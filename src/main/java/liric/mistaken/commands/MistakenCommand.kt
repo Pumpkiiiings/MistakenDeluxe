@@ -21,7 +21,7 @@ import java.util.concurrent.ThreadLocalRandom
  */
 class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
-    private val mm = Mistaken.mm
+    private val mm = plugin.mm
     // Usamos Set para búsqueda O(1) instantánea
     private val publicSubs = setOf("shop", "tienda", "lang", "language", "stats", "estadisticas", "afk")
 

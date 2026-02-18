@@ -1,6 +1,6 @@
-name: ModernPlugin
+name: Mistaken
 version: '${version}'
-main: me.mistaken.ModernPlugin
+main: liric.mistaken.Mistaken
 api-version: '1.21'
-author: Mistaken
-bootstrapper: me.mistaken.ModernBootstrap # Opcional si necesitas cargar librerías antes
+author: Pumpkingz
+bootstrapper: liric.mistaken.ModernBootstrap # Opcional si necesitas cargar librerías antes

@@ -2,6 +2,10 @@ package liric.mistaken
 
 import com.github.retrooper.packetevents.PacketEvents
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.database.StatsManager
 import liric.mistaken.asesinos.AsesinoManager
@@ -51,6 +55,7 @@ class Mistaken : JavaPlugin() {
     }
 
     // --- Core Variables ---
+    val pluginScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     val mm = MiniMessage.miniMessage()
     lateinit var assassinKey: NamespacedKey
     var craftEngineEnabled: Boolean = false
@@ -66,7 +71,7 @@ class Mistaken : JavaPlugin() {
     lateinit var messageConfig: MessageConfig
     lateinit var statsManager: StatsManager
     lateinit var playerDataManager: PlayerDataManager
-    lateinit var dbManager: DatabaseManager
+    lateinit var databaseManager: DatabaseManager
     lateinit var playerStatsManager: PlayerStatsManager
 
     // Game Managers
@@ -162,7 +167,7 @@ class Mistaken : JavaPlugin() {
 
     override fun onDisable() {
         // Null-safe checks usando Kotlin 'isInitialized'
-        if (::dbManager.isInitialized) dbManager.close()
+        if (::databaseManager.isInitialized) databaseManager.close()
         if (::scoreboardManager.isInitialized) scoreboardManager.removeAll()
         if (::generatorManager.isInitialized) generatorManager.clearGenerators()
         if (::ambientManager.isInitialized) ambientManager.stopAll()
@@ -183,7 +188,7 @@ class Mistaken : JavaPlugin() {
             val dbConfig = YamlConfiguration.loadConfiguration(dbFile)
 
             // Inicializamos managers
-            dbManager = DatabaseManager(this, dbConfig) // Usamos el constructor que espera FileConfiguration
+            databaseManager = DatabaseManager(this, dbConfig) // Usamos el constructor que espera FileConfiguration
             playerStatsManager = PlayerStatsManager(this)
 
             componentLogger.info(mm.deserialize("<green>[DB] Conexión HikariCP establecida.</green>"))

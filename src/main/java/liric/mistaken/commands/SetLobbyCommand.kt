@@ -3,6 +3,7 @@ package liric.mistaken.commands
 import com.mojang.brigadier.tree.LiteralCommandNode
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
+import io.papermc.paper.command.brigadier.BasicCommand
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Sound
@@ -43,7 +44,7 @@ object SetLobbyCommand {
                 // --- LÓGICA DEL COMANDO ---
 
                 // 3. Persistencia (La lógica interna de tu plugin)
-                plugin.setLobbyLocation(player.location)
+                plugin.setLobbyLocationConfig(player.location)
 
                 // 4. Feedback Visual (Multilingüe)
                 // Asumiendo que tu MessageConfig ya devuelve un Component, si devuelve String usa mm.deserialize()

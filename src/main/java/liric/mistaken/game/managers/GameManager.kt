@@ -38,7 +38,7 @@ import kotlin.math.min
  */
 class GameManager(private val plugin: Mistaken) {
 
-    private val mm = Mistaken.mm
+    private val mm = plugin.mm
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     // Sub-Managers

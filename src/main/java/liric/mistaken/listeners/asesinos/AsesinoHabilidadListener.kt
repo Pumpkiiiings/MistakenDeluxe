@@ -25,7 +25,7 @@ import org.bukkit.potion.PotionEffectType
  */
 class AsesinoHabilidadListener(private val plugin: Mistaken) : Listener {
 
-    private val mm = Mistaken.mm
+    private val mm = plugin.mm
     private val plain = PlainTextComponentSerializer.plainText()
 
     /**

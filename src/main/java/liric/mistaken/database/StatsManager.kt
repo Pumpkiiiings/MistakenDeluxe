@@ -29,7 +29,7 @@ class StatsManager(private val plugin: Mistaken) {
     fun loadStats(uuid: UUID, name: String) {
         scope.launch {
             try {
-                plugin.dbManager.connection.use { conn ->
+                plugin.databaseManager.connection.use { conn ->
                     // 1. Asegurar que el jugador existe (INSERT IGNORE)
                     val insertQuery = "INSERT IGNORE INTO stats (uuid, username) VALUES (?, ?)"
                     conn.prepareStatement(insertQuery).use { ps ->
@@ -97,7 +97,7 @@ class StatsManager(private val plugin: Mistaken) {
         """.trimIndent()
 
         try {
-            plugin.dbManager.connection.use { conn ->
+            plugin.databaseManager.connection.use { conn ->
                 conn.prepareStatement(query).use { ps ->
                     ps.setInt(1, stats.winsSurvivor.get())
                     ps.setInt(2, stats.winsAssassin.get())

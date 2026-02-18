@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class ConfigManager(private val plugin: Mistaken) {
 
-    private val mm = Mistaken.mm
+    private val mm = plugin.mm
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     // Archivos principales

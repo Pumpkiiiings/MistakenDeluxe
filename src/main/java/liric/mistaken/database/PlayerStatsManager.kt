@@ -43,7 +43,7 @@ class PlayerStatsManager(private val plugin: Mistaken) {
 
             try {
                 // .use cierra la conexión automáticamente al terminar el bloque
-                plugin.dbManager.connection.use { conn ->
+                plugin.databaseManager.connection.use { conn ->
                     conn.prepareStatement(query).use { stmt ->
                         stmt.setString(1, uuid.toString())
                         stmt.setString(2, playerName)
@@ -69,7 +69,7 @@ class PlayerStatsManager(private val plugin: Mistaken) {
             """.trimIndent()
 
             try {
-                plugin.dbManager.connection.use { conn ->
+                plugin.databaseManager.connection.use { conn ->
                     conn.prepareStatement(query).use { stmt ->
                         // Valores INSERT
                         stmt.setString(1, uuid.toString())

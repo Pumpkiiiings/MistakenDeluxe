@@ -86,8 +86,8 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
      */
     private fun resetPlayerStatus(player: Player) {
         player.gameMode = GameMode.SURVIVAL
-        player.isSwimming = false
-        player.visualFire = false // Propiedad de Paper/1.21+
+        player.isSwimming = false // Propiedad de Paper/1.21+
+        player.setVisualFire(false)
 
         // Atributos con Safe Call de Kotlin
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
@@ -99,7 +99,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
 
         // Limpieza de inventario y pociones eficiente
         player.inventory.clear()
-        player.inventory.armorContents = null
+        player.inventory.armorContents = arrayOfNulls(4)
 
         // Usamos una colección inmutable para evitar ConcurrentModificationException
         player.activePotionEffects.forEach { effect ->

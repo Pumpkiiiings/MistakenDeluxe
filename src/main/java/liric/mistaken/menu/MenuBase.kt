@@ -16,12 +16,14 @@ import org.bukkit.entity.Player
 abstract class MenuBase(fileName: String) {
 
     protected val plugin = Mistaken.instance
-    protected val mm = Mistaken.mm
+    protected val mm = plugin.mm
 
     protected var gui: Gui? = null
     protected val config = plugin.configManager.getMenuConfig(fileName)
 
-    protected val titulo: Component = mm.deserialize(config.getString("titulo", "<red>Menú sin Título"))
+    protected val titulo: Component = plugin.mm.deserialize(
+        config.getString("titulo") ?: "<red>Menú sin Título"
+    )
     protected val filas: Int = config.getInt("filas", 3)
 
     // Optimización: Guardamos los ítems decorativos ya construidos

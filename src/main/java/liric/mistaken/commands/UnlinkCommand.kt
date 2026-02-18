@@ -4,6 +4,7 @@ import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.tree.LiteralCommandNode
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
+import io.papermc.paper.command.brigadier.BasicCommand
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,7 +55,7 @@ object UnlinkCommand {
 
                             try {
                                 // try-with-resources al estilo Kotlin (.use)
-                                plugin.dbManager.connection.use { conn ->
+                                plugin.databaseManager.connection.use { conn ->
                                     conn.prepareStatement(sql).use { stmt ->
                                         stmt.setString(1, targetName)
                                         val rowsAffected = stmt.executeUpdate()
