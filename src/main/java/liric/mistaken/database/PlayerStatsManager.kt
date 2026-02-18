@@ -1,82 +1,91 @@
 package liric.mistaken.database
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import liric.mistaken.Mistaken
-import java.sql.SQLException
-import java.util.*
+import java.util.UUID
 
 /**
- * [LIRIC-MISTAKEN 2.0]
- * PlayerStatsManager: Persistencia de estadísticas en tiempo real.
- * Usa Coroutines (Dispatchers.IO) para que las consultas SQL no afecten los TPS del servidor.
+ * PlayerStatsManager - Mistaken v2.0-LIRIC
+ *
+ * Gestión de estadísticas persistentes.
+ * Optimización:
+ * - Uso de Corrutinas (Dispatchers.IO) para no bloquear el Main Thread.
+ * - Validación de columnas para seguridad.
+ * - Auto-cierre de recursos JDBC.
  */
 class PlayerStatsManager(private val plugin: Mistaken) {
 
-    // Scope dedicado a operaciones de base de datos para no saturar el servidor
-    private val dbScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    // Lista blanca de columnas permitidas para evitar inyección SQL
+    private val allowedColumns = setOf(
+        "kills", "deaths",
+        "wins_survivor", "wins_assassin",
+        "losses_survivor", "losses_assassin"
+    )
 
     /**
-     * Incrementa una estadística (kills, deaths, wins, etc.) de forma asíncrona.
-     * Optimizado con ON DUPLICATE KEY UPDATE para reducir el número de consultas.
+     * Incrementa una estadística numérica de forma asíncrona.
      */
     fun addStat(uuid: UUID, playerName: String, column: String) {
-        dbScope.launch {
-            // Validamos la columna por seguridad (Prevenir SQL Injection aunque sea interna)
-            val validColumns = listOf("wins_survivor", "wins_assassin", "losses_survivor", "losses_assassin", "deaths", "kills")
-            if (column.lowercase() !in validColumns) return@launch
+        // Validación de seguridad (Critico cuando concatenas nombres de columnas)
+        if (column !in allowedColumns) {
+            plugin.logger.warning("⚠️ Intento de modificar columna inválida o inyección SQL: $column")
+            return
+        }
 
+        // Lanzamos la tarea al hilo de IO (Input/Output)
+        CoroutineScope(Dispatchers.IO).launch {
             val query = """
-                INSERT INTO stats (uuid, username, $column) VALUES (?, ?, 1)
+                INSERT INTO stats (uuid, username, $column) VALUES (?, ?, 1) 
                 ON DUPLICATE KEY UPDATE $column = $column + 1, username = ?;
             """.trimIndent()
 
             try {
+                // .use cierra la conexión automáticamente al terminar el bloque
                 plugin.dbManager.connection.use { conn ->
-                    conn.prepareStatement(query).use { ps ->
-                        ps.setString(1, uuid.toString())
-                        ps.setString(2, playerName)
-                        ps.setString(3, playerName)
-                        ps.executeUpdate()
+                    conn.prepareStatement(query).use { stmt ->
+                        stmt.setString(1, uuid.toString())
+                        stmt.setString(2, playerName)
+                        stmt.setString(3, playerName) // Para actualizar el nombre si cambió
+                        stmt.executeUpdate()
                     }
                 }
-            } catch (e: SQLException) {
-                plugin.logger.severe("Error al incrementar estadística [$column] para $playerName: ${e.message}")
+            } catch (e: Exception) {
+                plugin.logger.severe("Error al incrementar estadística [$column]: ${e.message}")
+                e.printStackTrace()
             }
         }
     }
 
     /**
-     * Sincroniza el asesino seleccionado en la base de datos.
-     * Esto permite que sistemas externos (como bots de Discord) lean el estado real.
+     * Actualiza el asesino equipado.
      */
     fun updateSelectedKiller(uuid: UUID, playerName: String, killerName: String) {
-        dbScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             val query = """
-                INSERT INTO stats (uuid, username, asesino_equipado) VALUES (?, ?, ?)
+                INSERT INTO stats (uuid, username, asesino_equipado) VALUES (?, ?, ?) 
                 ON DUPLICATE KEY UPDATE asesino_equipado = ?, username = ?;
             """.trimIndent()
 
             try {
                 plugin.dbManager.connection.use { conn ->
-                    conn.prepareStatement(query).use { ps ->
-                        ps.setString(1, uuid.toString())
-                        ps.setString(2, playerName)
-                        ps.setString(3, killerName)
-                        ps.setString(4, killerName)
-                        ps.setString(5, playerName)
-                        ps.executeUpdate()
+                    conn.prepareStatement(query).use { stmt ->
+                        // Valores INSERT
+                        stmt.setString(1, uuid.toString())
+                        stmt.setString(2, playerName)
+                        stmt.setString(3, killerName)
+
+                        // Valores UPDATE
+                        stmt.setString(4, killerName)
+                        stmt.setString(5, playerName)
+
+                        stmt.executeUpdate()
                     }
                 }
-            } catch (e: SQLException) {
-                plugin.logger.severe("Error al actualizar asesino equipado en DB para $playerName: ${e.message}")
+            } catch (e: Exception) {
+                plugin.logger.severe("Error al actualizar asesino equipado en DB: ${e.message}")
             }
         }
-    }
-
-    /**
-     * Cancela todas las peticiones de base de datos pendientes al cerrar el plugin.
-     */
-    fun shutdown() {
-        dbScope.cancel()
     }
 }

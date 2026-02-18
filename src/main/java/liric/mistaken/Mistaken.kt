@@ -1,17 +1,16 @@
 package liric.mistaken
 
 import com.github.retrooper.packetevents.PacketEvents
-import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
-import kotlinx.coroutines.*
+import com.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.asesinos.AsesinoManager
 import liric.mistaken.asesinos.AsesinoTienda
-import liric.mistaken.commands.*
-import liric.mistaken.database.DatabaseManager
+import liric.mistaken.commands.CommandRegistry
 import liric.mistaken.config.ConfigManager
 import liric.mistaken.config.MessageConfig
 import liric.mistaken.data.PlayerDataManager
-import liric.mistaken.database.*
+import liric.mistaken.database.DatabaseManager
+import liric.mistaken.database.PlayerStatsManager
 import liric.mistaken.discord.DiscordManager
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.managers.*
@@ -28,142 +27,188 @@ import net.milkbowl.vault.economy.Economy
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
-import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.World
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.plugin.ServicePriority
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.util.*
-import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 
 class Mistaken : JavaPlugin() {
 
-    // Managers con inicialización tardía para ahorrar memoria en el booteo
-    lateinit var configManager: ConfigManager
-    lateinit var messageConfig: MessageConfig
-    lateinit var playerDataManager: PlayerDataManager
-    lateinit var arenaManager: ArenaManager
-    lateinit var gameManager: GameManager
-    lateinit var generatorManager: GeneratorManager
-    lateinit var mapManager: MapManager
-    lateinit var scoreboardManager: ScoreboardManager
-    lateinit var asesinoManager: AsesinoManager
-    lateinit var supervivienteManager: SupervivienteManager
-    lateinit var supervivienteTienda: SupervivienteTienda
-    lateinit var ambientManager: AmbientManager
-    lateinit var combatManager: CombatManager
-    lateinit var databaseManager: DatabaseManager
-    lateinit var discordManager: DiscordManager
-    lateinit var statsManager: StatsManager
-    lateinit var playerStatsManager: PlayerStatsManager
-    lateinit var shopSelector: ShopSelector
-    lateinit var asesinoTienda: AsesinoTienda
-
-    lateinit var assassinKey: NamespacedKey
-    private var dbConfig: FileConfiguration? = null
-    var lobbyLocation: Location? = null
-    var isCraftEngineEnabled = false = false
-
-    // Estado de jugadores
-    val staffEditMode = mutableSetOf<UUID>()
-    val afkPlayers = mutableSetOf<UUID>()
-
-    // Coroutine Scope para tareas asíncronas optimizadas
-    private val pluginScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-
+    // --- Singleton & Global Services ---
     companion object {
         lateinit var instance: Mistaken
             private set
+
         var economy: Economy? = null
             private set
-        val mm = MiniMessage.miniMessage()
 
-        @JvmStatic
-        fun getHealthAPI(): HealthAPI = instance.combatManager
+        // Método estático de utilidad para API
+        fun getHealthAPI(): HealthAPI? = instance.combatManager
     }
+
+    // --- Core Variables ---
+    val mm = MiniMessage.miniMessage()
+    lateinit var assassinKey: NamespacedKey
+    var craftEngineEnabled: Boolean = false
+        private set
+
+    // --- Data Structures ---
+    val staffEditMode = mutableSetOf<UUID>()
+    val afkPlayers = mutableSetOf<UUID>()
+    var lobbyLocation: Location? = null
+
+    // --- Managers (Lateinit: Se inicializan en onEnable) ---
+    lateinit var configManager: ConfigManager
+    lateinit var messageConfig: MessageConfig
+    lateinit var playerDataManager: PlayerDataManager
+    lateinit var dbManager: DatabaseManager
+    lateinit var playerStatsManager: PlayerStatsManager
+
+    // Game Managers
+    lateinit var gameManager: GameManager
+    lateinit var arenaManager: ArenaManager
+    lateinit var generatorManager: GeneratorManager
+    lateinit var mapManager: MapManager
+    lateinit var scoreboardManager: ScoreboardManager
+    lateinit var ambientManager: AmbientManager
+    lateinit var combatManager: CombatManager
+    lateinit var discordManager: DiscordManager
+
+    // Roles & Shops
+    lateinit var asesinoManager: AsesinoManager
+    lateinit var supervivienteManager: SupervivienteManager
+    lateinit var asesinoTienda: AsesinoTienda
+    lateinit var supervivienteTienda: SupervivienteTienda
+    lateinit var shopSelector: ShopSelector
 
     override fun onLoad() {
         instance = this
-        // PacketEvents 2.0+ (Spigot Builder)
+        // PacketEvents Load (Antes de iniciar el servidor)
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this))
-        PacketEvents.getAPI().settings.checkForUpdates(false).debug(false)
+        PacketEvents.getAPI().settings.checkForUpdates(false).bStats(true)
         PacketEvents.getAPI().load()
     }
 
     override fun onEnable() {
+        val start = System.currentTimeMillis()
+
+        // 1. Init PacketEvents & Keys
         PacketEvents.getAPI().init()
         assassinKey = NamespacedKey(this, "selected_assassin")
 
+        // 2. Archivos y Configuración
         saveDefaultConfig()
         createRequiredFolders()
-        loadDatabaseConfig()
         loadLobbyLocation()
 
-        // Inicialización de lógica base
-        configManager = ConfigManager(this).also { it.loadAllConfigs() }
+        configManager = ConfigManager(this).apply { loadAllConfigs() }
         messageConfig = MessageConfig(this)
         playerDataManager = PlayerDataManager(this)
 
+        // 3. Integraciones Externas (Vault, CraftEngine)
         if (!setupIntegrations()) return
-        setupDatabase()
 
-        // Inicialización de Managers de Juego
+        // 4. Base de Datos (Crítico: Si falla, apagamos)
+        if (!setupDatabase()) return
+
+        // 5. Inicialización de Managers (El orden importa)
+        discordManager = DiscordManager(this)
         generatorManager = GeneratorManager(this)
         arenaManager = ArenaManager(this)
         mapManager = MapManager()
-        discordManager = DiscordManager(this)
+
         asesinoManager = AsesinoManager(this)
         supervivienteManager = SupervivienteManager(this)
+
         asesinoTienda = AsesinoTienda()
         supervivienteTienda = SupervivienteTienda()
         shopSelector = ShopSelector()
+
         ambientManager = AmbientManager(this)
         combatManager = CombatManager(this)
 
-        // Registrar API de Salud en los servicios de Bukkit
+        // 6. Registro de Servicios (API Pública)
         server.servicesManager.register(HealthAPI::class.java, combatManager, this, ServicePriority.Normal)
 
+        // 7. Core Game Logic
         gameManager = GameManager(this)
         scoreboardManager = ScoreboardManager(this)
 
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+        // 8. Placeholders
+        if (server.pluginManager.isPluginEnabled("PlaceholderAPI")) {
             MistakenExpansion(this).register()
+            componentLogger.info(mm.deserialize("<green>✔ PAPI Hook registrado."))
         }
 
+        // 9. Eventos y Comandos (NUEVO SISTEMA)
         registerEvents()
-        registerCommands()
-        iniciarMotorDeParticulasAsync()
+
+        // ¡AQUÍ ESTÁ LA MAGIA! Inyección de comandos Brigadier
+        CommandRegistry(this).registerAll()
+
+        // 10. Tareas
+        iniciarMotorDeParticulas()
         sendLogo()
+
+        val time = System.currentTimeMillis() - start
+        componentLogger.info(mm.deserialize("<gradient:green:aqua>Mistaken habilitado en ${time}ms.</gradient>"))
     }
 
-    private fun setupDatabase() {
-        try {
-            databaseManager = DatabaseManager(this, dbConfig!!)
-            statsManager = StatsManager(this)
+    override fun onDisable() {
+        // Null-safe checks usando Kotlin 'isInitialized'
+        if (::dbManager.isInitialized) dbManager.close()
+        if (::scoreboardManager.isInitialized) scoreboardManager.removeAll()
+        if (::generatorManager.isInitialized) generatorManager.clearGenerators()
+        if (::ambientManager.isInitialized) ambientManager.stopAll()
+        if (::asesinoManager.isInitialized) asesinoManager.removerTodosLosAsesinos()
+
+        PacketEvents.getAPI().terminate()
+
+        componentLogger.info(mm.deserialize("<red>Mistaken desactivado correctamente."))
+    }
+
+    // --- SETUP HELPERS ---
+
+    private fun setupDatabase(): Boolean {
+        return try {
+            // Cargamos la config de DB
+            val dbFile = File(dataFolder, "database.yml")
+            if (!dbFile.exists()) saveResource("database.yml", false)
+            val dbConfig = YamlConfiguration.loadConfiguration(dbFile)
+
+            // Inicializamos managers
+            dbManager = DatabaseManager(this, dbConfig) // Usamos el constructor que espera FileConfiguration
             playerStatsManager = PlayerStatsManager(this)
-            server.consoleSender.sendMessage(mm.deserialize("<green>[Mistaken] Database y Stats vinculados correctamente.</green>"))
+
+            componentLogger.info(mm.deserialize("<green>[DB] Conexión HikariCP establecida.</green>"))
+            true
         } catch (e: Exception) {
-            server.consoleSender.sendMessage(mm.deserialize("<red>[Mistaken] FATAL ERROR: Fallo en DB. Plugin deshabilitado.</red>"))
+            componentLogger.error(mm.deserialize("<red>FATAL: Error al conectar Base de Datos.</red>"))
+            e.printStackTrace()
             server.pluginManager.disablePlugin(this)
+            false
         }
     }
 
     private fun setupIntegrations(): Boolean {
-        val vault = server.pluginManager.getPlugin("Vault")
-        if (vault == null || !setupEconomy()) {
-            server.consoleSender.sendMessage(mm.deserialize("<red>[Mistaken] Falta Vault o Plugin de Economía.</red>"));
+        // Economy (Vault)
+        val rsp = server.servicesManager.getRegistration(Economy::class.java)
+        if (rsp == null) {
+            componentLogger.error(mm.deserialize("<red>Vault no encontrado o sin plugin de economía.</red>"))
             server.pluginManager.disablePlugin(this)
             return false
         }
-        isCraftEngineEnabled = server.pluginManager.isPluginEnabled("CraftEngine")
-        return true
-    }
-
-    private fun setupEconomy(): Boolean {
-        val rsp = server.servicesManager.getRegistration(Economy::class.java) ?: return false
         economy = rsp.provider
-        return economy != null
+
+        // CraftEngine
+        if (server.pluginManager.isPluginEnabled("CraftEngine")) {
+            craftEngineEnabled = true
+            componentLogger.info(mm.deserialize("<aqua>CraftEngine detectado.</aqua>"))
+        }
+        return true
     }
 
     private fun registerEvents() {
@@ -178,73 +223,37 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(SupervivienteHabilidadListener(this), this)
     }
 
-    /**
-     * Registro de comandos usando la nueva API Lifecycle de Paper (1.21.4+)
-     * Esto usa Brigadier nativo, mucho más rápido que el plugin.yml
-     */
-    private fun registerCommands() {
-        val manager = this.lifecycleManager
-        manager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
-            val registrar = event.registrar()
+    private fun iniciarMotorDeParticulas() {
+        // Optimizamos el Scheduler usando el método nativo de Bukkit/Paper
+        server.scheduler.runTaskTimerAsynchronously(this, Runnable {
+            if (gameManager.currentState != GameState.INGAME) return@Runnable
 
-            // Aquí puedes instanciar tus comandos usando Brigadier o BasicCommand
-            // Por brevedad, asumo que tus clases Command ya están adaptadas o usan BasicCommand
-            registrar.register("arena", "Comando de arenas", ArenaCommand(this))
-            registrar.register("vote", "Votar por mapa", VoteCommand(this))
-            registrar.register("mistaken", "Comando principal", MistakenCommand(this))
-            registrar.register("setlobby", "Establecer lobby", SetLobbyCommand(this))
-        }
-    }
+            // Iteramos sobre el mapa de asesinos
+            asesinoManager.asesinosActivos.forEach { (uuid, asesino) ->
+                val p = Bukkit.getPlayer(uuid)
 
-    /**
-     * Motor de partículas usando Coroutines.
-     * No bloquea el hilo principal y tiene un consumo casi nulo.
-     */
-    private fun iniciarMotorDeParticulasAsync() {
-        pluginScope.launch {
-            while (isActive) {
-                if (gameManager.getCurrentState() == GameState.INGAME) {
-                    asesinoManager.asesinosActivos.forEach { (uuid, asesino) ->
-                        val player = Bukkit.getPlayer(uuid)
-                        if (player != null && player.isOnline) {
-                            // Solo procesar si se mueve o corre
-                            if (player.velocity.lengthSquared() > 0.001 || player.isSprinting) {
-                                // Partículas en hilo Async (Dispatchers.Default)
-                                asesino.mostrarTrail(player)
+                // Verificaciones rápidas antes de procesar
+                if (p != null && p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
 
-                                // Efectos físicos deben ir al Main Thread
-                                withContext(Dispatchers.Main) {
-                                    asesino.mostrarTrailFisico(player)
-                                }
-                            }
-                        }
-                    }
+                    // 1. Cálculo Asíncrono (Heavy math)
+                    asesino.mostrarTrail(p)
+
+                    // 2. Renderizado Síncrono (Solo si es necesario tocar la API de Bukkit que no sea thread-safe)
+                    server.scheduler.runTask(this, Runnable {
+                        asesino.mostrarTrailFisico(p)
+                    })
                 }
-                delay(100) // Equivalente a 2 ticks
             }
-        }
+        }, 0L, 2L)
     }
 
-    override fun onDisable() {
-        pluginScope.cancel() // Detener todas las tareas asíncronas
-        if (::databaseManager.isInitialized) databaseManager.close()
-        if (::scoreboardManager.isInitialized) scoreboardManager.removeAll()
-        if (::generatorManager.isInitialized) generatorManager.clearGenerators()
-        if (::ambientManager.isInitialized) ambientManager.stopAll()
-        if (::asesinoManager.isInitialized) asesinoManager.removerTodosLosAsesinos()
+    // --- UTILS & LOCATION ---
 
-        PacketEvents.getAPI().terminate()
-    }
-
-    // Helpers de estado
-    fun isInEditMode(player: Player) = staffEditMode.contains(player.uniqueId)
-    fun isAFK(player: Player) = afkPlayers.contains(player.uniqueId)
-    fun isIgnored(player: Player) = isInEditMode(player) || isAFK(player)
-
-    // Configuración de Lobby
-    fun loadLobbyLocation() {
+    private fun loadLobbyLocation() {
         val section = config.getConfigurationSection("settings.lobby") ?: return
-        val world = Bukkit.getWorld(section.getString("world") ?: "world") ?: return
+        val worldName = section.getString("world", "world") ?: "world"
+        val world = Bukkit.getWorld(worldName) ?: return
+
         lobbyLocation = Location(
             world,
             section.getDouble("x"), section.getDouble("y"), section.getDouble("z"),
@@ -252,7 +261,7 @@ class Mistaken : JavaPlugin() {
         )
     }
 
-    fun setLobbyLocation(loc: Location) {
+    fun setLobbyLocationConfig(loc: Location) {
         this.lobbyLocation = loc
         val section = config.createSection("settings.lobby")
         section.set("world", loc.world.name)
@@ -266,42 +275,49 @@ class Mistaken : JavaPlugin() {
 
     private fun createRequiredFolders() {
         val folders = listOf("lang", "menus")
-        folders.forEach { name ->
-            val folder = File(dataFolder, name)
-            if (!folder.exists()) folder.mkdirs()
-        }
+        folders.forEach { File(dataFolder, it).mkdirs() }
 
-        val menus = listOf("tienda_principal.yml", "asesinos_tienda.yml", "supervivientes_tienda.yml")
-        menus.forEach { name ->
-            val file = File(dataFolder, "menus/$name")
-            if (!file.exists()) saveResource("menus/$name", false)
+        val menus = listOf(
+            "tienda_principal.yml",
+            "asesinos_tienda.yml",
+            "supervivientes_tienda.yml"
+        )
+
+        menus.forEach { nombre ->
+            val file = File(dataFolder, "menus/$nombre")
+            if (!file.exists()) {
+                try {
+                    saveResource("menus/$nombre", false)
+                } catch (e: Exception) {
+                    logger.warning("No se pudo exportar $nombre")
+                }
+            }
         }
     }
 
-    private fun loadDatabaseConfig() {
-        val dbFile = File(dataFolder, "database.yml")
-        if (!dbFile.exists()) saveResource("database.yml", false)
-        dbConfig = YamlConfiguration.loadConfiguration(dbFile)
-    }
+    // --- STATE CHECKS ---
+    fun isInEditMode(player: Player) = staffEditMode.contains(player.uniqueId)
+    fun isAFK(player: Player) = afkPlayers.contains(player.uniqueId)
+    fun isIgnored(player: Player) = isInEditMode(player) || isAFK(player)
 
     private fun sendLogo() {
-        val blue1 = "#005f73"
-        val info = "#00d4ff"
+        val b1 = "<#005f73>"
+        val b2 = "<#004488>"
+        val b3 = "<#003366>"
+        val info = "<#00d4ff>"
 
-        val logo = """
-            
-               <blue1><bold>   __  __ _     _        _              </bold></blue1>
-              <blue1><bold>  /  |/  (_)__ / /____ _/ /_____ ___    </bold></blue1>
-            <#004488><bold> / /|_/ / (_-</ __/ _ `/  '_/ -_) _ \   </bold></#004488>
-            <#003366><bold>/_/  /_/_/___/\\__/\\_,_/_/\\_\\\\__/_//_/   </bold></#003366>
-            
-              <gray>Autor:</gray> <info>Liric Development</info>
-              <gray>Estado:</gray> <green>● Optimizado (Kotlin)</green>
-              <gray>Versión:</gray> <white>1.21.4 (Paper Native)</white>
-        """.trimIndent()
-            .replace("blue1", blue1)
-            .replace("info", info)
-
-        server.consoleSender.sendMessage(mm.deserialize(logo))
+        // Paper Logger soporta componentes directos, mucho más limpio
+        componentLogger.info(mm.deserialize("""
+            <newline>
+            $b1<bold>   __  __ _     _        _              </bold>$b1
+            $b1<bold>  /  |/  (_)__ / /____ _/ /_____ ___    </bold>$b1
+            $b2<bold> / /|_/ / (_-</ __/ _ `/  '_/ -_) _ \   </bold>$b2
+            $b3<bold>/_/  /_/_/___/\__/\_,_/_/\_\\__/_//_/   </bold>$b3
+            <newline>
+              <gray>Autor:</gray> $info Pumpkingz$info
+              <gray>Estado:</gray> <green>● Operativo (1.21.4)</green>
+              <gray>Motor:</gray> $info Brigadier & PacketEvents$info
+            <newline>
+        """.trimIndent()))
     }
 }

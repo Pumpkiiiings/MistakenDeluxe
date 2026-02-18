@@ -2,6 +2,7 @@ package liric.mistaken.utils
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion
 import liric.mistaken.Mistaken
+import liric.mistaken.data.PlayerStats
 import org.bukkit.OfflinePlayer
 
 /**
