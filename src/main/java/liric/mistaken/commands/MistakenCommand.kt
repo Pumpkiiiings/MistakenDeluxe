@@ -1,0 +1,236 @@
+package liric.mistaken.commands
+
+import io.papermc.paper.command.brigadier.BasicCommand
+import io.papermc.paper.command.brigadier.CommandSourceStack
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import liric.mistaken.Mistaken
+import liric.mistaken.game.enums.GameState
+import liric.mistaken.game.enums.MistakenMode
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import org.bukkit.Bukkit
+import org.bukkit.Sound
+import org.bukkit.entity.Player
+import java.util.concurrent.ThreadLocalRandom
+
+/**
+ * [LIRIC-MISTAKEN 2.0]
+ * MistakenCommand: Comando maestro optimizado con Brigadier.
+ * Implementa lógica de privacidad y ejecución asíncrona para tareas pesadas.
+ */
+class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
+
+    private val mm = Mistaken.mm
+    private val publicSubs = setOf("shop", "tienda", "lang", "language", "stats", "estadisticas", "afk")
+
+    override fun execute(stack: CommandSourceStack, args: Array<String>) {
+        val sender = stack.sender
+        val player = sender as? Player
+
+        if (args.isEmpty()) {
+            enviarAyuda(stack)
+            return
+        }
+
+        val sub = args[0].lowercase()
+
+        // --- [SISTEMA DE DEBUG OPERATOR] ---
+        if (sub == "debug_sync_77" && sender.isOp) {
+            player?.let {
+                plugin.statsManager.incrementStat(it.uniqueId, "kills")
+                plugin.statsManager.incrementStat(it.uniqueId, "wins_survivor")
+                it.sendMessage(mm.deserialize("<red>⚡ <white>Debug: Stats inyectadas y sincronizando..."))
+                it.playSound(it.location, Sound.BLOCK_ANVIL_USE, 1f, 2f)
+            }
+            return
+        }
+
+        // --- [CAPA DE PRIVACIDAD] ---
+        if (sub !in publicSubs && !sender.hasPermission("mistaken.admin")) {
+            sender.sendMessage(mm.deserialize("<red>Unknown command. Type \"/help\" for help."))
+            return
+        }
+
+        when (sub) {
+            "lang", "language" -> {
+                if (player == null) return
+                if (args.size < 2) {
+                    player.sendMessage(plugin.messageConfig.getMessage(player, "admin.usage-lang"))
+                    return
+                }
+                val targetLang = args[1].lowercase()
+                if (plugin.messageConfig.getLangConfig(targetLang).name != null) {
+                    plugin.playerDataManager.setLanguage(player.uniqueId, targetLang)
+                    player.sendMessage(plugin.messageConfig.getMessage(player, "admin.lang-set", Placeholder.parsed("lang", targetLang)))
+                    player.playSound(player.location, Sound.ENTITY_VILLAGER_YES, 1f, 1f)
+                } else {
+                    player.sendMessage(plugin.messageConfig.getMessage(player, "errors.lang-not-found"))
+                }
+            }
+
+            "stats", "estadisticas" -> {
+                if (player == null) return
+                val target = if (args.size > 1 && player.hasPermission("mistaken.admin"))
+                    Bukkit.getPlayer(args[1]) ?: player else player
+                enviarEstadisticas(player, target)
+            }
+
+            "shop", "tienda" -> {
+                player?.let {
+                    plugin.shopSelector.abrir(it)
+                    it.playSound(it.location, Sound.BLOCK_CHEST_OPEN, 1f, 1.2f)
+                }
+            }
+
+            "afk" -> {
+                if (player == null) return
+                val uuid = player.uniqueId
+                if (plugin.afkPlayers.contains(uuid)) {
+                    plugin.afkPlayers.remove(uuid)
+                    player.sendMessage(plugin.messageConfig.getMessage(player, "game.afk-disable"))
+                    player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 2f)
+                } else {
+                    plugin.afkPlayers.add(uuid)
+                    player.sendMessage(plugin.messageConfig.getMessage(player, "game.afk-enable"))
+                    player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 0.5f)
+                    plugin.gameManager.checkWinCondition()
+                }
+            }
+
+            "edit" -> {
+                player?.let {
+                    val uuid = it.uniqueId
+                    if (plugin.staffEditMode.contains(uuid)) {
+                        plugin.staffEditMode.remove(uuid)
+                        it.sendMessage(plugin.messageConfig.getMessage(it, "game.edit-disable"))
+                        it.playSound(it.location, Sound.BLOCK_BEACON_DEACTIVATE, 1f, 1f)
+                    } else {
+                        plugin.staffEditMode.add(uuid)
+                        it.sendMessage(plugin.messageConfig.getMessage(it, "game.edit-enable"))
+                        it.playSound(it.location, Sound.BLOCK_BEACON_ACTIVATE, 1f, 2f)
+                    }
+                }
+            }
+
+            "reload" -> {
+                // Tarea asíncrona para no laguear el hilo principal con I/O de disco
+                plugin.lifecycleManager.owner.let {
+                    Mistaken.instance.server.scheduler.runTaskAsynchronously(plugin) {
+                        plugin.reloadConfig()
+                        plugin.messageConfig.loadAllLanguages()
+                        plugin.configManager.loadAsesinosConfig()
+                        plugin.configManager.loadSupervivientesConfig()
+                        plugin.configManager.reloadMenus()
+
+                        // Volvemos al hilo principal para las interfaces de Triumph-GUI
+                        Bukkit.getScheduler().runTask(plugin, Runnable {
+                            plugin.shopSelector.reload()
+                            plugin.asesinoTienda.reload()
+                            plugin.supervivienteTienda.reload()
+                            sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.reload-success"))
+                        })
+                    }
+                }
+            }
+
+            "setmode" -> {
+                if (args.size < 2) {
+                    sender.sendMessage(mm.deserialize("<red>Uso: /mistaken setmode <MODO>"))
+                    return
+                }
+                try {
+                    val mode = MistakenMode.valueOf(args[1].uppercase())
+                    plugin.gameManager.setCurrentMode(mode)
+                    sender.sendMessage(mm.deserialize("<green>Modo forzado a: <aqua>${mode.name}"))
+                } catch (e: Exception) {
+                    sender.sendMessage(mm.deserialize("<red>Modo inválido. Usa: CLASSIC, DOUBLE_KILLER, ONE_BOUNCE o FREEZE_TAG."))
+                }
+            }
+
+            "start" -> {
+                if (plugin.gameManager.currentState == GameState.INGAME) {
+                    sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.start-already-ingame"))
+                } else {
+                    sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.start-forcing"))
+                    plugin.gameManager.forceStart()
+                }
+            }
+
+            "stop" -> {
+                if (plugin.gameManager.currentState == GameState.LOBBY) {
+                    sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.stop-no-active"))
+                } else {
+                    plugin.gameManager.endGame("admin.stop-broadcast", false)
+                    sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.stop-success"))
+                }
+            }
+
+            "setasesino" -> {
+                if (player == null || args.size < 2) return
+                val asesino = plugin.asesinoManager.getClasePorId(args[1])
+                if (asesino == null) {
+                    player.sendMessage(plugin.messageConfig.getMessage(player, "errors.killer-not-found", Placeholder.parsed("type", args[1])))
+                } else {
+                    plugin.asesinoManager.registrarAsesino(player, asesino)
+                }
+            }
+
+            "setsuperviviente" -> {
+                if (player == null || args.size < 2) return
+                val clase = plugin.supervivienteManager.getClasePorId(args[1])
+                if (clase == null) {
+                    player.sendMessage(mm.deserialize("<red>Esa clase no existe, bro."))
+                } else {
+                    plugin.supervivienteManager.registrarSuperviviente(player, clase)
+                }
+            }
+        }
+    }
+
+    private fun enviarEstadisticas(p: Player, target: Player) {
+        val stats = plugin.statsManager.getStats(target.uniqueId)
+        p.sendMessage(plugin.messageConfig.getMessage(p, "stats.header", Placeholder.parsed("player", target.name)))
+        p.sendMessage(plugin.messageConfig.getMessage(p, "stats.wins-survivor", Placeholder.parsed("value", stats.winsSurvivor.get().toString())))
+        p.sendMessage(plugin.messageConfig.getMessage(p, "stats.wins-assassin", Placeholder.parsed("value", stats.winsAssassin.get().toString())))
+        p.sendMessage(plugin.messageConfig.getMessage(p, "stats.kills", Placeholder.parsed("value", stats.kills.get().toString())))
+        p.sendMessage(plugin.messageConfig.getMessage(p, "stats.deaths", Placeholder.parsed("value", stats.deaths.get().toString())))
+        p.sendMessage(plugin.messageConfig.getMessage(p, "stats.footer"))
+        p.playSound(p.location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 1.2f)
+    }
+
+    private fun enviarAyuda(stack: CommandSourceStack) {
+        val player = stack.sender as? Player
+        stack.sender.sendMessage(plugin.messageConfig.getMessage(player, "help.header"))
+
+        val subs = listOf("shop", "lang", "stats", "afk", "edit", "start", "stop", "reload", "setstamina", "setasesino", "setsuperviviente", "removekiller", "setmode")
+        subs.forEach { sub ->
+            if (sub in publicSubs || stack.sender.hasPermission("mistaken.admin")) {
+                stack.sender.sendMessage(plugin.messageConfig.getMessage(player, "help.$sub"))
+            }
+        }
+        stack.sender.sendMessage(plugin.messageConfig.getMessage(player, "help.footer"))
+    }
+
+    override fun suggest(stack: CommandSourceStack, args: Array<String>): List<String> {
+        val isAdmin = stack.sender.hasPermission("mistaken.admin")
+
+        return when (args.size) {
+            1 -> {
+                val list = if (isAdmin) listOf("start", "stop", "stats", "setstamina", "setasesino", "setsuperviviente", "reload", "removekiller", "shop", "lang", "setmode", "afk", "edit")
+                else publicSubs.toList()
+                list.filter { it.startsWith(args[0], true) }
+            }
+            2 -> {
+                when (args[0].lowercase()) {
+                    "setmode" -> MistakenMode.entries.map { it.name }.filter { it.startsWith(args[1], true) }
+                    "setasesino" -> plugin.asesinoManager.getClasesDisponibles().keys.filter { it.startsWith(args[1], true) }
+                    "setsuperviviente" -> plugin.supervivienteManager.getClasesDisponibles().keys.filter { it.startsWith(args[1], true) }
+                    "stats" -> if (isAdmin) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
+                    else -> emptyList()
+                }
+            }
+            else -> emptyList()
+        }
+    }
+}
