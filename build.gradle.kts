@@ -1,0 +1,113 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.ow2.asm:asm:9.6")
+        classpath("org.ow2.asm:asm-commons:9.6")
+    }
+}
+
+plugins {
+    java
+    kotlin("jvm") version "2.1.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("maven-publish")
+}
+
+group = "me.mistaken"
+version = "4.5-FIX"
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://maven.enginehub.org/repo/")
+    maven("https://repo.triumphteam.dev/repository/maven-releases/")
+    maven("https://repo.codemc.io/repository/maven-public/")
+    maven("https://jitpack.io")
+    maven("https://repo.momirealms.net/releases/")
+    maven("https://repo.helpch.at/releases")
+    maven("https://repo.infernalsuite.com/repository/maven-snapshots/")
+
+    flatDir {
+        dirs("libs")
+    }
+}
+
+dependencies {
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    implementation(kotlin("stdlib"))
+
+    compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
+    implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
+
+    implementation("com.github.retrooper:packetevents-spigot:2.7.0")
+    implementation("com.zaxxer:HikariCP:5.1.0")
+    implementation("com.mysql:mysql-connector-j:8.3.0")
+    implementation("org.slf4j:slf4j-simple:2.0.9")
+
+    implementation("dev.triumphteam:triumph-gui:3.1.13")
+
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
+        exclude(group = "org.bukkit", module = "bukkit")
+    }
+    compileOnly("net.momirealms:craft-engine-core:0.0.60")
+    compileOnly("net.momirealms:craft-engine-bukkit:0.0.60")
+    compileOnly(files("libs/CraftEngine.jar"))
+
+    compileOnly("net.luckperms:api:5.4")
+    compileOnly("me.clip:placeholderapi:2.11.7")
+
+    compileOnly("net.kyori:adventure-platform-bukkit:4.3.4")
+    compileOnly("net.kyori:adventure-text-minimessage:4.17.0")
+
+    compileOnly("org.jetbrains:annotations:24.0.1")
+}
+
+tasks {
+    shadowJar {
+        archiveClassifier.set("")
+        mergeServiceFiles()
+        isZip64 = true
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+        relocate("com.github.retrooper.packetevents", "me.mistaken.libs.packetevents")
+        relocate("io.github.retrooper.packetevents", "me.mistaken.libs.packetevents")
+        relocate("com.zaxxer.hikari", "me.mistaken.libs.hikari")
+        relocate("dev.triumphteam.gui", "me.mistaken.libs.gui")
+        relocate("kotlin", "me.mistaken.libs.kotlin")
+    }
+
+    withType<JavaCompile> {
+        options.encoding = "UTF-8"
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
+    }
+
+    withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "21"
+    }
+
+    processResources {
+        val props = mapOf("version" to version)
+        inputs.properties(props)
+        filteringCharset = "UTF-8"
+
+        filesMatching("plugin.yml") {
+            expand(props)
+        }
+    }
+
+    build {
+        dependsOn(shadowJar)
+    }
+}
+

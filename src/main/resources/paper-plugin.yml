@@ -1,0 +1,6 @@
+name: ModernPlugin
+version: '${version}'
+main: me.mistaken.ModernPlugin
+api-version: '1.21'
+author: Mistaken
+bootstrapper: me.mistaken.ModernBootstrap # Opcional si necesitas cargar librerías antes
