@@ -1,0 +1,318 @@
+# ======================================================
+#          MISTAKEN - ENGLISH LANGUAGE
+# ======================================================
+
+prefix: "<b><color:#88C6F2>MISTAKEN</color></b> <color:#ADADAD>|</color> "
+
+# --- VOTING ---
+voting:
+  started: "<green>Voting started! Use <yellow>/vote <map></yellow>"
+  not-active: "<prefix><red>There is no active voting at this time."
+  already-voted: "<prefix><red>You have already voted in this match."
+  usage: "<prefix><red>Usage: /vote <map>"
+  not-found: "<prefix><red>The map <white>{map}</white> does not exist."
+  success: "<prefix><green>You voted for: <aqua>{map}</aqua>"
+  map-option: "<dark_gray>» <aqua>{map}</aqua>"
+  not-enough-players: "<prefix><red>Not enough souls! Not enough players to start."
+
+# --- BOSSBAR ---
+bossbar:
+  lobby: "<gradient:#ffcc00:#ffaa00><bold>WAITING FOR PLAYERS...</bold></gradient> <gray>({online})"
+  voting: "<b><color:#8AFF73>VOTING IN PROGRESS</color></b> <gray>| <white>Ends in: <yellow>{time}s"
+  starting: "<red><bold>PREPARE YOURSELF!</bold> <white>Starting in <yellow>{time}s"
+  ingame: "<white>Map: <yellow>{map}</yellow> <dark_gray>|</dark_gray> Mode: <aqua>{mode}</aqua> <dark_gray>|</dark_gray> Time: <green>{time}</green>"
+  ending: "<b><color:#FF001D>MATCH FINISHED!</color></b>"
+  colors:
+    lobby: "YELLOW"
+    voting: "WHITE"
+    starting: "PURPLE"
+    ingame: "RED"
+    ending: "PINK"
+
+# --- COMBAT ---
+combat:
+  heart-icon-on: "❤"
+  heart-icon-off: "🖤"
+  hunters-mark: "<red>"
+  health-bar: "<red>{hearts_on}<gray>{hearts_off}"
+  cooldown: "<red>Wait <white>{time}s</white> to attack again!"
+  critical-wound: "<prefix><red><bold>YOUR LEGS FAIL!</bold> <gray>Seek help or crawl."
+  kill-reward-actionbar: "<red><bold>+40 HEALTH</bold></red> <gray>|</gray> <gold><bold>+${reward} CREDITS</bold></gold>"
+  kill-reward-chat: "<prefix><gray>You received <green>${reward}</green> for claiming a victim."
+  rescue-start-carrier: "<prefix><green>You lifted <white>{target}</white>! Get them to safety."
+  rescue-start-victim: "<prefix><green><white>{carrier}</white> is carrying you."
+  rescue-dropped-carrier: "<prefix><yellow>You dropped your teammate on the ground."
+  rescue-dropped-victim: "<prefix><yellow>You have been dropped."
+  rescue-interrupted: "<prefix><red>You dropped your teammate due to the impact!"
+  win-reward-killer: "<prefix><gold>Massacre complete! <white>You received <green>${amount}</green> for your victory."
+  win-reward-survivor: "<green>You survived the killer! <white>You received <green>${amount}</green> for surviving."
+
+# --- SCOREBOARD ---
+scoreboard:
+  title: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN</bold></gradient>"
+  lobby:
+    - ""
+    - "<white>Status: <yellow>Lobby"
+    - "<white>Players: <green>%online%"
+    - ""
+    - "<white>Profile: <aqua>%player%"
+    - ""
+  voting:
+    - ""
+    - "<white>Phase: <aqua>VOTING"
+    - "<white>Time: <yellow>%timer%s"
+    - ""
+    - "<gray>Use /vote"
+    - ""
+  starting:
+    - ""
+    - "<white>Map: <green>%map%"
+    - "<white>Starts in: <yellow>%timer%s"
+    - ""
+    - "<red><bold>PREPARE!</bold>"
+    - ""
+  ingame_classic:
+    - ""
+    - "<white>Map: <green>%map%"
+    - "<white>Time: <yellow>%timer%"
+    - ""
+    - "<white>Gens: <green>%completed%/%total%"
+    - "<white>Killer:"
+    - "%killers%"
+    - ""
+    - "<white>Lives: <red>%lives% ❤"
+    - ""
+  ingame_double_killer:
+    - ""
+    - "<white>Map: <green>%map%"
+    - "<white>Time: <yellow>%timer%"
+    - ""
+    - "<white>Gens: <green>%completed%/%total%"
+    - "<white>Killers:"
+    - "%killers%"
+    - ""
+    - "<white>Lives: <red>%lives% ❤"
+    - ""
+  ingame_one_bounce:
+    - ""
+    - "<white>Map: <green>%map%"
+    - "<white>Time: <yellow>%timer%"
+    - ""
+    - "<white>Gens: <green>%completed%/%total%"
+    - "%killers%"
+    - ""
+    - "<white>Lives: <red>%lives% ❤"
+    - ""
+  ingame_freeze_tag:
+    - ""
+    - "<white>Map: <green>%map%"
+    - "<white>Time: <yellow>%timer%"
+    - ""
+    - "<white>Gens: <green>%completed%/%total%"
+    - "<white>Killer:"
+    - "%killers%"
+    - ""
+  ending:
+    - ""
+    - "<white>Status: <red>FINISH"
+    - "<white>Winner(s): %killers%"
+    - ""
+
+# --- GENERATORS ---
+generators:
+  names:
+    RAW_IRON_BLOCK: "<gold>SCRAP GENERATOR"
+    IRON_BLOCK: "<white>WIRING SYSTEM"
+    AMETHYST_BLOCK: "<purple>MEMORY CORE"
+  hologram:
+    lines-idle:
+      - "<gold><bold>{name}"
+      - "<white>Progress: <gray>{progress}%"
+      - "<yellow>Click to repair!"
+    lines-completed:
+      - "<green><bold>✔ POWER RESTORED ✔"
+      - "<gray>Great job!"
+
+# --- ROLES ---
+roles:
+  survivor:
+    title: "<green><bold>SURVIVOR"
+    subtitle: "<white>Repair the generators and escape."
+    chat:
+      - "<green>Search for <gold>Raw Iron</gold> blocks."
+      - "<red>Don't fail the precision skill-checks!"
+  killer:
+    title: "<red><bold>KILLER"
+    subtitle: "<white>Eliminate everyone before the game ends."
+    transform: "<prefix><gray>Your humanity fades... You have awakened as: </gray>{name}"
+    chat:
+      - "<green>Kill all players one by one."
+      - "<red>No mercy..."
+
+# --- KILLER MESSAGES ---
+killer:
+  transform: "<white>You have awakened as: </white>{name}"
+  killer-no-regen: "<prefix><red>⚠ No natural regeneration. Kill to heal!"
+
+# --- SHOP ---
+tienda:
+  titulo: "<dark_gray>Killers | Mistaken"
+  titulo-supervivientes: "<#00d4ff>Survivors | Black Market"
+  clase-especial: "<dark_gray>Special Class Entity"
+  clase-humana: "<gray>Class: <white>Human Survivor"
+  habilidades-titulo: "<gray>▶ <white>Abilities:"
+  estado-seleccionado: "<green>✔ <bold>SELECTED"
+  estado-poseido: "<yellow>» Click to select"
+  estado-precio: "<white>Cost: <yellow>● {amount} coins"
+  estado-comprar: "<green>Click to acquire killer"
+  estado-comprar-superviviente: "<#00d4ff>Click to acquire survivor"
+  seleccionado: "<prefix><green>Selected: <white>{name}"
+  comprado: "<prefix><gold>Cool! You unlocked: <white>{name}"
+  ya-seleccionado: "<yellow><bold>[!] <reset><yellow>This class is already selected."
+
+# --- COMMANDS AND HELP ---
+help:
+  header: "   <b><color:#88C6F2>MISTAKEN</color></b> <color:#ADADAD>|</color> <yellow>Help"
+  shop: "<gray>» <yellow>/mistaken shop <dark_gray>- <white>Killer shop."
+  stats: "<gray>» <yellow>/mistaken stats <dark_gray>- <white>Shows player's global record."
+  lang: "<gray>» <yellow>/mistaken lang <id> <dark_gray>- <white>Change your language."
+  afk: "<gray>» <yellow>/mistaken afk <dark_gray>- <white>Toggle AFK mode."
+  edit: "<gray>» <yellow>/mistaken edit <dark_gray>- <white>Toggle staff build mode."
+  start: "<gray>» <yellow>/mistaken start <dark_gray>- <white>Force start."
+  stop: "<gray>» <yellow>/mistaken stop <dark_gray>- <white>Stop match."
+  reload: "<gray>» <yellow>/mistaken reload <dark_gray>- <white>Reload config."
+  setstamina: "<gray>» <yellow>/mistaken setstamina <val> <dark_gray>- <white>Adjust stamina."
+  setasesino: "<gray>» <yellow>/mistaken setasesino <id> <dark_gray>- <white>Killer test."
+  setsuperviviente: "<gray>» <yellow>/mistaken setsuperviviente <id> <dark_gray>- <white>Test de supervivientes."
+  removekiller: "<gray>» <yellow>/mistaken removekiller <p> <dark_gray>- <white>Remove test role."
+  setmode: "<gray>» <yellow>/mistaken setmode <id> <dark_gray>- <white>Force a mode."
+  footer: " "
+
+admin:
+  reload-success: "<prefix><green>Config and languages reloaded successfully."
+  start-forcing: "<prefix><green>Starting hunting sequence..."
+  start-already-ingame: "<prefix><red>Error: Game already in progress."
+  stop-broadcast: "<red><bold>MATCH CANCELLED</bold> <gray>by staff."
+  stop-success: "<green>Match forcefully ended."
+  lobby-set: "<prefix><green>Lobby point set successfully."
+  lang-set: "<prefix><green>Language changed to: <aqua>{lang}"
+  usage-lang: "<prefix><red>Usage: /mistaken lang <es/en>"
+  stamina-set: "<prefix><green><white>{player}</white>'s energy set to <yellow>{amount}%"
+  removekiller-success: "<prefix><green>Role removed from <white>{player}</white>."
+  removekiller-target: "<prefix><red>Your role has been removed."
+  mode-forced: "<prefix><yellow>An administrator has forced the mode: <aqua>{mode}"
+  afk-enabled: "<prefix><yellow>AFK mode enabled. You are now being ignored."
+  afk-disabled: "<prefix><green>AFK mode disabled. Welcome back!"
+  edit-enabled: "<prefix><aqua>Edit mode enabled. You are now invisible to the logic."
+  edit-disabled: "<prefix><red>Edit mode disabled. Returning to normal state."
+
+stats:
+  header: "<dark_gray> <st>            </st> <gold>STATISTICS: <white><player></gold> <st>            </st> "
+  wins-survivor: "<gray>Survivor Wins: <green><value>"
+  wins-assassin: "<gray>Assassin Wins: <red><value>"
+  kills: "<gray>Total Kills: <dark_red><value>"
+  deaths: "<gray>Total Deaths: <dark_gray><value>"
+  footer: "<dark_gray><st>"
+
+# --- MODES ---
+modes:
+  classic:
+    title: "<red><bold>CLASSIC MODE"
+    subtitle: "<white>A killer lurks in the shadows..."
+  double_killer:
+    title: "<red><bold>DOUBLE KILLER"
+    subtitle: "<white>TWO ENTITIES HAVE AWAKENED! Death is inevitable."
+  one_bounce:
+    title: "<dark_red><bold>ONE BOUNCE"
+    subtitle: "<white>YOU ARE THE LONE SURVIVOR! Everyone is a killer."
+  freeze_tag:
+    title: "<aqua><bold>FREEZE TAG"
+    subtitle: "<white>The entities will freeze you. Rescue your teammates!"
+
+# --- GAME ---
+game:
+  map-loaded: "<green>Map <yellow>{map}</yellow> was selected."
+  player-died: "<red><white>{player}</white> has been eliminated."
+  player-frozen-death: "<red><white>{player}</white> was frozen to death."
+  killer-disconnected: "<prefix><red>The Killer has fled!"
+  killer-died-victory: "<red>¡El Asesino ha muerto!"
+  victory-killer: "<red><bold>EVIL HAS TRIUMPHED."
+  victory-survivors: "<green><bold>YOU SURVIVED!"
+  killer-hit-actionbar: "<red>❤ <white>Killer Health: <yellow>{health}</yellow>"
+  killer-stunned-damager: "<red>You stunned the killer!"
+  killer-stunned-victim: "<yellow>You have been stunned!"
+  killer-title: "<red><bold>VICTORY!"
+  killer-subtitle: "<white>No one is left alive."
+  survivor-title: "<green><bold>VICTORY!"
+  survivor-subtitle: "<white>You escaped with your life."
+  join-as-spectator: "<prefix><gray>Match already started. You are spectating."
+  rejoin-msg: "<prefix><red>Welcome back, killer. Continue the massacre."
+  infection-hit: "<prefix><red>SYSTEM CORRUPTED! You have been infected by the Error Star."
+  hunt-start: "<red><bold>THE KILLER HAS APPEARED!</bold> <white>Don't let them find you...</white>"
+  time-extended: "<green>Well done! For the kill, <yellow>{seconds}s</yellow> added to timer."
+  mode-reveal-start: "<yellow>Analyzing anomalies in the area... <obfuscated>aa</obfuscated>"
+  mode-selected: "<white>Mode detected: <aqua>{mode}"
+  player-frozen: "<aqua>{player} <white>has been frozen by the killer."
+  unfrozen-victim: "<green>{player} has freed you from the ice."
+  unfrozen-rescuer: "<green>You have freed {player}."
+  freeze-title: "<aqua><bold>FROZEN!"
+  freeze-subtitle: "<white>You have {color}0{time} <white>seconds to be unfrozen."
+  edit-enable: "<prefix><aqua>Edit mode enabled. You are now invisible to game logic."
+  edit-disable: "<prefix><aqua>Edit mode enabled. You are now invisible to game logic."
+  afk-enable: "<prefix><yellow>AFK mode enabled. The game engine will now ignore you."
+  afk-disable: "<prefix><green>AFK mode disabled. Welcome back!"
+
+# --- ARENA ---
+arena:
+  created: "<prefix><white>Arena <yellow>{name}</yellow> created."
+  deleted: "<prefix><red>Arena <yellow>{name}</yellow> deleted."
+  setpaste: "<prefix><white>Schematic point set."
+  setspawn: "<prefix><white><yellow>{type}</yellow> spawn saved for <yellow>{name}</yellow>."
+  setgenerator: "<prefix><white>Generator added."
+  delgenerator: "<prefix><red>Generator removed."
+  delgenerators: "<prefix><red>Generators cleared."
+  usage-setspawn: "<prefix><red>Usage: /arena setspawn {name} <asesino/survivor>"
+  status-ready: "<green>READY"
+  status-incomplete: "<red>INCOMPLETE"
+  check-header: "<dark_gray>» <gray><yellow>{name}</yellow> status: {status}"
+  check-survivors: "<gray> - Survivor Spawns: <white>{count}"
+  check-generators: "<gray> - Generators: <white>{count}"
+  check-killer: "<gray> - Killer Spawn: {icon}"
+  help-header: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN</bold></gradient> <dark_gray>| <gray>Arenas"
+  help-line-create: " <yellow>/arena create <name>"
+  help-line-delete: " <yellow>/arena delete <name>"
+  help-line-check: " <yellow>/arena check <name>"
+  help-line-setpaste: " <yellow>/arena setpaste <name>"
+  help-line-setspawn: " <yellow>/arena setspawn <name> <type>"
+  help-line-setgenerator: " <yellow>/arena setgenerator <name>"
+  help-line-delgenerator: " <yellow>/arena delgenerator <name>"
+  help-line-delgenerators: " <yellow>/arena delgenerators <name>"
+
+# --- ERRORS ---
+errors:
+  no-permission: "<prefix><red>You don't have permission."
+  only-players: "<red>For players only."
+  lang-not-found: "<prefix><red>That language doesn't exist."
+  no-money: "<prefix><red>Not enough money."
+  arena-not-found: "<prefix><red>Arena <white>{name}</white> does not exist."
+  voting-not-active: "<prefix><red>Voting is inactive."
+  already-voted: "<prefix><red>You already voted."
+  player-not-found: "<prefix><red>Player offline."
+  player-not-killer: "<prefix><red>Not a killer."
+  unknown-command: "<prefix><red>Unknown command."
+  invalid-number: "<prefix><red>Use a valid number."
+  invalid-spawn-type: "<prefix><red>Use asesino or survivor."
+  invalid-gen-block: "<prefix><red>Look at an iron or amethyst block."
+  not-a-generator: "<prefix><red>That's not a generator."
+  killer-not-found: "<prefix><red>That class doesn't exist."
+
+# --- PARANOIA MOTOR ---
+paranoia:
+  - "<dark_gray><obfuscated>||</obfuscated> Did you hear that? <obfuscated>||</obfuscated>"
+  - "<dark_gray>SOMEONE IS WATCHING...</dark_gray>"
+  - "<red>HE IS NEAR.</red>"
+  - "<dark_gray>DON'T TURN AROUND.</dark_gray>"
+
+# --- STAMINA ---
+stamina:
+  exhausted: "<red><bold>YOU ARE EXHAUSTED!</bold> <gray>Catch your breath..."

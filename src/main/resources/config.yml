@@ -1,0 +1,53 @@
+# ======================================================
+#          MISTAKEN v3.1 - CONFIGURACIÓN GLOBAL
+# ======================================================
+
+# --- NÚCLEO DEL SISTEMA ---
+core:
+  language: "es"
+  min-players: 2
+  persistence-key: "selected_assassin"
+  debug: false
+
+# --- FLUJO DE TIEMPOS (Segundos) ---
+timers:
+  voting: 30
+  starting: 15
+  ingame: 300
+  ending: 15
+
+# --- INTEGRACIONES (WEBHOOKS) ---
+discord:
+  webhooks:
+    game-tracker: "URL_AQUI"
+    alerts: "URL_AQUI"
+
+# --- BALANCE DE COMBATE & JUEGO ---
+gameplay:
+  killer:
+    damage: 2.9           # Muere al 7mo golpe (Perfect balance)
+    health: 200.0         # 100 Corazones
+    stamina-loss: 0.8
+  survivor:
+    stamina-loss: 1.5
+    stamina-recovery: 1.2
+    exhaustion-level: 2   # Slowness al cansarce
+  rewards:
+    kill: 50.0
+    win-killer: 500.0
+    win-survivor: 200.0
+
+# --- ESTÉTICA & MUNDO ---
+visuals:
+  bossbar-style: "SOLID" # SOLID, SEGMENTED_6, 10, 12, 20
+
+# --- PERSISTENCIA (Auto-generado) ---
+# Usa /setlobby para actualizar estas coordenadas
+settings:
+  lobby:
+    world: "world"
+    x: 0.0
+    y: 64.0
+    z: 0.0
+    yaw: 0.0
+    pitch: 0.0

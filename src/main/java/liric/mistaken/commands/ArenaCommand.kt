@@ -30,7 +30,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
 
         // Filtro de seguridad: Si no es admin, fingimos que el comando no existe
         if (!sender.hasPermission("mistaken.admin")) {
-            sender.sendMessage(Mistaken.mm.deserialize("<red>Unknown command. Type \"/help\" for help."))
+            sender.sendMessage(plugin.mm.deserialize("<red>Unknown command. Type \"/help\" for help."))
             return
         }
 
@@ -56,7 +56,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
                 player.sendMessage(plugin.messageConfig.getMessage(player, "arena.created",
                     Placeholder.parsed("name", arenaName)))
                 player.playSound(player.location, Sound.ENTITY_VILLAGER_YES, 1f, 1f)
-                player.sendMessage(Mistaken.mm.deserialize("<gray>Nota: Asegúrate de tener el archivo <white>$arenaName.slime</white> en su carpeta."))
+                player.sendMessage(plugin.mm.deserialize("<gray>Nota: Asegúrate de tener el archivo <white>$arenaName.slime</white> en su carpeta."))
             }
 
             "delete" -> {

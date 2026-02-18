@@ -1,0 +1,318 @@
+# ======================================================
+#          MISTAKEN - JAPANESE LANGUAGE (日本語)
+# ======================================================
+
+prefix: "<b><color:#88C6F2>MISTAKEN</color></b> <color:#ADADAD>|</color> "
+
+# --- 投票 (VOTING) ---
+voting:
+  started: "<green>投票が開始されました！ <yellow>/vote <map></yellow> で投票してください。"
+  not-active: "<prefix><red>現在、アクティブな投票はありません。"
+  already-voted: "<prefix><red>このマッチでは既に投票済みです。"
+  usage: "<prefix><red>使用法: /vote <map>"
+  not-found: "<prefix><red>マップ <white>{map}</white> は存在しません。"
+  success: "<prefix><green>投票先: <aqua>{map}</aqua>"
+  map-option: "<dark_gray>» <aqua>{map}</aqua>"
+  not-enough-players: "<prefix><red>プレイヤーが不足しています！開始に必要な人数が集まっていません。"
+
+# --- ボスバー (BOSSBAR) ---
+bossbar:
+  lobby: "<gradient:#ffcc00:#ffaa00><bold>プレイヤー待機中...</bold></gradient> <gray>({online})"
+  voting: "<b><color:#8AFF73>投票受付中</color></b> <gray>| <white>残り時間: <yellow>{time}s"
+  starting: "<red><bold>準備せよ！</bold> <white>開始まで <yellow>{time}s"
+  ingame: "<white>マップ: <yellow>{map}</yellow> <dark_gray>|</dark_gray> モード: <aqua>{mode}</aqua> <dark_gray>|</dark_gray> 残り時間: <green>{time}</green>"
+  ending: "<b><color:#FF001D>マッチ終了！</color></b>"
+  colors:
+    lobby: "YELLOW"
+    voting: "WHITE"
+    starting: "PURPLE"
+    ingame: "RED"
+    ending: "PINK"
+
+# --- 戦闘 (COMBAT) ---
+combat:
+  heart-icon-on: "❤"
+  heart-icon-off: "🖤"
+  hunters-mark: "<red>"
+  health-bar: "<red>{hearts_on}<gray>{hearts_off}"
+  cooldown: "<red>再攻撃まであと <white>{time}s</white> 待機してください！"
+  critical-wound: "<prefix><red><bold>足が動かない！</bold> <gray>助けを待つか、這って進め。"
+  kill-reward-actionbar: "<red><bold>+40 体力</bold></red> <gray>|</gray> <gold><bold>+${reward} クレジット</bold></gold>"
+  kill-reward-chat: "<prefix><gray>犠牲者を捧げ、 <green>${reward}</green> を獲得しました。"
+  rescue-start-carrier: "<prefix><green><white>{target}</white> を担ぎました！安全な場所へ運んでください。"
+  rescue-start-victim: "<prefix><green><white>{carrier}</white> に担がれています。"
+  rescue-dropped-carrier: "<prefix><yellow>仲間を地面に降ろしました。"
+  rescue-dropped-victim: "<prefix><yellow>地面に降ろされました。"
+  rescue-interrupted: "<prefix><red>衝撃により仲間を落としてしまいました！"
+  win-reward-killer: "<prefix><gold>皆殺し完了！ <white>勝利報酬として <green>${amount}</green> を獲得。"
+  win-reward-survivor: "<green>殺人鬼から生き延びた！ <white>脱出報酬として <green>${amount}</green> を獲得。"
+
+# --- スコアボード (SCOREBOARD) ---
+scoreboard:
+  title: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN</bold></gradient>"
+  lobby:
+    - ""
+    - "<white>状態: <yellow>ロビー"
+    - "<white>プレイヤー: <green>%online%"
+    - ""
+    - "<white>プロフィール: <aqua>%player%"
+    - ""
+  voting:
+    - ""
+    - "<white>フェーズ: <aqua>マップ投票"
+    - "<white>残り時間: <yellow>%timer%s"
+    - ""
+    - "<gray>/vote で投票"
+    - ""
+  starting:
+    - ""
+    - "<white>マップ: <green>%map%"
+    - "<white>開始まで: <yellow>%timer%s"
+    - ""
+    - "<red><bold>準備完了！</bold>"
+    - ""
+  ingame_classic:
+    - ""
+    - "<white>マップ: <green>%map%"
+    - "<white>残り時間: <yellow>%timer%"
+    - ""
+    - "<white>発電機: <green>%completed%/%total%"
+    - "<white>殺人鬼:"
+    - "%killers%"
+    - ""
+    - "<white>ライフ: <red>%lives% ❤"
+    - ""
+  ingame_double_killer:
+    - ""
+    - "<white>マップ: <green>%map%"
+    - "<white>残り時間: <yellow>%timer%"
+    - ""
+    - "<white>発電機: <green>%completed%/%total%"
+    - "<white>殺人鬼:"
+    - "%killers%"
+    - ""
+    - "<white>ライフ: <red>%lives% ❤"
+    - ""
+  ingame_one_bounce:
+    - ""
+    - "<white>マップ: <green>%map%"
+    - "<white>残り時間: <yellow>%timer%"
+    - ""
+    - "<white>発電機: <green>%completed%/%total%"
+    - "%killers%"
+    - ""
+    - "<white>ライフ: <red>%lives% ❤"
+    - ""
+  ingame_freeze_tag:
+    - ""
+    - "<white>マップ: <green>%map%"
+    - "<white>残り時間: <yellow>%timer%"
+    - ""
+    - "<white>発電機: <green>%completed%/%total%"
+    - "<white>殺人鬼:"
+    - "%killers%"
+    - ""
+  ending:
+    - ""
+    - "<white>状態: <red>終了"
+    - "<white>勝者: %killers%"
+    - ""
+
+# --- 発電機 (GENERATORS) ---
+generators:
+  names:
+    RAW_IRON_BLOCK: "<gold>スクラップ発電機"
+    IRON_BLOCK: "<white>電気系統"
+    AMETHYST_BLOCK: "<purple>メモリーコア"
+  hologram:
+    lines-idle:
+      - "<gold><bold>{name}"
+      - "<white>進行度: <gray>{progress}%"
+      - "<yellow>クリックして修理！"
+    lines-completed:
+      - "<green><bold>✔ 電力復旧完了 ✔"
+      - "<gray>よくやった！"
+
+# --- 役職 (ROLES) ---
+roles:
+  survivor:
+    title: "<green><bold>生存者 (SURVIVOR)"
+    subtitle: "<white>発電機を修理して脱出しろ。"
+    chat:
+      - "<green><gold>粗鉄ブロック</gold> を探してください。"
+      - "<red>スキルチェックに失敗するな！"
+  killer:
+    title: "<red><bold>殺人鬼 (KILLER)"
+    subtitle: "<white>時間が切れる前に全員を抹殺しろ。"
+    transform: "<prefix><gray>人間性が失われていく... あなたは次として目覚めた: </gray>{name}"
+    chat:
+      - "<green>プレイヤーを一人ずつ仕留めてください。"
+      - "<red>慈悲は無用..."
+
+# --- 殺人鬼のメッセージ (KILLER MESSAGES) ---
+killer:
+  transform: "<white>あなたは次として目覚めた: </white>{name}"
+  killer-no-regen: "<prefix><red>⚠ 自然回復不能。生存者を仕留めて回復しろ！"
+
+# --- ショップ (SHOP) ---
+tienda:
+  titulo: "<dark_gray>殺人鬼 | Mistaken"
+  titulo-supervivientes: "<#00d4ff>生存者 | ブラックマーケット"
+  clase-especial: "<dark_gray>特殊個体クラス"
+  clase-humana: "<gray>クラス: <white>人間生存者"
+  habilidades-titulo: "<gray>▶ <white>アビリティ:"
+  estado-seleccionado: "<green>✔ <bold>選択中"
+  estado-poseido: "<yellow>» クリックで選択"
+  estado-precio: "<white>価格: <yellow>● {amount} コイン"
+  estado-comprar: "<green>クリックで殺人鬼をアンロック"
+  estado-comprar-superviviente: "<#00d4ff>クリックで生存者をアンロック"
+  seleccionado: "<prefix><green>選択済み: <white>{name}"
+  comprado: "<prefix><gold>アンロック成功: <white>{name}"
+  ya-seleccionado: "<yellow><bold>[!] <reset><yellow>このクラスは既に選択されています。"
+
+# --- コマンドとヘルプ (COMMANDS & HELP) ---
+help:
+  header: "   <b><color:#88C6F2>MISTAKEN</color></b> <color:#ADADAD>|</color> <yellow>ヘルプ"
+  shop: "<gray>» <yellow>/mistaken shop <dark_gray>- <white>殺人鬼ショップを開く。"
+  stats: "<gray>» <yellow>/mistaken stats <dark_gray>- <white>グローバル統計を表示。"
+  lang: "<gray>» <yellow>/mistaken lang <id> <dark_gray>- <white>言語を変更。"
+  afk: "<gray>» <yellow>/mistaken afk <dark_gray>- <white>離席モードの切り替え。"
+  edit: "<gray>» <yellow>/mistaken edit <dark_gray>- <white>建築モード (スタッフ用)。"
+  start: "<gray>» <yellow>/mistaken start <dark_gray>- <white>強制開始。"
+  stop: "<gray>» <yellow>/mistaken stop <dark_gray>- <white>マッチを強制終了。"
+  reload: "<gray>» <yellow>/mistaken reload <dark_gray>- <white>設定を再読み込み。"
+  setstamina: "<gray>» <yellow>/mistaken setstamina <val> <dark_gray>- <white>スタミナを調整。"
+  setasesino: "<gray>» <yellow>/mistaken setasesino <id> <dark_gray>- <white>殺人鬼テスト。"
+  setsuperviviente: "<gray>» <yellow>/mistaken setsuperviviente <id> <dark_gray>- <white>生存者テスト。"
+  removekiller: "<gray>» <yellow>/mistaken removekiller <p> <dark_gray>- <white>ロールテスト解除。"
+  setmode: "<gray>» <yellow>/mistaken setmode <id> <dark_gray>- <white>モードを強制設定。"
+  footer: " "
+
+admin:
+  reload-success: "<prefix><green>設定と各言語ファイルを再読み込みしました。"
+  start-forcing: "<prefix><green>狩りのシーケンスを開始します..."
+  start-already-ingame: "<prefix><red>エラー: 既に進行中のマッチがあります。"
+  stop-broadcast: "<red><bold>マッチがスタッフによって中止されました。</bold>"
+  stop-success: "<green>マッチを強制終了しました。"
+  lobby-set: "<prefix><green>ロビー地点を保存しました。"
+  lang-set: "<prefix><green>言語を次に変更しました: <aqua>{lang}"
+  usage-lang: "<prefix><red>使用法: /mistaken lang <es/en/ja>"
+  stamina-set: "<prefix><green><white>{player}</white> のスタミナを <yellow>{amount}%</yellow> に設定しました。"
+  removekiller-success: "<prefix><green><white>{player}</white> のロールを解除しました。"
+  removekiller-target: "<prefix><red>あなたのロールは解除されました。"
+  mode-forced: "<prefix><yellow>管理者がモードを強制設定しました: <aqua>{mode}"
+  afk-enabled: "<prefix><yellow>離席モード有効。ゲームシステムから無視されます。"
+  afk-disabled: "<prefix><green>離席モード解除。狩りに戻りましょう！"
+  edit-enabled: "<prefix><aqua>編集モード有効。ゲームのロジックから除外されます。"
+  edit-disabled: "<prefix><red>編集モード解除。ゲームのロジックが再び適用されます。"
+
+stats:
+  header: "<dark_gray> <st>            </st> <gold>統計: <white><player></gold> <st>            </st> "
+  wins-survivor: "<gray>生存者勝利数: <green><value>"
+  wins-assassin: "<gray>殺人鬼勝利数: <red><value>"
+  kills: "<gray>累計キル数: <dark_red><value>"
+  deaths: "<gray>累計デス数: <dark_gray><value>"
+  footer: "<dark_gray><st>"
+
+# --- モード (MODES) ---
+modes:
+  classic:
+    title: "<red><bold>クラシックモード"
+    subtitle: "<white>影に潜む一人の殺人鬼..."
+  double_killer:
+    title: "<red><bold>ダブル殺人鬼"
+    subtitle: "<white>二体の怪物が目覚めた！死は避けられない。"
+  one_bounce:
+    title: "<dark_red><bold>ワン・バウンス"
+    subtitle: "<white>生存者はあなた一人！他は全員殺人鬼だ。"
+  freeze_tag:
+    title: "<aqua><bold>フリーズ・タグ"
+    subtitle: "<white>殺人鬼があなたを凍らせる。仲間を救助せよ！"
+
+# --- ゲーム (GAME) ---
+game:
+  map-loaded: "<green>マップ <yellow>{map}</yellow> が選択されました。"
+  player-died: "<red><white>{player}</white> が脱落しました。"
+  player-frozen-death: "<red><white>{player}</white> は凍死しました。"
+  killer-disconnected: "<prefix><red>殺人鬼が逃亡しました！"
+  killer-died-victory: "<red>殺人鬼が死亡しました！"
+  victory-killer: "<red><bold>悪が勝利した。"
+  victory-survivors: "<green><bold>生き延びた！"
+  killer-hit-actionbar: "<red>❤ <white>殺人鬼の体力: <yellow>{health}</yellow>"
+  killer-stunned-damager: "<red>殺人鬼を怯ませた！"
+  killer-stunned-victim: "<yellow>怯み状態になりました！"
+  killer-title: "<red><bold>勝利！"
+  killer-subtitle: "<white>生存者は一人も残っていない。"
+  survivor-title: "<green><bold>勝利！"
+  survivor-subtitle: "<white>無事に生還した。"
+  join-as-spectator: "<prefix><gray>マッチは既に開始されています。観戦モードに入ります。"
+  rejoin-msg: "<prefix><red>おかえりなさい、殺人鬼。虐殺を続けてください。"
+  infection-hit: "<prefix><red>システム汚染！Error Starに感染しました。"
+  hunt-start: "<red><bold>殺人鬼が出現！</bold> <white>見つからないようにしろ...</white>"
+  time-extended: "<green>ナイスキル！残り時間が <yellow>{seconds}秒</yellow> 追加されました。"
+  mode-reveal-start: "<yellow>エリア内の異常を分析中... <obfuscated>aa</obfuscated>"
+  mode-selected: "<white>モード検知: <aqua>{mode}"
+  player-frozen: "<aqua>{player} <white>が殺人鬼に凍らされました。"
+  unfrozen-victim: "<green>{player} が氷を溶かしてくれました。"
+  unfrozen-rescuer: "<green>{player} の氷を溶かしました。"
+  freeze-title: "<aqua><bold>氷結！"
+  freeze-subtitle: "<white>救助まで残り {color}0{time} <white>秒です。"
+  edit-enable: "<prefix><aqua>編集モード有効。ゲームシステムから除外されます。"
+  edit-disable: "<prefix><red>編集モード解除。ゲームのロジックが適用されます。"
+  afk-enable: "<prefix><yellow>離席モード有効。ゲームエンジンに無視されます。"
+  afk-disable: "<prefix><green>離席モード解除。おかえりなさい！"
+
+# --- アリーナ (ARENA) ---
+arena:
+  created: "<prefix><white>アリーナ <yellow>{name}</yellow> を作成しました。"
+  deleted: "<prefix><red>アリーナ <yellow>{name}</yellow> を削除しました。"
+  setpaste: "<prefix><white>概略図の貼り付け地点を保存しました。"
+  setspawn: "<prefix><white><yellow>{name}</yellow> の <yellow>{type}</yellow> スポーン地点を保存しました。"
+  setgenerator: "<prefix><white>発電機を追加しました。"
+  delgenerator: "<prefix><red>発電機を削除しました。"
+  delgenerators: "<prefix><red>発電機を全て消去しました。"
+  usage-setspawn: "<prefix><red>使用法: /arena setspawn {name} <asesino/survivor>"
+  status-ready: "<green>準備完了"
+  status-incomplete: "<red>未完成"
+  check-header: "<dark_gray>» <gray><yellow>{name}</yellow> の状態: {status}"
+  check-survivors: "<gray> - 生存者スポーン数: <white>{count}"
+  check-generators: "<gray> - 発電機数: <white>{count}"
+  check-killer: "<gray> - 殺人鬼スポーン: {icon}"
+  help-header: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN</bold></gradient> <dark_gray>| <gray>アリーナ設定"
+  help-line-create: " <yellow>/arena create <name>"
+  help-line-delete: " <yellow>/arena delete <name>"
+  help-line-check: " <yellow>/arena check <name>"
+  help-line-setpaste: " <yellow>/arena setpaste <name>"
+  help-line-setspawn: " <yellow>/arena setspawn <name> <type>"
+  help-line-setgenerator: " <yellow>/arena setgenerator <name>"
+  help-line-delgenerator: " <yellow>/arena delgenerator <name>"
+  help-line-delgenerators: " <yellow>/arena delgenerators <name>"
+
+# --- エラー (ERRORS) ---
+errors:
+  no-permission: "<prefix><red>権限がありません。"
+  only-players: "<red>プレイヤーのみ実行可能です。"
+  lang-not-found: "<prefix><red>その言語は存在しません。"
+  no-money: "<prefix><red>所持金が足りません。"
+  arena-not-found: "<prefix><red>アリーナ <white>{name}</white> は見つかりません。"
+  voting-not-active: "<prefix><red>現在、投票は行われていません。"
+  already-voted: "<prefix><red>既に投票済みです。"
+  player-not-found: "<prefix><red>プレイヤーが見つかりません。"
+  player-not-killer: "<prefix><red>殺人鬼ではありません。"
+  unknown-command: "<prefix><red>不明なコマンドです。"
+  invalid-number: "<prefix><red>有効な数値を入力してください。"
+  invalid-spawn-type: "<prefix><red>'asesino' または 'survivor' を指定してください。"
+  invalid-gen-block: "<prefix><red>粗鉄またはアメジストブロックを向いてください。"
+  not-a-generator: "<prefix><red>それは発電機ではありません。"
+  killer-not-found: "<prefix><red>そのクラスは存在しません。"
+
+# --- パラノイア・エンジン (PARANOIA ENGINE) ---
+paranoia:
+  - "<dark_gray><obfuscated>||</obfuscated> 今、何か聞こえなかったか？ <obfuscated>||</obfuscated>"
+  - "<dark_gray>誰かに見られている...</dark_gray>"
+  - "<red>奴が近くにいる。</red>"
+  - "<dark_gray>振り返るな。</dark_gray>"
+
+# --- スタミナ (STAMINA) ---
+stamina:
+  exhausted: "<red><bold>スタミナ切れ！</bold> <gray>息を整えてください..."
