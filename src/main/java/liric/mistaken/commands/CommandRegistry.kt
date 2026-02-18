@@ -2,42 +2,65 @@ package liric.mistaken.commands
 
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import liric.mistaken.Mistaken
-import org.bukkit.plugin.java.JavaPlugin
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * CommandRegistry: Centralizador de comandos usando la nueva API Lifecycle de Paper (1.21.4+).
- * Elimina la necesidad de registrar comandos en el plugin.yml.
+ * CommandRegistry: Centralizador de inyección de comandos Brigadier.
+ * Optimización: Registra todas las instancias una sola vez en el ciclo de vida de Paper.
  */
 class CommandRegistry(private val plugin: Mistaken) {
 
     fun registerAll() {
         val manager = plugin.lifecycleManager
 
-        // Registramos en el evento COMMANDS del ciclo de vida
+        // El evento COMMANDS se dispara cuando el servidor está listo para recibir registros
         manager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
             val registrar = event.registrar()
 
-            // Registro de comandos individuales
-            // "mistaken" es el comando base, luego vienen los alias
+            // --- 1. COMANDO PRINCIPAL (/mistaken) ---
             registrar.register(
                 "mistaken",
-                "Comando principal del plugin",
-                listOf("ms", "mt"),
+                "Comando general de Mistaken (Stats, Shop, Admin)",
+                listOf("ms", "mt", "mist"),
                 MistakenCommand(plugin)
             )
 
+            // --- 2. COMANDO DE ARENAS (/arena) ---
             registrar.register(
                 "arena",
-                "Gestión de arenas",
+                "Administración y creación de mapas/arenas",
                 ArenaCommand(plugin)
             )
 
+            // --- 3. COMANDO DE VOTACIÓN (/vote) ---
             registrar.register(
                 "vote",
-                "Votar por un mapa",
+                "Votar por el siguiente mapa de la partida",
                 VoteCommand(plugin)
             )
+
+            // --- 4. COMANDO DE VINCULACIÓN (/link) ---
+            registrar.register(
+                "link",
+                "Generar código de vinculación para Discord",
+                LinkCommand(plugin)
+            )
+
+            // --- 5. COMANDO DE DESVINCULACIÓN (/unlink) ---
+            registrar.register(
+                "unlink",
+                "Desvincular a un jugador de su cuenta de Discord",
+                UnlinkCommand(plugin)
+            )
+
+            // --- 6. COMANDO DE LOBBY (/setlobby) ---
+            registrar.register(
+                "setlobby",
+                "Establecer el punto de spawn del lobby principal",
+                SetLobbyCommand(plugin)
+            )
         }
+
+        plugin.logger.info("§a[CommandRegistry] Todos los comandos inyectados en Brigadier (Nativo).")
     }
 }
