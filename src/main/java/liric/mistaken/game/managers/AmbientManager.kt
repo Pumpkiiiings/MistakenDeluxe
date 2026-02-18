@@ -47,7 +47,7 @@ class AmbientManager(private val plugin: Mistaken) {
                 if (plugin.gameManager.currentState == GameState.INGAME) {
                     tickCounter++
 
-                    val killer = plugin.gameManager.currentAsesino
+                    val killer = plugin.gameManager.getCurrentAsesino()
                     if (killer != null && killer.isOnline) {
                         val killerLoc = killer.location
 

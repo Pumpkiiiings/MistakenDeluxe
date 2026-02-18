@@ -7,6 +7,7 @@ import liric.mistaken.api.HealthAPI
 import liric.mistaken.asesinos.AsesinoManager
 import liric.mistaken.asesinos.AsesinoTienda
 import liric.mistaken.commands.*
+import liric.mistaken.database.DatabaseManager
 import liric.mistaken.config.ConfigManager
 import liric.mistaken.config.MessageConfig
 import liric.mistaken.data.PlayerDataManager

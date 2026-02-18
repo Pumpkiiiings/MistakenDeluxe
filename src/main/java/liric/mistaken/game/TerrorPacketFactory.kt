@@ -96,7 +96,7 @@ class TerrorPacketFactory(private val plugin: Mistaken) {
         // Status 2 = Entity Hurt Animation
         PacketEvents.getAPI().playerManager.sendPacket(
             victim,
-            WrapperPlayServerEntityStatus(victim.entityId, 2.toByte())
+            WrapperPlayServerEntityStatus(victim.entityId, 2) // ✅ Correcto (Int)
         )
 
         // El sonido se reproduce en el hilo principal para sincronización con el cliente

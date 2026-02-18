@@ -1,53 +1,66 @@
 package liric.mistaken.commands
 
-import io.papermc.paper.command.brigadier.BasicCommand
+import com.mojang.brigadier.tree.LiteralCommandNode
 import io.papermc.paper.command.brigadier.CommandSourceStack
+import io.papermc.paper.command.brigadier.Commands
 import liric.mistaken.Mistaken
+import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 
 /**
- * [LIRIC-MISTAKEN 2.0]
- * SetLobbyCommand: Establece el punto de spawn global.
- * Optimizado para Paper 1.21.4 con Brigadier.
+ * SetLobbyCommand - Kotlin Edition (Paper 1.21.4+)
+ *
+ * Optimización:
+ * - Usa Brigadier Node para inyección directa en el Dispatcher.
+ * - Validación de permisos nativa (.requires).
+ * - Cero "reflection" de Bukkit antiguo.
  */
-class SetLobbyCommand(private val plugin: Mistaken) : BasicCommand {
+object SetLobbyCommand {
 
-    private val mm = Mistaken.mm
+    private val mm = MiniMessage.miniMessage()
 
-    override fun execute(stack: CommandSourceStack, args: Array<String>) {
-        val sender = stack.sender
+    fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {
+        return Commands.literal("setlobby")
+            // 1. Validación de Permisos (Nativa y rápida)
+            // Si no tiene permiso, el comando ni siquiera aparece en el autocompletado.
+            .requires { source ->
+                source.sender.hasPermission("mistaken.admin")
+            }
+            // 2. Ejecución
+            .executes { ctx ->
+                val sender = ctx.source.sender
 
-        // 1. Identificar al ejecutor de forma segura (Cast as? Player)
-        val player = sender as? Player ?: run {
-            sender.sendMessage("Este comando solo puede ser ejecutado por jugadores.")
-            return
-        }
+                // Casting seguro de Kotlin. Si no es Player, 'player' será null.
+                val player = sender as? Player
 
-        // 2. Persistencia física
-        // El método setLobbyLocation ya está optimizado en el Main para guardar en config.
-        plugin.setLobbyLocation(player.location)
+                // Validación de ejecutor técnico
+                if (player == null) {
+                    sender.sendMessage(mm.deserialize("<red>Este comando solo puede ser ejecutado por jugadores."))
+                    return@executes 0 // Retornamos 0 para indicar fallo/no acción
+                }
 
-        // 3. Feedback visual y auditivo localizado
-        player.sendMessage(plugin.messageConfig.getMessage(player, "admin.lobby-set"))
-        player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.2f)
+                // --- LÓGICA DEL COMANDO ---
 
-        // 4. Registro de auditoría para la consola (MiniMessage)
-        plugin.logger.info("Lobby actualizado en ${player.world.name} por ${player.name}")
-    }
+                // 3. Persistencia (La lógica interna de tu plugin)
+                plugin.setLobbyLocation(player.location)
 
-    /**
-     * Define quién puede usar el comando y lo oculta de la lista de autocompletado
-     * para usuarios sin permisos.
-     */
-    override fun canUse(stack: CommandSourceStack): Boolean {
-        return stack.sender.hasPermission("mistaken.admin")
-    }
+                // 4. Feedback Visual (Multilingüe)
+                // Asumiendo que tu MessageConfig ya devuelve un Component, si devuelve String usa mm.deserialize()
+                val message = plugin.messageConfig.getMessage(player, "admin.lobby-set")
+                player.sendMessage(message)
 
-    /**
-     * Al no tener argumentos, el autocompletado devuelve una lista vacía.
-     */
-    override fun suggest(stack: CommandSourceStack, args: Array<String>): List<String> {
-        return emptyList()
+                // 5. Feedback Auditivo
+                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.2f)
+
+                // 6. Registro de Auditoría (Logger de Paper)
+                // Usamos Templates de Kotlin ($) para máxima legibilidad y rendimiento
+                plugin.componentLogger.info(mm.deserialize(
+                    "<gray>[Mistaken]</gray> <green>Lobby actualizado en </green><white>${player.world.name}</white><green> por </green><white>${player.name}</white>"
+                ))
+
+                1 // Retornamos 1 para indicar éxito (Command.SINGLE_SUCCESS)
+            }
+            .build()
     }
 }

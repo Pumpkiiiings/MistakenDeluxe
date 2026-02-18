@@ -75,7 +75,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 .getStringList("$path.lines")
 
             val processedLines = mutableListOf<String>()
-            val healthStr = gm.getHealth(player).toString()
+            val healthStr = gm.combatManager.getHealth(player).toString()
             val pName = player.name
 
             for (line in rawLines) {

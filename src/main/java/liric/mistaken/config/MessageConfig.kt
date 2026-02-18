@@ -69,6 +69,11 @@ class MessageConfig(private val plugin: Mistaken) {
         defaultLang = plugin.config.getString("settings.default-language", "es") ?: "es"
     }
 
+    // 🔥 CORREGIDO: Ahora esta función está fuera, como debe ser.
+    fun getLoadedLanguages(): Set<String> {
+        return languages.keys
+    }
+
     /**
      * Obtiene un String crudo. Ideal para BossBars o ActionBars que procesan placeholders manuales.
      */
