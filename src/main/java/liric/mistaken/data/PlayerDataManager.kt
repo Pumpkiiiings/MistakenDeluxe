@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class PlayerDataManager(private val plugin: Mistaken) {
 
-    private val mm = Mistaken.mm
+    private val mm = plugin.mm
     private val userData = ConcurrentHashMap<UUID, MistakenUser>()
 
     private lateinit var file: File

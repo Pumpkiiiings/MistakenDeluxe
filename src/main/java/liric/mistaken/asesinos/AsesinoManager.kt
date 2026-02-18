@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class AsesinoManager(private val plugin: Mistaken) {
 
-    private val mm = Mistaken.mm
+    private val mm = plugin.mm
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     val asesinosActivos = ConcurrentHashMap<UUID, Asesino>()
@@ -29,9 +29,7 @@ class AsesinoManager(private val plugin: Mistaken) {
     init {
         // Registro masivo optimizado
         listOf(
-            Slasher(), Herobrine(), Entity303(), NullAsesino(),
-            CharlieInferno(), Devesto(), Mariachi(), KasaneTeto(),
-            HatsuneMiku(), SixSeven(), Romeo(), ColorAndElectricity(), CoolKid()
+            Slasher(), Herobrine(), Entity303(), NullAsesino()
         ).forEach { registrarClase(it) }
     }
 
@@ -63,7 +61,7 @@ class AsesinoManager(private val plugin: Mistaken) {
 
         // Limpieza inmediata (Sync)
         player.inventory.clear()
-        player.inventory.armorContents = null
+        player.inventory.armorContents = arrayOfNulls(4)
         asesinosActivos[uuid] = asesino
 
         // Feedback inmediato

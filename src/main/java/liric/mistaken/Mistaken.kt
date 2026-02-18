@@ -1,8 +1,9 @@
 package liric.mistaken
 
 import com.github.retrooper.packetevents.PacketEvents
-import com.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
+import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import liric.mistaken.api.HealthAPI
+import liric.mistaken.database.StatsManager
 import liric.mistaken.asesinos.AsesinoManager
 import liric.mistaken.asesinos.AsesinoTienda
 import liric.mistaken.commands.CommandRegistry
@@ -63,6 +64,7 @@ class Mistaken : JavaPlugin() {
     // --- Managers (Lateinit: Se inicializan en onEnable) ---
     lateinit var configManager: ConfigManager
     lateinit var messageConfig: MessageConfig
+    lateinit var statsManager: StatsManager
     lateinit var playerDataManager: PlayerDataManager
     lateinit var dbManager: DatabaseManager
     lateinit var playerStatsManager: PlayerStatsManager
@@ -106,6 +108,7 @@ class Mistaken : JavaPlugin() {
 
         configManager = ConfigManager(this).apply { loadAllConfigs() }
         messageConfig = MessageConfig(this)
+        statsManager = StatsManager(this)
         playerDataManager = PlayerDataManager(this)
 
         // 3. Integraciones Externas (Vault, CraftEngine)
@@ -118,7 +121,7 @@ class Mistaken : JavaPlugin() {
         discordManager = DiscordManager(this)
         generatorManager = GeneratorManager(this)
         arenaManager = ArenaManager(this)
-        mapManager = MapManager()
+        mapManager = MapManager(this)
 
         asesinoManager = AsesinoManager(this)
         supervivienteManager = SupervivienteManager(this)

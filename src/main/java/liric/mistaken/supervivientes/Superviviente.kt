@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap
 abstract class Superviviente(val id: String, val nombre: String) {
 
     protected val plugin = Mistaken.instance
-    protected val mm = Mistaken.mm
+    protected val mm = plugin.mm
 
     // Cooldowns: UUID_Slot -> Timestamp (ms)
     private val cooldowns = ConcurrentHashMap<String, Long>()

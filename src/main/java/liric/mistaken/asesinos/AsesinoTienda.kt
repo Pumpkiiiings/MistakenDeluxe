@@ -131,7 +131,7 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
 
             gui?.setItem(slots[slotIndex], ItemBuilder.from(base.material)
                 .name(base.displayName)
-                .lore(fullLore)
+                .lore(fullLore.toList())
                 .flags(*ItemFlag.entries.toTypedArray())
                 .asGuiItem { event ->
                     handlePurchaseLogic(player, killerId, base.precio)

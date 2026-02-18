@@ -27,8 +27,7 @@ class SupervivienteManager(private val plugin: Mistaken) {
     init {
         // Registro de catálogo optimizado
         listOf(
-            Civil(), Repartidor(), Axel(), Gumi(),
-            Neru(), Jesse(), Mariachi(), Steve(), Petra()
+            Civil(), Repartidor()
         ).forEach { registrarClase(it) }
     }
 

@@ -134,7 +134,7 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
 
             gui?.setItem(slots[currentSlotIndex], ItemBuilder.from(base.material)
                 .name(base.displayName)
-                .lore(fullLore)
+                .lore(fullLore.toList())
                 .flags(*ItemFlag.entries.toTypedArray())
                 .asGuiItem { _ ->
                     handleLogic(player, survivorId, base.precio)

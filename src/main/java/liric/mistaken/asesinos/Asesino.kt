@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 abstract class Asesino(val id: String, val nombre: String) {
 
     protected val plugin = Mistaken.instance
-    protected val mm = Mistaken.mm
+    protected val mm = plugin.mm
 
     // Cooldowns: UUID_Slot -> Timestamp (ms)
     private val cooldowns = ConcurrentHashMap<String, Long>()
@@ -93,7 +93,7 @@ abstract class Asesino(val id: String, val nombre: String) {
             if (p.isOnline) {
                 // 2. Reset de inventario y equipo
                 p.inventory.clear()
-                p.inventory.armorContents = null
+                p.inventory.armorContents = arrayOfNulls(4)
 
                 // 3. Limpiar todos los efectos de poción de forma segura
                 p.activePotionEffects.forEach { effect ->

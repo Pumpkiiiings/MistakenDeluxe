@@ -62,7 +62,7 @@ object CraftEngineUtils {
     fun getCustomItemSafe(property: String?): ItemStack {
         return getCustomItem(property) ?: ItemStack(Material.BARRIER).apply {
             itemMeta = itemMeta?.apply {
-                displayName(Mistaken.mm.deserialize("<red><bold>ERROR:</bold> Ítem no encontrado"))
+                displayName(Mistaken.instance.mm.deserialize("<red><bold>ERROR:</bold> Ítem no encontrado"))
             }
         }
     }
