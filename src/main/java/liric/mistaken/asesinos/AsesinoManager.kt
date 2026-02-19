@@ -42,6 +42,11 @@ class AsesinoManager(private val plugin: Mistaken) {
         clasesDisponibles[asesino.id.lowercase()] = asesino
     }
 
+    // --- AGREGADO: Getter para compatibilidad con bucles externos ---
+    fun getClasesDisponibles(): Map<String, Asesino> {
+        return clasesDisponibles
+    }
+
     /**
      * Sincroniza la clase sin efectos. Útil para el selector del lobby.
      */
@@ -106,6 +111,14 @@ class AsesinoManager(private val plugin: Mistaken) {
                 }
             }
         }
+    }
+
+    /**
+     * AGREGADO: Metodo para equipar un asesino por su ID de clase.
+     */
+    fun equiparAsesino(player: Player, claseId: String) {
+        val clase = getClasePorId(claseId) ?: getClasePorId("slasher")
+        clase?.let { registrarAsesino(player, it) }
     }
 
     /**
