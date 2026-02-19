@@ -3,31 +3,36 @@ package liric.mistaken.asesinos
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.clases.*
+import liric.mistaken.utils.mainThread // 1. IMPORTANTE: Usamos nuestro puente para el hilo principal
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * AsesinoManager: El motor central de las entidades del mal.
- * Optimizado para Paper 1.21.4 con equipamiento distribuido mediante Coroutines.
+ * AsesinoManager: Gestión de clases y estados de los asesinos.
+ *
+ * Optimización:
+ * - Solucionado el crash de Dispatchers.Main usando plugin.mainThread.
+ * - Uso de Coroutines para distribuir la carga de equipamiento (No laguea al servidor).
+ * - ConcurrentHashMap para asegurar thread-safety en entornos asíncronos.
  */
 class AsesinoManager(private val plugin: Mistaken) {
 
     private val mm = plugin.mm
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
+    // Mapas de datos protegidos para acceso multihilo
     val asesinosActivos = ConcurrentHashMap<UUID, Asesino>()
     private val clasesDisponibles = ConcurrentHashMap<String, Asesino>()
 
     init {
-        // Registro masivo optimizado
+        // Registro inicial de clases
         listOf(
             Slasher(), Herobrine(), Entity303(), NullAsesino()
         ).forEach { registrarClase(it) }
@@ -38,7 +43,7 @@ class AsesinoManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Sincroniza la clase sin efectos visuales. Útil para pre-selección en Lobby.
+     * Sincroniza la clase sin efectos. Útil para el selector del lobby.
      */
     fun actualizarAsesino(player: Player, claseId: String) {
         if (claseId.equals("none", ignoreCase = true)) {
@@ -47,57 +52,64 @@ class AsesinoManager(private val plugin: Mistaken) {
         }
 
         val clase = getClasePorId(claseId) ?: return
-        clase.cleanup(player)
+        // Cleanup preventivo en el hilo principal
+        scope.launch(plugin.mainThread) {
+            clase.cleanup(player)
+        }
 
-        plugin.logger.info("${player.name} sincronizado con ${clase.nombre}")
+        plugin.componentLogger.info(mm.deserialize("<gray>${player.name} seleccionó a ${clase.nombre}</gray>"))
     }
 
     /**
-     * ¡La transformación final!
-     * Optimizado: Usa Coroutines para distribuir la carga de equipamiento en varios ticks.
+     * ¡Transformación!
+     * Distribuye la carga de equipamiento en varios ticks para evitar tirones de lag.
      */
     fun registrarAsesino(player: Player, asesino: Asesino) {
         val uuid = player.uniqueId
 
-        // Limpieza inmediata (Sync)
+        // 1. Limpieza inmediata (Debe ser Síncrono)
         player.inventory.clear()
         player.inventory.armorContents = arrayOfNulls(4)
         asesinosActivos[uuid] = asesino
 
-        // Feedback inmediato
+        // Feedback visual/auditivo
         player.sendMessage(plugin.messageConfig.getMessage(player, "killer.transform",
             Placeholder.component("name", mm.deserialize(asesino.nombre))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
-        // Motor de equipamiento asíncrono
+        // 2. Proceso de Equipamiento Asíncrono
         scope.launch {
-            // 1. Espera de seguridad para evitar conflictos con el mundo (10 ticks = 500ms)
+            // Espera pequeña para que el servidor procese el estado inicial (10 ticks)
             delay(500L)
 
             if (!player.isOnline || !asesinosActivos.containsKey(uuid)) return@launch
 
-            // Volvemos al Main Thread para efectos físicos
-            withContext(Dispatchers.Main) {
+            // --- VOLVER AL HILO PRINCIPAL (Bukkit) ---
+            withContext(plugin.mainThread) {
+                // Equipamos el kit de la clase
                 asesino.equipar(player)
+
+                // Efectos visuales iniciales
                 asesino.mostrarTrail(player)
             }
 
-            // 2. Equipamiento de armadura (5 ticks después)
+            // 3. Auto-equipamiento de armadura (5 ticks después)
             delay(250L)
 
             if (player.isOnline) {
-                withContext(Dispatchers.Main) {
+                withContext(plugin.mainThread) {
                     autoEquiparArmadura(player)
                     player.inventory.heldItemSlot = 8
                     player.updateInventory()
+
+                    plugin.componentLogger.info(mm.deserialize("<red>[Asesino] ${player.name} equipado como ${asesino.id}</red>"))
                 }
             }
         }
     }
 
     /**
-     * Motor de auto-equipamiento inteligente.
-     * Evita loops redundantes y usa comparaciones de String optimizadas.
+     * Coloca automáticamente piezas de armadura que estén en el inventario.
      */
     private fun autoEquiparArmadura(player: Player) {
         val inv = player.inventory
@@ -117,34 +129,37 @@ class AsesinoManager(private val plugin: Mistaken) {
         }
     }
 
-    fun equiparAsesino(player: Player, claseId: String) {
-        val clase = getClasePorId(claseId) ?: getClasePorId("slasher")
-        clase?.let { registrarAsesino(player, it) }
-    }
-
     fun removerAsesino(player: Player) {
         val asesino = asesinosActivos.remove(player.uniqueId)
 
-        // Si el asesino estaba activo, cleanup específico. Si no, cleanup preventivo de todas las clases.
-        asesino?.cleanup(player) ?: clasesDisponibles.values.forEach { it.cleanup(player) }
+        // Cleanup en hilo principal para evitar errores de API
+        scope.launch(plugin.mainThread) {
+            asesino?.cleanup(player) ?: clasesDisponibles.values.forEach { it.cleanup(player) }
 
-        // Reset de atributos Paper 1.21.4
-        player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
-        player.health = 20.0
-        player.isGlowing = false
-        player.isSwimming = false
+            // Reset total de atributos (1.21.4)
+            player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
+            player.health = 20.0
+            player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
+            player.isGlowing = false
+            player.isSwimming = false
+        }
     }
 
     fun removerTodosLosAsesinos() {
-        asesinosActivos.forEach { (uuid, asesino) ->
-            Bukkit.getPlayer(uuid)?.let { asesino.cleanup(it) }
+        // Copiamos la lista para evitar errores de modificación concurrente
+        val activos = asesinosActivos.keys().toList()
+
+        activos.forEach { uuid ->
+            val p = Bukkit.getPlayer(uuid)
+            if (p != null) removerAsesino(p)
         }
+
         asesinosActivos.clear()
-        // Cancelar todas las corrutinas de equipamiento en curso
+        // Cancelamos equipamientos que estaban a mitad de camino
         scope.coroutineContext.cancelChildren()
     }
 
-    // --- GETTERS MAESTROS ---
+    // --- GETTERS ---
 
     fun getAsesinoDelJugador(player: Player?): Asesino? {
         return player?.let { asesinosActivos[it.uniqueId] }
@@ -155,15 +170,14 @@ class AsesinoManager(private val plugin: Mistaken) {
     }
 
     fun getAsesinoActual(): Player? {
+        // En este juego solo suele haber uno, devolvemos el primero válido
         return asesinosActivos.keys.firstOrNull()?.let { Bukkit.getPlayer(it) }?.takeIf { it.isOnline }
     }
-
-    fun getClasesDisponibles(): Map<String, Asesino> = Collections.unmodifiableMap(clasesDisponibles)
 
     fun esElAsesino(player: Player?): Boolean = player?.let { asesinosActivos.containsKey(it.uniqueId) } ?: false
 
     /**
-     * Limpieza total al apagar el plugin
+     * Limpieza al apagar el plugin
      */
     fun shutdown() {
         removerTodosLosAsesinos()
