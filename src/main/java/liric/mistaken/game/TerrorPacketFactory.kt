@@ -9,6 +9,7 @@ import com.github.retrooper.packetevents.util.Vector3i
 import com.github.retrooper.packetevents.wrapper.play.server.*
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
+import liric.mistaken.utils.mainThread // IMPORTANTE: Nuestra extensión
 import org.bukkit.Location
 import org.bukkit.Sound
 import org.bukkit.entity.Player
@@ -79,8 +80,8 @@ class TerrorPacketFactory(private val plugin: Mistaken) {
         factoryScope.launch {
             delay(ticks * 50L)
             if (victim.isOnline) {
-                // Restaurar usando el bloque real del mundo
-                withContext(Dispatchers.Main) {
+                // --- ARREGLO: Reemplazado Dispatchers.Main por plugin.mainThread ---
+                withContext(plugin.mainThread) {
                     victim.sendBlockChange(loc, loc.block.blockData)
                 }
             }
@@ -96,7 +97,7 @@ class TerrorPacketFactory(private val plugin: Mistaken) {
         // Status 2 = Entity Hurt Animation
         PacketEvents.getAPI().playerManager.sendPacket(
             victim,
-            WrapperPlayServerEntityStatus(victim.entityId, 2) // ✅ Correcto (Int)
+            WrapperPlayServerEntityStatus(victim.entityId, 2)
         )
 
         // El sonido se reproduce en el hilo principal para sincronización con el cliente
@@ -129,7 +130,8 @@ class TerrorPacketFactory(private val plugin: Mistaken) {
         factoryScope.launch {
             delay(750) // 15 ticks aprox
             if (victim.isOnline) {
-                withContext(Dispatchers.Main) {
+                // --- ARREGLO: Reemplazado Dispatchers.Main por plugin.mainThread ---
+                withContext(plugin.mainThread) {
                     affected.forEach { loc ->
                         victim.sendBlockChange(loc, loc.block.blockData)
                     }

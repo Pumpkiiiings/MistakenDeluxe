@@ -7,6 +7,9 @@ import liric.mistaken.game.Arena
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import liric.mistaken.supervivientes.clases.Civil
+import net.kyori.adventure.bossbar.BossBar
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.title.Title
@@ -19,9 +22,6 @@ import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
 import org.bukkit.block.Block
-import org.bukkit.boss.BarColor
-import org.bukkit.boss.BarStyle
-import org.bukkit.boss.BossBar
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -488,33 +488,66 @@ class GameManager(private val plugin: Mistaken) {
     }
 
     private fun updatePersonalBar(p: Player, online: Int) {
-        val bar = personalBars.getOrPut(p.uniqueId) {
-            val styleStr = plugin.config.getString("bossbar.style", "SOLID")!!.uppercase()
-            Bukkit.createBossBar("", BarColor.WHITE, BarStyle.valueOf(styleStr))
+        val uuid = p.uniqueId
+        // Convertimos a lowercase para que coincida con el YAML (lobby, voting, etc)
+        val stateName = currentState.name.lowercase()
+
+        // 1. Procesar tiempo (mm:ss)
+        val timeStr = if (currentState == GameState.INGAME || currentState == GameState.STARTING) {
+            String.format("%02d:%02d", timer / 60, timer % 60)
+        } else {
+            timer.toString()
         }
 
-        if (!bar.players.contains(p)) bar.addPlayer(p)
+        // 2. Obtener textos (Pasamos el valor por defecto como tercer parámetro)
+        val modeKey = currentMode.name.lowercase()
 
-        val stateName = currentState.name.lowercase()
-        val timeStr = if (currentState == GameState.INGAME || currentState == GameState.STARTING)
-            String.format("%02d:%02d", timer / 60, timer % 60) else timer.toString()
+        // CORRECCIÓN: Pasamos el default adentro del paréntesis
+        val modeName = plugin.messageConfig.getRawString(p, "modes.$modeKey.name", currentMode.name)
+        val rawText = plugin.messageConfig.getRawString(p, "bossbar.$stateName", "<gray>Mistaken Game")
 
-        val modeName = plugin.messageConfig.getRawString(p, "modes.${currentMode.name.lowercase()}.name", currentMode.name)
-        val rawText = plugin.messageConfig.getRawString(p, "bossbar.$stateName", "...")
-
+        // 3. Reemplazo de placeholders según tu YAML
         val processedText = rawText
             .replace("{online}", online.toString())
             .replace("{time}", timeStr)
-            .replace("{map}", currentMapName)
+            .replace("{map}", currentMapName ?: "Cargando...")
             .replace("{mode}", modeName)
 
-        // Optimización: Solo enviar paquete si cambia el texto
-        if (processedText != lastProcessedText[p.uniqueId]) {
-            bar.setTitle(mm.serialize(mm.deserialize(processedText)))
-            lastProcessedText[p.uniqueId] = processedText
-
+        // 4. Obtener o crear la barra (Adventure API)
+        val bar = personalBars.getOrPut(uuid) {
+            // Buscamos el color en el path: bossbar.colors.lobby, etc.
             val colorName = plugin.messageConfig.getRawString(p, "bossbar.colors.$stateName", "WHITE")
-            try { bar.color = BarColor.valueOf(colorName.uppercase()) } catch (ignored: Exception) {}
+
+            val adventureColor = try {
+                net.kyori.adventure.bossbar.BossBar.Color.valueOf(colorName.uppercase())
+            } catch (e: Exception) {
+                net.kyori.adventure.bossbar.BossBar.Color.WHITE
+            }
+
+            val newBar = net.kyori.adventure.bossbar.BossBar.bossBar(
+                mm.deserialize(processedText),
+                1.0f,
+                adventureColor,
+                net.kyori.adventure.bossbar.BossBar.Overlay.PROGRESS
+            )
+
+            p.showBossBar(newBar)
+            newBar
+        }
+
+        // 5. Optimización: Solo actualizar si el texto cambió
+        if (processedText != lastProcessedText[uuid]) {
+            bar.name(mm.deserialize(processedText))
+            lastProcessedText[uuid] = processedText
+
+            // Actualizar color si cambió el estado de la partida
+            val colorName = plugin.messageConfig.getRawString(p, "bossbar.colors.$stateName", "WHITE")
+            try {
+                val nextColor = net.kyori.adventure.bossbar.BossBar.Color.valueOf(colorName.uppercase())
+                if (bar.color() != nextColor) {
+                    bar.color(nextColor)
+                }
+            } catch (ignored: Exception) { }
         }
     }
 
@@ -537,15 +570,24 @@ class GameManager(private val plugin: Mistaken) {
 
     fun removePlayerData(uuid: UUID) {
         val p = Bukkit.getPlayer(uuid)
-        p?.let {
-            personalBars.remove(uuid)?.removeAll()
-            lastProcessedText.remove(uuid)
-            it.isSwimming = false
-            ambientManager.stopAmbience(it)
+
+        personalBars.remove(uuid)?.let { bar ->
+            p?.hideBossBar(bar)
         }
+
+        lastProcessedText.remove(uuid)
+
+        p?.let {
+            it.isSwimming = false
+            plugin.ambientManager.stopAmbience(it)
+        }
+
         asesinosUUIDs.remove(uuid)
-        combatManager.removePlayerData(uuid)
-        if (uuid == currentAsesinoUUID) currentAsesinoUUID = null
+        plugin.combatManager.removePlayerData(uuid)
+
+        if (uuid == currentAsesinoUUID) {
+            currentAsesinoUUID = null
+        }
     }
 
     fun soltarPasajero(r: Player) { combatManager.soltarPasajero(r) }

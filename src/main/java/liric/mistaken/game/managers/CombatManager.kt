@@ -9,6 +9,7 @@ import liric.mistaken.Mistaken
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.api.events.MistakenDeathEvent
 import liric.mistaken.game.enums.MistakenMode
+import liric.mistaken.utils.mainThread // 1. IMPORTANTE: Usamos nuestro dispatcher corregido
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.title.Title
@@ -38,8 +39,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     private val frozenPlayers = ConcurrentHashMap.newKeySet<UUID>()
     private val originalHelmets = ConcurrentHashMap<UUID, ItemStack>()
     private val killerCooldowns = ConcurrentHashMap<UUID, Long>()
-
-    // Jobs de Kotlin
     private val freezeDeathJobs = ConcurrentHashMap<UUID, Job>()
 
     private val combatScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -47,25 +46,17 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
     // --- IMPLEMENTACIÓN API ---
 
-    override fun getHealth(player: Player): Int {
-        return playerHealth.getOrDefault(player.uniqueId, 6)
-    }
+    override fun getHealth(player: Player): Int = playerHealth.getOrDefault(player.uniqueId, 6)
 
     override fun setHealth(player: Player, health: Int) {
         playerHealth[player.uniqueId] = health.coerceIn(0, 6)
     }
 
-    /**
-     * ✅ MÉTODO AGREGADO: Restaura la salud a 6 sin borrar datos.
-     * Requerido por GameManager al iniciar la partida.
-     */
     fun resetHealth(player: Player) {
         setHealth(player, 6)
     }
 
-    override fun isFrozen(player: Player): Boolean {
-        return frozenPlayers.contains(player.uniqueId)
-    }
+    override fun isFrozen(player: Player): Boolean = frozenPlayers.contains(player.uniqueId)
 
     override fun resetPlayer(player: Player) {
         removePlayerData(player.uniqueId)
@@ -81,7 +72,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             val velocity = victim.location.toVector()
                 .subtract(killer.location.toVector())
                 .normalize().multiply(0.3).setY(0.25)
-            victim.velocity = velocity
+
+            // 2. ARREGLO: Aplicar velocidad en el hilo principal
+            combatScope.launch(plugin.mainThread) { victim.velocity = velocity }
         }
 
         if (plugin.gameManager.currentMode == MistakenMode.FREEZE_TAG) {
@@ -103,7 +96,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 0.5f)
         }
 
-        limpiarEstadoTransporte(victim)
+        // 3. ARREGLO: Operaciones de transporte en hilo principal
+        combatScope.launch(plugin.mainThread) { limpiarEstadoTransporte(victim) }
+
         victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1.0f, 1.0f)
 
         victim.world.spawnParticle(
@@ -114,12 +109,16 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
     override fun unfreeze(victim: Player, rescuer: Player) {
         if (!frozenPlayers.remove(victim.uniqueId)) return
-        resetFreezeState(victim)
-        setHealth(victim, 3)
-        victim.world.playSound(victim.location, Sound.BLOCK_FIRE_EXTINGUISH, 1f, 1.5f)
 
-        victim.sendMessage(plugin.messageConfig.getMessage(victim, "game.unfrozen-victim", Placeholder.parsed("player", rescuer.name)))
-        rescuer.sendMessage(plugin.messageConfig.getMessage(rescuer, "game.unfrozen-rescuer", Placeholder.parsed("player", victim.name)))
+        // 4. ARREGLO: Reset de estado en hilo principal
+        combatScope.launch(plugin.mainThread) {
+            resetFreezeState(victim)
+            setHealth(victim, 3)
+            victim.world.playSound(victim.location, Sound.BLOCK_FIRE_EXTINGUISH, 1f, 1.5f)
+
+            victim.sendMessage(plugin.messageConfig.getMessage(victim, "game.unfrozen-victim", Placeholder.parsed("player", rescuer.name)))
+            rescuer.sendMessage(plugin.messageConfig.getMessage(rescuer, "game.unfrozen-rescuer", Placeholder.parsed("player", victim.name)))
+        }
     }
 
     // --- LÓGICA DE COMBATE ---
@@ -169,6 +168,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             victim.world.spawnParticle(Particle.EXPLOSION, victim.location, 1)
             victim.world.playSound(victim.location, Sound.ENTITY_WITHER_DEATH, 1f, 0.5f)
             giveWinRewards(false)
+            // 5. ARREGLO: Firma de endGame corregida
             plugin.gameManager.endGame("game.killer-died-victory", false)
             return
         }
@@ -186,20 +186,24 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             plugin.gameManager.addTime(15)
         }
 
-        resetFreezeState(victim)
-        frozenPlayers.remove(victim.uniqueId)
-        victim.gameMode = GameMode.SPECTATOR
+        // 6. ARREGLO: Cambios físicos en hilo principal
+        combatScope.launch(plugin.mainThread) {
+            resetFreezeState(victim)
+            frozenPlayers.remove(victim.uniqueId)
+            victim.gameMode = GameMode.SPECTATOR
 
-        val deathPath = if (isHypothermia) "game.player-frozen-death" else "game.player-died"
-        plugin.gameManager.broadcastLocalized(deathPath, Placeholder.parsed("player", victim.name))
-        victim.playSound(victim.location, Sound.ENTITY_PLAYER_DEATH, 1f, 1f)
+            val deathPath = if (isHypothermia) "game.player-frozen-death" else "game.player-died"
+            plugin.gameManager.broadcastLocalized(deathPath, Placeholder.parsed("player", victim.name))
+            victim.playSound(victim.location, Sound.ENTITY_PLAYER_DEATH, 1f, 1f)
 
-        Bukkit.getScheduler().runTask(plugin, Runnable { plugin.gameManager.checkWinCondition() })
+            plugin.gameManager.checkWinCondition()
+        }
     }
 
     private fun enviarFeedbackSalud(victim: Player, current: Int) {
-        val heartOn = plugin.messageConfig.getRawString(victim, "combat.heart-icon-on", "❤")
-        val heartOff = plugin.messageConfig.getRawString(victim, "combat.heart-icon-off", "🖤")
+        // 7. ARREGLO: El método repeat() requiere un String no nulo
+        val heartOn = plugin.config.getString("messages.combat.heart-icon-on") ?: "❤"
+        val heartOff = plugin.config.getString("messages.combat.heart-icon-off") ?: "🖤"
 
         val onBuilder = heartOn.repeat(max(0, current))
         val offBuilder = heartOff.repeat(max(0, 6 - current))
@@ -219,13 +223,16 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     private fun aplicarHuntersMark(killer: Player, victim: Player) {
         enviarGlowPaquete(killer, victim, true)
 
-        val sb = killer.scoreboard
-        val team = sb.getTeam("glow_yellow") ?: sb.registerNewTeam("glow_yellow").apply {
-            color(NamedTextColor.YELLOW)
-        }
+        // 8. ARREGLO: El Scoreboard se toca en el hilo principal
+        combatScope.launch(plugin.mainThread) {
+            val sb = killer.scoreboard
+            val team = sb.getTeam("glow_yellow") ?: sb.registerNewTeam("glow_yellow").apply {
+                color(NamedTextColor.YELLOW)
+            }
 
-        if (!team.hasEntry(victim.name)) {
-            team.addEntry(victim.name)
+            if (!team.hasEntry(victim.name)) {
+                team.addEntry(victim.name)
+            }
         }
 
         killer.sendActionBar(plugin.messageConfig.getMessage(killer, "combat.hunters-mark", Placeholder.parsed("player", victim.name)))
@@ -235,7 +242,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             delay(5000)
             if (killer.isOnline && victim.isOnline) {
                 enviarGlowPaquete(killer, victim, false)
-                withContext(Dispatchers.Main) {
+                // Usamos nuestro dispatcher personalizado
+                withContext(plugin.mainThread) {
                     killer.scoreboard.getTeam("glow_yellow")?.removeEntry(victim.name)
                 }
             }
@@ -252,19 +260,22 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     private fun handleFreeze(victim: Player) {
         if (!frozenPlayers.add(victim.uniqueId)) return
 
-        val helmet = victim.inventory.helmet
-        if (helmet != null && helmet.type != Material.AIR) {
-            originalHelmets[victim.uniqueId] = helmet
+        // 9. ARREGLO: Equipamiento en hilo principal
+        combatScope.launch(plugin.mainThread) {
+            val helmet = victim.inventory.helmet
+            if (helmet != null && helmet.type != Material.AIR) {
+                originalHelmets[victim.uniqueId] = helmet
+            }
+
+            victim.inventory.helmet = ItemStack(Material.BLUE_ICE)
+            setPlayerPhysics(victim, 0.0, 0.0)
+            victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, false))
+            victim.world.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
+
+            startFreezeTimer(victim)
+            plugin.gameManager.broadcastLocalized("game.player-frozen", Placeholder.parsed("player", victim.name))
+            plugin.gameManager.checkWinCondition()
         }
-
-        victim.inventory.helmet = ItemStack(Material.BLUE_ICE)
-        setPlayerPhysics(victim, 0.0, 0.0)
-        victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, false))
-        victim.world.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
-
-        startFreezeTimer(victim)
-        plugin.gameManager.broadcastLocalized("game.player-frozen", Placeholder.parsed("player", victim.name))
-        plugin.gameManager.checkWinCondition()
     }
 
     private fun startFreezeTimer(victim: Player) {
@@ -273,7 +284,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             while (isActive && timeLeft > 0) {
                 if (!victim.isOnline || !isFrozen(victim)) break
 
-                withContext(Dispatchers.Main) {
+                // 10. ARREGLO: withContext(plugin.mainThread) para UI
+                withContext(plugin.mainThread) {
                     val timeFormatted = String.format("%d:%02d", timeLeft / 60, timeLeft % 60)
                     val color = when {
                         timeLeft <= 20 -> "<red>"
@@ -297,7 +309,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             }
 
             if (timeLeft <= 0 && victim.isOnline && isFrozen(victim)) {
-                withContext(Dispatchers.Main) { handleDeath(victim, true) }
+                // Volver al hilo principal para matar
+                withContext(plugin.mainThread) { handleDeath(victim, true) }
             }
         }
         freezeDeathJobs[victim.uniqueId] = job
@@ -377,5 +390,11 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 p.isSwimming = true
             }
         }
+    }
+
+    // 11. ARREGLO: Shutdown del Scope al apagar
+    fun shutdown() {
+        combatScope.cancel()
+        clearAll()
     }
 }

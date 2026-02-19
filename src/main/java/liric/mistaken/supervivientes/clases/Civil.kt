@@ -3,6 +3,7 @@ package liric.mistaken.supervivientes.clases
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.supervivientes.Superviviente
+import liric.mistaken.utils.mainThread // 1. IMPORTANTE: Usamos nuestro dispatcher
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
@@ -15,7 +16,11 @@ import org.bukkit.potion.PotionEffectType
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Civil: La clase balanceada para el pueblo.
- * Optimización: Timers de habilidades con Coroutines (Zero-Lag).
+ *
+ * Arreglos:
+ * - Reemplazado Dispatchers.Main por plugin.mainThread para evitar IllegalStateException.
+ * - Manejo seguro de nulos en configuración.
+ * - Optimización de timers asíncronos.
  */
 class Civil : Superviviente("civil", "Civil") {
 
@@ -34,7 +39,7 @@ class Civil : Superviviente("civil", "Civil") {
             player.inventory.setItem(i - 1, createItem(mat, displayName!!))
         }
 
-        val prefix = plugin.config.getString("settings.prefix", "<red>Mistaken <dark_gray>» ")
+        val prefix = plugin.config.getString("settings.prefix") ?: "<red>Mistaken <dark_gray>» "
         player.sendMessage(mm.deserialize("$prefix<gray>Has sido equipado como: <white>$nombre"))
     }
 
@@ -49,8 +54,8 @@ class Civil : Superviviente("civil", "Civil") {
         // --- MENSAJE Y SONIDO DINÁMICO ---
         val mensaje = section.getString("${key}_mensaje")
         if (!mensaje.isNullOrEmpty()) {
-            val prefix = plugin.config.getString("settings.prefix", "<red>Mistaken <dark_gray>» ")
-            player.sendMessage(mm.deserialize(mensaje.replace("<prefix>", prefix!!)))
+            val prefix = plugin.config.getString("settings.prefix") ?: "<red>Mistaken <dark_gray>» "
+            player.sendMessage(mm.deserialize(mensaje.replace("<prefix>", prefix)))
         }
 
         val soundName = section.getString("${key}_sonido", "UI_BUTTON_CLICK")
@@ -66,14 +71,16 @@ class Civil : Superviviente("civil", "Civil") {
     }
 
     private fun usarAdrenalina(player: Player) {
-        // Efecto inicial: Velocidad II por 5s (100 ticks)
+        // Efecto inicial (Síncrono)
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 1))
 
-        // Timer asíncrono para el bajón de energía
+        // Bajón de energía asíncrono
         val job = scope.launch {
-            delay(5000) // 5 segundos
-            withContext(Dispatchers.Main) {
-                if (player.isOnline) {
+            delay(5000) // 5 segundos de adrenalina
+
+            // --- ARREGLO: Salto al hilo principal de Bukkit ---
+            if (isActive && player.isOnline) {
+                withContext(plugin.mainThread) {
                     player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 0))
                 }
             }
@@ -82,19 +89,21 @@ class Civil : Superviviente("civil", "Civil") {
     }
 
     private fun usarInvisibilidad(player: Player) {
-        // Invisibilidad por 5s
+        // Invisibilidad inicial
         player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 100, 0, false, false, true))
 
         val job = scope.launch {
             delay(5000)
-            withContext(Dispatchers.Main) {
-                if (player.isOnline) {
+
+            // --- ARREGLO: Salto al hilo principal de Bukkit ---
+            if (isActive && player.isOnline) {
+                withContext(plugin.mainThread) {
                     val section = plugin.configManager.getSupervivientes().getConfigurationSection(pathBase)
                     val msgFin = section?.getString("habilidad2_mensaje_fin")
 
                     if (!msgFin.isNullOrEmpty()) {
-                        val prefix = plugin.config.getString("settings.prefix", "<red>Mistaken <dark_gray>» ")
-                        player.sendMessage(mm.deserialize(msgFin.replace("<prefix>", prefix!!)))
+                        val prefix = plugin.config.getString("settings.prefix") ?: "<red>Mistaken <dark_gray>» "
+                        player.sendMessage(mm.deserialize(msgFin.replace("<prefix>", prefix)))
                     }
                 }
             }
@@ -103,7 +112,7 @@ class Civil : Superviviente("civil", "Civil") {
     }
 
     private fun lanzarRoca(player: Player) {
-        // Lanzamos el proyectil con la metadata que checa el Listener
+        // Lanzamiento de proyectil (API de Bukkit)
         player.launchProjectile(Snowball::class.java).apply {
             setMetadata("mistaken_roca", FixedMetadataValue(plugin, true))
         }
@@ -111,14 +120,14 @@ class Civil : Superviviente("civil", "Civil") {
     }
 
     private fun createItem(mat: Material, name: String): ItemStack {
-        return ItemStack(mat).apply {
-            editMeta { it.displayName(mm.deserialize(name)) }
-        }
+        val item = ItemStack(mat)
+        item.editMeta { it.displayName(mm.deserialize(name)) }
+        return item
     }
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        // Cancelar todas las corrutinas de adrenalina/invisibilidad pendientes
+        // Cancelamos corrutinas pendientes para evitar efectos fantasma tras morir o terminar
         scope.coroutineContext.cancelChildren()
     }
 }
