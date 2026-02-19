@@ -2,17 +2,18 @@ package liric.mistaken.asesinos
 
 import kotlinx.coroutines.Job
 import liric.mistaken.Mistaken
-import net.kyori.adventure.text.minimessage.MiniMessage
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
-import org.bukkit.Bukkit
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import org.bukkit.Registry
 import org.bukkit.Sound
+import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
+import org.bukkit.scheduler.BukkitTask
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Asesino: Clase base polimórfica ultra-optimizada.
- * Usa Coroutines para el rastreo de habilidades y efectos sin saturar el Bukkit Scheduler.
+ * Adaptada para Paper 1.21.4+ con reseteo de atributos moderno y gestión de tareas.
  */
 abstract class Asesino(val id: String, val nombre: String) {
 
@@ -24,6 +25,9 @@ abstract class Asesino(val id: String, val nombre: String) {
 
     // Rastrero de tareas asíncronas (Jobs) para limpieza automática
     protected val activeJobs = ConcurrentHashMap.newKeySet<Job>()
+
+    // Rastrero de tareas de Bukkit para limpieza completa (Schedulers)
+    protected val activeTasks = ConcurrentHashMap.newKeySet<BukkitTask>()
 
     /**
      * Verifica si una habilidad está en cooldown y envía feedback visual.
@@ -66,6 +70,14 @@ abstract class Asesino(val id: String, val nombre: String) {
     }
 
     /**
+     * Registra una tarea de Bukkit (Scheduler) para ser cancelada automáticamente.
+     * IMPORTANTE: Debes pasar el resultado de .runTaskTimer() o .runTaskLater()
+     */
+    protected fun trackTask(task: BukkitTask) {
+        activeTasks.add(task)
+    }
+
+    /**
      * Reproduce el sonido configurado para una habilidad.
      */
     fun reproducirEfectosHabilidad(player: Player, slot: Int) {
@@ -73,10 +85,12 @@ abstract class Asesino(val id: String, val nombre: String) {
         val sonidoName = config.getString("asesinos.$id.items.habilidad${slot}_sonido") ?: return
 
         try {
+            // Soporte para sonidos nativos de Bukkit
             val sound = Sound.valueOf(sonidoName.uppercase())
             player.world.playSound(player.location, sound, 1.0f, 0.7f)
         } catch (e: IllegalArgumentException) {
-            plugin.logger.warning("Sonido inválido en config para $id (Habilidad $slot): $sonidoName")
+            // Si no es un sonido nativo, intentamos reproducirlo como sonido de recurso (custom)
+            player.playSound(player.location, sonidoName, 1.0f, 0.7f)
         }
     }
 
@@ -85,9 +99,13 @@ abstract class Asesino(val id: String, val nombre: String) {
      * Cancela todas las corrutinas activas y resetea al jugador físicamente.
      */
     open fun cleanup(player: Player?) {
-        // 1. Cancelar todas las tareas (Trails de partículas, loops de efectos, etc)
-        activeJobs.forEach { it.cancel() }
+        // 1. Cancelar todas las tareas (Coroutines y BukkitTasks)
+        activeJobs.forEach { if (it.isActive) it.cancel() }
         activeJobs.clear()
+
+        // Cancelación de tareas de Bukkit registradas (Schedulers)
+        activeTasks.forEach { it.cancel() }
+        activeTasks.clear()
 
         player?.let { p ->
             if (p.isOnline) {
@@ -106,13 +124,56 @@ abstract class Asesino(val id: String, val nombre: String) {
                 p.isGlowing = false
                 p.inventory.heldItemSlot = 0
 
-                // 5. Limpiar sus cooldowns para liberar RAM
+                // 5. Reset de atributos de la 1.21.4 (Crucial para el rendimiento)
+                resetAttributes(p)
+
+                // 6. Limpiar sus cooldowns para liberar RAM
                 val prefix = p.uniqueId.toString()
                 cooldowns.keys.removeIf { it.startsWith(prefix) }
+
+                // 7. Limpieza de PDC (Persistent Data Container)
+                p.persistentDataContainer.remove(plugin.assassinKey)
 
                 p.updateInventory()
             }
         }
+    }
+
+    /**
+     * Resetea los atributos del jugador a sus valores originales de la 1.21.4.
+     */
+    private fun resetAttributes(player: Player) {
+        // Lista extendida de atributos modernos para evitar bugs de velocidad/vida
+        val attributes = listOf(
+            Attribute.MAX_HEALTH,
+            Attribute.MOVEMENT_SPEED,
+            Attribute.ATTACK_DAMAGE,
+            Attribute.ATTACK_SPEED,
+            Attribute.KNOCKBACK_RESISTANCE,
+            Attribute.SCALE,            // 1.20.5+
+            Attribute.STEP_HEIGHT,      // 1.21.4+
+            Attribute.GRAVITY,          // 1.21.4+
+            Attribute.JUMP_STRENGTH     // 1.21.4+
+        )
+
+        attributes.forEach { attr ->
+            player.getAttribute(attr)?.let { instance ->
+                // Eliminar todos los modificadores (de otros plugins o habilidades)
+                instance.modifiers.forEach { instance.removeModifier(it) }
+                // Resetear al valor base por defecto del servidor
+                instance.baseValue = instance.defaultValue
+            }
+        }
+        // Curar al jugador tras resetear la vida máxima
+        player.health = player.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
+    }
+
+    /**
+     * Utilidad de mensajería rápida MiniMessage con placeholders.
+     */
+    protected fun msg(player: Player, path: String, vararg placeholders: TagResolver) {
+        val message = plugin.messageConfig.getMessage(player, path, *placeholders)
+        player.sendMessage(message)
     }
 
     // --- MÉTODOS ABSTRACTOS ---

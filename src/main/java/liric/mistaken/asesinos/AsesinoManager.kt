@@ -34,7 +34,7 @@ class AsesinoManager(private val plugin: Mistaken) {
     init {
         // Registro inicial de clases
         listOf(
-            Slasher(), Herobrine(), Entity303(), NullAsesino()
+            Slasher(), Herobrine(), Entity303(), NullAsesino(), ColorAndElectricity()
         ).forEach { registrarClase(it) }
     }
 
