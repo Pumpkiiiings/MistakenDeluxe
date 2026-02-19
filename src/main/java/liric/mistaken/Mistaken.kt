@@ -362,6 +362,7 @@ class Mistaken : JavaPlugin() {
         // Paper Logger soporta componentes directos, mucho más limpio
         componentLogger.info(mm.deserialize("""
             <newline>
+             $b1<bold> </bold>$b1
              $b1<bold> ███▄ ▄███▓ ██▓  ██████ ▄▄▄█████▓ ▄▄▄       ██ ▄█▀▓█████  ███▄    █ </bold>$b1
              $b1<bold>▓██▒▀█▀ ██▒▓██▒▒██    ▒ ▓  ██▒ ▓▒▒████▄     ██▄█▒ ▓█   ▀  ██ ▀█   █ </bold>$b1
              $b2<bold>▓██    ▓██░▒██▒░ ▓██▄   ▒ ▓██░ ▒░▒██  ▀█▄  ▓███▄░ ▒███   ▓██  ▀█ ██▒</bold>$b2
@@ -372,9 +373,9 @@ class Mistaken : JavaPlugin() {
              $b5<bold>░      ░    ▒ ░░  ░  ░    ░        ░   ▒   ░ ░░ ░    ░      ░   ░ ░  </bold>$b5
              $b5<bold>       ░    ░        ░                 ░  ░░  ░      ░  ░         ░ </bold>$b5
             <newline>
-               <gray>Autor:</gray> $info Pumpkingz$info
-               <gray>Estado:</gray> <green>● Operativo</green>
-               <gray>Addons Detectados:</gray> $info MistakenGenerators, PumpkinEffects, CraftEngine $info
+               <white>Autor:</white> $info Pumpkingz$info
+               <white>Estado:</white> <green>● Operativo</green>
+               <white>Addons Detectados:</white> $info MistakenGenerators, PumpkinEffects, CraftEngine $info
             <newline>
         """.trimIndent()))
     }
