@@ -11,7 +11,7 @@
 Mistaken es un plugin que trata de recrear los juegos: Dead by Daylight, Forsaken (Roblox)
 Bear Alpha (Roblox) y Die Of Death (Roblox), trayendolos a Minecraft.
 
-El plugin fue construido en Kotlin y Java usando tomando de base el plugin https://github.com/PulseBeat02/MurderRun hecho por
+El plugin fue construido en Kotlin y Java tomando de base el plugin https://github.com/PulseBeat02/MurderRun hecho por
 **PulseBeat02** para la **1.21.10**.
 
 ---
