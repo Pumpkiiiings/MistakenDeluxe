@@ -41,44 +41,68 @@ class AmbientManager(private val plugin: Mistaken) {
      * Procesa la lógica de terror cada 50ms (1 tick) sin afectar los TPS.
      */
     private fun startGlobalTask() {
+        // Usamos el scope del manager (IO o Default)
         job = scope.launch {
             var tickCounter = 0
+
+            // --- FASE 1: ESPERA SEGURA (El Freno de Mano) ---
+            // Mientras el plugin NO esté marcado como 'Ready', nos esperamos.
+            // Esto evita el error de "lateinit property not initialized".
+            while (isActive && !plugin.isReady) {
+                delay(500L) // Checamos cada 0.5 segundos (no gasta CPU)
+            }
+
+            // --- FASE 2: BUCLE DE JUEGO ---
+            // Aquí ya es seguro acceder a plugin.gameManager
             while (isActive) {
-                if (plugin.gameManager.currentState == GameState.INGAME) {
-                    tickCounter++
+                try {
+                    // Verificamos estado del juego (ahora seguro)
+                    if (plugin.gameManager.currentState == GameState.INGAME) {
+                        tickCounter++
 
-                    val killer = plugin.gameManager.getCurrentAsesino()
-                    if (killer != null && killer.isOnline) {
-                        val killerLoc = killer.location
+                        // Obtener asesino (thread-safe si solo lees datos básicos)
+                        val killer = plugin.gameManager.getCurrentAsesino()
 
-                        // Iteramos sobre supervivientes de forma asíncrona
-                        trackedSurvivors.forEach { uuid ->
-                            val survivor = Bukkit.getPlayer(uuid)
-                            if (survivor == null || !survivor.isOnline) {
-                                trackedSurvivors.remove(uuid)
-                                return@forEach
-                            }
+                        if (killer != null && killer.isOnline) {
+                            val killerLoc = killer.location
 
-                            val distSq = survivor.location.distanceSquared(killerLoc)
+                            // Usamos toList() para evitar ConcurrentModificationException si la lista cambia mientras iteramos
+                            trackedSurvivors.toList().forEach { uuid ->
+                                val survivor = Bukkit.getPlayer(uuid)
 
-                            // 1. Latido (Async)
-                            processHeartbeat(survivor, distSq, tickCounter)
+                                // Si se desconectó, lo sacamos de la lista local
+                                if (survivor == null || !survivor.isOnline) {
+                                    trackedSurvivors.remove(uuid)
+                                    return@forEach
+                                }
 
-                            // 2. Paranoia (Async, cada 10 ticks / 0.5s)
-                            if (tickCounter % 10 == 0) {
-                                processParanoia(survivor, distSq)
-                            }
+                                // Cálculo de distancia (Matemática pura, seguro en async)
+                                val distSq = survivor.location.distanceSquared(killerLoc)
 
-                            // 3. Sonidos Ambientales (Async, cada 300 ticks / 15s)
-                            if (tickCounter % 300 == 0) {
-                                if (ThreadLocalRandom.current().nextDouble() < 0.3) {
-                                    playDistortedSound(survivor)
+                                // 1. Latido (Lógica Async)
+                                processHeartbeat(survivor, distSq, tickCounter)
+
+                                // 2. Paranoia (Async, cada 10 ticks / 0.5s)
+                                if (tickCounter % 10 == 0) {
+                                    processParanoia(survivor, distSq)
+                                }
+
+                                // 3. Sonidos Ambientales (Async, cada 300 ticks / 15s)
+                                if (tickCounter % 300 == 0) {
+                                    // ThreadLocalRandom es vital para multihilo/async
+                                    if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.3) {
+                                        playDistortedSound(survivor)
+                                    }
                                 }
                             }
                         }
                     }
+                } catch (e: Exception) {
+                    // Capturamos errores para que el hilo no muera si Bukkit se queja
+                    e.printStackTrace()
                 }
-                delay(50L) // Pausa de 1 tick
+
+                delay(50L) // Pausa de 1 tick (50ms) para no quemar la CPU
             }
         }
     }
@@ -102,7 +126,7 @@ class AmbientManager(private val plugin: Mistaken) {
 
             // Efecto Darkness (Requiere Hilo Principal)
             if (distSq < 100.0) {
-                withContext(Dispatchers.Main) {
+                withContext(plugin.bukkitDispatcher) {
                     survivor.addPotionEffect(
                         PotionEffect(PotionEffectType.DARKNESS, 30, 0, false, false, false)
                     )

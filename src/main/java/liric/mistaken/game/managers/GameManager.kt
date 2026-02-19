@@ -86,7 +86,7 @@ class GameManager(private val plugin: Mistaken) {
 
                 // Necesitamos acceder a la API de Bukkit en el hilo principal
                 // pero hacemos los cálculos pesados fuera si es posible.
-                withContext(Dispatchers.Main) {
+                withContext(plugin.bukkitDispatcher) {
                     val onlinePlayers = Bukkit.getOnlinePlayers()
                     val validCount = onlinePlayers.count { !plugin.isIgnored(it) }
 

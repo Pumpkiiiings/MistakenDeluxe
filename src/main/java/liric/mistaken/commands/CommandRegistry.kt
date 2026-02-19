@@ -59,6 +59,6 @@ class CommandRegistry(private val plugin: Mistaken) {
             )
         }
 
-        plugin.logger.info("§a[CommandRegistry] ¡Todo el sistema de comandos está al puro tiro!")
+        plugin.logger.info("[CommandRegistry] Comandos registrados correctamente")
     }
 }

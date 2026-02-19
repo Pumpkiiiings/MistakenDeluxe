@@ -53,7 +53,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                 // 1. Verificación de estado rápida
                 if (plugin.gameManager.currentState != GameState.INGAME) {
                     // Si no hay juego, resetear comida en el hilo principal
-                    withContext(Dispatchers.Main) {
+                    withContext(plugin.bukkitDispatcher) {
                         resetAllFood()
                     }
                     delay(2000L) // Esperar 2 segundos antes de checar otra vez

@@ -2,10 +2,7 @@ package liric.mistaken
 
 import com.github.retrooper.packetevents.PacketEvents
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.database.StatsManager
 import liric.mistaken.asesinos.AsesinoManager
@@ -39,6 +36,7 @@ import org.bukkit.plugin.ServicePriority
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.util.*
+import kotlin.coroutines.CoroutineContext // AGREGADO
 
 class Mistaken : JavaPlugin() {
 
@@ -57,6 +55,16 @@ class Mistaken : JavaPlugin() {
     // --- Core Variables ---
     val pluginScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     val mm = MiniMessage.miniMessage()
+
+    // 🔥 AGREGADO: El motor que conecta las Corrutinas con el Hilo Principal de Bukkit
+    val bukkitDispatcher = object : CoroutineDispatcher() {
+        override fun dispatch(context: CoroutineContext, block: java.lang.Runnable) {
+            if (!isEnabled) return
+            if (Bukkit.isPrimaryThread()) block.run()
+            else Bukkit.getScheduler().runTask(this@Mistaken, block)
+        }
+    }
+
     lateinit var assassinKey: NamespacedKey
     var craftEngineEnabled: Boolean = false
         private set
@@ -65,6 +73,7 @@ class Mistaken : JavaPlugin() {
     val staffEditMode = mutableSetOf<UUID>()
     val afkPlayers = mutableSetOf<UUID>()
     var lobbyLocation: Location? = null
+    var isReady = false
 
     // --- Managers (Lateinit: Se inicializan en onEnable) ---
     lateinit var configManager: ConfigManager
@@ -102,48 +111,61 @@ class Mistaken : JavaPlugin() {
     override fun onEnable() {
         val start = System.currentTimeMillis()
 
+        // 0. 🔥 LA CLAVE: Inicializar el puente al hilo principal primero que nada
+        // Sin esto, cualquier Manager que use corrutinas va a tirar el error de "Main dispatcher missing"
+        instance = this
+        // Asegúrate de tener declarada 'val bukkitDispatcher = ...' arriba en la clase
+
         // 1. Init PacketEvents & Keys
         PacketEvents.getAPI().init()
         assassinKey = NamespacedKey(this, "selected_assassin")
 
-        // 2. Archivos y Configuración
+        // 2. Archivos y Configuración (La base para los demás)
         saveDefaultConfig()
         createRequiredFolders()
         loadLobbyLocation()
 
         configManager = ConfigManager(this).apply { loadAllConfigs() }
         messageConfig = MessageConfig(this)
-        statsManager = StatsManager(this)
-        playerDataManager = PlayerDataManager(this)
 
         // 3. Integraciones Externas (Vault, CraftEngine)
         if (!setupIntegrations()) return
 
-        // 4. Base de Datos (Crítico: Si falla, apagamos)
+        // 4. Base de Datos (Si no hay DB, no hay paraíso, pariente)
         if (!setupDatabase()) return
 
-        // 5. Inicialización de Managers (El orden importa)
-        discordManager = DiscordManager(this)
-        generatorManager = GeneratorManager(this)
-        arenaManager = ArenaManager(this)
-        mapManager = MapManager(this)
+        // 5. Inicializar datos base (Caché de stats y perfiles)
+        // Esto va antes que los Managers de juego por si alguien entra rápido
+        playerStatsManager = PlayerStatsManager(this)
+        statsManager = StatsManager(this)
+        playerDataManager = PlayerDataManager(this)
 
+        // 6. 🔥 EL ORDEN SAGRADO DE MANAGERS 🔥
+        // Primero el Corazón: Combat y Game (de ellos dependen casi todos)
+        combatManager = CombatManager(this)
+        gameManager = GameManager(this)
+
+        // Mundos y Mapas (Usan al GameManager para estados)
+        mapManager = MapManager(this)
+        arenaManager = ArenaManager(this)
+
+        // Entidades y Lógica (Registran clases en el GameManager)
         asesinoManager = AsesinoManager(this)
         supervivienteManager = SupervivienteManager(this)
+        discordManager = DiscordManager(this)
+        generatorManager = GeneratorManager(this)
 
+        // UI y Tiendas (Ya tienen las clases registradas arriba)
         asesinoTienda = AsesinoTienda()
         supervivienteTienda = SupervivienteTienda()
         shopSelector = ShopSelector()
 
+        // Bucle de ambiente y Scoreboard (Van al final porque lanzan tareas que buscan al GameManager)
         ambientManager = AmbientManager(this)
-        combatManager = CombatManager(this)
-
-        // 6. Registro de Servicios (API Pública)
-        server.servicesManager.register(HealthAPI::class.java, combatManager, this, ServicePriority.Normal)
-
-        // 7. Core Game Logic
-        gameManager = GameManager(this)
         scoreboardManager = ScoreboardManager(this)
+
+        // 7. Registro de Servicios (API Pública)
+        server.servicesManager.register(HealthAPI::class.java, combatManager, this, ServicePriority.Normal)
 
         // 8. Placeholders
         if (server.pluginManager.isPluginEnabled("PlaceholderAPI")) {
@@ -151,21 +173,21 @@ class Mistaken : JavaPlugin() {
             componentLogger.info(mm.deserialize("<green>✔ PAPI Hook registrado."))
         }
 
-        // 9. Eventos y Comandos (NUEVO SISTEMA)
+        // 9. Eventos y Comandos
         registerEvents()
+        CommandRegistry(this).registerAll() // Inyección Brigadier Pro
 
-        // ¡AQUÍ ESTÁ LA MAGIA! Inyección de comandos Brigadier
-        CommandRegistry(this).registerAll()
-
-        // 10. Tareas
+        // 10. Tareas finales
+        isReady = true
         iniciarMotorDeParticulas()
         sendLogo()
 
         val time = System.currentTimeMillis() - start
-        componentLogger.info(mm.deserialize("<gradient:green:aqua>Mistaken habilitado en ${time}ms.</gradient>"))
+        componentLogger.info(mm.deserialize("<green>Mistaken habilitado en ${time}ms.</green>"))
     }
 
     override fun onDisable() {
+        pluginScope.cancel() // 🔥 AGREGADO: Limpieza de todas las corrutinas activas
         // Null-safe checks usando Kotlin 'isInitialized'
         if (::databaseManager.isInitialized) databaseManager.close()
         if (::scoreboardManager.isInitialized) scoreboardManager.removeAll()
@@ -246,10 +268,10 @@ class Mistaken : JavaPlugin() {
                     // 1. Cálculo Asíncrono (Heavy math)
                     asesino.mostrarTrail(p)
 
-                    // 2. Renderizado Síncrono (Solo si es necesario tocar la API de Bukkit que no sea thread-safe)
-                    server.scheduler.runTask(this, Runnable {
+                    // 2. Renderizado Síncrono mediante el bukkitDispatcher (Fix: Main Dispatcher Error)
+                    pluginScope.launch(bukkitDispatcher) {
                         asesino.mostrarTrailFisico(p)
-                    })
+                    }
                 }
             }
         }, 0L, 2L)
@@ -323,8 +345,8 @@ class Mistaken : JavaPlugin() {
             $b3<bold>/_/  /_/_/___/\__/\_,_/_/\_\\__/_//_/   </bold>$b3
             <newline>
               <gray>Autor:</gray> $info Pumpkingz$info
-              <gray>Estado:</gray> <green>● Operativo (1.21.4)</green>
-              <gray>Motor:</gray> $info Brigadier & PacketEvents$info
+              <gray>Estado:</gray> <green>● Operativo</green>
+              <gray>Addons Detectados:</gray> $info MistakenGenerators, PumpkinEffects, CraftEngine $info
             <newline>
         """.trimIndent()))
     }

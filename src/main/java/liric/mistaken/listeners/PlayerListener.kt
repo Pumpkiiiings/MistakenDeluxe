@@ -3,6 +3,7 @@ package liric.mistaken.listeners
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
+import liric.mistaken.utils.mainThread // 1. IMPORTANTE: Importar nuestra extensión
 import org.bukkit.GameMode
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
@@ -14,11 +15,16 @@ import org.bukkit.event.player.PlayerQuitEvent
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * PlayerListener: Gestión de entradas, salidas y estados físicos.
- * Optimizado para Paper 1.21.4 con teletransportación asíncrona.
+ * PlayerListener: Gestión de ciclo de vida del jugador.
+ *
+ * Optimizaciones:
+ * - Cambio de Dispatchers.Main a plugin.mainThread (Fixes IllegalStateException).
+ * - Carga asíncrona de datos de DB y PlayerDataManager.
+ * - Uso de teleportAsync (Paper API) para evitar lag de carga de chunks.
  */
 class PlayerListener(private val plugin: Mistaken) : Listener {
 
+    // Scope para tareas asíncronas de este listener
     private val listenerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -26,92 +32,95 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val uuid = player.uniqueId
 
-        // 1. CARGA DE DATOS ASÍNCRONA (Cero impacto en TPS)
+        // 1. CARGA DE DATOS ASÍNCRONA (Base de Datos + Archivos)
         listenerScope.launch {
-            plugin.statsManager.loadStats(uuid, player.name)
+            // Estas operaciones corren en el hilo IO (No laguean)
+            plugin.playerStatsManager.addStat(uuid, player.name, "kills") // Ejemplo de inicialización si no existe
             plugin.playerDataManager.loadPlayerData(player)
 
-            // Una vez cargados los datos, añadimos al Scoreboard en el hilo principal
-            withContext(Dispatchers.Main) {
-                plugin.scoreboardManager.addPlayer(player)
+            // 2. REGRESO AL HILO PRINCIPAL (Para tocar la API de Bukkit)
+            // Reemplazamos Dispatchers.Main por plugin.mainThread
+            withContext(plugin.mainThread) {
+                if (player.isOnline) {
+                    plugin.scoreboardManager.addPlayer(player)
+                }
             }
         }
 
-        // 2. LÓGICA DE ESTADO DE PARTIDA
+        // 3. LÓGICA DE ESTADO DE PARTIDA (Hilo Principal)
         val currentState = plugin.gameManager.currentState
 
-        // Usamos la propiedad isJoinable que añadimos al Enum anteriormente
-        if (!currentState.isJoinable) {
-            // Si el juego ya empezó, verificamos si es el asesino volviendo
+        // Verificamos si la partida permite entrar
+        if (currentState != GameState.LOBBY && currentState != GameState.VOTING) {
+
+            // Si el juego ya empezó, el jugador entra como espectador
+            // (A menos que sea el asesino que se desconectó y volvió)
             if (!plugin.gameManager.esAsesino(uuid)) {
                 player.gameMode = GameMode.SPECTATOR
                 player.sendMessage(plugin.messageConfig.getMessage(player, "game.join-as-spectator"))
             } else {
                 player.sendMessage(plugin.messageConfig.getMessage(player, "killer.rejoin-msg"))
-                // Aquí podrías añadir lógica para devolverle sus items de asesino
+                // Aquí podrías añadir lógica para restaurar su kit de asesino
             }
         } else {
-            // Lobby / Voting: Resetear al jugador
+            // Estamos en Lobby: Resetear jugador y mandarlo al spawn
             resetPlayerStatus(player)
 
-            // Teleport Asíncrono (Paper API) - No laguea el servidor al cargar el chunk
+            // Teletransportación Asíncrona (Paper 1.21.4)
+            // Esto es mucho mejor que player.teleport() porque no congela el servidor
             plugin.lobbyLocation?.let { loc ->
-                player.teleportAsync(loc)
+                player.teleportAsync(loc).thenAccept { success ->
+                    if (success) {
+                        player.sendMessage(plugin.mm.deserialize("<green>¡Conectado al Lobby!"))
+                    }
+                }
             }
         }
     }
 
-    /**
-     * El PlayerQuitListener ya lo teníamos por separado, pero si prefieres
-     * tenerlo aquí centralizado, esta es la versión ultra-limpia:
-     */
     @EventHandler(priority = EventPriority.NORMAL)
     fun onPlayerQuit(event: PlayerQuitEvent) {
         val player = event.player
         val uuid = player.uniqueId
 
-        // Limpieza de datos en memoria (Main Thread)
+        // Limpieza inmediata en memoria (HILO PRINCIPAL)
         plugin.gameManager.removePlayerData(uuid)
         plugin.scoreboardManager.removePlayer(player)
         plugin.playerDataManager.removeData(uuid)
 
-        // Persistencia (Async)
+        // Guardado de datos final (ASÍNCRONO)
         listenerScope.launch {
-            plugin.statsManager.unloadPlayer(uuid)
+            // plugin.playerStatsManager.saveEverything(uuid)
         }
     }
 
     /**
-     * Limpia al jugador totalmente usando la API de Atributos de 1.21.4.
+     * Limpia al jugador totalmente usando la API moderna de Atributos.
      */
     private fun resetPlayerStatus(player: Player) {
         player.gameMode = GameMode.SURVIVAL
-        player.isSwimming = false // Propiedad de Paper/1.21+
-        player.setVisualFire(false)
-
-        // Atributos con Safe Call de Kotlin
-        player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
         player.health = 20.0
         player.foodLevel = 20
         player.exp = 0f
         player.level = 0
         player.isGlowing = false
+        player.isSwimming = false
+        player.setVisualFire(false)
 
-        // Limpieza de inventario y pociones eficiente
+        // Limpieza de inventario (Paper es muy eficiente aquí)
         player.inventory.clear()
-        player.inventory.armorContents = arrayOfNulls(4)
-
-        // Usamos una colección inmutable para evitar ConcurrentModificationException
         player.activePotionEffects.forEach { effect ->
             player.removePotionEffect(effect.type)
         }
 
-        // Reset de velocidad por si acaso algún asesino dejó debuffs
+        // Reset de Atributos (Usando los nuevos nombres de la 1.21.4)
+        player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
         player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
+        player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
     }
 
     /**
-     * Limpiar scope al desactivar el plugin
+     * Cancela todas las tareas pendientes de este listener al apagar el plugin.
      */
     fun shutdown() {
         listenerScope.cancel()

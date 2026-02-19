@@ -1,6 +1,21 @@
 name: Mistaken
-version: '${version}'
-main: liric.mistaken.Mistaken
+version: 1.0.0-OPTIMIZED
+main: liric.mistaken.Mistaken # <-- ¡Ojo! Asegúrate que coincida con tu package
 api-version: '1.21'
 author: Pumpkingz
-bootstrapper: liric.mistaken.ModernBootstrap # Opcional si necesitas cargar librerías antes
+
+# Esto es lo que arregla el error de Vault y LuckPerms, pariente
+dependencies:
+  server:
+    Vault:
+      load: BEFORE
+      required: true
+    LuckPerms:
+      load: BEFORE
+      required: true
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+    CraftEngine:
+      load: BEFORE
+      required: false

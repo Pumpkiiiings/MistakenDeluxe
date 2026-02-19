@@ -8,6 +8,7 @@ import com.infernalsuite.asp.loaders.file.FileLoader
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import liric.mistaken.Mistaken
+import liric.mistaken.utils.mainThread // 1. IMPORTANTE: Usamos nuestro dispatcher
 import org.bukkit.Bukkit
 import org.bukkit.GameRule
 import org.bukkit.World
@@ -17,14 +18,18 @@ import java.util.concurrent.CompletableFuture
 /**
  * [LIRIC-MISTAKEN 2.0]
  * MapManager: Gestión de mundos dinámicos con AdvancedSlimePaper (ASP).
- * Optimizado para carga asíncrona y configuración de ambiente tétrico.
+ *
+ * Optimización:
+ * - Reemplazado Dispatchers.Main por plugin.mainThread (Fix crash).
+ * - Carga de archivos en Dispatchers.IO.
+ * - Registro de mundo en el Hilo Principal de Bukkit.
  */
 class MapManager(private val plugin: Mistaken) {
 
     private val asp = AdvancedSlimePaperAPI.instance()
     private val fileLoader: SlimeLoader
 
-    // Scope dedicado para no interferir con el ciclo de vida del plugin
+    // Scope dedicado para operaciones de mapas (IO)
     private val mapScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
@@ -35,17 +40,16 @@ class MapManager(private val plugin: Mistaken) {
 
     /**
      * Carga un mundo de arena desde una plantilla .slime.
-     * Retorna un CompletableFuture para mantener compatibilidad con el GameManager.
      */
     fun loadArenaWorld(templateName: String): CompletableFuture<World?> {
-        // Usamos async para manejar la tarea asíncronamente y convertirlo a CompletableFuture
+        // Ejecutamos todo dentro de un bloque async en el hilo de IO
         return mapScope.async {
             val instanceName = "${templateName}_${System.currentTimeMillis()}"
 
             try {
-                // 1. Verificación y lectura del disco (Hilo IO)
+                // --- FASE 1: DISCO (Hilo IO) ---
                 if (!fileLoader.worldExists(templateName)) {
-                    plugin.logger.severe("No existe el archivo .slime para: $templateName")
+                    plugin.componentLogger.error(plugin.mm.deserialize("<red>[MapManager] El archivo .slime '$templateName' no existe.</red>"))
                     return@async null
                 }
 
@@ -55,41 +59,43 @@ class MapManager(private val plugin: Mistaken) {
                     setValue(SlimeProperties.PVP, true)
                 }
 
-                // Leer mundo desde el cargador
+                // Leer mundo desde el archivo (Esto es pesado, se queda en IO)
                 val template = asp.readWorld(fileLoader, templateName, true, props)
                 val worldInstance = template.clone(instanceName)
 
-                // 2. Registro en Bukkit (Debe ser en el Hilo Principal)
-                return@async withContext(Dispatchers.Main) {
+                // --- FASE 2: REGISTRO (Hilo Principal de Bukkit) ---
+                // AQUÍ USAMOS plugin.mainThread PARA EVITAR EL CRASH
+                return@async withContext(plugin.mainThread) {
                     try {
+                        // Cargar la instancia en el servidor de Bukkit
                         val instance = asp.loadWorld(worldInstance, false)
                         val bukkitWorld = instance.bukkitWorld ?: return@withContext null
 
-                        // --- 🌙 CONFIGURACIÓN DE NOCHE ETERNA & OPTIMIZACIÓN ---
+                        // --- CONFIGURACIÓN DE AMBIENTE (1.21.4) ---
                         bukkitWorld.apply {
-                            isAutoSave = false // No queremos basura en el disco
-                            time = 18000L      // Medianoche cerrada
+                            isAutoSave = false
+                            time = 18000L // Noche
 
-                            // Reglas de juego para evitar cambios de ambiente
                             setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false)
                             setGameRule(GameRule.DO_WEATHER_CYCLE, false)
                             setGameRule(GameRule.DO_MOB_SPAWNING, false)
                             setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false)
+                            setGameRule(GameRule.DO_FIRE_TICK, false)
 
                             setStorm(false)
                             isThundering = false
                         }
 
-                        plugin.logger.info("Mundo instanciado correctamente: ${bukkitWorld.name}")
+                        plugin.componentLogger.info(plugin.mm.deserialize("<green>[MapManager] Mundo instanciado: ${bukkitWorld.name}</green>"))
                         bukkitWorld
                     } catch (e: Exception) {
-                        plugin.logger.severe("Error al cargar la instancia de Bukkit para $templateName: ${e.message}")
+                        plugin.componentLogger.error(plugin.mm.deserialize("<red>[MapManager] Error al registrar mundo en Bukkit: ${e.message}</red>"))
                         null
                     }
                 }
 
             } catch (e: Exception) {
-                plugin.logger.severe("Fallo crítico en MapManager para $templateName: ${e.message}")
+                plugin.componentLogger.error(plugin.mm.deserialize("<red>[MapManager] Fallo crítico cargando $templateName: ${e.message}</red>"))
                 e.printStackTrace()
                 null
             }
@@ -97,17 +103,22 @@ class MapManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Descarga un mundo sin guardar cambios, ideal para arenas temporales.
+     * Descarga un mundo sin guardar cambios de forma segura.
      */
     fun unloadWorld(world: World?) {
         if (world == null) return
 
-        // ASP recomienda descargar los mundos de Bukkit normalmente si no se requiere persistencia
-        Bukkit.unloadWorld(world, false)
+        // La descarga debe ocurrir en el hilo principal
+        mapScope.launch {
+            withContext(plugin.mainThread) {
+                Bukkit.unloadWorld(world, false)
+                plugin.componentLogger.info(plugin.mm.deserialize("<gray>Mundo ${world.name} descargado.</gray>"))
+            }
+        }
     }
 
     /**
-     * Cancela todas las tareas de carga pendientes si el plugin se apaga.
+     * Cancela todas las cargas pendientes al apagar el plugin.
      */
     fun shutdown() {
         mapScope.cancel()
