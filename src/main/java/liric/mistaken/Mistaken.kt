@@ -11,6 +11,7 @@ import liric.mistaken.commands.CommandRegistry
 import liric.mistaken.config.ConfigManager
 import liric.mistaken.config.MessageConfig
 import liric.mistaken.data.PlayerDataManager
+import liric.mistaken.asesinos.Asesino
 import liric.mistaken.database.DatabaseManager
 import liric.mistaken.database.PlayerStatsManager
 import liric.mistaken.discord.DiscordManager
@@ -40,15 +41,17 @@ import kotlin.coroutines.CoroutineContext // AGREGADO
 
 class Mistaken : JavaPlugin() {
 
-    // --- Singleton & Global Services ---
     companion object {
+
+        @JvmStatic
         lateinit var instance: Mistaken
             private set
 
+        @JvmStatic
         var economy: Economy? = null
             private set
 
-        // Método estático de utilidad para API
+        @JvmStatic
         fun getHealthAPI(): HealthAPI? = instance.combatManager
     }
 
@@ -254,29 +257,47 @@ class Mistaken : JavaPlugin() {
     }
 
     private fun iniciarMotorDeParticulas() {
-        // Optimizamos el Scheduler usando el método nativo de Bukkit/Paper
+        // Usamos el scheduler asíncrono de Paper para el filtrado y cálculos matemáticos
         server.scheduler.runTaskTimerAsynchronously(this, Runnable {
             if (gameManager.currentState != GameState.INGAME) return@Runnable
 
-            // Iteramos sobre el mapa de asesinos
+            // Lista para agrupar a quiénes debemos aplicarles efectos físicos en el hilo principal
+            val targetsForPhysicalTrail = mutableListOf<Pair<Player, Asesino>>()
+
+            // 1. FILTRADO ASÍNCRONO (Aquí no lagueamos a nadie)
             asesinoManager.asesinosActivos.forEach { (uuid, asesino) ->
-                val p = Bukkit.getPlayer(uuid)
+                val p = Bukkit.getPlayer(uuid) ?: return@forEach
 
-                // Verificaciones rápidas antes de procesar
-                if (p != null && p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
+                // Verificaciones rápidas (Matemática simple)
+                if (p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
 
-                    // 1. Cálculo Asíncrono (Heavy math)
+                    // A. Mostrar Trail de Paquetes (PacketEvents es ASYNC-SAFE)
+                    // Esto se queda en este hilo asíncrono. ¡Súper rápido!
                     asesino.mostrarTrail(p)
 
-                    // 2. Renderizado Síncrono mediante el bukkitDispatcher (Fix: Main Dispatcher Error)
-                    pluginScope.launch(bukkitDispatcher) {
-                        asesino.mostrarTrailFisico(p)
-                    }
+                    // B. Agregamos a la lista para el proceso síncrono
+                    targetsForPhysicalTrail.add(p to asesino)
                 }
+            }
+
+            // 2. PROCESO SÍNCRONO AGRUPADO (Batching)
+            if (targetsForPhysicalTrail.isNotEmpty()) {
+                // Saltamos al hilo principal una sola vez para todos los asesinos
+                // Usamos el scheduler de Bukkit directo que es más liviano que 'launch' para tareas de alta frecuencia
+                server.scheduler.runTask(this, Runnable {
+                    for (pair in targetsForPhysicalTrail) {
+                        val player = pair.first
+                        val asesino = pair.second
+
+                        // Doble check de seguridad
+                        if (player.isOnline) {
+                            asesino.mostrarTrailFisico(player)
+                        }
+                    }
+                })
             }
         }, 0L, 2L)
     }
-
     // --- UTILS & LOCATION ---
 
     private fun loadLobbyLocation() {
@@ -334,19 +355,26 @@ class Mistaken : JavaPlugin() {
         val b1 = "<#005f73>"
         val b2 = "<#004488>"
         val b3 = "<#003366>"
+        val b4 = "<#005f73>"
+        val b5 = "<#004488>"
         val info = "<#00d4ff>"
 
         // Paper Logger soporta componentes directos, mucho más limpio
         componentLogger.info(mm.deserialize("""
             <newline>
-            $b1<bold>   __  __ _     _        _              </bold>$b1
-            $b1<bold>  /  |/  (_)__ / /____ _/ /_____ ___    </bold>$b1
-            $b2<bold> / /|_/ / (_-</ __/ _ `/  '_/ -_) _ \   </bold>$b2
-            $b3<bold>/_/  /_/_/___/\__/\_,_/_/\_\\__/_//_/   </bold>$b3
+             $b1<bold> ███▄ ▄███▓ ██▓  ██████ ▄▄▄█████▓ ▄▄▄       ██ ▄█▀▓█████  ███▄    █ </bold>$b1
+             $b1<bold>▓██▒▀█▀ ██▒▓██▒▒██    ▒ ▓  ██▒ ▓▒▒████▄     ██▄█▒ ▓█   ▀  ██ ▀█   █ </bold>$b1
+             $b2<bold>▓██    ▓██░▒██▒░ ▓██▄   ▒ ▓██░ ▒░▒██  ▀█▄  ▓███▄░ ▒███   ▓██  ▀█ ██▒</bold>$b2
+             $b3<bold>▒██    ▒██ ░██░  ▒   ██▒░ ▓██▓ ░ ░██▄▄▄▄██ ▓██ █▄ ▒▓█  ▄ ▓██▒  ▐▌██▒</bold>$b3
+             $b4<bold>▒██▒   ░██▒░██░▒██████▒▒  ▒██▒ ░  ▓█   ▓██▒▒██▒ █▄░▒████▒▒██░   ▓██░</bold>$b4
+             $b5<bold>░ ▒░   ░  ░░▓  ▒ ▒▓▒ ▒ ░  ▒ ░░    ▒▒   ▓▒█░▒ ▒▒ ▓▒░░ ▒░ ░░ ▒░   ▒ ▒ </bold>$b5
+             $b4<bold>░  ░      ░ ▒ ░░ ░▒  ░ ░    ░      ▒   ▒▒ ░░ ░▒ ▒░ ░ ░  ░░ ░░   ░ ▒░</bold>$b4
+             $b5<bold>░      ░    ▒ ░░  ░  ░    ░        ░   ▒   ░ ░░ ░    ░      ░   ░ ░  </bold>$b5
+             $b5<bold>       ░    ░        ░                 ░  ░░  ░      ░  ░         ░ </bold>$b5
             <newline>
-              <gray>Autor:</gray> $info Pumpkingz$info
-              <gray>Estado:</gray> <green>● Operativo</green>
-              <gray>Addons Detectados:</gray> $info MistakenGenerators, PumpkinEffects, CraftEngine $info
+               <gray>Autor:</gray> $info Pumpkingz$info
+               <gray>Estado:</gray> <green>● Operativo</green>
+               <gray>Addons Detectados:</gray> $info MistakenGenerators, PumpkinEffects, CraftEngine $info
             <newline>
         """.trimIndent()))
     }

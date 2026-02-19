@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.game.Arena
+import liric.mistaken.utils.mainThread
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import liric.mistaken.supervivientes.clases.Civil
@@ -81,54 +82,55 @@ class GameManager(private val plugin: Mistaken) {
     private fun runGameLoop() {
         scope.launch {
             var tickCounter = 0
+
+            val minPlayers = plugin.config.getInt("settings.min-players", 2)
+
             while (isActive) {
-                tickCounter++
+                val isSecondTick = tickCounter % 20 == 0
+                if (isSecondTick || currentState == GameState.INGAME) {
 
-                // Necesitamos acceder a la API de Bukkit en el hilo principal
-                // pero hacemos los cálculos pesados fuera si es posible.
-                withContext(plugin.bukkitDispatcher) {
-                    val onlinePlayers = Bukkit.getOnlinePlayers()
-                    val validCount = onlinePlayers.count { !plugin.isIgnored(it) }
+                    withContext(plugin.mainThread) {
+                        val onlinePlayers = Bukkit.getOnlinePlayers()
 
-                    // Lógica de Segundo (Cada 20 ticks)
-                    if (tickCounter % 20 == 0) {
-                        onlinePlayers.forEach { updatePersonalBar(it, onlinePlayers.size) }
+                        if (isSecondTick) {
+                            if (timer > 0) timer--
 
-                        if (timer > 0) timer--
+                            val validCount = onlinePlayers.count { !plugin.isIgnored(it) }
 
-                        when (currentState) {
-                            GameState.LOBBY -> {
-                                if (validCount >= plugin.config.getInt("settings.min-players", 2)) {
-                                    startVotingProcess()
-                                }
+                            for (p in onlinePlayers) {
+                                updatePersonalBar(p, onlinePlayers.size)
                             }
-                            GameState.VOTING -> {
-                                val min = plugin.config.getInt("settings.min-players", 2)
-                                if (validCount < min) {
-                                    resetToLobby("voting.not-enough-players")
-                                } else if (timer <= 0) {
-                                    startInGame()
+
+                            when (currentState) {
+                                GameState.LOBBY -> {
+                                    if (validCount >= minPlayers) startVotingProcess()
                                 }
-                            }
-                            GameState.STARTING -> handleStartingSequence()
-                            GameState.ENDING -> {
-                                if (timer <= 0) {
-                                    teleportAllToLobby()
-                                    resetToLobby(null)
+                                GameState.VOTING -> {
+                                    if (validCount < minPlayers) {
+                                        resetToLobby("voting.not-enough-players")
+                                    } else if (timer <= 0) {
+                                        startInGame()
+                                    }
                                 }
+                                GameState.STARTING -> handleStartingSequence()
+                                GameState.ENDING -> {
+                                    if (timer <= 0) {
+                                        teleportAllToLobby()
+                                        resetToLobby(null)
+                                    }
+                                }
+                                else -> {}
                             }
-                            else -> {}
                         }
-                    }
 
-                    // Lógica In-Game (Cada tick o intervalos menores)
-                    if (currentState == GameState.INGAME) {
-                        handleInGameTick(onlinePlayers, tickCounter)
+                        if (currentState == GameState.INGAME) {
+                            handleInGameTick(onlinePlayers, tickCounter)
+                        }
                     }
                 }
 
-                // Pausa de 1 tick (50ms)
-                delay(50L)
+                tickCounter++
+                delay(50L) // Pausa de 1 tick
             }
         }
     }
