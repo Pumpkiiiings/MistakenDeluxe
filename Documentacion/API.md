@@ -1,4 +1,4 @@
-![api](https://i.ibb.co/Xk3SXpdz/apimistaken.png)
+![api](https://i.ibb.co/TM8QzsCk/api2.png)
 
 Esta documentación define los estándares de integración para el ecosistema **Mistaken**. La API ha sido diseñada bajo principios de desacoplamiento y alta cohesión, permitiendo a los desarrolladores extender la funcionalidad del core sin comprometer la integridad del ciclo de vida del juego.
 
