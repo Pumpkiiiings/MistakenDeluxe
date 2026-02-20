@@ -3,7 +3,6 @@ package liric.mistaken.supervivientes
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.supervivientes.clases.*
-import liric.mistaken.utils.mainThread // 1. IMPORTANTE: Usamos nuestra extensión para evitar el crash
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.*
@@ -13,20 +12,25 @@ import java.util.concurrent.ConcurrentHashMap
  * [LIRIC-MISTAKEN 2.0]
  * SupervivienteManager: Gestión de clases humanas ultra-optimizada.
  *
- * Optimizaciones:
- * - Solucionado el error de Dispatchers.Main usando plugin.mainThread.
- * - Registro de clases asíncrono para evitar micro-tirones.
- * - Limpieza total de atributos y estados al remover jugadores.
+ * OPTIMIZACIÓN SPARK:
+ * - Se corrigió el error de Runnable en Bukkit Scheduler.
+ * - Uso de colecciones concurrentes para evitar bloqueos.
+ * - Limpieza de efectos de poción segura para la versión 1.21.4.
  */
 class SupervivienteManager(private val plugin: Mistaken) {
 
-    // Cache de supervivientes activos (Thread-Safe para acceso desde AmbientManager)
+    private val mm = plugin.mm
+
+    // Cache de supervivientes activos (Thread-Safe)
     private val activeSurvivors = ConcurrentHashMap<UUID, Superviviente>()
 
     // Catálogo de clases registradas
     private val availableClasses = ConcurrentHashMap<String, Superviviente>()
 
-    // Scope para tareas de equipamiento (Hilo de fondo por defecto)
+    // Propiedad de solo lectura para acceso rápido
+    val catalogo: Map<String, Superviviente> get() = availableClasses
+
+    // Scope para tareas puramente asíncronas
     private val managerScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     init {
@@ -36,51 +40,36 @@ class SupervivienteManager(private val plugin: Mistaken) {
         ).forEach { registrarClase(it) }
     }
 
-    /**
-     * Registra una clase en el catálogo global.
-     */
     fun registrarClase(superviviente: Superviviente) {
         availableClasses[superviviente.id.lowercase()] = superviviente
     }
 
-    /**
-     * Busca una clase por su ID (Case-insensitive).
-     */
     fun getClasePorId(id: String?): Superviviente? {
         return id?.lowercase()?.let { availableClasses[it] }
     }
 
     /**
-     * Asigna una clase a un jugador.
-     * El delay de seguridad ocurre en segundo plano y el equipamiento en el hilo de Bukkit.
+     * 🔥 REGISTRO OPTIMIZADO:
+     * Usamos Bukkit Scheduler para el delay de equipamiento.
+     * Esto evita que Spark marque 'resumeWith' como un punto caliente de CPU.
      */
     fun registrarSuperviviente(player: Player, clase: Superviviente) {
         val uuid = player.uniqueId
         activeSurvivors[uuid] = clase
 
-        managerScope.launch {
-            // --- HILO ASÍNCRONO ---
-            // Esperamos 250ms (aprox 5 ticks) para asegurar que el jugador cargó el chunk tras el teleport
-            delay(250)
+        // 5 ticks (250ms) es el estándar de oro para asegurar que el teleport finalizó.
+        Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+            if (player.isOnline && activeSurvivors.containsKey(uuid)) {
+                clase.equipar(player)
+                player.updateInventory()
 
-            // --- VOLVER AL HILO PRINCIPAL (Bukkit) ---
-            // Reemplazamos Dispatchers.Main por plugin.mainThread para evitar IllegalStateException
-            withContext(plugin.mainThread) {
-                if (player.isOnline && activeSurvivors.containsKey(uuid)) {
-                    clase.equipar(player)
-                    player.updateInventory()
-
-                    plugin.componentLogger.info(plugin.mm.deserialize(
-                        "<gray>[Superviviente]</gray> <white>${player.name}</white> <green>equipado como ${clase.id}</green>"
-                    ))
-                }
+                plugin.componentLogger.info(mm.deserialize(
+                    "<gray>[Superviviente]</gray> <white>${player.name}</white> <green>equipado como ${clase.id}</green>"
+                ))
             }
-        }
+        }, 5L)
     }
 
-    /**
-     * Remueve a un jugador y limpia su estado físico/mental.
-     */
     fun removerSuperviviente(player: Player) {
         removerSuperviviente(player.uniqueId)
     }
@@ -88,16 +77,35 @@ class SupervivienteManager(private val plugin: Mistaken) {
     fun removerSuperviviente(uuid: UUID) {
         val clase = activeSurvivors.remove(uuid) ?: return
 
-        // Ejecutamos el cleanup en el hilo principal para evitar errores de API de Bukkit
-        managerScope.launch(plugin.mainThread) {
+        // --- SOLUCIÓN AL ERROR DE RUNNABLE ---
+        // Al usar 'Runnable { ... }' Kotlin crea una instancia de la interfaz de Java,
+        // permitiendo que Bukkit.getScheduler lo acepte sin errores.
+        val cleanupTask = Runnable {
             val player = Bukkit.getPlayer(uuid)
+
+            // 1. Limpieza de lógica de la clase
             clase.cleanup(player)
 
-            // Si el jugador está online, reseteamos atributos básicos
+            // 2. Limpieza física del jugador
             player?.let { p ->
                 p.inventory.clear()
-                p.activePotionEffects.forEach { p.removePotionEffect(it.type) }
+                p.inventory.armorContents = arrayOfNulls(4)
+
+                // En 1.21.4 es vital usar toList() para evitar ConcurrentModificationException
+                p.activePotionEffects.toList().forEach { effect ->
+                    p.removePotionEffect(effect.type)
+                }
+
+                // Reset de nado (Nuevo en Paper 1.21+)
+                p.isSwimming = false
             }
+        }
+
+        // Ejecución inteligente: Si ya estamos en el hilo principal, ejecutamos de inmediato.
+        if (Bukkit.isPrimaryThread()) {
+            cleanupTask.run()
+        } else {
+            Bukkit.getScheduler().runTask(plugin, cleanupTask)
         }
     }
 
@@ -108,42 +116,28 @@ class SupervivienteManager(private val plugin: Mistaken) {
         return player?.let { activeSurvivors.containsKey(it.uniqueId) } ?: false
     }
 
-    /**
-     * Obtiene la instancia de la clase actual del jugador.
-     */
     fun getClase(player: Player?): Superviviente? {
         return player?.let { activeSurvivors[it.uniqueId] }
     }
 
-    /**
-     * Catálogo completo de clases.
-     */
-    fun getClasesDisponibles(): Map<String, Superviviente> = availableClasses
+    fun getClasesDisponibles(): Map<String, Superviviente> = catalogo
 
     /**
-     * Limpia a todos los supervivientes.
+     * Limpieza total al terminar la partida.
      */
     fun limpiarTodo() {
         if (activeSurvivors.isEmpty()) return
 
-        // Copiamos las IDs para evitar errores de modificación durante la iteración
+        // Copiamos llaves para evitar errores de modificación concurrente
         val keys = activeSurvivors.keys().toList()
-
         keys.forEach { uuid ->
             removerSuperviviente(uuid)
         }
 
         activeSurvivors.clear()
-
-        // Cancelar equipamientos que aún no se habían completado (delays)
-        managerScope.coroutineContext.cancelChildren()
-
-        plugin.componentLogger.info(plugin.mm.deserialize("<aqua>[Mistaken]</aqua> <gray>Limpieza de supervivientes completada.</gray>"))
+        plugin.componentLogger.info(mm.deserialize("<aqua>[Mistaken]</aqua> <gray>Limpieza de supervivientes completada.</gray>"))
     }
 
-    /**
-     * Cierre definitivo del Manager al apagar el plugin.
-     */
     fun shutdown() {
         limpiarTodo()
         managerScope.cancel()

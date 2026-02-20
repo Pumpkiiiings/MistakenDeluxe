@@ -11,14 +11,16 @@ import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
+import liric.mistaken.utils.mainThread
 import org.bukkit.*
-import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Entity
+import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import org.bukkit.util.EulerAngle
-import org.bukkit.util.Vector
+import org.bukkit.util.Transformation
+import org.joml.Quaternionf
+import org.joml.Vector3f as JomlVector3f
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.cos
 import kotlin.math.sin
@@ -26,11 +28,15 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Slasher: El Carnicero Implacable.
- * Optimización: Habilidades temporales con Coroutines y rastro de sangre con PacketEvents.
+ *
+ * MEJORAS 1.21.4:
+ * - Uso de ItemDisplay con métodos directos (setItemStack/setTransformation) para evitar errores.
+ * - Sincronización con plugin.mainThread para estabilidad total.
+ * - Trail de sangre asíncrono con PacketEvents.
  */
 class Slasher : Asesino(
     "slasher",
-    Mistaken.instance.configManager.getAsesinos().getString("asesinos.slasher.nombre", "<red><b>SLASHER</b>")!!
+    Mistaken.instance.configManager.getAsesinos().getString("asesinos.slasher.nombre", "<red><b>SLASHER</b>") ?: "Slasher"
 ) {
 
     private val pathBase = "asesinos.slasher"
@@ -49,14 +55,11 @@ class Slasher : Asesino(
         }
     }
 
-    // --- 🚀 TRAIL DE SANGRE ASÍNCRONO (PacketEvents) ---
-
     override fun mostrarTrail(player: Player) {
         val l = player.location
         val mgr = PacketEvents.getAPI().playerManager
-        val distSq = 625.0 // 25 bloques de culling
+        val distSq = 625.0
 
-        // Partícula de polvo rojo (Sangre)
         val dustData = ParticleDustData(1.0f, 0.0f, 0.0f, 0.8f)
         val bloodPacket = WrapperPlayServerParticle(
             Particle(ParticleTypes.DUST, dustData),
@@ -64,26 +67,23 @@ class Slasher : Asesino(
             Vector3f(0.1f, 0.1f, 0.1f), 0.02f, 1
         )
 
-        Bukkit.getOnlinePlayers().forEach { p ->
-            if (p != player && p.world == l.world && p.location.distanceSquared(l) < distSq) {
+        l.world.players.forEach { p ->
+            if (p != player && p.location.distanceSquared(l) < distSq) {
                 mgr.sendPacket(p, bloodPacket)
             }
         }
     }
 
-    // --- HABILIDADES ---
-
     private fun habilidadSedDeSangre(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 160, 2))
         player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 160, 1))
 
-        // Dibujar estrella estética (Async math)
         dibujarEstrella(player, Color.RED, 1.5, 5)
 
-        // Debuff post-frenesí con Coroutine
         scope.launch {
-            delay(8000) // 160 ticks = 8 segundos
-            withContext(Dispatchers.Main) {
+            delay(8000)
+            // CORRECCIÓN: Usar el puente del hilo principal
+            withContext(plugin.mainThread) {
                 if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
                     player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 1))
                     player.sendMessage(mm.deserialize("<red><i>Te sientes agotado por el frenesí...</i></red>"))
@@ -94,56 +94,63 @@ class Slasher : Asesino(
 
     private fun habilidadMacheteLanzable(player: Player) {
         val config = plugin.configManager.getAsesinos()
-        val itemMachete = CraftEngineUtils.getCustomItemSafe(config.getString("$pathBase.items.arma"))
+        val itemMachete = CraftEngineUtils.getCustomItem(config.getString("$pathBase.items.arma")) ?: return
 
         val spawnLoc = player.eyeLocation.clone()
-        val armorStand = player.world.spawn(spawnLoc, ArmorStand::class.java) { stand ->
-            stand.isVisible = false
-            stand.isMarker = true
-            stand.isSmall = true
-            stand.setGravity(false)
-            stand.equipment.setItemInMainHand(itemMachete)
-            stand.rightArmPose = EulerAngle(Math.toRadians(90.0), 0.0, 0.0)
+
+        // --- FIX: Uso de métodos directos setItemStack y setTransformation ---
+        val macheteDisplay = player.world.spawn(spawnLoc, ItemDisplay::class.java) { display ->
+            display.setItemStack(itemMachete)
+            display.setTransformation(Transformation(
+                JomlVector3f(0f, 0f, 0f),
+                Quaternionf().rotateX(Math.toRadians(90.0).toFloat()),
+                JomlVector3f(0.6f, 0.6f, 0.6f),
+                Quaternionf()
+            ))
+            display.interpolationDuration = 1
+            display.teleportDuration = 1
         }
 
-        temporaryEntities.add(armorStand)
+        temporaryEntities.add(macheteDisplay)
         val direction = player.location.direction.multiply(1.5)
 
         val job = scope.launch {
             var ticks = 0
-            while (isActive && ticks < 25 && !armorStand.isDead) {
-                withContext(Dispatchers.Main) {
-                    armorStand.teleport(armorStand.location.add(direction))
-                    armorStand.rightArmPose = armorStand.rightArmPose.add(0.6, 0.0, 0.0)
+            withContext(plugin.mainThread) {
+                while (isActive && ticks < 25 && macheteDisplay.isValid) {
+                    macheteDisplay.teleport(macheteDisplay.location.add(direction))
 
-                    // Trail visual
-                    armorStand.world.spawnParticle(
-                        org.bukkit.Particle.DUST, armorStand.location.add(0.0, 0.5, 0.0), 1,
+                    // Rotación visual corregida
+                    val currentT = macheteDisplay.transformation
+                    currentT.leftRotation.rotateZ(0.5f)
+                    macheteDisplay.setTransformation(currentT)
+
+                    macheteDisplay.world.spawnParticle(
+                        org.bukkit.Particle.DUST, macheteDisplay.location, 1,
                         org.bukkit.Particle.DustOptions(Color.YELLOW, 0.8f)
                     )
 
-                    // Detección de impacto
-                    val hit = armorStand.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull {
+                    val hit = macheteDisplay.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull {
                         !plugin.asesinoManager.esElAsesino(it)
                     }
 
                     hit?.let { victim ->
-                        plugin.gameManager.combatManager.takeDamage(victim)
+                        plugin.combatManager.takeDamage(victim)
                         victim.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 40, 0))
-                        victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 1))
 
                         victim.world.spawnParticle(
                             org.bukkit.Particle.BLOCK, victim.location.add(0.0, 1.0, 0.0), 8, 0.1, 0.1, 0.1,
                             Material.REDSTONE_BLOCK.createBlockData()
                         )
-                        removeEntity(armorStand)
+                        macheteDisplay.remove()
                         cancel()
                     }
+
+                    delay(50)
+                    ticks++
                 }
-                delay(50) // 1 Tick
-                ticks++
+                if (macheteDisplay.isValid) macheteDisplay.remove()
             }
-            if (isActive) withContext(Dispatchers.Main) { removeEntity(armorStand) }
         }
         trackJob(job)
     }
@@ -151,15 +158,14 @@ class Slasher : Asesino(
     private fun habilidadPresencia(player: Player) {
         player.playSound(player.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1.5f, 0.8f)
 
-        // Círculo de partículas optimizado
         val loc = player.location
         val dust = org.bukkit.Particle.DustOptions(Color.RED, 1.2f)
-        var i = 0.0
-        while (i < Math.PI * 2) {
-            val x = cos(i) * 3.5
-            val z = sin(i) * 3.5
+
+        for (i in 0..15) {
+            val angle = i * Math.PI * 2 / 16
+            val x = cos(angle) * 3.5
+            val z = sin(angle) * 3.5
             player.world.spawnParticle(org.bukkit.Particle.DUST, loc.clone().add(x, 1.0, z), 1, dust)
-            i += Math.PI / 8
         }
 
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
@@ -178,8 +184,8 @@ class Slasher : Asesino(
         dibujarEstrella(player, Color.MAROON, 3.0, 5)
 
         scope.launch {
-            delay(15000) // 300 ticks = 15 segundos
-            withContext(Dispatchers.Main) {
+            delay(15000)
+            withContext(plugin.mainThread) {
                 if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
                     player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
                 }
@@ -191,7 +197,6 @@ class Slasher : Asesino(
         val loc = player.location.add(0.0, 0.1, 0.0)
         val dust = org.bukkit.Particle.DustOptions(color, 1.0f)
 
-        // Lógica de dibujo instantánea
         for (i in 0 until puntas) {
             val angle = i * Math.PI * 2 / puntas
             val nextAngle = (i + 2) * Math.PI * 2 / puntas
@@ -211,14 +216,9 @@ class Slasher : Asesino(
         }
     }
 
-    private fun removeEntity(entity: Entity) {
-        entity.remove()
-        temporaryEntities.remove(entity)
-    }
-
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        temporaryEntities.forEach { it.remove() }
+        temporaryEntities.forEach { if (it.isValid) it.remove() }
         temporaryEntities.clear()
         scope.coroutineContext.cancelChildren()
     }
@@ -228,11 +228,12 @@ class Slasher : Asesino(
         inv.clear()
         val config = plugin.configManager.getAsesinos()
 
-        // Armadura (Safe parsing)
-        inv.helmet = CraftEngineUtils.getCustomItem(config.getString("$pathBase.armadura.casco"))
-        inv.chestplate = CraftEngineUtils.getCustomItem(config.getString("$pathBase.armadura.pechera"))
-        inv.leggings = CraftEngineUtils.getCustomItem(config.getString("$pathBase.armadura.pantalones"))
-        inv.boots = CraftEngineUtils.getCustomItem(config.getString("$pathBase.armadura.botas"))
+        inv.apply {
+            helmet = CraftEngineUtils.getCustomItem(config.getString("$pathBase.armadura.casco"))
+            chestplate = CraftEngineUtils.getCustomItem(config.getString("$pathBase.armadura.pechera"))
+            leggings = CraftEngineUtils.getCustomItem(config.getString("$pathBase.armadura.pantalones"))
+            boots = CraftEngineUtils.getCustomItem(config.getString("$pathBase.armadura.botas"))
+        }
 
         for (i in 0..4) {
             val key = if (i == 0) "arma" else "habilidad$i"
@@ -246,6 +247,8 @@ class Slasher : Asesino(
                 }
             }
         }
+
+        // --- FIX: heldItemSlot directamente en el inventario ---
         player.inventory.heldItemSlot = 8
         player.updateInventory()
     }

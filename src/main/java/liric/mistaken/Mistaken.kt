@@ -114,16 +114,22 @@ class Mistaken : JavaPlugin() {
     override fun onEnable() {
         val start = System.currentTimeMillis()
 
-        // 0. 🔥 LA CLAVE: Inicializar el puente al hilo principal primero que nada
-        // Sin esto, cualquier Manager que use corrutinas va a tirar el error de "Main dispatcher missing"
+        // 0. 🔥 INICIALIZACIÓN CRÍTICA
         instance = this
-        // Asegúrate de tener declarada 'val bukkitDispatcher = ...' arriba en la clase
+        // El bukkitDispatcher ya debe estar declarado como 'val' arriba en la clase.
+
+        // --- 🚀 MEJORA: WARM-UP DE CORRUTINAS ---
+        // Lanzamos una tarea vacía para que la JVM cargue las clases de Kotlin Coroutines ahora
+        // y no cuando un jugador muera o use una habilidad, evitando el lag spike inicial.
+        pluginScope.launch(Dispatchers.Default) {
+            delay(1)
+        }
 
         // 1. Init PacketEvents & Keys
         PacketEvents.getAPI().init()
         assassinKey = NamespacedKey(this, "selected_assassin")
 
-        // 2. Archivos y Configuración (La base para los demás)
+        // 2. Archivos y Configuración
         saveDefaultConfig()
         createRequiredFolders()
         loadLobbyLocation()
@@ -131,39 +137,33 @@ class Mistaken : JavaPlugin() {
         configManager = ConfigManager(this).apply { loadAllConfigs() }
         messageConfig = MessageConfig(this)
 
-        // 3. Integraciones Externas (Vault, CraftEngine)
+        // 3. Integraciones Externas
         if (!setupIntegrations()) return
 
-        // 4. Base de Datos (Si no hay DB, no hay paraíso, pariente)
+        // 4. Base de Datos
         if (!setupDatabase()) return
 
         // 5. Inicializar datos base (Caché de stats y perfiles)
-        // Esto va antes que los Managers de juego por si alguien entra rápido
         playerStatsManager = PlayerStatsManager(this)
         statsManager = StatsManager(this)
         playerDataManager = PlayerDataManager(this)
 
         // 6. 🔥 EL ORDEN SAGRADO DE MANAGERS 🔥
-        // Primero el Corazón: Combat y Game (de ellos dependen casi todos)
         combatManager = CombatManager(this)
         gameManager = GameManager(this)
 
-        // Mundos y Mapas (Usan al GameManager para estados)
         mapManager = MapManager(this)
         arenaManager = ArenaManager(this)
 
-        // Entidades y Lógica (Registran clases en el GameManager)
         asesinoManager = AsesinoManager(this)
         supervivienteManager = SupervivienteManager(this)
         discordManager = DiscordManager(this)
         generatorManager = GeneratorManager(this)
 
-        // UI y Tiendas (Ya tienen las clases registradas arriba)
         asesinoTienda = AsesinoTienda()
         supervivienteTienda = SupervivienteTienda()
         shopSelector = ShopSelector()
 
-        // Bucle de ambiente y Scoreboard (Van al final porque lanzan tareas que buscan al GameManager)
         ambientManager = AmbientManager(this)
         scoreboardManager = ScoreboardManager(this)
 
@@ -173,34 +173,42 @@ class Mistaken : JavaPlugin() {
         // 8. Placeholders
         if (server.pluginManager.isPluginEnabled("PlaceholderAPI")) {
             MistakenExpansion(this).register()
-            componentLogger.info(mm.deserialize("<green>✔ PAPI Hook registrado."))
         }
 
         // 9. Eventos y Comandos
         registerEvents()
-        CommandRegistry(this).registerAll() // Inyección Brigadier Pro
+        CommandRegistry(this).registerAll() // Inyección nativa Brigadier
 
-        // 10. Tareas finales
+        // 10. 🏁 TAREAS FINALES Y ACTIVACIÓN
+
+        // Marcamos el plugin como listo ANTES de iniciar el motor de partículas
+        // Esto permite que los loops de AmbientManager y otros empiecen a correr.
         isReady = true
-        iniciarMotorDeParticulas()
+
+        iniciarMotorDeParticulas() // El motor optimizado con Batching que hicimos
         sendLogo()
 
         val time = System.currentTimeMillis() - start
-        componentLogger.info(mm.deserialize("<green>Mistaken habilitado en ${time}ms.</green>"))
+        componentLogger.info(mm.deserialize("<green>Mistaken habilitado en ${time}ms</green>"))
     }
 
     override fun onDisable() {
-        pluginScope.cancel() // 🔥 AGREGADO: Limpieza de todas las corrutinas activas
-        // Null-safe checks usando Kotlin 'isInitialized'
-        if (::databaseManager.isInitialized) databaseManager.close()
-        if (::scoreboardManager.isInitialized) scoreboardManager.removeAll()
-        if (::generatorManager.isInitialized) generatorManager.clearGenerators()
-        if (::ambientManager.isInitialized) ambientManager.stopAll()
-        if (::asesinoManager.isInitialized) asesinoManager.removerTodosLosAsesinos()
+        isReady = false
+
+        pluginScope.cancel("Plugin shutting down")
+
+        if (::ambientManager.isInitialized) runCatching { ambientManager.stopAll() }
+        if (::generatorManager.isInitialized) runCatching { generatorManager.clearGenerators() }
+        if (::scoreboardManager.isInitialized) runCatching { scoreboardManager.removeAll() }
+        if (::asesinoManager.isInitialized) runCatching { asesinoManager.shutdown() } // Llama a su propio método de limpieza total
+        if (::supervivienteManager.isInitialized) runCatching { supervivienteManager.shutdown() }
+        if (::databaseManager.isInitialized) runCatching { databaseManager.close() }
 
         PacketEvents.getAPI().terminate()
 
-        componentLogger.info(mm.deserialize("<red>Mistaken desactivado correctamente."))
+        componentLogger.info(mm.deserialize(
+            "<newline><red>║ <bold>MISTAKEN</bold> ha sido desactivado con éxito.</red><newline>"
+        ))
     }
 
     // --- SETUP HELPERS ---

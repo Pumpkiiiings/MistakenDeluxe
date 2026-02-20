@@ -9,6 +9,7 @@ import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import liric.mistaken.supervivientes.clases.Civil
 import net.kyori.adventure.bossbar.BossBar
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
@@ -28,6 +29,7 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.min
@@ -41,13 +43,16 @@ class GameManager(private val plugin: Mistaken) {
 
     private val mm = plugin.mm
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-
-    // Sub-Managers
+    private val lastBarContent = mutableMapOf<UUID, String>()
+    private val lastBarSignature = mutableMapOf<UUID, String>()
+    private var cachedBarColor: net.kyori.adventure.bossbar.BossBar.Color? = null
+    private var lastStateForColor: GameState? = null
+    private var tickCounter = 0
+    private var gameTask: ScheduledTask? = null
     val voteManager = VoteManager()
     val ambientManager = AmbientManager(plugin)
     val combatManager = CombatManager(plugin)
 
-    // Estado del Juego
     var currentState = GameState.LOBBY
         private set
     var currentMode = MistakenMode.CLASSIC
@@ -79,60 +84,69 @@ class GameManager(private val plugin: Mistaken) {
      * Bucle principal del juego (Game Loop).
      * Reemplaza al BukkitRunnable para una gestión de hilos más eficiente.
      */
+
     private fun runGameLoop() {
-        scope.launch {
-            var tickCounter = 0
+        // 1. Limpiamos cualquier tarea anterior para evitar que se dupliquen (Memory Leak Fix)
+        gameTask?.cancel()
 
-            val minPlayers = plugin.config.getInt("settings.min-players", 2)
+        // 2. Cacheamos la config una sola vez fuera del bucle
+        val minPlayers = plugin.config.getInt("settings.min-players", 2)
 
-            while (isActive) {
-                val isSecondTick = tickCounter % 20 == 0
-                if (isSecondTick || currentState == GameState.INGAME) {
+        // 3. Reemplazamos el 'scope.launch' por el Scheduler Global de Paper.
+        // Esto corre en el Hilo Principal, eliminando los saltos de hilo que viste en Spark.
+        gameTask = plugin.server.globalRegionScheduler.runAtFixedRate(plugin, { _ ->
 
-                    withContext(plugin.mainThread) {
-                        val onlinePlayers = Bukkit.getOnlinePlayers()
+            // Verificación de seguridad: si el plugin no está listo, no hacemos nada
+            if (!plugin.isReady) return@runAtFixedRate
 
-                        if (isSecondTick) {
-                            if (timer > 0) timer--
+            val onlinePlayers = Bukkit.getOnlinePlayers()
+            tickCounter++
 
-                            val validCount = onlinePlayers.count { !plugin.isIgnored(it) }
+            val isSecondTick = tickCounter % 20 == 0
 
-                            for (p in onlinePlayers) {
-                                updatePersonalBar(p, onlinePlayers.size)
-                            }
+            // Tu lógica original optimizada:
+            if (isSecondTick || currentState == GameState.INGAME) {
 
-                            when (currentState) {
-                                GameState.LOBBY -> {
-                                    if (validCount >= minPlayers) startVotingProcess()
-                                }
-                                GameState.VOTING -> {
-                                    if (validCount < minPlayers) {
-                                        resetToLobby("voting.not-enough-players")
-                                    } else if (timer <= 0) {
-                                        startInGame()
-                                    }
-                                }
-                                GameState.STARTING -> handleStartingSequence()
-                                GameState.ENDING -> {
-                                    if (timer <= 0) {
-                                        teleportAllToLobby()
-                                        resetToLobby(null)
-                                    }
-                                }
-                                else -> {}
+                // --- LÓGICA DE SEGUNDO (Cada 20 ticks) ---
+                if (isSecondTick) {
+                    if (timer > 0) timer--
+
+                    // Filtrado rápido de jugadores válidos
+                    val validCount = onlinePlayers.count { !plugin.isIgnored(it) }
+
+                    // Actualización de barras con CACHÉ (Evita procesar MiniMessage si no hay cambios)
+                    for (p in onlinePlayers) {
+                        updatePersonalBar(p, onlinePlayers.size)
+                    }
+
+                    when (currentState) {
+                        GameState.LOBBY -> {
+                            if (validCount >= minPlayers) startVotingProcess()
+                        }
+                        GameState.VOTING -> {
+                            if (validCount < minPlayers) {
+                                resetToLobby("voting.not-enough-players")
+                            } else if (timer <= 0) {
+                                startInGame()
                             }
                         }
-
-                        if (currentState == GameState.INGAME) {
-                            handleInGameTick(onlinePlayers, tickCounter)
+                        GameState.STARTING -> handleStartingSequence()
+                        GameState.ENDING -> {
+                            if (timer <= 0) {
+                                teleportAllToLobby()
+                                resetToLobby(null)
+                            }
                         }
+                        else -> {}
                     }
                 }
 
-                tickCounter++
-                delay(50L) // Pausa de 1 tick
+                // --- LÓGICA DE TICK (Solo en partida) ---
+                if (currentState == GameState.INGAME) {
+                    handleInGameTick(onlinePlayers, tickCounter)
+                }
             }
-        }
+        }, 1L, 1L) // Pulso de 1 tick (exactamente 50ms)
     }
 
     private fun handleStartingSequence() {
@@ -228,15 +242,16 @@ class GameManager(private val plugin: Mistaken) {
         currentState = GameState.STARTING
         currentMapName = winner
 
-        // Carga asíncrona del mundo (MapManager)
+        // 1. Carga asíncrona del mundo (MapManager)
         plugin.mapManager.loadArenaWorld(winner).thenAccept { aspWorld ->
-            // Volvemos al Main Thread
+            // Volvemos al Main Thread para tocar la API de Bukkit
             Bukkit.getScheduler().runTask(plugin, Runnable {
                 if (aspWorld == null) {
                     resetToLobby(null)
                     return@Runnable
                 }
 
+                // --- LÓGICA DE MODO Y TIEMPO ---
                 timer = 15
                 if (!modeForced) {
                     val chance = ThreadLocalRandom.current().nextInt(1, 101)
@@ -248,15 +263,24 @@ class GameManager(private val plugin: Mistaken) {
                     }
                 }
 
+                // 2. ACTUALIZACIÓN DE MUNDO EN LOCALIZACIONES
                 arena.asesinoSpawn?.world = aspWorld
                 arena.survivorSpawns.forEach { it.world = aspWorld }
 
-                plugin.generatorManager.clearGenerators()
-                arena.generators.forEach {
-                    it.world = aspWorld
-                    plugin.generatorManager.registerGenerator(it)
+                // --- 🔥 AQUÍ VA LA OPTIMIZACIÓN (REEMPLAZO DEL BUCLE) 🔥 ---
+
+                // Preparamos la lista de localizaciones clonadas con el mundo correcto
+                val genLocations = arena.generators.map { loc ->
+                    loc.clone().apply { world = aspWorld }
                 }
 
+                // Llamamos al método Batch que ya optimizamos.
+                // Internamente hace clearGenerators(), carga la config en IO y spawnea hologramas.
+                plugin.generatorManager.prepareArenaGenerators(genLocations)
+
+                // --- FIN DE LA OPTIMIZACIÓN ---
+
+                // 3. Setup de jugadores y feedback
                 setupPlayers(arena)
                 broadcastLocalized("game.map-loaded", Placeholder.parsed("map", winner))
             })
@@ -264,16 +288,15 @@ class GameManager(private val plugin: Mistaken) {
     }
 
     private fun setupPlayers(arena: Arena) {
-        // Pre-carga de chunks
-        arena.asesinoSpawn?.chunk?.load()
-        arena.survivorSpawns.forEach { it.chunk.load() }
+        // 1. ELIMINADO: arena.asesinoSpawn?.chunk?.load()
+        // ¿Por qué? teleportAsync ya carga el chunk de forma asíncrona sin laguear.
 
         val onlinePlayers = Bukkit.getOnlinePlayers().filter { !plugin.isIgnored(it) }.toMutableList()
         if (onlinePlayers.isEmpty()) return
 
+        // --- CÁLCULO DE ROLES (Lógica de memoria, es rápida) ---
         asesinosUUIDs.clear()
         val candidatos = onlinePlayers.filter { !yaJugaronAsesino.contains(it.uniqueId) }.toMutableList()
-
         if (candidatos.isEmpty()) {
             yaJugaronAsesino.clear()
             candidatos.addAll(onlinePlayers)
@@ -293,41 +316,57 @@ class GameManager(private val plugin: Mistaken) {
         }
         currentAsesinoUUID = asesinosUUIDs.firstOrNull()
 
-        val survivorsSolo = mutableListOf<Player>()
+        // --- PREPARACIÓN Y TELEPORT ASÍNCRONO ---
         var survivorIndex = 0
+        val survivorsSolo = mutableListOf<Player>()
 
-        onlinePlayers.forEachIndexed { _, p ->
+        for (p in onlinePlayers) {
+            val uuid = p.uniqueId
+            val isKiller = esAsesino(uuid)
+
+            // Reseteo básico instantáneo (Hilo principal)
             p.inventory.clear()
             combatManager.resetHealth(p)
             p.gameMode = GameMode.SURVIVAL
 
-            val isKiller = esAsesino(p.uniqueId)
-
             if (isKiller) {
-                val claseID = plugin.playerDataManager.getSelectedKiller(p.uniqueId)
-                plugin.asesinoManager.equiparAsesino(p, claseID)
-                arena.asesinoSpawn?.let { p.teleport(it) }
                 setLuckPermsPrefix(p, "<red>")
+                val spawnLoc = arena.asesinoSpawn ?: p.world.spawnLocation
+
+                // 🔥 TELEPORT ASÍNCRONO: No detiene el Main Thread
+                p.teleportAsync(spawnLoc).thenAccept { success ->
+                    if (success && p.isOnline) {
+                        val claseID = plugin.playerDataManager.getSelectedKiller(uuid)
+                        plugin.asesinoManager.equiparAsesino(p, claseID)
+                    }
+                }
             } else {
                 survivorsSolo.add(p)
                 setLuckPermsPrefix(p, "<green>")
-
-                val idElegido = plugin.playerDataManager.getSelectedSurvivor(p.uniqueId)
                 val finalIndex = survivorIndex++
 
-                // Distribución de teleports para evitar lag
+                // Buscamos el spawn que le toca
+                val spawns = arena.survivorSpawns
+                val spawnLoc = if (spawns.isEmpty()) arena.asesinoSpawn ?: p.world.spawnLocation
+                else spawns[finalIndex % spawns.size]
+
+                // 🔥 TELEPORT ASÍNCRONO ESCALONADO (1 tick de diferencia cada 2 jugadores)
+                val delayTicks = (finalIndex / 2).toLong()
+
                 Bukkit.getScheduler().runTaskLater(plugin, Runnable {
                     if (!p.isOnline) return@Runnable
 
-                    val spawns = arena.survivorSpawns
-                    val sSpawn = if (spawns.isEmpty()) arena.asesinoSpawn else spawns[finalIndex % spawns.size]
-                    sSpawn?.let { p.teleport(it) }
-
-                    val clase = plugin.supervivienteManager.getClasePorId(idElegido) ?: Civil()
-                    plugin.supervivienteManager.registrarSuperviviente(p, clase)
-                }, (finalIndex / 5L) + 1L)
+                    p.teleportAsync(spawnLoc).thenAccept { success ->
+                        if (success && p.isOnline) {
+                            val idElegido = plugin.playerDataManager.getSelectedSurvivor(uuid)
+                            val clase = plugin.supervivienteManager.getClasePorId(idElegido) ?: Civil()
+                            plugin.supervivienteManager.registrarSuperviviente(p, clase)
+                        }
+                    }
+                }, delayTicks)
             }
 
+            // Títulos (Adventure API es muy ligera)
             val rp = if (isKiller) "killer" else "survivor"
             p.showTitle(Title.title(
                 plugin.messageConfig.getMessage(p, "roles.$rp.title"),
@@ -335,7 +374,7 @@ class GameManager(private val plugin: Mistaken) {
             ))
         }
 
-        // Discord Async
+        // --- DISCORD (Totalmente fuera del hilo principal) ---
         scope.launch(Dispatchers.IO) {
             val killer = getCurrentAsesino()
             if (killer != null) {
@@ -491,66 +530,79 @@ class GameManager(private val plugin: Mistaken) {
 
     private fun updatePersonalBar(p: Player, online: Int) {
         val uuid = p.uniqueId
-        // Convertimos a lowercase para que coincida con el YAML (lobby, voting, etc)
         val stateName = currentState.name.lowercase()
 
-        // 1. Procesar tiempo (mm:ss)
+        // 1. Formateo de tiempo ultra-rápido (Interpolación de Kotlin)
         val timeStr = if (currentState == GameState.INGAME || currentState == GameState.STARTING) {
-            String.format("%02d:%02d", timer / 60, timer % 60)
+            val mins = timer / 60
+            val secs = timer % 60
+            "${if (mins < 10) "0" else ""}$mins:${if (secs < 10) "0" else ""}$secs"
         } else {
             timer.toString()
         }
 
-        // 2. Obtener textos (Pasamos el valor por defecto como tercer parámetro)
-        val modeKey = currentMode.name.lowercase()
+        // 2. CREAR FIRMA DE ESTADO (Para saber si algo de verdad cambió)
+        // Incluimos online, timer, estado y mapa.
+        val signature = "S:$stateName|T:$timeStr|O:$online|M:$currentMapName|MD:${currentMode.name}"
 
-        // CORRECCIÓN: Pasamos el default adentro del paréntesis
+        if (lastBarSignature[uuid] == signature) return
+        lastBarSignature[uuid] = signature
+
+        // --- A PARTIR DE AQUÍ SOLO SE EJECUTA SI HUBO UN CAMBIO REAL ---
+
+        // 3. Obtener textos (Optimizado)
+        val modeKey = currentMode.name.lowercase()
         val modeName = plugin.messageConfig.getRawString(p, "modes.$modeKey.name", currentMode.name)
         val rawText = plugin.messageConfig.getRawString(p, "bossbar.$stateName", "<gray>Mistaken Game")
 
-        // 3. Reemplazo de placeholders según tu YAML
+        // Reemplazo de placeholders eficiente
         val processedText = rawText
             .replace("{online}", online.toString())
             .replace("{time}", timeStr)
-            .replace("{map}", currentMapName ?: "Cargando...")
+            .replace("{map}", currentMapName ?: "...")
             .replace("{mode}", modeName)
 
-        // 4. Obtener o crear la barra (Adventure API)
+        // 4. Gestión de la Barra
         val bar = personalBars.getOrPut(uuid) {
-            // Buscamos el color en el path: bossbar.colors.lobby, etc.
-            val colorName = plugin.messageConfig.getRawString(p, "bossbar.colors.$stateName", "WHITE")
-
-            val adventureColor = try {
-                net.kyori.adventure.bossbar.BossBar.Color.valueOf(colorName.uppercase())
-            } catch (e: Exception) {
-                net.kyori.adventure.bossbar.BossBar.Color.WHITE
-            }
-
+            val color = getBossBarColor(p, stateName)
             val newBar = net.kyori.adventure.bossbar.BossBar.bossBar(
                 mm.deserialize(processedText),
                 1.0f,
-                adventureColor,
+                color,
                 net.kyori.adventure.bossbar.BossBar.Overlay.PROGRESS
             )
-
             p.showBossBar(newBar)
             newBar
         }
 
-        // 5. Optimización: Solo actualizar si el texto cambió
-        if (processedText != lastProcessedText[uuid]) {
-            bar.name(mm.deserialize(processedText))
-            lastProcessedText[uuid] = processedText
+        // 5. Actualizar contenido visual
+        bar.name(mm.deserialize(processedText))
 
-            // Actualizar color si cambió el estado de la partida
-            val colorName = plugin.messageConfig.getRawString(p, "bossbar.colors.$stateName", "WHITE")
-            try {
-                val nextColor = net.kyori.adventure.bossbar.BossBar.Color.valueOf(colorName.uppercase())
-                if (bar.color() != nextColor) {
-                    bar.color(nextColor)
-                }
-            } catch (ignored: Exception) { }
+        // 6. Actualizar color solo si el estado cambió (Ahorra lecturas de config)
+        if (lastStateForColor != currentState) {
+            bar.color(getBossBarColor(p, stateName))
+            if (uuid == Bukkit.getOnlinePlayers().firstOrNull()?.uniqueId) {
+                lastStateForColor = currentState // Solo lo actualizamos una vez por ciclo global
+            }
         }
+    }
+
+    /**
+     * Obtiene el color de la BossBar de forma segura y eficiente.
+     */
+    private fun getBossBarColor(p: Player, stateName: String): net.kyori.adventure.bossbar.BossBar.Color {
+        val colorStr = plugin.messageConfig.getRawString(p, "bossbar.colors.$stateName", "WHITE")
+        return try {
+            net.kyori.adventure.bossbar.BossBar.Color.valueOf(colorStr.uppercase())
+        } catch (e: Exception) {
+            net.kyori.adventure.bossbar.BossBar.Color.WHITE
+        }
+    }
+
+    fun removePlayer(p: Player) {
+        val bar = personalBars.remove(p.uniqueId)
+        if (bar != null) p.hideBossBar(bar)
+        lastBarSignature.remove(p.uniqueId)
     }
 
     private fun checkHeartbeat(killer: Player) {
