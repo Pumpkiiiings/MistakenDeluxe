@@ -23,8 +23,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * GeneratorManager: Gestión de generadores ultra-optimizada.
- * Reducción de Spark: Movimiento de I/O a la fase de carga y Batching de hologramas.
+ * GeneratorManager: Gestión de generadores ultra-optimizada y multilingüe.
  */
 class GeneratorManager(private val plugin: Mistaken) : Listener {
 
@@ -34,7 +33,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     private val generators = ConcurrentHashMap<Location, GeneratorState>()
     private val nameCache = ConcurrentHashMap<Material, String>()
 
-    // Componentes pre-deserializados para ahorrar CPU
+    // Plantillas de texto cargadas desde el idioma del servidor
     private var idleLines: List<String> = emptyList()
     private var completedLines: List<String> = emptyList()
 
@@ -54,16 +53,44 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         loadTemplates()
     }
 
-    private fun loadTemplates() {
-        val langConfig = plugin.messageConfig.getLangConfig("es")
-        idleLines = langConfig.getStringList("generators.hologram.lines-idle")
-        completedLines = langConfig.getStringList("generators.hologram.lines-completed")
+    /**
+     * Carga las líneas del holograma y nombres desde el idioma configurado.
+     */
+    fun loadTemplates() {
+        // 1. Obtenemos el idioma principal (default "es")
+        val defaultLang = plugin.config.getString("settings.default-lang", "es") ?: "es"
+        val langConfig = plugin.messageConfig.getLangConfig(defaultLang)
+
+        // 2. Cargamos las plantillas del YAML
+        idleLines = langConfig.getStringList("generators.hologram.lines-idle").ifEmpty {
+            listOf("<gold>{name}", "<white>Progreso: <gray>{progress}%")
+        }
+        completedLines = langConfig.getStringList("generators.hologram.lines-completed").ifEmpty {
+            listOf("<green><bold>✔ ENERGÍA RESTAURADA ✔")
+        }
+
+        // Limpiamos el caché de nombres por si el idioma cambió en un reload
+        nameCache.clear()
+
+        plugin.componentLogger.info(mm.deserialize("<gray>[Generadores] Plantillas cargadas correctamente (<white>$defaultLang</white>)."))
     }
 
     /**
-     * 🔥 SOLUCIÓN AL 0.12% DE SPARK:
-     * Registra todos los generadores del mapa de un solo golpe al cargar la arena.
+     * Obtiene el nombre estético del bloque según el idioma del servidor.
      */
+    private fun getFriendlyName(material: Material): String {
+        return nameCache.getOrPut(material) {
+            val lang = plugin.config.getString("settings.default-lang", "es") ?: "es"
+            val langConfig = plugin.messageConfig.getLangConfig(lang)
+
+            // Busca en 'generators.names.MATERIAL_NAME'
+            // Fallback: Formatea el nombre del Material (RAW_IRON_BLOCK -> Raw Iron Block)
+            langConfig.getString("generators.names.${material.name}")
+                ?: material.name.lowercase().replace("_", " ").split(" ")
+                    .joinToString(" ") { it.replaceFirstChar { char -> char.uppercase() } }
+        }
+    }
+
     fun prepareArenaGenerators(locations: List<Location>) {
         clearGenerators()
 
@@ -144,14 +171,16 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
     private fun updateHologramVisual(state: GeneratorState) {
         val entity = state.displayEntity ?: return
+        if (entity.isDead) return
 
-        val typeName = nameCache.getOrPut(state.originalMaterial) {
-            state.originalMaterial.name.replace("_", " ")
-        }
-
+        // Obtenemos el nombre dinámico traducido
+        val typeName = getFriendlyName(state.originalMaterial)
         val lines = if (state.completed) completedLines else idleLines
+
+        // Build Component eficiente con placeholders dinámicos
         val text = lines.joinToString("\n") { line ->
-            line.replace("{name}", typeName).replace("{progress}", state.progress.toString())
+            line.replace("{name}", typeName)
+                .replace("{progress}", state.progress.toString())
         }
 
         entity.text(mm.deserialize(text))
@@ -177,51 +206,24 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     fun clearGenerators() {
         generators.forEach { (_, state) -> state.displayEntity?.remove() }
         generators.clear()
-        nameCache.clear()
+        // No borramos nameCache aquí para mantener el rendimiento en reloads rápidos
     }
 
     fun isCompleted(loc: Location) = generators[loc.block.location]?.completed ?: false
     fun getProgress(loc: Location) = generators[loc.block.location]?.progress ?: 0
 
-    // --- MÉTODOS AGREGADOS (NUEVOS) ---
-
-    /**
-     * Resetea el progreso de todos los generadores sin recargar el mundo.
-     * Optimización: setType(..., false) evita tirones de lag físico.
-     */
     fun resetGenerators() {
         generators.forEach { (loc, state) ->
             state.progress = 0
             state.completed = false
-
-            // Revertimos al bloque original sin updates de iluminación pesados
             loc.block.setType(state.originalMaterial, false)
             updateHologramVisual(state)
         }
-
-        // Limpiar sesión en config y guardar en segundo plano
         dataConfig.set("session", null)
         saveToFileAsync()
     }
 
-    /**
-     * Retorna cuántos generadores han sido completados en la arena actual.
-     */
-    fun getCompletedCount(): Int {
-        return generators.values.count { it.completed }
-    }
-
-    /**
-     * Retorna el total de generadores registrados en memoria.
-     */
-    fun getTotalGenerators(): Int {
-        return generators.size
-    }
-
-    /**
-     * Obtiene una lista de todas las localizaciones de bloques de generadores activos.
-     */
-    fun getGeneratorLocations(): List<Location> {
-        return generators.keys.toList()
-    }
+    fun getCompletedCount(): Int = generators.values.count { it.completed }
+    fun getTotalGenerators(): Int = generators.size
+    fun getGeneratorLocations(): List<Location> = generators.keys.toList()
 }

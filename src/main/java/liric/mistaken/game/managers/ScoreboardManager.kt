@@ -3,8 +3,8 @@ package liric.mistaken.game.managers
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.game.enums.MistakenMode
 import liric.mistaken.utils.FastBoard
+import liric.mistaken.utils.mainThread
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
@@ -15,8 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * [LIRIC-MISTAKEN 2.0]
  * ScoreboardManager: Motor ultra-optimizado.
- * - Procesa MiniMessage -> Legacy en hilos secundarios (Async).
- * - Usa FastBoard para enviar paquetes sin tocar el Main Thread de Bukkit.
+ * FIX: Se corrigió la lectura de vidas y se optimizó el refresco visual.
  */
 class ScoreboardManager(private val plugin: Mistaken) {
 
@@ -24,7 +23,6 @@ class ScoreboardManager(private val plugin: Mistaken) {
     private val mm = MiniMessage.miniMessage()
     private val legacy = LegacyComponentSerializer.legacySection()
 
-    // Scope para procesamiento asíncrono
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var updateJob: Job? = null
 
@@ -34,124 +32,131 @@ class ScoreboardManager(private val plugin: Mistaken) {
 
     private fun startUpdateTask() {
         updateJob = scope.launch {
-            // Esperar a que el plugin esté listo (Usando el flag que creamos antes)
-            while (isActive && !plugin.isReady) {
-                delay(500)
-            }
+            while (isActive && !plugin.isReady) delay(500)
 
             while (isActive) {
                 try {
-                    // 1. Recolección de datos rápida (Thread-Safe en Paper)
-                    val onlineCount = Bukkit.getOnlinePlayers().size
-                    val gm = plugin.gameManager
-
-                    // 2. Procesar todos los marcadores
-                    updateAll(onlineCount, gm)
+                    // Actualización masiva (Cada 10 ticks)
+                    updateAll()
                 } catch (e: Exception) {
-                    // Evitar que el hilo muera por un error de config
+                    // Silencioso para evitar spam en consola
                 }
-                delay(500L) // 10 Ticks: Balance perfecto entre fluidez y rendimiento
+                delay(500L)
             }
         }
     }
 
-    private fun updateAll(online: Int, gm: GameManager) {
-        val state = gm.currentState
-        val mode = gm.currentMode
+    /**
+     * 🔥 FIX CRÍTICO: Actualización instantánea.
+     * Esta función ahora es mucho más agresiva para asegurar que el cambio se vea.
+     */
+    fun updatePlayer(player: Player) {
+        val board = boards[player.uniqueId] ?: return
+        if (!player.isOnline || !plugin.isReady) return
 
-        // --- PRE-PROCESAMIENTO GLOBAL (Se hace 1 vez para todos los jugadores) ---
+        // Procesamos el renderizado fuera del hilo principal para no laguear
+        scope.launch {
+            renderBoard(player, board)
+        }
+    }
+
+    private fun updateAll() {
+        boards.forEach { (uuid, board) ->
+            val player = Bukkit.getPlayer(uuid) ?: return@forEach
+            if (player.isOnline) {
+                renderBoard(player, board)
+            }
+        }
+    }
+
+    private fun renderBoard(player: Player, board: FastBoard) {
+        val gm = plugin.gameManager
+        val uuid = player.uniqueId
+
+        // 1. RECOLECCIÓN DE DATOS (Instantánea)
+        val onlineCount = Bukkit.getOnlinePlayers().size
+        val lives = gm.combatManager.getHealth(player).toString() // Leemos la vida actualizada
         val timeStr = String.format("%02d:%02d", gm.timer / 60, gm.timer % 60)
         val mapName = gm.currentMapName ?: "---"
         val completed = plugin.generatorManager.getCompletedCount().toString()
         val total = plugin.generatorManager.getTotalGenerators().toString()
-        val killers = getKillerDisplayStrings(gm)
 
-        // Definir la ruta del YAML según tu estructura
+        val state = gm.currentState
+        val mode = gm.currentMode
+
+        // 2. DETERMINAR RUTA DE CONFIG
         val stateKey = if (state == GameState.INGAME) "ingame_${mode.name.lowercase()}" else state.name.lowercase()
         val path = "scoreboard.$stateKey"
 
-        // Iterar sobre los marcadores activos
-        boards.forEach { (uuid, board) ->
-            val player = Bukkit.getPlayer(uuid) ?: return@forEach
-            if (!player.isOnline) return@forEach
+        val lang = plugin.playerDataManager.getLanguage(uuid) ?: "es"
+        val config = plugin.messageConfig.getLangConfig(lang)
 
-            // Obtener idioma del jugador
-            val lang = plugin.playerDataManager.getLanguage(uuid) ?: "es"
-            val config = plugin.messageConfig.getLangConfig(lang)
+        // 3. ACTUALIZAR TÍTULO
+        val rawTitle = config.getString("scoreboard.title") ?: "<bold>MISTAKEN"
+        board.updateTitle(legacy.serialize(mm.deserialize(rawTitle)))
 
-            // 1. Actualizar Título
-            val rawTitle = config.getString("scoreboard.title") ?: "<bold>MISTAKEN"
-            board.updateTitle(legacy.serialize(mm.deserialize(rawTitle)))
+        // 4. PROCESAR LÍNEAS (Optimizado)
+        val rawLines = config.getStringList(path)
+        val processedLines = mutableListOf<String>()
 
-            // 2. Procesar Líneas
-            val rawLines = config.getStringList(path)
-            val processedLines = mutableListOf<String>()
-            val lives = gm.combatManager.getHealth(player).toString()
+        // Cache de asesinos para no repetir el proceso por cada línea
+        val killerLines = if (rawLines.any { it.contains("%killers%") }) getKillerDisplayStrings(gm) else emptyList()
 
-            for (line in rawLines) {
-                if (line.contains("%killers%")) {
-                    processedLines.addAll(killers)
-                    continue
-                }
-
-                // Reemplazo de placeholders ultra-rápido
-                val formatted = line
-                    .replace("%timer%", timeStr)
-                    .replace("%map%", mapName)
-                    .replace("%online%", online.toString())
-                    .replace("%completed%", completed)
-                    .replace("%total%", total)
-                    .replace("%lives%", lives)
-                    .replace("%player%", player.name)
-
-                // Convertir MiniMessage a Legacy (§) para los paquetes de FastBoard
-                processedLines.add(legacy.serialize(mm.deserialize(formatted)))
+        for (line in rawLines) {
+            if (line.contains("%killers%")) {
+                processedLines.addAll(killerLines)
+                continue
             }
 
-            // 3. Inyectar al marcador (FastBoard maneja los paquetes de forma interna)
-            board.updateLines(processedLines)
+            // Reemplazo en cadena (Kotlin es más rápido aquí)
+            val formatted = line
+                .replace("%player%", player.name)
+                .replace("%timer%", timeStr)
+                .replace("%map%", mapName)
+                .replace("%online%", onlineCount.toString())
+                .replace("%completed%", completed)
+                .replace("%total%", total)
+                .replace("%lives%", lives) // <--- REEMPLAZO DE VIDAS
+
+            // Deserializamos y convertimos a Legacy para FastBoard
+            processedLines.add(legacy.serialize(mm.deserialize(formatted)))
         }
+
+        // 5. ENVIAR AL JUGADOR
+        // FastBoard se encarga de enviar solo los paquetes de las líneas que cambiaron
+        board.updateLines(processedLines)
     }
 
     private fun getKillerDisplayStrings(gm: GameManager): List<String> {
         val lines = mutableListOf<String>()
         val ids = gm.asesinosUUIDs
+
         if (ids.isEmpty()) {
             lines.add(legacy.serialize(mm.deserialize(" <red>Buscando...")))
             return lines
         }
-        ids.forEach { uuid ->
-            Bukkit.getPlayer(uuid)?.let {
-                lines.add(legacy.serialize(mm.deserialize(" <red>• ${it.name}")))
+
+        for (id in ids) {
+            val killer = Bukkit.getPlayer(id)
+            if (killer != null && killer.isOnline) {
+                lines.add(legacy.serialize(mm.deserialize(" <red>• ${killer.name}")))
             }
         }
         return lines
     }
 
-    // --- GESTIÓN DE JUGADORES (CORREGIDO PARA KOTLIN) ---
+    // --- MÉTODOS DE CONTROL ---
 
     fun addPlayer(player: Player) {
         val uuid = player.uniqueId
-        // Limpiamos rastro anterior si existe
-        boards.remove(uuid)?.let { old ->
-            if (!old.isDeleted) old.delete()
-        }
-        // Creamos el nuevo marcador
+        boards[uuid]?.let { if (!it.isDeleted) it.delete() }
         boards[uuid] = FastBoard(player)
     }
 
-    fun removePlayer(player: Player) {
-        val uuid = player.uniqueId
-        boards.remove(uuid)?.let { board ->
-            if (!board.isDeleted) board.delete()
-        }
-    }
+    fun removePlayer(player: Player) = removePlayer(player.uniqueId)
 
-    // Sobrecarga por UUID para mayor utilidad
     fun removePlayer(uuid: UUID) {
-        boards.remove(uuid)?.let { board ->
-            if (!board.isDeleted) board.delete()
-        }
+        boards.remove(uuid)?.let { if (!it.isDeleted) it.delete() }
     }
 
     fun removeAll() {

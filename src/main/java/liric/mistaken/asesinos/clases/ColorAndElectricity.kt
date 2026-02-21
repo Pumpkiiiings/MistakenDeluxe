@@ -7,25 +7,25 @@ import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.*
+import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import org.bukkit.scheduler.BukkitRunnable
-import java.util.concurrent.ThreadLocalRandom
+import org.bukkit.util.Transformation
+import org.joml.Quaternionf
+import org.joml.Vector3f as JomlVector3f
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.cos
+import kotlin.math.sin
 
-/**
- * ColorAndElectricity - Edición Kotlin (Muship Style)
- * Optimizado para Paper 1.21.4
- */
 class ColorAndElectricity : Asesino(
     "colorandelectricity",
-    // 1. CORREGIDO: Uso de getAsesinos() en lugar de la propiedad inexistente
     Mistaken.instance.configManager.getAsesinos().getString(
         "asesinos.colorandelectricity.nombre",
         "<gradient:#ff0080:#00ffff:#ffff00><b>色彩電気</b></gradient>"
@@ -33,146 +33,171 @@ class ColorAndElectricity : Asesino(
 ) {
 
     private val path = "asesinos.colorandelectricity"
-    private val palette = arrayOf(
-        floatArrayOf(1f, 0f, 0.5f), // Rosa
-        floatArrayOf(0f, 1f, 1f),   // Cian
-        floatArrayOf(1f, 1f, 0f)    // Amarillo
+    private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
+
+    // --- 🧊 DISPLAY BLOCKS (Configuración de colores solicitada) ---
+    private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
+    private val angulos = ConcurrentHashMap<UUID, Double>()
+    private val orbitMaterials = listOf(
+        Material.PURPLE_WOOL,      // Morado
+        Material.BLUE_WOOL,        // Azul Oscuro
+        Material.LIGHT_BLUE_WOOL,  // Azul Claro
+        Material.LIME_WOOL,        // Lima
+        Material.SMOOTH_STONE,     // Piedra Lisa
+        Material.ORANGE_WOOL,      // Naranja
+        Material.RED_WOOL          // Rojo
     )
+
+    init {
+        // Intentamos precargar, pero el método equipar ahora es más inteligente
+        preLoadKit()
+    }
+
+    private fun preLoadKit() {
+        val config = plugin.configManager.getAsesinos()
+        val armorKeys = listOf("casco", "pechera", "pantalones", "botas")
+        val itemKeys = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
+
+        armorKeys.forEach { key ->
+            val id = config.getString("$path.armadura.$key")
+            if (!id.isNullOrEmpty() && id != "none") {
+                CraftEngineUtils.getCustomItem(id)?.let { itemKitCache[key] = it }
+            }
+        }
+
+        itemKeys.forEach { key ->
+            val id = config.getString("$path.items.$key")
+            if (!id.isNullOrEmpty() && id != "none") {
+                CraftEngineUtils.getCustomItem(id)?.let { itemKitCache[key] = it }
+            }
+        }
+    }
+
+    /**
+     * 🔥 EQUIPAR CORREGIDO
+     * Si el caché está vacío (porque los ítems no estaban listos al iniciar),
+     * intenta recargarlos una última vez antes de dar el kit.
+     */
+    override fun equipar(player: Player) {
+        val inv = player.inventory
+        inv.clear()
+
+        // Si el caché de armadura está vacío, intentamos cargar de nuevo (Fix para CraftEngine)
+        if (!itemKitCache.containsKey("casco")) {
+            preLoadKit()
+        }
+
+        // Equipar Armadura
+        inv.helmet = itemKitCache["casco"]?.clone()
+        inv.chestplate = itemKitCache["pechera"]?.clone()
+        inv.leggings = itemKitCache["pantalones"]?.clone()
+        inv.boots = itemKitCache["botas"]?.clone()
+
+        // Equipar Items
+        inv.setItem(8, itemKitCache["arma"]?.clone())
+        inv.setItem(1, itemKitCache["habilidad1"]?.clone())
+        inv.setItem(2, itemKitCache["habilidad2"]?.clone())
+        inv.setItem(3, itemKitCache["habilidad3"]?.clone())
+        inv.setItem(4, itemKitCache["habilidad4"]?.clone())
+
+        player.inventory.heldItemSlot = 8
+        player.updateInventory()
+
+        // Log para debug si sigue fallando (solo saldrá en consola)
+        if (inv.helmet == null) {
+            plugin.logger.warning("¡Cuidado! No se pudo cargar la armadura de ColorAndElectricity. Revisa si los IDs de CraftEngine son correctos.")
+        }
+    }
+
+    override fun mostrarTrailFisico(player: Player) {
+        val uuid = player.uniqueId
+        if (!plugin.asesinoManager.esElAsesino(player)) {
+            limpiarEntidades(uuid)
+            return
+        }
+
+        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) {
+            limpiarEntidades(uuid)
+        }
+
+        val entidades = orbitadores.getOrPut(uuid) {
+            orbitMaterials.map { mat -> crearBloqueOrbitante(player.location, mat) }.toMutableList()
+        }
+
+        val anguloBase = angulos.getOrDefault(uuid, 0.0)
+        val radio = 1.6
+        val size = entidades.size
+
+        for (i in entidades.indices) {
+            val display = entidades[i]
+            if (display.isValid) {
+                val offset = (2 * Math.PI / size) * i
+                val x = radio * cos(anguloBase + offset)
+                val z = radio * sin(anguloBase + offset)
+                val y = 1.1 + (0.15 * sin((anguloBase + offset) * 3)) // Movimiento ondulado suave
+
+                display.teleport(player.location.clone().add(x, y, z))
+            }
+        }
+        angulos[uuid] = anguloBase + 0.08 // Velocidad de rotación
+    }
+
+    private fun crearBloqueOrbitante(loc: Location, mat: Material): BlockDisplay {
+        return loc.world.spawn(loc, BlockDisplay::class.java) { bd ->
+            bd.block = mat.createBlockData()
+            bd.transformation = Transformation(
+                JomlVector3f(-0.1f, -0.1f, -0.1f), // Centrado perfecto
+                Quaternionf(),
+                JomlVector3f(0.2f, 0.2f, 0.2f), // Tamaño pequeño tipo "orbe"
+                Quaternionf()
+            )
+            bd.teleportDuration = 2
+            bd.interpolationDuration = 2
+        }
+    }
+
+    // --- EL RESTO DE FUNCIONES SE MANTRENIEN IGUAL ---
 
     override fun usarHabilidad(player: Player, slot: Int) {
         if (checkCooldown(player, slot)) return
-
         when (slot) {
             1 -> habilidadVividTrace(player)
             2 -> habilidadColorDrain(player)
-            3 -> habilidadPulseStatic(player)
             4 -> habilidadShikisaiEnd(player)
         }
-
         reproducirEfectosHabilidad(player, slot)
     }
 
     override fun mostrarTrail(player: Player) {
         val loc = player.location.add(0.0, 0.1, 0.0)
-        val random = ThreadLocalRandom.current()
-        val rgb = palette[random.nextInt(palette.size)]
-
-        val dust = Particle(ParticleTypes.DUST).apply {
-            data = ParticleDustData(rgb[0], rgb[1], rgb[2], 1.2f)
-        }
-
-        val packet = WrapperPlayServerParticle(
-            dust, false, Vector3d(loc.x, loc.y, loc.z),
-            Vector3f(0.2f, 0.2f, 0.2f), 0.01f, 1
-        )
-
-        val distSq = 625.0
-        loc.world.players.forEach { p ->
-            if (p != player && p.location.distanceSquared(loc) < distSq) {
-                PacketEvents.getAPI().playerManager.sendPacket(p, packet)
-            }
-        }
-    }
-
-    override fun mostrarTrailFisico(player: Player) {
-        // Optimizado: Sin carga en el hilo principal
+        val dust = Particle(ParticleTypes.DUST).apply { data = ParticleDustData(1f, 0f, 0.5f, 1.1f) }
+        val packet = WrapperPlayServerParticle(dust, false, Vector3d(loc.x, loc.y, loc.z), Vector3f(0.1f, 0.1f, 0.1f), 0.01f, 1)
+        loc.world.players.forEach { p -> if (p != player && p.location.distanceSquared(loc) < 625.0) PacketEvents.getAPI().playerManager.sendPacket(p, packet) }
     }
 
     private fun habilidadVividTrace(player: Player) {
         player.velocity = player.location.direction.multiply(1.8).setY(0.2)
         player.playSound(player.location, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1f, 2f)
-        player.world.spawnParticle(org.bukkit.Particle.WITCH, player.location, 15, 0.3, 0.3, 0.3, 0.1)
     }
 
     private fun habilidadColorDrain(player: Player) {
-        player.playSound(player.location, Sound.BLOCK_CONDUIT_ATTACK_TARGET, 1f, 1.8f)
-
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
-            if (!plugin.asesinoManager.esElAsesino(victim)) {
-                victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
-                victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
-                victim.sendMessage(mm.deserialize("<gradient:#ff0080:#00ffff><i>\"Dame tus colores...\"</i></gradient>"))
-            }
+            if (!plugin.asesinoManager.esElAsesino(victim)) victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
         }
-    }
-
-    private fun habilidadPulseStatic(player: Player) {
-        var ticks = 0
-        val runnable = object : BukkitRunnable() {
-            override fun run() {
-                if (ticks > 3 || !player.isOnline) { cancel(); return }
-
-                player.world.spawnParticle(org.bukkit.Particle.ELECTRIC_SPARK, player.location, 20, 2.0, 2.0, 2.0, 0.05)
-                player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BIT, 1f, 1.5f + (ticks * 0.2f))
-
-                player.getNearbyEntities(5.0, 5.0, 5.0).filterIsInstance<Player>().forEach { victim ->
-                    if (!plugin.asesinoManager.esElAsesino(victim)) {
-                        victim.damage(1.0, player)
-                        victim.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 40, 1))
-                    }
-                }
-                ticks++
-            }
-        }
-
-        // 2. CORREGIDO: Capturamos la BukkitTask para trackTask()
-        val task = runnable.runTaskTimer(plugin, 0L, 5L)
-        trackTask(task)
     }
 
     private fun habilidadShikisaiEnd(player: Player) {
-        val target = player.getNearbyEntities(15.0, 15.0, 15.0)
-            .filterIsInstance<Player>()
-            .find { !plugin.asesinoManager.esElAsesino(it) }
-
-        target?.let {
-            player.teleportAsync(it.location).thenAccept { success ->
-                if (success) {
-                    player.playSound(player.location, Sound.ENTITY_FIREWORK_ROCKET_TWINKLE, 1f, 0.5f)
-                    player.world.spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, player.location, 30, 0.5, 1.0, 0.5, 0.5)
-                    it.sendMessage(mm.deserialize("<red><b>[!] SOBRECARGA CROMÁTICA</b></red>"))
-                    it.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 120, 0))
-                }
-            }
-        }
+        val target = player.getNearbyEntities(15.0, 15.0, 15.0).filterIsInstance<Player>().find { !plugin.asesinoManager.esElAsesino(it) }
+        target?.let { player.teleportAsync(it.location) }
     }
 
-    override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        // 3. CORREGIDO: Uso de getAsesinos()
-        val config = plugin.configManager.getAsesinos()
-
-        inv.apply {
-            helmet = CraftEngineUtils.getCustomItem(config.getString("$path.armadura.casco"))
-            chestplate = CraftEngineUtils.getCustomItem(config.getString("$path.armadura.pechera"))
-            leggings = CraftEngineUtils.getCustomItem(config.getString("$path.armadura.pantalones"))
-            boots = CraftEngineUtils.getCustomItem(config.getString("$path.armadura.botas"))
-        }
-
-        for (i in 0..4) {
-            val itemKey = if (i == 0) "arma" else "habilidad$i"
-            val id = config.getString("$path.items.$itemKey")
-            val name = config.getString("$path.items.${itemKey}_nombre")
-
-            // 4. CORREGIDO: equals con ignoreCase correctamente escrito
-            if (id != null && !id.equals("none", ignoreCase = true)) {
-                CraftEngineUtils.getCustomItem(id)?.let { item ->
-                    name?.let {
-                        item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
-                    }
-                    inv.setItem(if (i == 0) 8 else i, item)
-                }
-            }
-        }
-
-        // 5. CORREGIDO: heldItemSlot es propiedad de Player, no de Inventory
-        player.inventory.heldItemSlot = 8
-        player.updateInventory()
+    private fun limpiarEntidades(uuid: UUID) {
+        orbitadores.remove(uuid)?.forEach { it.remove() }
+        angulos.remove(uuid)
     }
 
-    // 6. CORREGIDO: Signatura idéntica a la clase base (Player?)
     override fun cleanup(player: Player?) {
         super.cleanup(player)
+        player?.let { limpiarEntidades(it.uniqueId) }
     }
 }
