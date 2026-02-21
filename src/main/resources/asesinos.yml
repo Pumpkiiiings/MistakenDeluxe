@@ -161,16 +161,15 @@ asesinos:
   charlie:
     # --- Datos de Tienda ---
     precio: 7500
-    icono_material: "MAGMA_CREAM"
+    icono_material: "MAGMA_BLOCK"
     nombre: "<gradient:#ff4500:#ff8c00><b>CHARLIE INFERNO</b></gradient>"
     descripcion:
-      - "<gray>El maestro del fuego y el hielo."
-      - "<gray>Capaz de manipular la temperatura corporal."
-      - "<gradient:#ff4500:#ff8c00>Mecánica:</gradient> <white>Levitación y quemaduras."
+      - "<gray>El heraldo del fuego y el hielo eterno."
+      - "<gray>Domina el campo con ataques elementales masivos."
+      - "<gradient:#ff4500:#ff8c00>Mecánica:</gradient> <white>Poder devastador vs Agotamiento."
     lore_tienda:
-      - "<gray>\"¿Sientes el calor... o el frío extremo?\""
+      - "<gray>\"You can run from your demons until you are exhausted...\""
       - "<white>Dificultad: <red>Experto"
-    # --- Equipamiento ---
     armadura:
       casco: "mistaken:charlie_helmet"
       pechera: "mistaken:charlie_chestplate"
@@ -179,22 +178,22 @@ asesinos:
     items:
       arma: "GOLDEN_SWORD"
       arma_nombre: "<gradient:#ff4500:#ff8c00>Filo del Infierno"
-      habilidad1: "BLUE_ICE"
-      habilidad1_nombre: "<aqua>Cold Shower"
-      habilidad1_cooldown: 25
-      habilidad1_sonido: "BLOCK_GLASS_BREAK"
-      habilidad2: "FIRE_CHARGE"
-      habilidad2_nombre: "<red>The Pledge"
-      habilidad2_cooldown: 35
-      habilidad2_sonido: "ENTITY_BLAZE_SHOOT"
-      habilidad3: "GOLD_BLOCK"
-      habilidad3_nombre: "<gold>Golden Escalator"
-      habilidad3_cooldown: 30
-      habilidad3_sonido: "ENTITY_BAT_TAKEOFF"
-      habilidad4: "ROTTEN_FLESH"
-      habilidad4_nombre: "<dark_red><bold>EXHAUSTION</bold>"
-      habilidad4_cooldown: 100
-      habilidad4_sonido: "ENTITY_WARDEN_HEARTBEAT"
+      habilidad1: "FIRE_CHARGE"
+      habilidad1_nombre: "<red><b>¡INFIERNO!</b>"
+      habilidad1_cooldown: 30
+      habilidad1_sonido: "ITEM_FIRECHARGE_USE"
+      habilidad2: "RECOVERY_COMPASS"
+      habilidad2_nombre: "<gradient:#ff4500:#000000><b>Demon's Run</b></gradient>"
+      habilidad2_cooldown: 45
+      habilidad2_sonido: "ENTITY_WARDEN_HEARTBEAT"
+      habilidad3: "PACKED_ICE"
+      habilidad3_nombre: "<aqua><b>Púas de Glaciar</b>"
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "BLOCK_GLASS_BREAK"
+      habilidad4: "ECHO_SHARD"
+      habilidad4_nombre: "<dark_red><b>Colmillos del Inframundo</b>"
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
 
   devesto:
     # --- Datos de Tienda ---
@@ -248,10 +247,10 @@ asesinos:
       - "<white>Dificultad: <red>Experto"
     # --- Equipamiento ---
     armadura:
-      casco: "mistaken:mariachi_helmet"
-      pechera: "mistaken:mariachi_chestplate"
-      pantalones: "mistaken:mariachi_leggings"
-      botas: "mistaken:mariachi_boots"
+      casco: "mistaken:charro_helmet"
+      pechera: "mistaken:charro_chestplate"
+      pantalones: "mistaken:charro_leggings"
+      botas: "mistaken:charro_boots"
     items:
       arma: "GOLDEN_AXE"
       arma_nombre: "<gradient:#ff0000:#000000>La Guitarra del Destino"
