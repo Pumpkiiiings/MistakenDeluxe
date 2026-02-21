@@ -9,6 +9,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPa
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
+import liric.mistaken.utils.mainThread
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.ItemDisplay
@@ -27,7 +28,7 @@ import kotlin.math.sin
 
 /**
  * KasaneTeto - La Quimera de las Baguettes v2.0
- * Optimización: ItemDisplays para las baguettes, Caché de Kit y Daño Real.
+ * FIX: Slots de habilidades corregidos (0-3) y carga de armadura blindada.
  */
 class KasaneTeto : Asesino(
     "teto",
@@ -55,14 +56,16 @@ class KasaneTeto : Asesino(
 
         armorKeys.forEach { key ->
             config.getString("$path.armadura.$key")?.let { id ->
-                if (id != "none") CraftEngineUtils.getCustomItem(id)?.let { itemKitCache[key] = it }
+                if (id != "none" && id.isNotEmpty()) {
+                    CraftEngineUtils.getCustomItem(id)?.let { itemKitCache[key] = it }
+                }
             }
         }
 
         itemKeys.forEach { key ->
             config.getString("$path.items.$key")?.let { id ->
                 val name = config.getString("$path.items.${key}_nombre")
-                if (id != "none") {
+                if (id != "none" && id.isNotEmpty()) {
                     CraftEngineUtils.getCustomItem(id)?.let { item ->
                         name?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
                         itemKitCache[key] = item
@@ -73,92 +76,28 @@ class KasaneTeto : Asesino(
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        if (checkCooldown(player, slot)) return
-
+        // 🔥 FIX: Mapeo de slots 0, 1, 2, 3 para las 4 habilidades
         when (slot) {
-            1 -> habilidadTaladro(player)
-            2 -> habilidadBaguette(player)
-            3 -> habilidadBroma(player)
-            4 -> habilidadTerritory(player)
-        }
-        reproducirEfectosHabilidad(player, slot)
-    }
-
-    // --- 🚀 TRAIL ASÍNCRONO ---
-
-    override fun mostrarTrail(player: Player) {
-        if (player.velocity.lengthSquared() < 0.001) return
-
-        val loc = player.location
-        val mgr = PacketEvents.getAPI().playerManager
-        val pos = Vector3d(loc.x, loc.y + 0.2, loc.z)
-
-        // Partículas Rosas (SPORE_BLOSSOM_AIR)
-        val pinkPacket = WrapperPlayServerParticle(
-            Particle(ParticleTypes.SPORE_BLOSSOM_AIR), false, pos, Vector3f(0.3f, 0.1f, 0.3f), 0.01f, 1
-        )
-
-        loc.world.players.forEach { p ->
-            if (p != player && p.location.distanceSquared(loc) < 400.0) {
-                mgr.sendPacket(p, pinkPacket)
-
-                // Notas musicales rosas (25% chance)
-                if (ThreadLocalRandom.current().nextFloat() < 0.25f) {
-                    mgr.sendPacket(p, WrapperPlayServerParticle(
-                        Particle(ParticleTypes.NOTE), false, Vector3d(loc.x, loc.y + 2.1, loc.z), Vector3f(0.1f, 0.1f, 0.1f), 0.6f, 1
-                    ))
-                }
+            1 -> {
+                if (checkCooldown(player, 1)) return
+                habilidadTaladro(player)
+                reproducirEfectosHabilidad(player, 1)
             }
-        }
-    }
-
-    // --- 🌀 MOTOR DE BAGUETTES (Físico) ---
-
-    override fun mostrarTrailFisico(player: Player) {
-        val uuid = player.uniqueId
-        if (!plugin.asesinoManager.esElAsesino(player)) { limpiarBaguettes(uuid); return }
-
-        // Fix cambio de mundo
-        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarBaguettes(uuid)
-
-        val entidades = orbitadores.getOrPut(uuid) {
-            mutableListOf<ItemDisplay>().apply {
-                repeat(4) { add(crearBaguetteOrbitante(player.location)) }
+            2 -> {
+                if (checkCooldown(player, 2)) return
+                habilidadBaguette(player)
+                reproducirEfectosHabilidad(player, 2)
             }
-        }
-
-        val anguloBase = angulos.getOrDefault(uuid, 0.0)
-        val radio = 1.2
-        val size = entidades.size
-
-        for (i in entidades.indices) {
-            val display = entidades[i]
-            if (display.isValid) {
-                val offset = (2 * Math.PI / size) * i
-                val x = radio * cos(anguloBase + offset)
-                val z = radio * sin(anguloBase + offset)
-                val y = 1.1 + (0.1 * sin((anguloBase + offset) * 2))
-
-                // Teleport con rotación para que las baguettes miren hacia afuera
-                val loc = player.location.clone().add(x, y, z)
-                loc.yaw = ((anguloBase + offset) * 180 / Math.PI).toFloat() + 90f
-                display.teleport(loc)
+            3 -> {
+                if (checkCooldown(player, 3)) return
+                habilidadBroma(player)
+                reproducirEfectosHabilidad(player, 3)
             }
-        }
-        angulos[uuid] = anguloBase + 0.12
-    }
-
-    private fun crearBaguetteOrbitante(loc: Location): ItemDisplay {
-        return loc.world.spawn(loc, ItemDisplay::class.java) { id ->
-            id.setItemStack(ItemStack(Material.BREAD))
-            id.transformation = Transformation(
-                JomlVector3f(0f, 0f, 0f),
-                Quaternionf(),
-                JomlVector3f(0.8f, 0.8f, 0.8f), // Un poquito grandes porque son baguettes
-                Quaternionf()
-            )
-            id.teleportDuration = 1
-            id.interpolationDuration = 1
+            4 -> {
+                if (checkCooldown(player, 4)) return
+                habilidadTerritory(player)
+                reproducirEfectosHabilidad(player, 4)
+            }
         }
     }
 
@@ -178,6 +117,7 @@ class KasaneTeto : Asesino(
     }
 
     private fun habilidadBaguette(player: Player) {
+        // Dash de Baguette
         player.velocity = player.location.direction.multiply(1.1).setY(0.2)
         player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
@@ -189,6 +129,7 @@ class KasaneTeto : Asesino(
     }
 
     private fun habilidadBroma(player: Player) {
+        // Broma del 1 de Abril
         player.world.spawnParticle(org.bukkit.Particle.EXPLOSION, player.location, 1)
         player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
@@ -200,6 +141,7 @@ class KasaneTeto : Asesino(
     }
 
     private fun habilidadTerritory(player: Player) {
+        // Buff Territory
         player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 240, 0))
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 240, 1))
         player.isGlowing = true
@@ -213,24 +155,79 @@ class KasaneTeto : Asesino(
         }, 240L)
     }
 
-    // --- EQUIPAMIENTO ---
+    // --- 🚀 VISUALES ---
+
+    override fun mostrarTrail(player: Player) {
+        if (player.velocity.lengthSquared() < 0.001) return
+        val loc = player.location
+        val pos = Vector3d(loc.x, loc.y + 0.2, loc.z)
+        val pinkPacket = WrapperPlayServerParticle(Particle(ParticleTypes.SPORE_BLOSSOM_AIR), false, pos, Vector3f(0.3f, 0.1f, 0.3f), 0.01f, 1)
+        loc.world.players.forEach { p -> if (p != player && p.location.distanceSquared(loc) < 400.0) PacketEvents.getAPI().playerManager.sendPacket(p, pinkPacket) }
+    }
+
+    override fun mostrarTrailFisico(player: Player) {
+        val uuid = player.uniqueId
+        if (!plugin.asesinoManager.esElAsesino(player)) { limpiarBaguettes(uuid); return }
+
+        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarBaguettes(uuid)
+
+        val entidades = orbitadores.getOrPut(uuid) {
+            mutableListOf<ItemDisplay>().apply {
+                repeat(4) { add(crearBaguetteOrbitante(player.location)) }
+            }
+        }
+
+        val anguloBase = angulos.getOrDefault(uuid, 0.0)
+        val radio = 1.2
+
+        for (i in entidades.indices) {
+            val display = entidades[i]
+            if (display.isValid) {
+                val offset = (2 * Math.PI / entidades.size) * i
+                val x = radio * cos(anguloBase + offset)
+                val z = radio * sin(anguloBase + offset)
+                val y = 1.1 + (0.1 * sin((anguloBase + offset) * 2))
+
+                val loc = player.location.clone().add(x, y, z)
+                loc.yaw = ((anguloBase + offset) * 180 / Math.PI).toFloat() + 90f
+                display.teleport(loc)
+            }
+        }
+        angulos[uuid] = anguloBase + 0.12
+    }
+
+    private fun crearBaguetteOrbitante(loc: Location): ItemDisplay {
+        return loc.world.spawn(loc, ItemDisplay::class.java) { id ->
+            id.setItemStack(ItemStack(Material.BREAD))
+            id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf(), JomlVector3f(0.8f, 0.8f, 0.8f), Quaternionf())
+            id.teleportDuration = 1
+            id.interpolationDuration = 1
+        }
+    }
+
+    // --- 🛠️ EQUIPAMIENTO (EL FIX) ---
 
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
 
-        if (!itemKitCache.containsKey("casco")) preLoadKit()
+        // 🔥 FIX: Re-cargar si el caché está vacío (CraftEngine timing fix)
+        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) {
+            preLoadKit()
+        }
 
-        inv.helmet = itemKitCache["casco"]?.clone()
-        inv.chestplate = itemKitCache["pechera"]?.clone()
-        inv.leggings = itemKitCache["pantalones"]?.clone()
-        inv.boots = itemKitCache["botas"]?.clone()
+        // Equipar armadura
+        itemKitCache["casco"]?.let { inv.helmet = it.clone() }
+        itemKitCache["pechera"]?.let { inv.chestplate = it.clone() }
+        itemKitCache["pantalones"]?.let { inv.leggings = it.clone() }
+        itemKitCache["botas"]?.let { inv.boots = it.clone() }
 
-        inv.setItem(8, itemKitCache["arma"]?.clone())
-        inv.setItem(1, itemKitCache["habilidad1"]?.clone())
-        inv.setItem(2, itemKitCache["habilidad2"]?.clone())
-        inv.setItem(3, itemKitCache["habilidad3"]?.clone())
-        inv.setItem(4, itemKitCache["habilidad4"]?.clone())
+        // Equipar hotbar
+        itemKitCache["habilidad1"]?.let { inv.setItem(1, it.clone()) }
+        itemKitCache["habilidad2"]?.let { inv.setItem(2, it.clone()) }
+        itemKitCache["habilidad3"]?.let { inv.setItem(3, it.clone()) }
+        itemKitCache["habilidad4"]?.let { inv.setItem(4, it.clone()) }
+        itemKitCache["arma"]?.let { inv.setItem(8, it.clone()) }
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()
@@ -243,6 +240,9 @@ class KasaneTeto : Asesino(
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        player?.let { limpiarBaguettes(it.uniqueId) }
+        player?.let {
+            limpiarBaguettes(it.uniqueId)
+            it.removePotionEffect(PotionEffectType.DARKNESS)
+        }
     }
 }

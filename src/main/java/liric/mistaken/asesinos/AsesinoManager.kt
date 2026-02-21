@@ -37,7 +37,8 @@ class AsesinoManager(private val plugin: Mistaken) {
         // Registro inicial de clases (Añadidos los nuevos asesinos)
         listOf(
             Slasher(), Herobrine(), Entity303(), NullAsesino(),
-            ColorAndElectricity(), CharlieInferno()
+            ColorAndElectricity(), CharlieInferno(), Romeo(), Mariachi(),
+            Devesto(), KasaneTeto()
         ).forEach { registrarClase(it) }
     }
 

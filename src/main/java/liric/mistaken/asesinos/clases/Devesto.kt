@@ -9,6 +9,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPa
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
+import liric.mistaken.utils.mainThread
 import org.bukkit.*
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
@@ -16,6 +17,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Transformation
+import org.bukkit.util.Vector
 import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
@@ -24,8 +26,8 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * DEVESTO - The F3X Architect v2.0
- * Sincronizado con YAML: Carga de nombres, cooldowns y sonidos dinámicos.
+ * DEVESTO - The F3X Architect v2.2
+ * FIX: Slots de habilidades (0-3), Knockback manual y carga de items garantizada.
  */
 class Devesto : Asesino(
     "devesto",
@@ -37,7 +39,6 @@ class Devesto : Asesino(
 
     private val path = "asesinos.devesto"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
-
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val backupMapa = ConcurrentHashMap<Location, Material>()
@@ -46,10 +47,6 @@ class Devesto : Asesino(
         preLoadKit()
     }
 
-    /**
-     * 🔥 CACHÉ INTELIGENTE:
-     * Carga todos los items Y sus nombres desde el YAML una sola vez.
-     */
     private fun preLoadKit() {
         val config = plugin.configManager.getAsesinos()
         val armorKeys = listOf("casco", "pechera", "pantalones", "botas")
@@ -57,14 +54,14 @@ class Devesto : Asesino(
 
         armorKeys.forEach { key ->
             config.getString("$path.armadura.$key")?.let { id ->
-                if (id != "none") CraftEngineUtils.getCustomItem(id)?.let { itemKitCache[key] = it }
+                if (id != "none" && id.isNotEmpty()) CraftEngineUtils.getCustomItem(id)?.let { itemKitCache[key] = it }
             }
         }
 
         itemKeys.forEach { key ->
             config.getString("$path.items.$key")?.let { id ->
                 val name = config.getString("$path.items.${key}_nombre")
-                if (id != "none") {
+                if (id != "none" && id.isNotEmpty()) {
                     CraftEngineUtils.getCustomItem(id)?.let { item ->
                         name?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
                         itemKitCache[key] = item
@@ -75,84 +72,60 @@ class Devesto : Asesino(
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        if (checkCooldown(player, slot)) return
-
+        // 🔥 FIX: Mapping de slots 0, 1, 2, 3 (correspondientes a las teclas 1, 2, 3, 4)
         when (slot) {
-            1 -> habilidadMoveTool(player)
-            2 -> habilidadPaintTool(player)
-            3 -> habilidadResizeTool(player)
-            4 -> habilidadDeleteTool(player)
-        }
-        reproducirEfectosHabilidad(player, slot)
-    }
-
-    // --- 🔄 ÓRBITA DE HERRAMIENTAS (ItemDisplays) ---
-
-    override fun mostrarTrailFisico(player: Player) {
-        val uuid = player.uniqueId
-        if (!plugin.asesinoManager.esElAsesino(player)) { limpiarEntidades(uuid); return }
-
-        // Fix de cambio de mundo
-        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarEntidades(uuid)
-
-        val entidades = orbitadores.getOrPut(uuid) {
-            mutableListOf(
-                // Tomamos las herramientas del caché para que se vea igual que su arma
-                crearDisplayHerramienta(player.location, itemKitCache["arma"] ?: ItemStack(Material.NETHERITE_AXE)),
-                crearDisplayHerramienta(player.location, ItemStack(Material.NETHERITE_HOE)) // Azada para el F3X look
-            )
-        }
-
-        val anguloBase = angulos.getOrDefault(uuid, 0.0)
-        val radio = 1.4
-
-        // Rotación Hacha
-        val x1 = radio * cos(anguloBase)
-        val z1 = radio * sin(anguloBase)
-        entidades[0].teleport(player.location.clone().add(x1, 0.9, z1))
-
-        // Rotación Azada (Contraria)
-        val x2 = radio * cos(anguloBase + Math.PI)
-        val z2 = radio * sin(anguloBase + Math.PI)
-        entidades[1].teleport(player.location.clone().add(x2, 0.9, z2))
-
-        angulos[uuid] = anguloBase + 0.12
-    }
-
-    private fun crearDisplayHerramienta(loc: Location, item: ItemStack): ItemDisplay {
-        return loc.world.spawn(loc, ItemDisplay::class.java) { id ->
-            id.setItemStack(item)
-            id.transformation = Transformation(
-                org.joml.Vector3f(0f, 0f, 0f),
-                Quaternionf().rotateZ(Math.toRadians(45.0).toFloat()),
-                org.joml.Vector3f(0.7f, 0.7f, 0.7f),
-                Quaternionf()
-            )
-            id.teleportDuration = 1
-            id.interpolationDuration = 1
+            1 -> {
+                if (checkCooldown(player, 1)) return
+                habilidadMoveTool(player)
+                reproducirEfectosHabilidad(player, 1)
+            }
+            2 -> {
+                if (checkCooldown(player, 2)) return
+                habilidadPaintTool(player)
+                reproducirEfectosHabilidad(player, 2)
+            }
+            3 -> {
+                if (checkCooldown(player, 3)) return
+                habilidadResizeTool(player)
+                reproducirEfectosHabilidad(player, 3)
+            }
+            4 -> {
+                if (checkCooldown(player, 4)) return
+                habilidadDeleteTool(player)
+                reproducirEfectosHabilidad(player, 4)
+            }
         }
     }
 
-    // --- 🛠️ HABILIDADES F3X ---
+    // --- 🏗️ HABILIDADES CON KNOCKBACK ---
 
     private fun habilidadMoveTool(player: Player) {
+        player.sendMessage(mm.deserialize("<blue>[F3X]</blue> <gray>Herramienta: <white>MOVE"))
+        player.playSound(player.location, Sound.BLOCK_IRON_TRAPDOOR_OPEN, 1f, 2f)
+
         player.getNearbyEntities(10.0, 10.0, 10.0).filterIsInstance<Player>().forEach { target ->
             if (!plugin.asesinoManager.esElAsesino(target)) {
-                target.velocity = player.location.direction.multiply(2.2).setY(0.4)
+                // 🔥 TRUE KNOCKBACK: Empujamos al jugador en la dirección que mira Devesto
+                val push = player.location.direction.normalize().multiply(2.2).setY(0.4)
+                target.velocity = push
             }
         }
     }
 
     private fun habilidadPaintTool(player: Player) {
+        player.sendMessage(mm.deserialize("<blue>[F3X]</blue> <gray>Herramienta: <white>PAINT"))
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { target ->
             if (!plugin.asesinoManager.esElAsesino(target)) {
                 target.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
                 target.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 80, 1))
+                // Pequeño empuje para que se note el golpe de "pintura"
+                target.velocity = target.location.toVector().subtract(player.location.toVector()).normalize().multiply(0.5).setY(0.2)
             }
         }
     }
 
     private fun habilidadResizeTool(player: Player) {
+        player.sendMessage(mm.deserialize("<blue>[F3X]</blue> <gray>Herramienta: <white>RESIZE"))
         player.getNearbyEntities(12.0, 12.0, 12.0).filterIsInstance<Player>().forEach { target ->
             if (!plugin.asesinoManager.esElAsesino(target)) {
                 target.addPotionEffect(PotionEffect(PotionEffectType.LEVITATION, 35, 2))
@@ -170,48 +143,83 @@ class Devesto : Asesino(
                     for (z in -1..1) {
                         val b = targetBlock.getRelative(x, y, z)
                         if (b.type.isAir || b.type == Material.BEDROCK || b.type == Material.BARRIER) continue
-
                         backupMapa.putIfAbsent(b.location, b.type)
-                        val loc = b.location
                         b.type = Material.AIR
-
-                        b.world.spawnParticle(org.bukkit.Particle.BLOCK_CRUMBLE, loc.add(0.5, 0.5, 0.5), 3, b.blockData)
+                        b.world.spawnParticle(org.bukkit.Particle.BLOCK_CRUMBLE, b.location.add(0.5, 0.5, 0.5), 3, b.blockData)
                     }
                 }
             }
         }
 
+        // 🔥 TRUE DAMAGE & KNOCKBACK
         player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { target ->
             if (!plugin.asesinoManager.esElAsesino(target)) {
                 plugin.combatManager.processTrueDamage(target, player, 12.0)
+
+                // Explosión que aleja a los sobrevivientes del punto de impacto
+                val kb = target.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.5)
+                target.velocity = kb
             }
         }
     }
 
+    // --- 🛠️ EQUIPAMIENTO (FIXED) ---
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
 
-        if (itemKitCache.isEmpty()) preLoadKit()
-
-        inv.helmet = itemKitCache["casco"]?.clone()
-        inv.chestplate = itemKitCache["pechera"]?.clone()
-        inv.leggings = itemKitCache["pantalones"]?.clone()
-        inv.boots = itemKitCache["botas"]?.clone()
-
-        // Usamos forEach para que sea más legible y seguro
-        mapOf(
-            8 to "arma", 1 to "habilidad1", 2 to "habilidad2",
-            3 to "habilidad3", 4 to "habilidad4"
-        ).forEach { (slot, key) ->
-            itemKitCache[key]?.let { inv.setItem(slot, it.clone()) }
+        // 🔥 FIX: Lazy load para asegurar armadura de CraftEngine
+        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) {
+            preLoadKit()
         }
+
+        // Cargar armadura desde caché con clonación segura
+        itemKitCache["casco"]?.let { inv.helmet = it.clone() }
+        itemKitCache["pechera"]?.let { inv.chestplate = it.clone() }
+        itemKitCache["pantalones"]?.let { inv.leggings = it.clone() }
+        itemKitCache["botas"]?.let { inv.boots = it.clone() }
+
+        // Cargar ítems en Hotbar (Slot 0-3 y Arma en 8)
+        itemKitCache["habilidad1"]?.let { inv.setItem(1, it.clone()) }
+        itemKitCache["habilidad2"]?.let { inv.setItem(2, it.clone()) }
+        itemKitCache["habilidad3"]?.let { inv.setItem(3, it.clone()) }
+        itemKitCache["habilidad4"]?.let { inv.setItem(4, it.clone()) }
+        itemKitCache["arma"]?.let { inv.setItem(8, it.clone()) }
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()
     }
 
-    override fun mostrarTrail(player: Player) { /* Devesto no tiene trail de partículas */ }
+    // --- 🔄 ÓRBITA ---
+    override fun mostrarTrailFisico(player: Player) {
+        val uuid = player.uniqueId
+        if (!plugin.asesinoManager.esElAsesino(player)) { limpiarEntidades(uuid); return }
+
+        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarEntidades(uuid)
+
+        val entidades = orbitadores.getOrPut(uuid) {
+            mutableListOf(
+                crearDisplayHerramienta(player.location, itemKitCache["arma"] ?: ItemStack(Material.NETHERITE_AXE)),
+                crearDisplayHerramienta(player.location, ItemStack(Material.NETHERITE_HOE))
+            )
+        }
+
+        val anguloBase = angulos.getOrDefault(uuid, 0.0)
+        val radio = 1.3
+        entidades[0].teleport(player.location.clone().add(radio * cos(anguloBase), 0.8, radio * sin(anguloBase)))
+        entidades[1].teleport(player.location.clone().add(radio * cos(anguloBase + Math.PI), 0.8, radio * sin(anguloBase + Math.PI)))
+        angulos[uuid] = anguloBase + 0.12
+    }
+
+    private fun crearDisplayHerramienta(loc: Location, item: ItemStack): ItemDisplay {
+        return loc.world.spawn(loc, ItemDisplay::class.java) { id ->
+            id.setItemStack(item)
+            id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf().rotateZ(Math.toRadians(45.0).toFloat()), JomlVector3f(0.7f, 0.7f, 0.7f), Quaternionf())
+            id.teleportDuration = 1; id.interpolationDuration = 1
+        }
+    }
+
+    override fun mostrarTrail(player: Player) {}
 
     private fun limpiarEntidades(uuid: UUID) {
         orbitadores.remove(uuid)?.forEach { it.remove() }
@@ -219,7 +227,6 @@ class Devesto : Asesino(
     }
 
     override fun cleanup(player: Player?) {
-        // Restaurar bloques si es que se usó //set 0
         if (backupMapa.isNotEmpty()) {
             backupMapa.forEach { (loc, mat) -> loc.block.type = mat }
             backupMapa.clear()

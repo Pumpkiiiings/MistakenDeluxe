@@ -9,6 +9,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTe
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
+import liric.mistaken.game.enums.GameState
 import liric.mistaken.utils.CraftEngineUtils
 import liric.mistaken.utils.mainThread
 import net.kyori.adventure.text.Component
@@ -30,8 +31,8 @@ import kotlin.math.sin
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Romeo: El Administrador del Mundo (MSM Edition)
- * H1: Admin Dash (Colisión) | H2: Visión Admin | H3: Colmillos Triple | H4: Nether Star
+ * Romeo: El Administrador del Mundo.
+ * FIX: Slots corregidos (0-3), Knockback manual potente y carga de armadura garantizada.
  */
 class Romeo : Asesino(
     "romeo",
@@ -55,100 +56,120 @@ class Romeo : Asesino(
 
         armor.forEach { k ->
             config.getString("$path.armadura.$k")?.let { id ->
-                CraftEngineUtils.getCustomItem(id)?.let { itemKitCache[k] = it }
+                if (id != "none" && id.isNotEmpty()) {
+                    CraftEngineUtils.getCustomItem(id)?.let { itemKitCache[k] = it }
+                }
             }
         }
 
         items.forEach { k ->
             config.getString("$path.items.$k")?.let { id ->
                 val name = config.getString("$path.items.${k}_nombre")
-                CraftEngineUtils.getCustomItem(id)?.let { item ->
-                    name?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
-                    itemKitCache[k] = item
+                if (id != "none" && id.isNotEmpty()) {
+                    CraftEngineUtils.getCustomItem(id)?.let { item ->
+                        name?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
+                        itemKitCache[k] = item
+                    }
                 }
             }
         }
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        if (checkCooldown(player, slot)) return
+        // 🔥 FIX: Mapping de slots 0, 1, 2, 3 (correspondientes a las teclas 1, 2, 3, 4)
         when (slot) {
-            1 -> habilidadAdminDash(player)
-            2 -> habilidadAdminVision(player)
-            3 -> habilidadTripleColmillo(player)
-            4 -> habilidadNetherStar(player)
+            1 -> {
+                if (checkCooldown(player, 1)) return
+                habilidadAdminDash(player)
+                reproducirEfectosHabilidad(player, 1)
+            }
+            2 -> {
+                if (checkCooldown(player, 2)) return
+                habilidadAdminVision(player)
+                reproducirEfectosHabilidad(player, 2)
+            }
+            3 -> {
+                if (checkCooldown(player, 3)) return
+                habilidadTripleColmillo(player)
+                reproducirEfectosHabilidad(player, 3)
+            }
+            4 -> {
+                if (checkCooldown(player, 4)) return
+                habilidadNetherStar(player)
+                reproducirEfectosHabilidad(player, 4)
+            }
         }
-        reproducirEfectosHabilidad(player, slot)
     }
 
-    // --- 🏃 H1: ADMIN DASH (5 SEGUNDOS) ---
+    // --- 🏃 H1: ADMIN DASH CON TRUE KB ---
     private fun habilidadAdminDash(player: Player) {
         val job = scope.launch {
             var duration = 100 // 5 segundos
             withContext(plugin.mainThread) {
+                player.playSound(player.location, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 0.5f)
                 while (duration > 0 && player.isOnline) {
                     val dir = player.location.direction.normalize().multiply(1.4)
                     player.velocity = dir
 
-                    // 1. Chocar con pared (Quita 3 corazones = 6 HP)
-                    val frontBlock = player.location.add(dir.clone().multiply(0.5)).block
-                    if (frontBlock.type.isSolid) {
-                        plugin.combatManager.processTrueDamage(player, null, 6.0)
+                    // Detección de colisión con muros
+                    val checkLoc = player.location.clone().add(dir.clone().multiply(0.8))
+                    if (checkLoc.block.type.isSolid) {
+                        plugin.combatManager.processTrueDamage(player, null, 6.0) // 3 corazones daño self
                         player.playSound(player.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
-                        player.sendMessage(mm.deserialize("<red><b>[!]</b> ¡Impacto brutal contra el entorno!</red>"))
+                        player.sendMessage(mm.deserialize("<red><b>[!]</b> ¡Has impactado contra un muro!</red>"))
                         break
                     }
 
-                    // 2. Chocar con Jugador (Quita 2.5 corazones = 5 HP)
-                    player.getNearbyEntities(1.5, 1.5, 1.5).filterIsInstance<Player>().firstOrNull {
+                    // Detección de víctimas + KB Manual (True Damage)
+                    player.getNearbyEntities(2.0, 2.0, 2.0).filterIsInstance<Player>().firstOrNull {
                         !plugin.asesinoManager.esElAsesino(it)
                     }?.let { victim ->
-                        plugin.combatManager.processTrueDamage(victim, player, 5.0)
+                        plugin.combatManager.processTrueDamage(victim, player, 5.0) // 2.5 corazones
+                        // 🔥 Knockback manual potente del dash
+                        victim.velocity = player.location.direction.normalize().multiply(1.5).setY(0.4)
                         player.playSound(player.location, Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.2f, 0.8f)
                         duration = 0
                     }
-
-                    delay(50)
-                    duration--
+                    delay(50); duration--
                 }
             }
         }
         trackJob(job)
     }
 
-    // --- 👁️ H2: ADMIN VISION (GLOW BLANCO VIRTUAL) ---
+    // --- 👁️ H2: ADMIN VISION (WHITE GLOW VIRTUAL) ---
     private fun habilidadAdminVision(player: Player) {
         val teamInfo = ScoreBoardTeamInfo(
             Component.text("AdminTeam"), Component.empty(), Component.empty(),
-            WrapperPlayServerTeams.NameTagVisibility.ALWAYS, WrapperPlayServerTeams.CollisionRule.NEVER,
-            NamedTextColor.WHITE, WrapperPlayServerTeams.OptionData.NONE
+            WrapperPlayServerTeams.NameTagVisibility.ALWAYS,
+            WrapperPlayServerTeams.CollisionRule.NEVER,
+            NamedTextColor.WHITE,
+            WrapperPlayServerTeams.OptionData.NONE
         )
 
         player.getNearbyEntities(100.0, 100.0, 100.0).filterIsInstance<Player>().forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
-                // Creamos equipo virtual blanco solo para Romeo
                 val createTeam = WrapperPlayServerTeams("admin_glow", WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, mutableListOf(victim.name))
                 PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
 
-                // Aplicamos el brillo
-                val packet = WrapperPlayServerEntityMetadata(victim.entityId, listOf(EntityData(0, EntityDataTypes.BYTE, 0x40.toByte())))
+                val mask = 0x40.toByte()
+                val packet = WrapperPlayServerEntityMetadata(victim.entityId, listOf(EntityData(0, EntityDataTypes.BYTE, mask)))
                 PacketEvents.getAPI().playerManager.sendPacket(player, packet)
             }
         }
 
-        // Limpiar en 10 segundos
         Bukkit.getScheduler().runTaskLater(plugin, Runnable {
             if (player.isOnline) {
-                val removeTeam = WrapperPlayServerTeams("admin_glow", WrapperPlayServerTeams.TeamMode.REMOVE, null as ScoreBoardTeamInfo?, mutableListOf<String>())
+                val removeTeam = WrapperPlayServerTeams("admin_glow", WrapperPlayServerTeams.TeamMode.REMOVE, null as ScoreBoardTeamInfo?, mutableListOf())
                 PacketEvents.getAPI().playerManager.sendPacket(player, removeTeam)
             }
-        }, 200L)
+        }, 200L) // 10 Segundos
     }
 
-    // --- 🦷 H3: TRIPLE COLMILLO DEL VACÍO ---
+    // --- 🦷 H3: TRIPLE COLMILLO ---
     private fun habilidadTripleColmillo(player: Player) {
         val startLoc = player.location
-        val angles = listOf(-25.0, 0.0, 25.0) // Abanico triple
+        val angles = listOf(-25.0, 0.0, 25.0)
 
         angles.forEach { offset ->
             scope.launch {
@@ -158,15 +179,14 @@ class Romeo : Asesino(
                     withContext(plugin.mainThread) {
                         currentLoc.add(direction)
                         if (!currentLoc.block.type.isSolid) {
-                            currentLoc.world?.spawnParticle(org.bukkit.Particle.WITCH, currentLoc, 4, 0.1, 0.1, 0.1, 0.02)
                             currentLoc.world?.spawn(currentLoc, EvokerFangs::class.java)
 
-                            // Efectos de impacto
-                            currentLoc.world?.getNearbyEntities(currentLoc, 1.2, 1.2, 1.2)?.filterIsInstance<Player>()?.forEach { victim ->
+                            currentLoc.world?.getNearbyEntities(currentLoc, 1.5, 1.5, 1.5)?.filterIsInstance<Player>()?.forEach { victim ->
                                 if (!plugin.asesinoManager.esElAsesino(victim)) {
                                     plugin.combatManager.processTrueDamage(victim, player, 4.0) // 2 corazones
-                                    victim.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 0)) // 3s
-                                    victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0)) // 2s
+                                    victim.velocity = Vector(0.0, 0.5, 0.0) // Mini KB hacia arriba
+                                    victim.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 0))
+                                    victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
                                 }
                             }
                         }
@@ -177,42 +197,42 @@ class Romeo : Asesino(
         }
     }
 
-    // --- ⭐ H4: NETHER STAR (PROJECTILE) ---
+    // --- ⭐ H4: NETHER STAR PROJECTILE ---
     private fun habilidadNetherStar(player: Player) {
-        val starDisplay = player.world.spawn(player.eyeLocation, ItemDisplay::class.java) {
+        val star = player.world.spawn(player.eyeLocation, ItemDisplay::class.java) {
             it.setItemStack(ItemStack(Material.NETHER_STAR))
-            it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.6f, 0.6f, 0.6f), Quaternionf())
+            it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.7f, 0.7f, 0.7f), Quaternionf())
             it.interpolationDuration = 1; it.teleportDuration = 1
         }
-
         val direction = player.location.direction.multiply(1.5)
-
         scope.launch {
             var ticks = 0
             withContext(plugin.mainThread) {
-                while (ticks < 40 && starDisplay.isValid) {
-                    starDisplay.teleport(starDisplay.location.add(direction))
-                    starDisplay.world.spawnParticle(org.bukkit.Particle.END_ROD, starDisplay.location, 2, 0.0, 0.0, 0.0, 0.01)
+                while (ticks < 40 && star.isValid) {
+                    star.teleport(star.location.add(direction))
+                    val hit = star.getNearbyEntities(1.5, 1.5, 1.5).filterIsInstance<Player>().firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
 
-                    val hit = starDisplay.getNearbyEntities(1.0, 1.0, 1.0).filterIsInstance<Player>().firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
-                    if (hit != null || starDisplay.location.block.type.isSolid) {
-                        starDisplay.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, starDisplay.location, 1)
-                        starDisplay.world.playSound(starDisplay.location, Sound.ENTITY_GENERIC_EXPLODE, 1.2f, 1.1f)
+                    if (hit != null || star.location.block.type.isSolid) {
+                        star.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, star.location, 1)
+                        star.world.playSound(star.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1.2f)
 
                         hit?.let {
-                            plugin.combatManager.processTrueDamage(it, player, 5.0) // 2.5 corazones
-                            it.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 0)) // 3s debilidad
+                            plugin.combatManager.processTrueDamage(it, player, 5.0)
+                            // KB Manual de explosión
+                            val kb = it.location.toVector().subtract(star.location.toVector()).normalize().multiply(1.4).setY(0.4)
+                            it.velocity = kb
+                            it.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 0))
                         }
                         break
                     }
                     delay(50); ticks++
                 }
-                starDisplay.remove()
+                star.remove()
             }
         }
     }
 
-    // --- 🧊 MOTOR FÍSICO: COMMAND BLOCK ORBITANTE ---
+    // --- 🧊 MOTOR FÍSICO: COMMAND BLOCK ---
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { limpiar(uuid); return }
@@ -225,29 +245,35 @@ class Romeo : Asesino(
             }
         }
 
-        val angulo = (angulos.getOrDefault(uuid, 0.0) + 0.15) % (Math.PI * 2)
-        val x = 1.4 * cos(angulo); val z = 1.4 * sin(angulo); val y = 1.2 + (0.15 * sin(angulo * 2))
-        display.teleport(player.location.clone().add(x, y, z))
+        val angulo = (angulos.getOrDefault(uuid, 0.0) + 0.12) % (Math.PI * 2)
+        display.teleport(player.location.clone().add(1.5 * cos(angulo), 1.2 + (0.15 * sin(angulo * 2)), 1.5 * sin(angulo)))
         angulos[uuid] = angulo
     }
 
     override fun mostrarTrail(player: Player) {}
 
+    // --- 🛠️ EQUIPAMIENTO (FIXED) ---
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
-        if (itemKitCache.isEmpty()) preLoadKit()
 
-        inv.helmet = itemKitCache["casco"]?.clone()
-        inv.chestplate = itemKitCache["pechera"]?.clone()
-        inv.leggings = itemKitCache["pantalones"]?.clone()
-        inv.boots = itemKitCache["botas"]?.clone()
+        // 🔥 FIX: Lazy load por si CraftEngine no estaba listo
+        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) {
+            preLoadKit()
+        }
 
-        inv.setItem(8, itemKitCache["arma"]?.clone())
-        inv.setItem(0, itemKitCache["habilidad1"]?.clone())
-        inv.setItem(1, itemKitCache["habilidad2"]?.clone())
-        inv.setItem(2, itemKitCache["habilidad3"]?.clone())
-        inv.setItem(3, itemKitCache["habilidad4"]?.clone())
+        // Cargar armadura
+        itemKitCache["casco"]?.let { inv.helmet = it.clone() }
+        itemKitCache["pechera"]?.let { inv.chestplate = it.clone() }
+        itemKitCache["pantalones"]?.let { inv.leggings = it.clone() }
+        itemKitCache["botas"]?.let { inv.boots = it.clone() }
+
+        // Cargar hotbar (Slots 0, 1, 2, 3 + Arma en 8)
+        itemKitCache["habilidad1"]?.let { inv.setItem(1, it.clone()) }
+        itemKitCache["habilidad2"]?.let { inv.setItem(2, it.clone()) }
+        itemKitCache["habilidad3"]?.let { inv.setItem(3, it.clone()) }
+        itemKitCache["habilidad4"]?.let { inv.setItem(4, it.clone()) }
+        itemKitCache["arma"]?.let { inv.setItem(8, it.clone()) }
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()

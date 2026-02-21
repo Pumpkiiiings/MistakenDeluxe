@@ -382,12 +382,12 @@ asesinos:
 
   romeo:
     precio: 30000
-    icono_material: "REDSTONE_BLOCK"
+    icono_material: "COMMAND_BLOCK"
     nombre: "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient> <white>[ADMIN]</white>"
     descripcion:
       - "<red>El Administrador del Mundo ha regresado."
-      - "<gray>Capaz de reescribir las reglas a su voluntad."
-      - "<gold>Mecánica: <white>Manipulación de bloques y teleportación global."
+      - "<gray>Controla el campo de batalla con el poder del código."
+      - "<gold>Mecánica: <white>Dash destructivo y ataques del Vacío."
     lore_tienda:
       - "<gray>\"¡Yo hago las reglas aquí!\""
       - "<white>Dificultad: <dark_red>IMPARABLE"
@@ -398,23 +398,23 @@ asesinos:
       botas: "mistaken:romeo_boots"
     items:
       arma: "DIAMOND_PICKAXE"
-      arma_nombre: "<gradient:#ff0000:#ffff00>Pico de Administrador"
-      habilidad1: "BARRIER"
-      habilidad1_nombre: "<red>Muro Invisible"
-      habilidad1_cooldown: 18
-      habilidad1_sonido: "BLOCK_BARRIER_PLACE"
-      habilidad2: "ENDER_PEARL"
-      habilidad2_nombre: "<gold>Desplazamiento de Bloque"
-      habilidad2_cooldown: 10
-      habilidad2_sonido: "ENTITY_ENDER_PEARL_THROW"
-      habilidad3: "REDSTONE_TORCH"
-      habilidad3_nombre: "<yellow>Activación de Trampas"
-      habilidad3_cooldown: 25
-      habilidad3_sonido: "BLOCK_REDSTONE_TORCH_BURNOUT"
-      habilidad4: "COMMAND_BLOCK"
-      habilidad4_nombre: "<dark_red><bold>REGLAS DEL JUEGO</bold>"
-      habilidad4_cooldown: 90
-      habilidad4_sonido: "BLOCK_COMMAND_BLOCK_ACTIVATE"
+      arma_nombre: "<gradient:#ff0000:#ffff00>Pico del Administrador"
+      habilidad1: "FEATHER"
+      habilidad1_nombre: "<red><b>Admin Dash</b>"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+      habilidad2: "EYE_OF_ENDER"
+      habilidad2_nombre: "<white><b>Visión del Administrador</b>"
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "ENTITY_ENDER_EYE_DEATH"
+      habilidad3: "ECHO_SHARD"
+      habilidad3_nombre: "<dark_purple><b>Colmillos del Vacío</b>"
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
+      habilidad4: "NETHER_STAR"
+      habilidad4_nombre: "<gold><b>Estrella del Fin</b>"
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_WITHER_DEATH"
 
   colorandelectricity:
     precio: 10500

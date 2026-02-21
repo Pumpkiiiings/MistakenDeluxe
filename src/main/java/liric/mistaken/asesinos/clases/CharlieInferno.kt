@@ -46,7 +46,7 @@ class CharlieInferno : Asesino(
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val musicTasks = ConcurrentHashMap<UUID, BukkitRunnable>()
 
-    private val orbitMaterials = listOf(Material.MAGMA_BLOCK, Material.PACKED_ICE)
+    private val orbitMaterials = listOf(Material.PACKED_ICE, Material.MAGMA_BLOCK)
 
     init {
         preLoadKit()
@@ -209,10 +209,10 @@ class CharlieInferno : Asesino(
         inv.boots = itemKitCache["botas"]?.clone()
 
         inv.setItem(8, itemKitCache["arma"]?.clone())
-        inv.setItem(0, itemKitCache["habilidad1"]?.clone())
-        inv.setItem(1, itemKitCache["habilidad2"]?.clone())
-        inv.setItem(2, itemKitCache["habilidad3"]?.clone())
-        inv.setItem(3, itemKitCache["habilidad4"]?.clone())
+        inv.setItem(1, itemKitCache["habilidad1"]?.clone())
+        inv.setItem(2, itemKitCache["habilidad2"]?.clone())
+        inv.setItem(3, itemKitCache["habilidad3"]?.clone())
+        inv.setItem(4, itemKitCache["habilidad4"]?.clone())
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()
