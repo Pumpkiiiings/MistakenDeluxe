@@ -185,6 +185,10 @@ class Mistaken : JavaPlugin() {
         // Esto permite que los loops de AmbientManager y otros empiecen a correr.
         isReady = true
 
+        lobbyLocation?.world?.let { world ->
+            world.setGameRule(org.bukkit.GameRule.DO_IMMEDIATE_RESPAWN, true)
+        }
+
         iniciarMotorDeParticulas() // El motor optimizado con Batching que hicimos
         sendLogo()
 

@@ -27,14 +27,22 @@ import java.util.concurrent.ThreadLocalRandom
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * GameListener: El árbitro de la partida.
- * Optimizado para Paper 1.21.4 y sincronizado con el sistema de salud Boss/Survivor.
+ * GameListener: El árbitro supremo de la partida.
+ *
+ * MEJORAS:
+ * - Insta-Respawn integrado (Cero pantalla roja).
+ * - Daño Real (True Damage) de 1.5 corazones para el Asesino.
+ * - Daño Real de 2.0 corazones para el Superviviente contra el Boss.
+ * - Optimización masiva de eventos de inventario y hambre.
  */
 class GameListener(private val plugin: Mistaken) : Listener {
 
     private val mm = MiniMessage.miniMessage()
     private val plain = PlainTextComponentSerializer.plainText()
 
+    /**
+     * 🔥 MOTOR DE COMBATE: Maneja el daño real ignorando armaduras.
+     */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onDamageByEntity(event: EntityDamageByEntityEvent) {
         if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
@@ -46,45 +54,76 @@ class GameListener(private val plugin: Mistaken) : Listener {
             else -> null
         } ?: return
 
-        // 🧊 REGLA FREEZE
+        // 🧊 REGLA FREEZE: Invulnerabilidad al estar congelado
         if (plugin.combatManager.isFrozen(victim)) {
             event.isCancelled = true
             return
         }
 
-        val damagerUUID = damager.uniqueId
-        val victimUUID = victim.uniqueId
+        val isDamagerKiller = plugin.gameManager.esAsesino(damager.uniqueId)
+        val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
 
-        // A. EL ASESINO ATACA A UN SOBREVIVIENTE
-        if (plugin.gameManager.esAsesino(damagerUUID) && !plugin.gameManager.esAsesino(victimUUID)) {
-            event.damage = 0.0 // Cancelamos Minecraft
-            // 🔥 LLAMADA CORREGIDA: Usamos processTrueDamage
-            plugin.combatManager.processTrueDamage(victim, damager, 6.0)
+        // CASO A: EL ASESINO ATACA A UN SOBREVIVIENTE
+        if (isDamagerKiller && !isVictimKiller) {
+            event.damage = 0.0 // Cancelamos daño vanilla
 
-            // Visuales de sangre
-            victim.world.spawnParticle(Particle.BLOCK, victim.location.add(0.0, 1.0, 0.0), 10, 0.1, 0.1, 0.1, Material.REDSTONE_BLOCK.createBlockData())
+            // Aplicamos DAÑO REAL (1.5 corazones = 3.0 HP)
+            plugin.combatManager.processTrueDamage(victim, damager, 3.0)
+
+            // Efectos visuales de impacto (Sangre)
+            victim.world.spawnParticle(
+                Particle.BLOCK,
+                victim.location.add(0.0, 1.0, 0.0), 10,
+                0.1, 0.1, 0.1,
+                Material.REDSTONE_BLOCK.createBlockData()
+            )
             victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 0.8f, 0.5f)
             return
         }
 
-        // B. EL SOBREVIVIENTE SE DEFIENDE (Golpea al Asesino)
-        if (plugin.gameManager.esAsesino(victimUUID)) {
-            // Mostramos la salud real (0-200)
+        // CASO B: EL SOBREVIVIENTE SE DEFIENDE (Ataca al Jefe)
+        if (!isDamagerKiller && isVictimKiller) {
+            event.damage = 0.0 // Cancelamos daño vanilla para usar daño fijo
+
+            // Mostramos la salud real del Boss (0-200)
             val killerHealth = victim.health.toInt()
             damager.sendActionBar(plugin.messageConfig.getMessage(damager, "game.killer-hit-actionbar",
                 Placeholder.parsed("health", killerHealth.toString())))
 
+            // Probabilidad de Stun al Jefe
             if (ThreadLocalRandom.current().nextInt(100) < 15) {
                 aplicarStunAlAsesino(victim, damager)
             }
 
-            event.damage = 0.0
-            // 🔥 LLAMADA CORREGIDA: El sobreviviente quita 4 de vida al jefe
+            // Aplicamos DAÑO REAL al Jefe (2.0 corazones = 4.0 HP)
             plugin.combatManager.processTrueDamage(victim, damager, 4.0)
             return
         }
 
-        event.isCancelled = true // Fuego amigo
+        // CASO C: FUEGO AMIGO
+        event.isCancelled = true
+    }
+
+    /**
+     * 🔥 INSTA-RESPAWN: Elimina la pantalla de muerte y acelera el juego.
+     */
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onPlayerDeath(event: PlayerDeathEvent) {
+        if (plugin.gameManager.currentState != GameState.INGAME) return
+
+        val victim = event.entity
+
+        // 1. Rendimiento: Limpiar basura del suelo y ocultar mensaje vanilla
+        event.drops.clear()
+        event.droppedExp = 0
+        event.deathMessage(null)
+
+        // 2. Lógica de juego: Cambiar a espectador, avisar a la arena, etc.
+        plugin.gameManager.handlePlayerDeath(victim)
+
+        // 3. LA LLAVE DEL INSTA-RESPAWN:
+        // Forzamos al cliente a reaparecer en el mismo tick.
+        victim.spigot().respawn()
     }
 
     private fun aplicarStunAlAsesino(killer: Player, damager: Player) {
@@ -104,6 +143,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         if (plugin.gameManager.currentState != GameState.INGAME) return
         val player = event.entity as? Player ?: return
 
+        // Bloquear daños ambientales si está congelado (Freeze Tag)
         if (plugin.combatManager.isFrozen(player)) {
             if (event.cause == EntityDamageEvent.DamageCause.FREEZE ||
                 event.cause == EntityDamageEvent.DamageCause.SUFFOCATION) {
@@ -116,17 +156,16 @@ class GameListener(private val plugin: Mistaken) : Listener {
     fun onInventoryOpen(event: InventoryOpenEvent) {
         if (plugin.gameManager.currentState != GameState.INGAME) return
 
-        // Check de tipo rápido (Ahorra CPU)
         val type = event.inventory.type
         if (type == InventoryType.PLAYER || type == InventoryType.CRAFTING) return
 
-        // Verificación de títulos para nuestras GUIs custom
+        // Filtrar por títulos de nuestras GUIs de TriumphGUI
         val title = plain.serialize(event.view.title())
         val allowedKeywords = listOf("Reparando", "Skill Check", "ENTES", "Tienda", "Selecciona")
 
         if (allowedKeywords.any { title.contains(it) }) return
 
-        // Bloquear cofres del mapa, hornos, etc.
+        // Bloquear cofres vanilla y otros bloques con inventario
         event.isCancelled = true
     }
 
@@ -134,24 +173,12 @@ class GameListener(private val plugin: Mistaken) : Listener {
     fun onHungerChange(event: FoodLevelChangeEvent) {
         if (plugin.gameManager.currentState == GameState.INGAME) {
             event.isCancelled = true
-            // Mantener barra de comida llena si no se está usando para estamina
+            // Mantener barra visual llena si no hay estamina usándola
             if (event.foodLevel < 20) (event.entity as Player).foodLevel = 20
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
-    fun onPlayerDeath(event: PlayerDeathEvent) {
-        if (plugin.gameManager.currentState != GameState.INGAME) return
-
-        // Limpieza de drops para rendimiento
-        event.drops.clear()
-        event.droppedExp = 0
-
-        // El plugin maneja el cambio a espectador y fin de juego
-        plugin.gameManager.handlePlayerDeath(event.entity)
-    }
-
-    // --- BLOQUEOS DE ACCIÓN ---
+    // --- BLOQUEOS DE ACCIÓN (RENDIMIENTO Y REGLAS) ---
 
     @EventHandler fun onDrop(e: PlayerDropItemEvent) {
         if (plugin.gameManager.currentState == GameState.INGAME) e.isCancelled = true
@@ -183,6 +210,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler
     fun onRegen(event: EntityRegainHealthEvent) {
+        // Desactivar curación por comida (Satiated)
         if (plugin.gameManager.currentState == GameState.INGAME) {
             val reason = event.regainReason
             if (reason == EntityRegainHealthEvent.RegainReason.SATIATED ||

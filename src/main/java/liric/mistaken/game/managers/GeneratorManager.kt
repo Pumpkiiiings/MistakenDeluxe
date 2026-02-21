@@ -173,17 +173,20 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val entity = state.displayEntity ?: return
         if (entity.isDead) return
 
-        // Obtenemos el nombre dinámico traducido
+        // 1. Obtenemos el nombre dinámico traducido
         val typeName = getFriendlyName(state.originalMaterial)
         val lines = if (state.completed) completedLines else idleLines
 
-        // Build Component eficiente con placeholders dinámicos
-        val text = lines.joinToString("\n") { line ->
+        // 2. 🔥 LA SOLUCIÓN MAESTRA:
+        // Usamos "\n<reset>" como separador.
+        // Esto garantiza que si la línea 1 tiene <bold>, la línea 2 empiece desde cero (normal).
+        val text = lines.joinToString("\n<reset>") { line ->
             line.replace("{name}", typeName)
                 .replace("{progress}", state.progress.toString())
         }
 
-        entity.text(mm.deserialize(text))
+        // 3. Deserializamos asegurando un reset inicial
+        entity.text(mm.deserialize("<reset>$text"))
     }
 
     private fun saveStateToConfig(loc: Location, state: GeneratorState) {
