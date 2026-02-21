@@ -7,6 +7,9 @@ author: Pumpkingz
 # Esto es lo que arregla el error de Vault y LuckPerms, pariente
 dependencies:
   server:
+    Meowtils:
+      load: BEFORE
+      required: true
     Vault:
       load: BEFORE
       required: true
