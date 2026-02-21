@@ -486,3 +486,30 @@ asesinos:
       habilidad4_nombre: "<dark_red><bold>CRITICAL ERROR</bold>"
       habilidad4_cooldown: 60
       habilidad4_sonido: "ENTITY_ENDERMAN_TELEPORT"
+  bendy:
+    precio: 25000
+    icono_material: "SQUID_INK"
+    nombre: "<gradient:#000000:#333333><b>BENDY</b></gradient> <white>[INK]</white>"
+    descripcion:
+      - "<gray>El demonio de tinta ha escapado del estudio."
+      - "<gray>Especialista en movilidad y ceguera."
+      - "<black>Mecánica: <white>Túneles de tinta y forma de Bestia."
+    lore_tienda:
+      - "<gray>\"El demonio de tinta.\""
+      - "<white>Dificultad: <red>DIFÍCIL"
+    armadura:
+      casco: "mistaken:bendy_helmet"
+      pechera: "mistaken:bendy_chestplate"
+      pantalones: "mistaken:bendy_leggings"
+      botas: "mistaken:bendy_boots"
+    items:
+      arma: "NETHERITE_AXE"
+      arma_nombre: "<black>Hacha Manchada de Tinta"
+      habilidad1: "SQUID_INK"
+      habilidad1_nombre: "<dark_gray><b>Túnel de Tinta</b>"
+      habilidad2: "BLACK_DYE"
+      habilidad2_nombre: "<black><b>Desbordamiento</b>"
+      habilidad3: "COAL_BLOCK"
+      habilidad3_nombre: "<dark_gray><b>Charco Corrosivo</b>"
+      habilidad4: "WITHER_SKELETON_SKULL"
+      habilidad4_nombre: "<black><bold>EL DEMONIO DE TINTA</bold>"
