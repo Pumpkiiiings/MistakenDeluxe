@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "liric.mistaken" // Actualizado a tu nuevo package
-version = "1.10.0"
+version = "1.10.1"
 
 java {
     toolchain {
