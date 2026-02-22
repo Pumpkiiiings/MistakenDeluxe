@@ -5,6 +5,7 @@ import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import kotlinx.coroutines.*
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.database.StatsManager
+import liric.mistaken.game.managers.MusicManager
 import liric.mistaken.asesinos.AsesinoManager
 import liric.mistaken.asesinos.AsesinoTienda
 import liric.mistaken.commands.CommandRegistry
@@ -89,6 +90,7 @@ class Mistaken : JavaPlugin() {
     // Game Managers
     lateinit var gameManager: GameManager
     lateinit var arenaManager: ArenaManager
+    lateinit var musicManager: MusicManager
     lateinit var generatorManager: GeneratorManager
     lateinit var mapManager: MapManager
     lateinit var scoreboardManager: ScoreboardManager
@@ -116,20 +118,17 @@ class Mistaken : JavaPlugin() {
 
         // 0. 🔥 INICIALIZACIÓN CRÍTICA
         instance = this
-        // El bukkitDispatcher ya debe estar declarado como 'val' arriba en la clase.
 
-        // --- 🚀 MEJORA: WARM-UP DE CORRUTINAS ---
-        // Lanzamos una tarea vacía para que la JVM cargue las clases de Kotlin Coroutines ahora
-        // y no cuando un jugador muera o use una habilidad, evitando el lag spike inicial.
+        // Warm-up de corrutinas para evitar lag spikes iniciales
         pluginScope.launch(Dispatchers.Default) {
             delay(1)
         }
 
-        // 1. Init PacketEvents & Keys
+        // 1. PacketEvents & Keys
         PacketEvents.getAPI().init()
         assassinKey = NamespacedKey(this, "selected_assassin")
 
-        // 2. Archivos y Configuración
+        // 2. Configuración y Carpetas
         saveDefaultConfig()
         createRequiredFolders()
         loadLobbyLocation()
@@ -137,37 +136,40 @@ class Mistaken : JavaPlugin() {
         configManager = ConfigManager(this).apply { loadAllConfigs() }
         messageConfig = MessageConfig(this)
 
-        // 3. Integraciones Externas
+        // 3. Hooks (Vault, etc)
         if (!setupIntegrations()) return
 
         // 4. Base de Datos
         if (!setupDatabase()) return
 
-        // 5. Inicializar datos base (Caché de stats y perfiles)
+        // 5. Datos Base
         playerStatsManager = PlayerStatsManager(this)
         statsManager = StatsManager(this)
         playerDataManager = PlayerDataManager(this)
 
-        // 6. 🔥 EL ORDEN SAGRADO DE MANAGERS 🔥
+        // 6. El Corazón de los Managers
         combatManager = CombatManager(this)
         gameManager = GameManager(this)
-
         mapManager = MapManager(this)
         arenaManager = ArenaManager(this)
-
         asesinoManager = AsesinoManager(this)
         supervivienteManager = SupervivienteManager(this)
         discordManager = DiscordManager(this)
         generatorManager = GeneratorManager(this)
 
+        // 🔥 INICIALIZACIÓN DEL MOTOR MUSICAL
+        musicManager = MusicManager(this)
+
+        // UI
         asesinoTienda = AsesinoTienda()
         supervivienteTienda = SupervivienteTienda()
         shopSelector = ShopSelector()
 
+        // Bucles de fondo
         ambientManager = AmbientManager(this)
         scoreboardManager = ScoreboardManager(this)
 
-        // 7. Registro de Servicios (API Pública)
+        // 7. Servicios API
         server.servicesManager.register(HealthAPI::class.java, combatManager, this, ServicePriority.Normal)
 
         // 8. Placeholders
@@ -175,25 +177,35 @@ class Mistaken : JavaPlugin() {
             MistakenExpansion(this).register()
         }
 
-        // 9. Eventos y Comandos
+        // 9. Eventos y Comandos Brigadier
         registerEvents()
-        CommandRegistry(this).registerAll() // Inyección nativa Brigadier
+        CommandRegistry(this).registerAll()
 
-        // 10. 🏁 TAREAS FINALES Y ACTIVACIÓN
+        // 10. 🏁 TAREAS FINALES Y ACTIVACIÓN DEL LOBBY
 
-        // Marcamos el plugin como listo ANTES de iniciar el motor de partículas
-        // Esto permite que los loops de AmbientManager y otros empiecen a correr.
+        // Marcamos el plugin como listo
         isReady = true
 
-        lobbyLocation?.world?.let { world ->
-            world.setGameRule(org.bukkit.GameRule.DO_IMMEDIATE_RESPAWN, true)
+        // --- 🏥 SINCRONIZACIÓN DE JUGADORES (Lobby Ready) ---
+        // Aplicamos la salud 20/200 y corazones a todos los que ya estén dentro
+        Bukkit.getOnlinePlayers().forEach { player ->
+            combatManager.resetHealth(player)
+            musicManager.syncPlayer(player) // Para que escuchen la música del lobby de una
         }
 
-        iniciarMotorDeParticulas() // El motor optimizado con Batching que hicimos
+        // --- 🌍 REGLAS DEL MUNDO LOBBY ---
+        lobbyLocation?.world?.let { world ->
+            // Activa reaparición instantánea en el lobby
+            world.setGameRule(org.bukkit.GameRule.DO_IMMEDIATE_RESPAWN, true)
+            // Opcional: Activar música en el mundo del lobby si no lo has hecho en el MusicManager
+        }
+
+        // --- 🚀 MOTORES EN MARCHA ---
+        iniciarMotorDeParticulas()
         sendLogo()
 
         val time = System.currentTimeMillis() - start
-        componentLogger.info(mm.deserialize("<green>Mistaken habilitado en ${time}ms</green>"))
+        componentLogger.info(mm.deserialize("<gradient:green:aqua>Mistaken v${description.version} habilitado en ${time}ms (Full Lobby Sync)</gradient>"))
     }
 
     override fun onDisable() {
@@ -202,6 +214,7 @@ class Mistaken : JavaPlugin() {
         pluginScope.cancel("Plugin shutting down")
 
         if (::ambientManager.isInitialized) runCatching { ambientManager.stopAll() }
+        if (::musicManager.isInitialized) musicManager.shutdown()
         if (::generatorManager.isInitialized) runCatching { generatorManager.clearGenerators() }
         if (::scoreboardManager.isInitialized) runCatching { scoreboardManager.removeAll() }
         if (::asesinoManager.isInitialized) runCatching { asesinoManager.shutdown() } // Llama a su propio método de limpieza total
@@ -337,25 +350,44 @@ class Mistaken : JavaPlugin() {
     }
 
     private fun createRequiredFolders() {
-        val folders = listOf("lang", "menus")
-        folders.forEach { File(dataFolder, it).mkdirs() }
+        // 1. Crear estructura de carpetas
+        listOf("lang", "menus").forEach { folderName ->
+            File(dataFolder, folderName).takeIf { !it.exists() }?.mkdirs()
+        }
 
-        val menus = listOf(
+        // 2. Archivos en la raíz del plugin
+        listOf("database.yml", "music.yml").forEach { fileName ->
+            if (!File(dataFolder, fileName).exists()) {
+                saveResource(fileName, false)
+            }
+        }
+
+        // 3. Archivos de Lenguaje (Soporte Multi-Lang)
+        listOf("es.yml", "en.yml", "jp.yml", "fr.yml", "zh.yml").forEach { langName ->
+            val internalPath = "lang/$langName"
+            if (!File(dataFolder, internalPath).exists()) {
+                // runCatching es el try-catch "moderno" de Kotlin
+                runCatching { saveResource(internalPath, false) }
+            }
+        }
+
+        // 4. Archivos de Menús (GUIs)
+        listOf(
             "tienda_principal.yml",
             "asesinos_tienda.yml",
             "supervivientes_tienda.yml"
-        )
-
-        menus.forEach { nombre ->
-            val file = File(dataFolder, "menus/$nombre")
-            if (!file.exists()) {
-                try {
-                    saveResource("menus/$nombre", false)
-                } catch (e: Exception) {
-                    logger.warning("No se pudo exportar $nombre")
+        ).forEach { menuName ->
+            val internalPath = "menus/$menuName"
+            if (!File(dataFolder, internalPath).exists()) {
+                runCatching {
+                    saveResource(internalPath, false)
+                }.onFailure {
+                    componentLogger.warn(mm.deserialize("<yellow>⚠️ No se pudo exportar el menú: $menuName</yellow>"))
                 }
             }
         }
+
+        componentLogger.info(mm.deserialize("<gray>[System] Estructura de archivos verificada correctamente.</gray>"))
     }
 
     // --- STATE CHECKS ---

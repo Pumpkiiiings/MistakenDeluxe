@@ -32,6 +32,9 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val uuid = player.uniqueId
 
+        // 🔥 AGREGADO: Sincronizar el motor de música al entrar
+        plugin.musicManager.syncPlayer(player)
+
         // 1. CARGA DE DATOS ASÍNCRONA (Base de Datos + Archivos)
         listenerScope.launch {
             // Estas operaciones corren en el hilo IO (No laguean)
