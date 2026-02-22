@@ -388,17 +388,26 @@ class GameManager(private val plugin: Mistaken) {
         currentState = GameState.ENDING
         timer = 15
 
-        // Discord & Stats Async
-        scope.launch(Dispatchers.IO) {
-            val ganadorNombre = if (killerWon) (getCurrentAsesino()?.name ?: "El Asesino") else "Supervivientes"
-            val razon = if (killerWon) "¡El asesino ganó!" else "¡Los supervivientes lograron sobrevivir!"
-            val escapados = Bukkit.getOnlinePlayers().filter {
-                !esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL
-            }.map { it.name }
+        // 1. RECOLECCIÓN DE DATOS PARA ASYNC (Antes de limpiar listas)
+        val mapName = currentMapName ?: "---"
+        val modeName = currentMode.name
+        val killer = getCurrentAsesino()
+        val ganadorNombre = if (killerWon) (killer?.name ?: "El Asesino") else "Supervivientes"
+        val razon = if (killerWon) "¡El asesino ganó!" else "¡Los supervivientes sobrevivieron!"
 
-            plugin.discordManager.sendGameEnd(currentMapName, ganadorNombre, razon, escapados)
+        // Filtrar sobrevivientes que escaparon (vivos y en survival)
+        val onlinePlayers = Bukkit.getOnlinePlayers().toList()
+        val escapados = onlinePlayers.filter {
+            !esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL
+        }.map { it.name }
 
-            Bukkit.getOnlinePlayers().forEach { p ->
+        // 2. 🚀 TAREAS PESADAS ASÍNCRONAS (Stats y Discord)
+        plugin.pluginScope.launch(Dispatchers.IO) {
+            // Discord Hook
+            plugin.discordManager.sendGameEnd(mapName, ganadorNombre, razon, escapados)
+
+            // Procesar estadísticas de todos
+            onlinePlayers.forEach { p ->
                 val uuid = p.uniqueId
                 if (killerWon) {
                     if (esAsesino(uuid)) plugin.statsManager.incrementStat(uuid, "wins_assassin")
@@ -410,32 +419,41 @@ class GameManager(private val plugin: Mistaken) {
             }
         }
 
+        // 3. LIMPIEZA DE LÓGICA GLOBAL
         broadcastLocalized(configPath)
         combatManager.giveWinRewards(killerWon)
         ambientManager.stopAll()
         combatManager.clearAll()
-        limpiarMapa()
+        limpiarMapa() // ASP Unload si es necesario
 
         modeForced = false
         val type = if (killerWon) "killer" else "survivor"
         val winSound = if (killerWon) Sound.ENTITY_WITHER_SPAWN else Sound.UI_TOAST_CHALLENGE_COMPLETE
 
-        Bukkit.getOnlinePlayers().forEach { p ->
+        // 4. 🌀 BUCLE ÚNICO DE LIMPIEZA DE JUGADORES (Optimizado)
+        for (p in onlinePlayers) {
+            // A. Limpiar transporte y fuego
             p.passengers.forEach { p.removePassenger(it) }
             p.vehicle?.removePassenger(p)
+            p.fireTicks = 0
+
+            // B. Limpiar Inventario y Efectos
             p.inventory.clear()
             p.inventory.armorContents = arrayOfNulls(4)
-            p.activePotionEffects.forEach { p.removePotionEffect(it.type) }
-            p.fireTicks = 0
-            p.isSwimming = false
+            p.activePotionEffects.toList().forEach { p.removePotionEffect(it.type) }
 
+            // C. Ejecutar cleanup de la clase (Habilidades, Tareas, etc.)
             if (esAsesino(p.uniqueId)) {
                 plugin.asesinoManager.getAsesinoDelJugador(p)?.cleanup(p)
             } else {
                 plugin.supervivienteManager.getClase(p)?.cleanup(p)
             }
 
-            p.gameMode = GameMode.SPECTATOR
+            // D. 🔥 FIX ESPECTADOR (Usando el nuevo utilitario)
+            // Esto evita que caigan al vacío y asegura que puedan volar
+            liric.mistaken.utils.SpectatorUtils.setSafeSpectator(p)
+
+            // E. Feedback Visual y Auditivo
             p.showTitle(Title.title(
                 plugin.messageConfig.getMessage(p, "game.$type-title"),
                 plugin.messageConfig.getMessage(p, "game.$type-subtitle")
@@ -443,9 +461,12 @@ class GameManager(private val plugin: Mistaken) {
             p.playSound(p.location, winSound, 1f, 1f)
         }
 
+        // 5. RESET FINAL DE ROLES
         asesinosUUIDs.clear()
         plugin.asesinoManager.removerTodosLosAsesinos()
         plugin.supervivienteManager.limpiarTodo()
+
+        plugin.componentLogger.info(plugin.mm.deserialize("<gray>[Game] Partida finalizada correctamente.</gray>"))
     }
 
     fun checkWinCondition() {

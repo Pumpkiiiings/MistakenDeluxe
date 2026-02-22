@@ -402,7 +402,7 @@ asesinos:
       habilidad1_nombre: "<red><b>Admin Dash</b>"
       habilidad1_cooldown: 15
       habilidad1_sonido: "ENTITY_FIREWORK_ROCKET_LAUNCH"
-      habilidad2: "EYE_OF_ENDER"
+      habilidad2: "ENDER_EYE"
       habilidad2_nombre: "<white><b>Visión del Administrador</b>"
       habilidad2_cooldown: 30
       habilidad2_sonido: "ENTITY_ENDER_EYE_DEATH"
@@ -487,6 +487,7 @@ asesinos:
       habilidad4_cooldown: 60
       habilidad4_sonido: "ENTITY_ENDERMAN_TELEPORT"
   bendy:
+    # --- Datos de Tienda ---
     precio: 25000
     icono_material: "SQUID_INK"
     nombre: "<gradient:#000000:#333333><b>BENDY</b></gradient> <white>[INK]</white>"
@@ -495,8 +496,9 @@ asesinos:
       - "<gray>Especialista en movilidad y ceguera."
       - "<black>Mecánica: <white>Túneles de tinta y forma de Bestia."
     lore_tienda:
-      - "<gray>\"El demonio de tinta.\""
+      - "<gray>\"tintoso.\""
       - "<white>Dificultad: <red>DIFÍCIL"
+    # --- Equipamiento (CraftEngine) ---
     armadura:
       casco: "mistaken:bendy_helmet"
       pechera: "mistaken:bendy_chestplate"
@@ -507,9 +509,17 @@ asesinos:
       arma_nombre: "<black>Hacha Manchada de Tinta"
       habilidad1: "SQUID_INK"
       habilidad1_nombre: "<dark_gray><b>Túnel de Tinta</b>"
+      habilidad1_cooldown: 18
+      habilidad1_sonido: "ENTITY_SQUID_SQUIRT"
       habilidad2: "BLACK_DYE"
       habilidad2_nombre: "<black><b>Desbordamiento</b>"
+      habilidad2_cooldown: 25
+      habilidad2_sonido: "ENTITY_GENERIC_SPLASH"
       habilidad3: "COAL_BLOCK"
       habilidad3_nombre: "<dark_gray><b>Charco Corrosivo</b>"
+      habilidad3_cooldown: 15
+      habilidad3_sonido: "BLOCK_SLIME_BLOCK_PLACE"
       habilidad4: "WITHER_SKELETON_SKULL"
       habilidad4_nombre: "<black><bold>EL DEMONIO DE TINTA</bold>"
+      habilidad4_cooldown: 120
+      habilidad4_sonido: "ENTITY_WITHER_SPAWN"

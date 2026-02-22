@@ -114,15 +114,23 @@ abstract class Asesino(val id: String, val nombre: String) {
                 p.inventory.armorContents = arrayOfNulls(4)
 
                 // 3. Limpiar todos los efectos de poción de forma segura
-                p.activePotionEffects.forEach { effect ->
+                // Usamos toList() para evitar ConcurrentModificationException en 1.21.4
+                p.activePotionEffects.toList().forEach { effect ->
                     p.removePotionEffect(effect.type)
                 }
 
-                // 4. Resetear estados físicos (Paper API)
-                p.isFlying = false
-                p.allowFlight = false
+                // 4. 🔥 FIX ESPECTADOR Y ESTADOS FÍSICOS
+                p.isSwimming = false // Evita el bug de la cámara "nadando"
+                p.isGliding = false  // Evita el bug de las elitras
                 p.isGlowing = false
                 p.inventory.heldItemSlot = 0
+
+                // 💡 LA CLAVE: Solo quitamos el vuelo si el jugador NO es espectador.
+                // Si el juego terminó y es espectador, lo dejamos volar para que no caiga al vacío.
+                if (p.gameMode != org.bukkit.GameMode.SPECTATOR) {
+                    p.allowFlight = false
+                    p.isFlying = false
+                }
 
                 // 5. Reset de atributos de la 1.21.4 (Crucial para el rendimiento)
                 resetAttributes(p)

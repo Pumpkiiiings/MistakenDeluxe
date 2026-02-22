@@ -183,32 +183,47 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     // --- SOPORTE ---
 
     private fun handleDeath(victim: Player, isHypothermia: Boolean) {
+        // 1. Todo lo que toca físicamente al jugador va en un solo bloque al hilo principal
         runOnMain {
+            // A. Quitamos efectos residuales
             victim.removePotionEffect(PotionEffectType.DARKNESS)
-            victim.isSwimming = false
+
+            // B. 🔥 LLAMADA AL UTILITARIO (Esto ya pone el modo espectador, vuelo y quita nado)
+            liric.mistaken.utils.SpectatorUtils.setSafeSpectator(victim)
+
+            // C. Reset de Atributos (Vuelve a 10 corazones normales para el lobby/espectador)
+            victim.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
+
+            // D. Limpieza de lógica interna del manager
+            frozenPlayers.remove(victim.uniqueId)
         }
 
+        // 2. Lógica de Juego (Si era el asesino)
         if (plugin.gameManager.esAsesino(victim.uniqueId)) {
-            giveWinRewards(false)
+            giveWinRewards(false) // Ganan sobrevivientes
             plugin.gameManager.endGame("game.killer-died-victory", false)
             return
         }
 
+        // 3. Lógica de Juego (Si era un sobreviviente)
         val killer = plugin.gameManager.getCurrentAsesino()
         if (killer != null) {
+            // Llamar al evento para otros addons
             Bukkit.getPluginManager().callEvent(MistakenDeathEvent(victim, killer))
+
+            // 🚀 PERSISTENCIA ASÍNCRONA (Esto no laguea)
             plugin.pluginScope.launch(Dispatchers.IO) {
                 plugin.playerStatsManager.addStat(killer.uniqueId, killer.name, "kills")
                 plugin.playerStatsManager.addStat(victim.uniqueId, victim.name, "deaths")
             }
+
             plugin.gameManager.addTime(15)
         }
-
         runOnMain {
-            frozenPlayers.remove(victim.uniqueId)
-            victim.gameMode = GameMode.SPECTATOR
-            victim.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
-            plugin.gameManager.broadcastLocalized("game.player-died", Placeholder.parsed("player", victim.name))
+            val deathPath = if (isHypothermia) "game.player-frozen-death" else "game.player-died"
+            plugin.gameManager.broadcastLocalized(deathPath, Placeholder.parsed("player", victim.name))
+            victim.playSound(victim.location, Sound.ENTITY_PLAYER_DEATH, 1f, 1f)
+
             plugin.gameManager.checkWinCondition()
         }
     }
