@@ -343,42 +343,6 @@ asesinos:
       habilidad4_cooldown: 100
       habilidad4_sonido: "UI_TOAST_CHALLENGE_COMPLETE"
 
-  67dev:
-    precio: 670000000
-    icono_material: "COMMAND_BLOCK"
-    nombre: "<gradient:#ff0000:#550000><b>ENTITY 67</b></gradient> <dark_gray>[DEV]</dark_gray>"
-    descripcion:
-      - "<red>ADVERTENCIA: CAPACIDADES DE ADMIN DETECTADAS."
-      - "<gray>Manipulación directa del código de Mistaken."
-      - "<dark_red>Mecánica: <white>Insta-kill y bypass de físicas."
-    lore_tienda:
-      - "<dark_gray>\"67 67 67 67 67...\""
-      - "<white>Dificultad: <red>BORRAR SISTEMA"
-    armadura:
-      casco: "mistaken:dev_67_helmet"
-      pechera: "mistaken:dev_67_chestplate"
-      pantalones: "mistaken:dev_67_leggings"
-      botas: "mistaken:dev_67_boots"
-    items:
-      arma: "NETHERITE_SWORD"
-      arma_nombre: "<red><b>ERROR_CODE_67</b>"
-      habilidad1: "RECOVERY_COMPASS"
-      habilidad1_nombre: "<gold>Falla en la Realidad (Dash)"
-      habilidad1_cooldown: 5
-      habilidad1_sonido: "BLOCK_GLASS_BREAK"
-      habilidad2: "FIREWORK_ROCKET"
-      habilidad2_nombre: "<red>Modo Espectador (Vuelo)"
-      habilidad2_cooldown: 15
-      habilidad2_sonido: "ENTITY_BAT_TAKEOFF"
-      habilidad3: "OBSIDIAN"
-      habilidad3_nombre: "<dark_purple>67 67 67 67 67 (Spam)"
-      habilidad3_cooldown: 20
-      habilidad3_sonido: "ENTITY_ENDER_DRAGON_GROWL"
-      habilidad4: "COMMAND_BLOCK"
-      habilidad4_nombre: "<dark_red><bold>/KILL @SURVIVORS</bold>"
-      habilidad4_cooldown: 60
-      habilidad4_sonido: "ENTITY_WITHER_DEATH"
-
   romeo:
     precio: 30000
     icono_material: "COMMAND_BLOCK"

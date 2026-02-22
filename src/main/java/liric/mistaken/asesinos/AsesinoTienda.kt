@@ -25,7 +25,7 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
         private var clickSoundCache: Sound = Sound.UI_BUTTON_CLICK
 
         // Listas de permisos para filtrado rápido
-        private val EXCLUSIVE_IDS = setOf("devesto", "mariachi", "romeo", "67dev", "coolkid")
+        private val EXCLUSIVE_IDS = setOf("devesto", "mariachi", "romeo", "bendy")
         private val SPECIAL_IDS = setOf("teto", "miku", "charlie", "colorandelectricity")
     }
 
