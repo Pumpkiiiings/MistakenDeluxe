@@ -22,4 +22,4 @@ decoraciones:
     slots: [10,16,37,43]
 
 # Nota: Los items de los asesinos NO se ponen aquí porque
-# el plugin los genera solitos desde tu asesinos.yml
+# el plugin los genera solitos desde tu asesinos_info.yml

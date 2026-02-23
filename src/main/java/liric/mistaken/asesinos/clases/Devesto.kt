@@ -10,7 +10,6 @@ import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
-import liric.mistaken.utils.mainThread
 import org.bukkit.*
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
@@ -18,7 +17,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Transformation
-import org.bukkit.util.Vector
 import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
@@ -26,14 +24,9 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * DEVESTO - The F3X Architect.
- * Sincronizado con Multi-Lang y optimizado para Paper 1.21.4.
- */
 class Devesto : Asesino(
     "devesto",
-    Mistaken.Companion.instance.messageConfig.getSpecificFile(null, "asesinos").getString("asesinos.devesto.nombre", "Devesto")!!
+    Mistaken.instance.messageConfig.getRawString(null, "asesinos.devesto.nombre", "<gradient:#4b0082:#000000><b>DEVESTO</b></gradient>", "asesinos_info")
 ) {
 
     private val path = "asesinos.devesto"
@@ -47,17 +40,13 @@ class Devesto : Asesino(
         preLoadKit()
     }
 
-    /**
-     * 🔥 PRE-LOAD LÓGICO:
-     * Carga los materiales y IDs del archivo asesinos.yml de la RAIZ.
-     */
     private fun preLoadKit() {
-        val config = plugin.configManager.getAsesinosConfig(null) // Archivo raíz
+        val config = plugin.configManager.getAsesinos()
         val armor = listOf("casco", "pechera", "pantalones", "botas")
         val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
         armor.forEach { k ->
-            config.getString("asesinos.devesto.armadura.$k")?.let { id ->
+            config.getString("$path.armadura.$k")?.let { id ->
                 if (id != "none") {
                     val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.NETHERITE_HELMET)
                     itemKitCache[k] = item
@@ -66,7 +55,7 @@ class Devesto : Asesino(
         }
 
         items.forEach { k ->
-            config.getString("asesinos.devesto.items.$k")?.let { id ->
+            config.getString("$path.items.$k")?.let { id ->
                 if (id != "none") {
                     val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
                     itemKitCache[k] = item
@@ -76,7 +65,6 @@ class Devesto : Asesino(
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        // Mantuve tus slots desplazados: Teclas 2, 3, 4, 5
         when (slot) {
             1 -> if (!checkCooldown(player, 1)) { habilidadMoveTool(player); reproducirEfectosHabilidad(player, 1) }
             2 -> if (!checkCooldown(player, 2)) { habilidadPaintTool(player); reproducirEfectosHabilidad(player, 2) }
@@ -85,26 +73,21 @@ class Devesto : Asesino(
         }
     }
 
-    // --- 🛠️ EQUIPAMIENTO (SISTEMA MULTI-IDIOMA) ---
-
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
 
-        // Lazy load fix
-        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
+        if (itemKitCache.isEmpty()) preLoadKit()
 
-        // Obtenemos el archivo de lenguaje del jugador
-        val langAsesinos = plugin.messageConfig.getSpecificFile(player, "asesinos")
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
         fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
             val item = itemKitCache[key]?.clone() ?: return
 
-            // 🔥 Buscamos el nombre traducido en la carpeta del idioma del jugador
-            val namePath = if (key == "arma") "asesinos.devesto.items.arma_nombre"
-            else "asesinos.devesto.items.${key}_nombre"
+            val namePath = if (key == "arma") "asesinos.devesto.habilidades_nombres.arma"
+            else "asesinos.devesto.habilidades_nombres.$key"
 
-            val localizedName = langAsesinos.getString(namePath)
+            val localizedName = langInfo.getString(namePath)
             if (localizedName != null) {
                 item.editMeta { it.displayName(mm.deserialize(localizedName)) }
             }
@@ -121,13 +104,11 @@ class Devesto : Asesino(
             }
         }
 
-        // Entregar armadura
         setLocalizedItem(0, "casco", true)
         setLocalizedItem(0, "pechera", true)
         setLocalizedItem(0, "pantalones", true)
         setLocalizedItem(0, "botas", true)
 
-        // Entregar hotbar (Slots 1, 2, 3, 4 y Arma en 8)
         setLocalizedItem(1, "habilidad1")
         setLocalizedItem(2, "habilidad2")
         setLocalizedItem(3, "habilidad3")
@@ -137,8 +118,6 @@ class Devesto : Asesino(
         player.inventory.heldItemSlot = 8
         player.updateInventory()
     }
-
-    // --- 🏗️ HABILIDADES ---
 
     private fun habilidadMoveTool(player: Player) {
         player.sendMessage(mm.deserialize("<blue>[F3X]</blue> <gray>Herramienta: <white>MOVE"))
@@ -186,14 +165,12 @@ class Devesto : Asesino(
         }
         player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { target ->
             if (!plugin.asesinoManager.esElAsesino(target)) {
-                plugin.combatManager.processTrueDamage(target, player, 12.0) // Daño real 6 corazones
+                plugin.gameManager.combatManager.takeDamage(target)
                 val kb = target.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.5)
                 target.velocity = kb
             }
         }
     }
-
-    // --- 🔄 ÓRBITA Y TRAIL ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
@@ -224,10 +201,15 @@ class Devesto : Asesino(
     override fun mostrarTrail(player: Player) {
         val loc = player.location
         val packet = WrapperPlayServerParticle(Particle(ParticleTypes.ENCHANT), false, Vector3d(loc.x, loc.y + 1.2, loc.z), Vector3f(0.4f, 0.4f, 0.4f), 0.1f, 2)
-        loc.world.players.forEach { if (it.location.distanceSquared(loc) < 625.0) PacketEvents.getAPI().playerManager.sendPacket(it, packet) }
+        loc.world.players.forEach {
+            if (it.location.distanceSquared(loc) < 625.0) PacketEvents.getAPI().playerManager.sendPacket(it, packet)
+        }
     }
 
-    private fun limpiarEntidades(uuid: UUID) { orbitadores.remove(uuid)?.forEach { it.remove() }; angulos.remove(uuid) }
+    private fun limpiarEntidades(uuid: UUID) {
+        orbitadores.remove(uuid)?.forEach { it.remove() }
+        angulos.remove(uuid)
+    }
 
     override fun cleanup(player: Player?) {
         if (backupMapa.isNotEmpty()) {
@@ -236,5 +218,6 @@ class Devesto : Asesino(
         }
         player?.let { limpiarEntidades(it.uniqueId) }
         super.cleanup(player)
+        scope.coroutineContext.cancelChildren()
     }
 }

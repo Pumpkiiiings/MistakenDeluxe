@@ -3,7 +3,6 @@ package liric.mistaken.asesinos
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.clases.*
-import liric.mistaken.utils.mainThread
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -15,12 +14,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * AsesinoManager: Gestión de clases y estados de los asesinos.
- *
- * OPTIMIZACIÓN SUPREMA:
- * - Se reemplazó Coroutines por Bukkit Scheduler en tareas de inventario (elimina el lag de Spark).
- * - Detección de hilo inteligente para evitar saltos innecesarios.
- * - Limpieza de atributos moderna para 1.21.4.
+ * AsesinoManager: El mero jefe de los malos.
+ * Optimizado: Se quitó la redundancia de armadura y se afinó el tiempo de carga.
  */
 class AsesinoManager(private val plugin: Mistaken) {
 
@@ -30,11 +25,10 @@ class AsesinoManager(private val plugin: Mistaken) {
     val asesinosActivos = ConcurrentHashMap<UUID, Asesino>()
     private val clasesDisponibles = ConcurrentHashMap<String, Asesino>()
 
-    // Exponemos el catálogo como propiedad de solo lectura (más rápido que un método)
     val catalogo: Map<String, Asesino> get() = clasesDisponibles
 
     init {
-        // Registro inicial de clases (Añadidos los nuevos asesinos)
+        // Registro de los pesados
         listOf(
             Slasher(), Herobrine(), Entity303(), NullAsesino(),
             ColorAndElectricity(), CharlieInferno(), Romeo(), Mariachi(),
@@ -46,70 +40,62 @@ class AsesinoManager(private val plugin: Mistaken) {
         clasesDisponibles[asesino.id.lowercase()] = asesino
     }
 
-    /**
-     * Sincroniza la clase sin efectos.
-     */
     fun actualizarAsesino(player: Player, claseId: String) {
         if (claseId.equals("none", ignoreCase = true)) {
             removerAsesino(player)
             return
         }
-
         val clase = getClasePorId(claseId) ?: return
 
-        // Ejecución inmediata si ya estamos en el hilo principal, si no, usamos el dispatcher
-        val cleanupAction = { clase.cleanup(player) }
-        if (Bukkit.isPrimaryThread()) cleanupAction() else Bukkit.getScheduler().runTask(plugin, cleanupAction)
-
+        // Usamos el dispatcher que ya arreglamos para que no truene el hilo
+        plugin.pluginScope.launch(plugin.bukkitDispatcher) {
+            clase.cleanup(player)
+        }
         plugin.componentLogger.info(mm.deserialize("<gray>${player.name} sincronizado con ${clase.nombre}</gray>"))
     }
 
     /**
-     * 🔥 FIX DE RENDIMIENTO: Registro de asesino.
-     * Reemplazamos Coroutines por Bukkit Scheduler para evitar el overhead de 'resumeWith'.
+     * 🔥 EL FIX DE LA ARMADURA:
+     * Limpiamos todo y dejamos que la clase haga su chamba solita.
      */
     fun registrarAsesino(player: Player, asesino: Asesino) {
         val uuid = player.uniqueId
 
-        // 1. Reset instantáneo (Hilo Principal)
+        // 1. Limpieza total inmediata
         player.inventory.clear()
         player.inventory.armorContents = arrayOfNulls(4)
         asesinosActivos[uuid] = asesino
 
-        // Feedback visual inmediato
+        // Feedback
         player.sendMessage(plugin.messageConfig.getMessage(player, "killer.transform",
             Placeholder.component("name", mm.deserialize(asesino.nombre))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
-        // 2. Equipamiento escalonado (Uso de Bukkit Scheduler = Menos overhead que Coroutines para esto)
+        // 2. Equipamiento con delay de seguridad
         Bukkit.getScheduler().runTaskLater(plugin, Runnable {
             if (!player.isOnline || !asesinosActivos.containsKey(uuid)) return@Runnable
 
-            // Equipamos el kit (Esto DEBE ser en el main thread)
+            // Aquí la clase pone su armadura y sus habilidades
             asesino.equipar(player)
             asesino.mostrarTrail(player)
 
-            // 3. Auto-equipamiento de armadura (5 ticks después para asegurar carga de items)
-            Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-                if (player.isOnline && asesinosActivos.containsKey(uuid)) {
-                    autoEquiparArmadura(player)
-                    player.inventory.heldItemSlot = 8 // Método explícito para evitar errores de API
-                    player.updateInventory()
-                }
-            }, 5L)
+            // 3. Ajuste final (Mantenemos el slot 8 para el arma)
+            player.inventory.heldItemSlot = 8
+            player.updateInventory()
+
+            // Fallback: Por si la clase dejó algún ítem de armadura fuera (ItemsAdder/Oraxen a veces fallan)
+            autoEquiparArmadura(player)
+
         }, 10L)
     }
 
-    /**
-     * Método para equipar un asesino por su ID de clase.
-     */
     fun equiparAsesino(player: Player, claseId: String) {
         val clase = getClasePorId(claseId) ?: getClasePorId("slasher")
         clase?.let { registrarAsesino(player, it) }
     }
 
     /**
-     * Coloca automáticamente piezas de armadura.
+     * Este vato ahora solo sirve como "limpia-sobras" por si algo quedó en el inventario.
      */
     private fun autoEquiparArmadura(player: Player) {
         val inv = player.inventory
@@ -131,45 +117,31 @@ class AsesinoManager(private val plugin: Mistaken) {
     fun removerAsesino(player: Player) {
         val asesino = asesinosActivos.remove(player.uniqueId)
 
-        val task = {
+        plugin.pluginScope.launch(plugin.bukkitDispatcher) {
             asesino?.cleanup(player) ?: clasesDisponibles.values.forEach { it.cleanup(player) }
 
-            // Reset de Atributos Paper 1.21.4
+            // Reset total de los fierros del jugador
             player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
             player.health = 20.0
             player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
             player.isGlowing = false
             player.isSwimming = false
         }
-
-        if (Bukkit.isPrimaryThread()) task() else Bukkit.getScheduler().runTask(plugin, task)
     }
 
     fun removerTodosLosAsesinos() {
-        // Copia de seguridad para evitar ConcurrentModification
-        val activos = asesinosActivos.keys.toList()
-        activos.forEach { uuid ->
+        asesinosActivos.keys.toList().forEach { uuid ->
             Bukkit.getPlayer(uuid)?.let { removerAsesino(it) }
         }
         asesinosActivos.clear()
-
-        // Matar cualquier corrutina de cálculo de trail pendiente
         scope.coroutineContext.cancelChildren()
     }
 
-    // --- GETTERS OPTIMIZADOS ---
-
+    // --- GETTERS ---
     fun getClasePorId(id: String?): Asesino? = id?.lowercase()?.let { clasesDisponibles[it] }
-
     fun getAsesinoDelJugador(player: Player?): Asesino? = player?.let { asesinosActivos[it.uniqueId] }
-
-    fun getAsesinoActual(): Player? =
-        asesinosActivos.keys.firstOrNull()?.let { Bukkit.getPlayer(it) }?.takeIf { it.isOnline }
-
-    fun esElAsesino(player: Player?): Boolean =
-        player?.let { asesinosActivos.containsKey(it.uniqueId) } ?: false
-
-    // Alias para el bucle externo que usaste
+    fun getAsesinoActual(): Player? = asesinosActivos.keys.firstOrNull()?.let { Bukkit.getPlayer(it) }?.takeIf { it.isOnline }
+    fun esElAsesino(player: Player?): Boolean = player?.let { asesinosActivos.containsKey(it.uniqueId) } ?: false
     fun getClasesDisponibles(): Map<String, Asesino> = catalogo
 
     fun shutdown() {

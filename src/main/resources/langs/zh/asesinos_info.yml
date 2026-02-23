@@ -1,0 +1,208 @@
+asesinos:
+  slasher:
+    nombre: "<white><b>南瓜白 (PUMPKIN WHITE)</b>"
+    descripcion:
+      - "<gray>一个经典而残暴的杀手。"
+      - "<gray>物理追逐的专家。"
+      - "<red>机制： <white>导致持续流血。"
+    lore_tienda:
+      - "<gray>\"他对鲜血的渴望永无止境...\""
+      - "<white>难度： <green>简单"
+    habilidades_nombres:
+      arma: "<red>斧头"
+      habilidad1: "<red>嗜血"
+      habilidad2: "<gold>投掷砍刀"
+      habilidad3: "<dark_purple>恐怖存在"
+      habilidad4: "<dark_red><bold>处决模式</bold>"
+
+  herobrine:
+    nombre: "<white><b>HEROBRINE</b>"
+    descripcion:
+      - "<gray>腐蚀现实的神话。"
+      - "<gray>潜行与机动性专家。"
+      - "<white>机制： <white>传送与显形。"
+    lore_tienda:
+      - "<gray>\"他不应该出现在这里...\""
+      - "<white>难度： <yellow>中等"
+    habilidades_nombres:
+      arma: "<white>遗忘之刃"
+      habilidad1: "<white>虚空突进"
+      habilidad2: "<aqua>维度跳跃"
+      habilidad3: "<dark_gray>恐惧脉冲"
+      habilidad4: "<red><bold>世界错误</bold>"
+
+  entity303:
+    nombre: "<red><b>实体 303 (ENTITY 303)</b>"
+    descripcion:
+      - "<gray>代码中的严重错误。"
+      - "<gray>故障与火焰攻击专家。"
+      - "<red>机制： <white>数据感染与飞行。"
+    lore_tienda:
+      - "<gray>\"SYSTEM ERROR: 303 FOUND\""
+      - "<white>难度： <yellow>中等"
+    habilidades_nombres:
+      arma: "<red>腐化军刀"
+      habilidad1: "<red>代码突进"
+      habilidad2: "<red>错误之星"
+      habilidad3: "<red>飞行协议"
+      habilidad4: "<dark_red><bold>系统崩溃</bold>"
+
+  null:
+    nombre: "<dark_gray><b>NULL</b>"
+    descripcion:
+      - "<gray>存在的绝对虚无。"
+      - "<gray>致盲与陷阱专家。"
+      - "<dark_gray>机制： <white>完全黑暗与窒息。"
+    lore_tienda:
+      - "<gray>\"他走过的地方，什么也不会留下...\""
+      - "<white>难度： <red>困难"
+    habilidades_nombres:
+      arma: "<dark_gray>虚空匕首"
+      habilidad1: "<red>渲染错误"
+      habilidad2: "<aqua>灵魂信标"
+      habilidad3: "<dark_gray>虚空囚牢"
+      habilidad4: "<gray><bold>深渊之牙</bold>"
+
+  charlie:
+    nombre: "<gradient:#ff4500:#ff8c00><b>查理·地狱 (CHARLIE INFERNO)</b></gradient>"
+    descripcion:
+      - "<gray>火焰与永恒冰霜的使者。"
+      - "<gray>以大规模元素攻击主宰战场。"
+      - "<gradient:#ff4500:#ff8c00>机制：</gradient> <white>毁灭性力量 vs 疲劳。"
+    lore_tienda:
+      - "<gray>\"你可以逃避心魔，直到你筋疲力尽...\""
+      - "<white>难度： <red>专家"
+    habilidades_nombres:
+      arma: "<gradient:#ff4500:#ff8c00>地狱之刃</gradient>"
+      habilidad1: "<red><b>地狱！</b>"
+      habilidad2: "<gradient:#ff4500:#000000><b>恶魔冲刺</b></gradient>"
+      habilidad3: "<aqua><b>冰川尖刺</b>"
+      habilidad4: "<dark_red><b>冥界之牙</b>"
+
+  devesto:
+    nombre: "<gradient:#4b0082:#000000><b>DEVESTO</b></gradient> <white>[F3X]</white>"
+    descripcion:
+      - "<gray>腐败的代码架构师。"
+      - "<gray>随心所欲地操纵地图。"
+      - "<dark_purple>机制：</gradient> <white>//set 0 与恢复。"
+    lore_tienda:
+      - "<gray>\"对你的存在执行 Control-Alt-Delete。\""
+      - "<white>难度： <red>不可能"
+    habilidades_nombres:
+      arma: "<gradient:#4b0082:#000000>架构师之斧</gradient>"
+      habilidad1: "<blue>[F3X]</blue> <white>Move Tool"
+      habilidad2: "<blue>[F3X]</blue> <white>Paint Tool"
+      habilidad3: "<blue>[F3X]</blue> <white>Resize Tool"
+      habilidad4: "<red><bold>//SET 0 (DELETE)</bold>"
+
+  mariachi:
+    nombre: "<gradient:#ff0000:#000000><b>死亡流浪乐手 (MARIACHI MUERTE)</b></gradient>"
+    descripcion:
+      - "<gray>黑骑士来收你的灵魂了。"
+      - "<gray>听觉昏迷专家。"
+      - "<red>机制：</gradient> <white>全图音乐与眩晕。"
+    lore_tienda:
+      - "<gray>\"哎呀呀！唱歌吧，不要哭泣...\""
+      - "<white>难度： <red>专家"
+    habilidades_nombres:
+      arma: "<gradient:#ff0000:#000000>命运吉他</gradient>"
+      habilidad1: "<red>恐怖尖叫"
+      habilidad2: "<gold>踢踏舞 (践踏)"
+      habilidad3: "<white>精准吉他打击"
+      habilidad4: "<green><bold>龙舌兰酒</bold>"
+
+  teto:
+    nombre: "<gradient:#ff66cc:#ff0000><b>重音 TETO</b></gradient>"
+    descripcion:
+      - "<gray>UTAU 嵌合体已降临 Mistaken。"
+      - "<gray>失真与战术攻击专家。"
+      - "<red>机制： <white>强力技能伴随自我削弱。"
+    lore_tienda:
+      - "<gray>\"你真是个笨蛋！ (Baka!)\""
+      - "<white>难度： <red>困难"
+    habilidades_nombres:
+      arma: "<gradient:#ff66cc:#ff0000>嵌合体麦克风</gradient>"
+      habilidad1: "<gradient:#7d7d7d:#ff0000>嵌合钻头</gradient>"
+      habilidad2: "<gradient:#ffcc99:#e6ac00>钢铁法棍</gradient>"
+      habilidad3: "<gradient:#ff0000:#ffffff>愚人节玩笑</gradient>"
+      habilidad4: "<dark_red><bold>领域 (0401)</bold>"
+
+  miku:
+    nombre: "<gradient:#00ffcc:#0099ff><b>初音未来 (HATSUNE MIKU)</b></gradient>"
+    descripcion:
+      - "<gray>终极虚拟偶像登场。"
+      - "<gray>群体控制与激光专家。"
+      - "<aqua>机制： <white>光影投射与海量伤害。"
+    lore_tienda:
+      - "<gray>\"世界第一的公主殿下！\""
+      - "<white>难度： <yellow>中等"
+    habilidades_nombres:
+      arma: "<gradient:#00ffcc:#0099ff>葱剑 (Negi-Saber)</gradient>"
+      habilidad1: "<aqua>投影 39"
+      habilidad2: "<gradient:#00ffcc:#ffffff>世界统治</gradient>"
+      habilidad3: "<gradient:#ff00cc:#00ffcc><b>初音光束！</b></gradient>"
+      habilidad4: "<gradient:#00ffcc:#0099ff><bold>最终演唱会</bold></gradient>"
+
+  romeo:
+    nombre: "<gradient:#ff0000:#ffff00><b>罗密欧 (ROMEO)</b></gradient> <white>[ADMIN]</white>"
+    descripcion:
+      - "<red>世界管理员回归。"
+      - "<gray>用代码的力量控制战场。"
+      - "<gold>机制： <white>毁灭突进与虚空攻击。"
+    lore_tienda:
+      - "<gray>\"这里由我制定规则！\""
+      - "<white>难度： <dark_red>不可阻挡"
+    habilidades_nombres:
+      arma: "<gradient:#ff0000:#ffff00>管理员之镐</gradient>"
+      habilidad1: "<red><b>管理员冲刺</b>"
+      habilidad2: "<white><b>管理员视野</b>"
+      habilidad3: "<dark_purple><b>虚空之牙</b>"
+      habilidad4: "<gold><b>末日之星</b>"
+
+  colorandelectricity:
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>色彩电气</b></gradient>"
+    descripcion:
+      - "<gray>由纯粹静电组成的无形之物。"
+      - "<gray>视觉剥夺与速度专家。"
+      - "<gradient:#ff0080:#00ffff>机制：</gradient> <white>色彩过载。"
+    lore_tienda:
+      - "<gray>\"我想要颜色... 把你的颜色给我。\""
+      - "<white>难度： <red>困难"
+    habilidades_nombres:
+      arma: "<gradient:#ff0080:#00ffff>高压之刃</gradient>"
+      habilidad1: "<gradient:#ff0080:#ffffff>生动轨迹 (突进)</gradient>"
+      habilidad2: "<gradient:#00ffff:#ffffff>色彩抽取</gradient>"
+      habilidad3: "<gradient:#ffff00:#ffffff>静电脉冲</gradient>"
+      habilidad4: "<gradient:#ff0080:#00ffff><bold>色彩终结</bold></gradient>"
+
+  coolkid:
+    nombre: "<gradient:#00ff00:#004400><b>COOLKID</b></gradient> <gray>[DEV]</gray>"
+    descripcion:
+      - "<gray>测试杀手 v4.1 (DEV 分支)。"
+      - "<gray>网络攻击与故障专家。"
+      - "<green>机制： <white>丢包与致命错误。"
+    lore_tienda:
+      - "<dark_gray>\"127.0.0.1: 连接已终止。\""
+      - "<white>难度： <green>测试"
+    habilidades_nombres:
+      arma: "<green>强制权限木棍"
+      habilidad1: "<green>强制登录 (突进)"
+      habilidad2: "<green>数据丢包 (克隆)"
+      habilidad3: "<red>系统关闭"
+      habilidad4: "<dark_red><bold>严重错误</bold>"
+
+  bendy:
+    nombre: "<gradient:#000000:#333333><b>班迪 (BENDY)</b></gradient> <white>[INK]</white>"
+    descripcion:
+      - "<gray>墨水恶魔逃出了工作室。"
+      - "<gray>机动性与致盲专家。"
+      - "<black>机制： <white>墨水通道与野兽形态。"
+    lore_tienda:
+      - "<gray>\"墨水飞溅。\""
+      - "<white>难度： <red>困难"
+    habilidades_nombres:
+      arma: "<black>沾满墨水的斧头"
+      habilidad1: "<dark_gray><b>墨水通道</b>"
+      habilidad2: "<black><b>墨水泛滥</b>"
+      habilidad3: "<dark_gray><b>腐蚀水坑</b>"
+      habilidad4: "<black><bold>墨水恶魔</bold>"

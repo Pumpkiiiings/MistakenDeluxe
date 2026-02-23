@@ -93,7 +93,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
 
         // 2. 🔥 CARGA DE CONFIGURACIÓN (Sistema Pro+ de Carpetas)
         val langCode = plugin.playerDataManager.getLanguage(uuid) ?: "es"
-        // Buscamos el archivo principal (es.yml) dentro de la carpeta (langs/es/)
+        // Buscamos el archivo principal (messages.yml) dentro de la carpeta (langs/es/)
         val config = plugin.messageConfig.getSpecificFile(player, langCode)
 
         // Determinar qué sección del scoreboard mostrar

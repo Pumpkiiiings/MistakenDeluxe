@@ -5,14 +5,11 @@ import com.github.retrooper.packetevents.protocol.particle.Particle
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
-import liric.mistaken.utils.mainThread
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.*
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
@@ -27,14 +24,9 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
 
-/**
- * Mariachi v2.2 - Kotlin Jalisco Edition.
- * Sincronizado con Multi-Lang, Fallback Vanilla y Guitarra Física.
- */
 class Mariachi : Asesino(
     "mariachi",
-    // Nombre dinámico basado en el idioma default del servidor
-    Mistaken.instance.messageConfig.getSpecificFile(null, "asesinos").getString("asesinos.mariachi.nombre", "Mariachi")!!
+    Mistaken.instance.messageConfig.getRawString(null, "asesinos.mariachi.nombre", "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>", "asesinos_info")
 ) {
 
     private val path = "asesinos.mariachi"
@@ -49,17 +41,13 @@ class Mariachi : Asesino(
         preLoadKit()
     }
 
-    /**
-     * 🔥 PRE-LOAD LÓGICO:
-     * Carga materiales y IDs del archivo asesinos.yml central (Raíz).
-     */
     private fun preLoadKit() {
-        val config = plugin.configManager.getAsesinosConfig(null)
+        val config = plugin.configManager.getAsesinos()
         val armor = listOf("casco", "pechera", "pantalones", "botas")
         val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
         armor.forEach { k ->
-            config.getString("asesinos.mariachi.armadura.$k")?.let { id ->
+            config.getString("$path.armadura.$k")?.let { id ->
                 if (id != "none") {
                     val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.LEATHER_HELMET)
                     itemKitCache[k] = item
@@ -68,7 +56,7 @@ class Mariachi : Asesino(
         }
 
         items.forEach { k ->
-            config.getString("asesinos.mariachi.items.$k")?.let { id ->
+            config.getString("$path.items.$k")?.let { id ->
                 if (id != "none") {
                     val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.GOLDEN_AXE)
                     itemKitCache[k] = item
@@ -78,7 +66,6 @@ class Mariachi : Asesino(
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        // Mapping desplazado: Tecla 2 a 5 (Slot 1 a 4)
         when (slot) {
             1 -> if (!checkCooldown(player, 1)) { habilidadGrito(player); reproducirEfectosHabilidad(player, 1) }
             2 -> if (!checkCooldown(player, 2)) { habilidadJarabe(player); reproducirEfectosHabilidad(player, 2) }
@@ -87,24 +74,21 @@ class Mariachi : Asesino(
         }
     }
 
-    // --- 🛠️ EQUIPAMIENTO (SISTEMA MULTI-IDIOMA) ---
-
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
 
-        // Fix de carga CraftEngine
         if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
 
-        val langAsesinos = plugin.messageConfig.getSpecificFile(player, "asesinos")
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
         fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
             val item = itemKitCache[key]?.clone() ?: return
 
-            val namePath = if (key == "arma") "asesinos.mariachi.items.arma_nombre"
-            else "asesinos.mariachi.items.${key}_nombre"
+            val namePath = if (key == "arma") "asesinos.mariachi.habilidades_nombres.arma"
+            else "asesinos.mariachi.habilidades_nombres.$key"
 
-            langAsesinos.getString(namePath)?.let {
+            langInfo.getString(namePath)?.let {
                 item.editMeta { m -> m.displayName(mm.deserialize(it)) }
             }
 
@@ -118,10 +102,7 @@ class Mariachi : Asesino(
             } else inv.setItem(slot, item)
         }
 
-        // 1. Armadura
         listOf("casco", "pechera", "pantalones", "botas").forEach { setLocalizedItem(0, it, true) }
-
-        // 2. Hotbar (Slots 1, 2, 3, 4 y Arma en 8)
         setLocalizedItem(1, "habilidad1")
         setLocalizedItem(2, "habilidad2")
         setLocalizedItem(3, "habilidad3")
@@ -132,8 +113,6 @@ class Mariachi : Asesino(
         player.updateInventory()
         iniciarMusica(player)
     }
-
-    // --- 🎸 HABILIDADES ---
 
     private fun habilidadGrito(player: Player) {
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { target ->
@@ -154,12 +133,10 @@ class Mariachi : Asesino(
     private fun habilidadGuitarrazo(player: Player) {
         player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { target ->
             if (!plugin.asesinoManager.esElAsesino(target)) {
-                val v = target.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5)
-                v.y = 0.4
+                val v = target.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
                 target.velocity = v
 
-                // Daño Real 5 HP (2.5 corazones)
-                plugin.combatManager.processTrueDamage(target, player, 5.0)
+                plugin.gameManager.combatManager.takeDamage(target)
                 target.playSound(target.location, Sound.BLOCK_ANVIL_LAND, 0.8f, 0.5f)
             }
         }
@@ -171,8 +148,6 @@ class Mariachi : Asesino(
         player.sendMessage(mm.deserialize("<green>¡Salud! Nada te hace daño ahora.</green>"))
     }
 
-    // --- 🚀 VISUALES ---
-
     override fun mostrarTrail(player: Player) {
         if (player.velocity.lengthSquared() < 0.001) return
         val loc = player.location.add(0.0, 0.2, 0.0)
@@ -181,8 +156,8 @@ class Mariachi : Asesino(
 
         val flame = WrapperPlayServerParticle(Particle(ParticleTypes.SOUL_FIRE_FLAME), false, pos, Vector3f(0.15f, 0.1f, 0.15f), 0.02f, 1)
 
-        loc.world.players.forEach { p ->
-            if (p.location.distanceSquared(loc) < 625.0) {
+        Bukkit.getOnlinePlayers().forEach { p ->
+            if (p != player && p.world == loc.world && p.location.distanceSquared(loc) < 625.0) {
                 mgr.sendPacket(p, flame)
                 if (ThreadLocalRandom.current().nextFloat() < 0.15f) {
                     mgr.sendPacket(p, WrapperPlayServerParticle(Particle(ParticleTypes.NOTE), false, pos.add(0.0, 1.8, 0.0), Vector3f(0.1f, 0.1f, 0.1f), 0.5f, 1))

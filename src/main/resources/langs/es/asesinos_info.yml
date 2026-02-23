@@ -1,0 +1,208 @@
+asesinos:
+  slasher:
+    nombre: "<white><b>PUMPKIN WHITE</b>"
+    descripcion:
+      - "<gray>Un asesino clásico y brutal."
+      - "<gray>Especialista en persecución física."
+      - "<red>Mecánica: <white>Causa hemorragias constantes."
+    lore_tienda:
+      - "<gray>\"Su sed de sangre no tiene fin...\""
+      - "<white>Dificultad: <green>Fácil"
+    habilidades_nombres:
+      arma: "<red>Hacha"
+      habilidad1: "<red>Sed de Sangre"
+      habilidad2: "<gold>Machete Lanzable"
+      habilidad3: "<dark_purple>Presencia Aterradora"
+      habilidad4: "<dark_red><bold>MODO EJECUCIÓN</bold>"
+
+  herobrine:
+    nombre: "<white><b>HEROBRINE</b>"
+    descripcion:
+      - "<gray>El mito que corrompe la realidad."
+      - "<gray>Especialista en acecho y movilidad."
+      - "<white>Mecánica: <white>Teletransporte y revelación."
+    lore_tienda:
+      - "<gray>\"Él no debería estar aquí...\""
+      - "<white>Dificultad: <yellow>Media"
+    habilidades_nombres:
+      arma: "<white>Hoja del Olvido"
+      habilidad1: "<white>Dash del Vacío"
+      habilidad2: "<aqua>Salto Dimensional"
+      habilidad3: "<dark_gray>Pulso de Terror"
+      habilidad4: "<red><bold>ERROR DE MUNDO</bold>"
+
+  entity303:
+    nombre: "<red><b>ENTITY 303</b>"
+    descripcion:
+      - "<gray>Un error crítico en el código."
+      - "<gray>Especialista en ataques glitch y fuego."
+      - "<red>Mecánica: <white>Infección de datos y vuelo."
+    lore_tienda:
+      - "<gray>\"SYSTEM ERROR: 303 FOUND\""
+      - "<white>Dificultad: <yellow>Media"
+    habilidades_nombres:
+      arma: "<red>Sable Corrupto"
+      habilidad1: "<red>Dash de Código"
+      habilidad2: "<red>Estrella del Error"
+      habilidad3: "<red>Protocolo de Vuelo"
+      habilidad4: "<dark_red><bold>CRASH DE SISTEMA</bold>"
+
+  null:
+    nombre: "<dark_gray><b>NULL</b>"
+    descripcion:
+      - "<gray>La ausencia absoluta de existencia."
+      - "<gray>Especialista en ceguera y trampas."
+      - "<dark_gray>Mecánica: <white>Oscuridad total y asfixia."
+    lore_tienda:
+      - "<gray>\"Nada queda donde él camina...\""
+      - "<white>Dificultad: <red>Difícil"
+    habilidades_nombres:
+      arma: "<dark_gray>Daga del Vacío"
+      habilidad1: "<red>Error de Renderizado"
+      habilidad2: "<aqua>Faro de Almas"
+      habilidad3: "<dark_gray>Prisión del Vacío"
+      habilidad4: "<gray><bold>COLMILLOS DEL ABISMO</bold>"
+
+  charlie:
+    nombre: "<gradient:#ff4500:#ff8c00><b>CHARLIE INFERNO</b></gradient>"
+    descripcion:
+      - "<gray>El heraldo del fuego y el hielo eterno."
+      - "<gray>Domina el campo con ataques elementales masivos."
+      - "<gradient:#ff4500:#ff8c00>Mecánica:</gradient> <white>Poder devastador vs Agotamiento."
+    lore_tienda:
+      - "<gray>\"You can run from your demons until you are exhausted...\""
+      - "<white>Dificultad: <red>Experto"
+    habilidades_nombres:
+      arma: "<gradient:#ff4500:#ff8c00>Filo del Infierno</gradient>"
+      habilidad1: "<red><b>¡INFIERNO!</b>"
+      habilidad2: "<gradient:#ff4500:#000000><b>Demon's Run</b></gradient>"
+      habilidad3: "<aqua><b>Púas de Glaciar</b>"
+      habilidad4: "<dark_red><b>Colmillos del Inframundo</b>"
+
+  devesto:
+    nombre: "<gradient:#4b0082:#000000><b>DEVESTO</b></gradient> <white>[F3X]</white>"
+    descripcion:
+      - "<gray>El arquitecto corrupto del código."
+      - "<gray>Manipula el mapa a su voluntad."
+      - "<dark_purple>Mecánica:</gradient> <white>//set 0 y restauración."
+    lore_tienda:
+      - "<gray>\"Control-Alt-Delete a tu existencia.\""
+      - "<white>Dificultad: <red>Imposible"
+    habilidades_nombres:
+      arma: "<gradient:#4b0082:#000000>Hacha del Arquitecto</gradient>"
+      habilidad1: "<blue>[F3X]</blue> <white>Move Tool"
+      habilidad2: "<blue>[F3X]</blue> <white>Paint Tool"
+      habilidad3: "<blue>[F3X]</blue> <white>Resize Tool"
+      habilidad4: "<red><bold>//SET 0 (DELETE)</bold>"
+
+  mariachi:
+    nombre: "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>"
+    descripcion:
+      - "<gray>El Charro Negro ha llegado por tu alma."
+      - "<gray>Especialista en aturdimiento auditivo."
+      - "<red>Mecánica:</gradient> <white>Música global y mareo."
+    lore_tienda:
+      - "<gray>\"¡Ay ay ay! Canta y no llores...\""
+      - "<white>Dificultad: <red>Experto"
+    habilidades_nombres:
+      arma: "<gradient:#ff0000:#000000>La Guitarra del Destino</gradient>"
+      habilidad1: "<red>Grito Aterrador"
+      habilidad2: "<gold>Jarabe Tapatío (Zapateado)"
+      habilidad3: "<white>Guitarrazo Certero"
+      habilidad4: "<green><bold>TRAGO DE TEQUILA</bold>"
+
+  teto:
+    nombre: "<gradient:#ff66cc:#ff0000><b>KASANE TETO</b></gradient>"
+    descripcion:
+      - "<gray>La quimera UTAU ha llegado a Mistaken."
+      - "<gray>Especialista en distorsión y ataques tácticos."
+      - "<red>Mecánica: <white>Habilidades potentes con auto-debuffs."
+    lore_tienda:
+      - "<gray>\"¡Eres tan tonto! (Baka!)\""
+      - "<white>Dificultad: <red>Difícil"
+    habilidades_nombres:
+      arma: "<gradient:#ff66cc:#ff0000>Microfono de la Quimera</gradient>"
+      habilidad1: "<gradient:#7d7d7d:#ff0000>Taladro Quimérico</gradient>"
+      habilidad2: "<gradient:#ffcc99:#e6ac00>Baguette de Hierro</gradient>"
+      habilidad3: "<gradient:#ff0000:#ffffff>Broma del 1 de Abril</gradient>"
+      habilidad4: "<dark_red><bold>TERRITORY (0401)</bold>"
+
+  miku:
+    nombre: "<gradient:#00ffcc:#0099ff><b>HATSUNE MIKU</b></gradient>"
+    descripcion:
+      - "<gray>La ídolo virtual definitiva ha llegado."
+      - "<gray>Especialista en control de masas y láseres."
+      - "<aqua>Mecánica: <white>Proyecciones de luz y daño masivo."
+    lore_tienda:
+      - "<gray>\"¡El mundo es mío!\""
+      - "<white>Dificultad: <yellow>Media"
+    habilidades_nombres:
+      arma: "<gradient:#00ffcc:#0099ff>Negi-Saber</gradient>"
+      habilidad1: "<aqua>Proyección 39"
+      habilidad2: "<gradient:#00ffcc:#ffffff>DOMINACIÓN MUNDIAL</gradient>"
+      habilidad3: "<gradient:#ff00cc:#00ffcc><b>MIKU MIKU BEAMMMM</b></gradient>"
+      habilidad4: "<gradient:#00ffcc:#0099ff><bold>CONCIERTO FINAL</bold></gradient>"
+
+  romeo:
+    nombre: "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient> <white>[ADMIN]</white>"
+    descripcion:
+      - "<red>El Administrador del Mundo ha regresado."
+      - "<gray>Controla el campo de batalla con el poder del código."
+      - "<gold>Mecánica: <white>Dash destructivo y ataques del Vacío."
+    lore_tienda:
+      - "<gray>\"¡Yo hago las reglas aquí!\""
+      - "<white>Dificultad: <dark_red>IMPARABLE"
+    habilidades_nombres:
+      arma: "<gradient:#ff0000:#ffff00>Pico del Administrador</gradient>"
+      habilidad1: "<red><b>Admin Dash</b>"
+      habilidad2: "<white><b>Visión del Administrador</b>"
+      habilidad3: "<dark_purple><b>Colmillos del Vacío</b>"
+      habilidad4: "<gold><b>Estrella del Fin</b>"
+
+  colorandelectricity:
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>色彩電気</b></gradient>"
+    descripcion:
+      - "<gray>Un ser sin cuerpo hecho de pura estática."
+      - "<gray>Especialista en robo de visión y velocidad."
+      - "<gradient:#ff0080:#00ffff>Mecánica:</gradient> <white>Sobrecarga cromática."
+    lore_tienda:
+      - "<gray>\"Quiero colores... dame tus colores.\""
+      - "<white>Dificultad: <red>Difícil"
+    habilidades_nombres:
+      arma: "<gradient:#ff0080:#00ffff>Cuchilla de Alto Voltaje</gradient>"
+      habilidad1: "<gradient:#ff0080:#ffffff>Vivid Trace (Dash)</gradient>"
+      habilidad2: "<gradient:#00ffff:#ffffff>Color Drain</gradient>"
+      habilidad3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
+      habilidad4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
+
+  coolkid:
+    nombre: "<gradient:#00ff00:#004400><b>COOLKID</b></gradient> <gray>[DEV]</gray>"
+    descripcion:
+      - "<gray>Asesino de pruebas v4.1 (Rama DEV)."
+      - "<gray>Especialista en ataques de red y glitches."
+      - "<green>Mecánica: <white>Packet loss y errores críticos."
+    lore_tienda:
+      - "<dark_gray>\"127.0.0.1: Connection Terminated.\""
+      - "<white>Dificultad: <green>Prueba"
+    habilidades_nombres:
+      arma: "<green>Force Op Stick"
+      habilidad1: "<green>Force Login (Dash)"
+      habilidad2: "<green>Packet Loss (Clones)"
+      habilidad3: "<red>System Shutdown"
+      habilidad4: "<dark_red><bold>CRITICAL ERROR</bold>"
+
+  bendy:
+    nombre: "<gradient:#000000:#333333><b>BENDY</b></gradient> <white>[INK]</white>"
+    descripcion:
+      - "<gray>El demonio de tinta ha escapado del estudio."
+      - "<gray>Especialista en movilidad y ceguera."
+      - "<black>Mecánica: <white>Túneles de tinta y forma de Bestia."
+    lore_tienda:
+      - "<gray>\"tintoso.\""
+      - "<white>Dificultad: <red>DIFÍCIL"
+    habilidades_nombres:
+      arma: "<black>Hacha Manchada de Tinta"
+      habilidad1: "<dark_gray><b>Túnel de Tinta</b>"
+      habilidad2: "<black><b>Desbordamiento</b>"
+      habilidad3: "<dark_gray><b>Charco Corrosivo</b>"
+      habilidad4: "<black><bold>EL DEMONIO DE TINTA</bold>"

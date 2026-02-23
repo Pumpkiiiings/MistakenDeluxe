@@ -10,8 +10,6 @@ import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
-import liric.mistaken.utils.mainThread
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.*
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
@@ -19,23 +17,22 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Transformation
-import org.bukkit.util.Vector
 import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * KasaneTeto - La Quimera de las Baguettes v2.1
- * FIX: Soporte Multi-Idioma, Fallback Vanilla y Slots 1-4.
+ * [LIRIC-MISTAKEN 2.0]
+ * KasaneTeto: La Quimera de las Baguettes.
+ * Optimización: Soporte Multi-Idioma, Fallback Vanilla y Coroutines para timers.
  */
 class KasaneTeto : Asesino(
     "teto",
-    // Nombre dinámico para el log del servidor
-    Mistaken.instance.messageConfig.getSpecificFile(null, "asesinos").getString("asesinos.teto.nombre", "Kasane Teto")!!
+    // Nombre dinámico para la carga inicial (Se actualizará al idioma del jugador en el scoreboard)
+    Mistaken.instance.messageConfig.getRawString(null, "asesinos.teto.nombre", "<gradient:#ff66cc:#ff0000><b>KASANE TETO</b></gradient>", "asesinos_info")
 ) {
 
     private val path = "asesinos.teto"
@@ -53,22 +50,22 @@ class KasaneTeto : Asesino(
      * Carga materiales y IDs del archivo asesinos.yml central (Raíz).
      */
     private fun preLoadKit() {
-        val config = plugin.configManager.getAsesinosConfig(null)
+        val config = plugin.configManager.getAsesinos()
         val armor = listOf("casco", "pechera", "pantalones", "botas")
         val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
         armor.forEach { k ->
-            config.getString("asesinos.teto.armadura.$k")?.let { id ->
+            config.getString("$path.armadura.$k")?.let { id ->
                 if (id != "none") {
                     // Si no es de CraftEngine, intentamos cargarlo como material de Minecraft
-                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.NETHERITE_HELMET)
+                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.LEATHER_HELMET)
                     itemKitCache[k] = item
                 }
             }
         }
 
         items.forEach { k ->
-            config.getString("asesinos.teto.items.$k")?.let { id ->
+            config.getString("$path.items.$k")?.let { id ->
                 if (id != "none") {
                     val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
                     itemKitCache[k] = item
@@ -78,7 +75,7 @@ class KasaneTeto : Asesino(
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        // Mapeo: Slot 1 (Tecla 2) a Slot 4 (Tecla 5)
+        // Mapeo: Teclas 2, 3, 4, 5 -> Slots 1, 2, 3, 4
         when (slot) {
             1 -> if (!checkCooldown(player, 1)) { habilidadTaladro(player); reproducirEfectosHabilidad(player, 1) }
             2 -> if (!checkCooldown(player, 2)) { habilidadBaguette(player); reproducirEfectosHabilidad(player, 2) }
@@ -95,14 +92,14 @@ class KasaneTeto : Asesino(
 
         if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
 
-        val langAsesinos = plugin.messageConfig.getSpecificFile(player, "asesinos")
+        val langAsesinos = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
         fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
             val item = itemKitCache[key]?.clone() ?: return
 
-            // Buscamos el nombre traducido en lang/{idioma}/asesinos.yml
-            val namePath = if (key == "arma") "asesinos.teto.items.arma_nombre"
-            else "asesinos.teto.items.${key}_nombre"
+            // Buscamos el nombre traducido en lang/{idioma}/asesinos_info.yml
+            val namePath = if (key == "arma") "asesinos.teto.habilidades_nombres.arma"
+            else "asesinos.teto.habilidades_nombres.$key"
 
             val localizedName = langAsesinos.getString(namePath)
             if (localizedName != null) {
@@ -143,7 +140,7 @@ class KasaneTeto : Asesino(
     private fun habilidadTaladro(player: Player) {
         player.getNearbyEntities(3.5, 3.5, 3.5).filterIsInstance<Player>().forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
-                plugin.combatManager.processTrueDamage(victim, player, 5.0)
+                plugin.gameManager.combatManager.takeDamage(victim)
                 victim.addPotionEffect(PotionEffect(PotionEffectType.MINING_FATIGUE, 40, 1))
                 victim.playSound(victim.location, Sound.BLOCK_ANVIL_LAND, 0.5f, 1.5f)
             }
@@ -174,12 +171,18 @@ class KasaneTeto : Asesino(
         player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 240, 0))
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 240, 1))
         player.isGlowing = true
-        Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-            if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
-                player.isGlowing = false
-                player.playSound(player.location, Sound.BLOCK_BEACON_DEACTIVATE, 1f, 0.5f)
+
+        // Coroutine en vez de BukkitRunnable para ahorrar recursos
+        val job = scope.launch {
+            delay(12000) // 240 ticks = 12 segundos
+            withContext(plugin.bukkitDispatcher) {
+                if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
+                    player.isGlowing = false
+                    player.playSound(player.location, Sound.BLOCK_BEACON_DEACTIVATE, 1f, 0.5f)
+                }
             }
-        }, 240L)
+        }
+        trackJob(job) // Se añade al rastreador automático de limpieza
     }
 
     // --- 🚀 VISUALES ---
@@ -191,11 +194,13 @@ class KasaneTeto : Asesino(
 
         val entidades = orbitadores.getOrPut(uuid) {
             mutableListOf<ItemDisplay>().apply {
-                repeat(4) { add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
-                    id.setItemStack(ItemStack(Material.BREAD))
-                    id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf(), JomlVector3f(0.8f, 0.8f, 0.8f), Quaternionf())
-                    id.teleportDuration = 1; id.interpolationDuration = 1
-                }) }
+                repeat(4) {
+                    add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
+                        id.setItemStack(ItemStack(Material.BREAD))
+                        id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf(), JomlVector3f(0.8f, 0.8f, 0.8f), Quaternionf())
+                        id.teleportDuration = 1; id.interpolationDuration = 1
+                    })
+                }
             }
         }
 
@@ -219,10 +224,24 @@ class KasaneTeto : Asesino(
     override fun mostrarTrail(player: Player) {
         if (player.velocity.lengthSquared() < 0.001) return
         val pos = Vector3d(player.location.x, player.location.y + 0.2, player.location.z)
+        // Partículas Spore Blossom (Estilo Sakura)
         val packet = WrapperPlayServerParticle(Particle(ParticleTypes.SPORE_BLOSSOM_AIR), false, pos, Vector3f(0.3f, 0.1f, 0.3f), 0.01f, 1)
-        player.world.players.forEach { PacketEvents.getAPI().playerManager.sendPacket(it, packet) }
+
+        player.world.players.forEach {
+            if (it.location.distanceSquared(player.location) < 625.0) {
+                PacketEvents.getAPI().playerManager.sendPacket(it, packet)
+            }
+        }
     }
 
-    private fun limpiarBaguettes(uuid: UUID) { orbitadores.remove(uuid)?.forEach { it.remove() }; angulos.remove(uuid) }
-    override fun cleanup(player: Player?) { super.cleanup(player); player?.let { limpiarBaguettes(it.uniqueId) }; scope.coroutineContext.cancelChildren() }
+    private fun limpiarBaguettes(uuid: UUID) {
+        orbitadores.remove(uuid)?.forEach { it.remove() }
+        angulos.remove(uuid)
+    }
+
+    override fun cleanup(player: Player?) {
+        super.cleanup(player)
+        player?.let { limpiarBaguettes(it.uniqueId) }
+        scope.coroutineContext.cancelChildren()
+    }
 }

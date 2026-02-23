@@ -5,13 +5,11 @@ import com.github.retrooper.packetevents.protocol.particle.Particle
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
-import liric.mistaken.utils.mainThread
 import org.bukkit.*
 import org.bukkit.entity.*
 import org.bukkit.inventory.ItemStack
@@ -22,18 +20,18 @@ import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * NullAsesino: El Ente del Glitch.
- * FIX: Soporte Multi-Idioma, Armadura garantizada y Órbita Mística.
+ * FIX: Fallback de armadura por slot y forEach Null-Safe corregido.
  */
 class NullAsesino : Asesino(
     "null",
-    // Nombre dinámico basado en el idioma default del servidor
-    Mistaken.instance.messageConfig.getSpecificFile(null, "asesinos").getString("asesinos.null.nombre", "NULL")!!
+    Mistaken.instance.messageConfig.getRawString(null, "asesinos.null.nombre", "<dark_gray><b>NULL</b>", "asesinos_info")
 ) {
 
     private val pathBase = "asesinos.null"
@@ -41,7 +39,7 @@ class NullAsesino : Asesino(
     private val activeTraps = ConcurrentHashMap.newKeySet<Entity>()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    // --- 🧊 OBJETOS MÍSTICOS ORBITANTES ---
+    // Órbita
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val orbitMaterials = listOf(Material.BEACON, Material.ENDER_EYE, Material.NETHER_STAR)
@@ -51,35 +49,40 @@ class NullAsesino : Asesino(
     }
 
     /**
-     * 🔥 PRE-LOAD LÓGICO:
-     * Carga materiales e IDs del archivo asesinos.yml de la RAIZ.
+     * 🔥 CARGADOR BLINDADO:
+     * Asigna un material de respaldo específico por cada slot de armadura.
      */
     private fun preLoadKit() {
-        val config = plugin.configManager.getAsesinosConfig(null) // Archivo raíz
-        val armor = listOf("casco", "pechera", "pantalones", "botas")
-        val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
+        val config = plugin.configManager.getAsesinos()
 
-        armor.forEach { k ->
-            config.getString("asesinos.null.armadura.$k")?.let { id ->
-                if (id != "none") {
-                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.NETHERITE_HELMET)
-                    itemKitCache[k] = item
-                }
+        // Mapa de respaldos: Si falla CraftEngine, le damos la pieza correcta de Netherite
+        val armorMap = mapOf(
+            "casco" to Material.NETHERITE_HELMET,
+            "pechera" to Material.NETHERITE_CHESTPLATE,
+            "pantalones" to Material.NETHERITE_LEGGINGS,
+            "botas" to Material.NETHERITE_BOOTS
+        )
+
+        armorMap.forEach { (key, fallbackMat) ->
+            val id = config.getString("$pathBase.armadura.$key") ?: "none"
+            if (id != "none" && id.isNotBlank()) {
+                val item = CraftEngineUtils.getCustomItem(id)
+                // Si falla CraftEngine, intentamos material por nombre, si no, el fallback forzoso
+                itemKitCache[key] = item ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: fallbackMat)
             }
         }
 
-        items.forEach { k ->
-            config.getString("asesinos.null.items.$k")?.let { id ->
-                if (id != "none") {
-                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
-                    itemKitCache[k] = item
-                }
+        // Cargar ítems de habilidad
+        listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4").forEach { key ->
+            val id = config.getString("$pathBase.items.$key") ?: "none"
+            if (id != "none" && id.isNotBlank()) {
+                val item = CraftEngineUtils.getCustomItem(id)
+                itemKitCache[key] = item ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.PAPER)
             }
         }
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        // Mapeo de slots: 1, 2, 3, 4 (Teclas 2, 3, 4, 5)
         when (slot) {
             1 -> if (!checkCooldown(player, 1)) { habilidadErrorRender(player); reproducirEfectosHabilidad(player, 1) }
             2 -> if (!checkCooldown(player, 2)) { habilidadGeneradorBait(player); reproducirEfectosHabilidad(player, 2) }
@@ -88,28 +91,22 @@ class NullAsesino : Asesino(
         }
     }
 
-    // --- 🛠️ EQUIPAMIENTO (SISTEMA MULTI-IDIOMA) ---
-
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
+        inv.armorContents = arrayOfNulls(4)
 
-        // Fix de carga CraftEngine
-        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
+        if (itemKitCache.isEmpty()) preLoadKit()
 
-        // Obtenemos el archivo de traducción del jugador (lang/es/asesinos.yml)
-        val langAsesinos = plugin.messageConfig.getSpecificFile(player, "asesinos")
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
-        fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
+        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val item = itemKitCache[key]?.clone() ?: return
+            val namePath = if (key == "arma") "asesinos.null.habilidades_nombres.arma"
+            else "asesinos.null.habilidades_nombres.$key"
 
-            // Buscamos el nombre traducido en la carpeta del idioma
-            val namePath = if (key == "arma") "asesinos.null.items.arma_nombre"
-            else "asesinos.null.items.${key}_nombre"
-
-            val localizedName = langAsesinos.getString(namePath)
-            if (localizedName != null) {
-                item.editMeta { it.displayName(mm.deserialize(localizedName)) }
+            langInfo.getString(namePath)?.let {
+                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
             if (isArmor) {
@@ -124,31 +121,28 @@ class NullAsesino : Asesino(
             }
         }
 
-        // 1. Armadura
-        setLocalizedItem(0, "casco", true)
-        setLocalizedItem(0, "pechera", true)
-        setLocalizedItem(0, "pantalones", true)
-        setLocalizedItem(0, "botas", true)
-
-        // 2. Hotbar (Slots 1 al 4 y Arma en 8)
-        setLocalizedItem(1, "habilidad1")
-        setLocalizedItem(2, "habilidad2")
-        setLocalizedItem(3, "habilidad3")
-        setLocalizedItem(4, "habilidad4")
-        setLocalizedItem(8, "arma")
+        // Entregar todo el kit traducido
+        deliver("casco", 0, true)
+        deliver("pechera", 0, true)
+        deliver("pantalones", 0, true)
+        deliver("botas", 0, true)
+        deliver("habilidad1", 1)
+        deliver("habilidad2", 2)
+        deliver("habilidad3", 3)
+        deliver("habilidad4", 4)
+        deliver("arma", 8)
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()
     }
 
-    // --- 🚀 HABILIDADES ---
-
     private fun habilidadErrorRender(player: Player) {
         player.world.spawnParticle(org.bukkit.Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 3, 0.5, 0.5, 0.5, 0.0)
-        player.getNearbyEntities(12.0, 12.0, 12.0).filterIsInstance<Player>().forEach { victim ->
+        player.world.getNearbyPlayers(player.location, 12.0).forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 200, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 200, 0))
+                victim.sendMessage(mm.deserialize("<dark_gray><obfuscated>ERR</obfuscated> <white><b>SISTEMA CORRUPTO</b> <dark_gray><obfuscated>ERR</obfuscated>"))
             }
         }
     }
@@ -157,10 +151,39 @@ class NullAsesino : Asesino(
         val loc = player.location.block.location.add(0.5, 0.1, 0.5)
         val bait = loc.world?.spawn(loc, ArmorStand::class.java) { asEntity ->
             asEntity.isVisible = false
+            asEntity.setGravity(false)
             asEntity.isMarker = true
             asEntity.equipment.helmet = ItemStack(Material.BEACON)
         } ?: return
         activeTraps.add(bait)
+
+        val job = scope.launch {
+            var timer = 0
+            while (isActive && timer < 400 && !bait.isDead) {
+                withContext(plugin.bukkitDispatcher) {
+                    val angle = timer * 0.4
+                    val x = cos(angle) * 0.7
+                    val z = sin(angle) * 0.7
+                    loc.world?.spawnParticle(org.bukkit.Particle.END_ROD, loc.clone().add(x, 1.0, z), 1, 0.0, 0.0, 0.0, 0.0)
+
+                    // 🔥 FIX: Check de jugadores cercanos corregido
+                    val victim = loc.world?.getNearbyPlayers(loc, 3.5)?.firstOrNull {
+                        !plugin.asesinoManager.esElAsesino(it)
+                    }
+
+                    victim?.let { v ->
+                        plugin.gameManager.combatManager.takeDamage(v)
+                        v.playSound(v.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.1f)
+                        cleanupTrap(bait)
+                        cancel()
+                    }
+                }
+                delay(100)
+                timer++
+            }
+            if (isActive) withContext(plugin.bukkitDispatcher) { cleanupTrap(bait) }
+        }
+        trackJob(job)
     }
 
     private fun habilidadPrisionVacio(player: Player) {
@@ -168,32 +191,36 @@ class NullAsesino : Asesino(
             it is Player && !plugin.asesinoManager.esElAsesino(it)
         }
         val victim = ray?.hitEntity as? Player ?: return
-        victim.velocity = player.location.toVector().subtract(victim.location.toVector()).normalize().multiply(0.6).setY(0.2)
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 10))
+        player.playSound(victim.location, Sound.BLOCK_CHAIN_PLACE, 1f, 0.5f)
     }
 
     private fun habilidadColmillosVacio(player: Player) {
         val startLoc = player.location
         val direction = startLoc.direction.setY(0.0).normalize()
-        scope.launch {
+        val job = scope.launch {
             val currentLoc = startLoc.clone()
             repeat(15) {
-                withContext(plugin.mainThread) {
+                if (!isActive) return@launch
+                withContext(plugin.bukkitDispatcher) {
                     currentLoc.add(direction)
-                    currentLoc.world?.spawn(currentLoc, EvokerFangs::class.java)
-                    currentLoc.world?.getNearbyEntities(currentLoc, 1.5, 1.5, 1.5)?.filterIsInstance<Player>()?.forEach { victim ->
-                        if (!plugin.asesinoManager.esElAsesino(victim)) {
-                            plugin.combatManager.processTrueDamage(victim, player, 4.0)
-                            victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
+                    if (!currentLoc.block.type.isSolid) {
+                        currentLoc.world?.spawn(currentLoc, EvokerFangs::class.java)
+
+                        // 🔥 EL FIX QUE BUSCABAS: Agregamos el ?. antes del forEach
+                        currentLoc.world?.getNearbyPlayers(currentLoc, 1.5)?.forEach { victim ->
+                            if (!plugin.asesinoManager.esElAsesino(victim)) {
+                                plugin.gameManager.combatManager.takeDamage(victim)
+                                victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
+                            }
                         }
                     }
                 }
                 delay(50)
             }
         }
+        trackJob(job)
     }
-
-    // --- 🧊 MOTOR FÍSICO: ÓRBITA MÍSTICA ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
@@ -220,8 +247,7 @@ class NullAsesino : Asesino(
                 val offset = (2 * Math.PI / entidades.size) * i
                 val x = radio * cos(anguloActual + offset)
                 val z = radio * sin(anguloActual + offset)
-                val y = 1.1 + (0.2 * sin((anguloActual + offset) * 2))
-                display.teleport(player.location.clone().add(x, y, z))
+                display.teleport(player.location.clone().add(x, 1.1 + (0.2 * sin(anguloActual * 2)), z))
             }
         }
         angulos[uuid] = anguloActual
@@ -229,16 +255,13 @@ class NullAsesino : Asesino(
 
     override fun mostrarTrail(player: Player) {
         val loc = player.location.add(0.0, 1.1, 0.0)
-        val packet = WrapperPlayServerParticle(Particle(ParticleTypes.WITCH), false, Vector3d(loc.x, loc.y, loc.z), Vector3f(0.2f, 0.2f, 0.2f), 0.02f, 1)
-        player.world.players.forEach { if (it.location.distanceSquared(loc) < 625.0) PacketEvents.getAPI().playerManager.sendPacket(it, packet) }
+        val pos = Vector3d(loc.x, loc.y, loc.z)
+        val mgr = PacketEvents.getAPI().playerManager
+        val packet = WrapperPlayServerParticle(Particle(ParticleTypes.WITCH), false, pos, Vector3f(0.2f, 0.2f, 0.2f), 0.02f, 1)
+        loc.world.players.forEach { if (it != player && it.location.distanceSquared(loc) < 625.0) mgr.sendPacket(it, packet) }
     }
 
+    private fun cleanupTrap(trap: Entity) { trap.remove(); activeTraps.remove(trap) }
     private fun limpiarVisuales(uuid: UUID) { orbitadores.remove(uuid)?.forEach { it.remove() }; angulos.remove(uuid) }
-
-    override fun cleanup(player: Player?) {
-        super.cleanup(player)
-        player?.let { limpiarVisuales(it.uniqueId) }
-        activeTraps.forEach { it.remove() }; activeTraps.clear()
-        scope.coroutineContext.cancelChildren()
-    }
+    override fun cleanup(player: Player?) { super.cleanup(player); player?.let { limpiarVisuales(it.uniqueId) }; activeTraps.forEach { it.remove() }; activeTraps.clear(); scope.coroutineContext.cancelChildren() }
 }

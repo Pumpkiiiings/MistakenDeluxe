@@ -14,19 +14,18 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * SupervivienteTienda: Interfaz de gestión de clases humanas con soporte Multi-Idioma.
- * Optimización: Eliminación de cache estática para soporte real de múltiples lenguajes simultáneos.
+ * SupervivienteTienda: Menú de selección de humanos.
+ * Optimizado para leer de archivos divididos e inyectar componentes MiniMessage.
  */
 class SupervivienteTienda : MenuBase("supervivientes_tienda") {
 
     override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
-        // 1. Obtener archivos de traducción y lógica
-        val langSurvivors = plugin.messageConfig.getSpecificFile(player, "supervivientes")
-        val globalSurvivors = plugin.configManager.getSupervivientesConfig(player)
+        // 1. Info local (Textos) y Global (Fierros/Mecánicas)
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes")
+        val globalMecanicas = plugin.configManager.getSupervivientes()
 
         val slots = config.getIntegerList("ajustes.slots-disponibles")
         if (slots.isEmpty()) return
@@ -35,7 +34,7 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
         val uuid = player.uniqueId
         val selected = data.getSelectedSurvivor(uuid)
 
-        // Labels traducidos según el idioma del jugador
+        // Labels del idioma
         val labelHumano = plugin.messageConfig.getMessage(player, "tienda.clase-humana")
         val labelSeleccionado = plugin.messageConfig.getMessage(player, "tienda.estado-seleccionado")
         val labelPoseido = plugin.messageConfig.getMessage(player, "tienda.estado-poseido")
@@ -44,39 +43,32 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
 
         var slotIndex = 0
 
-        // Iterar sobre las clases del manager de supervivientes
-        for (survivorId in plugin.supervivienteManager.catalogo.keys) {
+        for (survivorId in plugin.supervivienteManager.getClasesDisponibles().keys) {
             if (slotIndex >= slots.size) break
 
-            // --- RECOLECCIÓN DE DATOS DINÁMICOS ---
+            // --- DATOS VISUALES ---
+            val nombreVisual = langInfo.getString("supervivientes.$survivorId.nombre") ?: survivorId
+            val loreTienda = langInfo.getStringList("supervivientes.$survivorId.lore_tienda")
 
-            // Visuales: Del archivo lang/{lang}/supervivientes.yml
-            val nombreVisual = langSurvivors.getString("supervivientes.$survivorId.nombre") ?: survivorId
-            val loreTienda = langSurvivors.getStringList("supervivientes.$survivorId.lore_tienda")
-
-            // Lógicos: Del archivo global (Precios e Iconos)
-            val precio = globalSurvivors.getInt("supervivientes.$survivorId.precio", 0)
-            val matStr = globalSurvivors.getString("supervivientes.$survivorId.icono_material", "IRON_CHESTPLATE")!!
+            // --- DATOS MECÁNICOS ---
+            val precio = globalMecanicas.getInt("supervivientes.$survivorId.precio", 0)
+            val matStr = globalMecanicas.getString("supervivientes.$survivorId.icono_material", "IRON_CHESTPLATE")!!
             val iconoMat = Material.matchMaterial(matStr) ?: Material.IRON_CHESTPLATE
 
-            // --- CONSTRUCCIÓN DEL LORE ---
-            val fullLore = mutableListOf<Component>()
-            fullLore.add(labelHumano)
-            fullLore.add(Component.empty())
-
-            // Lore descriptivo traducido
-            loreTienda.forEach { fullLore.add(mm.deserialize("<reset><i><gray>$it")) }
-            fullLore.add(Component.empty())
-
-            // Habilidades traducidas
-            fullLore.add(labelHabilidades)
-            for (i in 1..4) {
-                val habName = langSurvivors.getString("supervivientes.$survivorId.items.habilidad${i}_nombre")
-                if (habName != null) fullLore.add(mm.deserialize("<reset> <dark_gray>• <white>$habName"))
+            // --- LORE DINÁMICO ---
+            val fullLore = mutableListOf<Component>().apply {
+                add(labelHumano)
+                add(Component.empty())
+                loreTienda.forEach { add(mm.deserialize("<reset><i><gray>$it")) }
+                add(Component.empty())
+                add(labelHabilidades)
+                for (i in 1..3) {
+                    val habName = langInfo.getString("supervivientes.$survivorId.items.habilidad${i}_nombre")
+                    if (habName != null) add(mm.deserialize("<reset> <dark_gray>• <white>$habName"))
+                }
+                add(Component.empty())
             }
-            fullLore.add(Component.empty())
 
-            // Estado de compra/selección
             val tiene = data.tieneSuperviviente(uuid, survivorId)
             val esSeleccionado = selected.equals(survivorId, ignoreCase = true)
 
@@ -84,16 +76,16 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
                 esSeleccionado -> fullLore.add(labelSeleccionado)
                 tiene -> fullLore.add(labelPoseido)
                 else -> {
-                    fullLore.add(plugin.messageConfig.getMessage(player, "tienda.estado-price",
+                    fullLore.add(plugin.messageConfig.getMessage(player, "tienda.estado-precio",
                         Placeholder.parsed("amount", precio.toString())))
                     fullLore.add(labelComprar)
                 }
             }
 
-            // --- INYECCIÓN EN EL MENÚ ---
+            // --- RENDER ---
             gui.setItem(slots[slotIndex], ItemBuilder.from(iconoMat)
                 .name(mm.deserialize(nombreVisual))
-                .lore(fullLore as List<Component>)
+                .lore(fullLore.toList())
                 .flags(*ItemFlag.entries.toTypedArray())
                 .asGuiItem {
                     handleLogic(player, survivorId, precio, tiene)
@@ -105,38 +97,29 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
     }
 
     private fun handleLogic(player: Player, id: String, precio: Int, tiene: Boolean) {
-        val data = plugin.playerDataManager
         val uuid = player.uniqueId
-        val actual = data.getSelectedSurvivor(uuid)
+        val data = plugin.playerDataManager
 
-        if (id.equals(actual, ignoreCase = true)) {
+        if (id.equals(data.getSelectedSurvivor(uuid), ignoreCase = true)) {
             player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.ya-seleccionado"))
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
             return
         }
 
         if (tiene) {
-            // Acción: Seleccionar
             data.setSelectedSurvivor(uuid, id)
-
-            // Persistencia en PDC de Paper
             val key = NamespacedKey(plugin, "selected_survivor")
             player.persistentDataContainer.set(key, PersistentDataType.STRING, id)
-
             player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.seleccionado", Placeholder.parsed("name", id)))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
-
-            abrir(player) // Refrescar UI
+            abrir(player)
         } else {
-            // Acción: Comprar
             val economy = Mistaken.economy
             if (economy != null && economy.has(player, precio.toDouble())) {
                 economy.withdrawPlayer(player, precio.toDouble())
                 data.comprarSuperviviente(uuid, id)
-
                 player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.comprado", Placeholder.parsed("name", id)))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
-
                 abrir(player)
             } else {
                 player.sendMessage(plugin.messageConfig.getMessage(player, "errors.no-money"))

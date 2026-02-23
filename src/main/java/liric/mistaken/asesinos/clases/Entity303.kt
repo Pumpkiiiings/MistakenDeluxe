@@ -11,31 +11,27 @@ import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
-import liric.mistaken.utils.mainThread
 import org.bukkit.*
 import org.bukkit.entity.*
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.util.Transformation
-import org.bukkit.util.Vector
 import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Entity 303: El Hacker de la Realidad.
- * FIX: Slots 1-4, Carga de armadura blindada, Multi-Idioma y True Damage.
+ * FIX: Slots 1-4, Carga de armadura, Multi-Idioma y True Damage.
  */
 class Entity303 : Asesino(
     "entity303",
-    Mistaken.Companion.instance.messageConfig.getSpecificFile(null, "asesinos").getString("asesinos.entity303.nombre", "Entity 303")!!
+    Mistaken.instance.messageConfig.getRawString(null, "asesinos.entity303.nombre", "<red><b>ENTITY 303</b>", "asesinos_info")
 ) {
 
     private val path = "asesinos.entity303"
@@ -44,7 +40,6 @@ class Entity303 : Asesino(
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    // Bloques representativos del glitch (Redstone y Magma)
     private val orbitMaterials = listOf(Material.REDSTONE_BLOCK, Material.MAGMA_BLOCK, Material.OBSERVER)
 
     init {
@@ -52,12 +47,12 @@ class Entity303 : Asesino(
     }
 
     private fun preLoadKit() {
-        val config = plugin.configManager.getAsesinosConfig(null) // Raíz
+        val config = plugin.configManager.getAsesinos() // Raíz
         val armor = listOf("casco", "pechera", "pantalones", "botas")
         val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
         armor.forEach { k ->
-            config.getString("asesinos.entity303.armadura.$k")?.let { id ->
+            config.getString("$path.armadura.$k")?.let { id ->
                 if (id != "none") {
                     val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.NETHERITE_HELMET)
                     itemKitCache[k] = item
@@ -66,7 +61,7 @@ class Entity303 : Asesino(
         }
 
         items.forEach { k ->
-            config.getString("asesinos.entity303.items.$k")?.let { id ->
+            config.getString("$path.items.$k")?.let { id ->
                 if (id != "none") {
                     val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
                     itemKitCache[k] = item
@@ -76,7 +71,6 @@ class Entity303 : Asesino(
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        // Mapeo desplazado: Teclas 2, 3, 4, 5 (Slots 1, 2, 3, 4)
         when (slot) {
             1 -> if (!checkCooldown(player, 1)) { habilidadDashCodigo(player); reproducirEfectosHabilidad(player, 1) }
             2 -> if (!checkCooldown(player, 2)) { habilidadInfeccionSistema(player); reproducirEfectosHabilidad(player, 2) }
@@ -85,33 +79,34 @@ class Entity303 : Asesino(
         }
     }
 
-    // --- 💻 H1: DASH DE CÓDIGO (CON DAÑO Y KB) ---
+    // --- 💻 H1: DASH DE CÓDIGO ---
     private fun habilidadDashCodigo(player: Player) {
         val dir = player.location.direction.normalize().multiply(2.0).setY(0.2)
         player.velocity = dir
 
-        // Loop de detección durante el dash
-        val task = object : BukkitRunnable() {
+        val job = scope.launch {
             var count = 0
             val hitted = mutableSetOf<UUID>()
-            override fun run() {
-                if (count >= 10 || !player.isOnline) { cancel(); return }
-                player.getNearbyEntities(2.0, 2.0, 2.0).filterIsInstance<Player>().forEach { victim ->
-                    if (!plugin.asesinoManager.esElAsesino(victim) && !hitted.contains(victim.uniqueId)) {
-                        hitted.add(victim.uniqueId)
-                        plugin.combatManager.processTrueDamage(victim, player, 5.0) // 2.5 corazones
-                        victim.velocity = player.location.direction.normalize().multiply(1.5).setY(0.4)
-                        victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
+            while (isActive && count < 10 && player.isOnline) {
+                withContext(plugin.bukkitDispatcher) {
+                    player.getNearbyEntities(2.0, 2.0, 2.0).filterIsInstance<Player>().forEach { victim ->
+                        if (!plugin.asesinoManager.esElAsesino(victim) && !hitted.contains(victim.uniqueId)) {
+                            hitted.add(victim.uniqueId)
+                            plugin.gameManager.combatManager.takeDamage(victim)
+                            victim.velocity = player.location.direction.normalize().multiply(1.5).setY(0.4)
+                            victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
+                        }
                     }
                 }
+                delay(50)
                 count++
             }
         }
-        task.runTaskTimer(plugin, 0L, 1L)
+        trackJob(job)
         player.playSound(player.location, Sound.ENTITY_GHAST_SHOOT, 1f, 1.5f)
     }
 
-    // --- ☣️ H2: INFECCIÓN DE SISTEMA (True Damage) ---
+    // --- ☣️ H2: INFECCIÓN DE SISTEMA ---
     private fun habilidadInfeccionSistema(player: Player) {
         val star = player.world.spawn(player.eyeLocation, ItemDisplay::class.java) {
             it.setItemStack(ItemStack(Material.NETHER_STAR))
@@ -119,10 +114,10 @@ class Entity303 : Asesino(
         }
         val direction = player.location.direction.multiply(1.5)
 
-        scope.launch {
+        val job = scope.launch {
             var ticks = 0
-            withContext(plugin.bukkitDispatcher) {
-                while (ticks < 40 && star.isValid) {
+            while (isActive && ticks < 40 && star.isValid) {
+                withContext(plugin.bukkitDispatcher) {
                     star.teleport(star.location.add(direction))
                     star.world.spawnParticle(org.bukkit.Particle.ENCHANT, star.location, 5, 0.1, 0.1, 0.1, 0.05)
 
@@ -130,17 +125,20 @@ class Entity303 : Asesino(
                     if (hit != null || star.location.block.type.isSolid) {
                         star.world.spawnParticle(org.bukkit.Particle.EXPLOSION, star.location, 1)
                         hit?.let {
-                            plugin.combatManager.processTrueDamage(it, player, 4.0)
+                            plugin.gameManager.combatManager.takeDamage(it)
                             it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
                             it.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, 100, 1))
                         }
-                        break
+                        star.remove()
+                        cancel()
                     }
-                    delay(50); ticks++
                 }
-                star.remove()
+                delay(50)
+                ticks++
             }
+            withContext(plugin.bukkitDispatcher) { if (star.isValid) star.remove() }
         }
+        trackJob(job)
     }
 
     // --- ✈️ H3: PROTOCOLO DE VUELO ---
@@ -149,7 +147,7 @@ class Entity303 : Asesino(
         player.isFlying = true
         player.playSound(player.location, Sound.BLOCK_BEACON_ACTIVATE, 1f, 2f)
 
-        scope.launch {
+        val job = scope.launch {
             delay(5000) // 5 segundos de vuelo
             withContext(plugin.bukkitDispatcher) {
                 if (player.isOnline && player.gameMode != GameMode.SPECTATOR) {
@@ -160,6 +158,7 @@ class Entity303 : Asesino(
                 }
             }
         }
+        trackJob(job)
     }
 
     // --- ❌ H4: CRASH DE PANTALLA ---
@@ -180,12 +179,15 @@ class Entity303 : Asesino(
         inv.clear()
         if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
 
-        val lang = plugin.messageConfig.getSpecificFile(player, "asesinos")
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
         fun giveItem(slot: Int, key: String, isArmor: Boolean = false) {
             val item = itemKitCache[key]?.clone() ?: return
-            val namePath = if (key == "arma") "asesinos.entity303.items.arma_nombre" else "asesinos.entity303.items.${key}_nombre"
-            lang.getString(namePath)?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
+
+            val namePath = if (key == "arma") "asesinos.entity303.habilidades_nombres.arma"
+            else "asesinos.entity303.habilidades_nombres.$key"
+
+            langInfo.getString(namePath)?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
 
             if (isArmor) {
                 when(key) {

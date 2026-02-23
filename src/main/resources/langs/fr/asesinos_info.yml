@@ -1,0 +1,208 @@
+asesinos:
+  slasher:
+    nombre: "<white><b>PUMPKIN WHITE</b>"
+    descripcion:
+      - "<gray>Un tueur classique et brutal."
+      - "<gray>Spécialiste de la poursuite physique."
+      - "<red>Mécanique: <white>Provoque des hémorragies constantes."
+    lore_tienda:
+      - "<gray>\"Sa soif de sang n'a pas de fin...\""
+      - "<white>Difficulté: <green>Facile"
+    habilidades_nombres:
+      arma: "<red>Hache"
+      habilidad1: "<red>Soif de Sang"
+      habilidad2: "<gold>Machette de Lancer"
+      habilidad3: "<dark_purple>Présence Terrifiante"
+      habilidad4: "<dark_red><bold>MODE EXÉCUTION</bold>"
+
+  herobrine:
+    nombre: "<white><b>HEROBRINE</b>"
+    descripcion:
+      - "<gray>Le mythe qui corrompt la réalité."
+      - "<gray>Spécialiste de la traque et de la mobilité."
+      - "<white>Mécanique: <white>Téléportation et révélation."
+    lore_tienda:
+      - "<gray>\"Il ne devrait pas être là...\""
+      - "<white>Difficulté: <yellow>Moyenne"
+    habilidades_nombres:
+      arma: "<white>Lame de l'Oubli"
+      habilidad1: "<white>Charge du Vide"
+      habilidad2: "<aqua>Saut Dimensionnel"
+      habilidad3: "<dark_gray>Impulsion de Terreur"
+      habilidad4: "<red><bold>ERREUR MONDIALE</bold>"
+
+  entity303:
+    nombre: "<red><b>ENTITY 303</b>"
+    descripcion:
+      - "<gray>Une erreur critique dans le code."
+      - "<gray>Spécialiste des attaques glitch et de feu."
+      - "<red>Mécanique: <white>Infection de données et vol."
+    lore_tienda:
+      - "<gray>\"SYSTEM ERROR: 303 FOUND\""
+      - "<white>Difficulté: <yellow>Moyenne"
+    habilidades_nombres:
+      arma: "<red>Sabre Corrompu"
+      habilidad1: "<red>Charge de Code"
+      habilidad2: "<red>Étoile d'Erreur"
+      habilidad3: "<red>Protocole de Vol"
+      habilidad4: "<dark_red><bold>PLANTAGE SYSTÈME</bold>"
+
+  null:
+    nombre: "<dark_gray><b>NULL</b>"
+    descripcion:
+      - "<gray>L'absence absolue d'existence."
+      - "<gray>Spécialiste de l'aveuglement et des pièges."
+      - "<dark_gray>Mécanique: <white>Obscurité totale et suffocation."
+    lore_tienda:
+      - "<gray>\"Il ne reste rien là où il marche...\""
+      - "<white>Difficulté: <red>Difficile"
+    habilidades_nombres:
+      arma: "<dark_gray>Dague du Vide"
+      habilidad1: "<red>Erreur de Rendu"
+      habilidad2: "<aqua>Balise des Âmes"
+      habilidad3: "<dark_gray>Prison du Vide"
+      habilidad4: "<gray><bold>CROCS DE L'ABÎME</bold>"
+
+  charlie:
+    nombre: "<gradient:#ff4500:#ff8c00><b>CHARLIE INFERNO</b></gradient>"
+    descripcion:
+      - "<gray>Le héraut du feu et de la glace éternelle."
+      - "<gray>Domine le terrain avec des attaques élémentaires."
+      - "<gradient:#ff4500:#ff8c00>Mécanique:</gradient> <white>Pouvoir dévastateur vs Épuisement."
+    lore_tienda:
+      - "<gray>\"Tu peux fuir tes démons jusqu'à l'épuisement...\""
+      - "<white>Difficulté: <red>Expert"
+    habilidades_nombres:
+      arma: "<gradient:#ff4500:#ff8c00>Lame de l'Enfer</gradient>"
+      habilidad1: "<red><b>ENFER !</b>"
+      habilidad2: "<gradient:#ff4500:#000000><b>Course du Démon</b></gradient>"
+      habilidad3: "<aqua><b>Pointes de Glacier</b>"
+      habilidad4: "<dark_red><b>Crocs des Enfers</b>"
+
+  devesto:
+    nombre: "<gradient:#4b0082:#000000><b>DEVESTO</b></gradient> <white>[F3X]</white>"
+    descripcion:
+      - "<gray>L'architecte corrompu du code."
+      - "<gray>Manipule la carte à sa guise."
+      - "<dark_purple>Mécanique:</gradient> <white>//set 0 et restauration."
+    lore_tienda:
+      - "<gray>\"Control-Alt-Delete à ton existence.\""
+      - "<white>Difficulté: <red>Impossible"
+    habilidades_nombres:
+      arma: "<gradient:#4b0082:#000000>Hache de l'Architecte</gradient>"
+      habilidad1: "<blue>[F3X]</blue> <white>Move Tool"
+      habilidad2: "<blue>[F3X]</blue> <white>Paint Tool"
+      habilidad3: "<blue>[F3X]</blue> <white>Resize Tool"
+      habilidad4: "<red><bold>//SET 0 (DELETE)</bold>"
+
+  mariachi:
+    nombre: "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>"
+    descripcion:
+      - "<gray>Le Charro Noir est venu pour ton âme."
+      - "<gray>Spécialiste de l'étourdissement auditif."
+      - "<red>Mécanique:</gradient> <white>Musique globale et vertiges."
+    lore_tienda:
+      - "<gray>\"Ay ay ay ! Chante et ne pleure pas...\""
+      - "<white>Difficulté: <red>Expert"
+    habilidades_nombres:
+      arma: "<gradient:#ff0000:#000000>Guitare du Destin</gradient>"
+      habilidad1: "<red>Cri Terrifiant"
+      habilidad2: "<gold>Danse Tapatío (Piétinement)"
+      habilidad3: "<white>Coup de Guitare Précis"
+      habilidad4: "<green><bold>CUP DE TEQUILA</bold>"
+
+  teto:
+    nombre: "<gradient:#ff66cc:#ff0000><b>KASANE TETO</b></gradient>"
+    descripcion:
+      - "<gray>La chimère UTAU est arrivée dans Mistaken."
+      - "<gray>Spécialiste de la distorsion et des attaques tactiques."
+      - "<red>Mécanique: <white>Compétences puissantes avec auto-débuffs."
+    lore_tienda:
+      - "<gray>\"Tu es tellement idiot ! (Baka!)\""
+      - "<white>Difficulté: <red>Difficile"
+    habilidades_nombres:
+      arma: "<gradient:#ff66cc:#ff0000>Microphone de la Chimère</gradient>"
+      habilidad1: "<gradient:#7d7d7d:#ff0000>Foret Chimérique</gradient>"
+      habilidad2: "<gradient:#ffcc99:#e6ac00>Baguette de Fer</gradient>"
+      habilidad3: "<gradient:#ff0000:#ffffff>Blague du 1er Avril</gradient>"
+      habilidad4: "<dark_red><bold>TERRITORY (0401)</bold>"
+
+  miku:
+    nombre: "<gradient:#00ffcc:#0099ff><b>HATSUNE MIKU</b></gradient>"
+    descripcion:
+      - "<gray>L'idole virtuelle ultime est arrivée."
+      - "<gray>Spécialiste du contrôle de foule et des lasers."
+      - "<aqua>Mécanique: <white>Projections de lumière et dégâts massifs."
+    lore_tienda:
+      - "<gray>\"Le monde est à moi !\""
+      - "<white>Difficulté: <yellow>Moyenne"
+    habilidades_nombres:
+      arma: "<gradient:#00ffcc:#0099ff>Negi-Saber</gradient>"
+      habilidad1: "<aqua>Projection 39"
+      habilidad2: "<gradient:#00ffcc:#ffffff>DOMINATION MONDIALE</gradient>"
+      habilidad3: "<gradient:#ff00cc:#00ffcc><b>MIKU MIKU BEAMMMM</b></gradient>"
+      habilidad4: "<gradient:#00ffcc:#0099ff><bold>CONCERT FINAL</bold></gradient>"
+
+  romeo:
+    nombre: "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient> <white>[ADMIN]</white>"
+    descripcion:
+      - "<red>L'Admin du Monde est de retour."
+      - "<gray>Contrôle le champ de bataille avec le code."
+      - "<gold>Mécanique: <white>Charge destructrice et attaques du Vide."
+    lore_tienda:
+      - "<gray>\"Je fais les règles ici !\""
+      - "<white>Difficulté: <dark_red>IMPARABLE"
+    habilidades_nombres:
+      arma: "<gradient:#ff0000:#ffff00>Pioche de l'Admin</gradient>"
+      habilidad1: "<red><b>Charge Admin</b>"
+      habilidad2: "<white><b>Vision de l'Admin</b>"
+      habilidad3: "<dark_purple><b>Crocs du Vide</b>"
+      habilidad4: "<gold><b>Étoile de la Fin</b>"
+
+  colorandelectricity:
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>SHIKISAI DENKI</b></gradient>"
+    descripcion:
+      - "<gray>Un être sans corps fait de pure statique."
+      - "<gray>Spécialiste du vol de vision et de la vitesse."
+      - "<gradient:#ff0080:#00ffff>Mécanique:</gradient> <white>Surcharge chromatique."
+    lore_tienda:
+      - "<gray>\"Je veux des couleurs... donne-moi tes couleurs.\""
+      - "<white>Difficulté: <red>Difficile"
+    habilidades_nombres:
+      arma: "<gradient:#ff0080:#00ffff>Lame Haute Tension</gradient>"
+      habilidad1: "<gradient:#ff0080:#ffffff>Vivid Trace (Charge)</gradient>"
+      habilidad2: "<gradient:#00ffff:#ffffff>Color Drain</gradient>"
+      habilidad3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
+      habilidad4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
+
+  coolkid:
+    nombre: "<gradient:#00ff00:#004400><b>COOLKID</b></gradient> <gray>[DEV]</gray>"
+    descripcion:
+      - "<gray>Tueur de test v4.1 (Branche DEV)."
+      - "<gray>Spécialiste des attaques réseau et glitchs."
+      - "<green>Mécanique: <white>Perte de paquets et erreurs critiques."
+    lore_tienda:
+      - "<dark_gray>\"127.0.0.1: Connection Terminated.\""
+      - "<white>Difficulté: <green>Test"
+    habilidades_nombres:
+      arma: "<green>Force Op Stick"
+      habilidad1: "<green>Force Login (Charge)"
+      habilidad2: "<green>Packet Loss (Clones)"
+      habilidad3: "<red>System Shutdown"
+      habilidad4: "<dark_red><bold>CRITICAL ERROR</bold>"
+
+  bendy:
+    nombre: "<gradient:#000000:#333333><b>BENDY</b></gradient> <white>[INK]</white>"
+    descripcion:
+      - "<gray>Le démon d'encre s'est échappé du studio."
+      - "<gray>Spécialiste de la mobilité et de l'aveuglement."
+      - "<black>Mécanique: <white>Tunnels d'encre et forme de Bête."
+    lore_tienda:
+      - "<gray>\"Encreux.\""
+      - "<white>Difficulté: <red>DIFFICILE"
+    habilidades_nombres:
+      arma: "<black>Hache Tachée d'Encre"
+      habilidad1: "<dark_gray><b>Tunnel d'Encre</b>"
+      habilidad2: "<black><b>Débordement</b>"
+      habilidad3: "<dark_gray><b>Flaque Corrosive</b>"
+      habilidad4: "<black><bold>LE DÉMON D'ENCRE</bold>"

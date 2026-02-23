@@ -9,31 +9,28 @@ import org.bukkit.inventory.ItemStack
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * CraftEngineUtils: Bridge de compatibilidad para ítems custom y vanilla.
- * Optimizado para Paper 1.21.4+ con lógica de fallback ultra-rápida.
+ * CraftEngineUtils: El puente definitivo para ítems custom y vanilla.
+ * Optimizado para Paper 1.21.4 con debug inteligente.
  */
 object CraftEngineUtils {
 
     /**
-     * Verifica si CraftEngine está instalado y activado.
-     * En Paper 1.21.4+, acceder al PluginManager es una operación O(1) muy rápida.
+     * Checa si el motor de CraftEngine está activo.
      */
     fun isAvailable(): Boolean = Bukkit.getPluginManager().isPluginEnabled("CraftEngine")
 
     /**
-     * Resuelve un String de configuración en un ItemStack real.
-     * Soporta formatos: "namespace:id" (CraftEngine) o "MATERIAL_NAME" (Vanilla).
+     * Resuelve el ítem buscando primero en CraftEngine y luego en Vanilla.
      */
     fun getCustomItem(property: String?): ItemStack? {
-        // 1. Filtrado ultra-rápido de nulos o vacíos
+        // 1. Filtro rápido: si no hay nada o dice 'none', nos ahorramos el jale.
         if (property.isNullOrBlank() || property.equals("none", ignoreCase = true)) {
             return null
         }
 
-        // 2. Intento de carga por CraftEngine
+        // 2. Intento por CraftEngine (si tiene el formato namespace:id)
         if (property.contains(":") && isAvailable()) {
             try {
-                // Split optimizado con límite
                 val split = property.split(":", limit = 2)
                 if (split.size == 2) {
                     val key = Key.of(split[0], split[1])
@@ -44,25 +41,38 @@ object CraftEngineUtils {
                     }
                 }
             } catch (e: Exception) {
-                Mistaken.instance.logger.warning("Fallo al resolver ítem en CraftEngine: $property")
+                Mistaken.instance.logger.warning("Fallo crítico al pedir ítem a CraftEngine: $property")
             }
         }
 
-        // 3. Fallback Vanilla (Match Material)
-        // matchMaterial es más seguro que valueOf porque no tira excepciones
-        return Material.matchMaterial(property.uppercase())?.let { material ->
-            if (material != Material.AIR) ItemStack(material) else null
+        // 3. Fallback Vanilla: Si no tiene ':' o CraftEngine no lo halló.
+        // Usamos matchMaterial porque es más aguantador que el valueOf
+        val mat = Material.matchMaterial(property.uppercase())
+
+        return if (mat != null && mat != Material.AIR) {
+            ItemStack(mat)
+        } else {
+            // Si llegamos aquí, es que el admin escribió algo que no existe
+            if (!property.contains(":")) {
+                Mistaken.instance.logger.warning("¡Aviso! No se encontró el material vanilla: $property")
+            }
+            null
         }
     }
 
     /**
-     * Versión a prueba de errores: Devuelve una BARRIER si el ítem no existe.
-     * Evita que el inventario del asesino se rompa por un error de config.
+     * Versión para el equipo de los asesinos.
+     * Si no encuentra el ítem, te da una barrera con el nombre del error.
      */
     fun getCustomItemSafe(property: String?): ItemStack {
-        return getCustomItem(property) ?: ItemStack(Material.BARRIER).apply {
-            itemMeta = itemMeta?.apply {
-                displayName(Mistaken.instance.mm.deserialize("<red><bold>ERROR:</bold> Ítem no encontrado"))
+        val item = getCustomItem(property)
+        if (item != null) return item
+
+        // Si falló, fabricamos un ítem de error para que el admin sepa qué onda
+        return ItemStack(Material.BARRIER).apply {
+            editMeta { meta ->
+                meta.displayName(Mistaken.instance.mm.deserialize("<red><bold>ERROR:</bold> <white>$property"))
+                meta.lore(listOf(Mistaken.instance.mm.deserialize("<gray>Este ítem no se encontró en la config.")))
             }
         }
     }

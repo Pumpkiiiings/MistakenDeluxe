@@ -3,132 +3,124 @@ package liric.mistaken.config
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * ConfigManager: Centralizador de acceso a datos locales y globales.
- * Actúa como puente entre el núcleo del plugin y el motor de traducciones.
+ * ConfigManager: El patrón de las configuraciones mecánicas.
+ * Maneja los datos globales (cooldowns, items, precios) y los menús.
  */
 class ConfigManager(private val plugin: Mistaken) {
 
     private val mm = plugin.mm
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    // --- 📂 ACCESO A CONFIGURACIONES GLOBALES (Raíz) ---
+    // --- ARCHIVOS GLOBALES (MECÁNICAS Y BALANCE) ---
+    private lateinit var asesinosFile: File
+    private lateinit var asesinosConfig: FileConfiguration
 
-    /**
-     * Obtiene el archivo config.yml principal del plugin.
-     */
-    val config: FileConfiguration
-        get() = plugin.config
+    private lateinit var supervivientesFile: File
+    private lateinit var supervivientesConfig: FileConfiguration
 
-    // --- 🛠️ MÉTODOS DE RECARGA ---
+    // Caché de menús (Thread-safe)
+    private val menusCache = ConcurrentHashMap<String, FileConfiguration>()
 
-    /**
-     * 🔥 FIX: Método principal de carga.
-     * Se llama desde el onEnable del plugin principal.
-     */
     fun loadAllConfigs() {
-        // En el sistema de carpetas, esto dispara el escaneo total del JAR y carpetas
-        plugin.messageConfig.loadAllLanguages()
-
-        plugin.componentLogger.info(mm.deserialize("<gray>[Config] Sistema de configuraciones y lenguajes sincronizado.</gray>"))
+        // Solo cargamos las mecánicas globales aquí.
+        // Los idiomas se cargan en MessageConfig por separado.
+        loadAsesinosConfig()
+        loadSupervivientesConfig()
     }
 
-    /**
-     * Recarga la base de datos de asesinos refrescando el motor de idiomas.
-     */
+    // --- ⚔️ GESTIÓN DE MECÁNICAS GLOBALES ---
+
     fun loadAsesinosConfig() {
-        plugin.messageConfig.loadAllLanguages()
+        asesinosFile = File(plugin.dataFolder, "asesinos.yml")
+        if (!asesinosFile.exists()) plugin.saveResource("asesinos.yml", false)
+        asesinosConfig = YamlConfiguration.loadConfiguration(asesinosFile)
     }
 
-    /**
-     * Recarga la base de datos de supervivientes.
-     */
+    fun getAsesinos(): FileConfiguration = asesinosConfig
+
     fun loadSupervivientesConfig() {
-        plugin.messageConfig.loadAllLanguages()
+        supervivientesFile = File(plugin.dataFolder, "supervivientes.yml")
+        if (!supervivientesFile.exists()) plugin.saveResource("supervivientes.yml", false)
+        supervivientesConfig = YamlConfiguration.loadConfiguration(supervivientesFile)
     }
 
+    fun getSupervivientes(): FileConfiguration = supervivientesConfig
+
+    // --- 📜 GESTIÓN DE MENÚS (CACHÉ REACTIVO) ---
+
     /**
-     * Limpia el caché de los menús y los obliga a re-procesar los archivos YAML.
+     * Obtiene la configuración de un menú (ej: tienda_principal) de forma rápida.
      */
+    fun getMenuConfig(fileName: String): FileConfiguration {
+        return menusCache.getOrPut(fileName) {
+            val menuFile = File(plugin.dataFolder, "menus/$fileName.yml")
+            if (!menuFile.exists()) {
+                plugin.saveResource("menus/$fileName.yml", false)
+            }
+            YamlConfiguration.loadConfiguration(menuFile)
+        }
+    }
+
     fun reloadMenus() {
-        // Usamos el semáforo global para evitar UninitializedPropertyAccessException
-        if (!plugin.isReady) return
+        menusCache.clear()
 
-        // Aquí ya es seguro llamarlos porque isReady = true garantiza que ya existen
-        plugin.shopSelector.reload()
-        plugin.asesinoTienda.reload()
-        plugin.supervivienteTienda.reload()
+        // Verificamos que el plugin ya haya arrancado completamente
+        if (plugin.isReady) {
+            plugin.shopSelector.reload()
+            plugin.asesinoTienda.reload()
+            plugin.supervivienteTienda.reload()
+        }
+        plugin.componentLogger.info(mm.deserialize("<gray>[Config] Caché de menús y UIs reiniciado.</gray>"))
     }
 
-    // --- 🌍 PUENTE HACIA EL MOTOR DE IDIOMAS (I18n) ---
+    // --- 🌍 PUENTES HACIA EL MOTOR DE IDIOMAS ---
 
     /**
-     * Obtiene la configuración de un menú adaptada al idioma del jugador.
+     * Helper súper rápido para obtener el nombre traducido de un asesino.
+     * Va y le pregunta al MessageConfig (asesinos_info.yml).
      */
-    fun getMenuConfig(player: Player, menuName: String): FileConfiguration {
-        return plugin.messageConfig.getSpecificFile(player, menuName)
-    }
-
-    /**
-     * Obtiene el archivo asesinos.yml del idioma del jugador (Lores, Nombres).
-     */
-    fun getAsesinosConfig(player: Player?): FileConfiguration {
-        return plugin.messageConfig.getSpecificFile(player, "asesinos")
-    }
-
-    /**
-     * Obtiene el archivo supervivientes.yml del idioma del jugador.
-     */
-    fun getSupervivientesConfig(player: Player?): FileConfiguration {
-        return plugin.messageConfig.getSpecificFile(player, "supervivientes")
-    }
-
-    /**
-     * Helper para obtener el nombre traducido de un asesino al vuelo.
-     */
-    fun getAssassinName(player: Player, assassinId: String): String {
-        val config = getAsesinosConfig(player)
-        return config.getString("asesinos.$assassinId.nombre") ?: assassinId
+    fun getAssassinName(player: Player?, assassinId: String): String {
+        return plugin.messageConfig.getRawString(
+            player = player,
+            fileName = "asesinos_info",
+            path = "asesinos.$assassinId.nombre",
+            def = assassinId.uppercase()
+        )
     }
 
     // --- 💾 PERSISTENCIA ASÍNCRONA ---
 
-    /**
-     * Guarda cambios en un archivo de idioma específico de forma asíncrona.
-     */
-    fun saveLangFileAsync(player: Player, fileName: String, fileConfig: FileConfiguration) {
-        val lang = player.let { plugin.playerDataManager.getLanguage(it.uniqueId) } ?: "es"
-        val file = File(plugin.dataFolder, "lang/$lang/$fileName.yml")
+    fun saveAll() {
+        saveConfigAsync(asesinosConfig, asesinosFile, "asesinos.yml")
+        saveConfigAsync(supervivientesConfig, supervivientesFile, "supervivientes.yml")
+    }
 
+    private fun saveConfigAsync(config: FileConfiguration?, file: File, name: String) {
+        if (config == null) return
         scope.launch {
             try {
-                fileConfig.save(file)
+                config.save(file)
             } catch (e: IOException) {
-                plugin.componentLogger.error(mm.deserialize("<red>[System] Error al guardar $lang/$fileName: ${e.message}"))
+                plugin.componentLogger.error(mm.deserialize("<red>[System] Error al guardar $name: ${e.message}"))
             }
         }
     }
 
     // --- ⚡ UTILIDAD PARA CRAFTENGINE ---
 
-    /**
-     * Resuelve la NamespacedKey de un item custom basado en la config del idioma.
-     */
-    fun getCraftKey(player: Player, path: String): String? {
-        val config = getAsesinosConfig(player)
-        val value = config.getString("asesinos.$path") ?: return null
-
+    fun getCraftKey(path: String): String? {
+        val value = asesinosConfig.getString("asesinos.$path") ?: return null
         if (value.isEmpty() || value.equals("none", ignoreCase = true)) return null
 
         return if (value.contains(":")) value
-        else {
-            val defaultNamespace = config.getString("namespace", "mistaken")
-            "$defaultNamespace:$value"
-        }
+        else "${asesinosConfig.getString("namespace", "mistaken")}:$value"
     }
 }

@@ -36,7 +36,7 @@ abstract class Asesino(val id: String, val nombre: String) {
      */
     fun checkCooldown(player: Player, slot: Int): Boolean {
         // 1. Obtenemos el tiempo del archivo raíz (Lógica global)
-        val globalConfig = plugin.configManager.getAsesinosConfig(null)
+        val globalConfig = plugin.configManager.getAsesinos()
         val cooldownSecs = globalConfig.getInt("asesinos.$id.items.habilidad${slot}_cooldown", 0)
 
         if (cooldownSecs <= 0) return false
@@ -52,7 +52,7 @@ abstract class Asesino(val id: String, val nombre: String) {
         if (now < expireTime) {
             val remaining = (expireTime - now) / 1000.0
 
-            // Mensaje de error traducido desde es/es.yml o en/en.yml
+            // Mensaje de error traducido desde es/messages.yml o en/messages.yml
             val msg = plugin.messageConfig.getMessage(player, "errors.ability-cooldown",
                 Placeholder.parsed("skill", nombreHab),
                 Placeholder.parsed("time", "%.1f".format(remaining))
@@ -87,7 +87,7 @@ abstract class Asesino(val id: String, val nombre: String) {
      * Reproduce el sonido de la habilidad desde el archivo raíz.
      */
     fun reproducirEfectosHabilidad(player: Player, slot: Int) {
-        val config = plugin.configManager.getAsesinosConfig(null)
+        val config = plugin.configManager.getAsesinos()
         val sonidoName = config.getString("asesinos.$id.items.habilidad${slot}_sonido") ?: return
 
         runCatching {
