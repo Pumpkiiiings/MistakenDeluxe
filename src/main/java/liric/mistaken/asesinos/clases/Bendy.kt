@@ -25,7 +25,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 class Bendy : Asesino(
     "bendy",
-    Mistaken.instance.configManager.getAsesinos().getString("asesinos.bendy.nombre", "<black><b>THE INK DEMON</b></black>")!!
+    // El nombre del asesino en el constructor también se jala del lenguaje (usamos null para el default del server)
+    Mistaken.instance.messageConfig.getSpecificFile(null, "asesinos").getString("asesinos.bendy.nombre", "Bendy")!!
 ) {
 
     private val path = "asesinos.bendy"
@@ -38,14 +39,18 @@ class Bendy : Asesino(
         preLoadKit()
     }
 
+    /**
+     * 🔥 PRE-LOAD: Solo cargamos el material o el ítem de CraftEngine.
+     * No ponemos nombres aquí para que el multi-lenguaje funcione.
+     */
     private fun preLoadKit() {
-        val config = plugin.configManager.getAsesinos()
+        val config = plugin.configManager.getAsesinosConfig(null) // Archivo raíz
         val armor = listOf("casco", "pechera", "pantalones", "botas")
         val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
         armor.forEach { k ->
-            config.getString("$path.armadura.$k")?.let { id ->
-                if (id != "none" && id.isNotEmpty()) {
+            config.getString("asesinos.bendy.armadura.$k")?.let { id ->
+                if (id != "none") {
                     val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.LEATHER_HELMET)
                     itemKitCache[k] = item
                 }
@@ -53,11 +58,9 @@ class Bendy : Asesino(
         }
 
         items.forEach { k ->
-            config.getString("$path.items.$k")?.let { id ->
-                val name = config.getString("$path.items.${k}_nombre")
-                if (id != "none" && id.isNotEmpty()) {
+            config.getString("asesinos.bendy.items.$k")?.let { id ->
+                if (id != "none") {
                     val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
-                    name?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
                     itemKitCache[k] = item
                 }
             }
@@ -66,52 +69,30 @@ class Bendy : Asesino(
 
     override fun usarHabilidad(player: Player, slot: Int) {
         when (slot) {
-            1 -> if (!checkCooldown(player, 1)) {
-                habilidadInkPortal(player)
-                reproducirEfectosHabilidad(player, 1)
-                applyInkFatigue(player)
-            }
-            2 -> if (!checkCooldown(player, 2)) {
-                habilidadInkFlow(player)
-                reproducirEfectosHabilidad(player, 2)
-                applyInkFatigue(player)
-            }
-            3 -> if (!checkCooldown(player, 3)) {
-                habilidadInkPuddle(player)
-                reproducirEfectosHabilidad(player, 3)
-                applyInkFatigue(player)
-            }
-            4 -> if (!checkCooldown(player, 4)) {
-                habilidadTheBeast(player)
-                reproducirEfectosHabilidad(player, 4)
-            }
+            1 -> if (!checkCooldown(player, 1)) { habilidadInkPortal(player); reproducirEfectosHabilidad(player, 1); applyInkFatigue(player) }
+            2 -> if (!checkCooldown(player, 2)) { habilidadInkFlow(player); reproducirEfectosHabilidad(player, 2); applyInkFatigue(player) }
+            3 -> if (!checkCooldown(player, 3)) { habilidadInkPuddle(player); reproducirEfectosHabilidad(player, 3); applyInkFatigue(player) }
+            4 -> if (!checkCooldown(player, 4)) { habilidadTheBeast(player); reproducirEfectosHabilidad(player, 4) }
         }
     }
 
-    private fun applyInkFatigue(player: Player) {
-        player.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 0, false, false, true))
-    }
+    private fun applyInkFatigue(player: Player) = player.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 0, false, false, true))
 
-    // --- 🌀 HABILIDADES ---
+    // --- 🌀 HABILIDADES (Lógica igual, pero asegurando sincronía) ---
 
     private fun habilidadInkPortal(player: Player) {
         val target = player.getTargetBlockExact(15) ?: player.location.add(player.location.direction.multiply(5)).block
         val targetLoc = target.location.add(0.5, 1.1, 0.5)
-
         player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 40, 0, false, false))
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 40, 4, false, false))
-
         player.world.spawnParticle(org.bukkit.Particle.SQUID_INK, player.location, 50, 0.5, 1.0, 0.5, 0.1)
         player.playSound(player.location, Sound.ENTITY_SQUID_SQUIRT, 1f, 0.5f)
-
         val job = scope.launch {
             delay(1500)
             withContext(plugin.mainThread) {
                 if (player.isOnline) {
                     player.teleport(targetLoc)
                     player.world.spawnParticle(org.bukkit.Particle.SQUID_INK, player.location, 50, 0.5, 1.0, 0.5, 0.1)
-                    player.playSound(player.location, Sound.ENTITY_SQUID_DEATH, 1f, 0.1f)
-
                     player.getNearbyEntities(4.0, 4.0, 4.0).filterIsInstance<Player>().forEach { victim ->
                         if (!plugin.asesinoManager.esElAsesino(victim)) {
                             victim.playSound(victim.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.1f)
@@ -125,7 +106,6 @@ class Bendy : Asesino(
     }
 
     private fun habilidadInkFlow(player: Player) {
-        player.playSound(player.location, Sound.ENTITY_GENERIC_SPLASH, 1f, 0.5f)
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
                 val toVictim = victim.location.toVector().subtract(player.location.toVector()).normalize()
@@ -162,7 +142,6 @@ class Bendy : Asesino(
         isBeastMode = true
         player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 200, 1))
         player.isGlowing = true
-        player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f)
         val job = scope.launch {
             delay(10000)
             withContext(plugin.mainThread) {
@@ -174,7 +153,59 @@ class Bendy : Asesino(
         trackJob(job)
     }
 
-    // --- 🚀 MOTOR DE PARTÍCULAS (ASYNC) ---
+    // --- 🛠️ EQUIPAMIENTO (CON TRADUCCIÓN AL VUELO) ---
+
+    override fun equipar(player: Player) {
+        val inv = player.inventory
+        inv.clear()
+        if (itemKitCache.isEmpty()) preLoadKit()
+
+        // 1. Obtenemos el archivo de lenguaje del jugador (lang/es/asesinos.yml)
+        val langAsesinos = plugin.messageConfig.getSpecificFile(player, "asesinos")
+
+        fun giveNamedItem(slot: Int, key: String, isArmor: Boolean = false) {
+            val item = itemKitCache[key]?.clone() ?: return
+
+            // 🔥 LA MAGIA: Jalamos el nombre del archivo de idioma en este milisegundo
+            val namePath = if (key == "arma") "asesinos.bendy.items.arma_nombre"
+            else "asesinos.bendy.items.${key}_nombre"
+
+            val localizedName = langAsesinos.getString(namePath)
+
+            if (localizedName != null) {
+                item.editMeta { it.displayName(mm.deserialize(localizedName)) }
+            }
+
+            if (isArmor) {
+                when(key) {
+                    "casco" -> inv.helmet = item
+                    "pechera" -> inv.chestplate = item
+                    "pantalones" -> inv.leggings = item
+                    "botas" -> inv.boots = item
+                }
+            } else {
+                inv.setItem(slot, item)
+            }
+        }
+
+        // Entregar armadura
+        giveNamedItem(0, "casco", true)
+        giveNamedItem(0, "pechera", true)
+        giveNamedItem(0, "pantalones", true)
+        giveNamedItem(0, "botas", true)
+
+        // Entregar habilidades (Slots 1 al 4) y Arma (8)
+        giveNamedItem(1, "habilidad1")
+        giveNamedItem(2, "habilidad2")
+        giveNamedItem(3, "habilidad3")
+        giveNamedItem(4, "habilidad4")
+        giveNamedItem(8, "arma")
+
+        player.inventory.heldItemSlot = 8
+        player.updateInventory()
+    }
+
+    // --- 🚀 MOTORES VISUALES (Con partículas para el propio asesino) ---
 
     override fun mostrarTrail(player: Player) {
         if (player.velocity.lengthSquared() < 0.001) return
@@ -182,31 +213,17 @@ class Bendy : Asesino(
         val pos = Vector3d(loc.x, loc.y, loc.z)
         val mgr = PacketEvents.getAPI().playerManager
 
-        // 1. Rastro de tinta en los pies
-        val groundPacket = WrapperPlayServerParticle(
-            Particle(ParticleTypes.SQUID_INK), false,
-            pos.add(0.0, 0.1, 0.0), Vector3f(0.3f, 0.0f, 0.3f), 0.02f, 2
-        )
+        val ground = WrapperPlayServerParticle(Particle(ParticleTypes.SQUID_INK), false, pos.add(0.0, 0.1, 0.0), Vector3f(0.3f, 0.0f, 0.3f), 0.02f, 2)
+        val drips = WrapperPlayServerParticle(Particle(ParticleTypes.LARGE_SMOKE), false, pos.add(0.0, 1.8, 0.0), Vector3f(0.2f, 0.4f, 0.2f), 0.01f, 1)
 
-        // 2. Tinta goteando desde arriba
-        val dripPacket = WrapperPlayServerParticle(
-            Particle(ParticleTypes.LARGE_SMOKE),
-            false, pos.add(0.0, 1.8, 0.0),
-            Vector3f(0.2f, 0.4f, 0.2f), 0.01f, 1
-        )
-
-        // 🔥 FIX: Eliminado el filtro para que el asesino también vea su propio trail
         loc.world.players.forEach { viewer ->
             if (viewer.location.distanceSquared(loc) < 400.0) {
-                mgr.sendPacket(viewer, groundPacket)
-                mgr.sendPacket(viewer, dripPacket)
+                mgr.sendPacket(viewer, ground)
+                mgr.sendPacket(viewer, drips)
             }
         }
     }
 
-    /**
-     * 🔥 EFECTO DE CHARCO DINÁMICO (SYNC)
-     */
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { limpiarAura(uuid); return }
@@ -222,32 +239,6 @@ class Bendy : Asesino(
         display.teleport(player.location.clone().add(0.0, 0.01, 0.0))
     }
 
-    override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
-
-        inv.helmet = itemKitCache["casco"]?.clone()
-        inv.chestplate = itemKitCache["pechera"]?.clone()
-        inv.leggings = itemKitCache["pantalones"]?.clone()
-        inv.boots = itemKitCache["botas"]?.clone()
-
-        inv.setItem(1, itemKitCache["habilidad1"]?.clone())
-        inv.setItem(2, itemKitCache["habilidad2"]?.clone())
-        inv.setItem(3, itemKitCache["habilidad3"]?.clone())
-        inv.setItem(4, itemKitCache["habilidad4"]?.clone())
-        inv.setItem(8, itemKitCache["arma"]?.clone())
-
-        player.inventory.heldItemSlot = 8
-        player.updateInventory()
-    }
-
     private fun limpiarAura(uuid: UUID) { auras.remove(uuid)?.remove() }
-
-    override fun cleanup(player: Player?) {
-        super.cleanup(player)
-        isBeastMode = false
-        player?.let { limpiarAura(it.uniqueId) }
-        scope.coroutineContext.cancelChildren()
-    }
+    override fun cleanup(player: Player?) { super.cleanup(player); isBeastMode = false; player?.let { limpiarAura(it.uniqueId) }; scope.coroutineContext.cancelChildren() }
 }

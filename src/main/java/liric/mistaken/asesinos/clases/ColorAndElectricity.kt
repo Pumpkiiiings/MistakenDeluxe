@@ -7,9 +7,12 @@ import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
+import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
+import liric.mistaken.utils.mainThread
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.*
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Player
@@ -29,16 +32,15 @@ import kotlin.math.sin
 
 class ColorAndElectricity : Asesino(
     "colorandelectricity",
-    Mistaken.Companion.instance.configManager.getAsesinos().getString(
-        "asesinos.colorandelectricity.nombre",
-        "<gradient:#ff0080:#00ffff:#ffff00><b>色彩電気</b></gradient>"
-    )!!
+    // Nombre del asesino dinámico según el idioma por defecto del server
+    Mistaken.instance.messageConfig.getSpecificFile(null, "asesinos").getString("asesinos.colorandelectricity.nombre", "Color & Electricity")!!
 ) {
 
     private val path = "asesinos.colorandelectricity"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private val orbitMaterials = listOf(
         Material.PURPLE_WOOL, Material.BLUE_WOOL, Material.LIGHT_BLUE_WOOL,
@@ -49,34 +51,37 @@ class ColorAndElectricity : Asesino(
         preLoadKit()
     }
 
+    /**
+     * 🔥 PRE-LOAD LÓGICO:
+     * Carga los materiales y IDs del archivo asesinos.yml de la RAIZ.
+     * No guardamos nombres aquí para permitir el Multi-Idioma al equipar.
+     */
     private fun preLoadKit() {
-        val config = plugin.configManager.getAsesinos()
-        val armorKeys = listOf("casco", "pechera", "pantalones", "botas")
-        val itemKeys = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
+        val config = plugin.configManager.getAsesinosConfig(null) // Archivo raíz
+        val armor = listOf("casco", "pechera", "pantalones", "botas")
+        val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
-        armorKeys.forEach { key ->
-            config.getString("$path.armadura.$key")?.let { id ->
-                if (id != "none" && id.isNotEmpty()) {
-                    CraftEngineUtils.getCustomItem(id)?.let { itemKitCache[key] = it }
+        armor.forEach { k ->
+            config.getString("asesinos.colorandelectricity.armadura.$k")?.let { id ->
+                if (id != "none") {
+                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.LEATHER_HELMET)
+                    itemKitCache[k] = item
                 }
             }
         }
-        itemKeys.forEach { key ->
-            config.getString("$path.items.$key")?.let { id ->
-                val name = config.getString("$path.items.${key}_nombre")
-                if (id != "none" && id.isNotEmpty()) {
-                    CraftEngineUtils.getCustomItem(id)?.let { item ->
-                        name?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
-                        itemKitCache[key] = item
-                    }
+
+        items.forEach { k ->
+            config.getString("asesinos.colorandelectricity.items.$k")?.let { id ->
+                if (id != "none") {
+                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
+                    itemKitCache[k] = item
                 }
             }
         }
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        // 🔥 NUEVO MAPPING DESPLAZADO UN SLOT A LA DERECHA
-        // Slot 1 (Tecla 2) = H1, Slot 2 (Tecla 3) = H2, Slot 3 (Tecla 4) = H3, Slot 4 (Tecla 5) = H4
+        // Mantuve tus slots desplazados (1, 2, 3, 4)
         when (slot) {
             1 -> if (!checkCooldown(player, 1)) { habilidadVividTrace(player); reproducirEfectosHabilidad(player, 1) }
             2 -> if (!checkCooldown(player, 2)) { habilidadColorDrain(player); reproducirEfectosHabilidad(player, 2) }
@@ -85,32 +90,75 @@ class ColorAndElectricity : Asesino(
         }
     }
 
-    // --- 🚀 HABILIDADES REPARADAS ---
+    // --- 🛠️ EQUIPAMIENTO (SISTEMA MULTI-IDIOMA) ---
+
+    override fun equipar(player: Player) {
+        val inv = player.inventory
+        inv.clear()
+
+        // Si el caché falló (CraftEngine no listo), reintentamos una vez
+        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
+
+        // Obtenemos el archivo de lenguaje específico del jugador (lang/es/asesinos.yml)
+        val langAsesinos = plugin.messageConfig.getSpecificFile(player, "asesinos")
+
+        fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
+            val item = itemKitCache[key]?.clone() ?: return
+
+            // 🔥 Buscamos el nombre traducido en la carpeta del idioma
+            val namePath = if (key == "arma") "asesinos.colorandelectricity.items.arma_nombre"
+            else "asesinos.colorandelectricity.items.${key}_nombre"
+
+            val localizedName = langAsesinos.getString(namePath)
+            if (localizedName != null) {
+                item.editMeta { it.displayName(mm.deserialize(localizedName)) }
+            }
+
+            if (isArmor) {
+                when(key) {
+                    "casco" -> inv.helmet = item
+                    "pechera" -> inv.chestplate = item
+                    "pantalones" -> inv.leggings = item
+                    "botas" -> inv.boots = item
+                }
+            } else {
+                inv.setItem(slot, item)
+            }
+        }
+
+        // 1. Armadura
+        setLocalizedItem(0, "casco", true)
+        setLocalizedItem(0, "pechera", true)
+        setLocalizedItem(0, "pantalones", true)
+        setLocalizedItem(0, "botas", true)
+
+        // 2. Hotbar desplazada (Slots 1, 2, 3, 4 y Arma en 8)
+        setLocalizedItem(1, "habilidad1")
+        setLocalizedItem(2, "habilidad2")
+        setLocalizedItem(3, "habilidad3")
+        setLocalizedItem(4, "habilidad4")
+        setLocalizedItem(8, "arma")
+
+        player.inventory.heldItemSlot = 8
+        player.updateInventory()
+    }
+
+    // --- ⚡ HABILIDADES REPARADAS ---
 
     private fun habilidadVividTrace(player: Player) {
-        // Dash potente
         val dir = player.location.direction.normalize().multiply(1.8).setY(0.2)
         player.velocity = dir
 
-        // 🔥 FIX HABILIDAD 1: Detección de impacto continua durante el dash (8 ticks)
         val task = object : BukkitRunnable() {
             var count = 0
             val hitted = mutableSetOf<UUID>()
-
             override fun run() {
-                if (count >= 8 || !player.isOnline) { cancel(); return }
-
+                if (count >= 10 || !player.isOnline) { cancel(); return }
                 player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
                     if (!plugin.asesinoManager.esElAsesino(victim) && !hitted.contains(victim.uniqueId)) {
                         hitted.add(victim.uniqueId)
-
-                        // Daño Real
                         plugin.combatManager.processTrueDamage(victim, player, 4.0)
-
-                        // 🔥 TRUE KNOCKBACK: Empuje explosivo hacia afuera
-                        val kb = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.5)
-                        victim.velocity = kb
-
+                        victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
                         victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 1.5f)
                     }
                 }
@@ -118,9 +166,7 @@ class ColorAndElectricity : Asesino(
             }
         }
         task.runTaskTimer(plugin, 0L, 1L)
-
         player.playSound(player.location, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1f, 2f)
-        player.world.spawnParticle(org.bukkit.Particle.WITCH, player.location, 15, 0.3, 0.3, 0.3, 0.1)
     }
 
     private fun habilidadColorDrain(player: Player) {
@@ -129,8 +175,7 @@ class ColorAndElectricity : Asesino(
             if (!plugin.asesinoManager.esElAsesino(victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
-                // Pequeño sacudón visual
-                victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(0.2).setY(0.1)
+                victim.sendMessage(mm.deserialize("<gradient:#ff0080:#00ffff><i>\"Dame tus colores...\"</i></gradient>"))
             }
         }
     }
@@ -141,17 +186,10 @@ class ColorAndElectricity : Asesino(
             override fun run() {
                 if (ticks > 3 || !player.isOnline) { cancel(); return }
                 player.world.spawnParticle(org.bukkit.Particle.ELECTRIC_SPARK, player.location, 20, 2.0, 2.0, 2.0, 0.05)
-                player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BIT, 1f, 1.5f + (ticks * 0.2f))
-
                 player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { victim ->
                     if (!plugin.asesinoManager.esElAsesino(victim)) {
                         plugin.combatManager.processTrueDamage(victim, player, 2.0)
-
-                        // 🔥 TRUE KNOCKBACK (Repulsión eléctrica)
-                        val push = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(0.8).setY(0.3)
-                        victim.velocity = push
-
-                        victim.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 40, 1))
+                        victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(0.8).setY(0.3)
                     }
                 }
                 ticks++
@@ -161,48 +199,14 @@ class ColorAndElectricity : Asesino(
     }
 
     private fun habilidadShikisaiEnd(player: Player) {
-        val target = player.getNearbyEntities(15.0, 15.0, 15.0).filterIsInstance<Player>()
-            .find { !plugin.asesinoManager.esElAsesino(it) }
-
+        val target = player.getNearbyEntities(15.0, 15.0, 15.0).filterIsInstance<Player>().find { !plugin.asesinoManager.esElAsesino(it) }
         target?.let { t ->
             player.teleportAsync(t.location).thenAccept {
-                player.playSound(player.location, Sound.ENTITY_FIREWORK_ROCKET_TWINKLE, 1f, 0.5f)
                 player.world.spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, player.location, 30, 0.5, 1.0, 0.5, 0.5)
                 t.sendMessage(mm.deserialize("<red><b>[!] SOBRECARGA CROMÁTICA</b></red>"))
-
-                // 🔥 KNOCKBACK VERTICAL (Hacia arriba)
                 t.velocity = Vector(0.0, 1.2, 0.0)
-                t.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 120, 0))
             }
         }
-    }
-
-    // --- 🛠️ EQUIPAMIENTO (FIXED) ---
-
-    override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-
-        // Si el caché está vacío (CraftEngine timing), forzamos carga
-        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) {
-            preLoadKit()
-        }
-
-        // Armadura
-        itemKitCache["casco"]?.let { inv.helmet = it.clone() }
-        itemKitCache["pechera"]?.let { inv.chestplate = it.clone() }
-        itemKitCache["pantalones"]?.let { inv.leggings = it.clone() }
-        itemKitCache["botas"]?.let { inv.boots = it.clone() }
-
-        // Items
-        itemKitCache["habilidad1"]?.let { inv.setItem(1, it.clone()) }
-        itemKitCache["habilidad2"]?.let { inv.setItem(2, it.clone()) }
-        itemKitCache["habilidad3"]?.let { inv.setItem(3, it.clone()) }
-        itemKitCache["habilidad4"]?.let { inv.setItem(4, it.clone()) }
-        itemKitCache["arma"]?.let { inv.setItem(8, it.clone()) }
-
-        player.inventory.heldItemSlot = 8
-        player.updateInventory()
     }
 
     // --- 🌀 MOTOR DE BLOQUES ---
@@ -243,7 +247,7 @@ class ColorAndElectricity : Asesino(
     override fun mostrarTrail(player: Player) {
         val loc = player.location.add(0.0, 0.1, 0.0)
         val packet = WrapperPlayServerParticle(Particle(ParticleTypes.DUST, ParticleDustData(1f, 0f, 0.5f, 1.1f)), false, Vector3d(loc.x, loc.y, loc.z), Vector3f(0.1f, 0.1f, 0.1f), 0.01f, 1)
-        loc.world.players.forEach { p -> if (p != player && p.location.distanceSquared(loc) < 625.0) PacketEvents.getAPI().playerManager.sendPacket(p, packet) }
+        loc.world.players.forEach { p -> if (p.location.distanceSquared(loc) < 625.0) PacketEvents.getAPI().playerManager.sendPacket(p, packet) }
     }
 
     private fun limpiarEntidades(uuid: UUID) {
@@ -253,9 +257,7 @@ class ColorAndElectricity : Asesino(
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        player?.let {
-            limpiarEntidades(it.uniqueId)
-            it.removePotionEffect(PotionEffectType.DARKNESS)
-        }
+        player?.let { limpiarEntidades(it.uniqueId) }
+        scope.coroutineContext.cancelChildren()
     }
 }

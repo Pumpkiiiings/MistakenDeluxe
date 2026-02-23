@@ -1,0 +1,474 @@
+# ======================================================
+#          MISTAKEN - 杀手配置 (CN)
+# ======================================================
+
+namespace: "mistaken"
+
+asesinos:
+  slasher:
+    precio: 0
+    icono_material: "NETHERITE_SWORD"
+    nombre: "<white><b>PUMPKIN WHITE</b>"
+    descripcion:
+      - "<gray>经典而残暴的杀手。"
+      - "<gray>物理追击专家。"
+      - "<red>机制: <white>造成持续流血。"
+    lore_tienda:
+      - "<gray>\"他的嗜血欲望永无止境...\""
+      - "<white>难度: <green>简单"
+    armadura:
+      casco: "mistaken:pumpkinwhite_helmet"
+      pechera: "mistaken:pumpkinwhite_chestplate"
+      pantalones: "mistaken:pumpkinwhite_leggings"
+      botas: "mistaken:pumpkinwhite_boots"
+    items:
+      arma: "DIAMOND_AXE"
+      arma_nombre: "<red>斧头"
+      habilidad1: "BLAZE_POWDER"
+      habilidad1_nombre: "<red>嗜血欲望"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "ENTITY_ENDER_DRAGON_GROWL"
+      habilidad2: "SNOWBALL"
+      habilidad2_nombre: "<gold>投掷砍刀"
+      habilidad2_cooldown: 12
+      habilidad2_sonido: "ENTITY_ARROW_SHOOT"
+      habilidad3: "GHAST_TEAR"
+      habilidad3_nombre: "<dark_purple>恐怖降临"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad4: "NETHER_STAR"
+      habilidad4_nombre: "<dark_red><bold>处决模式</bold>"
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_WITHER_SPAWN"
+
+  herobrine:
+    precio: 2500
+    icono_material: "NETHER_STAR"
+    nombre: "<white><b>HEROBRINE</b>"
+    descripcion:
+      - "<gray>腐蚀现实的神话。"
+      - "<gray>潜行与机动性专家。"
+      - "<white>机制: <white>传送与揭示位置。"
+    lore_tienda:
+      - "<gray>\"他不应该出现在这里...\""
+      - "<white>难度: <yellow>中等"
+    armadura:
+      casco: "mistaken:herobrine_helmet"
+      pechera: "mistaken:herobrine_chestplate"
+      pantalones: "mistaken:herobrine_leggings"
+      botas: "mistaken:herobrine_boots"
+    items:
+      arma: "DIAMOND_AXE"
+      arma_nombre: "<white>遗忘之刃"
+      habilidad1: "WIND_CHARGE"
+      habilidad1_nombre: "<white>虚空冲刺"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_WARDEN_SONIC_BOOM"
+      habilidad2: "COMPASS"
+      habilidad2_nombre: "<aqua>维度跳跃"
+      habilidad2_cooldown: 35
+      habilidad2_sonido: "BLOCK_PORTAL_TRAVEL"
+      habilidad3: "NETHER_STAR"
+      habilidad3_nombre: "<dark_gray>恐惧脉冲"
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "ENTITY_WITHER_SHOOT"
+      habilidad4: "BEACON"
+      habilidad4_nombre: "<red><bold>世界错误</bold>"
+      habilidad4_cooldown: 80
+      habilidad4_sonido: "ENTITY_ELDER_GUARDIAN_CURSE"
+
+  entity303:
+    precio: 3000
+    icono_material: "NETHERITE_UPGRADE_SMITHING_TEMPLATE"
+    nombre: "<red><b>ENTITY 303</b>"
+    descripcion:
+      - "<gray>代码中的关键错误。"
+      - "<gray>故障与火焰攻击专家。"
+      - "<red>机制: <white>数据感染与飞行。"
+    lore_tienda:
+      - "<gray>\"系统错误：检测到 303\""
+      - "<white>难度: <yellow>中等"
+    armadura:
+      casco: "mistaken:entity303_helmet"
+      pechera: "mistaken:entity303_chestplate"
+      pantalones: "mistaken:entity303_leggings"
+      botas: "mistaken:entity303_boots"
+    items:
+      arma: "IRON_SWORD"
+      arma_nombre: "<red>腐蚀之剑"
+      habilidad1: "FIRE_CHARGE"
+      habilidad1_nombre: "<red>代码冲刺"
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_DRAGON_FIREBALL_EXPLODE"
+      habilidad2: "REDSTONE"
+      habilidad2_nombre: "<red>错误之星"
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad3: "FEATHER"
+      habilidad3_nombre: "<red>飞行协议"
+      habilidad3_cooldown: 30
+      habilidad3_sonido: "ENTITY_BAT_LOOP"
+      habilidad4: "OBSERVER"
+      habilidad4_nombre: "<dark_red><bold>系统崩溃</bold>"
+      habilidad4_cooldown: 90
+      habilidad4_sonido: "BLOCK_NOTE_BLOCK_BASEDRUM"
+
+  null:
+    precio: 5000
+    icono_material: "COAL_BLOCK"
+    nombre: "<dark_gray><b>NULL</b>"
+    descripcion:
+      - "<gray>存在的绝对缺失。"
+      - "<gray>失明与陷阱专家。"
+      - "<dark_gray>机制: <white>绝对黑暗与窒息。"
+    lore_tienda:
+      - "<gray>\"他所过之处，万物皆无...\""
+      - "<white>难度: <red>困难"
+    armadura:
+      casco: "mistaken:null_helmet"
+      pechera: "mistaken:null_chestplate"
+      pantalones: "mistaken:null_leggings"
+      botas: "mistaken:null_boots"
+    items:
+      arma: "NETHERITE_SWORD"
+      arma_nombre: "<dark_gray>虚空短剑"
+      habilidad1: "RECOVERY_COMPASS"
+      habilidad1_nombre: "<red>渲染错误"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "BLOCK_GLASS_BREAK"
+      habilidad2: "BEACON"
+      habilidad2_nombre: "<aqua>灵魂信标"
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "ENTITY_EXPERIENCE_ORB_PICKUP"
+      habilidad3: "CHAIN"
+      habilidad3_nombre: "<dark_gray>虚空牢笼"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "BLOCK_CHAIN_PLACE"
+      habilidad4: "ECHO_SHARD"
+      habilidad4_nombre: "<gray><bold>深渊獠牙</bold>"
+      habilidad4_cooldown: 45
+      habilidad4_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
+
+  charlie:
+    precio: 7500
+    icono_material: "MAGMA_BLOCK"
+    nombre: "<gradient:#ff4500:#ff8c00><b>CHARLIE INFERNO</b></gradient>"
+    descripcion:
+      - "<gray>火焰与永恒寒冰的使者。"
+      - "<gray>以大规模元素攻击统治战场。"
+      - "<gradient:#ff4500:#ff8c00>机制:</gradient> <white>毁天灭地的力量 vs 力竭。"
+    lore_tienda:
+      - "<gray>\"在精疲力竭之前，拼命逃离你的心魔吧...\""
+      - "<white>难度: <red>专家"
+    armadura:
+      casco: "mistaken:charlie_helmet"
+      pechera: "mistaken:charlie_chestplate"
+      pantalones: "mistaken:charlie_leggings"
+      botas: "mistaken:charlie_boots"
+    items:
+      arma: "GOLDEN_SWORD"
+      arma_nombre: "<gradient:#ff4500:#ff8c00>地狱之锋"
+      habilidad1: "FIRE_CHARGE"
+      habilidad1_nombre: "<red><b>炼狱！</b>"
+      habilidad1_cooldown: 30
+      habilidad1_sonido: "ITEM_FIRECHARGE_USE"
+      habilidad2: "RECOVERY_COMPASS"
+      habilidad2_nombre: "<gradient:#ff4500:#000000><b>恶魔奔袭</b></gradient>"
+      habilidad2_cooldown: 45
+      habilidad2_sonido: "ENTITY_WARDEN_HEARTBEAT"
+      habilidad3: "PACKED_ICE"
+      habilidad3_nombre: "<aqua><b>冰川尖刺</b>"
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "BLOCK_GLASS_BREAK"
+      habilidad4: "ECHO_SHARD"
+      habilidad4_nombre: "<dark_red><b>地底獠牙</b>"
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
+
+  devesto:
+    precio: 10000
+    icono_material: "NETHERITE_AXE"
+    nombre: "<gradient:#4b0082:#000000><b>DEVESTO</b></gradient> <white>[F3X]</white>"
+    descripcion:
+      - "<gray>代码的堕落建筑师。"
+      - "<gray>随心所欲操控地图。"
+      - "<dark_purple>机制:</gradient> <white>//set 0 与恢复。"
+    lore_tienda:
+      - "<gray>\"Control-Alt-Delete 你的存在。\""
+      - "<white>难度: <red>极难"
+    armadura:
+      casco: "mistaken:devesto_helmet"
+      pechera: "mistaken:devesto_chestplate"
+      pantalones: "mistaken:devesto_leggings"
+      botas: "mistaken:devesto_boots"
+    items:
+      arma: "NETHERITE_AXE"
+      arma_nombre: "<gradient:#4b0082:#000000>建筑师之斧"
+      habilidad1: "PISTON"
+      habilidad1_nombre: "<blue>[F3X]</blue> <white>移动工具"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "BLOCK_PISTON_EXTEND"
+      habilidad2: "CYAN_DYE"
+      habilidad2_nombre: "<blue>[F3X]</blue> <white>涂料工具"
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "ITEM_DYE_USE"
+      habilidad3: "STICK"
+      habilidad3_nombre: "<blue>[F3X]</blue> <white>缩放工具"
+      habilidad3_cooldown: 30
+      habilidad3_sonido: "ENTITY_ITEM_FRAME_ROTATE_ITEM"
+      habilidad4: "BARRIER"
+      habilidad4_nombre: "<red><bold>//SET 0 (删除)</bold>"
+      habilidad4_cooldown: 120
+      habilidad4_sonido: "ENTITY_GENERIC_EXPLODE"
+
+  mariachi:
+    precio: 12000
+    icono_material: "GOLDEN_SWORD"
+    nombre: "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>"
+    descripcion:
+      - "<gray>黑衣查罗来索要你的灵魂了。"
+      - "<gray>听觉眩晕专家。"
+      - "<red>机制:</gradient> <white>全局音乐与眩晕。"
+    lore_tienda:
+      - "<gray>\"哎呀呀！歌唱吧，别哭泣...\""
+      - "<white>难度: <red>专家"
+    armadura:
+      casco: "mistaken:charro_helmet"
+      pechera: "mistaken:charro_chestplate"
+      pantalones: "mistaken:charro_leggings"
+      botas: "mistaken:charro_boots"
+    items:
+      arma: "GOLDEN_AXE"
+      arma_nombre: "<gradient:#ff0000:#000000>命运吉他"
+      habilidad1: "ECHO_SHARD"
+      habilidad1_nombre: "<red>恐怖尖叫"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "ENTITY_ENDER_DRAGON_GROWL"
+      habilidad2: "LEATHER_BOOTS"
+      habilidad2_nombre: "<gold>踏步舞"
+      habilidad2_cooldown: 25
+      habilidad2_sonido: "ENTITY_HORSE_GALLOP"
+      habilidad3: "WOODEN_SWORD"
+      habilidad3_nombre: "<white>精准吉他重击"
+      habilidad3_cooldown: 15
+      habilidad3_sonido: "BLOCK_WOOD_BREAK"
+      habilidad4: "POTION"
+      habilidad4_nombre: "<green><bold>一口特基拉</bold>"
+      habilidad4_cooldown: 45
+      habilidad4_sonido: "ENTITY_GENERIC_DRINK"
+
+  teto:
+    precio: 15000
+    icono_material: "MUSIC_DISC_PIGSTEP"
+    nombre: "<gradient:#ff66cc:#ff0000><b>重音 TETO</b></gradient>"
+    descripcion:
+      - "<gray>UTAU 奇美拉降临 Mistaken。"
+      - "<gray>畸变与战术攻击专家。"
+      - "<red>机制: <white>强力技能伴随自身减益。"
+    lore_tienda:
+      - "<gray>\"你真是个笨蛋！(Baka!)\""
+      - "<white>难度: <red>困难"
+    armadura:
+      casco: "mistaken:teto_helmet"
+      pechera: "mistaken:teto_chestplate"
+      pantalones: "mistaken:teto_leggings"
+      botas: "mistaken:teto_boots"
+    items:
+      arma: "IRON_SWORD"
+      arma_nombre: "<gradient:#ff66cc:#ff0000>奇美拉麦克风"
+      habilidad1: "HOPPER"
+      habilidad1_nombre: "<gradient:#7d7d7d:#ff0000>奇美拉电钻"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_ZOMBIE_ATTACK_IRON_DOOR"
+      habilidad2: "BREAD"
+      habilidad2_nombre: "<gradient:#ffcc99:#e6ac00>钢铁法棍"
+      habilidad2_cooldown: 10
+      habilidad2_sonido: "ENTITY_ITEM_BREAK"
+      habilidad3: "TNT"
+      habilidad3_nombre: "<gradient:#ff0000:#ffffff>愚人节玩笑"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ENTITY_CREEPER_PRIMED"
+      habilidad4: "NETHER_STAR"
+      habilidad4_nombre: "<dark_red><bold>领地 (0401)</bold>"
+      habilidad4_cooldown: 80
+      habilidad4_sonido: "BLOCK_BEACON_ACTIVATE"
+
+  miku:
+    precio: 20000
+    icono_material: "CYAN_DYE"
+    nombre: "<gradient:#00ffcc:#0099ff><b>初音未来</b></gradient>"
+    descripcion:
+      - "<gray>终极虚拟偶像登场。"
+      - "<gray>群体控制与激光专家。"
+      - "<aqua>机制: <white>光影投射与大规模伤害。"
+    lore_tienda:
+      - "<gray>\"世界是我的！\""
+      - "<white>难度: <yellow>中等"
+    armadura:
+      casco: "mistaken:miku_helmet"
+      pechera: "mistaken:miku_chestplate"
+      pantalones: "mistaken:miku_leggings"
+      botas: "mistaken:miku_boots"
+    items:
+      arma: "DIAMOND_SWORD"
+      arma_nombre: "<gradient:#00ffcc:#0099ff>大葱剑"
+      habilidad1: "END_ROD"
+      habilidad1_nombre: "<aqua>39 投射"
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad2: "BEACON"
+      habilidad2_nombre: "<gradient:#00ffcc:#ffffff>世界统治"
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "BLOCK_BEACON_POWER_SELECT"
+      habilidad3: "SEA_LANTERN"
+      habilidad3_nombre: "<gradient:#ff00cc:#00ffcc><b>未来之光冲击波</b>"
+      habilidad3_cooldown: 45
+      habilidad3_sonido: "ENTITY_WARDEN_SONIC_BOOM"
+      habilidad4: "NETHER_STAR"
+      habilidad4_nombre: "<gradient:#00ffcc:#0099ff><bold>最终演唱会</bold>"
+      habilidad4_cooldown: 100
+      habilidad4_sonido: "UI_TOAST_CHALLENGE_COMPLETE"
+
+  romeo:
+    precio: 30000
+    icono_material: "COMMAND_BLOCK"
+    nombre: "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient> <white>[管理员]</white>"
+    descripcion:
+      - "<red>世界管理员已回归。"
+      - "<gray>以代码之力统治战场。"
+      - "<gold>机制: <white>毁灭冲刺与虚空攻击。"
+    lore_tienda:
+      - "<gray>\"这里由我定规则！\""
+      - "<white>难度: <dark_red>不可战胜"
+    armadura:
+      casco: "mistaken:romeo_helmet"
+      pechera: "mistaken:romeo_chestplate"
+      pantalones: "mistaken:romeo_leggings"
+      botas: "mistaken:romeo_boots"
+    items:
+      arma: "DIAMOND_PICKAXE"
+      arma_nombre: "<gradient:#ff0000:#ffff00>管理员之镐"
+      habilidad1: "FEATHER"
+      habilidad1_nombre: "<red><b>管理员冲刺</b>"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+      habilidad2: "ENDER_EYE"
+      habilidad2_nombre: "<white><b>管理员之眼</b>"
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "ENTITY_ENDER_EYE_DEATH"
+      habilidad3: "ECHO_SHARD"
+      habilidad3_nombre: "<dark_purple><b>虚空獠牙</b>"
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
+      habilidad4: "NETHER_STAR"
+      habilidad4_nombre: "<gold><b>终焉之星</b>"
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_WITHER_DEATH"
+
+  colorandelectricity:
+    precio: 10500
+    icono_material: "LIGHTNING_ROD"
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>色彩电气</b></gradient>"
+    descripcion:
+      - "<gray>纯静电组成的无形之躯。"
+      - "<gray>剥夺视觉与速度专家。"
+      - "<gradient:#ff0080:#00ffff>机制:</gradient> <white>色彩过载。"
+    lore_tienda:
+      - "<gray>\"我想要颜色... 把你的颜色给我。\""
+      - "<white>难度: <red>困难"
+    armadura:
+      casco: "mistaken:muship_helmet"
+      pechera: "mistaken:muship_chestplate"
+      pantalones: "mistaken:muship_leggings"
+      botas: "mistaken:muship_boots"
+    items:
+      arma: "GOLDEN_SWORD"
+      arma_nombre: "<gradient:#ff0080:#00ffff>高压刃"
+      habilidad1: "FEATHER"
+      habilidad1_nombre: "<gradient:#ff0080:#ffffff>鲜活踪迹 (冲刺)"
+      habilidad1_cooldown: 8
+      habilidad1_sonido: "BLOCK_AMETHYST_BLOCK_CHIME"
+      habilidad2: "CYAN_DYE"
+      habilidad2_nombre: "<gradient:#00ffff:#ffffff>色彩汲取"
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "BLOCK_CONDUIT_ATTACK_TARGET"
+      habilidad3: "COPPER_INGOT"
+      habilidad3_nombre: "<gradient:#ffff00:#ffffff>脉冲静电"
+      habilidad3_cooldown: 15
+      habilidad3_sonido: "BLOCK_NOTE_BLOCK_BIT"
+      habilidad4: "NETHER_STAR"
+      habilidad4_nombre: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold>"
+      habilidad4_cooldown: 50
+      habilidad4_sonido: "ENTITY_FIREWORK_ROCKET_TWINKLE"
+
+  coolkid:
+    precio: 0
+    icono_material: "COMMAND_BLOCK"
+    nombre: "<gradient:#00ff00:#004400><b>COOLKID</b></gradient> <gray>[测试]</gray>"
+    descripcion:
+      - "<gray>测试版杀手 v4.1 (开发分支)。"
+      - "<gray>网络攻击与故障专家。"
+      - "<green>机制: <white>丢包与关键错误。"
+    lore_tienda:
+      - "<dark_gray>\"127.0.0.1: 连接已终止。\""
+      - "<white>难度: <green>测试"
+    armadura:
+      casco: "mistaken:coolkid_helmet"
+      pechera: "mistaken:coolkid_chestplate"
+      pantalones: "mistaken:coolkid_leggings"
+      botas: "mistaken:coolkid_boots"
+    items:
+      arma: "mistaken:coolkid_weapon"
+      arma_nombre: "<green>强制 OP 棒"
+      habilidad1: "mistaken:coolkid_h1"
+      habilidad1_nombre: "<green>强制登录 (冲刺)"
+      habilidad1_cooldown: 10
+      habilidad1_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad2: "mistaken:coolkid_h2"
+      habilidad2_nombre: "<green>数据丢包 (分身)"
+      habilidad2_cooldown: 25
+      habilidad2_sonido: "BLOCK_NOTE_BLOCK_BIT"
+      habilidad3: "mistaken:coolkid_h3"
+      habilidad3_nombre: "<red>系统关机"
+      habilidad3_cooldown: 30
+      habilidad3_sonido: "BLOCK_BEACON_DEACTIVATE"
+      habilidad4: "mistaken:coolkid_h4"
+      habilidad4_nombre: "<dark_red><bold>严重错误</bold>"
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_ENDERMAN_TELEPORT"
+
+  bendy:
+    precio: 25000
+    icono_material: "SQUID_INK"
+    nombre: "<gradient:#000000:#333333><b>BENDY</b></gradient> <white>[墨水]</white>"
+    descripcion:
+      - "<gray>墨水恶魔逃出了工作室。"
+      - "<gray>机动性与失明专家。"
+      - "<black>机制: <white>墨水隧道与野兽形态。"
+    lore_tienda:
+      - "<gray>\"满身墨渍。\""
+      - "<white>难度: <red>困难"
+    armadura:
+      casco: "mistaken:bendy_helmet"
+      pechera: "mistaken:bendy_chestplate"
+      pantalones: "mistaken:bendy_leggings"
+      botas: "mistaken:bendy_boots"
+    items:
+      arma: "NETHERITE_AXE"
+      arma_nombre: "<black>沾满墨水的斧头"
+      habilidad1: "SQUID_INK"
+      habilidad1_nombre: "<dark_gray><b>墨水隧道</b>"
+      habilidad1_cooldown: 18
+      habilidad1_sonido: "ENTITY_SQUID_SQUIRT"
+      habilidad2: "BLACK_DYE"
+      habilidad2_nombre: "<black><b>溢流</b>"
+      habilidad2_cooldown: 25
+      habilidad2_sonido: "ENTITY_GENERIC_SPLASH"
+      habilidad3: "COAL_BLOCK"
+      habilidad3_nombre: "<dark_gray><b>腐蚀墨池</b>"
+      habilidad3_cooldown: 15
+      habilidad3_sonido: "BLOCK_SLIME_BLOCK_PLACE"
+      habilidad4: "WITHER_SKELETON_SKULL"
+      habilidad4_nombre: "<black><bold>墨水恶魔</bold>"
+      habilidad4_cooldown: 120
+      habilidad4_sonido: "ENTITY_WITHER_SPAWN"

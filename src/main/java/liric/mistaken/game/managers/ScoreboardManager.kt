@@ -4,7 +4,6 @@ import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.utils.FastBoard
-import liric.mistaken.utils.mainThread
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
@@ -14,8 +13,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * ScoreboardManager: Motor ultra-optimizado.
- * FIX: Se corrigió la lectura de vidas y se optimizó el refresco visual.
+ * ScoreboardManager: Motor ultra-optimizado para Paper 1.21.4.
+ * FIX: Sincronización con carpetas de idioma y actualización instantánea de vidas.
  */
 class ScoreboardManager(private val plugin: Mistaken) {
 
@@ -32,29 +31,30 @@ class ScoreboardManager(private val plugin: Mistaken) {
 
     private fun startUpdateTask() {
         updateJob = scope.launch {
+            // Esperar a que el plugin de la luz verde
             while (isActive && !plugin.isReady) delay(500)
 
             while (isActive) {
                 try {
-                    // Actualización masiva (Cada 10 ticks)
+                    // Actualización cíclica (Tiempo, Generadores, etc.)
                     updateAll()
                 } catch (e: Exception) {
-                    // Silencioso para evitar spam en consola
+                    // Evitar spam si un archivo YAML está mal escrito
                 }
-                delay(500L)
+                delay(500L) // 10 Ticks
             }
         }
     }
 
     /**
-     * 🔥 FIX CRÍTICO: Actualización instantánea.
-     * Esta función ahora es mucho más agresiva para asegurar que el cambio se vea.
+     * 🔥 ACTUALIZACIÓN INSTANTÁNEA:
+     * Se llama desde CombatManager al cambiar la salud.
      */
     fun updatePlayer(player: Player) {
         val board = boards[player.uniqueId] ?: return
         if (!player.isOnline || !plugin.isReady) return
 
-        // Procesamos el renderizado fuera del hilo principal para no laguear
+        // Renderizado asíncrono para no tocar el TPS del server
         scope.launch {
             renderBoard(player, board)
         }
@@ -73,10 +73,17 @@ class ScoreboardManager(private val plugin: Mistaken) {
         val gm = plugin.gameManager
         val uuid = player.uniqueId
 
-        // 1. RECOLECCIÓN DE DATOS (Instantánea)
+        // 1. RECOLECCIÓN DE DATOS (Frescos de la RAM)
         val onlineCount = Bukkit.getOnlinePlayers().size
-        val lives = gm.combatManager.getHealth(player).toString() // Leemos la vida actualizada
-        val timeStr = String.format("%02d:%02d", gm.timer / 60, gm.timer % 60)
+        val lives = gm.combatManager.getHealth(player).toString()
+
+        // Formateo de tiempo mm:ss
+        val timeStr = if (gm.timer >= 60) {
+            String.format("%02d:%02d", gm.timer / 60, gm.timer % 60)
+        } else {
+            "${gm.timer}s"
+        }
+
         val mapName = gm.currentMapName ?: "---"
         val completed = plugin.generatorManager.getCompletedCount().toString()
         val total = plugin.generatorManager.getTotalGenerators().toString()
@@ -84,22 +91,29 @@ class ScoreboardManager(private val plugin: Mistaken) {
         val state = gm.currentState
         val mode = gm.currentMode
 
-        // 2. DETERMINAR RUTA DE CONFIG
-        val stateKey = if (state == GameState.INGAME) "ingame_${mode.name.lowercase()}" else state.name.lowercase()
+        // 2. 🔥 CARGA DE CONFIGURACIÓN (Sistema Pro+ de Carpetas)
+        val langCode = plugin.playerDataManager.getLanguage(uuid) ?: "es"
+        // Buscamos el archivo principal (es.yml) dentro de la carpeta (langs/es/)
+        val config = plugin.messageConfig.getSpecificFile(player, langCode)
+
+        // Determinar qué sección del scoreboard mostrar
+        val stateKey = if (state == GameState.INGAME) {
+            "ingame_${mode.name.lowercase()}"
+        } else {
+            state.name.lowercase()
+        }
+
         val path = "scoreboard.$stateKey"
 
-        val lang = plugin.playerDataManager.getLanguage(uuid) ?: "es"
-        val config = plugin.messageConfig.getLangConfig(lang)
-
-        // 3. ACTUALIZAR TÍTULO
+        // 3. ACTUALIZAR TÍTULO (Legacy para FastBoard)
         val rawTitle = config.getString("scoreboard.title") ?: "<bold>MISTAKEN"
         board.updateTitle(legacy.serialize(mm.deserialize(rawTitle)))
 
-        // 4. PROCESAR LÍNEAS (Optimizado)
+        // 4. PROCESAR LÍNEAS
         val rawLines = config.getStringList(path)
         val processedLines = mutableListOf<String>()
 
-        // Cache de asesinos para no repetir el proceso por cada línea
+        // Cache de lista de asesinos para no repetir el proceso
         val killerLines = if (rawLines.any { it.contains("%killers%") }) getKillerDisplayStrings(gm) else emptyList()
 
         for (line in rawLines) {
@@ -108,7 +122,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 continue
             }
 
-            // Reemplazo en cadena (Kotlin es más rápido aquí)
+            // Reemplazo de placeholders ultra-rápido
             val formatted = line
                 .replace("%player%", player.name)
                 .replace("%timer%", timeStr)
@@ -118,12 +132,11 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 .replace("%total%", total)
                 .replace("%lives%", lives) // <--- REEMPLAZO DE VIDAS
 
-            // Deserializamos y convertimos a Legacy para FastBoard
+            // Deserialización final
             processedLines.add(legacy.serialize(mm.deserialize(formatted)))
         }
 
-        // 5. ENVIAR AL JUGADOR
-        // FastBoard se encarga de enviar solo los paquetes de las líneas que cambiaron
+        // 5. ENVIAR PAQUETES
         board.updateLines(processedLines)
     }
 
@@ -145,7 +158,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
         return lines
     }
 
-    // --- MÉTODOS DE CONTROL ---
+    // --- GESTIÓN DE JUGADORES ---
 
     fun addPlayer(player: Player) {
         val uuid = player.uniqueId

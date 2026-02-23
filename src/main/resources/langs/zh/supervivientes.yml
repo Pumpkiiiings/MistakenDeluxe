@@ -1,0 +1,264 @@
+# ======================================================
+#          MISTAKEN - 生存者配置 (CN)
+# ======================================================
+
+# CraftEngine 默认命名空间
+namespace: "mistaken"
+
+supervivientes:
+  civil:
+    # --- 商店数据 ---
+    precio: 0
+    icono_material: "LEATHER_CHESTPLATE"
+    nombre: "<white><b>平民</b>"
+    descripcion:
+      - "<gray>困在混乱中的普通公民。"
+      - "<gray>各项属性非常均衡。"
+      - "<white>机制: <white>潜行与自卫。"
+    lore_tienda:
+      - "<gray>\"我只想回家...\""
+      - "<white>难度: <green>简单"
+    # --- 装备 ---
+    armadura:
+      casco: "none"
+      pechera: "none"
+      pantalones: "none"
+      botas: "none"
+    items:
+      habilidad1: "SUGAR"
+      habilidad1_nombre: "<light_purple>肾上腺素"
+      habilidad1_mensaje: "<prefix><light_purple>肾上腺素爆发！ <gray>5秒内移动速度提升。"
+      habilidad1_cooldown: 30
+      habilidad1_sonido: "ENTITY_PLAYER_BREATH"
+
+      habilidad2: "FERMENTED_SPIDER_EYE"
+      habilidad2_nombre: "<gray>隐匿"
+      habilidad2_mensaje: "<prefix><gray>你已隐匿身形... <white>进入5秒隐身状态。"
+      habilidad2_mensaje_fin: "<prefix><red>隐身状态已结束！"
+      habilidad2_cooldown: 50
+      habilidad2_sonido: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+
+      habilidad3: "COBBLESTONE"
+      habilidad3_nombre: "<gold>投掷石块"
+      habilidad3_mensaje: "<prefix><gold>石块已投掷！ <gray>命中后将减慢杀手速度。"
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "ENTITY_SNOWBALL_THROW"
+
+  repartidor:
+    # --- 商店数据 ---
+    precio: 750
+    icono_material: "IRON_CHESTPLATE"
+    nombre: "<gold><b>外卖员</b>"
+    descripcion:
+      - "<gray>连 Herobrine 都无法阻止这份订单。"
+      - "<white>机制: <white>辅助与极限速度。"
+    lore_tienda:
+      - "<gray>\"五星好评，不然没完，兄弟！\""
+      - "<white>难度: <green>简单"
+    # --- 装备 ---
+    armadura:
+      casco: "none"
+      pechera: "none"
+      pantalones: "none"
+      botas: "none"
+    items:
+      habilidad1: "SUGAR"
+      habilidad1_nombre: "<aqua>能量饮料"
+      habilidad1_mensaje: "<prefix><aqua>饮用完毕！ <gray>配送速度已激活。"
+      habilidad1_cooldown: 35
+      habilidad1_sonido: "ENTITY_GENERIC_DRINK"
+
+      habilidad2: "COOKIE"
+      habilidad2_nombre: "<gold>投掷订单"
+      habilidad2_mensaje: "<prefix><gold>订单派送中！ <gray>正在维护好评。"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_SNOWBALL_THROW"
+
+      habilidad3: "CHEST"
+      habilidad3_nombre: "<red>酱汁溢出"
+      habilidad3_mensaje: "<prefix><red>酱汁洒了！ <gray>地面现在变得很滑。"
+      habilidad3_cooldown: 50
+      habilidad3_sonido: "BLOCK_SLIME_BLOCK_PLACE"
+
+  jesse:
+    nombre: "<gold><b>杰西</b>"
+    precio: 5000
+    icono_material: "GOLDEN_SWORD"
+    lore_tienda:
+      - "传奇领袖，来自"
+      - "新岩石之令。"
+      - ""
+      - "<yellow>支援与营救专家！"
+
+    ajustes:
+      radio_curacion: 15.0
+      cooldown_rastreo: 10
+
+    items:
+      habilidad1: "GOLDEN_SWORD"
+      habilidad1_nombre: "<gold>之令长剑"
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_SWEEP"
+      habilidad1_mensaje: "<prefix><gray>为了秩序！已使用冲刺。"
+
+      habilidad2: "NETHER_STAR"
+      habilidad2_nombre: "<gold><b>加百列的护身符</b>"
+      habilidad2_cooldown: 25
+      habilidad2_sonido: "BLOCK_BEACON_ACTIVATE"
+      habilidad2_mensaje: "<prefix><gold>护身符发出了恢复脉冲！"
+
+      habilidad3: "GOLDEN_CHESTPLATE"
+      habilidad3_nombre: "<gold>秩序召集"
+      habilidad3_cooldown: 40
+      habilidad3_sonido: "ITEM_ARMOR_EQUIP_GOLD"
+      habilidad3_mensaje: "<prefix><yellow>你感受到了伙伴们的守护！"
+
+  petra:
+    nombre: "<red><b>佩特拉</b>"
+    precio: 6000
+    icono_material: "IRON_SWORD"
+    lore_tienda:
+      - "秩序之令中最强大的战士。"
+      - ""
+      - "<red>快速战斗与隐匿专家！"
+
+    ajustes:
+      danio_dash: 2
+      duracion_sigilo: 5
+
+    items:
+      habilidad1: "IRON_SWORD"
+      habilidad1_nombre: "<red>佩特拉之剑"
+      habilidad1_cooldown: 10
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_SWEEP"
+      habilidad1_mensaje: "<prefix><gray>闪电切斩！"
+
+      habilidad2: "FEATHER"
+      habilidad2_nombre: "<white><b>导弹突击</b>"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad2_mensaje: "<prefix><red>佩特拉发起了冲锋！"
+
+      habilidad3: "GRAY_DYE"
+      habilidad3_nombre: "<dark_gray>烟雾弹"
+      habilidad3_cooldown: 35
+      habilidad3_sonido: "ENTITY_GENERIC_EXTINGUISH_FIRE"
+      habilidad3_mensaje: "<prefix><dark_gray>佩特拉消失在烟雾之中！"
+
+  steve:
+    nombre: "<blue><b>史蒂夫</b>"
+    precio: 0
+    icono_material: "PLAYER_HEAD"
+    lore_tienda:
+      - "生存之神。"
+      - ""
+      - "<blue>精通技术战斗与建造！"
+
+    ajustes:
+      duracion_muro: 5
+      fuerza_empuje: 1.4
+
+    items:
+      habilidad1: "NETHERITE_AXE"
+      habilidad1_nombre: "<blue><b>暴击横扫</b>"
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_CRIT"
+      habilidad1_mensaje: "<prefix><blue>史蒂夫发动了致命一击！"
+
+      habilidad2: "COBBLESTONE"
+      habilidad2_nombre: "<gray><b>防御墙</b>"
+      habilidad2_cooldown: 18
+      habilidad2_sonido: "BLOCK_STONE_PLACE"
+      habilidad2_mensaje: "<prefix><gray>极速建造已激活！"
+
+      habilidad3: "WATER_BUCKET"
+      habilidad3_nombre: "<aqua><b>落地水特技</b>"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ITEM_BUCKET_EMPTY"
+      habilidad3_mensaje: "<prefix><aqua>杀手正陷入困境！"
+
+  gumi:
+    nombre: "<color:#a9d14f><b>GUMI</b></color>"
+    precio: 5200
+    icono_material: "LIME_DYE"
+    lore_tienda:
+      - "虚拟扭曲的歌姬。"
+      - ""
+      - "<color:#a9d14f>掌控回声与数字残像！"
+
+    ajustes:
+      distancia_swap: 10.0
+      duracion_estatica: 4
+
+    items:
+      habilidad1: "ECHO_SHARD"
+      habilidad1_nombre: "<color:#a9d14f><b>系统: ECHO</b></color>"
+      habilidad1_cooldown: 25
+      habilidad1_sonido: "BLOCK_AMETHYST_BLOCK_BREAK"
+      habilidad1_mensaje: "<prefix><color:#a9d14f><i>黑与白... 尽在脑海之中...</i>"
+
+      habilidad2: "ARMOR_STAND"
+      habilidad2_nombre: "<color:#a9d14f><b>复刻猫</b></color>"
+      habilidad2_cooldown: 35
+      habilidad2_sonido: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+      habilidad2_mensaje: "<prefix><color:#a9d14f>你究竟在追逐谁？"
+
+      habilidad3: "DECORATED_POT"
+      habilidad3_nombre: "<color:#ff4d4d><b>套娃狂热</b></color>"
+      habilidad3_cooldown: 45
+      habilidad3_sonido: "ENTITY_GENERIC_EXPLODE"
+      habilidad3_mensaje: "<prefix><red>1, 2, 3, 4! 套娃！"
+
+  neru:
+    nombre: "<color:#ffcc00><b>亚北音留</b></color>"
+    precio: 4900
+    icono_material: "GOLD_INGOT"
+    lore_tienda:
+      - "冷漠的歌姬。"
+      - ""
+      - "<color:#ffcc00>精通信息骚扰与网络延迟攻击！"
+
+    ajustes:
+      duracion_stun: 3
+      radio_spam: 7.0
+
+    items:
+      habilidad1: "GOLDEN_CARROT"
+      habilidad1_nombre: "<color:#ffcc00><b>通知轰炸</b></color>"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "BLOCK_NOTE_BLOCK_BELL"
+      habilidad1_mensaje: "<prefix><color:#ffcc00>音留正在对杀手进行消息狂轰！"
+
+      habilidad2: "BARRIER"
+      habilidad2_nombre: "<color:#ffcc00><b>AFK 模式</b></color>"
+      habilidad2_cooldown: 35
+      habilidad2_sonido: "BLOCK_IRON_DOOR_CLOSE"
+      habilidad2_mensaje: "<prefix><gray>音留觉得很无聊，挂机去了..."
+
+      habilidad3: "YELLOW_DYE"
+      habilidad3_nombre: "<color:#ffcc00><b>三重傻瓜打击</b>"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ENTITY_FIREWORK_ROCKET_TWINKLE"
+      habilidad3_mensaje: "<prefix><color:#ffcc00>笨蛋！笨蛋！笨蛋！"
+
+  mariachi:
+    nombre: "<color:#fbca03><b>流浪乐手</b></color>"
+    precio: 5000
+    icono_material: "GOLDEN_AXE"
+    lore_tienda:
+      - "哎呀呀！不唱歌的人只会哭泣。"
+      - ""
+      - "<color:#fbca03>音乐支援与逃脱专家。"
+
+    items:
+      habilidad1: "WOODEN_HOE"
+      habilidad1_nombre: "<color:#fbca03><b>吉他猛击</b></color>"
+      habilidad1_cooldown: 15
+
+      habilidad2: "HONEY_BOTTLE"
+      habilidad2_nombre: "<color:#fbca03><b>塔帕提奥舞曲</b></color>"
+      habilidad2_cooldown: 25
+
+      habilidad3: "GOLDEN_CHESTPLATE"
+      habilidad3_nombre: "<color:#fbca03><b>墨西哥呐喊</b></color>"
+      habilidad3_cooldown: 40

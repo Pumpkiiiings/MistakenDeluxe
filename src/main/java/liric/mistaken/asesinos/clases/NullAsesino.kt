@@ -5,285 +5,240 @@ import com.github.retrooper.packetevents.protocol.particle.Particle
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
-import liric.mistaken.utils.mainThread // 1. IMPORTANTE: Usamos nuestro dispatcher
-import org.bukkit.Bukkit
-import org.bukkit.Location
-import org.bukkit.Material
-import org.bukkit.Sound
-import org.bukkit.attribute.Attribute
+import liric.mistaken.utils.mainThread
+import org.bukkit.*
 import org.bukkit.entity.*
+import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import org.bukkit.util.Transformation
+import org.joml.Quaternionf
+import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * NullAsesino: El Ente del Glitch.
- *
- * Arreglos:
- * - Reemplazado Dispatchers.Main por plugin.mainThread (Evita crasheos).
- * - Optimización de bucles asíncronos para 2 jugadores.
- * - Limpieza de atributos corregida para 1.21.4.
+ * FIX: Soporte Multi-Idioma, Armadura garantizada y Órbita Mística.
  */
 class NullAsesino : Asesino(
     "null",
-    Mistaken.instance.configManager.getAsesinos().getString("asesinos.null.nombre", "<dark_gray><b>NULL</b>")!!
+    // Nombre dinámico basado en el idioma default del servidor
+    Mistaken.instance.messageConfig.getSpecificFile(null, "asesinos").getString("asesinos.null.nombre", "NULL")!!
 ) {
 
     private val pathBase = "asesinos.null"
+    private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val activeTraps = ConcurrentHashMap.newKeySet<Entity>()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    // --- 🧊 AGREGADO: VARIABLES PARA ÓRBITA ---
+    // --- 🧊 OBJETOS MÍSTICOS ORBITANTES ---
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val orbitMaterials = listOf(Material.BEACON, Material.ENDER_EYE, Material.NETHER_STAR)
 
-    override fun usarHabilidad(player: Player, slot: Int) {
-        if (checkCooldown(player, slot)) return
-        reproducirEfectosHabilidad(player, slot)
-
-        when (slot) {
-            1 -> habilidadErrorRender(player)
-            2 -> habilidadGeneradorBait(player)
-            3 -> habilidadPrisionVacio(player)
-            4 -> habilidadColmillosVacio(player)
-        }
+    init {
+        preLoadKit()
     }
 
-    override fun mostrarTrail(player: Player) {
-        val l = player.location.add(0.0, 1.1, 0.0)
-        val pos = Vector3d(l.x, l.y, l.z)
-        val off = Vector3f(0.15f, 0.2f, 0.15f)
-        val mgr = PacketEvents.getAPI().playerManager
+    /**
+     * 🔥 PRE-LOAD LÓGICO:
+     * Carga materiales e IDs del archivo asesinos.yml de la RAIZ.
+     */
+    private fun preLoadKit() {
+        val config = plugin.configManager.getAsesinosConfig(null) // Archivo raíz
+        val armor = listOf("casco", "pechera", "pantalones", "botas")
+        val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
-        val white = WrapperPlayServerParticle(Particle(ParticleTypes.END_ROD), false, pos, off, 0.02f, 1)
-        val purple = WrapperPlayServerParticle(Particle(ParticleTypes.WITCH), false, pos, off, 0.02f, 1)
-
-        val distSq = 625.0
-        Bukkit.getOnlinePlayers().forEach { p ->
-            if (p != player && p.world == l.world && p.location.distanceSquared(l) < distSq) {
-                mgr.sendPacket(p, white)
-                mgr.sendPacket(p, purple)
-            }
-        }
-    }
-
-    // --- 🧊 AGREGADO: LÓGICA DE ÓRBITA FÍSICA ---
-    override fun mostrarTrailFisico(player: Player) {
-        val uuid = player.uniqueId
-        // Si ya no es el asesino, limpiamos
-        if (!plugin.asesinoManager.esElAsesino(player)) { limpiarVisuales(uuid); return }
-
-        // Fix por si cambia de mundo (ASP)
-        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
-
-        // Creamos los ItemDisplays si no existen
-        val entidades = orbitadores.getOrPut(uuid) {
-            mutableListOf<ItemDisplay>().apply {
-                orbitMaterials.forEach { mat ->
-                    add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
-                        id.setItemStack(org.bukkit.inventory.ItemStack(mat))
-                        id.transformation = org.bukkit.util.Transformation(
-                            org.joml.Vector3f(0f, 0f, 0f),
-                            org.joml.Quaternionf(),
-                            org.joml.Vector3f(0.5f, 0.5f, 0.5f), // Tamaño escalado
-                            org.joml.Quaternionf()
-                        )
-                        id.teleportDuration = 2
-                        id.interpolationDuration = 2
-                    })
+        armor.forEach { k ->
+            config.getString("asesinos.null.armadura.$k")?.let { id ->
+                if (id != "none") {
+                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.NETHERITE_HELMET)
+                    itemKitCache[k] = item
                 }
             }
         }
 
-        val anguloBase = angulos.getOrDefault(uuid, 0.0)
-        val radio = 1.4
-        val size = entidades.size
-
-        for (i in entidades.indices) {
-            val display = entidades[i]
-            if (display.isValid) {
-                val offset = (2 * Math.PI / size) * i
-                val x = radio * cos(anguloBase + offset)
-                val z = radio * sin(anguloBase + offset)
-                val y = 1.1 + (0.2 * sin((anguloBase + offset) * 2))
-
-                val loc = player.location.clone().add(x, y, z)
-                loc.yaw = (anguloBase * 50).toFloat() // Rotación propia
-                display.teleport(loc)
+        items.forEach { k ->
+            config.getString("asesinos.null.items.$k")?.let { id ->
+                if (id != "none") {
+                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
+                    itemKitCache[k] = item
+                }
             }
         }
-        angulos[uuid] = (anguloBase + 0.10) % (Math.PI * 2)
     }
+
+    override fun usarHabilidad(player: Player, slot: Int) {
+        // Mapeo de slots: 1, 2, 3, 4 (Teclas 2, 3, 4, 5)
+        when (slot) {
+            1 -> if (!checkCooldown(player, 1)) { habilidadErrorRender(player); reproducirEfectosHabilidad(player, 1) }
+            2 -> if (!checkCooldown(player, 2)) { habilidadGeneradorBait(player); reproducirEfectosHabilidad(player, 2) }
+            3 -> if (!checkCooldown(player, 3)) { habilidadPrisionVacio(player); reproducirEfectosHabilidad(player, 3) }
+            4 -> if (!checkCooldown(player, 4)) { habilidadColmillosVacio(player); reproducirEfectosHabilidad(player, 4) }
+        }
+    }
+
+    // --- 🛠️ EQUIPAMIENTO (SISTEMA MULTI-IDIOMA) ---
+
+    override fun equipar(player: Player) {
+        val inv = player.inventory
+        inv.clear()
+
+        // Fix de carga CraftEngine
+        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
+
+        // Obtenemos el archivo de traducción del jugador (lang/es/asesinos.yml)
+        val langAsesinos = plugin.messageConfig.getSpecificFile(player, "asesinos")
+
+        fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
+            val item = itemKitCache[key]?.clone() ?: return
+
+            // Buscamos el nombre traducido en la carpeta del idioma
+            val namePath = if (key == "arma") "asesinos.null.items.arma_nombre"
+            else "asesinos.null.items.${key}_nombre"
+
+            val localizedName = langAsesinos.getString(namePath)
+            if (localizedName != null) {
+                item.editMeta { it.displayName(mm.deserialize(localizedName)) }
+            }
+
+            if (isArmor) {
+                when(key) {
+                    "casco" -> inv.helmet = item
+                    "pechera" -> inv.chestplate = item
+                    "pantalones" -> inv.leggings = item
+                    "botas" -> inv.boots = item
+                }
+            } else {
+                inv.setItem(slot, item)
+            }
+        }
+
+        // 1. Armadura
+        setLocalizedItem(0, "casco", true)
+        setLocalizedItem(0, "pechera", true)
+        setLocalizedItem(0, "pantalones", true)
+        setLocalizedItem(0, "botas", true)
+
+        // 2. Hotbar (Slots 1 al 4 y Arma en 8)
+        setLocalizedItem(1, "habilidad1")
+        setLocalizedItem(2, "habilidad2")
+        setLocalizedItem(3, "habilidad3")
+        setLocalizedItem(4, "habilidad4")
+        setLocalizedItem(8, "arma")
+
+        player.inventory.heldItemSlot = 8
+        player.updateInventory()
+    }
+
+    // --- 🚀 HABILIDADES ---
 
     private fun habilidadErrorRender(player: Player) {
-        player.world.playSound(player.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
-        player.world.playSound(player.location, Sound.ENTITY_WARDEN_DIG, 1f, 1.5f)
         player.world.spawnParticle(org.bukkit.Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 3, 0.5, 0.5, 0.5, 0.0)
-
         player.getNearbyEntities(12.0, 12.0, 12.0).filterIsInstance<Player>().forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
-                victim.apply {
-                    addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 200, 0))
-                    addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 200, 0))
-                    addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 0))
-                    sendMessage(mm.deserialize("<dark_gray><obfuscated>ERR</obfuscated> <white><b>SISTEMA CORRUPTO</b> <dark_gray><obfuscated>ERR</obfuscated>"))
-                    playSound(location, Sound.BLOCK_CONDUIT_DEACTIVATE, 1f, 0.1f)
-                }
+                victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 200, 0))
+                victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 200, 0))
             }
         }
     }
 
     private fun habilidadGeneradorBait(player: Player) {
         val loc = player.location.block.location.add(0.5, 0.1, 0.5)
-
         val bait = loc.world?.spawn(loc, ArmorStand::class.java) { asEntity ->
             asEntity.isVisible = false
-            asEntity.setGravity(false)
             asEntity.isMarker = true
-            asEntity.equipment.helmet = org.bukkit.inventory.ItemStack(Material.BEACON)
+            asEntity.equipment.helmet = ItemStack(Material.BEACON)
         } ?: return
-
         activeTraps.add(bait)
-
-        val job = scope.launch {
-            var timer = 0
-            while (isActive && timer < 400 && !bait.isDead) {
-                // --- ARREGLO: Salto al hilo principal de Bukkit ---
-                withContext(plugin.mainThread) {
-                    val angle = timer * 0.4
-                    val x = cos(angle) * 0.7
-                    val z = sin(angle) * 0.7
-
-                    loc.world?.spawnParticle(org.bukkit.Particle.END_ROD, loc.clone().add(x, 1.0, z), 1, 0.0, 0.0, 0.0, 0.0)
-                    loc.world?.spawnParticle(org.bukkit.Particle.WITCH, loc.clone().add(-x, 1.0, -z), 1, 0.0, 0.0, 0.0, 0.0)
-
-                    val hit = loc.world?.getNearbyEntities(loc, 3.5, 3.5, 3.5)?.filterIsInstance<Player>()?.firstOrNull {
-                        !plugin.asesinoManager.esElAsesino(it)
-                    }
-
-                    hit?.let { victim ->
-                        activarTrampa(victim, bait)
-                        cancel()
-                    }
-                }
-                delay(100)
-                timer++
-            }
-            if (isActive) withContext(plugin.mainThread) { cleanupTrap(bait) }
-        }
-        trackJob(job)
-    }
-
-    private fun activarTrampa(victim: Player, bait: ArmorStand) {
-        victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 300, 0))
-        victim.playSound(victim.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.1f)
-        victim.world.spawnParticle(org.bukkit.Particle.DRAGON_BREATH, victim.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, 0.05)
-        cleanupTrap(bait)
     }
 
     private fun habilidadPrisionVacio(player: Player) {
         val ray = player.world.rayTraceEntities(player.eyeLocation, player.location.direction, 15.0) {
             it is Player && !plugin.asesinoManager.esElAsesino(it)
         }
-
         val victim = ray?.hitEntity as? Player ?: return
-
+        victim.velocity = player.location.toVector().subtract(victim.location.toVector()).normalize().multiply(0.6).setY(0.2)
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 10))
-        victim.playSound(victim.location, Sound.BLOCK_CHAIN_PLACE, 1f, 0.5f)
-
-        val job = scope.launch {
-            var t = 0
-            while (isActive && t < 15 && victim.isOnline) {
-                // --- ARREGLO: Bukkit API requiere hilo principal ---
-                withContext(plugin.mainThread) {
-                    victim.world.spawnParticle(org.bukkit.Particle.END_ROD, victim.location.add(0.0, 1.0, 0.0), 8, 0.4, 0.6, 0.4, 0.05)
-                }
-                delay(200)
-                t++
-            }
-        }
-        trackJob(job)
     }
 
     private fun habilidadColmillosVacio(player: Player) {
         val startLoc = player.location
         val direction = startLoc.direction.setY(0.0).normalize()
-
-        val job = scope.launch {
+        scope.launch {
             val currentLoc = startLoc.clone()
             repeat(15) {
-                if (!player.isOnline) return@launch
-
-                // --- ARREGLO: Spawning y física en hilo principal ---
                 withContext(plugin.mainThread) {
                     currentLoc.add(direction)
-                    currentLoc.world?.spawnParticle(org.bukkit.Particle.WITCH, currentLoc, 4, 0.2, 0.1, 0.2, 0.02)
-                    currentLoc.world?.playSound(currentLoc, Sound.BLOCK_NYLIUM_BREAK, 0.8f, 0.1f)
                     currentLoc.world?.spawn(currentLoc, EvokerFangs::class.java)
+                    currentLoc.world?.getNearbyEntities(currentLoc, 1.5, 1.5, 1.5)?.filterIsInstance<Player>()?.forEach { victim ->
+                        if (!plugin.asesinoManager.esElAsesino(victim)) {
+                            plugin.combatManager.processTrueDamage(victim, player, 4.0)
+                            victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
+                        }
+                    }
                 }
                 delay(50)
             }
         }
-        trackJob(job)
     }
 
-    private fun cleanupTrap(trap: Entity) {
-        trap.remove()
-        activeTraps.remove(trap)
-    }
+    // --- 🧊 MOTOR FÍSICO: ÓRBITA MÍSTICA ---
 
-    // --- 🧊 AGREGADO: LIMPIEZA DE VISUALES ---
-    private fun limpiarVisuales(uuid: UUID) {
-        orbitadores.remove(uuid)?.forEach { it.remove() }
-        angulos.remove(uuid)
-    }
+    override fun mostrarTrailFisico(player: Player) {
+        val uuid = player.uniqueId
+        if (!plugin.asesinoManager.esElAsesino(player)) { limpiarVisuales(uuid); return }
+        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
 
-    override fun cleanup(player: Player?) {
-        super.cleanup(player)
-        // Cleanup de entidades debe ser en el hilo principal
-        scope.launch(plugin.mainThread) {
-            activeTraps.forEach { it.remove() }
-            activeTraps.clear()
-            // Limpiar órbita también
-            player?.let { limpiarVisuales(it.uniqueId) }
-        }
-        scope.coroutineContext.cancelChildren()
-    }
-
-    override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        val config = plugin.configManager.getAsesinos()
-
-        inv.helmet = CraftEngineUtils.getCustomItem(config.getString("$pathBase.armadura.casco"))
-        inv.chestplate = CraftEngineUtils.getCustomItem(config.getString("$pathBase.armadura.pechera"))
-        inv.leggings = CraftEngineUtils.getCustomItem(config.getString("$pathBase.armadura.pantalones"))
-        inv.boots = CraftEngineUtils.getCustomItem(config.getString("$pathBase.armadura.botas"))
-
-        for (i in 0..4) {
-            val key = if (i == 0) "arma" else "habilidad$i"
-            val id = config.getString("$pathBase.items.$key")
-            val name = config.getString("$pathBase.items.${key}_nombre")
-
-            if (!id.isNullOrBlank() && !id.equals("none", true)) {
-                CraftEngineUtils.getCustomItem(id)?.let { item ->
-                    name?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
-                    inv.setItem(if (i == 0) 8 else i, item)
+        val entidades = orbitadores.getOrPut(uuid) {
+            mutableListOf<ItemDisplay>().apply {
+                orbitMaterials.forEach { mat ->
+                    add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
+                        id.setItemStack(ItemStack(mat))
+                        id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
+                        id.teleportDuration = 2; id.interpolationDuration = 2
+                    })
                 }
             }
         }
-        player.inventory.heldItemSlot = 8
-        player.updateInventory()
+
+        val anguloActual = (angulos.getOrDefault(uuid, 0.0) + 0.10) % (Math.PI * 2)
+        val radio = 1.4
+        for (i in entidades.indices) {
+            val display = entidades[i]
+            if (display.isValid) {
+                val offset = (2 * Math.PI / entidades.size) * i
+                val x = radio * cos(anguloActual + offset)
+                val z = radio * sin(anguloActual + offset)
+                val y = 1.1 + (0.2 * sin((anguloActual + offset) * 2))
+                display.teleport(player.location.clone().add(x, y, z))
+            }
+        }
+        angulos[uuid] = anguloActual
+    }
+
+    override fun mostrarTrail(player: Player) {
+        val loc = player.location.add(0.0, 1.1, 0.0)
+        val packet = WrapperPlayServerParticle(Particle(ParticleTypes.WITCH), false, Vector3d(loc.x, loc.y, loc.z), Vector3f(0.2f, 0.2f, 0.2f), 0.02f, 1)
+        player.world.players.forEach { if (it.location.distanceSquared(loc) < 625.0) PacketEvents.getAPI().playerManager.sendPacket(it, packet) }
+    }
+
+    private fun limpiarVisuales(uuid: UUID) { orbitadores.remove(uuid)?.forEach { it.remove() }; angulos.remove(uuid) }
+
+    override fun cleanup(player: Player?) {
+        super.cleanup(player)
+        player?.let { limpiarVisuales(it.uniqueId) }
+        activeTraps.forEach { it.remove() }; activeTraps.clear()
+        scope.coroutineContext.cancelChildren()
     }
 }

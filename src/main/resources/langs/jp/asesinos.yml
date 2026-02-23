@@ -1,0 +1,474 @@
+# ======================================================
+#          MISTAKEN - 殺人者設定 (JP)
+# ======================================================
+
+namespace: "mistaken"
+
+asesinos:
+  slasher:
+    precio: 0
+    icono_material: "NETHERITE_SWORD"
+    nombre: "<white><b>PUMPKIN WHITE</b>"
+    descripcion:
+      - "<gray>古典的で残忍な殺人鬼。"
+      - "<gray>物理的な追跡のスペシャリスト。"
+      - "<red>メカニクス: <white>絶え間ない出血を引き起こす。"
+    lore_tienda:
+      - "<gray>\"彼の血への渇きに終わりはない...\""
+      - "<white>難易度: <green>初級"
+    armadura:
+      casco: "mistaken:pumpkinwhite_helmet"
+      pechera: "mistaken:pumpkinwhite_chestplate"
+      pantalones: "mistaken:pumpkinwhite_leggings"
+      botas: "mistaken:pumpkinwhite_boots"
+    items:
+      arma: "DIAMOND_AXE"
+      arma_nombre: "<red>斧"
+      habilidad1: "BLAZE_POWDER"
+      habilidad1_nombre: "<red>血の渇き"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "ENTITY_ENDER_DRAGON_GROWL"
+      habilidad2: "SNOWBALL"
+      habilidad2_nombre: "<gold>投げナイフ"
+      habilidad2_cooldown: 12
+      habilidad2_sonido: "ENTITY_ARROW_SHOOT"
+      habilidad3: "GHAST_TEAR"
+      habilidad3_nombre: "<dark_purple>恐怖の存在"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad4: "NETHER_STAR"
+      habilidad4_nombre: "<dark_red><bold>処刑モード</bold>"
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_WITHER_SPAWN"
+
+  herobrine:
+    precio: 2500
+    icono_material: "NETHER_STAR"
+    nombre: "<white><b>HEROBRINE</b>"
+    descripcion:
+      - "<gray>現実を腐敗させる神話。"
+      - "<gray>追跡と機動力のスペシャリスト。"
+      - "<white>メカニクス: <white>テレポートと視界共有。"
+    lore_tienda:
+      - "<gray>\"彼はここにいてはいけない存在だ...\""
+      - "<white>難易度: <yellow>中級"
+    armadura:
+      casco: "mistaken:herobrine_helmet"
+      pechera: "mistaken:herobrine_chestplate"
+      pantalones: "mistaken:herobrine_leggings"
+      botas: "mistaken:herobrine_boots"
+    items:
+      arma: "DIAMOND_AXE"
+      arma_nombre: "<white>忘却の刃"
+      habilidad1: "WIND_CHARGE"
+      habilidad1_nombre: "<white>虚空のダッシュ"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_WARDEN_SONIC_BOOM"
+      habilidad2: "COMPASS"
+      habilidad2_nombre: "<aqua>次元跳躍"
+      habilidad2_cooldown: 35
+      habilidad2_sonido: "BLOCK_PORTAL_TRAVEL"
+      habilidad3: "NETHER_STAR"
+      habilidad3_nombre: "<dark_gray>恐怖の波動"
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "ENTITY_WITHER_SHOOT"
+      habilidad4: "BEACON"
+      habilidad4_nombre: "<red><bold>ワールドエラー</bold>"
+      habilidad4_cooldown: 80
+      habilidad4_sonido: "ENTITY_ELDER_GUARDIAN_CURSE"
+
+  entity303:
+    precio: 3000
+    icono_material: "NETHERITE_UPGRADE_SMITHING_TEMPLATE"
+    nombre: "<red><b>ENTITY 303</b>"
+    descripcion:
+      - "<gray>コード内の致命的なエラー。"
+      - "<gray>グリッチと炎攻撃のスペシャリスト。"
+      - "<red>メカニクス: <white>データ感染と飛行。"
+    lore_tienda:
+      - "<gray>\"システムエラー: 303 を検出\""
+      - "<white>難易度: <yellow>中級"
+    armadura:
+      casco: "mistaken:entity303_helmet"
+      pechera: "mistaken:entity303_chestplate"
+      pantalones: "mistaken:entity303_leggings"
+      botas: "mistaken:entity303_boots"
+    items:
+      arma: "IRON_SWORD"
+      arma_nombre: "<red>堕落したサーベル"
+      habilidad1: "FIRE_CHARGE"
+      habilidad1_nombre: "<red>コードダッシュ"
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_DRAGON_FIREBALL_EXPLODE"
+      habilidad2: "REDSTONE"
+      habilidad2_nombre: "<red>エラーの星"
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad3: "FEATHER"
+      habilidad3_nombre: "<red>飛行プロトコル"
+      habilidad3_cooldown: 30
+      habilidad3_sonido: "ENTITY_BAT_LOOP"
+      habilidad4: "OBSERVER"
+      habilidad4_nombre: "<dark_red><bold>システムクラッシュ</bold>"
+      habilidad4_cooldown: 90
+      habilidad4_sonido: "BLOCK_NOTE_BLOCK_BASEDRUM"
+
+  null:
+    precio: 5000
+    icono_material: "COAL_BLOCK"
+    nombre: "<dark_gray><b>NULL</b>"
+    descripcion:
+      - "<gray>存在の絶対的な欠如。"
+      - "<gray>盲目と罠のスペシャリスト。"
+      - "<dark_gray>メカニクス: <white>完全な闇と窒息。"
+    lore_tienda:
+      - "<gray>\"彼が歩く場所には何も残らない...\""
+      - "<white>難易度: <red>上級"
+    armadura:
+      casco: "mistaken:null_helmet"
+      pechera: "mistaken:null_chestplate"
+      pantalones: "mistaken:null_leggings"
+      botas: "mistaken:null_boots"
+    items:
+      arma: "NETHERITE_SWORD"
+      arma_nombre: "<dark_gray>虚空の短剣"
+      habilidad1: "RECOVERY_COMPASS"
+      habilidad1_nombre: "<red>レンダリングエラー"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "BLOCK_GLASS_BREAK"
+      habilidad2: "BEACON"
+      habilidad2_nombre: "<aqua>魂のビーコン"
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "ENTITY_EXPERIENCE_ORB_PICKUP"
+      habilidad3: "CHAIN"
+      habilidad3_nombre: "<dark_gray>虚空の監獄"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "BLOCK_CHAIN_PLACE"
+      habilidad4: "ECHO_SHARD"
+      habilidad4_nombre: "<gray><bold>深淵の牙</bold>"
+      habilidad4_cooldown: 45
+      habilidad4_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
+
+  charlie:
+    precio: 7500
+    icono_material: "MAGMA_BLOCK"
+    nombre: "<gradient:#ff4500:#ff8c00><b>CHARLIE INFERNO</b></gradient>"
+    descripcion:
+      - "<gray>炎と永遠の氷の伝令。"
+      - "<gray>強力な属性攻撃で戦場を支配する。"
+      - "<gradient:#ff4500:#ff8c00>メカニクス:</gradient> <white>圧倒的な力 vs 疲労。"
+    lore_tienda:
+      - "<gray>\"疲れ果てるまで悪夢から逃げ続けろ...\""
+      - "<white>難易度: <red>エキスパート"
+    armadura:
+      casco: "mistaken:charlie_helmet"
+      pechera: "mistaken:charlie_chestplate"
+      pantalones: "mistaken:charlie_leggings"
+      botas: "mistaken:charlie_boots"
+    items:
+      arma: "GOLDEN_SWORD"
+      arma_nombre: "<gradient:#ff4500:#ff8c00>地獄の刃"
+      habilidad1: "FIRE_CHARGE"
+      habilidad1_nombre: "<red><b>煉獄！</b>"
+      habilidad1_cooldown: 30
+      habilidad1_sonido: "ITEM_FIRECHARGE_USE"
+      habilidad2: "RECOVERY_COMPASS"
+      habilidad2_nombre: "<gradient:#ff4500:#000000><b>デモンズラン</b></gradient>"
+      habilidad2_cooldown: 45
+      habilidad2_sonido: "ENTITY_WARDEN_HEARTBEAT"
+      habilidad3: "PACKED_ICE"
+      habilidad3_nombre: "<aqua><b>氷河の棘</b>"
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "BLOCK_GLASS_BREAK"
+      habilidad4: "ECHO_SHARD"
+      habilidad4_nombre: "<dark_red><b>冥界の牙</b>"
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
+
+  devesto:
+    precio: 10000
+    icono_material: "NETHERITE_AXE"
+    nombre: "<gradient:#4b0082:#000000><b>DEVESTO</b></gradient> <white>[F3X]</white>"
+    descripcion:
+      - "<gray>コードの堕落した設計者。"
+      - "<gray>意のままにマップを操作する。"
+      - "<dark_purple>メカニクス:</gradient> <white>//set 0 と復元。"
+    lore_tienda:
+      - "<gray>\"お前の存在を Control-Alt-Delete。\""
+      - "<white>難易度: <red>不可能"
+    armadura:
+      casco: "mistaken:devesto_helmet"
+      pechera: "mistaken:devesto_chestplate"
+      pantalones: "mistaken:devesto_leggings"
+      botas: "mistaken:devesto_boots"
+    items:
+      arma: "NETHERITE_AXE"
+      arma_nombre: "<gradient:#4b0082:#000000>設計者の斧"
+      habilidad1: "PISTON"
+      habilidad1_nombre: "<blue>[F3X]</blue> <white>移動ツール"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "BLOCK_PISTON_EXTEND"
+      habilidad2: "CYAN_DYE"
+      habilidad2_nombre: "<blue>[F3X]</blue> <white>ペイントツール"
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "ITEM_DYE_USE"
+      habilidad3: "STICK"
+      habilidad3_nombre: "<blue>[F3X]</blue> <white>サイズ変更ツール"
+      habilidad3_cooldown: 30
+      habilidad3_sonido: "ENTITY_ITEM_FRAME_ROTATE_ITEM"
+      habilidad4: "BARRIER"
+      habilidad4_nombre: "<red><bold>//SET 0 (消去)</bold>"
+      habilidad4_cooldown: 120
+      habilidad4_sonido: "ENTITY_GENERIC_EXPLODE"
+
+  mariachi:
+    precio: 12000
+    icono_material: "GOLDEN_SWORD"
+    nombre: "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>"
+    descripcion:
+      - "<gray>チャロ・ネグロが魂を奪いに来た。"
+      - "<gray>聴覚気絶のスペシャリスト。"
+      - "<red>メカニクス:</gradient> <white>全体音楽と眩暈。"
+    lore_tienda:
+      - "<gray>\"アイアイアイ！ 泣かずに歌え...\""
+      - "<white>難易度: <red>エキスパート"
+    armadura:
+      casco: "mistaken:charro_helmet"
+      pechera: "mistaken:charro_chestplate"
+      pantalones: "mistaken:charro_leggings"
+      botas: "mistaken:charro_boots"
+    items:
+      arma: "GOLDEN_AXE"
+      arma_nombre: "<gradient:#ff0000:#000000>運命のギター"
+      habilidad1: "ECHO_SHARD"
+      habilidad1_nombre: "<red>恐怖の叫び"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "ENTITY_ENDER_DRAGON_GROWL"
+      habilidad2: "LEATHER_BOOTS"
+      habilidad2_nombre: "<gold>ハラベ・タパティオ"
+      habilidad2_cooldown: 25
+      habilidad2_sonido: "ENTITY_HORSE_GALLOP"
+      habilidad3: "WOODEN_SWORD"
+      habilidad3_nombre: "<white>ギターの一撃"
+      habilidad3_cooldown: 15
+      habilidad3_sonido: "BLOCK_WOOD_BREAK"
+      habilidad4: "POTION"
+      habilidad4_nombre: "<green><bold>テキーラの一杯</bold>"
+      habilidad4_cooldown: 45
+      habilidad4_sonido: "ENTITY_GENERIC_DRINK"
+
+  teto:
+    precio: 15000
+    icono_material: "MUSIC_DISC_PIGSTEP"
+    nombre: "<gradient:#ff66cc:#ff0000><b>重音テト</b></gradient>"
+    descripcion:
+      - "<gray>UTAUのキメラがMistakenに降臨。"
+      - "<gray>歪みと戦術的攻撃のスペシャリスト。"
+      - "<red>メカニクス: <white>強力なスキルと自己デバフ。"
+    lore_tienda:
+      - "<gray>\"君は本当にバカだな！\""
+      - "<white>難易度: <red>上級"
+    armadura:
+      casco: "mistaken:teto_helmet"
+      pechera: "mistaken:teto_chestplate"
+      pantalones: "mistaken:teto_leggings"
+      botas: "mistaken:teto_boots"
+    items:
+      arma: "IRON_SWORD"
+      arma_nombre: "<gradient:#ff66cc:#ff0000>キメラのマイク"
+      habilidad1: "HOPPER"
+      habilidad1_nombre: "<gradient:#7d7d7d:#ff0000>キメラドリル"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_ZOMBIE_ATTACK_IRON_DOOR"
+      habilidad2: "BREAD"
+      habilidad2_nombre: "<gradient:#ffcc99:#e6ac00>鉄のフランスパン"
+      habilidad2_cooldown: 10
+      habilidad2_sonido: "ENTITY_ITEM_BREAK"
+      habilidad3: "TNT"
+      habilidad3_nombre: "<gradient:#ff0000:#ffffff>エイプリルフールの嘘"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ENTITY_CREEPER_PRIMED"
+      habilidad4: "NETHER_STAR"
+      habilidad4_nombre: "<dark_red><bold>テリトリー (0401)</bold>"
+      habilidad4_cooldown: 80
+      habilidad4_sonido: "BLOCK_BEACON_ACTIVATE"
+
+  miku:
+    precio: 20000
+    icono_material: "CYAN_DYE"
+    nombre: "<gradient:#00ffcc:#0099ff><b>初音ミク</b></gradient>"
+    descripcion:
+      - "<gray>究極のバーチャルアイドルが登場。"
+      - "<gray>クラウドコントロールとレーザーのスペシャリスト。"
+      - "<aqua>メカニクス: <white>光の投影と大ダメージ。"
+    lore_tienda:
+      - "<gray>\"世界は私のもの！\""
+      - "<white>難易度: <yellow>中級"
+    armadura:
+      casco: "mistaken:miku_helmet"
+      pechera: "mistaken:miku_chestplate"
+      pantalones: "mistaken:miku_leggings"
+      botas: "mistaken:miku_boots"
+    items:
+      arma: "DIAMOND_SWORD"
+      arma_nombre: "<gradient:#00ffcc:#0099ff>ネギセイバー"
+      habilidad1: "END_ROD"
+      habilidad1_nombre: "<aqua>プロジェクション 39"
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad2: "BEACON"
+      habilidad2_nombre: "<gradient:#00ffcc:#ffffff>世界征服"
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "BLOCK_BEACON_POWER_SELECT"
+      habilidad3: "SEA_LANTERN"
+      habilidad3_nombre: "<gradient:#ff00cc:#00ffcc><b>ミクミクビーム！</b>"
+      habilidad3_cooldown: 45
+      habilidad3_sonido: "ENTITY_WARDEN_SONIC_BOOM"
+      habilidad4: "NETHER_STAR"
+      habilidad4_nombre: "<gradient:#00ffcc:#0099ff><bold>ファイナルコンサート</bold>"
+      habilidad4_cooldown: 100
+      habilidad4_sonido: "UI_TOAST_CHALLENGE_COMPLETE"
+
+  romeo:
+    precio: 30000
+    icono_material: "COMMAND_BLOCK"
+    nombre: "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient> <white>[管理者]</white>"
+    descripcion:
+      - "<red>世界の管理者が帰還した。"
+      - "<gray>コードの力で戦場を支配する。"
+      - "<gold>メカニクス: <white>破壊的なダッシュと虚空攻撃。"
+    lore_tienda:
+      - "<gray>\"ルールは私が決める！\""
+      - "<white>難易度: <dark_red>不可避"
+    armadura:
+      casco: "mistaken:romeo_helmet"
+      pechera: "mistaken:romeo_chestplate"
+      pantalones: "mistaken:romeo_leggings"
+      botas: "mistaken:romeo_boots"
+    items:
+      arma: "DIAMOND_PICKAXE"
+      arma_nombre: "<gradient:#ff0000:#ffff00>管理者のツルハシ"
+      habilidad1: "FEATHER"
+      habilidad1_nombre: "<red><b>管理者ダッシュ</b>"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+      habilidad2: "ENDER_EYE"
+      habilidad2_nombre: "<white><b>管理者の眼</b>"
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "ENTITY_ENDER_EYE_DEATH"
+      habilidad3: "ECHO_SHARD"
+      habilidad3_nombre: "<dark_purple><b>虚空の牙</b>"
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
+      habilidad4: "NETHER_STAR"
+      habilidad4_nombre: "<gold><b>終焉の星</b>"
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_WITHER_DEATH"
+
+  colorandelectricity:
+    precio: 10500
+    icono_material: "LIGHTNING_ROD"
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>色彩電気</b></gradient>"
+    descripcion:
+      - "<gray>純粋な静電気で構成された実体のない存在。"
+      - "<gray>視界強奪と速度のスペシャリスト。"
+      - "<gradient:#ff0080:#00ffff>メカニクス:</gradient> <white>色彩過負荷。"
+    lore_tienda:
+      - "<gray>\"色が欲しい... お前の色をくれ。\""
+      - "<white>難易度: <red>上級"
+    armadura:
+      casco: "mistaken:muship_helmet"
+      pechera: "mistaken:muship_chestplate"
+      pantalones: "mistaken:muship_leggings"
+      botas: "mistaken:muship_boots"
+    items:
+      arma: "GOLDEN_SWORD"
+      arma_nombre: "<gradient:#ff0080:#00ffff>高電圧ブレード"
+      habilidad1: "FEATHER"
+      habilidad1_nombre: "<gradient:#ff0080:#ffffff>ビビッドトレース"
+      habilidad1_cooldown: 8
+      habilidad1_sonido: "BLOCK_AMETHYST_BLOCK_CHIME"
+      habilidad2: "CYAN_DYE"
+      habilidad2_nombre: "<gradient:#00ffff:#ffffff>カラードレイン"
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "BLOCK_CONDUIT_ATTACK_TARGET"
+      habilidad3: "COPPER_INGOT"
+      habilidad3_nombre: "<gradient:#ffff00:#ffffff>パルススタティック"
+      habilidad3_cooldown: 15
+      habilidad3_sonido: "BLOCK_NOTE_BLOCK_BIT"
+      habilidad4: "NETHER_STAR"
+      habilidad4_nombre: "<gradient:#ff0080:#00ffff><bold>色彩の終焉</bold>"
+      habilidad4_cooldown: 50
+      habilidad4_sonido: "ENTITY_FIREWORK_ROCKET_TWINKLE"
+
+  coolkid:
+    precio: 0
+    icono_material: "COMMAND_BLOCK"
+    nombre: "<gradient:#00ff00:#004400><b>COOLKID</b></gradient> <gray>[開発]</gray>"
+    descripcion:
+      - "<gray>テスト用殺人鬼 v4.1 (開発ブランチ)。"
+      - "<gray>ネットワーク攻撃とグリッチのスペシャリスト。"
+      - "<green>メカニクス: <white>パケットロスと致命的なエラー。"
+    lore_tienda:
+      - "<dark_gray>\"127.0.0.1: 接続が強制終了されました。\""
+      - "<white>難易度: <green>テスト用"
+    armadura:
+      casco: "mistaken:coolkid_helmet"
+      pechera: "mistaken:coolkid_chestplate"
+      pantalones: "mistaken:coolkid_leggings"
+      botas: "mistaken:coolkid_boots"
+    items:
+      arma: "mistaken:coolkid_weapon"
+      arma_nombre: "<green>管理者権限ステッキ"
+      habilidad1: "mistaken:coolkid_h1"
+      habilidad1_nombre: "<green>強制ログイン (ダッシュ)"
+      habilidad1_cooldown: 10
+      habilidad1_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad2: "mistaken:coolkid_h2"
+      habilidad2_nombre: "<green>パケットロス (分身)"
+      habilidad2_cooldown: 25
+      habilidad2_sonido: "BLOCK_NOTE_BLOCK_BIT"
+      habilidad3: "mistaken:coolkid_h3"
+      habilidad3_nombre: "<red>システムシャットダウン"
+      habilidad3_cooldown: 30
+      habilidad3_sonido: "BLOCK_BEACON_DEACTIVATE"
+      habilidad4: "mistaken:coolkid_h4"
+      habilidad4_nombre: "<dark_red><bold>致命的なエラー</bold>"
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_ENDERMAN_TELEPORT"
+
+  bendy:
+    precio: 25000
+    icono_material: "SQUID_INK"
+    nombre: "<gradient:#000000:#333333><b>BENDY</b></gradient> <white>[インク]</white>"
+    descripcion:
+      - "<gray>インクの悪魔がスタジオから脱走した。"
+      - "<gray>機動力と盲目のスペシャリスト。"
+      - "<black>メカニクス: <white>インクのトンネルとビースト形態。"
+    lore_tienda:
+      - "<gray>\"インクまみれ。\""
+      - "<white>難易度: <red>上級"
+    armadura:
+      casco: "mistaken:bendy_helmet"
+      pechera: "mistaken:bendy_chestplate"
+      pantalones: "mistaken:bendy_leggings"
+      botas: "mistaken:bendy_boots"
+    items:
+      arma: "NETHERITE_AXE"
+      arma_nombre: "<black>インクまみれの斧"
+      habilidad1: "SQUID_INK"
+      habilidad1_nombre: "<dark_gray><b>インクトンネル</b>"
+      habilidad1_cooldown: 18
+      habilidad1_sonido: "ENTITY_SQUID_SQUIRT"
+      habilidad2: "BLACK_DYE"
+      habilidad2_nombre: "<black><b>インクの氾濫</b>"
+      habilidad2_cooldown: 25
+      habilidad2_sonido: "ENTITY_GENERIC_SPLASH"
+      habilidad3: "COAL_BLOCK"
+      habilidad3_nombre: "<dark_gray><b>腐食する水たまり</b>"
+      habilidad3_cooldown: 15
+      habilidad3_sonido: "BLOCK_SLIME_BLOCK_PLACE"
+      habilidad4: "WITHER_SKELETON_SKULL"
+      habilidad4_nombre: "<black><bold>インクの悪魔</bold>"
+      habilidad4_cooldown: 120
+      habilidad4_sonido: "ENTITY_WITHER_SPAWN"

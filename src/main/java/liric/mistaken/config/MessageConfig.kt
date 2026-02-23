@@ -1,170 +1,175 @@
 package liric.mistaken.config
 
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import org.bukkit.Bukkit
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import java.util.jar.JarFile
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * MessageConfig: Motor de internacionalización (i18n) ultra-optimizado.
- * Utiliza caché de componentes pre-renderizados para evitar procesar MiniMessage en cada tick.
+ * MessageConfig Pro+: Motor de internacionalización con Inyector de Variables.
+ * Reemplaza automáticamente {player}, {online}, {prefix} y más en todo el plugin.
  */
 class MessageConfig(private val plugin: Mistaken) {
 
     private val mm = MiniMessage.miniMessage()
-    private val languages = ConcurrentHashMap<String, FileConfiguration>()
-
-    // Cachés de alto rendimiento
-    private val componentCache = ConcurrentHashMap<String, MutableMap<String, Component>>()
-    private val listCache = ConcurrentHashMap<String, MutableMap<String, List<Component>>>()
-    private val rawStringCache = ConcurrentHashMap<String, MutableMap<String, String>>()
-
+    private val langMap = ConcurrentHashMap<String, ConcurrentHashMap<String, FileConfiguration>>()
     private var defaultLang = "es"
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
         loadAllLanguages()
     }
 
     /**
-     * Carga todos los archivos de idioma de forma asíncrona.
+     * 🔥 MOTOR DE AUTO-EXTRACCIÓN:
+     * Extrae recursivamente todo lo que esté en 'langs/' dentro del JAR.
+     */
+    private fun extractYamlResources() {
+        runCatching {
+            val jarFile = File(plugin::class.java.protectionDomain.codeSource.location.toURI())
+            if (!jarFile.exists()) return@runCatching
+
+            JarFile(jarFile).use { jar ->
+                val entries = jar.entries()
+                while (entries.hasMoreElements()) {
+                    val entry = entries.nextElement()
+                    val path = entry.name
+
+                    if (path.startsWith("langs/") && path.endsWith(".yml") && !entry.isDirectory) {
+                        val outFile = File(plugin.dataFolder, path)
+                        if (!outFile.exists()) {
+                            outFile.parentFile.mkdirs()
+                            plugin.saveResource(path, false)
+                        }
+                    }
+                }
+            }
+        }.onFailure { e ->
+            plugin.componentLogger.error(mm.deserialize("<red>[I18n] Error crítico extrayendo recursos: ${e.message}"))
+        }
+    }
+
+    /**
+     * Carga y sincroniza todos los idiomas en la RAM.
      */
     fun loadAllLanguages() {
-        // Limpieza atómica de cachés
-        languages.clear()
-        componentCache.clear()
-        listCache.clear()
-        rawStringCache.clear()
+        langMap.clear()
+        extractYamlResources()
 
-        val langFolder = File(plugin.dataFolder, "lang")
+        val langFolder = File(plugin.dataFolder, "langs")
         if (!langFolder.exists()) langFolder.mkdirs()
 
-        // Exportar archivos base si no existen
-        listOf("es", "en", "fr", "zh", "jp").forEach { lang ->
-            val file = File(langFolder, "$lang.yml")
-            if (!file.exists()) {
-                plugin.saveResource("lang/$lang.yml", false)
+        langFolder.listFiles { it.isDirectory }?.forEach { dir ->
+            val langCode = dir.name.lowercase()
+            val filesInDir = ConcurrentHashMap<String, FileConfiguration>()
+
+            dir.walkTopDown().filter { it.extension == "yml" }.forEach { yamlFile ->
+                val fileName = yamlFile.nameWithoutExtension.lowercase()
+                filesInDir[fileName] = YamlConfiguration.loadConfiguration(yamlFile)
             }
-        }
-
-        // Cargar archivos YAML al mapa de configuraciones
-        langFolder.listFiles { _, name -> name.endsWith(".yml") }?.forEach { file ->
-            val langName = file.nameWithoutExtension.lowercase()
-            val config = YamlConfiguration.loadConfiguration(file)
-
-            languages[langName] = config
-            componentCache[langName] = ConcurrentHashMap()
-            listCache[langName] = ConcurrentHashMap()
-            rawStringCache[langName] = ConcurrentHashMap()
+            langMap[langCode] = filesInDir
         }
 
         defaultLang = plugin.config.getString("settings.default-language", "es") ?: "es"
-    }
-
-    // 🔥 CORREGIDO: Ahora esta función está fuera, como debe ser.
-    fun getLoadedLanguages(): Set<String> {
-        return languages.keys
+        plugin.componentLogger.info(mm.deserialize("<gray>[I18n] Motor Pro+ sincronizado con Inyector de Variables.</gray>"))
     }
 
     /**
-     * Obtiene un String crudo. Ideal para BossBars o ActionBars que procesan placeholders manuales.
+     * 🔥 LA CLAVE: Genera las variables que funcionarán en TODOS los mensajes.
      */
-    fun getRawString(player: Player?, path: String, def: String): String {
-        val lang = getPlayerLang(player)
-        val langMap = rawStringCache.getOrPut(lang) { ConcurrentHashMap() }
+    private fun getGlobalResolvers(player: Player?, config: FileConfiguration): TagResolver {
+        val resolvers = mutableListOf<TagResolver>()
 
-        return langMap.getOrPut(path) {
-            val config = getLangConfig(lang)
-            config.getString(path) ?: getLangConfig(defaultLang).getString(path, def) ?: def
-        }
+        // 1. Variable {player}
+        resolvers.add(Placeholder.parsed("player", player?.name ?: "Consola"))
+
+        // 2. Variable {prefix} (jala del archivo del idioma actual)
+        val prefixRaw = config.getString("prefix", "") ?: ""
+        resolvers.add(Placeholder.component("prefix", mm.deserialize(parseLegacy(prefixRaw))))
+
+        // 3. Variable {online}
+        resolvers.add(Placeholder.parsed("online", Bukkit.getOnlinePlayers().size.toString()))
+
+        return TagResolver.resolver(resolvers)
     }
 
     /**
-     * Obtiene un mensaje traducido y procesado como Componente de Adventure.
+     * Obtiene un mensaje traducido y procesa variables automáticamente.
      */
-    fun getMessage(player: Player?, path: String, vararg tags: TagResolver): Component {
+    fun getMessage(player: Player?, path: String, vararg extraTags: TagResolver): Component {
         val lang = getPlayerLang(player)
+        val config = getSpecificFile(player, lang)
 
-        // Si no hay tags dinámicos, usamos el caché de componentes pre-renderizados
-        if (tags.isEmpty()) {
-            val langMap = componentCache.getOrPut(lang) { ConcurrentHashMap() }
-            return langMap.getOrPut(path) { buildComponent(lang, path) }
+        var raw = config.getString(path)
+        if (raw == null && lang != defaultLang) {
+            raw = langMap[defaultLang]?.get(defaultLang)?.getString(path)
         }
 
-        // Si hay tags, procesamos el mensaje de forma dinámica
-        return processDynamic(lang, path, *tags)
+        val message = raw ?: "<red>Missing Path: $path"
+
+        // Combinamos variables globales con las extra que pases por código
+        val allTags = TagResolver.resolver(getGlobalResolvers(player, config), TagResolver.resolver(extraTags.toList()))
+
+        return mm.deserialize(parseLegacy(message), allTags)
     }
 
     /**
-     * Obtiene una lista de componentes (Lores de items, Scoreboards, etc).
+     * Obtiene una lista de componentes (Lores) con variables inyectadas.
      */
-    fun getMessageList(player: Player?, path: String): List<Component> {
-        val lang = getPlayerLang(player)
-        val langMap = listCache.getOrPut(lang) { ConcurrentHashMap() }
-
-        return langMap.getOrPut(path) {
-            val config = getLangConfig(lang)
-            var rawLines = config.getStringList(path)
-
-            if (rawLines.isEmpty()) {
-                rawLines = getLangConfig(defaultLang).getStringList(path)
-            }
-
-            val prefixResolver = getPrefixResolver(config)
-            rawLines.map { mm.deserialize(parseLegacy(it), prefixResolver) }
+    fun getMessageList(player: Player?, fileName: String, path: String): List<Component> {
+        val config = getSpecificFile(player, fileName)
+        val rawList = config.getStringList(path).ifEmpty {
+            if (getPlayerLang(player) != defaultLang)
+                langMap[defaultLang]?.get(fileName.lowercase())?.getStringList(path) ?: emptyList()
+            else emptyList()
         }
-    }
 
-    private fun buildComponent(lang: String, path: String): Component {
-        val config = getLangConfig(lang)
-        val raw = config.getString(path) ?: getLangConfig(defaultLang).getString(path) ?: "<red>Missing Path: $path"
-
-        return mm.deserialize(parseLegacy(raw), getPrefixResolver(config))
-    }
-
-    private fun processDynamic(lang: String, path: String, vararg tags: TagResolver): Component {
-        val config = getLangConfig(lang)
-        val raw = config.getString(path) ?: path
-
-        // Combinamos el prefijo del idioma con los tags proporcionados
-        val finalTags = arrayOf(getPrefixResolver(config), *tags)
-
-        return mm.deserialize(parseLegacy(raw), *finalTags)
+        val globalTags = getGlobalResolvers(player, config)
+        return rawList.map { mm.deserialize(parseLegacy(it), globalTags) }
     }
 
     /**
-     * Optimización: Convierte los viejos {tag} a <tag> de MiniMessage solo una vez.
+     * 🔥 ÚTIL PARA MENÚS: Procesa un texto que ya tienes (ej: nombre de asesino)
+     * para que acepte variables como {player}.
+     */
+    fun parseCustomText(player: Player?, text: String): Component {
+        val lang = getPlayerLang(player)
+        val config = getSpecificFile(player, lang)
+        return mm.deserialize(parseLegacy(text), getGlobalResolvers(player, config))
+    }
+
+    fun getRawString(player: Player?, fileName: String, path: String, def: String = ""): String {
+        val config = getSpecificFile(player, fileName)
+        return config.getString(path) ?: def
+    }
+
+    /**
+     * Convierte {variable} a <variable> para que MiniMessage la entienda.
      */
     private fun parseLegacy(text: String): String {
         return text.replace("{", "<").replace("}", ">")
     }
 
-    /**
-     * Genera un TagResolver para el prefijo de forma eficiente.
-     */
-    private fun getPrefixResolver(config: FileConfiguration): TagResolver {
-        val prefixRaw = config.getString("prefix", "<b>MISTAKEN</b> | ") ?: ""
-        return Placeholder.component("prefix", mm.deserialize(parseLegacy(prefixRaw)))
-    }
+    fun getLoadedLanguages(): Set<String> = langMap.keys
 
-    fun getLangConfig(lang: String): FileConfiguration {
-        return languages[lang.lowercase()] ?: languages[defaultLang] ?: YamlConfiguration()
+    fun getSpecificFile(player: Player?, fileName: String): FileConfiguration {
+        val lang = getPlayerLang(player)
+        return langMap[lang]?.get(fileName.lowercase())
+            ?: langMap[defaultLang]?.get(fileName.lowercase())
+            ?: YamlConfiguration()
     }
 
     private fun getPlayerLang(player: Player?): String {
-        return if (player == null) defaultLang
-        else plugin.playerDataManager.getLanguage(player.uniqueId)
+        return player?.let { plugin.playerDataManager.getLanguage(it.uniqueId) } ?: defaultLang
     }
 
-    fun reload() {
-        scope.launch { loadAllLanguages() }
-    }
+    fun reload() = loadAllLanguages()
 }

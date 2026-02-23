@@ -31,7 +31,6 @@ import net.milkbowl.vault.economy.Economy
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
-import org.bukkit.World
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.plugin.ServicePriority
@@ -133,8 +132,8 @@ class Mistaken : JavaPlugin() {
         createRequiredFolders()
         loadLobbyLocation()
 
-        configManager = ConfigManager(this).apply { loadAllConfigs() }
         messageConfig = MessageConfig(this)
+        configManager = ConfigManager(this).apply { loadAllConfigs() }
 
         // 3. Hooks (Vault, etc)
         if (!setupIntegrations()) return
@@ -349,45 +348,41 @@ class Mistaken : JavaPlugin() {
         saveConfig()
     }
 
+    /**
+     * Prepara los directorios base y archivos de configuración raíz.
+     * La extracción de idiomas y menús la maneja automáticamente el MessageConfig.
+     */
     private fun createRequiredFolders() {
-        // 1. Crear estructura de carpetas
-        listOf("lang", "menus").forEach { folderName ->
-            File(dataFolder, folderName).takeIf { !it.exists() }?.mkdirs()
+        // 1. Asegurar que la carpeta principal del plugin existe
+        if (!dataFolder.exists()) dataFolder.mkdirs()
+
+        // 2. Crear la carpeta raíz de idiomas (langs/)
+        // Es vital que exista para que el extractor del MessageConfig pueda escribir en ella
+        val langFolder = File(dataFolder, "langs")
+        if (!langFolder.exists()) {
+            langFolder.mkdirs()
         }
 
-        // 2. Archivos en la raíz del plugin
-        listOf("database.yml", "music.yml").forEach { fileName ->
-            if (!File(dataFolder, fileName).exists()) {
-                saveResource(fileName, false)
-            }
-        }
+        // 3. Archivos base en la raíz del plugin
+        // Estos son archivos técnicos que no dependen de la carpeta de idiomas
+        val baseFiles = listOf("database.yml", "music.yml")
 
-        // 3. Archivos de Lenguaje (Soporte Multi-Lang)
-        listOf("es.yml", "en.yml", "jp.yml", "fr.yml", "zh.yml").forEach { langName ->
-            val internalPath = "lang/$langName"
-            if (!File(dataFolder, internalPath).exists()) {
-                // runCatching es el try-catch "moderno" de Kotlin
-                runCatching { saveResource(internalPath, false) }
-            }
-        }
-
-        // 4. Archivos de Menús (GUIs)
-        listOf(
-            "tienda_principal.yml",
-            "asesinos_tienda.yml",
-            "supervivientes_tienda.yml"
-        ).forEach { menuName ->
-            val internalPath = "menus/$menuName"
-            if (!File(dataFolder, internalPath).exists()) {
+        baseFiles.forEach { fileName ->
+            val file = File(dataFolder, fileName)
+            if (!file.exists()) {
                 runCatching {
-                    saveResource(internalPath, false)
+                    saveResource(fileName, false)
                 }.onFailure {
-                    componentLogger.warn(mm.deserialize("<yellow>⚠️ No se pudo exportar el menú: $menuName</yellow>"))
+                    componentLogger.warn(mm.deserialize("<yellow>⚠️ No se pudo exportar el archivo base: $fileName (¿Está en el JAR?)</yellow>"))
                 }
             }
         }
 
-        componentLogger.info(mm.deserialize("<gray>[System] Estructura de archivos verificada correctamente.</gray>"))
+        // 💡 NOTA PARA EL ADMIN:
+        // El motor de MessageConfig detectará automáticamente cualquier carpeta (es, en, jp)
+        // y cualquier subcarpeta (menus, skills, etc.) que pongas dentro de 'langs/'.
+
+        componentLogger.info(mm.deserialize("<gray>[System] Estructura base verificada. Sincronizando con el motor I18n...</gray>"))
     }
 
     // --- STATE CHECKS ---

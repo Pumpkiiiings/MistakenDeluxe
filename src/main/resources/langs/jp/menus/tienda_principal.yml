@@ -1,0 +1,39 @@
+# ===============================================
+# Mistaken - メインショップ設定
+# ===============================================
+
+titulo: "<#001a33>» メインショップ"
+filas: 3
+
+ajustes:
+  sonido-click: "BLOCK_NOTE_BLOCK_XYLOPHONE"
+
+decoraciones:
+  vidrios_bordes:
+    material: "GRAY_STAINED_GLASS_PANE"
+    nombre: " "
+    slots: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]
+
+items:
+  asesinos:
+    slot: 11
+    material: "NETHERITE_SWORD"
+    nombre: "<gradient:red:dark_red><b>殺人鬼ショップ</b></gradient>"
+    lore:
+      - ""
+      - "<gray>殺人本能を解き放て。"
+      - "<gray>狩りのためのキャラクターや"
+      - "<gray>特殊能力を購入しましょう。"
+      - ""
+      - "<red>» クリックして入る"
+  supervivientes:
+    slot: 15
+    material: "IRON_CHESTPLATE"
+    nombre: "<gradient:#00d4ff:#004d99><b>生存者ショップ</b></gradient>"
+    lore:
+      - ""
+      - "<gray>生存率を向上させましょう。"
+      - "<gray>死を欺くためのユニークな"
+      - "<gray>パークを持つクラスを獲得。"
+      - ""
+      - "<#00d4ff>» クリックして入る"

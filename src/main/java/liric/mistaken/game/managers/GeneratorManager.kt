@@ -57,9 +57,12 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
      * Carga las líneas del holograma y nombres desde el idioma configurado.
      */
     fun loadTemplates() {
-        // 1. Obtenemos el idioma principal (default "es")
-        val defaultLang = plugin.config.getString("settings.default-lang", "es") ?: "es"
-        val langConfig = plugin.messageConfig.getLangConfig(defaultLang)
+        // 1. Obtenemos el idioma principal del servidor
+        val defaultLang = plugin.config.getString("settings.default-language", "es") ?: "es"
+
+        // 🔥 CORRECCIÓN: Usamos getSpecificFile pasando 'null' para usar el idioma default
+        // y el nombre del archivo principal (que es el mismo que el del idioma, ej: "es")
+        val langConfig = plugin.messageConfig.getSpecificFile(null, defaultLang)
 
         // 2. Cargamos las plantillas del YAML
         idleLines = langConfig.getStringList("generators.hologram.lines-idle").ifEmpty {
@@ -69,7 +72,6 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
             listOf("<green><bold>✔ ENERGÍA RESTAURADA ✔")
         }
 
-        // Limpiamos el caché de nombres por si el idioma cambió en un reload
         nameCache.clear()
 
         plugin.componentLogger.info(mm.deserialize("<gray>[Generadores] Plantillas cargadas correctamente (<white>$defaultLang</white>)."))
@@ -80,11 +82,12 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
      */
     private fun getFriendlyName(material: Material): String {
         return nameCache.getOrPut(material) {
-            val lang = plugin.config.getString("settings.default-lang", "es") ?: "es"
-            val langConfig = plugin.messageConfig.getLangConfig(lang)
+            val defaultLang = plugin.config.getString("settings.default-language", "es") ?: "es"
+
+            // 🔥 CORRECCIÓN: Igual aquí, usamos getSpecificFile(null, defaultLang)
+            val langConfig = plugin.messageConfig.getSpecificFile(null, defaultLang)
 
             // Busca en 'generators.names.MATERIAL_NAME'
-            // Fallback: Formatea el nombre del Material (RAW_IRON_BLOCK -> Raw Iron Block)
             langConfig.getString("generators.names.${material.name}")
                 ?: material.name.lowercase().replace("_", " ").split(" ")
                     .joinToString(" ") { it.replaceFirstChar { char -> char.uppercase() } }

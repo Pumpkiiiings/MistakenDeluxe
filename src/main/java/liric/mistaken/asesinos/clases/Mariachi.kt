@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.particle.Particle
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
+import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
@@ -24,136 +26,111 @@ import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
-import kotlin.math.cos
-import kotlin.math.sin
 
 /**
- * Mariachi v2.1 - Kotlin Jalisco Edition.
- * FIX: Slots de habilidades corregidos (0-3) y carga de armadura blindada.
- * NUEVO: Guitarra física orbitando en la espalda.
+ * Mariachi v2.2 - Kotlin Jalisco Edition.
+ * Sincronizado con Multi-Lang, Fallback Vanilla y Guitarra Física.
  */
 class Mariachi : Asesino(
     "mariachi",
-    Mistaken.instance.configManager.getAsesinos().getString(
-        "asesinos.mariachi.nombre",
-        "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>"
-    ) ?: "Mariachi"
+    // Nombre dinámico basado en el idioma default del servidor
+    Mistaken.instance.messageConfig.getSpecificFile(null, "asesinos").getString("asesinos.mariachi.nombre", "Mariachi")!!
 ) {
 
     private val path = "asesinos.mariachi"
     private val sonidoMúsicaId = "mistaken:jarabetapatio"
 
-    // Caché de items para 0% Spark en equipamiento
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val musicTasks = ConcurrentHashMap<UUID, BukkitRunnable>()
-
-    // --- 🎸 VISUAL: GUITARRA ORBITANTE ---
     private val guitarras = ConcurrentHashMap<UUID, ItemDisplay>()
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     init {
         preLoadKit()
     }
 
+    /**
+     * 🔥 PRE-LOAD LÓGICO:
+     * Carga materiales y IDs del archivo asesinos.yml central (Raíz).
+     */
     private fun preLoadKit() {
-        val config = plugin.configManager.getAsesinos()
-        val armorKeys = listOf("casco", "pechera", "pantalones", "botas")
-        val itemKeys = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
+        val config = plugin.configManager.getAsesinosConfig(null)
+        val armor = listOf("casco", "pechera", "pantalones", "botas")
+        val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
-        armorKeys.forEach { key ->
-            config.getString("$path.armadura.$key")?.let { id ->
-                if (id != "none" && id.isNotEmpty()) {
-                    CraftEngineUtils.getCustomItem(id)?.let { itemKitCache[key] = it }
+        armor.forEach { k ->
+            config.getString("asesinos.mariachi.armadura.$k")?.let { id ->
+                if (id != "none") {
+                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.LEATHER_HELMET)
+                    itemKitCache[k] = item
                 }
             }
         }
 
-        itemKeys.forEach { key ->
-            config.getString("$path.items.$key")?.let { id ->
-                val name = config.getString("$path.items.${key}_nombre")
-                if (id != "none" && id.isNotEmpty()) {
-                    CraftEngineUtils.getCustomItem(id)?.let { item ->
-                        name?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
-                        itemKitCache[key] = item
-                    }
+        items.forEach { k ->
+            config.getString("asesinos.mariachi.items.$k")?.let { id ->
+                if (id != "none") {
+                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.GOLDEN_AXE)
+                    itemKitCache[k] = item
                 }
             }
         }
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        // 🔥 FIX: Mapeo de slots 0, 1, 2, 3 para las habilidades del YAML
+        // Mapping desplazado: Tecla 2 a 5 (Slot 1 a 4)
         when (slot) {
-            1 -> {
-                if (checkCooldown(player, 1)) return
-                habilidadGrito(player)
-                reproducirEfectosHabilidad(player, 1)
-            }
-            2 -> {
-                if (checkCooldown(player, 2)) return
-                habilidadJarabe(player)
-                reproducirEfectosHabilidad(player, 2)
-            }
-            3 -> {
-                if (checkCooldown(player, 3)) return
-                habilidadGuitarrazo(player)
-                reproducirEfectosHabilidad(player, 3)
-            }
-            4 -> {
-                if (checkCooldown(player, 4)) return
-                habilidadTequila(player)
-                reproducirEfectosHabilidad(player, 4)
-            }
+            1 -> if (!checkCooldown(player, 1)) { habilidadGrito(player); reproducirEfectosHabilidad(player, 1) }
+            2 -> if (!checkCooldown(player, 2)) { habilidadJarabe(player); reproducirEfectosHabilidad(player, 2) }
+            3 -> if (!checkCooldown(player, 3)) { habilidadGuitarrazo(player); reproducirEfectosHabilidad(player, 3) }
+            4 -> if (!checkCooldown(player, 4)) { habilidadTequila(player); reproducirEfectosHabilidad(player, 4) }
         }
     }
 
-    // --- 🚀 TRAIL ASÍNCRONO ---
+    // --- 🛠️ EQUIPAMIENTO (SISTEMA MULTI-IDIOMA) ---
 
-    override fun mostrarTrail(player: Player) {
-        if (player.velocity.lengthSquared() < 0.001) return
+    override fun equipar(player: Player) {
+        val inv = player.inventory
+        inv.clear()
 
-        val loc = player.location.add(0.0, 0.2, 0.0)
-        val pos = Vector3d(loc.x, loc.y, loc.z)
-        val mgr = PacketEvents.getAPI().playerManager
+        // Fix de carga CraftEngine
+        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
 
-        val flamePacket = WrapperPlayServerParticle(Particle(ParticleTypes.SOUL_FIRE_FLAME), false, pos, Vector3f(0.15f, 0.1f, 0.15f), 0.02f, 1)
+        val langAsesinos = plugin.messageConfig.getSpecificFile(player, "asesinos")
 
-        loc.world.players.forEach { p ->
-            if (p != player && p.location.distanceSquared(loc) < 625.0) {
-                mgr.sendPacket(p, flamePacket)
-                if (ThreadLocalRandom.current().nextFloat() < 0.15f) {
-                    mgr.sendPacket(p, WrapperPlayServerParticle(Particle(ParticleTypes.NOTE), false, pos.add(0.0, 1.8, 0.0), Vector3f(0.1f, 0.1f, 0.1f), 0.5f, 1))
+        fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
+            val item = itemKitCache[key]?.clone() ?: return
+
+            val namePath = if (key == "arma") "asesinos.mariachi.items.arma_nombre"
+            else "asesinos.mariachi.items.${key}_nombre"
+
+            langAsesinos.getString(namePath)?.let {
+                item.editMeta { m -> m.displayName(mm.deserialize(it)) }
+            }
+
+            if (isArmor) {
+                when(key) {
+                    "casco" -> inv.helmet = item
+                    "pechera" -> inv.chestplate = item
+                    "pantalones" -> inv.leggings = item
+                    "botas" -> inv.boots = item
                 }
-            }
-        }
-    }
-
-    override fun mostrarTrailFisico(player: Player) {
-        val uuid = player.uniqueId
-        if (!plugin.asesinoManager.esElAsesino(player)) { limpiarVisuales(uuid); return }
-
-        // Fix cambio de mundo
-        if (guitarras[uuid]?.world != player.world) limpiarVisuales(uuid)
-
-        val display = guitarras.getOrPut(uuid) {
-            player.world.spawn(player.location, ItemDisplay::class.java) { id ->
-                id.setItemStack(itemKitCache["arma"] ?: ItemStack(Material.GOLDEN_AXE))
-                id.transformation = Transformation(
-                    JomlVector3f(0f, 0f, 0f),
-                    Quaternionf().rotateY(Math.toRadians(180.0).toFloat()),
-                    JomlVector3f(0.8f, 0.8f, 0.8f),
-                    Quaternionf()
-                )
-                id.teleportDuration = 2
-                id.interpolationDuration = 2
-            }
+            } else inv.setItem(slot, item)
         }
 
-        // Posicionar la guitarra en la espalda de forma fluida
-        val offset = player.location.direction.clone().multiply(-0.4)
-        val loc = player.location.clone().add(offset).add(0.0, 1.1, 0.0)
-        // Que la guitarra rote un poco con el movimiento
-        loc.yaw = player.location.yaw + 180f
-        display.teleport(loc)
+        // 1. Armadura
+        listOf("casco", "pechera", "pantalones", "botas").forEach { setLocalizedItem(0, it, true) }
+
+        // 2. Hotbar (Slots 1, 2, 3, 4 y Arma en 8)
+        setLocalizedItem(1, "habilidad1")
+        setLocalizedItem(2, "habilidad2")
+        setLocalizedItem(3, "habilidad3")
+        setLocalizedItem(4, "habilidad4")
+        setLocalizedItem(8, "arma")
+
+        player.inventory.heldItemSlot = 8
+        player.updateInventory()
+        iniciarMusica(player)
     }
 
     // --- 🎸 HABILIDADES ---
@@ -180,6 +157,8 @@ class Mariachi : Asesino(
                 val v = target.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5)
                 v.y = 0.4
                 target.velocity = v
+
+                // Daño Real 5 HP (2.5 corazones)
                 plugin.combatManager.processTrueDamage(target, player, 5.0)
                 target.playSound(target.location, Sound.BLOCK_ANVIL_LAND, 0.8f, 0.5f)
             }
@@ -190,50 +169,57 @@ class Mariachi : Asesino(
         player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 120, 4))
         player.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 160, 0))
         player.sendMessage(mm.deserialize("<green>¡Salud! Nada te hace daño ahora.</green>"))
-        player.playSound(player.location, Sound.ENTITY_GENERIC_DRINK, 1.0f, 1.0f)
     }
 
-    // --- 🛠️ EQUIPAMIENTO (FIXED) ---
+    // --- 🚀 VISUALES ---
 
-    override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
+    override fun mostrarTrail(player: Player) {
+        if (player.velocity.lengthSquared() < 0.001) return
+        val loc = player.location.add(0.0, 0.2, 0.0)
+        val pos = Vector3d(loc.x, loc.y, loc.z)
+        val mgr = PacketEvents.getAPI().playerManager
 
-        // 🔥 FIX: Lazy load para asegurar armadura de CraftEngine
-        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) {
-            preLoadKit()
+        val flame = WrapperPlayServerParticle(Particle(ParticleTypes.SOUL_FIRE_FLAME), false, pos, Vector3f(0.15f, 0.1f, 0.15f), 0.02f, 1)
+
+        loc.world.players.forEach { p ->
+            if (p.location.distanceSquared(loc) < 625.0) {
+                mgr.sendPacket(p, flame)
+                if (ThreadLocalRandom.current().nextFloat() < 0.15f) {
+                    mgr.sendPacket(p, WrapperPlayServerParticle(Particle(ParticleTypes.NOTE), false, pos.add(0.0, 1.8, 0.0), Vector3f(0.1f, 0.1f, 0.1f), 0.5f, 1))
+                }
+            }
+        }
+    }
+
+    override fun mostrarTrailFisico(player: Player) {
+        val uuid = player.uniqueId
+        if (!plugin.asesinoManager.esElAsesino(player)) { limpiarVisuales(uuid); return }
+        if (guitarras[uuid]?.world != player.world) limpiarVisuales(uuid)
+
+        val display = guitarras.getOrPut(uuid) {
+            player.world.spawn(player.location, ItemDisplay::class.java) { id ->
+                id.setItemStack(itemKitCache["arma"] ?: ItemStack(Material.GOLDEN_AXE))
+                id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf().rotateY(Math.toRadians(180.0).toFloat()), JomlVector3f(0.8f, 0.8f, 0.8f), Quaternionf())
+                id.teleportDuration = 2; id.interpolationDuration = 2
+            }
         }
 
-        inv.helmet = itemKitCache["casco"]?.clone()
-        inv.chestplate = itemKitCache["pechera"]?.clone()
-        inv.leggings = itemKitCache["pantalones"]?.clone()
-        inv.boots = itemKitCache["botas"]?.clone()
-
-        itemKitCache["habilidad1"]?.let { inv.setItem(1, it.clone()) }
-        itemKitCache["habilidad2"]?.let { inv.setItem(2, it.clone()) }
-        itemKitCache["habilidad3"]?.let { inv.setItem(3, it.clone()) }
-        itemKitCache["habilidad4"]?.let { inv.setItem(4, it.clone()) }
-        itemKitCache["arma"]?.let { inv.setItem(8, it.clone()) }
-
-        player.inventory.heldItemSlot = 8
-        player.updateInventory()
-        iniciarMusica(player)
+        val offset = player.location.direction.clone().multiply(-0.4)
+        val loc = player.location.clone().add(offset).add(0.0, 1.1, 0.0)
+        loc.yaw = player.location.yaw + 180f
+        display.teleport(loc)
     }
 
     private fun iniciarMusica(player: Player) {
         val uuid = player.uniqueId
         detenerMusica(uuid)
-
         val runnable = object : BukkitRunnable() {
             override fun run() {
-                if (!player.isOnline || !plugin.asesinoManager.esElAsesino(player)) {
-                    detenerMusica(uuid); cancel(); return
-                }
-                val loc = player.location
-                loc.world.players.forEach { p ->
-                    if (p.location.distanceSquared(loc) < 1600) {
+                if (!player.isOnline || !plugin.asesinoManager.esElAsesino(player)) { detenerMusica(uuid); cancel(); return }
+                player.location.world.players.forEach { p ->
+                    if (p.location.distanceSquared(player.location) < 1600) {
                         p.stopSound(sonidoMúsicaId, SoundCategory.RECORDS)
-                        p.playSound(loc, sonidoMúsicaId, SoundCategory.RECORDS, 1.5f, 1.0f)
+                        p.playSound(player.location, sonidoMúsicaId, SoundCategory.RECORDS, 1.5f, 1.0f)
                     }
                 }
             }

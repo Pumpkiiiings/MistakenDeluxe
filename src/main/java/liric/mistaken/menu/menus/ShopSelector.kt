@@ -5,103 +5,65 @@ import dev.triumphteam.gui.guis.Gui
 import liric.mistaken.menu.MenuBase
 import org.bukkit.Material
 import org.bukkit.Sound
+import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * ShopSelector: Menú principal de selección de tiendas.
- * Optimización: Interfaz pre-renderizada (Singleton) para consumo nulo de recursos.
+ *
+ * Optimización:
+ * - Soporte total para multi-idioma (es, en, jp, etc.) por subcarpetas.
+ * - Sin singletons compartidos (evita bugs visuales entre jugadores).
+ * - Carga dinámica de ítems desde el YAML del idioma del jugador.
  */
 class ShopSelector : MenuBase("tienda_principal") {
 
-    private var clickSound: Sound = Sound.UI_BUTTON_CLICK
-    private var isInitialized = false
+    /**
+     * Esta función se ejecuta cada vez que un jugador abre el menú.
+     * @param config Es el archivo YAML específico del idioma del jugador (ej: lang/jp/tienda_principal.yml)
+     */
+    override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
 
-    init {
-        // Inicializamos el GUI global inmediatamente al crear la instancia
-        initGlobalGui()
-    }
-
-    private fun initGlobalGui() {
-        if (isInitialized) return
-
-        // 1. Cargar sonido de forma segura
+        // 1. Cargar ajustes de sonido del idioma actual
         val soundName = config.getString("ajustes.sonido-click", "UI_BUTTON_CLICK") ?: "UI_BUTTON_CLICK"
-        clickSound = try {
+        val clickSound = try {
             Sound.valueOf(soundName.uppercase())
-        } catch (e: IllegalArgumentException) {
+        } catch (e: Exception) {
             Sound.UI_BUTTON_CLICK
         }
 
-        // 2. Crear la instancia base del GUI (Usando la propiedad de MenuBase)
-        this.gui = Gui.gui()
-            .title(titulo)
-            .rows(filas)
-            .disableAllInteractions()
-            .create()
-
-        // 3. ITEM: ASESINOS
+        // 2. ITEM: ASESINOS
         val pathA = "items.asesinos"
-        val itemAsesinos = ItemBuilder.from(
-            Material.getMaterial(config.getString("$pathA.material", "NETHERITE_SWORD")?.uppercase() ?: "NETHERITE_SWORD") ?: Material.NETHERITE_SWORD
-        ).apply {
-            name(mm.deserialize(config.getString("$pathA.nombre", "<red>Asesinos")!!))
-            lore(config.getStringList("$pathA.lore").map { mm.deserialize(it) })
-            flags(*ItemFlag.entries.toTypedArray()) // Ocultar todos los atributos (1.21.4 way)
-        }.asGuiItem { event ->
-            val p = event.whoClicked as? Player ?: return@asGuiItem
-            p.playSound(p.location, clickSound, 1f, 1f)
+        val matA = Material.matchMaterial(config.getString("$pathA.material", "NETHERITE_SWORD")!!) ?: Material.NETHERITE_SWORD
 
-            // Acceso directo a la tienda de asesinos del plugin principal
-            plugin.asesinoTienda.abrir(p)
-        }
+        val itemAsesinos = ItemBuilder.from(matA)
+            .name(mm.deserialize(config.getString("$pathA.nombre", "")!!))
+            .lore(config.getStringList("$pathA.lore").map { mm.deserialize(it) })
+            .flags(*ItemFlag.entries.toTypedArray()) // Ocultamos atributos (limpieza visual)
+            .asGuiItem {
+                player.playSound(player.location, clickSound, 1f, 1f)
+                // Abrimos la tienda de asesinos (que también detectará su idioma solo)
+                plugin.asesinoTienda.abrir(player)
+            }
 
-        // 4. ITEM: SUPERVIVIENTES
+        // 3. ITEM: SUPERVIVIENTES
         val pathS = "items.supervivientes"
-        val itemSurvivors = ItemBuilder.from(
-            Material.getMaterial(config.getString("$pathS.material", "IRON_CHESTPLATE")?.uppercase() ?: "IRON_CHESTPLATE") ?: Material.IRON_CHESTPLATE
-        ).apply {
-            name(mm.deserialize(config.getString("$pathS.nombre", "<green>Supervivientes")!!))
-            lore(config.getStringList("$pathS.lore").map { mm.deserialize(it) })
-            flags(*ItemFlag.entries.toTypedArray())
-        }.asGuiItem { event ->
-            val p = event.whoClicked as? Player ?: return@asGuiItem
-            p.playSound(p.location, clickSound, 1f, 1f)
+        val matS = Material.matchMaterial(config.getString("$pathS.material", "IRON_CHESTPLATE")!!) ?: Material.IRON_CHESTPLATE
 
-            // Acceso directo a la tienda de supervivientes del plugin principal
-            plugin.supervivienteTienda.abrir(p)
-        }
+        val itemSurvivors = ItemBuilder.from(matS)
+            .name(mm.deserialize(config.getString("$pathS.nombre", "")!!))
+            .lore(config.getStringList("$pathS.lore").map { mm.deserialize(it) })
+            .flags(*ItemFlag.entries.toTypedArray())
+            .asGuiItem {
+                player.playSound(player.location, clickSound, 1f, 1f)
+                // Abrimos la tienda de supervivientes
+                plugin.supervivienteTienda.abrir(player)
+            }
 
-        // 5. Colocar los items en sus slots configurados
-        gui?.let {
-            it.setItem(config.getInt("$pathA.slot", 11), itemAsesinos)
-            it.setItem(config.getInt("$pathS.slot", 15), itemSurvivors)
-        }
-
-        isInitialized = true
-    }
-
-    /**
-     * No necesitamos lógica dinámica por jugador en este menú,
-     * ya que es un selector estático.
-     */
-    override fun setupItems(player: Player) {
-        // Nada que procesar aquí.
-    }
-
-    /**
-     * Sobrescribimos abrir para usar la instancia global pre-cargada.
-     */
-    override fun abrir(player: Player) {
-        gui?.open(player)
-    }
-
-    /**
-     * Permite recargar el menú si se cambia el archivo YAML.
-     */
-    fun reload() {
-        isInitialized = false
-        initGlobalGui()
+        // 4. Colocar los ítems en sus slots (definidos en el YAML de ese idioma)
+        gui.setItem(config.getInt("$pathA.slot", 11), itemAsesinos)
+        gui.setItem(config.getInt("$pathS.slot", 15), itemSurvivors)
     }
 }

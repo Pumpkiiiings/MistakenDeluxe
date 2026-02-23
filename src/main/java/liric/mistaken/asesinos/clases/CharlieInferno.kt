@@ -28,38 +28,56 @@ import kotlin.math.*
 
 class CharlieInferno : Asesino(
     "charlie",
-    Mistaken.Companion.instance.configManager.getAsesinos()
-        .getString("asesinos.charlie.nombre", "<gradient:#ff4500:#ff8c00><b>CHARLIE INFERNO</b></gradient>")!!
+    // Nombre del asesino dinámico según el idioma por defecto del server
+    Mistaken.instance.messageConfig.getSpecificFile(null, "asesinos").getString("asesinos.charlie.nombre", "Charlie Inferno")!!
 ) {
 
     private val path = "asesinos.charlie"
     private val sonidoId = "mistaken:charlieinferno"
+
+    // Caché de ítems base (sin nombres) para optimizar RAM
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
+
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val musicTasks = ConcurrentHashMap<UUID, BukkitRunnable>()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val orbitMaterials = listOf(Material.MAGMA_BLOCK, Material.PACKED_ICE)
 
     init {
         preLoadKit()
     }
 
+    /**
+     * 🔥 PRE-CARGA LÓGICA:
+     * Carga los materiales y IDs de CraftEngine del archivo asesinos.yml de la RAIZ.
+     */
     private fun preLoadKit() {
-        val config = plugin.configManager.getAsesinos()
-        val armor = listOf("casco", "pechera", "pantalones", "botas")
-        val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
+        val config = plugin.configManager.getAsesinosConfig(null) // Archivo raíz
+        val armorKeys = listOf("casco", "pechera", "pantalones", "botas")
+        val itemKeys = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
-        armor.forEach { k -> config.getString("$path.armadura.$k")?.let { id -> CraftEngineUtils.getCustomItem(id)?.let { itemKitCache[k] = it } } }
-        items.forEach { k -> config.getString("$path.items.$k")?.let { id ->
-            val name = config.getString("$path.items.${k}_nombre")
-            CraftEngineUtils.getCustomItem(id)?.let { item ->
-                name?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
-                itemKitCache[k] = item
+        armorKeys.forEach { key ->
+            config.getString("asesinos.charlie.armadura.$key")?.let { id ->
+                if (id != "none") {
+                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.LEATHER_HELMET)
+                    itemKitCache[key] = item
+                }
             }
-        } }
+        }
+
+        itemKeys.forEach { key ->
+            config.getString("asesinos.charlie.items.$key")?.let { id ->
+                if (id != "none") {
+                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
+                    itemKitCache[key] = item
+                }
+            }
+        }
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
+        // Mantuve tus slots tal cual (1, 2, 3, 4)
         when (slot) {
             1 -> if (!checkCooldown(player, 1)) { habilidadInfierno(player); reproducirEfectosHabilidad(player, 1) }
             2 -> if (!checkCooldown(player, 2)) { habilidadDemonRun(player); reproducirEfectosHabilidad(player, 2) }
@@ -68,29 +86,81 @@ class CharlieInferno : Asesino(
         }
     }
 
-    // --- 🔥 H1: INFIERNO (15x15) ---
+    // --- 🛠️ EQUIPAMIENTO (SISTEMA MULTI-IDIOMA) ---
+
+    override fun equipar(player: Player) {
+        val inv = player.inventory
+        inv.clear()
+
+        // Si el caché falló (CraftEngine no listo), reintentamos una vez
+        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
+
+        // Obtenemos el archivo de lenguaje específico del jugador (lang/es/asesinos.yml)
+        val langAsesinos = plugin.messageConfig.getSpecificFile(player, "asesinos")
+
+        fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
+            val item = itemKitCache[key]?.clone() ?: return
+
+            // 🔥 Buscamos el nombre traducido en la carpeta del idioma
+            val namePath = if (key == "arma") "asesinos.charlie.items.arma_nombre"
+            else "asesinos.charlie.items.${key}_nombre"
+
+            val localizedName = langAsesinos.getString(namePath)
+            if (localizedName != null) {
+                item.editMeta { it.displayName(mm.deserialize(localizedName)) }
+            }
+
+            if (isArmor) {
+                when(key) {
+                    "casco" -> inv.helmet = item
+                    "pechera" -> inv.chestplate = item
+                    "pantalones" -> inv.leggings = item
+                    "botas" -> inv.boots = item
+                }
+            } else {
+                inv.setItem(slot, item)
+            }
+        }
+
+        // 1. Armadura
+        setLocalizedItem(0, "casco", true)
+        setLocalizedItem(0, "pechera", true)
+        setLocalizedItem(0, "pantalones", true)
+        setLocalizedItem(0, "botas", true)
+
+        // 2. Hotbar (Mantuve tus posiciones: 1, 2, 3, 4 y Arma en 8)
+        setLocalizedItem(1, "habilidad1")
+        setLocalizedItem(2, "habilidad2")
+        setLocalizedItem(3, "habilidad3")
+        setLocalizedItem(4, "habilidad4")
+        setLocalizedItem(8, "arma")
+
+        player.inventory.heldItemSlot = 8
+        player.updateInventory()
+        iniciarMusicaCharlie(player)
+    }
+
+    // --- 🔥 HABILIDADES (Lógica Original) ---
+
     private fun habilidadInfierno(player: Player) {
         player.getNearbyEntities(7.5, 7.5, 7.5).filterIsInstance<Player>().forEach { target ->
             if (!plugin.asesinoManager.esElAsesino(target)) {
-                target.fireTicks = 100 // 5 segundos de fuego
+                target.fireTicks = 100
                 target.playSound(target.location, Sound.ITEM_FIRECHARGE_USE, 1f, 1f)
             }
         }
         player.world.spawnParticle(org.bukkit.Particle.FLAME, player.location, 50, 2.0, 0.5, 2.0, 0.1)
-        // Debuff al asesino
         player.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
         player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
     }
 
-    // --- 🏃 H2: DEMON RUN (SPEED + LUEGO DEBUFF) ---
     private fun habilidadDemonRun(player: Player) {
         val targets = player.getNearbyEntities(10.0, 10.0, 10.0).filterIsInstance<Player>().toMutableList()
-        targets.add(player) // Incluimos al asesino
-
+        targets.add(player)
         targets.forEach { it.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 60, 0)) }
 
         scope.launch {
-            delay(3000) // 3 segundos después
+            delay(3000)
             withContext(plugin.mainThread) {
                 targets.forEach {
                     if (it.isOnline) {
@@ -103,28 +173,22 @@ class CharlieInferno : Asesino(
         }
     }
 
-    // --- 🧊 H3: BLOQUE DE HIELO (PROYECTIL) ---
     private fun habilidadBloqueHielo(player: Player) {
         val ice = player.world.spawn(player.eyeLocation, ItemDisplay::class.java) {
             it.setItemStack(ItemStack(Material.PACKED_ICE))
             it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.6f, 0.6f, 0.6f), Quaternionf())
         }
         val dir = player.location.direction.multiply(1.2)
-
         scope.launch {
             var ticks = 0
             withContext(plugin.mainThread) {
                 while (ticks < 40 && ice.isValid) {
                     ice.teleport(ice.location.add(dir))
                     val hit = ice.getNearbyEntities(1.0, 1.0, 1.0).filterIsInstance<Player>().firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
-
                     if (hit != null || ice.location.block.type.isSolid) {
                         ice.world.spawnParticle(org.bukkit.Particle.SNOWFLAKE, ice.location, 30, 0.5, 0.5, 0.5, 0.1)
                         ice.world.playSound(ice.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
-                        hit?.let {
-                            it.freezeTicks = 140
-                            it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
-                        }
+                        hit?.let { it.freezeTicks = 140; it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2)) }
                         break
                     }
                     delay(50); ticks++
@@ -135,11 +199,9 @@ class CharlieInferno : Asesino(
         }
     }
 
-    // --- 🦷 H4: COLMILLOS DEL INFIERNO ---
     private fun habilidadColmillosInfierno(player: Player) {
         val direction = player.location.direction.setY(0.0).normalize()
         val startLoc = player.location.clone()
-
         scope.launch {
             val current = startLoc.clone()
             repeat(12) {
@@ -149,7 +211,7 @@ class CharlieInferno : Asesino(
                     current.world?.getNearbyEntities(current, 1.2, 1.2, 1.2)?.filterIsInstance<Player>()?.forEach { victim ->
                         if (!plugin.asesinoManager.esElAsesino(victim)) {
                             victim.fireTicks = 100
-                            plugin.combatManager.processTrueDamage(victim, player, 4.0)
+                            plugin.combatManager.processTrueDamage(victim, player, 3.0)
                         }
                     }
                 }
@@ -162,28 +224,7 @@ class CharlieInferno : Asesino(
         }
     }
 
-    // --- 🚀 RESTO DE LÓGICA (Equipar, Orbitadores, etc) ---
-
-    override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        if (!itemKitCache.containsKey("casco")) preLoadKit()
-
-        inv.helmet = itemKitCache["casco"]?.clone()
-        inv.chestplate = itemKitCache["pechera"]?.clone()
-        inv.leggings = itemKitCache["pantalones"]?.clone()
-        inv.boots = itemKitCache["botas"]?.clone()
-
-        itemKitCache["habilidad1"]?.let { inv.setItem(1, it.clone()) }
-        itemKitCache["habilidad2"]?.let { inv.setItem(2, it.clone()) }
-        itemKitCache["habilidad3"]?.let { inv.setItem(3, it.clone()) }
-        itemKitCache["habilidad4"]?.let { inv.setItem(4, it.clone()) }
-        itemKitCache["arma"]?.let { inv.setItem(8, it.clone()) }
-
-        player.inventory.heldItemSlot = 8
-        player.updateInventory()
-        iniciarMusicaCharlie(player)
-    }
+    // --- 🚀 VISUALES ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
@@ -191,7 +232,7 @@ class CharlieInferno : Asesino(
         if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarEntidades(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
-            listOf(Material.MAGMA_BLOCK, Material.PACKED_ICE).map { mat ->
+            orbitMaterials.map { mat ->
                 player.world.spawn(player.location, BlockDisplay::class.java) { bd ->
                     bd.block = mat.createBlockData()
                     bd.transformation = Transformation(JomlVector3f(-0.15f, -0.15f, -0.15f), Quaternionf(), JomlVector3f(0.3f, 0.3f, 0.3f), Quaternionf())
@@ -200,14 +241,15 @@ class CharlieInferno : Asesino(
             }.toMutableList()
         }
 
-        val angulo = angulos.getOrDefault(uuid, 0.0) + 0.15
+        val anguloActual = angulos.getOrDefault(uuid, 0.0)
+        val radio = 1.3
         for (i in entidades.indices) {
             val offset = if (i == 0) 0.0 else Math.PI
-            val x = 1.3 * cos(angulo + offset)
-            val z = 1.3 * sin(angulo + offset)
+            val x = radio * cos(anguloActual + offset)
+            val z = radio * sin(anguloActual + offset)
             entidades[i].teleport(player.location.clone().add(x, if (i == 0) 1.8 else 0.8, z))
         }
-        angulos[uuid] = angulo
+        angulos[uuid] = (anguloActual + 0.15) % (Math.PI * 2)
     }
 
     private fun iniciarMusicaCharlie(player: Player) {

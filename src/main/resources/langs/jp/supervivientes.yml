@@ -1,0 +1,263 @@
+# ======================================================
+#          MISTAKEN - 生存者設定 (JP)
+# ======================================================
+
+namespace: "mistaken"
+
+supervivientes:
+  civil:
+    # --- ショップデータ ---
+    precio: 0
+    icono_material: "LEATHER_CHESTPLATE"
+    nombre: "<white><b>一般市民</b>"
+    descripcion:
+      - "<gray>混乱に巻き込まれた市民。"
+      - "<gray>すべての統計で純粋なバランス。"
+      - "<white>メカニクス: <white>隠密と自己防衛。"
+    lore_tienda:
+      - "<gray>\"ただ家に帰りたいだけなんだ...\""
+      - "<white>難易度: <green>初級"
+    # --- 装備 ---
+    armadura:
+      casco: "none"
+      pechera: "none"
+      pantalones: "none"
+      botas: "none"
+    items:
+      habilidad1: "SUGAR"
+      habilidad1_nombre: "<light_purple>アドレナリン"
+      habilidad1_mensaje: "<prefix><light_purple>アドレナリン放出！ <gray>5秒間移動速度が上昇します。"
+      habilidad1_cooldown: 30
+      habilidad1_sonido: "ENTITY_PLAYER_BREATH"
+
+      habilidad2: "FERMENTED_SPIDER_EYE"
+      habilidad2_nombre: "<gray>消失"
+      habilidad2_mensaje: "<prefix><gray>姿を消した... <white>5秒間透明になります。"
+      habilidad2_mensaje_fin: "<prefix><red>透明化が解除されました！"
+      habilidad2_cooldown: 50
+      habilidad2_sonido: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+
+      habilidad3: "COBBLESTONE"
+      habilidad3_nombre: "<gold>石を投げる"
+      habilidad3_mensaje: "<prefix><gold>石を投げた！ <gray>命中すると殺人鬼を鈍らせます。"
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "ENTITY_SNOWBALL_THROW"
+
+  repartidor:
+    # --- ショップデータ ---
+    precio: 750
+    icono_material: "IRON_CHESTPLATE"
+    nombre: "<gold><b>配達員</b>"
+    descripcion:
+      - "<gray>Herobrineでさえこの配達を止めることはできない。"
+      - "<white>メカニクス: <white>サポートと極限速度。"
+    lore_tienda:
+      - "<gray>\"星5評価じゃなきゃ意味がないんだ、ブラザー！\""
+      - "<white>難易度: <green>初級"
+    # --- 装備 ---
+    armadura:
+      casco: "none"
+      pechera: "none"
+      pantalones: "none"
+      botas: "none"
+    items:
+      habilidad1: "SUGAR"
+      habilidad1_nombre: "<aqua>エナジードリンク"
+      habilidad1_mensaje: "<prefix><aqua>ドリンクを飲んだ！ <gray>配達スピードモード起動。"
+      habilidad1_cooldown: 35
+      habilidad1_sonido: "ENTITY_GENERIC_DRINK"
+
+      habilidad2: "COOKIE"
+      habilidad2_nombre: "<gold>注文品を投げる"
+      habilidad2_mensaje: "<prefix><gold>注文品を配送中！ <gray>評価を維持しています。"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_SNOWBALL_THROW"
+
+      habilidad3: "CHEST"
+      habilidad3_nombre: "<red>ソースをこぼす"
+      habilidad3_mensaje: "<prefix><red>ソースをぶちまけた！ <gray>床が滑りやすくなっています。"
+      habilidad3_cooldown: 50
+      habilidad3_sonido: "BLOCK_SLIME_BLOCK_PLACE"
+
+  jesse:
+    nombre: "<gold><b>ジェシー</b>"
+    precio: 5000
+    icono_material: "GOLDEN_SWORD"
+    lore_tienda:
+      - "伝説のリーダー、"
+      - "新生「岩の騎士団」。"
+      - ""
+      - "<yellow>サポートと救助のスペシャリスト！"
+
+    ajustes:
+      radio_curacion: 15.0
+      cooldown_rastreo: 10
+
+    items:
+      habilidad1: "GOLDEN_SWORD"
+      habilidad1_nombre: "<gold>騎士団の剣"
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_SWEEP"
+      habilidad1_mensaje: "<prefix><gray>騎士団のために！ダッシュを使用。"
+
+      habilidad2: "NETHER_STAR"
+      habilidad2_nombre: "<gold><b>ガブリエルのお守り</b>"
+      habilidad2_cooldown: 25
+      habilidad2_sonido: "BLOCK_BEACON_ACTIVATE"
+      habilidad2_mensaje: "<prefix><gold>お守りが回復の波動を放つ！"
+
+      habilidad3: "GOLDEN_CHESTPLATE"
+      habilidad3_nombre: "<gold>騎士団の招集"
+      habilidad3_cooldown: 40
+      habilidad3_sonido: "ITEM_ARMOR_EQUIP_GOLD"
+      habilidad3_mensaje: "<prefix><yellow>仲間の加護を感じる！"
+
+  petra:
+    nombre: "<red><b>ペトラ</b>"
+    precio: 6000
+    icono_material: "IRON_SWORD"
+    lore_tienda:
+      - "騎士団で最も熟練した戦士。"
+      - ""
+      - "<red>高速戦闘と隠密のスペシャリスト！"
+
+    ajustes:
+      danio_dash: 2
+      duracion_sigilo: 5
+
+    items:
+      habilidad1: "IRON_SWORD"
+      habilidad1_nombre: "<red>ペトラの剣"
+      habilidad1_cooldown: 10
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_SWEEP"
+      habilidad1_mensaje: "<prefix><gray>電光石火の斬撃！"
+
+      habilidad2: "FEATHER"
+      habilidad2_nombre: "<white><b>ミサイルストライク</b>"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad2_mensaje: "<prefix><red>ペトラが突撃を開始！"
+
+      habilidad3: "GRAY_DYE"
+      habilidad3_nombre: "<dark_gray>煙幕"
+      habilidad3_cooldown: 35
+      habilidad3_sonido: "ENTITY_GENERIC_EXTINGUISH_FIRE"
+      habilidad3_mensaje: "<prefix><dark_gray>ペトラは煙の中に消えた！"
+
+  steve:
+    nombre: "<blue><b>スティーブ</b>"
+    precio: 0
+    icono_material: "PLAYER_HEAD"
+    lore_tienda:
+      - "サバイバルの神。"
+      - ""
+      - "<blue>テクニカル戦闘と建築の達人！"
+
+    ajustes:
+      duracion_muro: 5
+      fuerza_empuje: 1.4
+
+    items:
+      habilidad1: "NETHERITE_AXE"
+      habilidad1_nombre: "<blue><b>クリティカルアタック</b>"
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_CRIT"
+      habilidad1_mensaje: "<prefix><blue>スティーブのクリティカルヒット！"
+
+      habilidad2: "COBBLESTONE"
+      habilidad2_nombre: "<gray><b>防衛壁</b>"
+      habilidad2_cooldown: 18
+      habilidad2_sonido: "BLOCK_STONE_PLACE"
+      habilidad2_mensaje: "<prefix><gray>高速建築モード起動！"
+
+      habilidad3: "WATER_BUCKET"
+      habilidad3_nombre: "<aqua><b>水バケツトリック</b>"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ITEM_BUCKET_EMPTY"
+      habilidad3_mensaje: "<prefix><aqua>殺人鬼を溺れさせている！"
+
+  gumi:
+    nombre: "<color:#a9d14f><b>GUMI</b></color>"
+    precio: 5200
+    icono_material: "LIME_DYE"
+    lore_tienda:
+      - "仮想歪みのディーバ。"
+      - ""
+      - "<color:#a9d14f>エコーとデジタルコピーを操る！"
+
+    ajustes:
+      distancia_swap: 10.0
+      duracion_estatica: 4
+
+    items:
+      habilidad1: "ECHO_SHARD"
+      habilidad1_nombre: "<color:#a9d14f><b>System: ECHO</b></color>"
+      habilidad1_cooldown: 25
+      habilidad1_sonido: "BLOCK_AMETHYST_BLOCK_BREAK"
+      habilidad1_mensaje: "<prefix><color:#a9d14f><i>白黒つけたがる... 私の頭の中...</i>"
+
+      habilidad2: "ARMOR_STAND"
+      habilidad2_nombre: "<color:#a9d14f><b>コピーキャット</b></color>"
+      habilidad2_cooldown: 35
+      habilidad2_sonido: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+      habilidad2_mensaje: "<prefix><color:#a9d14f>君は一体、誰を追いかけているの？"
+
+      habilidad3: "DECORATED_POT"
+      habilidad3_nombre: "<color:#ff4d4d><b>マトリョシカ・フレンジー</b></color>"
+      habilidad3_cooldown: 45
+      habilidad3_sonido: "ENTITY_GENERIC_EXPLODE"
+      habilidad3_mensaje: "<prefix><red>1, 2, 3, 4! マトリョシカ！"
+
+  neru:
+    nombre: "<color:#ffcc00><b>亞北ネル</b></color>"
+    precio: 4900
+    icono_material: "GOLD_INGOT"
+    lore_tienda:
+      - "無関心のディーバ。"
+      - ""
+      - "<color:#ffcc00>通知スパムとラグ攻撃の専門家！"
+
+    ajustes:
+      duracion_stun: 3
+      radio_spam: 7.0
+
+    items:
+      habilidad1: "GOLDEN_CARROT"
+      habilidad1_nombre: "<color:#ffcc00><b>通知スパム</b></color>"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "BLOCK_NOTE_BLOCK_BELL"
+      habilidad1_mensaje: "<prefix><color:#ffcc00>ネルが殺人鬼を通知攻めにしている！"
+
+      habilidad2: "BARRIER"
+      habilidad2_nombre: "<color:#ffcc00><b>AFKモード</b></color>"
+      habilidad2_cooldown: 35
+      habilidad2_sonido: "BLOCK_IRON_DOOR_CLOSE"
+      habilidad2_mensaje: "<prefix><gray>ネルは飽きてAFKしたようです..."
+
+      habilidad3: "YELLOW_DYE"
+      habilidad3_nombre: "<color:#ffcc00><b>トリプルバカ・ストライク</b></color>"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ENTITY_FIREWORK_ROCKET_TWINKLE"
+      habilidad3_mensaje: "<prefix><color:#ffcc00>バカ！バカ！バカ！"
+
+  mariachi:
+    nombre: "<color:#fbca03><b>マリアッチ</b></color>"
+    precio: 5000
+    icono_material: "GOLDEN_AXE"
+    lore_tienda:
+      - "アイ、アイ、アイ！歌わなきゃ、泣いちゃうぜ。"
+      - ""
+      - "<color:#fbca03>音楽サポートと逃走の達人。"
+
+    items:
+      habilidad1: "WOODEN_HOE"
+      habilidad1_nombre: "<color:#fbca03><b>ギターの一撃</b></color>"
+      habilidad1_cooldown: 15
+
+      habilidad2: "HONEY_BOTTLE"
+      habilidad2_nombre: "<color:#fbca03><b>ハラベ・タパティオ</b></color>"
+      habilidad2_cooldown: 25
+
+      habilidad3: "GOLDEN_CHESTPLATE"
+      habilidad3_nombre: "<color:#fbca03><b>メキシカン・シャウト</b></color>"
+      habilidad3_cooldown: 40

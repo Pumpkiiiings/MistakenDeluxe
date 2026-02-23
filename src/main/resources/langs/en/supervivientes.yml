@@ -1,0 +1,313 @@
+# ======================================================
+#          MISTAKEN - SURVIVORS CONFIGURATION (EN)
+# ======================================================
+
+# Default namespace for CraftEngine
+namespace: "mistaken"
+
+supervivientes:
+  civil:
+    # --- Shop Data ---
+    precio: 0
+    icono_material: "LEATHER_CHESTPLATE"
+    nombre: "<white><b>CIVILIAN</b>"
+    descripcion:
+      - "<gray>A citizen caught in the chaos."
+      - "<gray>Pure balance in all stats."
+      - "<white>Mechanic: <white>Stealth and Self-Defense."
+    lore_tienda:
+      - "<gray>\"I just want to go home...\""
+      - "<white>Difficulty: <green>Easy"
+    # --- Equipment ---
+    armadura:
+      casco: "none"
+      pechera: "none"
+      pantalones: "none"
+      botas: "none"
+    items:
+      habilidad1: "SUGAR"
+      habilidad1_nombre: "<light_purple>Adrenaline"
+      habilidad1_mensaje: "<prefix><light_purple>Adrenaline activated! <gray>You run faster for 5s."
+      habilidad1_cooldown: 30
+      habilidad1_sonido: "ENTITY_PLAYER_BREATH"
+
+      habilidad2: "FERMENTED_SPIDER_EYE"
+      habilidad2_nombre: "<gray>Vanish"
+      habilidad2_mensaje: "<prefix><gray>You have vanished... <white>You are invisible for 5s."
+      habilidad2_mensaje_fin: "<prefix><red>Your invisibility has expired!"
+      habilidad2_cooldown: 50
+      habilidad2_sonido: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+
+      habilidad3: "COBBLESTONE"
+      habilidad3_nombre: "<gold>Throw Rock"
+      habilidad3_mensaje: "<prefix><gold>Rock thrown! <gray>Slows down the killer on impact."
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "ENTITY_SNOWBALL_THROW"
+
+  repartidor:
+    # --- Shop Data ---
+    precio: 750
+    icono_material: "IRON_CHESTPLATE"
+    nombre: "<gold><b>DELIVERY GUY</b>"
+    descripcion:
+      - "<gray>Not even Herobrine stops this delivery."
+      - "<white>Mechanic: <white>Support and Extreme Speed."
+    lore_tienda:
+      - "<gray>\"Five stars or nothing, bro!\""
+      - "<white>Difficulty: <green>Easy"
+    # --- Equipment ---
+    armadura:
+      casco: "none"
+      pechera: "none"
+      pantalones: "none"
+      botas: "none"
+    items:
+      habilidad1: "SUGAR"
+      habilidad1_nombre: "<aqua>Energy Drink"
+      habilidad1_mensaje: "<prefix><aqua>Drink consumed! <gray>Delivery speed activated."
+      habilidad1_cooldown: 35
+      habilidad1_sonido: "ENTITY_GENERIC_DRINK"
+
+      habilidad2: "COOKIE"
+      habilidad2_nombre: "<gold>Throw Order"
+      habilidad2_mensaje: "<prefix><gold>Order on the way! <gray>Watching that rating."
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_SNOWBALL_THROW"
+
+      habilidad3: "CHEST"
+      habilidad3_nombre: "<red>Sauce Spill"
+      habilidad3_mensaje: "<prefix><red>The sauce spilled! <gray>The floor is now slippery."
+      habilidad3_cooldown: 50
+      habilidad3_sonido: "BLOCK_SLIME_BLOCK_PLACE"
+
+  jesse:
+    nombre: "<gold><b>JESSE</b>"
+    precio: 5000
+    icono_material: "GOLDEN_SWORD"
+    lore_tienda:
+      - "The legendary leader of the"
+      - "New Order of the Stone."
+      - ""
+      - "<yellow>Support and Rescue Specialist!"
+
+    # --- TECHNICAL ABILITY SETTINGS ---
+    ajustes:
+      radio_curacion: 15.0
+      cooldown_rastreo: 10 # Cooldown for Left Click (Amulet)
+
+    # --- ITEMS AND ABILITIES ---
+    items:
+      # Ability 1: Sword of the Order
+      habilidad1: "GOLDEN_SWORD"
+      habilidad1_nombre: "<gold>Sword of the Order"
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_SWEEP"
+      habilidad1_mensaje: "<prefix><gray>For the Order! You used the dash."
+
+      # Ability 2: The Amulet (Right Click: Regen / Left Click: Tracking)
+      habilidad2: "NETHER_STAR"
+      habilidad2_nombre: "<gold><b>Gabriel's Amulet</b>"
+      habilidad2_cooldown: 25 # Healing CD (Right Click)
+      habilidad2_sonido: "BLOCK_BEACON_ACTIVATE"
+      habilidad2_mensaje: "<prefix><gold>The Amulet emits a restoring pulse!"
+
+      # Ability 3: Call of the Order
+      habilidad3: "GOLDEN_CHESTPLATE"
+      habilidad3_nombre: "<gold>Call of the Order"
+      habilidad3_cooldown: 40
+      habilidad3_sonido: "ITEM_ARMOR_EQUIP_GOLD"
+      habilidad3_mensaje: "<prefix><yellow>You feel the protection of your friends!"
+
+  petra:
+    nombre: "<red><b>PETRA</b>"
+    precio: 6000
+    icono_material: "IRON_SWORD"
+    lore_tienda:
+      - "The most skilled warrior of the Order."
+      - ""
+      - "<red>Fast Combat and Stealth Specialist!"
+
+    ajustes:
+      danio_dash: 2 # Health removed if colliding with killer
+      duracion_sigilo: 5 # Seconds without Glow visibility
+
+    items:
+      # Ability 1: Petra's Sword (Fast attack)
+      habilidad1: "IRON_SWORD"
+      habilidad1_nombre: "<red>Petra's Sword"
+      habilidad1_cooldown: 10
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_SWEEP"
+      habilidad1_mensaje: "<prefix><gray>Lightning strike!"
+
+      # Ability 2: Missile Strike (Combat Dash)
+      habilidad2: "FEATHER"
+      habilidad2_nombre: "<white><b>Missile Strike</b>"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad2_mensaje: "<prefix><red>Petra lunges into the attack!"
+
+      # Ability 3: Smoke Escape (Stealth)
+      habilidad3: "GRAY_DYE"
+      habilidad3_nombre: "<dark_gray>Smoke Bomb"
+      habilidad3_cooldown: 35
+      habilidad3_sonido: "ENTITY_GENERIC_EXTINGUISH_FIRE"
+      habilidad3_mensaje: "<prefix><dark_gray>Petra vanished into the smoke!"
+
+  axel:
+    nombre: "<green><b>AXEL</b>"
+    precio: 4800
+    icono_material: "TNT"
+    lore_tienda:
+      - "The muscle of the Order."
+      - ""
+      - "<green>Explosives and Knockback Specialist!"
+
+    ajustes:
+      fuerza_tnt: 1.5 # Knockback distance
+      radio_tnt: 5.0
+
+    items:
+      habilidad1: "TNT"
+      habilidad1_nombre: "<red>Axel's Dynamite"
+      habilidad1_cooldown: 25
+      habilidad1_sonido: "ENTITY_TNT_PRIMED"
+      habilidad1_mensaje: "<prefix><red>WATCH OUT! Dynamite incoming!"
+
+      habilidad2: "IRON_AXE"
+      habilidad2_nombre: "<green><b>Knockback Chop</b>"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_ZOMBIE_ATTACK_IRON_DOOR"
+      habilidad2_mensaje: "<prefix><green>Take that! Back off, beast!"
+
+      habilidad3: "SHIELD"
+      habilidad3_nombre: "<yellow>Great Axel's Shield"
+      habilidad3_cooldown: 40
+      habilidad3_sonido: "ITEM_SHIELD_BLOCK"
+      habilidad3_mensaje: "<prefix><yellow>None shall pass!"
+
+  steve:
+    nombre: "<blue><b>STEVE</b>"
+    precio: 0
+    icono_material: "PLAYER_HEAD"
+    lore_tienda:
+      - "The God of Survival."
+      - ""
+      - "<blue>Master of technical combat and building!"
+
+    ajustes:
+      duracion_muro: 5
+      fuerza_empuje: 1.4
+
+    items:
+      # Ability 1: Critical Axe (Jump + Damage/Knockback)
+      habilidad1: "NETHERITE_AXE"
+      habilidad1_nombre: "<blue><b>Critical Chop</b>"
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_CRIT"
+      habilidad1_mensaje: "<prefix><blue>Steve executed a critical hit!"
+
+      # Ability 2: The MLG / Cobblestone (Blocking path)
+      habilidad2: "COBBLESTONE"
+      habilidad2_nombre: "<gray><b>Defensive Wall</b>"
+      habilidad2_cooldown: 18
+      habilidad2_sonido: "BLOCK_STONE_PLACE"
+      habilidad2_mensaje: "<prefix><gray>Fast building activated!"
+
+      # Ability 3: Water Bucket (Slow and Escape)
+      habilidad3: "WATER_BUCKET"
+      habilidad3_nombre: "<aqua><b>Water Bucket Trick</b>"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ITEM_BUCKET_EMPTY"
+      habilidad3_mensaje: "<prefix><aqua>The killer is drowning!"
+
+  gumi:
+    nombre: "<color:#a9d14f><b>GUMI</b></color>"
+    precio: 5200
+    icono_material: "LIME_DYE"
+    lore_tienda:
+      - "The diva of virtual distortion."
+      - ""
+      - "<color:#a9d14f>Master of echo and digital copies!"
+
+    ajustes:
+      distancia_swap: 10.0
+      duracion_estatica: 4
+
+    items:
+      # Ability 1: ECHO (System reboot)
+      habilidad1: "ECHO_SHARD"
+      habilidad1_nombre: "<color:#a9d14f><b>System: ECHO</b></color>"
+      habilidad1_cooldown: 25
+      habilidad1_sonido: "BLOCK_AMETHYST_BLOCK_BREAK"
+      habilidad1_mensaje: "<prefix><color:#a9d14f><i>The black and white... inside my head...</i>"
+
+      # Ability 2: COPY CAT (Visual confusion)
+      habilidad2: "ARMOR_STAND"
+      habilidad2_nombre: "<color:#a9d14f><b>Copy Cat</b></color>"
+      habilidad2_cooldown: 35
+      habilidad2_sonido: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+      habilidad2_mensaje: "<prefix><color:#a9d14f>Who are you really chasing?"
+
+      # Ability 3: MATRYOSHKA (Chaos and color explosion)
+      habilidad3: "DECORATED_POT"
+      habilidad3_nombre: "<color:#ff4d4d><b>Matryoshka Frenzy</b></color>"
+      habilidad3_cooldown: 45
+      habilidad3_sonido: "ENTITY_GENERIC_EXPLODE"
+      habilidad3_mensaje: "<prefix><red>1, 2, 3, 4! Matryoshka!"
+
+  neru:
+    nombre: "<color:#ffcc00><b>AKITA NERU</b></color>"
+    precio: 4900
+    icono_material: "GOLD_INGOT"
+    lore_tienda:
+      - "The diva of indifference."
+      - ""
+      - "<color:#ffcc00>Spam and lag attack specialist!"
+
+    ajustes:
+      duracion_stun: 3
+      radio_spam: 7.0
+
+    items:
+      # Ability 1: Phone Spam (Annoying messages)
+      habilidad1: "GOLDEN_CARROT"
+      habilidad1_nombre: "<color:#ffcc00><b>Notification Spam</b></color>"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "BLOCK_NOTE_BLOCK_BELL"
+      habilidad1_mensaje: "<prefix><color:#ffcc00>Neru is bombarding the killer!"
+
+      # Ability 2: AFK Mode (Static invisibility)
+      habilidad2: "BARRIER"
+      habilidad2_nombre: "<color:#ffcc00><b>AFK Mode</b></color>"
+      habilidad2_cooldown: 35
+      habilidad2_sonido: "BLOCK_IRON_DOOR_CLOSE"
+      habilidad2_mensaje: "<prefix><gray>Neru got bored and went AFK..."
+
+      # Ability 3: Triple Baka (Bounce chaos)
+      habilidad3: "YELLOW_DYE"
+      habilidad3_nombre: "<color:#ffcc00><b>Triple Baka Strike</b></color>"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ENTITY_FIREWORK_ROCKET_TWINKLE"
+      habilidad3_mensaje: "<prefix><color:#ffcc00>BAKA! BAKA! BAKA!"
+
+  mariachi:
+    nombre: "<color:#fbca03><b>EL MARIACHI</b></color>"
+    precio: 5000
+    icono_material: "GOLDEN_AXE"
+    lore_tienda:
+      - "Ay, ay, ay! He who doesn't sing, cries."
+      - ""
+      - "<color:#fbca03>Musical support and escape expert."
+
+    items:
+      habilidad1: "WOODEN_HOE" # Represents the guitar
+      habilidad1_nombre: "<color:#fbca03><b>Guitar Bash</b></color>"
+      habilidad1_cooldown: 15
+
+      habilidad2: "HONEY_BOTTLE" # The "Tequila"
+      habilidad2_nombre: "<color:#fbca03><b>Jarabe Tapatío</b></color>"
+      habilidad2_cooldown: 25
+
+      habilidad3: "GOLDEN_CHESTPLATE" # Gala suit
+      habilidad3_nombre: "<color:#fbca03><b>Mexican Shout</b></color>"
+      habilidad3_cooldown: 40

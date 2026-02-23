@@ -4,105 +4,102 @@ import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
 import dev.triumphteam.gui.guis.GuiItem
 import liric.mistaken.Mistaken
-import net.kyori.adventure.text.Component
 import org.bukkit.Material
+import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * MenuBase: Estructura fundamental para interfaces optimizadas.
- * Implementa pre-renderizado de decoraciones para ahorrar ciclos de CPU.
+ * MenuBase: Estructura multilingüe ultra-optimizada.
+ * Los menús se cachean por IDIOMA, no por jugador, para ahorrar RAM.
  */
-abstract class MenuBase(fileName: String) {
+abstract class MenuBase(private val fileName: String) {
 
     protected val plugin = Mistaken.instance
     protected val mm = plugin.mm
 
-    protected var gui: Gui? = null
-    protected val config = plugin.configManager.getMenuConfig(fileName)
-
-    protected val titulo: Component = plugin.mm.deserialize(
-        config.getString("titulo") ?: "<red>Menú sin Título"
-    )
-    protected val filas: Int = config.getInt("filas", 3)
-
-    // Optimización: Guardamos los ítems decorativos ya construidos
-    private val decorationCache = mutableListOf<Pair<List<Int>, GuiItem>>()
-
-    init {
-        // Pre-cargamos las decoraciones al instanciar el menú (una sola vez)
-        preLoadDecorations()
-    }
+    // --- 🚀 EL SECRETO DEL RENDIMIENTO ---
+    // Guardamos las decoraciones ya procesadas por cada idioma.
+    // Mapa: <"es", CacheDeMenu>
+    private val langCache = ConcurrentHashMap<String, MenuLanguageData>()
 
     /**
-     * Parsea y construye los ítems decorativos del YAML una sola vez.
+     * Clase interna para guardar los datos ya procesados de un idioma.
      */
-    private fun preLoadDecorations() {
-        val decorSection = config.getConfigurationSection("decoraciones") ?: return
+    private data class MenuLanguageData(
+        val titulo: String,
+        val filas: Int,
+        val decorations: List<Pair<List<Int>, GuiItem>>
+    )
 
-        for (key in decorSection.getKeys(false)) {
-            val materialName = decorSection.getString("$key.material", "AIR")!!
-            val display = decorSection.getString("$key.nombre", " ")!!
-            val slots = decorSection.getIntegerList("$key.slots")
+    /**
+     * Obtiene o genera los datos del menú para el idioma del jugador.
+     */
+    private fun getMenuData(player: Player): MenuLanguageData {
+        val lang = player.let { plugin.playerDataManager.getLanguage(it.uniqueId) } ?: "es"
 
-            val material = Material.getMaterial(materialName.uppercase()) ?: run {
-                plugin.logger.warning("¡Aguas! Material inváldo en menú: $materialName")
-                Material.AIR
+        // Si el idioma ya está en caché, lo devolvemos al instante (0% CPU)
+        return langCache.getOrPut(lang) {
+            val config = plugin.messageConfig.getSpecificFile(player, fileName)
+
+            val titulo = config.getString("titulo") ?: "<red>Menú: $fileName"
+            val filas = config.getInt("filas", 3)
+            val decorList = mutableListOf<Pair<List<Int>, GuiItem>>()
+
+            // Procesar decoraciones del YAML
+            val decorSection = config.getConfigurationSection("decoraciones")
+            decorSection?.getKeys(false)?.forEach { key ->
+                val material = Material.matchMaterial(decorSection.getString("$key.material", "AIR")!!) ?: Material.AIR
+                val display = decorSection.getString("$key.nombre", " ")!!
+                val slots = decorSection.getIntegerList("$key.slots")
+
+                if (material != Material.AIR) {
+                    val item = ItemBuilder.from(material).name(mm.deserialize(display)).asGuiItem()
+                    decorList.add(Pair(slots, item))
+                }
             }
 
-            if (material == Material.AIR) continue
-
-            // Construimos el ítem una sola vez y lo guardamos en RAM
-            val decorationItem = ItemBuilder.from(material)
-                .name(mm.deserialize(display))
-                .asGuiItem()
-
-            decorationCache.add(Pair(slots, decorationItem))
+            MenuLanguageData(titulo, filas, decorList)
         }
     }
 
     /**
-     * Crea la instancia del GUI y aplica las decoraciones desde el caché.
+     * Abre el menú al jugador detectando su idioma.
      */
-    protected open fun createGuiInstance() {
-        this.gui = Gui.gui()
-            .title(titulo)
-            .rows(filas)
+    open fun abrir(player: Player) {
+        // 1. Obtenemos los datos (Título, Filas, Decoraciones) del caché de su idioma
+        val data = getMenuData(player)
+
+        // 2. Creamos la instancia del GUI (Las GUIs deben ser nuevas por jugador para evitar bugs)
+        val gui = Gui.gui()
+            .title(mm.deserialize(data.titulo))
+            .rows(data.filas)
             .disableAllInteractions()
             .create()
 
-        // Aplicar decoraciones desde el caché (operación ultra-rápida)
-        decorationCache.forEach { (slots, item) ->
-            gui?.setItem(slots, item)
+        // 3. Aplicamos decoraciones desde el caché (Súper rápido)
+        data.decorations.forEach { (slots, item) ->
+            gui.setItem(slots, item)
         }
+
+        // 4. Lógica de ítems dinámicos del hijo (Tienda, stats, etc.)
+        // Pasamos el archivo config específico para que el hijo también sepa el lang
+        val config = plugin.messageConfig.getSpecificFile(player, fileName)
+        setupItems(player, gui, config)
+
+        gui.open(player)
     }
 
     /**
-     * Abre el menú al jugador procesando los ítems dinámicos.
+     * @param config El archivo YAML del idioma del jugador (ej: lang/en/tienda.yml)
      */
-    open fun abrir(player: Player) {
-        // Si el GUI es nulo (o queremos que sea por jugador), lo instanciamos
-        if (this.gui == null) {
-            createGuiInstance()
-        }
-
-        // Configurar ítems específicos (como cabezas de jugadores o stats)
-        setupItems(player)
-
-        gui?.open(player)
-    }
+    abstract fun setupItems(player: Player, gui: Gui, config: FileConfiguration)
 
     /**
-     * Método abstracto para que los hijos añadan su lógica (items de tienda, etc).
+     * Limpia el caché para que los cambios en el YAML se vean sin reiniciar.
      */
-    abstract fun setupItems(player: Player)
-
-    /**
-     * Permite forzar la reconstrucción del GUI (por ejemplo, en un reload).
-     */
-    fun reloadGui() {
-        this.gui = null
-        decorationCache.clear()
-        preLoadDecorations()
+    fun reload() {
+        langCache.clear()
     }
 }

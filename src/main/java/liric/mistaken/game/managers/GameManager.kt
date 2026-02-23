@@ -553,41 +553,46 @@ class GameManager(private val plugin: Mistaken) {
         val uuid = p.uniqueId
         val stateName = currentState.name.lowercase()
 
-        // 1. Formateo de tiempo ultra-rápido (Interpolación de Kotlin)
+        // 1. Formateo de tiempo ultra-rápido
+        val mins = timer / 60
+        val secs = timer % 60
         val timeStr = if (currentState == GameState.INGAME || currentState == GameState.STARTING) {
-            val mins = timer / 60
-            val secs = timer % 60
             "${if (mins < 10) "0" else ""}$mins:${if (secs < 10) "0" else ""}$secs"
         } else {
             timer.toString()
         }
 
-        // 2. CREAR FIRMA DE ESTADO (Para saber si algo de verdad cambió)
-        // Incluimos online, timer, estado y mapa.
-        val signature = "S:$stateName|T:$timeStr|O:$online|M:$currentMapName|MD:${currentMode.name}"
+        // 2. Determinar el nombre del mapa para el placeholder
+        val mapDisplay = if (currentState == GameState.LOBBY || currentState == GameState.VOTING) {
+            "Lobby"
+        } else {
+            currentMapName ?: "..."
+        }
 
+        // 3. CREAR FIRMA DE ESTADO (Caché de rendimiento)
+        // La firma nos dice si los datos "crudos" cambiaron antes de procesar MiniMessage
+        val signature = "S:$stateName|T:$timeStr|O:$online|M:$mapDisplay|MD:${currentMode.name}"
         if (lastBarSignature[uuid] == signature) return
         lastBarSignature[uuid] = signature
 
-        // --- A PARTIR DE AQUÍ SOLO SE EJECUTA SI HUBO UN CAMBIO REAL ---
+        // --- 🚀 PROCESAMIENTO DINÁMICO CON MOTOR I18N ---
 
-        // 3. Obtener textos (Optimizado)
-        val modeKey = currentMode.name.lowercase()
-        val modeName = plugin.messageConfig.getRawString(p, "modes.$modeKey.name", currentMode.name)
-        val rawText = plugin.messageConfig.getRawString(p, "bossbar.$stateName", "<gray>Mistaken Game")
+        // 4. Creamos los "Tags" específicos para la barra.
+        // OJO: {player} y {online} NO los ponemos aquí porque el MessageConfig los mete solo!
+        val timeTag = net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("time", timeStr)
+        val mapTag = net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("map", mapDisplay)
+        val modeTag = net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("mode", currentMode.name)
 
-        // Reemplazo de placeholders eficiente
-        val processedText = rawText
-            .replace("{online}", online.toString())
-            .replace("{time}", timeStr)
-            .replace("{map}", currentMapName ?: "...")
-            .replace("{mode}", modeName)
+        // 5. Le pedimos al motor el componente ya procesado (Traducido + Variables inyectadas)
+        // Ruta en el YAML: bossbar.lobby, bossbar.ingame, etc.
+        val barComponent = plugin.messageConfig.getMessage(p, "bossbar.$stateName", timeTag, mapTag, modeTag)
 
-        // 4. Gestión de la Barra
+        // 6. GESTIÓN DE LA BARRA (Adventure API)
         val bar = personalBars.getOrPut(uuid) {
-            val color = getBossBarColor(p, stateName)
+            val langCode = plugin.playerDataManager.getLanguage(uuid) ?: "es"
+            val color = getBossBarColor(p, langCode, stateName)
             val newBar = net.kyori.adventure.bossbar.BossBar.bossBar(
-                mm.deserialize(processedText),
+                barComponent,
                 1.0f,
                 color,
                 net.kyori.adventure.bossbar.BossBar.Overlay.PROGRESS
@@ -596,23 +601,26 @@ class GameManager(private val plugin: Mistaken) {
             newBar
         }
 
-        // 5. Actualizar contenido visual
-        bar.name(mm.deserialize(processedText))
+        // 7. Actualizar el nombre visual de la barra
+        bar.name(barComponent)
 
-        // 6. Actualizar color solo si el estado cambió (Ahorra lecturas de config)
+        // 8. Actualizar color solo si el estado cambió (Ahorra lecturas de archivo)
         if (lastStateForColor != currentState) {
-            bar.color(getBossBarColor(p, stateName))
-            if (uuid == Bukkit.getOnlinePlayers().firstOrNull()?.uniqueId) {
-                lastStateForColor = currentState // Solo lo actualizamos una vez por ciclo global
+            val langCode = plugin.playerDataManager.getLanguage(uuid) ?: "es"
+            bar.color(getBossBarColor(p, langCode, stateName))
+
+            if (p.uniqueId == Bukkit.getOnlinePlayers().firstOrNull()?.uniqueId) {
+                lastStateForColor = currentState
             }
         }
     }
 
     /**
-     * Obtiene el color de la BossBar de forma segura y eficiente.
+     * Obtiene el color de la BossBar buscando en el archivo del idioma.
      */
-    private fun getBossBarColor(p: Player, stateName: String): net.kyori.adventure.bossbar.BossBar.Color {
-        val colorStr = plugin.messageConfig.getRawString(p, "bossbar.colors.$stateName", "WHITE")
+    private fun getBossBarColor(p: Player, lang: String, stateName: String): net.kyori.adventure.bossbar.BossBar.Color {
+        // Usamos getRawString para obtener el nombre del color (RED, BLUE, etc)
+        val colorStr = plugin.messageConfig.getRawString(p, lang, "bossbar.colors.$stateName", "WHITE")
         return try {
             net.kyori.adventure.bossbar.BossBar.Color.valueOf(colorStr.uppercase())
         } catch (e: Exception) {

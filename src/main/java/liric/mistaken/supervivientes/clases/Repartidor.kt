@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.listeners.supervivientes.SupervivienteHabilidadListener
 import liric.mistaken.supervivientes.Superviviente
+import liric.mistaken.utils.CraftEngineUtils
 import liric.mistaken.utils.mainThread
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -15,80 +16,121 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Repartidor: Soporte táctico y control de área.
  *
- * OPTIMIZACIÓN:
- * - Uso de PDC para proyectiles (Paper Native).
- * - Uso de HashSet Global para bloques (Adiós Metadata lenta).
- * - Corrutinas sincronizadas con el MainThread de Bukkit.
+ * MEJORAS:
+ * - Sistema Multi-Idioma (Nombres y mensajes por jugador).
+ * - Carga de materiales desde la raíz con Fallback Vanilla.
+ * - HashSet para derrames (0% lag de Metadata).
  */
-class Repartidor : Superviviente("repartidor", "Repartidor") {
+class Repartidor : Superviviente(
+    "repartidor",
+    Mistaken.instance.messageConfig.getSpecificFile(null, "supervivientes").getString("supervivientes.repartidor.nombre", "Repartidor")!!
+) {
 
     private val pathBase = "supervivientes.repartidor.items"
+    private val itemCache = ConcurrentHashMap<String, ItemStack>()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-
-    // Llave para marcar el proyectil de forma eficiente
     private val pedidoKey = NamespacedKey("mistaken", "pedido")
 
-    override fun equipar(player: Player) {
-        player.inventory.clear()
-        val config = plugin.configManager.getSupervivientes()
-        val section = config.getConfigurationSection(pathBase) ?: return
+    init {
+        preLoadKit()
+    }
 
-        for (i in 1..3) {
-            val matName = section.getString("habilidad$i", "BARRIER")
-            val displayName = section.getString("habilidad${i}_nombre", "<red>Habilidad $i")
-            val mat = Material.matchMaterial(matName ?: "BARRIER") ?: Material.BARRIER
+    /**
+     * 🔥 PRE-LOAD LÓGICO:
+     * Carga los materiales base del archivo supervivientes.yml de la RAIZ.
+     */
+    private fun preLoadKit() {
+        val config = plugin.configManager.getSupervivientesConfig(null)
+        val skillKeys = listOf("habilidad1", "habilidad2", "habilidad3")
 
-            player.inventory.setItem(i - 1, createItem(mat, displayName!!))
+        skillKeys.forEach { key ->
+            val id = config.getString("supervivientes.repartidor.items.$key")
+            if (id != null && id != "none" && id.isNotEmpty()) {
+                val customItem = CraftEngineUtils.getCustomItem(id)
+                val item = if (customItem != null) {
+                    customItem
+                } else {
+                    val mat = Material.matchMaterial(id) ?: Material.PAPER
+                    ItemStack(mat)
+                }
+                itemCache[key] = item
+            }
         }
-
-        val prefix = plugin.config.getString("settings.prefix", "<red>Mistaken <dark_gray>» ")
-        player.sendMessage(mm.deserialize("$prefix<gray>¡Tu pedido ha llegado! Clase: <gold>$nombre"))
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        val config = plugin.configManager.getSupervivientes()
-        val section = config.getConfigurationSection(pathBase) ?: return
+        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes")
 
-        val key = "habilidad${slot + 1}"
-        val cooldownSecs = section.getInt("${key}_cooldown", 30)
-
-        if (checkCooldown(player, slot, cooldownSecs)) return
-
-        // --- MENSAJE Y SONIDO ---
-        val mensaje = section.getString("${key}_mensaje")
-        if (!mensaje.isNullOrEmpty()) {
-            val prefix = plugin.config.getString("settings.prefix", "<red>Mistaken <dark_gray>» ")
-            player.sendMessage(mm.deserialize(mensaje.replace("<prefix>", prefix!!)))
-        }
-
-        val soundName = section.getString("${key}_sonido", "ENTITY_GENERIC_EAT")
-        runCatching {
-            player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f)
-        }
-
+        // Mapeo: Tecla 1 (Slot 0) a Tecla 3 (Slot 2)
         when (slot) {
-            0 -> usarBebidaEnergetica(player)
-            1 -> lanzarPedido(player)
-            2 -> usarDerrame(player)
+            0 -> if (!checkCooldown(player, 0, langConfig.getInt("supervivientes.repartidor.items.habilidad1_cooldown", 30))) {
+                usarBebidaEnergetica(player)
+                sendAbilityMessage(player, langConfig, "habilidad1")
+            }
+            1 -> if (!checkCooldown(player, 1, langConfig.getInt("supervivientes.repartidor.items.habilidad2_cooldown", 25))) {
+                lanzarPedido(player)
+                sendAbilityMessage(player, langConfig, "habilidad2")
+            }
+            2 -> if (!checkCooldown(player, 2, langConfig.getInt("supervivientes.repartidor.items.habilidad3_cooldown", 15))) {
+                usarDerrame(player)
+                sendAbilityMessage(player, langConfig, "habilidad3")
+            }
         }
     }
 
+    private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, key: String) {
+        val msg = lang.getString("supervivientes.repartidor.items.${key}_mensaje")
+        if (!msg.isNullOrEmpty()) {
+            player.sendMessage(mm.deserialize(msg))
+        }
+        val soundName = lang.getString("supervivientes.repartidor.items.${key}_sonido", "ENTITY_GENERIC_EAT")
+        runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
+    }
+
+    // --- 🛠️ EQUIPAMIENTO (CON TRADUCCIÓN AL VUELO) ---
+
+    override fun equipar(player: Player) {
+        val inv = player.inventory
+        inv.clear()
+
+        if (itemCache.isEmpty()) preLoadKit()
+
+        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes")
+
+        fun giveLocalizedSkill(slot: Int, key: String) {
+            val item = itemCache[key]?.clone() ?: return
+            val name = langConfig.getString("supervivientes.repartidor.items.${key}_nombre")
+
+            if (name != null) {
+                item.editMeta { it.displayName(mm.deserialize(name)) }
+            }
+            inv.setItem(slot, item)
+        }
+
+        // Entregar habilidades en slots 0, 1, 2
+        giveLocalizedSkill(0, "habilidad1")
+        giveLocalizedSkill(1, "habilidad2")
+        giveLocalizedSkill(2, "habilidad3")
+
+        player.sendMessage(plugin.messageConfig.getMessage(player, "supervivientes.repartidor.equip-msg"))
+        player.updateInventory()
+    }
+
+    // --- ⚡ LÓGICA DE HABILIDADES ---
+
     private fun usarBebidaEnergetica(player: Player) {
-        // Efecto inmediato de adrenalina
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 120, 1))
-
         val job = scope.launch {
-            delay(6000) // 6 segundos de duración del efecto
-
-            // Regresamos al hilo de Bukkit de forma segura
+            delay(6000) // 6 segundos de efecto
             withContext(plugin.mainThread) {
                 if (player.isOnline) {
-                    // "El bajón": Cansancio después de la bebida
                     player.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, 80, 1))
                     player.playSound(player.location, Sound.ENTITY_PLAYER_BURP, 0.8f, 0.8f)
                 }
@@ -98,8 +140,6 @@ class Repartidor : Superviviente("repartidor", "Repartidor") {
     }
 
     private fun lanzarPedido(player: Player) {
-        // Lanzamos Snowball con PDC (Persistent Data Container)
-        // Es infinitamente más rápido que setMetadata()
         player.launchProjectile(Snowball::class.java).apply {
             persistentDataContainer.set(pedidoKey, PersistentDataType.BYTE, 1.toByte())
         }
@@ -109,42 +149,24 @@ class Repartidor : Superviviente("repartidor", "Repartidor") {
     private fun usarDerrame(player: Player) {
         val blockLoc = player.location.block.location
 
-        // 🔥 OPTIMIZACIÓN SÉNIOR: Usamos el HashSet del Listener
-        // Esto evita que Spark detecte bloqueos por Metadata en bloques.
+        // Marcamos el bloque en el HashSet global (SupervivienteHabilidadListener)
         SupervivienteHabilidadListener.marcarBloque(blockLoc)
 
-        // Visuales
         player.world.spawnParticle(Particle.ITEM_SLIME, player.location.add(0.0, 0.1, 0.0), 40, 0.5, 0.0, 0.5, 0.1)
         player.playSound(player.location, Sound.BLOCK_SLIME_BLOCK_PLACE, 1f, 0.5f)
 
-        // Tarea de limpieza asíncrona
         val job = scope.launch {
-            delay(10000) // 10 segundos de duración del charco
-
+            delay(10000) // 10 segundos
             withContext(plugin.mainThread) {
-                // Removemos la localización del HashSet
                 SupervivienteHabilidadListener.desmarcarBloque(blockLoc)
-
-                // Efecto visual de secado
-                blockLoc.world.spawnParticle(
-                    Particle.DRIPPING_WATER,
-                    blockLoc.clone().add(0.5, 0.1, 0.5),
-                    15, 0.2, 0.1, 0.2
-                )
+                blockLoc.world.spawnParticle(Particle.DRIPPING_WATER, blockLoc.clone().add(0.5, 0.1, 0.5), 15, 0.2, 0.1, 0.2)
             }
         }
         trackJob(job)
     }
 
-    private fun createItem(mat: Material, name: String): ItemStack {
-        return ItemStack(mat).apply {
-            editMeta { it.displayName(mm.deserialize(name)) }
-        }
-    }
-
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        // Detenemos todos los timers de bebidas y derrame de este jugador
         scope.coroutineContext.cancelChildren()
     }
 }

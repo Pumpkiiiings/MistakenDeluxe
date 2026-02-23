@@ -2,9 +2,6 @@ package liric.mistaken.commands
 
 import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.command.brigadier.CommandSourceStack
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
@@ -12,7 +9,6 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.Sound
 import org.bukkit.entity.Player
-import java.util.concurrent.ThreadLocalRandom
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -23,7 +19,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
     private val mm = plugin.mm
     // Usamos Set para búsqueda O(1) instantánea
-    private val publicSubs = setOf("shop", "tienda", "lang", "language", "stats", "estadisticas", "afk")
+    private val publicSubs = setOf("shop", "tienda", "langs", "language", "stats", "estadisticas", "afk")
 
     override fun execute(stack: CommandSourceStack, args: Array<String>) {
         val sender = stack.sender
@@ -55,7 +51,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
         }
 
         when (sub) {
-            "lang", "language" -> {
+            "langs", "language" -> {
                 if (player == null) {
                     sender.sendMessage("Comando solo para jugadores.")
                     return
@@ -66,9 +62,9 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 }
                 val targetLang = args[1].lowercase()
                 // Verificamos si el idioma existe en el mapa de configuraciones
-                if (plugin.messageConfig.getLangConfig(targetLang).contains("prefix")) {
+                if (plugin.messageConfig.getLoadedLanguages().contains(targetLang)) {
                     plugin.playerDataManager.setLanguage(player.uniqueId, targetLang)
-                    player.sendMessage(plugin.messageConfig.getMessage(player, "admin.lang-set", Placeholder.parsed("lang", targetLang)))
+                    player.sendMessage(plugin.messageConfig.getMessage(player, "admin.lang-set", Placeholder.parsed("langs", targetLang)))
                     player.playSound(player.location, Sound.ENTITY_VILLAGER_YES, 1f, 1f)
                 } else {
                     player.sendMessage(plugin.messageConfig.getMessage(player, "errors.lang-not-found"))
@@ -259,7 +255,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
         val player = stack.sender as? Player
         stack.sender.sendMessage(plugin.messageConfig.getMessage(player, "help.header"))
 
-        val subs = listOf("shop", "lang", "stats", "afk", "edit", "start", "stop", "reload", "setstamina", "setasesino", "setsuperviviente", "removekiller", "setmode")
+        val subs = listOf("shop", "langs", "stats", "afk", "edit", "start", "stop", "reload", "setstamina", "setasesino", "setsuperviviente", "removekiller", "setmode")
         subs.forEach { sub ->
             if (sub in publicSubs || stack.sender.hasPermission("mistaken.admin")) {
                 stack.sender.sendMessage(plugin.messageConfig.getMessage(player, "help.$sub"))
@@ -277,7 +273,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
         return when (args.size) {
             1 -> {
-                val list = if (isAdmin) listOf("start", "stop", "stats", "setstamina", "setasesino", "setsuperviviente", "reload", "removekiller", "shop", "lang", "setmode", "afk", "edit")
+                val list = if (isAdmin) listOf("start", "stop", "stats", "setstamina", "setasesino", "setsuperviviente", "reload", "removekiller", "shop", "langs", "setmode", "afk", "edit")
                 else publicSubs.toList()
                 list.filter { it.startsWith(args[0], true) }
             }
@@ -287,7 +283,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     "setasesino" -> if (isAdmin) plugin.asesinoManager.getClasesDisponibles().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "setsuperviviente" -> if (isAdmin) plugin.supervivienteManager.getClasesDisponibles().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "stats" -> if (isAdmin) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
-                    "lang", "language" -> plugin.messageConfig.getLoadedLanguages().toList()
+                    "langs", "language" -> plugin.messageConfig.getLoadedLanguages().toList()
                     else -> emptyList()
                 }
             }
