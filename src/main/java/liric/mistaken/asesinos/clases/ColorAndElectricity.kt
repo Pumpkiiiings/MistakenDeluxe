@@ -82,25 +82,42 @@ class ColorAndElectricity : Asesino(
         }
     }
 
+    /**
+     * 🛠️ EQUIPAMIENTO (SISTEMA DE ALTO VOLTAJE):
+     * Jala las mecánicas de asesinos.yml y los nombres de asesinos_info.yml.
+     */
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
+        inv.armorContents = arrayOfNulls(4) // Limpieza total para que no se queden "fantasmas"
 
-        if (itemKitCache.isEmpty()) preLoadKit()
+        val configMecanica = plugin.configManager.getAsesinos() // El global (la raíz)
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info") // Los nombres traducidos
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
+            // 1. Buscamos el ID del ítem en el archivo de mecánicas (global)
+            val id = if (isArmor) configMecanica.getString("asesinos.colorandelectricity.armadura.$key")
+            else configMecanica.getString("asesinos.colorandelectricity.items.$key")
 
-        fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
-            val item = itemKitCache[key]?.clone() ?: return
+            if (id == null || id == "none") return
 
+            // 2. Creamos el ítem (CraftEngine o Vanilla fallback)
+            val item = CraftEngineUtils.getCustomItem(id) ?: run {
+                val matName = id.replace(".*:".toRegex(), "").uppercase()
+                val mat = Material.matchMaterial(matName)
+                if (mat != null) ItemStack(mat) else null
+            } ?: return
+
+            // 3. Le ponemos el nombre según el idioma del jugador (asesinos_info.yml)
+            // Nota: En tu YAML de info, la sección se llama 'habilidades_nombres'
             val namePath = if (key == "arma") "asesinos.colorandelectricity.habilidades_nombres.arma"
             else "asesinos.colorandelectricity.habilidades_nombres.$key"
 
-            val localizedName = langInfo.getString(namePath)
-            if (localizedName != null) {
-                item.editMeta { it.displayName(mm.deserialize(localizedName)) }
+            langInfo.getString(namePath)?.let {
+                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
+            // 4. Lo mandamos a su lugar correspondiente
             if (isArmor) {
                 when(key) {
                     "casco" -> inv.helmet = item
@@ -113,16 +130,17 @@ class ColorAndElectricity : Asesino(
             }
         }
 
-        setLocalizedItem(0, "casco", true)
-        setLocalizedItem(0, "pechera", true)
-        setLocalizedItem(0, "pantalones", true)
-        setLocalizedItem(0, "botas", true)
+        // --- SOLTAR EL KIT DE ELECTRICIDAD ---
+        deliver("casco", 0, true)
+        deliver("pechera", 0, true)
+        deliver("pantalones", 0, true)
+        deliver("botas", 0, true)
 
-        setLocalizedItem(1, "habilidad1")
-        setLocalizedItem(2, "habilidad2")
-        setLocalizedItem(3, "habilidad3")
-        setLocalizedItem(4, "habilidad4")
-        setLocalizedItem(8, "arma")
+        deliver("habilidad1", 1)
+        deliver("habilidad2", 2)
+        deliver("habilidad3", 3)
+        deliver("habilidad4", 4)
+        deliver("arma", 8)
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()

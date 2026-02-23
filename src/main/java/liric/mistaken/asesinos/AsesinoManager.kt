@@ -61,9 +61,9 @@ class AsesinoManager(private val plugin: Mistaken) {
     fun registrarAsesino(player: Player, asesino: Asesino) {
         val uuid = player.uniqueId
 
-        // 1. Limpieza total inmediata
+        // 1. Limpieza total inmediata (Hilo Principal)
         player.inventory.clear()
-        player.inventory.armorContents = arrayOfNulls(4)
+        player.inventory.armorContents = arrayOfNulls(4) // Dejarlo en ceros
         asesinosActivos[uuid] = asesino
 
         // Feedback
@@ -71,22 +71,19 @@ class AsesinoManager(private val plugin: Mistaken) {
             Placeholder.component("name", mm.deserialize(asesino.nombre))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
-        // 2. Equipamiento con delay de seguridad
+        // 2. Equipamiento con un solo delay
+        // Le damos 15 ticks para que el server se relaje después del teleport
         Bukkit.getScheduler().runTaskLater(plugin, Runnable {
             if (!player.isOnline || !asesinosActivos.containsKey(uuid)) return@Runnable
 
-            // Aquí la clase pone su armadura y sus habilidades
+            // 🔥 LA CLAVE: La clase se encarga de TODO su equipo
             asesino.equipar(player)
             asesino.mostrarTrail(player)
 
-            // 3. Ajuste final (Mantenemos el slot 8 para el arma)
+            // Ajustes finales de inventario
             player.inventory.heldItemSlot = 8
             player.updateInventory()
-
-            // Fallback: Por si la clase dejó algún ítem de armadura fuera (ItemsAdder/Oraxen a veces fallan)
-            autoEquiparArmadura(player)
-
-        }, 10L)
+        }, 15L)
     }
 
     fun equiparAsesino(player: Player, claseId: String) {

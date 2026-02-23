@@ -84,21 +84,34 @@ class CharlieInferno : Asesino(
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
+        inv.armorContents = arrayOfNulls(4) // Limpieza total de armadura para Kotlin
 
-        if (itemKitCache.isEmpty()) preLoadKit()
+        val configMecanica = plugin.configManager.getAsesinos() // El global (la raíz)
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info") // Los nombres traducidos
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
+            // 1. Buscamos el ID del ítem en el archivo de mecánicas (global)
+            val id = if (isArmor) configMecanica.getString("asesinos.charlie.armadura.$key")
+            else configMecanica.getString("asesinos.charlie.items.$key")
 
-        fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
-            val item = itemKitCache[key]?.clone() ?: return
+            if (id == null || id == "none") return
+
+            // 2. Creamos el ítem (CraftEngine o Vanilla fallback)
+            val item = CraftEngineUtils.getCustomItem(id) ?: run {
+                val matName = id.replace(".*:".toRegex(), "").uppercase()
+                val mat = Material.matchMaterial(matName)
+                if (mat != null) ItemStack(mat) else null
+            } ?: return
+
+            // 3. Le pegamos el nombre según el idioma del jugador (asesinos_info.yml)
             val namePath = if (key == "arma") "asesinos.charlie.habilidades_nombres.arma"
             else "asesinos.charlie.habilidades_nombres.$key"
 
-            val localizedName = langInfo.getString(namePath)
-            if (localizedName != null) {
-                item.editMeta { it.displayName(mm.deserialize(localizedName)) }
+            langInfo.getString(namePath)?.let {
+                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
+            // 4. Lo mandamos a su lugar
             if (isArmor) {
                 when(key) {
                     "casco" -> inv.helmet = item
@@ -111,19 +124,22 @@ class CharlieInferno : Asesino(
             }
         }
 
-        setLocalizedItem(0, "casco", true)
-        setLocalizedItem(0, "pechera", true)
-        setLocalizedItem(0, "pantalones", true)
-        setLocalizedItem(0, "botas", true)
+        // --- SOLTAR EL KIT COMPLETO ---
+        deliver("casco", 0, true)
+        deliver("pechera", 0, true)
+        deliver("pantalones", 0, true)
+        deliver("botas", 0, true)
 
-        setLocalizedItem(1, "habilidad1")
-        setLocalizedItem(2, "habilidad2")
-        setLocalizedItem(3, "habilidad3")
-        setLocalizedItem(4, "habilidad4")
-        setLocalizedItem(8, "arma")
+        deliver("habilidad1", 1)
+        deliver("habilidad2", 2)
+        deliver("habilidad3", 3)
+        deliver("habilidad4", 4)
+        deliver("arma", 8)
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()
+
+        // ¡Que empiece el corrido!
         iniciarMusicaCharlie(player)
     }
 

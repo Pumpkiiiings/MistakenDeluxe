@@ -73,25 +73,41 @@ class Devesto : Asesino(
         }
     }
 
+    /**
+     * 🛠️ EQUIPAMIENTO (SISTEMA DE ARQUITECTO F3X):
+     * Jala las mecánicas de asesinos.yml y los nombres de asesinos_info.yml.
+     */
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
+        inv.armorContents = arrayOfNulls(4) // Limpieza total para que no se queden "fantasmas"
 
-        if (itemKitCache.isEmpty()) preLoadKit()
+        val configMecanica = plugin.configManager.getAsesinos() // El global (la raíz)
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info") // Los nombres traducidos
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
+            // 1. Buscamos el ID del ítem en el archivo de mecánicas (global)
+            val id = if (isArmor) configMecanica.getString("asesinos.devesto.armadura.$key")
+            else configMecanica.getString("asesinos.devesto.items.$key")
 
-        fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
-            val item = itemKitCache[key]?.clone() ?: return
+            if (id == null || id == "none") return
 
+            // 2. Creamos el ítem (CraftEngine o Vanilla fallback)
+            val item = CraftEngineUtils.getCustomItem(id) ?: run {
+                val matName = id.replace(".*:".toRegex(), "").uppercase()
+                val mat = Material.matchMaterial(matName)
+                if (mat != null) ItemStack(mat) else null
+            } ?: return
+
+            // 3. Le ponemos el nombre según el idioma del jugador (asesinos_info.yml)
             val namePath = if (key == "arma") "asesinos.devesto.habilidades_nombres.arma"
             else "asesinos.devesto.habilidades_nombres.$key"
 
-            val localizedName = langInfo.getString(namePath)
-            if (localizedName != null) {
-                item.editMeta { it.displayName(mm.deserialize(localizedName)) }
+            langInfo.getString(namePath)?.let {
+                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
+            // 4. Lo mandamos a su lugar correspondiente
             if (isArmor) {
                 when(key) {
                     "casco" -> inv.helmet = item
@@ -104,16 +120,17 @@ class Devesto : Asesino(
             }
         }
 
-        setLocalizedItem(0, "casco", true)
-        setLocalizedItem(0, "pechera", true)
-        setLocalizedItem(0, "pantalones", true)
-        setLocalizedItem(0, "botas", true)
+        // --- SOLTAR EL KIT DE CONSTRUCCIÓN ---
+        deliver("casco", 0, true)
+        deliver("pechera", 0, true)
+        deliver("pantalones", 0, true)
+        deliver("botas", 0, true)
 
-        setLocalizedItem(1, "habilidad1")
-        setLocalizedItem(2, "habilidad2")
-        setLocalizedItem(3, "habilidad3")
-        setLocalizedItem(4, "habilidad4")
-        setLocalizedItem(8, "arma")
+        deliver("habilidad1", 1)
+        deliver("habilidad2", 2)
+        deliver("habilidad3", 3)
+        deliver("habilidad4", 4)
+        deliver("arma", 8)
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()
@@ -151,23 +168,28 @@ class Devesto : Asesino(
     private fun habilidadDeleteTool(player: Player) {
         val targetBlock = player.getTargetBlockExact(5)
         if (targetBlock != null && !targetBlock.type.isAir) {
-            for (x in -1..1) {
-                for (y in -1..1) {
-                    for (z in -1..1) {
-                        val b = targetBlock.getRelative(x, y, z)
-                        if (b.type.isAir || b.type == Material.BEDROCK || b.type == Material.BARRIER) continue
-                        backupMapa.putIfAbsent(b.location, b.type)
-                        b.type = Material.AIR
-                        b.world.spawnParticle(org.bukkit.Particle.BLOCK_CRUMBLE, b.location.add(0.5, 0.5, 0.5), 3, b.blockData)
+            // Como vamos a tocar bloques, esto TIENE que ser en el Main Thread
+            plugin.pluginScope.launch(plugin.bukkitDispatcher) {
+                for (x in -1..1) {
+                    for (y in -1..1) {
+                        for (z in -1..1) {
+                            val b = targetBlock.getRelative(x, y, z)
+                            if (b.type.isAir || b.type == Material.BEDROCK || b.type == Material.BARRIER) continue
+                            backupMapa.putIfAbsent(b.location, b.type)
+                            b.type = Material.AIR
+                            b.world.spawnParticle(org.bukkit.Particle.BLOCK_CRUMBLE, b.location.add(0.5, 0.5, 0.5), 3, b.blockData)
+                        }
                     }
                 }
             }
         }
-        player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { target ->
-            if (!plugin.asesinoManager.esElAsesino(target)) {
-                plugin.gameManager.combatManager.takeDamage(target)
-                val kb = target.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.5)
-                target.velocity = kb
+
+        // Daño a jugadores cercanos
+        player.world.getNearbyPlayers(player.location, 6.0).forEach { victim ->
+            if (!plugin.asesinoManager.esElAsesino(victim)) {
+                plugin.gameManager.combatManager.takeDamage(victim)
+                val kb = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.5)
+                victim.velocity = kb
             }
         }
     }

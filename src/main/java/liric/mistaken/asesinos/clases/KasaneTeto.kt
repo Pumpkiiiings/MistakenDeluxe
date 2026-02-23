@@ -27,15 +27,14 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0]
  * KasaneTeto: La Quimera de las Baguettes.
- * Optimización: Soporte Multi-Idioma, Fallback Vanilla y Coroutines para timers.
+ * FIX: Sistema de equipamiento híbrido y optimización de habilidades con Coroutines.
  */
 class KasaneTeto : Asesino(
     "teto",
-    // Nombre dinámico para la carga inicial (Se actualizará al idioma del jugador en el scoreboard)
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.teto.nombre", "<gradient:#ff66cc:#ff0000><b>KASANE TETO</b></gradient>", "asesinos_info")
 ) {
 
-    private val path = "asesinos.teto"
+    private val pathBase = "asesinos.teto"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
@@ -46,8 +45,8 @@ class KasaneTeto : Asesino(
     }
 
     /**
-     * 🔥 PRE-LOAD LÓGICO:
-     * Carga materiales y IDs del archivo asesinos.yml central (Raíz).
+     * 🔥 PRE-LOAD (Mecánicas):
+     * Carga materiales desde el asesinos.yml global (la raíz).
      */
     private fun preLoadKit() {
         val config = plugin.configManager.getAsesinos()
@@ -55,20 +54,17 @@ class KasaneTeto : Asesino(
         val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
         armor.forEach { k ->
-            config.getString("$path.armadura.$k")?.let { id ->
+            config.getString("$pathBase.armadura.$k")?.let { id ->
                 if (id != "none") {
-                    // Si no es de CraftEngine, intentamos cargarlo como material de Minecraft
-                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.LEATHER_HELMET)
-                    itemKitCache[k] = item
+                    itemKitCache[k] = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.NETHERITE_HELMET)
                 }
             }
         }
 
         items.forEach { k ->
-            config.getString("$path.items.$k")?.let { id ->
+            config.getString("$pathBase.items.$k")?.let { id ->
                 if (id != "none") {
-                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
-                    itemKitCache[k] = item
+                    itemKitCache[k] = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.PAPER)
                 }
             }
         }
@@ -84,26 +80,29 @@ class KasaneTeto : Asesino(
         }
     }
 
-    // --- 🛠️ EQUIPAMIENTO (SISTEMA MULTI-IDIOMA) ---
-
+    /**
+     * 🛠️ EQUIPAMIENTO (Visuales):
+     * Pone los trapos y las baguettes con nombres traducidos según el jugador.
+     */
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
+        inv.armorContents = arrayOfNulls(4) // Fix de armadura para Kotlin
 
-        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
+        if (itemKitCache.isEmpty()) preLoadKit()
 
-        val langAsesinos = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        // Jalamos el archivo de traducción (asesinos_info.yml)
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
-        fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
+        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val item = itemKitCache[key]?.clone() ?: return
 
-            // Buscamos el nombre traducido en lang/{idioma}/asesinos_info.yml
+            // Ruta de nombres en el nuevo YAML de información
             val namePath = if (key == "arma") "asesinos.teto.habilidades_nombres.arma"
             else "asesinos.teto.habilidades_nombres.$key"
 
-            val localizedName = langAsesinos.getString(namePath)
-            if (localizedName != null) {
-                item.editMeta { it.displayName(mm.deserialize(localizedName)) }
+            langInfo.getString(namePath)?.let {
+                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
             if (isArmor) {
@@ -118,18 +117,17 @@ class KasaneTeto : Asesino(
             }
         }
 
-        // 1. Armadura
-        setLocalizedItem(0, "casco", true)
-        setLocalizedItem(0, "pechera", true)
-        setLocalizedItem(0, "pantalones", true)
-        setLocalizedItem(0, "botas", true)
+        // Entregar el kit completo
+        deliver("casco", 0, true)
+        deliver("pechera", 0, true)
+        deliver("pantalones", 0, true)
+        deliver("botas", 0, true)
 
-        // 2. Hotbar (Slots 1, 2, 3, 4 y Arma en 8)
-        setLocalizedItem(1, "habilidad1")
-        setLocalizedItem(2, "habilidad2")
-        setLocalizedItem(3, "habilidad3")
-        setLocalizedItem(4, "habilidad4")
-        setLocalizedItem(8, "arma")
+        deliver("habilidad1", 1)
+        deliver("habilidad2", 2)
+        deliver("habilidad3", 3)
+        deliver("habilidad4", 4)
+        deliver("arma", 8)
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()
@@ -138,7 +136,8 @@ class KasaneTeto : Asesino(
     // --- 🥖 HABILIDADES ---
 
     private fun habilidadTaladro(player: Player) {
-        player.getNearbyEntities(3.5, 3.5, 3.5).filterIsInstance<Player>().forEach { victim ->
+        // Usamos getNearbyPlayers para no laguear buscando vacas o ítems
+        player.world.getNearbyPlayers(player.location, 3.5).forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
                 plugin.gameManager.combatManager.takeDamage(victim)
                 victim.addPotionEffect(PotionEffect(PotionEffectType.MINING_FATIGUE, 40, 1))
@@ -150,7 +149,7 @@ class KasaneTeto : Asesino(
 
     private fun habilidadBaguette(player: Player) {
         player.velocity = player.location.direction.multiply(1.1).setY(0.2)
-        player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
+        player.world.getNearbyPlayers(player.location, 2.5).forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
                 victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.2).setY(0.3)
             }
@@ -159,9 +158,10 @@ class KasaneTeto : Asesino(
 
     private fun habilidadBroma(player: Player) {
         player.world.spawnParticle(org.bukkit.Particle.EXPLOSION, player.location, 1)
-        player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { victim ->
+        player.world.getNearbyPlayers(player.location, 6.0).forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
+                // Mensaje de broma (Podrías moverlo al messages.yml si quieres, carnal)
                 victim.sendMessage(mm.deserialize("<gradient:#ff66cc:#ff0000><b>¡BAKA!</b> ¿Te la creíste?</gradient>"))
             }
         }
@@ -172,9 +172,8 @@ class KasaneTeto : Asesino(
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 240, 1))
         player.isGlowing = true
 
-        // Coroutine en vez de BukkitRunnable para ahorrar recursos
         val job = scope.launch {
-            delay(12000) // 240 ticks = 12 segundos
+            delay(12000) // 12 segundos
             withContext(plugin.bukkitDispatcher) {
                 if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
                     player.isGlowing = false
@@ -182,15 +181,15 @@ class KasaneTeto : Asesino(
                 }
             }
         }
-        trackJob(job) // Se añade al rastreador automático de limpieza
+        trackJob(job)
     }
 
-    // --- 🚀 VISUALES ---
+    // --- 🚀 VISUALES (Baguettes Orbitantes) ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { limpiarBaguettes(uuid); return }
-        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarBaguettes(uuid)
+        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
             mutableListOf<ItemDisplay>().apply {
@@ -204,32 +203,31 @@ class KasaneTeto : Asesino(
             }
         }
 
-        val anguloBase = angulos.getOrDefault(uuid, 0.0)
+        val anguloActual = (angulos.getOrDefault(uuid, 0.0) + 0.12) % (Math.PI * 2)
         for (i in entidades.indices) {
             val display = entidades[i]
             if (display.isValid) {
                 val offset = (2 * Math.PI / entidades.size) * i
-                val x = 1.2 * cos(anguloBase + offset)
-                val z = 1.2 * sin(anguloBase + offset)
-                val y = 1.1 + (0.1 * sin((anguloBase + offset) * 2))
+                val x = 1.2 * cos(anguloActual + offset)
+                val z = 1.2 * sin(anguloActual + offset)
+                val y = 1.1 + (0.1 * sin((anguloActual + offset) * 2))
 
                 val loc = player.location.clone().add(x, y, z)
-                loc.yaw = ((anguloBase + offset) * 180 / Math.PI).toFloat() + 90f
+                loc.yaw = ((anguloActual + offset) * 180 / Math.PI).toFloat() + 90f
                 display.teleport(loc)
             }
         }
-        angulos[uuid] = (anguloBase + 0.12) % (Math.PI * 2)
+        angulos[uuid] = anguloActual
     }
 
     override fun mostrarTrail(player: Player) {
         if (player.velocity.lengthSquared() < 0.001) return
         val pos = Vector3d(player.location.x, player.location.y + 0.2, player.location.z)
-        // Partículas Spore Blossom (Estilo Sakura)
         val packet = WrapperPlayServerParticle(Particle(ParticleTypes.SPORE_BLOSSOM_AIR), false, pos, Vector3f(0.3f, 0.1f, 0.3f), 0.01f, 1)
 
-        player.world.players.forEach {
-            if (it.location.distanceSquared(player.location) < 625.0) {
-                PacketEvents.getAPI().playerManager.sendPacket(it, packet)
+        player.world.players.forEach { viewer ->
+            if (viewer != player && viewer.location.distanceSquared(player.location) < 625.0) {
+                PacketEvents.getAPI().playerManager.sendPacket(viewer, packet)
             }
         }
     }
@@ -237,6 +235,10 @@ class KasaneTeto : Asesino(
     private fun limpiarBaguettes(uuid: UUID) {
         orbitadores.remove(uuid)?.forEach { it.remove() }
         angulos.remove(uuid)
+    }
+
+    private fun limpiarVisuales(uuid: UUID) {
+        limpiarBaguettes(uuid)
     }
 
     override fun cleanup(player: Player?) {

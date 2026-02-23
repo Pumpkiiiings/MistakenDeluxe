@@ -87,24 +87,37 @@ class Slasher : Asesino(
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
+        inv.armorContents = arrayOfNulls(4)
 
-        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
+        // 🔥 FIX: Si el caché está vacío o quieres asegurar que lea el YAML de nuevo:
+        // preLoadKit() // Descomenta esta línea si cambias mucho el YAML y quieres que se note sin reiniciar
 
-        // Obtenemos el archivo de lenguaje específico del jugador (lang/{idioma}/asesinos_info.yml)
-        val langAsesinos = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        val configMecanica = plugin.configManager.getAsesinos() // El global asesinos.yml
 
-        fun setLocalizedItem(slot: Int, key: String, isArmor: Boolean = false) {
-            val item = itemKitCache[key]?.clone() ?: return
+        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
+            // Buscamos el ID en el YAML de la raíz
+            val id = configMecanica.getString("$pathBase.armadura.$key") ?:
+            configMecanica.getString("$pathBase.items.$key")
 
-            // 🔥 Buscamos el nombre traducido en la sección de habilidades
-            val namePath = if (key == "arma") "asesinos.slasher.habilidades_nombres.arma"
-            else "asesinos.slasher.habilidades_nombres.$key"
+            if (id == null || id == "none") return
 
-            val localizedName = langAsesinos.getString(namePath)
-            if (localizedName != null) {
-                item.editMeta { it.displayName(mm.deserialize(localizedName)) }
+            // Intentamos sacar el ítem real
+            val item = CraftEngineUtils.getCustomItem(id) ?: run {
+                // Si no es de CraftEngine, buscamos material vanilla
+                val mat = Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase())
+                if (mat != null) ItemStack(mat) else null
+            } ?: return
+
+            // Le ponemos el nombre del idioma del jugador
+            val namePath = if (key == "arma") "asesinos.${this.id}.habilidades_nombres.arma"
+            else "asesinos.${this.id}.habilidades_nombres.$key"
+
+            langInfo.getString(namePath)?.let {
+                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
+            // Lo ponemos donde va
             if (isArmor) {
                 when(key) {
                     "casco" -> inv.helmet = item
@@ -112,18 +125,22 @@ class Slasher : Asesino(
                     "pantalones" -> inv.leggings = item
                     "botas" -> inv.boots = item
                 }
-            } else inv.setItem(slot, item)
+            } else {
+                inv.setItem(slot, item)
+            }
         }
 
-        listOf("casco", "pechera", "pantalones", "botas").forEach { setLocalizedItem(0, it, true) }
-        setLocalizedItem(1, "habilidad1")
-        setLocalizedItem(2, "habilidad2")
-        setLocalizedItem(3, "habilidad3")
-        setLocalizedItem(4, "habilidad4")
-        setLocalizedItem(8, "arma")
+        // Entregamos todo el mugrero
+        deliver("casco", 0, true)
+        deliver("pechera", 0, true)
+        deliver("pantalones", 0, true)
+        deliver("botas", 0, true)
 
-        player.inventory.heldItemSlot = 8
-        player.updateInventory()
+        deliver("habilidad1", 1)
+        deliver("habilidad2", 2)
+        deliver("habilidad3", 3)
+        deliver("habilidad4", 4)
+        deliver("arma", 8)
     }
 
     // --- 🩸 H1: SED DE SANGRE ---

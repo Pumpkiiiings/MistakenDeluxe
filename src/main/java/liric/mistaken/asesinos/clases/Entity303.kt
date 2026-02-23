@@ -89,8 +89,8 @@ class Entity303 : Asesino(
             val hitted = mutableSetOf<UUID>()
             while (isActive && count < 10 && player.isOnline) {
                 withContext(plugin.bukkitDispatcher) {
-                    player.getNearbyEntities(2.0, 2.0, 2.0).filterIsInstance<Player>().forEach { victim ->
-                        if (!plugin.asesinoManager.esElAsesino(victim) && !hitted.contains(victim.uniqueId)) {
+                    player.world.getNearbyPlayers(player.location, 2.0).forEach { victim ->
+                        if (!plugin.asesinoManager.esElAsesino(victim) && victim.uniqueId !in hitted) {
                             hitted.add(victim.uniqueId)
                             plugin.gameManager.combatManager.takeDamage(victim)
                             victim.velocity = player.location.direction.normalize().multiply(1.5).setY(0.4)
@@ -177,18 +177,46 @@ class Entity303 : Asesino(
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
-        if (itemKitCache.isEmpty() || !itemKitCache.containsKey("casco")) preLoadKit()
+        inv.armorContents = arrayOfNulls(4) // Limpieza total para que entre el traje nuevo
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        val configMecanica = plugin.configManager.getAsesinos() // El global (la raíz)
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info") // Los nombres pro
 
-        fun giveItem(slot: Int, key: String, isArmor: Boolean = false) {
-            val item = itemKitCache[key]?.clone() ?: return
+        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
+            // 1. Buscamos el ID del ítem en el archivo de mecánicas (global)
+            val id = if (isArmor) configMecanica.getString("$path.armadura.$key")
+            else configMecanica.getString("$path.items.$key")
 
+            if (id == null || id == "none") return
+
+            // 2. Creamos el ítem (CraftEngine o Vanilla fallback)
+            val item = CraftEngineUtils.getCustomItem(id) ?: run {
+                // Si no es de CraftEngine, limpiamos el ID y buscamos material de Minecraft
+                val matName = id.replace(".*:".toRegex(), "").uppercase()
+                val mat = Material.matchMaterial(matName)
+
+                // Fallback de emergencia por si el admin escribió una burrada
+                if (mat != null) ItemStack(mat)
+                else if (isArmor) {
+                    val fallback = when(key) {
+                        "casco" -> Material.NETHERITE_HELMET
+                        "pechera" -> Material.NETHERITE_CHESTPLATE
+                        "pantalones" -> Material.NETHERITE_LEGGINGS
+                        else -> Material.NETHERITE_BOOTS
+                    }
+                    ItemStack(fallback)
+                } else null
+            } ?: return
+
+            // 3. Le ponemos el nombre según el idioma del jugador (asesinos_info.yml)
             val namePath = if (key == "arma") "asesinos.entity303.habilidades_nombres.arma"
             else "asesinos.entity303.habilidades_nombres.$key"
 
-            langInfo.getString(namePath)?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
+            langInfo.getString(namePath)?.let {
+                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+            }
 
+            // 4. Lo mandamos a su slot correspondiente
             if (isArmor) {
                 when(key) {
                     "casco" -> inv.helmet = item
@@ -196,15 +224,22 @@ class Entity303 : Asesino(
                     "pantalones" -> inv.leggings = item
                     "botas" -> inv.boots = item
                 }
-            } else inv.setItem(slot, item)
+            } else {
+                inv.setItem(slot, item)
+            }
         }
 
-        listOf("casco", "pechera", "pantalones", "botas").forEach { giveItem(0, it, true) }
-        giveItem(1, "habilidad1")
-        giveItem(2, "habilidad2")
-        giveItem(3, "habilidad3")
-        giveItem(4, "habilidad4")
-        giveItem(8, "arma")
+        // --- SOLTAR EL KIT CORRUPTO ---
+        deliver("casco", 0, true)
+        deliver("pechera", 0, true)
+        deliver("pantalones", 0, true)
+        deliver("botas", 0, true)
+
+        deliver("habilidad1", 1)
+        deliver("habilidad2", 2)
+        deliver("habilidad3", 3)
+        deliver("habilidad4", 4)
+        deliver("arma", 8)
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()

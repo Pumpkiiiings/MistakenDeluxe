@@ -27,7 +27,7 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0]
  * NullAsesino: El Ente del Glitch.
- * FIX: Fallback de armadura por slot y forEach Null-Safe corregido.
+ * FIX: Cargador de armadura blindado por slot y NearbyPlayers Null-Safe.
  */
 class NullAsesino : Asesino(
     "null",
@@ -39,7 +39,7 @@ class NullAsesino : Asesino(
     private val activeTraps = ConcurrentHashMap.newKeySet<Entity>()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    // Órbita
+    // Órbita visual
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val orbitMaterials = listOf(Material.BEACON, Material.ENDER_EYE, Material.NETHER_STAR)
@@ -49,13 +49,13 @@ class NullAsesino : Asesino(
     }
 
     /**
-     * 🔥 CARGADOR BLINDADO:
-     * Asigna un material de respaldo específico por cada slot de armadura.
+     * 🔥 CARGADOR BLINDADO (Mecánicas):
+     * Carga materiales desde el asesinos.yml global (la raíz).
      */
     private fun preLoadKit() {
         val config = plugin.configManager.getAsesinos()
 
-        // Mapa de respaldos: Si falla CraftEngine, le damos la pieza correcta de Netherite
+        // Mapa de respaldos correctos por slot
         val armorMap = mapOf(
             "casco" to Material.NETHERITE_HELMET,
             "pechera" to Material.NETHERITE_CHESTPLATE,
@@ -64,18 +64,18 @@ class NullAsesino : Asesino(
         )
 
         armorMap.forEach { (key, fallbackMat) ->
-            val id = config.getString("$pathBase.armadura.$key") ?: "none"
-            if (id != "none" && id.isNotBlank()) {
+            val id = config.getString("$pathBase.armadura.$key")
+            if (id != null && id != "none") {
+                // Buscamos: CraftEngine -> Material por Nombre -> Fallback de su tipo
                 val item = CraftEngineUtils.getCustomItem(id)
-                // Si falla CraftEngine, intentamos material por nombre, si no, el fallback forzoso
                 itemKitCache[key] = item ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: fallbackMat)
             }
         }
 
         // Cargar ítems de habilidad
         listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4").forEach { key ->
-            val id = config.getString("$pathBase.items.$key") ?: "none"
-            if (id != "none" && id.isNotBlank()) {
+            val id = config.getString("$pathBase.items.$key")
+            if (id != null && id != "none") {
                 val item = CraftEngineUtils.getCustomItem(id)
                 itemKitCache[key] = item ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.PAPER)
             }
@@ -91,24 +91,44 @@ class NullAsesino : Asesino(
         }
     }
 
+    /**
+     * 🛠️ EQUIPAR:
+     * Entrega armadura y habilidades con los nombres del idioma del jugador.
+     */
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        if (itemKitCache.isEmpty()) preLoadKit()
+        // 🔥 FIX: Si el caché está vacío o quieres asegurar que lea el YAML de nuevo:
+        // preLoadKit() // Descomenta esta línea si cambias mucho el YAML y quieres que se note sin reiniciar
 
         val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        val configMecanica = plugin.configManager.getAsesinos() // El global asesinos.yml
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val item = itemKitCache[key]?.clone() ?: return
-            val namePath = if (key == "arma") "asesinos.null.habilidades_nombres.arma"
-            else "asesinos.null.habilidades_nombres.$key"
+            // Buscamos el ID en el YAML de la raíz
+            val id = configMecanica.getString("$pathBase.armadura.$key") ?:
+            configMecanica.getString("$pathBase.items.$key")
+
+            if (id == null || id == "none") return
+
+            // Intentamos sacar el ítem real
+            val item = CraftEngineUtils.getCustomItem(id) ?: run {
+                // Si no es de CraftEngine, buscamos material vanilla
+                val mat = Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase())
+                if (mat != null) ItemStack(mat) else null
+            } ?: return
+
+            // Le ponemos el nombre del idioma del jugador
+            val namePath = if (key == "arma") "asesinos.${this.id}.habilidades_nombres.arma"
+            else "asesinos.${this.id}.habilidades_nombres.$key"
 
             langInfo.getString(namePath)?.let {
                 item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
+            // Lo ponemos donde va
             if (isArmor) {
                 when(key) {
                     "casco" -> inv.helmet = item
@@ -121,28 +141,31 @@ class NullAsesino : Asesino(
             }
         }
 
-        // Entregar todo el kit traducido
+        // Entregamos todo el mugrero
         deliver("casco", 0, true)
         deliver("pechera", 0, true)
         deliver("pantalones", 0, true)
         deliver("botas", 0, true)
+
         deliver("habilidad1", 1)
         deliver("habilidad2", 2)
         deliver("habilidad3", 3)
         deliver("habilidad4", 4)
         deliver("arma", 8)
-
-        player.inventory.heldItemSlot = 8
-        player.updateInventory()
     }
 
     private fun habilidadErrorRender(player: Player) {
+        player.world.playSound(player.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
         player.world.spawnParticle(org.bukkit.Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 3, 0.5, 0.5, 0.5, 0.0)
+
+        // Búsqueda rápida de jugadores cercanos (Paper API)
         player.world.getNearbyPlayers(player.location, 12.0).forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
-                victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 200, 0))
-                victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 200, 0))
-                victim.sendMessage(mm.deserialize("<dark_gray><obfuscated>ERR</obfuscated> <white><b>SISTEMA CORRUPTO</b> <dark_gray><obfuscated>ERR</obfuscated>"))
+                victim.apply {
+                    addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 200, 0))
+                    addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 200, 0))
+                    sendMessage(mm.deserialize("<dark_gray><obfuscated>ERR</obfuscated> <white><b>SISTEMA CORRUPTO</b> <dark_gray><obfuscated>ERR</obfuscated>"))
+                }
             }
         }
     }
@@ -151,7 +174,7 @@ class NullAsesino : Asesino(
         val loc = player.location.block.location.add(0.5, 0.1, 0.5)
         val bait = loc.world?.spawn(loc, ArmorStand::class.java) { asEntity ->
             asEntity.isVisible = false
-            asEntity.setGravity(false)
+            asEntity.setGravity(false) // Fix directo
             asEntity.isMarker = true
             asEntity.equipment.helmet = ItemStack(Material.BEACON)
         } ?: return
@@ -166,20 +189,14 @@ class NullAsesino : Asesino(
                     val z = sin(angle) * 0.7
                     loc.world?.spawnParticle(org.bukkit.Particle.END_ROD, loc.clone().add(x, 1.0, z), 1, 0.0, 0.0, 0.0, 0.0)
 
-                    // 🔥 FIX: Check de jugadores cercanos corregido
-                    val victim = loc.world?.getNearbyPlayers(loc, 3.5)?.firstOrNull {
-                        !plugin.asesinoManager.esElAsesino(it)
-                    }
-
+                    val victim = loc.world?.getNearbyPlayers(loc, 3.5)?.firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
                     victim?.let { v ->
                         plugin.gameManager.combatManager.takeDamage(v)
                         v.playSound(v.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.1f)
-                        cleanupTrap(bait)
-                        cancel()
+                        cleanupTrap(bait); cancel()
                     }
                 }
-                delay(100)
-                timer++
+                delay(100); timer++
             }
             if (isActive) withContext(plugin.bukkitDispatcher) { cleanupTrap(bait) }
         }
@@ -206,8 +223,7 @@ class NullAsesino : Asesino(
                     currentLoc.add(direction)
                     if (!currentLoc.block.type.isSolid) {
                         currentLoc.world?.spawn(currentLoc, EvokerFangs::class.java)
-
-                        // 🔥 EL FIX QUE BUSCABAS: Agregamos el ?. antes del forEach
+                        // 🔥 FIX: getNearbyPlayers con safe-call (?) para evitar error
                         currentLoc.world?.getNearbyPlayers(currentLoc, 1.5)?.forEach { victim ->
                             if (!plugin.asesinoManager.esElAsesino(victim)) {
                                 plugin.gameManager.combatManager.takeDamage(victim)
