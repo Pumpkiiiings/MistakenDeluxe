@@ -9,17 +9,16 @@ import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams.ScoreBoardTeamInfo
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
-import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import org.bukkit.*
+import org.bukkit.Bukkit
+import org.bukkit.Location
+import org.bukkit.Material
+import org.bukkit.Sound
 import org.bukkit.entity.*
-import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Transformation
@@ -34,7 +33,6 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Herobrine: El Rey del Vacío.
- * Corregido: PacketEvents 2.11.2, Paper 1.21.4 y Dispatchers.
  */
 class Herobrine : Asesino(
     "herobrine",
@@ -73,8 +71,8 @@ class Herobrine : Asesino(
         val cloudPacket = WrapperPlayServerParticle(Particle(ParticleTypes.CLOUD), false, pos, off, 0.01f, 1)
         val distSq = 625.0 // 25 bloques
 
-        l.world.players.forEach { p ->
-            if (p != player && p.location.distanceSquared(l) < distSq) {
+        Bukkit.getOnlinePlayers().forEach { p ->
+            if (p != player && p.world == l.world && p.location.distanceSquared(l) < distSq) {
                 mgr.sendPacket(p, cloudPacket)
 
                 if (ThreadLocalRandom.current().nextDouble() < 0.2) {
@@ -85,7 +83,7 @@ class Herobrine : Asesino(
         }
     }
 
-    // --- 🧊 MOTOR DE ÓRBITA (NATIVO 1.21.4) ---
+    // --- 🧊 MOTOR DE ÓRBITA ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
@@ -95,23 +93,21 @@ class Herobrine : Asesino(
 
         val entidades = orbitadores.getOrPut(uuid) {
             mutableListOf<Entity>().apply {
-                orbitMaterials.forEach { mat ->
-                    if (mat == Material.NETHER_STAR) {
-                        add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
-                            id.setItemStack(ItemStack(mat))
-                            id.setTransformation(Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf()))
-                            id.teleportDuration = 2
-                            id.interpolationDuration = 2
-                        })
-                    } else {
-                        add(player.world.spawn(player.location, BlockDisplay::class.java) { bd ->
-                            bd.block = mat.createBlockData()
-                            bd.setTransformation(Transformation(JomlVector3f(-0.15f, -0.15f, -0.15f), Quaternionf(), JomlVector3f(0.3f, 0.3f, 0.3f), Quaternionf()))
-                            bd.teleportDuration = 2
-                            bd.interpolationDuration = 2
-                        })
-                    }
-                }
+                add(player.world.spawn(player.location, BlockDisplay::class.java) { bd ->
+                    bd.block = Material.NETHERRACK.createBlockData()
+                    bd.transformation = Transformation(JomlVector3f(-0.15f, -0.15f, -0.15f), Quaternionf(), JomlVector3f(0.3f, 0.3f, 0.3f), Quaternionf())
+                    bd.teleportDuration = 2; bd.interpolationDuration = 2
+                })
+                add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
+                    id.setItemStack(org.bukkit.inventory.ItemStack(Material.NETHER_STAR))
+                    id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
+                    id.teleportDuration = 2; id.interpolationDuration = 2
+                })
+                add(player.world.spawn(player.location, BlockDisplay::class.java) { bd ->
+                    bd.block = Material.GOLD_BLOCK.createBlockData()
+                    bd.transformation = Transformation(JomlVector3f(-0.15f, -0.15f, -0.15f), Quaternionf(), JomlVector3f(0.3f, 0.3f, 0.3f), Quaternionf())
+                    bd.teleportDuration = 2; bd.interpolationDuration = 2
+                })
             }
         }
 
@@ -158,25 +154,33 @@ class Herobrine : Asesino(
     private fun habilidadSaltoDimensional(player: Player) {
         val gens = plugin.generatorManager.getGeneratorLocations()
         if (gens.isEmpty()) return
-        player.teleport(gens.random().clone().add(0.5, 1.1, 0.5))
+
+        val target = gens.random().clone().add(0.5, 1.1, 0.5)
+        player.world.spawnParticle(org.bukkit.Particle.REVERSE_PORTAL, player.location.add(0.0, 1.0, 0.0), 15, 0.4, 0.6, 0.4, 0.1)
+        player.playSound(player.location, Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1f, 0.5f)
+        player.teleport(target)
+        player.world.spawnParticle(org.bukkit.Particle.CLOUD, player.location.add(0.0, 1.0, 0.0), 10, 0.3, 0.5, 0.3, 0.05)
         player.playSound(player.location, Sound.BLOCK_PORTAL_TRAVEL, 0.6f, 1.8f)
     }
 
     private fun habilidadEstrellaWither(player: Player) {
         val skull = player.launchProjectile(WitherSkull::class.java)
+        skull.isCharged = false
         skull.yield = 0f
 
         val job = scope.launch {
             var life = 0
             while (isActive && life < 60 && !skull.isDead && skull.isValid) {
-                // 🔥 FIX: Uso del dispatcher de Paper
+                // 🔥 FIX: Reemplazado Dispatchers.Main por plugin.bukkitDispatcher
                 withContext(plugin.bukkitDispatcher) {
+                    skull.world.spawnParticle(org.bukkit.Particle.END_ROD, skull.location, 1, 0.0, 0.0, 0.0, 0.01)
+
                     val hit = skull.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull {
                         !plugin.asesinoManager.esElAsesino(it)
                     }
 
                     hit?.let { victim ->
-                        plugin.combatManager.processTrueDamage(victim, player, 5.0)
+                        plugin.gameManager.combatManager.takeDamage(victim)
                         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 0))
                         victim.playSound(victim.location, Sound.ENTITY_WITHER_SHOOT, 0.7f, 1.5f)
                         skull.remove()
@@ -191,34 +195,30 @@ class Herobrine : Asesino(
     }
 
     private fun habilidadErrorMundo(player: Player) {
-        val teamInfo = ScoreBoardTeamInfo(
-            Component.text("HB_Team"), Component.empty(), Component.empty(),
-            WrapperPlayServerTeams.NameTagVisibility.ALWAYS, WrapperPlayServerTeams.CollisionRule.NEVER,
-            NamedTextColor.DARK_PURPLE, WrapperPlayServerTeams.OptionData.NONE
-        )
+        val board = Bukkit.getScoreboardManager().mainScoreboard
+        val team = board.getTeam("hb_purple") ?: board.registerNewTeam("hb_purple")
+        team.color(NamedTextColor.DARK_PURPLE)
+
+        val mgr = PacketEvents.getAPI().playerManager
 
         Bukkit.getOnlinePlayers().forEach { online ->
             if (plugin.asesinoManager.esElAsesino(online)) return@forEach
 
-            // 🔥 FIX: Ambigüedad de constructor solucionada con mutableListOf
-            val createTeam = WrapperPlayServerTeams("hb_glow", WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, mutableListOf(online.name))
-            PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
+            team.addEntry(online.name)
 
             val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x40.toByte()))
-            PacketEvents.getAPI().playerManager.sendPacket(player, WrapperPlayServerEntityMetadata(online.entityId, metadata))
+            mgr.sendPacket(player, WrapperPlayServerEntityMetadata(online.entityId, metadata))
 
             online.playSound(online.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 0.5f, 2.0f)
 
             scope.launch {
                 delay(10000)
-                // 🔥 FIX: Uso del dispatcher de Paper
+                // 🔥 FIX: Reemplazado Dispatchers.Main por plugin.bukkitDispatcher
                 withContext(plugin.bukkitDispatcher) {
                     if (online.isOnline) {
+                        team.removeEntry(online.name)
                         val resetMeta = listOf(EntityData(0, EntityDataTypes.BYTE, 0x00.toByte()))
-                        PacketEvents.getAPI().playerManager.sendPacket(player, WrapperPlayServerEntityMetadata(online.entityId, resetMeta))
-
-                        val removeTeam = WrapperPlayServerTeams("hb_glow", WrapperPlayServerTeams.TeamMode.REMOVE, null as ScoreBoardTeamInfo?, mutableListOf<String>())
-                        PacketEvents.getAPI().playerManager.sendPacket(player, removeTeam)
+                        mgr.sendPacket(player, WrapperPlayServerEntityMetadata(online.entityId, resetMeta))
                     }
                 }
             }
@@ -232,10 +232,12 @@ class Herobrine : Asesino(
                     cube.setAI(false)
                     cube.isGlowing = true
                     cube.isInvulnerable = true
+                    team.addEntry(cube.uniqueId.toString())
                     markerEntities.add(cube)
                 }?.let { spawned ->
                     scope.launch {
                         delay(10000)
+                        // 🔥 FIX: Reemplazado Dispatchers.Main por plugin.bukkitDispatcher
                         withContext(plugin.bukkitDispatcher) {
                             spawned.remove()
                             markerEntities.remove(spawned)
@@ -269,25 +271,18 @@ class Herobrine : Asesino(
         inv.leggings = CraftEngineUtils.getCustomItem(config.getString("$path.armadura.pantalones"))
         inv.boots = CraftEngineUtils.getCustomItem(config.getString("$path.armadura.botas"))
 
-        for (i in 1..4) {
-            val id = config.getString("$path.items.habilidad$i")
-            val name = config.getString("$path.items.habilidad${i}_nombre")
+        for (i in 0..4) {
+            val key = if (i == 0) "arma" else "habilidad$i"
+            val id = config.getString("$path.items.$key")
+            val name = config.getString("$path.items.${key}_nombre")
 
             if (!id.isNullOrBlank() && !id.equals("none", true)) {
                 CraftEngineUtils.getCustomItem(id)?.let { item ->
                     name?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
-                    inv.setItem(i - 1, item)
+                    inv.setItem(if (i == 0) 8 else i, item)
                 }
             }
         }
-
-        val armaId = config.getString("$path.items.arma")
-        val armaName = config.getString("$path.items.arma_nombre")
-        CraftEngineUtils.getCustomItem(armaId)?.let { item ->
-            armaName?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
-            inv.setItem(8, item)
-        }
-
         player.inventory.heldItemSlot = 8
         player.updateInventory()
     }
