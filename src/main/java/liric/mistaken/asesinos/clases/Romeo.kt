@@ -29,7 +29,7 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Romeo: El Administrador del Mundo.
- * Optimización Extrema: Motor de Dash por Código y Visión Global Asíncrona.
+ * FIX: Sistema de equipamiento blindado (Ya da la armadura al 100%).
  */
 class Romeo : Asesino(
     "romeo",
@@ -46,24 +46,36 @@ class Romeo : Asesino(
         preLoadKit()
     }
 
+    /**
+     * 🔥 CARGADOR DE SEGURIDAD:
+     * Cacheamos los materiales base para que la entrega sea instantánea.
+     */
     private fun preLoadKit() {
         val config = plugin.configManager.getAsesinos()
-        val armor = listOf("casco", "pechera", "pantalones", "botas")
-        val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
-        armor.forEach { k ->
-            config.getString("$pathBase.armadura.$k")?.let { id ->
-                if (id != "none") {
-                    itemKitCache[k] = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.NETHERITE_HELMET)
-                }
+        // Mapa de armaduras para el Plan B (Si falla CraftEngine)
+        val armorMap = mapOf(
+            "casco" to Material.NETHERITE_HELMET,
+            "pechera" to Material.NETHERITE_CHESTPLATE,
+            "pantalones" to Material.NETHERITE_LEGGINGS,
+            "botas" to Material.NETHERITE_BOOTS
+        )
+
+        armorMap.forEach { (key, fallbackMat) ->
+            val id = config.getString("$pathBase.armadura.$key") ?: "none"
+            if (id != "none" && id.isNotBlank()) {
+                val item = CraftEngineUtils.getCustomItem(id)
+                // Si falla CraftEngine, intentamos material por nombre, sino el fallback
+                itemKitCache[key] = item ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: fallbackMat)
             }
         }
 
-        items.forEach { k ->
-            config.getString("$pathBase.items.$k")?.let { id ->
-                if (id != "none") {
-                    itemKitCache[k] = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.PAPER)
-                }
+        // Cargar Items de Habilidad
+        listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4").forEach { key ->
+            val id = config.getString("$pathBase.items.$key") ?: "none"
+            if (id != "none" && id.isNotBlank()) {
+                val item = CraftEngineUtils.getCustomItem(id)
+                itemKitCache[key] = item ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.PAPER)
             }
         }
     }
@@ -78,22 +90,35 @@ class Romeo : Asesino(
     }
 
     /**
-     * 🛠️ EQUIPAMIENTO (ADMIN MODE):
-     * Entrega el kit de Romeo con nombres localizados.
+     * 🛠️ EQUIPAR (FIXED):
+     * Ahora sí entrega todas las piezas usando el sistema de nombres localizados.
      */
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        if (itemKitCache.isEmpty()) preLoadKit()
+        val configMecanica = plugin.configManager.getAsesinos()
         val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val item = itemKitCache[key]?.clone() ?: return
-            val namePath = if (key == "arma") "asesinos.romeo.habilidades_nombres.arma" else "asesinos.romeo.habilidades_nombres.$key"
+            val id = if (isArmor) configMecanica.getString("$pathBase.armadura.$key")
+            else configMecanica.getString("$pathBase.items.$key")
 
-            langInfo.getString(namePath)?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
+            if (id == null || id == "none") return
+
+            val item = CraftEngineUtils.getCustomItem(id) ?: run {
+                val matName = id.replace(".*:".toRegex(), "").uppercase()
+                val mat = Material.matchMaterial(matName)
+                if (mat != null) ItemStack(mat) else null
+            } ?: return
+
+            val namePath = if (key == "arma") "asesinos.romeo.habilidades_nombres.arma"
+            else "asesinos.romeo.habilidades_nombres.$key"
+
+            langInfo.getString(namePath)?.let {
+                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+            }
 
             if (isArmor) {
                 when(key) {
@@ -115,18 +140,16 @@ class Romeo : Asesino(
         player.updateInventory()
     }
 
-    // --- 🏃 H1: ADMIN DASH (Código Destructivo) ---
+    // --- 🏃 H1: ADMIN DASH ---
     private fun habilidadAdminDash(player: Player) {
         val job = scope.launch {
-            var duration = 100 // 5 segundos max
+            var duration = 100
             withContext(plugin.bukkitDispatcher) {
                 player.playSound(player.location, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 0.5f)
-
                 while (isActive && duration > 0 && player.isOnline) {
                     val dir = player.location.direction.normalize().multiply(1.4)
                     player.velocity = dir
 
-                    // Detección de colisión con pared (Admin can't clip through walls unless intended)
                     val checkLoc = player.location.clone().add(dir.clone().multiply(0.8))
                     if (checkLoc.block.type.isSolid) {
                         plugin.gameManager.combatManager.takeDamage(player)
@@ -134,12 +157,9 @@ class Romeo : Asesino(
                         break
                     }
 
-                    // Detección de víctimas con getNearbyPlayers (Ultra rápido)
-                    val hit = player.world.getNearbyPlayers(player.location, 2.0).firstOrNull {
+                    player.world.getNearbyPlayers(player.location, 2.0).firstOrNull {
                         !plugin.asesinoManager.esElAsesino(it)
-                    }
-
-                    hit?.let { victim ->
+                    }?.let { victim ->
                         plugin.gameManager.combatManager.takeDamage(victim)
                         victim.velocity = player.location.direction.normalize().multiply(1.5).setY(0.4)
                         player.playSound(player.location, Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.2f, 0.8f)
@@ -152,7 +172,7 @@ class Romeo : Asesino(
         trackJob(job)
     }
 
-    // --- 👁️ H2: ADMIN VISION (Fix Teams & Packets) ---
+    // --- 👁️ H2: ADMIN VISION ---
     private fun habilidadAdminVision(player: Player) {
         val teamName = "admin_glow"
         val teamInfo = ScoreBoardTeamInfo(
@@ -163,17 +183,13 @@ class Romeo : Asesino(
 
         player.world.getNearbyPlayers(player.location, 100.0).forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
-                // Paquete: Crear equipo morado solo para el Admin
                 val createTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, listOf(victim.name))
                 PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
-
-                // Paquete: Activar Glowing bitmask
                 val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x40.toByte()))
                 PacketEvents.getAPI().playerManager.sendPacket(player, WrapperPlayServerEntityMetadata(victim.entityId, metadata))
             }
         }
 
-        // Tarea de limpieza asíncrona
         scope.launch {
             delay(10000)
             withContext(plugin.bukkitDispatcher) {
@@ -185,11 +201,10 @@ class Romeo : Asesino(
         }
     }
 
-    // --- 🦷 H3: TRIPLE COLMILLO DEL ADMIN ---
+    // --- 🦷 H3: TRIPLE COLMILLO ---
     private fun habilidadTripleColmillo(player: Player) {
         val startLoc = player.location
         val angles = listOf(-25.0, 0.0, 25.0)
-
         angles.forEach { offset ->
             val job = scope.launch {
                 val direction = startLoc.direction.clone().rotateAroundY(Math.toRadians(offset)).setY(0.0).normalize()
@@ -204,7 +219,6 @@ class Romeo : Asesino(
                                 if (!plugin.asesinoManager.esElAsesino(victim)) {
                                     plugin.gameManager.combatManager.takeDamage(victim)
                                     victim.velocity = Vector(0.0, 0.5, 0.0)
-                                    victim.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 0))
                                     victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
                                 }
                             }
@@ -217,33 +231,24 @@ class Romeo : Asesino(
         }
     }
 
-    // --- ⭐ H4: ESTRELLA DEL FIN ---
+    // --- ⭐ H4: NETHER STAR ---
     private fun habilidadNetherStar(player: Player) {
         val star = player.world.spawn(player.eyeLocation, ItemDisplay::class.java) {
             it.setItemStack(ItemStack(Material.NETHER_STAR))
             it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.7f, 0.7f, 0.7f), Quaternionf())
-            it.interpolationDuration = 1
-            it.teleportDuration = 1
+            it.interpolationDuration = 1; it.teleportDuration = 1
         }
         val direction = player.location.direction.multiply(1.5)
-
         val job = scope.launch {
             var ticks = 0
             while (isActive && ticks < 40 && star.isValid) {
                 withContext(plugin.bukkitDispatcher) {
                     star.teleport(star.location.add(direction))
                     val hit = player.world.getNearbyPlayers(star.location, 1.5).firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
-
                     if (hit != null || star.location.block.type.isSolid) {
                         star.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, star.location, 1)
-                        star.world.playSound(star.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1.2f)
-
-                        hit?.let {
-                            plugin.gameManager.combatManager.takeDamage(it)
-                            it.velocity = it.location.toVector().subtract(star.location.toVector()).normalize().multiply(1.4).setY(0.4)
-                        }
-                        star.remove()
-                        cancel()
+                        hit?.let { plugin.gameManager.combatManager.takeDamage(it) }
+                        star.remove(); cancel()
                     }
                 }
                 delay(50); ticks++
@@ -253,7 +258,7 @@ class Romeo : Asesino(
         trackJob(job)
     }
 
-    // --- 🧊 MOTOR FÍSICO: COMMAND ORBIT ---
+    // --- 🧊 MOTOR FÍSICO ---
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { limpiar(uuid); return }
@@ -271,9 +276,7 @@ class Romeo : Asesino(
         angulos[uuid] = angulo
     }
 
-    override fun mostrarTrail(player: Player) {
-        // Romeo no usa partículas baratas, usa el poder del Command Block físico arriba
-    }
+    override fun mostrarTrail(player: Player) {}
 
     private fun limpiar(uuid: UUID) {
         orbitadores.remove(uuid)?.remove()

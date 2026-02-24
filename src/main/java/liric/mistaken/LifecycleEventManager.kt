@@ -4,7 +4,7 @@ import com.github.retrooper.packetevents.PacketEvents
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import org.bukkit.plugin.java.JavaPlugin
 
-class MistakenPlugin : JavaPlugin() {
+class LifecycleEventManager : JavaPlugin() {
 
     override fun onLoad() {
         // Inicializar PacketEvents antes de que cargue el servidor

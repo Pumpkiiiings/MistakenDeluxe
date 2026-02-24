@@ -156,8 +156,6 @@ killer:
 
 # --- 商店 ---
 tienda:
-  titulo: "<dark_gray>杀手 | Mistaken"
-  titulo-supervivientes: "<#00d4ff>生还者 | 黑市"
   clase-especial: "<dark_gray>特殊等级实体"
   clase-humana: "<gray>职业: <white>人类生还者"
   habilidades-titulo: "<gray>▶ <white>技能:"

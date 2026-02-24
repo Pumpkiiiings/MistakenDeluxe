@@ -10,15 +10,8 @@ import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
-import org.bukkit.Bukkit
-import org.bukkit.Location
-import org.bukkit.Material
-import org.bukkit.Sound
-import org.bukkit.SoundCategory
-import org.bukkit.entity.BlockDisplay
-import org.bukkit.entity.EvokerFangs
-import org.bukkit.entity.ItemDisplay
-import org.bukkit.entity.Player
+import org.bukkit.*
+import org.bukkit.entity.*
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -30,12 +23,17 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.cos
 import kotlin.math.sin
 
+/**
+ * [LIRIC-MISTAKEN 2.0]
+ * Charlie Inferno: El Heraldo de los Elementos.
+ * FIX: Equipamiento robusto, Multi-Lang y optimización de hilos.
+ */
 class CharlieInferno : Asesino(
     "charlie",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.charlie.nombre", "<gradient:#ff4500:#ff8c00><b>CHARLIE INFERNO</b></gradient>", "asesinos_info")
 ) {
 
-    private val path = "asesinos.charlie"
+    private val pathBase = "asesinos.charlie"
     private val sonidoId = "mistaken:charlieinferno"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
@@ -48,25 +46,27 @@ class CharlieInferno : Asesino(
         preLoadKit()
     }
 
+    /**
+     * 🔥 PRE-LOAD (Mecánicas Globales):
+     * Jala los materiales del asesinos.yml de la raíz.
+     */
     private fun preLoadKit() {
         val config = plugin.configManager.getAsesinos()
-        val armorKeys = listOf("casco", "pechera", "pantalones", "botas")
-        val itemKeys = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
+        val armor = listOf("casco", "pechera", "pantalones", "botas")
+        val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
-        armorKeys.forEach { key ->
-            config.getString("$path.armadura.$key")?.let { id ->
+        armor.forEach { k ->
+            config.getString("$pathBase.armadura.$k")?.let { id ->
                 if (id != "none") {
-                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.LEATHER_HELMET)
-                    itemKitCache[key] = item
+                    itemKitCache[k] = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.NETHERITE_HELMET)
                 }
             }
         }
 
-        itemKeys.forEach { key ->
-            config.getString("$path.items.$key")?.let { id ->
+        items.forEach { k ->
+            config.getString("$pathBase.items.$k")?.let { id ->
                 if (id != "none") {
-                    val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
-                    itemKitCache[key] = item
+                    itemKitCache[k] = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
                 }
             }
         }
@@ -81,29 +81,30 @@ class CharlieInferno : Asesino(
         }
     }
 
+    /**
+     * 🛠️ EQUIPAR (SISTEMA MULTI-IDIOMA):
+     * Entrega el kit basado en el idioma del jugador.
+     */
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
-        inv.armorContents = arrayOfNulls(4) // Limpieza total de armadura para Kotlin
+        inv.armorContents = arrayOfNulls(4)
 
-        val configMecanica = plugin.configManager.getAsesinos() // El global (la raíz)
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info") // Los nombres traducidos
+        val configMecanica = plugin.configManager.getAsesinos()
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            // 1. Buscamos el ID del ítem en el archivo de mecánicas (global)
-            val id = if (isArmor) configMecanica.getString("asesinos.charlie.armadura.$key")
-            else configMecanica.getString("asesinos.charlie.items.$key")
+            val id = if (isArmor) configMecanica.getString("$pathBase.armadura.$key")
+            else configMecanica.getString("$pathBase.items.$key")
 
             if (id == null || id == "none") return
 
-            // 2. Creamos el ítem (CraftEngine o Vanilla fallback)
             val item = CraftEngineUtils.getCustomItem(id) ?: run {
                 val matName = id.replace(".*:".toRegex(), "").uppercase()
                 val mat = Material.matchMaterial(matName)
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            // 3. Le pegamos el nombre según el idioma del jugador (asesinos_info.yml)
             val namePath = if (key == "arma") "asesinos.charlie.habilidades_nombres.arma"
             else "asesinos.charlie.habilidades_nombres.$key"
 
@@ -111,7 +112,6 @@ class CharlieInferno : Asesino(
                 item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
-            // 4. Lo mandamos a su lugar
             if (isArmor) {
                 when(key) {
                     "casco" -> inv.helmet = item
@@ -119,32 +119,23 @@ class CharlieInferno : Asesino(
                     "pantalones" -> inv.leggings = item
                     "botas" -> inv.boots = item
                 }
-            } else {
-                inv.setItem(slot, item)
-            }
+            } else inv.setItem(slot, item)
         }
 
-        // --- SOLTAR EL KIT COMPLETO ---
-        deliver("casco", 0, true)
-        deliver("pechera", 0, true)
-        deliver("pantalones", 0, true)
-        deliver("botas", 0, true)
-
-        deliver("habilidad1", 1)
-        deliver("habilidad2", 2)
-        deliver("habilidad3", 3)
-        deliver("habilidad4", 4)
+        deliver("casco", 0, true); deliver("pechera", 0, true)
+        deliver("pantalones", 0, true); deliver("botas", 0, true)
+        deliver("habilidad1", 1); deliver("habilidad2", 2)
+        deliver("habilidad3", 3); deliver("habilidad4", 4)
         deliver("arma", 8)
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()
-
-        // ¡Que empiece el corrido!
-        iniciarMusicaCharlie(player)
     }
 
+    // --- 🔥 HABILIDADES (Optimizadas) ---
+
     private fun habilidadInfierno(player: Player) {
-        player.getNearbyEntities(7.5, 7.5, 7.5).filterIsInstance<Player>().forEach { target ->
+        player.world.getNearbyPlayers(player.location, 7.5).forEach { target ->
             if (!plugin.asesinoManager.esElAsesino(target)) {
                 target.fireTicks = 100
                 plugin.gameManager.combatManager.takeDamage(target)
@@ -157,8 +148,7 @@ class CharlieInferno : Asesino(
     }
 
     private fun habilidadDemonRun(player: Player) {
-        val targets = player.getNearbyEntities(10.0, 10.0, 10.0).filterIsInstance<Player>().toMutableList()
-        targets.add(player)
+        val targets = player.world.getNearbyPlayers(player.location, 10.0).toMutableList()
         targets.forEach { it.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 60, 0)) }
 
         scope.launch {
@@ -181,12 +171,14 @@ class CharlieInferno : Asesino(
             it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.6f, 0.6f, 0.6f), Quaternionf())
         }
         val dir = player.location.direction.multiply(1.2)
-        scope.launch {
+
+        val job = scope.launch {
             var ticks = 0
             while (isActive && ticks < 40 && ice.isValid) {
                 withContext(plugin.bukkitDispatcher) {
                     ice.teleport(ice.location.add(dir))
-                    val hit = ice.getNearbyEntities(1.0, 1.0, 1.0).filterIsInstance<Player>().firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
+                    val hit = player.world.getNearbyPlayers(ice.location, 1.0).firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
+
                     if (hit != null || ice.location.block.type.isSolid) {
                         ice.world.spawnParticle(org.bukkit.Particle.SNOWFLAKE, ice.location, 30, 0.5, 0.5, 0.5, 0.1)
                         ice.world.playSound(ice.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
@@ -206,6 +198,7 @@ class CharlieInferno : Asesino(
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
             }
         }
+        trackJob(job)
     }
 
     private fun habilidadColmillosInfierno(player: Player) {
@@ -218,7 +211,7 @@ class CharlieInferno : Asesino(
                 withContext(plugin.bukkitDispatcher) {
                     current.add(direction)
                     current.world.spawn(current, EvokerFangs::class.java)
-                    current.world.getNearbyEntities(current, 1.2, 1.2, 1.2).filterIsInstance<Player>().forEach { victim ->
+                    current.world.getNearbyPlayers(current, 1.5).forEach { victim ->
                         if (!plugin.asesinoManager.esElAsesino(victim)) {
                             victim.fireTicks = 100
                             plugin.gameManager.combatManager.takeDamage(victim)
@@ -227,13 +220,11 @@ class CharlieInferno : Asesino(
                 }
                 delay(100)
             }
-            withContext(plugin.bukkitDispatcher) {
-                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
-                player.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
-            }
         }
         trackJob(job)
     }
+
+    // --- 🚀 VISUALES ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
@@ -275,9 +266,8 @@ class CharlieInferno : Asesino(
                         }
                     }
                 }
-                delay(74000) // 1480 ticks aprox
+                delay(74000)
             }
-            withContext(plugin.bukkitDispatcher) { detenerMusica(uuid) }
         }
         musicJobs[uuid] = job
         trackJob(job)

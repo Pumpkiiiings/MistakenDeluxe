@@ -22,6 +22,7 @@ import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerToggleSneakEvent
+import org.bukkit.metadata.FixedMetadataValue
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ThreadLocalRandom
@@ -29,12 +30,7 @@ import java.util.concurrent.ThreadLocalRandom
 /**
  * [LIRIC-MISTAKEN 2.0]
  * GameListener: El árbitro supremo y controlador de mecánicas.
- *
- * MEJORAS:
- * - Sistema de Rescate (Freeze Tag) por Clic Derecho.
- * - Insta-Respawn (Cero pantalla de muerte).
- * - True Damage integrado.
- * - Filtros O(1) para inventarios y acciones.
+ * FIX: Solucionado el StackOverflowError (Bucle Infinito) en el daño al Jefe.
  */
 class GameListener(private val plugin: Mistaken) : Listener {
 
@@ -53,13 +49,8 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val victim = event.rightClicked as? Player ?: return
         val rescuer = event.player
 
-        // ¿La víctima está hecha paleta de hielo?
         if (plugin.combatManager.isFrozen(victim)) {
-
-            // Solo los humanos rescatan, el asesino no ayuda
             if (!plugin.gameManager.esAsesino(rescuer.uniqueId)) {
-
-                // Si el rescatista está a 1 vida, no tiene fuerza para ayudar
                 if (plugin.combatManager.getHealth(rescuer) <= 1) {
                     rescuer.sendActionBar(mm.deserialize("<red>¡Estás muy herido para rescatar a nadie!"))
                     return
@@ -67,10 +58,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
                 event.isCancelled = true // Evitar abrir inventarios
 
-                // 🔥 ¡LIBERTAD! 🔥
                 plugin.combatManager.unfreeze(victim, rescuer)
-
-                // Efectos visuales de rescate
                 victim.world.spawnParticle(Particle.SNOWFLAKE, victim.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
                 victim.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 1.5f)
             }
@@ -78,10 +66,13 @@ class GameListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * 🔥 MOTOR DE COMBATE: Maneja el daño real (True Damage).
+     * 🔥 MOTOR DE COMBATE: Maneja el daño real ignorando las defensas vanilla.
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onDamageByEntity(event: EntityDamageByEntityEvent) {
+        // 🔥 EL CANDADO: Si el evento trae nuestra marca, lo ignoramos para no entrar en bucle
+        if (event.entity.hasMetadata("mistaken_processing")) return
+
         if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
 
         val victim = event.entity as? Player ?: return
@@ -91,7 +82,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
             else -> null
         } ?: return
 
-        // 🧊 REGLA FREEZE: Invulnerabilidad al estar tieso
+        // 🧊 REGLA FREEZE
         if (plugin.combatManager.isFrozen(victim)) {
             event.isCancelled = true
             return
@@ -104,10 +95,8 @@ class GameListener(private val plugin: Mistaken) : Listener {
         if (isDamagerKiller && !isVictimKiller) {
             event.damage = 0.0
 
-            // Aplicamos daño de sistema (Vidas)
             plugin.combatManager.takeDamage(victim)
 
-            // Sangre (Partículas de bloque)
             victim.world.spawnParticle(
                 Particle.BLOCK, victim.location.add(0.0, 1.0, 0.0), 10,
                 0.1, 0.1, 0.1, Material.REDSTONE_BLOCK.createBlockData()
@@ -116,22 +105,27 @@ class GameListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // --- CASO B: EL SOBREVIVIENTE SE REBELA (Ataca al Boss) ---
+        // --- CASO B: EL SOBREVIVIENTE SE DEFIENDE (Ataca al Boss) ---
         if (!isDamagerKiller && isVictimKiller) {
-            event.damage = 0.0
+            event.isCancelled = true // Cancelamos el golpe original para que no pase la armadura
 
-            // Feedback de vida del Boss
+            // Ponemos la marca antes de hacer el daño custom
+            victim.setMetadata("mistaken_processing", FixedMetadataValue(plugin, true))
+
+            // Aplicamos DAÑO REAL al Jefe (Jalamos del config, o 2.9 por defecto)
+            val damageToBoss = plugin.config.getDouble("gameplay.killer.damage", 2.9)
+            victim.damage(damageToBoss, damager)
+
+            // Quitamos la marca para que los siguientes golpes sean procesados
+            victim.removeMetadata("mistaken_processing", plugin)
+
+            val killerHealth = victim.health.toInt()
             damager.sendActionBar(plugin.messageConfig.getMessage(damager, "game.killer-hit-actionbar",
-                Placeholder.parsed("health", victim.health.toInt().toString())))
+                Placeholder.parsed("health", killerHealth.toString())))
 
-            // Probabilidad de Stun (15%)
             if (ThreadLocalRandom.current().nextInt(100) < 15) {
                 aplicarStunAlAsesino(victim, damager)
             }
-
-            // Aplicamos DAÑO REAL al Jefe (usando el método del Main o CombatManager)
-            // Si tu CombatManager tiene el método processTrueDamage úsalo, sino victim.damage(4.0)
-            victim.damage(4.0, damager)
             return
         }
 
@@ -140,7 +134,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * 🔥 INSTA-RESPAWN: No más pantalla de muerte para no perder tiempo.
+     * 🔥 INSTA-RESPAWN: No más pantalla de muerte.
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
@@ -153,7 +147,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
         plugin.gameManager.handlePlayerDeath(victim)
 
-        // 🔥 RESPRAWN PRO: Esperamos 1 tick para que no haya bugs visuales
+        // RESPRAWN PRO: Esperamos 1 tick
         plugin.server.scheduler.runTask(plugin, Runnable {
             if (victim.isOnline) {
                 victim.spigot().respawn()
@@ -179,7 +173,6 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val player = event.entity as? Player ?: return
 
         if (plugin.combatManager.isFrozen(player)) {
-            // No morir por frío o asfixia en el bloque de hielo
             if (event.cause == EntityDamageEvent.DamageCause.FREEZE ||
                 event.cause == EntityDamageEvent.DamageCause.SUFFOCATION ||
                 event.cause == EntityDamageEvent.DamageCause.DROWNING) {

@@ -156,8 +156,6 @@ killer:
 
 # --- SHOP ---
 tienda:
-  titulo: "<dark_gray>Killers | Mistaken"
-  titulo-supervivientes: "<#00d4ff>Survivors | Black Market"
   clase-especial: "<dark_gray>Special Class Entity"
   clase-humana: "<gray>Class: <white>Human Survivor"
   habilidades-titulo: "<gray>▶ <white>Abilities:"

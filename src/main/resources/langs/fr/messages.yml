@@ -156,8 +156,6 @@ killer:
 
 # --- TIENDA ---
 tienda:
-  titulo: "<dark_gray>Tueurs | Mistaken"
-  titulo-supervivientes: "<#00d4ff>Survivants | Marché Noir"
   clase-especial: "<dark_gray>Entité de Classe Spéciale"
   clase-humana: "<gray>Classe : <white>Survivant Humain"
   habilidades-titulo: "<gray>▶ <white>Compétences :"
