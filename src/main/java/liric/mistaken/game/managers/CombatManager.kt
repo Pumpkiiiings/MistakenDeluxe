@@ -1,5 +1,6 @@
 package liric.mistaken.game.managers
 
+import fr.skytasul.glowingentities.GlowingEntities;
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.event.PacketListenerAbstract
 import com.github.retrooper.packetevents.event.PacketReceiveEvent
@@ -177,38 +178,26 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         if (!isAttackerKiller && !isVictimKiller) event.isCancelled = true
     }
 
-    // --- CAZADOR: GLOW PRIVADO A PRUEBA DE BALAS ---
+    /**
+     * 🔥 MARCA DEL CAZADOR (Glow Privado):
+     * Usa la API de GlowingEntities para que SOLO el asesino vea a la víctima.
+     */
     private fun aplicarHuntersMark(killer: Player, victim: Player) {
-        val entityId = victim.entityId
-        // Lo metemos al caché por 5 segundos
-        huntedEntities[entityId] = System.currentTimeMillis() + 5000
+        plugin.glowingAPI.setGlowing(victim, killer, org.bukkit.ChatColor.YELLOW)
 
-        runOnMain {
-            // Usamos el Scoreboard de Bukkit SOLO para asegurar que el color sea Amarillo
-            val board = Bukkit.getScoreboardManager().mainScoreboard
-            val teamName = "ms_glow"
-            val team = board.getTeam(teamName) ?: board.registerNewTeam(teamName).apply {
-                color(NamedTextColor.YELLOW)
-            }
-            if (!team.hasEntry(victim.name)) team.addEntry(victim.name)
+        killer.sendActionBar(plugin.messageConfig.getMessage(
+            killer,
+            "combat.hunters-mark",
+            Placeholder.parsed("player", victim.name)
+        ))
+        killer.playSound(killer.location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 1.5f)
 
-            // Forzamos un paquete inmediato para que el brillo encienda sin esperar a que la víctima se mueva
-            val packet = WrapperPlayServerEntityMetadata(entityId, listOf(EntityData(0, EntityDataTypes.BYTE, 0x40.toByte())))
-            PacketEvents.getAPI().playerManager.sendPacket(killer, packet)
+        combatScope.launch {
+            delay(5000) // 5 segundos de cacería
 
-            killer.sendActionBar(plugin.messageConfig.getMessage(killer, "combat.hunters-mark", Placeholder.parsed("player", victim.name)))
-            killer.playSound(killer.location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 1.5f)
-
-            // Limpieza a los 5 segundos
-            combatScope.launch {
-                delay(5000)
-                runOnMain {
-                    board.getTeam(teamName)?.removeEntry(victim.name)
-                    if (killer.isOnline && victim.isOnline) {
-                        // Apagamos el brillo
-                        val resetPacket = WrapperPlayServerEntityMetadata(entityId, listOf(EntityData(0, EntityDataTypes.BYTE, 0.toByte())))
-                        PacketEvents.getAPI().playerManager.sendPacket(killer, resetPacket)
-                    }
+            runOnMain {
+                if (killer.isOnline && victim.isOnline) {
+                    plugin.glowingAPI.unsetGlowing(victim, killer)
                 }
             }
         }

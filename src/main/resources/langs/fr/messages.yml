@@ -36,7 +36,7 @@ combat:
   hunters-mark: "<red>"
   health-bar: "<red>{hearts_on}<gray>{hearts_off}"
   cooldown: "<red>Attends <white>{time}s</white> avant d'attaquer à nouveau !"
-  critical-wound: "<prefix><red><bold>TES JAMBES CÈDENT !</bold> <gray>Cherche de l'aide ou rampe."
+  critical-wound: "<red><bold>TES JAMBES CÈDENT !</bold> <gray>Cherche de l'aide ou rampe."
   kill-reward-actionbar: "<red><bold>+40 SANTÉ</bold></red> <gray>|</gray> <gold><bold>+${reward} CRÉDITS</bold></gold>"
   kill-reward-chat: "<prefix><gray>Tu as reçu <green>${reward}</green> pour avoir éliminé une victime."
   rescue-start-carrier: "<prefix><green>Tu portes <white>{target}</white> ! Mets-le en sécurité."

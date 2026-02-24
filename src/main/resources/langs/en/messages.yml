@@ -36,7 +36,7 @@ combat:
   hunters-mark: "<red>"
   health-bar: "<red>{hearts_on}<gray>{hearts_off}"
   cooldown: "<red>Wait <white>{time}s</white> to attack again!"
-  critical-wound: "<prefix><red><bold>YOUR LEGS FAIL!</bold> <gray>Seek help or crawl."
+  critical-wound: "<red><bold>YOUR LEGS FAIL!</bold> <gray>Seek help or crawl."
   kill-reward-actionbar: "<red><bold>+40 HEALTH</bold></red> <gray>|</gray> <gold><bold>+${reward} CREDITS</bold></gold>"
   kill-reward-chat: "<prefix><gray>You received <green>${reward}</green> for claiming a victim."
   rescue-start-carrier: "<prefix><green>You lifted <white>{target}</white>! Get them to safety."

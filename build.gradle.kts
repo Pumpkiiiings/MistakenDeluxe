@@ -50,6 +50,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("com.github.retrooper:packetevents-spigot:2.7.0")
     implementation("com.zaxxer:HikariCP:5.1.0")
+    implementation("fr.skytasul:glowingentities:1.4.10")
     implementation("com.mysql:mysql-connector-j:8.3.0")
     implementation("dev.triumphteam:triumph-gui:3.1.13")
     implementation("org.slf4j:slf4j-simple:2.0.9")
@@ -84,6 +85,7 @@ tasks {
         relocate("com.zaxxer.hikari", "liric.mistaken.libs.hikari")
         relocate("dev.triumphteam.gui", "liric.mistaken.libs.gui")
         relocate("kotlin", "liric.mistaken.libs.kotlin")
+        relocate("fr.skytasul.glowingentities", "liric.mistaken.libs.glowing")
 
         // AQUÍ ESTÁ LO QUE FALTABA PARA QUITAR LO ROJO:
         relocate("kotlinx", "liric.mistaken.libs.kotlinx")

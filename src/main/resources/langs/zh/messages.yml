@@ -36,7 +36,7 @@ combat:
   hunters-mark: "<red>"
   health-bar: "<red>{hearts_on}<gray>{hearts_off}"
   cooldown: "<red>请等待 <white>{time}秒</white> 后再攻击！"
-  critical-wound: "<prefix><red><bold>你的双腿失去了知觉！</bold> <gray>寻求帮助或爬行求生。"
+  critical-wound: "<red><bold>你的双腿失去了知觉！</bold> <gray>寻求帮助或爬行求生。"
   kill-reward-actionbar: "<red><bold>+40 生命值</bold></red> <gray>|</gray> <gold><bold>+${reward} 积分</bold></gold>"
   kill-reward-chat: "<prefix><gray>你因消灭目标获得了 <green>${reward}</green> 积分。"
   rescue-start-carrier: "<prefix><green>你背起了 <white>{target}</white>！带他们去安全的地方。"

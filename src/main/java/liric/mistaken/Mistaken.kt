@@ -3,6 +3,7 @@ package liric.mistaken
 import com.github.retrooper.packetevents.PacketEvents
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import kotlinx.coroutines.*
+import fr.skytasul.glowingentities.GlowingEntities
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.database.StatsManager
 import liric.mistaken.game.managers.MusicManager
@@ -103,6 +104,7 @@ class Mistaken : JavaPlugin() {
     lateinit var asesinoTienda: AsesinoTienda
     lateinit var supervivienteTienda: SupervivienteTienda
     lateinit var shopSelector: ShopSelector
+    lateinit var glowingAPI: GlowingEntities
 
     override fun onLoad() {
         instance = this
@@ -147,6 +149,7 @@ class Mistaken : JavaPlugin() {
         playerDataManager = PlayerDataManager(this)
 
         // 6. El Corazón de los Managers
+        glowingAPI = GlowingEntities(this)
         combatManager = CombatManager(this)
         gameManager = GameManager(this)
         mapManager = MapManager(this)
@@ -218,6 +221,7 @@ class Mistaken : JavaPlugin() {
         if (::scoreboardManager.isInitialized) runCatching { scoreboardManager.removeAll() }
         if (::asesinoManager.isInitialized) runCatching { asesinoManager.shutdown() } // Llama a su propio método de limpieza total
         if (::supervivienteManager.isInitialized) runCatching { supervivienteManager.shutdown() }
+        if (::glowingAPI.isInitialized) runCatching { glowingAPI.disable() }
         if (::databaseManager.isInitialized) runCatching { databaseManager.close() }
 
         PacketEvents.getAPI().terminate()

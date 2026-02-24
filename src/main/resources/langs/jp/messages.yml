@@ -36,7 +36,7 @@ combat:
   hunters-mark: "<red>"
   health-bar: "<red>{hearts_on}<gray>{hearts_off}"
   cooldown: "<red>再攻撃まであと <white>{time}s</white> 待機してください！"
-  critical-wound: "<prefix><red><bold>足が動かない！</bold> <gray>助けを待つか、這って進め。"
+  critical-wound: "<red><bold>足が動かない！</bold> <gray>助けを待つか、這って進め。"
   kill-reward-actionbar: "<red><bold>+40 体力</bold></red> <gray>|</gray> <gold><bold>+${reward} クレジット</bold></gold>"
   kill-reward-chat: "<prefix><gray>犠牲者を捧げ、 <green>${reward}</green> を獲得しました。"
   rescue-start-carrier: "<prefix><green><white>{target}</white> を担ぎました！安全な場所へ運んでください。"
