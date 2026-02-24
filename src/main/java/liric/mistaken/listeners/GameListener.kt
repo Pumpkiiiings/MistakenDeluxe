@@ -22,7 +22,6 @@ import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerToggleSneakEvent
-import org.bukkit.metadata.FixedMetadataValue
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ThreadLocalRandom
@@ -30,7 +29,7 @@ import java.util.concurrent.ThreadLocalRandom
 /**
  * [LIRIC-MISTAKEN 2.0]
  * GameListener: El árbitro supremo y controlador de mecánicas.
- * FIX: Solucionado el StackOverflowError (Bucle Infinito) en el daño al Jefe.
+ * FIX: Daño directo manipulando la salud para evitar StackOverflowErrors.
  */
 class GameListener(private val plugin: Mistaken) : Listener {
 
@@ -38,8 +37,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     private val plain = PlainTextComponentSerializer.plainText()
 
     /**
-     * 🧊 SISTEMA DE RESCATE (Freeze Tag):
-     * Detecta cuando un superviviente le da clic derecho a un compa congelado.
+     * 🧊 SISTEMA DE RESCATE (Freeze Tag)
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onRescue(event: PlayerInteractEntityEvent) {
@@ -56,8 +54,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                     return
                 }
 
-                event.isCancelled = true // Evitar abrir inventarios
-
+                event.isCancelled = true
                 plugin.combatManager.unfreeze(victim, rescuer)
                 victim.world.spawnParticle(Particle.SNOWFLAKE, victim.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
                 victim.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 1.5f)
@@ -66,13 +63,10 @@ class GameListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * 🔥 MOTOR DE COMBATE: Maneja el daño real ignorando las defensas vanilla.
+     * 🔥 MOTOR DE COMBATE: True Damage Nativo.
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onDamageByEntity(event: EntityDamageByEntityEvent) {
-        // 🔥 EL CANDADO: Si el evento trae nuestra marca, lo ignoramos para no entrar en bucle
-        if (event.entity.hasMetadata("mistaken_processing")) return
-
         if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
 
         val victim = event.entity as? Player ?: return
@@ -94,7 +88,6 @@ class GameListener(private val plugin: Mistaken) : Listener {
         // --- CASO A: EL ASESINO REPARTE LEÑA ---
         if (isDamagerKiller && !isVictimKiller) {
             event.damage = 0.0
-
             plugin.combatManager.takeDamage(victim)
 
             victim.world.spawnParticle(
@@ -107,24 +100,37 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
         // --- CASO B: EL SOBREVIVIENTE SE DEFIENDE (Ataca al Boss) ---
         if (!isDamagerKiller && isVictimKiller) {
-            event.isCancelled = true // Cancelamos el golpe original para que no pase la armadura
 
-            // Ponemos la marca antes de hacer el daño custom
-            victim.setMetadata("mistaken_processing", FixedMetadataValue(plugin, true))
+            // 1. Cancelamos el daño de Minecraft (evita que la armadura de Netherite lo proteja)
+            event.isCancelled = true
 
-            // Aplicamos DAÑO REAL al Jefe (Jalamos del config, o 2.9 por defecto)
-            val damageToBoss = plugin.config.getDouble("gameplay.killer.damage", 2.9)
-            victim.damage(damageToBoss, damager)
+            // 2. Calculamos el daño real (4.0 = 2 corazones)
+            val damageToBoss = plugin.config.getDouble("gameplay.killer.damage", 4.0)
 
-            // Quitamos la marca para que los siguientes golpes sean procesados
-            victim.removeMetadata("mistaken_processing", plugin)
+            // 3. Modificamos la salud directo (No dispara eventos de Bukkit = 0 loops)
+            val nuevaSalud = (victim.health - damageToBoss).coerceAtLeast(0.0)
+            victim.health = nuevaSalud
 
-            val killerHealth = victim.health.toInt()
+            // 4. Simulamos el empuje y el color rojo de daño (Nativo de Paper)
+            victim.playHurtAnimation(damager.location.yaw)
+            victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1.0f, 1.0f)
+
+            // 5. Feedback visual de la vida restante del Boss
+            val killerHealth = nuevaSalud.toInt()
             damager.sendActionBar(plugin.messageConfig.getMessage(damager, "game.killer-hit-actionbar",
                 Placeholder.parsed("health", killerHealth.toString())))
 
+            // Probabilidad de Stun (15%)
             if (ThreadLocalRandom.current().nextInt(100) < 15) {
                 aplicarStunAlAsesino(victim, damager)
+            }
+
+            // Si el Boss muere
+// Si el Boss muere
+            if (nuevaSalud <= 0.0) {
+                // 🔥 LLAMAMOS DIRECTO A TU MANAGER
+                // Esto lo pasa a espectador, da los premios y termina la partida sin bugear a Bukkit
+                plugin.gameManager.handlePlayerDeath(victim)
             }
             return
         }
@@ -134,7 +140,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * 🔥 INSTA-RESPAWN: No más pantalla de muerte.
+     * 🔥 INSTA-RESPAWN
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
@@ -147,9 +153,11 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
         plugin.gameManager.handlePlayerDeath(victim)
 
-        // RESPRAWN PRO: Esperamos 1 tick
         plugin.server.scheduler.runTask(plugin, Runnable {
-            if (victim.isOnline) {
+            if (victim.isOnline && !victim.isDead) {
+                // Si el jugador sigue vivo (porque lo "matamos" manualmente arriba)
+                // no hace falta respawnearlo, el GameManager lo pasa a espectador.
+            } else if (victim.isOnline) {
                 victim.spigot().respawn()
             }
         })
