@@ -1,5 +1,5 @@
 name: Mistaken
-version: 1.10.5
+version: 1.10.6
 main: liric.mistaken.Mistaken # <-- ¡Ojo! Asegúrate que coincida con tu package
 api-version: '1.21'
 author: Pumpkingz
