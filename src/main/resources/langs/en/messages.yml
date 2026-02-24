@@ -292,6 +292,7 @@ arena:
 errors:
   no-permission: "<prefix><red>You don't have permission."
   only-players: "<red>For players only."
+  ability-cooldown: "<red>La habilidad</red> <gold><skill></gold> <red>no está lista. Tiempo de recarga restante:</red> <yellow><time>s</yellow>"
   lang-not-found: "<prefix><red>That language doesn't exist."
   no-money: "<prefix><red>Not enough money."
   arena-not-found: "<prefix><red>Arena <white>{name}</white> does not exist."

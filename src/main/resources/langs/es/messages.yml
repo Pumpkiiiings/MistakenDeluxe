@@ -290,8 +290,9 @@ arena:
 
 # --- ERRORES ---
 errors:
-  no-permission: "<prefix><red>No tienes permiso para esto, bro."
+  no-permission: "<prefix><red>No tienes permiso para esto."
   only-players: "<red>Solo para jugadores."
+  ability-cooldown: "<red>La habilidad</red> <gold><skill></gold> <red>no está lista. Tiempo de recarga restante:</red> <yellow><time>s</yellow>"
   lang-not-found: "<prefix><red>Ese idioma no existe."
   no-money: "<prefix><red>No tienes lana suficiente."
   arena-not-found: "<prefix><red>La arena <white>{name}</white> no existe."

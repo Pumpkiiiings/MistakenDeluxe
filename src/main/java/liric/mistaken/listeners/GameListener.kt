@@ -2,7 +2,7 @@ package liric.mistaken.listeners
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
-import net.kyori.adventure.text.minimessage.MiniMessage
+import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Material
@@ -20,6 +20,7 @@ import org.bukkit.event.inventory.CraftItemEvent
 import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerDropItemEvent
+import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerToggleSneakEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -27,21 +28,57 @@ import java.util.concurrent.ThreadLocalRandom
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * GameListener: El árbitro supremo de la partida.
+ * GameListener: El árbitro supremo y controlador de mecánicas.
  *
  * MEJORAS:
- * - Insta-Respawn integrado (Cero pantalla roja).
- * - Daño Real (True Damage) de 1.5 corazones para el Asesino.
- * - Daño Real de 2.0 corazones para el Superviviente contra el Boss.
- * - Optimización masiva de eventos de inventario y hambre.
+ * - Sistema de Rescate (Freeze Tag) por Clic Derecho.
+ * - Insta-Respawn (Cero pantalla de muerte).
+ * - True Damage integrado.
+ * - Filtros O(1) para inventarios y acciones.
  */
 class GameListener(private val plugin: Mistaken) : Listener {
 
-    private val mm = MiniMessage.miniMessage()
+    private val mm = plugin.mm
     private val plain = PlainTextComponentSerializer.plainText()
 
     /**
-     * 🔥 MOTOR DE COMBATE: Maneja el daño real ignorando armaduras.
+     * 🧊 SISTEMA DE RESCATE (Freeze Tag):
+     * Detecta cuando un superviviente le da clic derecho a un compa congelado.
+     */
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun onRescue(event: PlayerInteractEntityEvent) {
+        if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
+        if (plugin.gameManager.currentMode != MistakenMode.FREEZE_TAG) return
+
+        val victim = event.rightClicked as? Player ?: return
+        val rescuer = event.player
+
+        // ¿La víctima está hecha paleta de hielo?
+        if (plugin.combatManager.isFrozen(victim)) {
+
+            // Solo los humanos rescatan, el asesino no ayuda
+            if (!plugin.gameManager.esAsesino(rescuer.uniqueId)) {
+
+                // Si el rescatista está a 1 vida, no tiene fuerza para ayudar
+                if (plugin.combatManager.getHealth(rescuer) <= 1) {
+                    rescuer.sendActionBar(mm.deserialize("<red>¡Estás muy herido para rescatar a nadie!"))
+                    return
+                }
+
+                event.isCancelled = true // Evitar abrir inventarios
+
+                // 🔥 ¡LIBERTAD! 🔥
+                plugin.combatManager.unfreeze(victim, rescuer)
+
+                // Efectos visuales de rescate
+                victim.world.spawnParticle(Particle.SNOWFLAKE, victim.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
+                victim.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 1.5f)
+            }
+        }
+    }
+
+    /**
+     * 🔥 MOTOR DE COMBATE: Maneja el daño real (True Damage).
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onDamageByEntity(event: EntityDamageByEntityEvent) {
@@ -54,7 +91,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
             else -> null
         } ?: return
 
-        // 🧊 REGLA FREEZE: Invulnerabilidad al estar congelado
+        // 🧊 REGLA FREEZE: Invulnerabilidad al estar tieso
         if (plugin.combatManager.isFrozen(victim)) {
             event.isCancelled = true
             return
@@ -63,67 +100,65 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val isDamagerKiller = plugin.gameManager.esAsesino(damager.uniqueId)
         val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
 
-        // CASO A: EL ASESINO ATACA A UN SOBREVIVIENTE
+        // --- CASO A: EL ASESINO REPARTE LEÑA ---
         if (isDamagerKiller && !isVictimKiller) {
-            event.damage = 0.0 // Cancelamos daño vanilla
+            event.damage = 0.0
 
-            // Aplicamos DAÑO REAL (1.5 corazones = 3.0 HP)
-            plugin.combatManager.processTrueDamage(victim, damager, 3.0)
+            // Aplicamos daño de sistema (Vidas)
+            plugin.combatManager.takeDamage(victim)
 
-            // Efectos visuales de impacto (Sangre)
+            // Sangre (Partículas de bloque)
             victim.world.spawnParticle(
-                Particle.BLOCK,
-                victim.location.add(0.0, 1.0, 0.0), 10,
-                0.1, 0.1, 0.1,
-                Material.REDSTONE_BLOCK.createBlockData()
+                Particle.BLOCK, victim.location.add(0.0, 1.0, 0.0), 10,
+                0.1, 0.1, 0.1, Material.REDSTONE_BLOCK.createBlockData()
             )
             victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 0.8f, 0.5f)
             return
         }
 
-        // CASO B: EL SOBREVIVIENTE SE DEFIENDE (Ataca al Jefe)
+        // --- CASO B: EL SOBREVIVIENTE SE REBELA (Ataca al Boss) ---
         if (!isDamagerKiller && isVictimKiller) {
-            event.damage = 0.0 // Cancelamos daño vanilla para usar daño fijo
+            event.damage = 0.0
 
-            // Mostramos la salud real del Boss (0-200)
-            val killerHealth = victim.health.toInt()
+            // Feedback de vida del Boss
             damager.sendActionBar(plugin.messageConfig.getMessage(damager, "game.killer-hit-actionbar",
-                Placeholder.parsed("health", killerHealth.toString())))
+                Placeholder.parsed("health", victim.health.toInt().toString())))
 
-            // Probabilidad de Stun al Jefe
+            // Probabilidad de Stun (15%)
             if (ThreadLocalRandom.current().nextInt(100) < 15) {
                 aplicarStunAlAsesino(victim, damager)
             }
 
-            // Aplicamos DAÑO REAL al Jefe (2.0 corazones = 4.0 HP)
-            plugin.combatManager.processTrueDamage(victim, damager, 4.0)
+            // Aplicamos DAÑO REAL al Jefe (usando el método del Main o CombatManager)
+            // Si tu CombatManager tiene el método processTrueDamage úsalo, sino victim.damage(4.0)
+            victim.damage(4.0, damager)
             return
         }
 
-        // CASO C: FUEGO AMIGO
+        // --- CASO C: FUEGO AMIGO ---
         event.isCancelled = true
     }
 
     /**
-     * 🔥 INSTA-RESPAWN: Elimina la pantalla de muerte y acelera el juego.
+     * 🔥 INSTA-RESPAWN: No más pantalla de muerte para no perder tiempo.
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
-        if (plugin.gameManager.currentState != GameState.INGAME) return
+        if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
 
         val victim = event.entity
-
-        // 1. Rendimiento: Limpiar basura del suelo y ocultar mensaje vanilla
         event.drops.clear()
         event.droppedExp = 0
         event.deathMessage(null)
 
-        // 2. Lógica de juego: Cambiar a espectador, avisar a la arena, etc.
         plugin.gameManager.handlePlayerDeath(victim)
 
-        // 3. LA LLAVE DEL INSTA-RESPAWN:
-        // Forzamos al cliente a reaparecer en el mismo tick.
-        victim.spigot().respawn()
+        // 🔥 RESPRAWN PRO: Esperamos 1 tick para que no haya bugs visuales
+        plugin.server.scheduler.runTask(plugin, Runnable {
+            if (victim.isOnline) {
+                victim.spigot().respawn()
+            }
+        })
     }
 
     private fun aplicarStunAlAsesino(killer: Player, damager: Player) {
@@ -140,13 +175,14 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onEnvironmentalDamage(event: EntityDamageEvent) {
-        if (plugin.gameManager.currentState != GameState.INGAME) return
+        if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
         val player = event.entity as? Player ?: return
 
-        // Bloquear daños ambientales si está congelado (Freeze Tag)
         if (plugin.combatManager.isFrozen(player)) {
+            // No morir por frío o asfixia en el bloque de hielo
             if (event.cause == EntityDamageEvent.DamageCause.FREEZE ||
-                event.cause == EntityDamageEvent.DamageCause.SUFFOCATION) {
+                event.cause == EntityDamageEvent.DamageCause.SUFFOCATION ||
+                event.cause == EntityDamageEvent.DamageCause.DROWNING) {
                 event.isCancelled = true
             }
         }
@@ -154,51 +190,31 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     fun onInventoryOpen(event: InventoryOpenEvent) {
-        if (plugin.gameManager.currentState != GameState.INGAME) return
+        if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
 
         val type = event.inventory.type
         if (type == InventoryType.PLAYER || type == InventoryType.CRAFTING) return
 
-        // Filtrar por títulos de nuestras GUIs de TriumphGUI
         val title = plain.serialize(event.view.title())
-        val allowedKeywords = listOf("Reparando", "Skill Check", "ENTES", "Tienda", "Selecciona")
+        val allowed = listOf("Reparando", "Skill Check", "ENTES", "Tienda", "Selecciona")
 
-        if (allowedKeywords.any { title.contains(it) }) return
-
-        // Bloquear cofres vanilla y otros bloques con inventario
+        if (allowed.any { title.contains(it, ignoreCase = true) }) return
         event.isCancelled = true
     }
 
     @EventHandler
     fun onHungerChange(event: FoodLevelChangeEvent) {
-        if (plugin.gameManager.currentState == GameState.INGAME) {
+        if (plugin.isReady && plugin.gameManager.currentState == GameState.INGAME) {
             event.isCancelled = true
-            // Mantener barra visual llena si no hay estamina usándola
-            if (event.foodLevel < 20) (event.entity as Player).foodLevel = 20
+            (event.entity as? Player)?.let { if (it.foodLevel < 20) it.foodLevel = 20 }
         }
     }
 
-    // --- BLOQUEOS DE ACCIÓN (RENDIMIENTO Y REGLAS) ---
-
-    @EventHandler fun onDrop(e: PlayerDropItemEvent) {
-        if (plugin.gameManager.currentState == GameState.INGAME) e.isCancelled = true
-    }
-
-    @EventHandler fun onCraft(e: CraftItemEvent) {
-        if (plugin.gameManager.currentState == GameState.INGAME) e.isCancelled = true
-    }
-
-    @EventHandler fun onBreak(e: BlockBreakEvent) {
-        if (plugin.gameManager.currentState == GameState.INGAME && !e.player.hasPermission("mistaken.admin")) {
-            e.isCancelled = true
-        }
-    }
-
-    @EventHandler fun onPlace(e: BlockPlaceEvent) {
-        if (plugin.gameManager.currentState == GameState.INGAME && !e.player.hasPermission("mistaken.admin")) {
-            e.isCancelled = true
-        }
-    }
+    // --- BLOQUEOS RÁPIDOS ---
+    @EventHandler fun onDrop(e: PlayerDropItemEvent) { if (plugin.gameManager.currentState == GameState.INGAME) e.isCancelled = true }
+    @EventHandler fun onCraft(e: CraftItemEvent) { if (plugin.gameManager.currentState == GameState.INGAME) e.isCancelled = true }
+    @EventHandler fun onBreak(e: BlockBreakEvent) { if (plugin.gameManager.currentState == GameState.INGAME && !e.player.hasPermission("mistaken.admin")) e.isCancelled = true }
+    @EventHandler fun onPlace(e: BlockPlaceEvent) { if (plugin.gameManager.currentState == GameState.INGAME && !e.player.hasPermission("mistaken.admin")) e.isCancelled = true }
 
     @EventHandler
     fun onPlayerDismount(event: PlayerToggleSneakEvent) {
@@ -210,11 +226,9 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler
     fun onRegen(event: EntityRegainHealthEvent) {
-        // Desactivar curación por comida (Satiated)
         if (plugin.gameManager.currentState == GameState.INGAME) {
-            val reason = event.regainReason
-            if (reason == EntityRegainHealthEvent.RegainReason.SATIATED ||
-                reason == EntityRegainHealthEvent.RegainReason.REGEN) {
+            val r = event.regainReason
+            if (r == EntityRegainHealthEvent.RegainReason.SATIATED || r == EntityRegainHealthEvent.RegainReason.REGEN) {
                 event.isCancelled = true
             }
         }

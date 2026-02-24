@@ -292,6 +292,7 @@ arena:
 errors:
   no-permission: "<prefix><red>権限がありません。"
   only-players: "<red>プレイヤーのみ実行可能です。"
+  ability-cooldown: "<red>La habilidad</red> <gold><skill></gold> <red>no está lista. Tiempo de recarga restante:</red> <yellow><time>s</yellow>"
   lang-not-found: "<prefix><red>その言語は存在しません。"
   no-money: "<prefix><red>所持金が足りません。"
   arena-not-found: "<prefix><red>アリーナ <white>{name}</white> は見つかりません。"

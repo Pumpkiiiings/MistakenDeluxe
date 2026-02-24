@@ -68,7 +68,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     fun resetHealth(player: Player) {
         val isKiller = plugin.gameManager.esAsesino(player.uniqueId)
         runOnMain {
-            val maxHP = if (isKiller) 200.0 else 20.0
+            val maxHP = if (isKiller) 100.0 else 20.0
             player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
             player.health = maxHP
             player.removePotionEffect(PotionEffectType.DARKNESS)

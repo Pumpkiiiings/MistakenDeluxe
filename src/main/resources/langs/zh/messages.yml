@@ -292,6 +292,7 @@ arena:
 errors:
   no-permission: "<prefix><red>你没有权限执行此操作。"
   only-players: "<red>仅限玩家执行。"
+  ability-cooldown: "<red>La habilidad</red> <gold><skill></gold> <red>no está lista. Tiempo de recarga restante:</red> <yellow><time>s</yellow>"
   lang-not-found: "<prefix><red>该语言不存在。"
   no-money: "<prefix><red>没有足够的积分。"
   arena-not-found: "<prefix><red>竞技场 <white>{name}</white> 不存在。"

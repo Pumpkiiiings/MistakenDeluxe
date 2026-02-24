@@ -57,6 +57,13 @@ class CommandRegistry(private val plugin: Mistaken) {
                 "Vincular Discord",
                 emptyList()
             )
+
+            // Adentro del manager.registerEventHandler(LifecycleEvents.COMMANDS)
+            registrar.register(
+                MistakenTestCommand.get(plugin),
+                "Comando de pruebas secretas para Admins",
+                listOf("mtest", "mt") // Alias cortos para no escribir tanto
+            )
         }
 
         plugin.logger.info("[CommandRegistry] Comandos registrados correctamente")

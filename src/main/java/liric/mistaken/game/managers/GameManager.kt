@@ -233,57 +233,66 @@ class GameManager(private val plugin: Mistaken) {
     }
 
     fun startInGame() {
-        val winner = voteManager.getWinningMap(plugin.arenaManager.getArenas())
-        if (winner == null) { resetToLobby(null); return }
-
-        val arena = plugin.arenaManager.getArena(winner)
-        if (arena == null) { resetToLobby(null); return }
+        val arenas = plugin.arenaManager.getArenas()
+        val winner = voteManager.getWinningMap(arenas) ?: run { resetToLobby(null); return }
+        val arena = plugin.arenaManager.getArena(winner) ?: run { resetToLobby(null); return }
 
         currentState = GameState.STARTING
         currentMapName = winner
 
-        // 1. Carga asíncrona del mundo (MapManager)
-        plugin.mapManager.loadArenaWorld(winner).thenAccept { aspWorld ->
-            // Volvemos al Main Thread para tocar la API de Bukkit
-            Bukkit.getScheduler().runTask(plugin, Runnable {
+        // Usamos corrutinas para que el server ni sienta la carga del mundo
+        scope.launch {
+            val aspWorld = plugin.mapManager.loadArenaWorld(winner).join()
+
+            withContext(plugin.bukkitDispatcher) {
                 if (aspWorld == null) {
                     resetToLobby(null)
-                    return@Runnable
+                    return@withContext
                 }
 
-                // --- LÓGICA DE MODO Y TIEMPO ---
+                // --- 🛡️ FILTRO DE MODOS MEJORADO (SEGURIDAD TOTAL) ---
                 timer = 15
                 if (!modeForced) {
-                    val chance = ThreadLocalRandom.current().nextInt(1, 101)
-                    currentMode = when {
-                        chance <= 60 -> MistakenMode.CLASSIC
-                        chance <= 75 -> MistakenMode.ONE_BOUNCE
-                        chance <= 90 -> MistakenMode.DOUBLE_KILLER
-                        else -> MistakenMode.FREEZE_TAG
+                    val onlineCount = Bukkit.getOnlinePlayers().count { !plugin.isIgnored(it) }
+
+                    // 🔥 LA REGLA DE ORO 🔥
+                    if (onlineCount < 3) {
+                        // Si hay 1 o 2 vatos, no le buscamos ruido al chicharrón: CLASSIC sí o sí.
+                        currentMode = MistakenMode.CLASSIC
+                    } else {
+                        // Si hay 3 o más, tiramos los dados
+                        val chance = java.util.concurrent.ThreadLocalRandom.current().nextInt(1, 101)
+                        var selected = when {
+                            chance <= 60 -> MistakenMode.CLASSIC
+                            chance <= 75 -> MistakenMode.ONE_BOUNCE
+                            chance <= 90 -> MistakenMode.DOUBLE_KILLER
+                            else -> MistakenMode.FREEZE_TAG
+                        }
+
+                        // Refinamos por si salió algo que ocupa más gente
+                        // Double Killer a fuerza ocupa 4 o más (2 killers y al menos 2 víctimas)
+                        if (selected == MistakenMode.DOUBLE_KILLER && onlineCount < 4) {
+                            selected = MistakenMode.CLASSIC
+                        }
+
+                        currentMode = selected
                     }
                 }
+                // ---------------------------------------------------
 
-                // 2. ACTUALIZACIÓN DE MUNDO EN LOCALIZACIONES
+                // Sincronizamos el mundo con los spawns
                 arena.asesinoSpawn?.world = aspWorld
                 arena.survivorSpawns.forEach { it.world = aspWorld }
 
-                // --- 🔥 AQUÍ VA LA OPTIMIZACIÓN (REEMPLAZO DEL BUCLE) 🔥 ---
-
-                // Preparamos la lista de localizaciones clonadas con el mundo correcto
+                // Registramos generadores en lote (batch)
                 val genLocations = arena.generators.map { loc ->
                     loc.clone().apply { world = aspWorld }
                 }
-
-                // Llamamos al método Batch que ya optimizamos.
-                // Internamente hace clearGenerators(), carga la config en IO y spawnea hologramas.
                 plugin.generatorManager.prepareArenaGenerators(genLocations)
 
-                // --- FIN DE LA OPTIMIZACIÓN ---
-
-                // 3. Setup de jugadores y feedback
                 setupPlayers(arena)
                 broadcastLocalized("game.map-loaded", Placeholder.parsed("map", winner))
-            })
+            }
         }
     }
 

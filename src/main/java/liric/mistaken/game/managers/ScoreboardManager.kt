@@ -13,13 +13,13 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * ScoreboardManager: Motor ultra-optimizado para Paper 1.21.4.
- * FIX: Sincronización con carpetas de idioma y actualización instantánea de vidas.
+ * ScoreboardManager: Motor Pro+ adaptado a tu estructura YAML.
+ * FIX: Ruta de llaves corregida (scoreboard.<estado>).
  */
 class ScoreboardManager(private val plugin: Mistaken) {
 
     private val boards = ConcurrentHashMap<UUID, FastBoard>()
-    private val mm = MiniMessage.miniMessage()
+    private val mm = plugin.mm
     private val legacy = LegacyComponentSerializer.legacySection()
 
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -31,33 +31,27 @@ class ScoreboardManager(private val plugin: Mistaken) {
 
     private fun startUpdateTask() {
         updateJob = scope.launch {
-            // Esperar a que el plugin de la luz verde
+            // Esperar a que el patrón de la luz verde
             while (isActive && !plugin.isReady) delay(500)
 
             while (isActive) {
                 try {
-                    // Actualización cíclica (Tiempo, Generadores, etc.)
                     updateAll()
                 } catch (e: Exception) {
-                    // Evitar spam si un archivo YAML está mal escrito
+                    // Si algo truena, que no se caiga el server, pariente
                 }
-                delay(500L) // 10 Ticks
+                delay(500L) // Actualiza cada 10 Ticks (2 veces por segundo)
             }
         }
     }
 
     /**
-     * 🔥 ACTUALIZACIÓN INSTANTÁNEA:
-     * Se llama desde CombatManager al cambiar la salud.
+     * Actualiza a un solo jugador (útil cuando le bajan vida).
      */
     fun updatePlayer(player: Player) {
         val board = boards[player.uniqueId] ?: return
         if (!player.isOnline || !plugin.isReady) return
-
-        // Renderizado asíncrono para no tocar el TPS del server
-        scope.launch {
-            renderBoard(player, board)
-        }
+        scope.launch { renderBoard(player, board) }
     }
 
     private fun updateAll() {
@@ -73,47 +67,53 @@ class ScoreboardManager(private val plugin: Mistaken) {
         val gm = plugin.gameManager
         val uuid = player.uniqueId
 
-        // 1. RECOLECCIÓN DE DATOS (Frescos de la RAM)
+        // 1. RECOLECCIÓN DE DATOS
         val onlineCount = Bukkit.getOnlinePlayers().size
         val lives = gm.combatManager.getHealth(player).toString()
 
-        // Formateo de tiempo mm:ss
+        // Formateo de tiempo (00:00 o s)
         val timeStr = if (gm.timer >= 60) {
             String.format("%02d:%02d", gm.timer / 60, gm.timer % 60)
         } else {
-            "${gm.timer}s"
+            "${gm.timer}"
         }
 
-        val mapName = gm.currentMapName ?: "---"
+        val mapName = gm.currentMapName
         val completed = plugin.generatorManager.getCompletedCount().toString()
         val total = plugin.generatorManager.getTotalGenerators().toString()
 
         val state = gm.currentState
         val mode = gm.currentMode
 
-        // 2. 🔥 CARGA DE CONFIGURACIÓN (Sistema Pro+ de Carpetas)
-        val langCode = plugin.playerDataManager.getLanguage(uuid) ?: "es"
-        // Buscamos el archivo principal (messages.yml) dentro de la carpeta (langs/es/)
-        val config = plugin.messageConfig.getSpecificFile(player, langCode)
+        // 2. 🔥 CARGA DE CONFIGURACIÓN
+        // Buscamos en el archivo "messages" de la carpeta del idioma del jugador
+        val config = plugin.messageConfig.getSpecificFile(player, "messages")
 
-        // Determinar qué sección del scoreboard mostrar
-        val stateKey = if (state == GameState.INGAME) {
-            "ingame_${mode.name.lowercase()}"
-        } else {
-            state.name.lowercase()
+        // 3. DETERMINAR RUTA SEGÚN TU YAML
+        // scoreboard:
+        //   lobby: ...
+        //   ingame_classic: ...
+        val stateKey = when (state) {
+            GameState.INGAME -> "ingame_${mode.name.lowercase()}"
+            else -> state.name.lowercase()
         }
-
         val path = "scoreboard.$stateKey"
 
-        // 3. ACTUALIZAR TÍTULO (Legacy para FastBoard)
-        val rawTitle = config.getString("scoreboard.title") ?: "<bold>MISTAKEN"
+        // 4. ACTUALIZAR TÍTULO
+        val rawTitle = config.getString("scoreboard.title") ?: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN"
         board.updateTitle(legacy.serialize(mm.deserialize(rawTitle)))
 
-        // 4. PROCESAR LÍNEAS
+        // 5. PROCESAR LÍNEAS
         val rawLines = config.getStringList(path)
+        if (rawLines.isEmpty()) {
+            // Si te sale esto en el juego, es que la ruta en el YAML está mal, carnal
+            board.updateLines(listOf("§cError: $path", "§cvacío en YAML"))
+            return
+        }
+
         val processedLines = mutableListOf<String>()
 
-        // Cache de lista de asesinos para no repetir el proceso
+        // Cache de asesinos para no procesar el loop por cada línea
         val killerLines = if (rawLines.any { it.contains("%killers%") }) getKillerDisplayStrings(gm) else emptyList()
 
         for (line in rawLines) {
@@ -122,7 +122,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 continue
             }
 
-            // Reemplazo de placeholders ultra-rápido
+            // Reemplazo de placeholders al puro centavo
             val formatted = line
                 .replace("%player%", player.name)
                 .replace("%timer%", timeStr)
@@ -130,13 +130,14 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 .replace("%online%", onlineCount.toString())
                 .replace("%completed%", completed)
                 .replace("%total%", total)
-                .replace("%lives%", lives) // <--- REEMPLAZO DE VIDAS
+                .replace("%lives%", lives)
+                .replace("{", "<").replace("}", ">") // Fix por si usas llaves en vez de <>
 
-            // Deserialización final
+            // Convertimos de MiniMessage a Legacy (§) para que FastBoard mande el paquete
             processedLines.add(legacy.serialize(mm.deserialize(formatted)))
         }
 
-        // 5. ENVIAR PAQUETES
+        // 6. ENVIAR PAQUETES
         board.updateLines(processedLines)
     }
 
@@ -145,14 +146,15 @@ class ScoreboardManager(private val plugin: Mistaken) {
         val ids = gm.asesinosUUIDs
 
         if (ids.isEmpty()) {
-            lines.add(legacy.serialize(mm.deserialize(" <red>Buscando...")))
+            lines.add(legacy.serialize(mm.deserialize(" <gray>Ninguno")))
             return lines
         }
 
         for (id in ids) {
             val killer = Bukkit.getPlayer(id)
             if (killer != null && killer.isOnline) {
-                lines.add(legacy.serialize(mm.deserialize(" <red>• ${killer.name}")))
+                // Estilo tétrico para la lista de asesinos
+                lines.add(legacy.serialize(mm.deserialize(" <white>• <red>${killer.name}")))
             }
         }
         return lines
@@ -166,10 +168,8 @@ class ScoreboardManager(private val plugin: Mistaken) {
         boards[uuid] = FastBoard(player)
     }
 
-    fun removePlayer(player: Player) = removePlayer(player.uniqueId)
-
-    fun removePlayer(uuid: UUID) {
-        boards.remove(uuid)?.let { if (!it.isDeleted) it.delete() }
+    fun removePlayer(player: Player) {
+        boards.remove(player.uniqueId)?.let { if (!it.isDeleted) it.delete() }
     }
 
     fun removeAll() {
