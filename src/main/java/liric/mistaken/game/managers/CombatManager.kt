@@ -1,20 +1,10 @@
 package liric.mistaken.game.managers
 
-import fr.skytasul.glowingentities.GlowingEntities;
-import com.github.retrooper.packetevents.PacketEvents
-import com.github.retrooper.packetevents.event.PacketListenerAbstract
-import com.github.retrooper.packetevents.event.PacketReceiveEvent
-import com.github.retrooper.packetevents.event.PacketSendEvent
-import com.github.retrooper.packetevents.protocol.entity.data.EntityData
-import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes
-import com.github.retrooper.packetevents.protocol.packettype.PacketType
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.api.events.MistakenDeathEvent
-import liric.mistaken.game.enums.MistakenMode
-import net.kyori.adventure.text.format.NamedTextColor
+import liric.mistaken.game.enums.GameState
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.title.Title
 import org.bukkit.*
@@ -24,18 +14,17 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
-import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.metadata.FixedMetadataValue
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.roundToInt
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * CombatManager: Motor de Daño y Estado del Jugador.
- * FIX: Inyección de paquetes (PacketListener) para un Glow Privado perfecto y sin parpadeos.
+ * CombatManager: Motor de Daño y Radar de Latidos (NERFED).
  */
 class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
@@ -44,44 +33,84 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     private val killerCooldowns = ConcurrentHashMap<UUID, Long>()
     private val freezeDeathJobs = ConcurrentHashMap<UUID, Job>()
 
-    // 🔥 EL NUEVO CACHÉ: Guarda las ID de los jugadores que están siendo cazados
-    private val huntedEntities = ConcurrentHashMap<Int, Long>()
-
     private val combatScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val cooldownMs = 2000L
     private val mm = plugin.mm
 
     init {
-        // 🔥 EL SECUESTRADOR DE PAQUETES 🔥
-        // Esto intercepta la información del servidor antes de que llegue a las pantallas.
-        PacketEvents.getAPI().eventManager.registerListener(object : PacketListenerAbstract() {
-            override fun onPacketSend(event: PacketSendEvent) {
-                if (event.packetType == PacketType.Play.Server.ENTITY_METADATA) {
-                    val packet = WrapperPlayServerEntityMetadata(event)
+        startRadarTask()
+    }
 
-                    // ¿Es una entidad marcada?
-                    val expireTime = huntedEntities[packet.entityId] ?: return
+    /**
+     * 🛰️ MOTOR DE RASTREO (VERSIÓN NERFEADA):
+     * - Glow: 10 bloques.
+     * - ActionBar: Amarillo, sin distancia.
+     * - Sonido: Intensidad escalada por proximidad.
+     */
+    private fun startRadarTask() {
+        combatScope.launch {
+            while (isActive && !plugin.isReady) delay(1000)
 
-                    // Si ya se acabó el tiempo del glow, lo borramos de la lista
-                    if (System.currentTimeMillis() > expireTime) {
-                        huntedEntities.remove(packet.entityId)
-                        return
-                    }
+            while (isActive) {
+                if (plugin.gameManager.currentState == GameState.INGAME) {
+                    val killer = plugin.gameManager.getCurrentAsesino()
 
-                    // ¿El que está viendo esto es un asesino? Si no, lo dejamos pasar normal
-                    val receiver = event.getPlayer<Player>() ?: return
-                    if (!plugin.gameManager.esAsesino(receiver.uniqueId)) return
+                    if (killer != null && killer.isOnline) {
+                        val killerLoc = killer.location
+                        var minDistance = Double.MAX_VALUE
+                        var foundSomeone = false
 
-                    // Inyectar el bit de GLOW (0x40) a la fuerza
-                    packet.entityMetadata.forEach { data ->
-                        if (data.index == 0 && data.type == EntityDataTypes.BYTE) {
-                            val currentMask = data.value as Byte
-                            data.value = (currentMask.toInt() or 0x40).toByte()
+                        withContext(plugin.bukkitDispatcher) {
+                            Bukkit.getOnlinePlayers().forEach { target ->
+                                if (target.uniqueId != killer.uniqueId &&
+                                    target.gameMode == GameMode.SURVIVAL &&
+                                    !plugin.isIgnored(target)) {
+
+                                    val dist = killerLoc.distance(target.location)
+
+                                    // 1. 🔥 NERF: GLOW SOLO A 10 BLOQUES
+                                    if (dist <= 10.0) {
+                                        target.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, 30, 0, false, false, false))
+                                    }
+
+                                    // 2. DETECCIÓN PARA LATIDOS (Máximo 30m)
+                                    if (dist <= 30.0) {
+                                        if (dist < minDistance) {
+                                            minDistance = dist
+                                            foundSomeone = true
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 3. FEEDBACK SENSORIAL ESCALADO
+                            if (foundSomeone) {
+                                // 🔥 NERF: ActionBar Amarilla y sin mostrar los metros
+                                killer.sendActionBar(mm.deserialize(
+                                    "<yellow>Escuchas el latido de alguien.."
+                                ))
+
+                                // 🔥 MEJORA: Latido Progresivo (Más intenso entre más cerca)
+                                // Volumen: 0.4 a 1.2 | Pitch: 0.5 a 1.5
+                                val volume = when {
+                                    minDistance < 5.0 -> 1.2f
+                                    minDistance < 15.0 -> 0.8f
+                                    else -> 0.4f
+                                }
+                                val pitch = when {
+                                    minDistance < 5.0 -> 1.5f
+                                    minDistance < 15.0 -> 1.0f
+                                    else -> 0.6f
+                                }
+
+                                killer.playSound(killer.location, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, volume, pitch)
+                            }
                         }
                     }
                 }
+                delay(500) // 10 Ticks
             }
-        })
+        }
     }
 
     private inline fun runOnMain(crossinline block: () -> Unit) {
@@ -89,7 +118,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         else combatScope.launch(plugin.bukkitDispatcher) { block() }
     }
 
-    // --- IMPLEMENTACIÓN DE LA API ---
+    // --- MÉTODOS DE LA API (SE MANTIENEN IGUAL) ---
+
     override fun getHealth(player: Player): Int = player.health.toInt()
 
     override fun setHealth(player: Player, health: Int) {
@@ -110,7 +140,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     fun resetHealth(player: Player) {
         val isKiller = plugin.gameManager.esAsesino(player.uniqueId)
         runOnMain {
-            val maxHP = if (isKiller) 160.0 else 20.0 // 80 Corazones para Asesino, 10 para Superviviente
+            val maxHP = if (isKiller) 160.0 else 20.0
             player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
             player.health = maxHP
             player.removePotionEffect(PotionEffectType.DARKNESS)
@@ -119,26 +149,19 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         }
     }
 
-    // --- MOTOR DE DAÑO (TRUE DAMAGE) ---
     fun processTrueDamage(victim: Player, attacker: Player?, amount: Double) {
         if (isFrozen(victim)) return
         val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
-
         runOnMain {
             val nextHP = (victim.health - amount).coerceAtLeast(0.0)
             victim.health = nextHP
-
-            if (!isVictimKiller) {
-                if (attacker != null) aplicarHuntersMark(attacker, victim)
-
-                if (nextHP <= 4.0 && nextHP > 0.0 && !victim.hasPotionEffect(PotionEffectType.DARKNESS)) {
-                    val rawMsg = plugin.messageConfig.getRawString(victim, "combat.critical-wound", "<red><bold>¡TUS PIERNAS FALLAN!</bold> <gray>Busca ayuda o arrástrate.")
+            if (!isVictimKiller && nextHP <= 4.0 && nextHP > 0.0) {
+                if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {
+                    val rawMsg = plugin.messageConfig.getRawString(victim, "combat.critical-wound", "<red><bold>¡TUS PIERNAS FALLAN!</bold>")
                     victim.sendMessage(mm.deserialize(rawMsg))
                     victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, Int.MAX_VALUE, 0, false, false, true))
-                    victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 0.5f)
                 }
             }
-
             victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1.0f, 1.0f)
             victim.world.spawnParticle(Particle.BLOCK, victim.location.add(0.0, 1.0, 0.0), 10, 0.2, 0.2, 0.2, Material.REDSTONE_BLOCK.createBlockData())
             if (plugin.isReady) plugin.scoreboardManager.updatePlayer(victim)
@@ -151,7 +174,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         if (event.entity.hasMetadata("mistaken_processing")) return
         val victim = event.entity as? Player ?: return
         val attacker = event.damager as? Player ?: return
-
         val isAttackerKiller = plugin.gameManager.esAsesino(attacker.uniqueId)
         val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
 
@@ -166,7 +188,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             processTrueDamage(victim, attacker, 3.0)
             return
         }
-
         if (!isAttackerKiller && isVictimKiller) {
             event.isCancelled = true
             victim.setMetadata("mistaken_processing", FixedMetadataValue(plugin, true))
@@ -174,36 +195,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             victim.removeMetadata("mistaken_processing", plugin)
             return
         }
-
-        if (!isAttackerKiller && !isVictimKiller) event.isCancelled = true
     }
 
-    /**
-     * 🔥 MARCA DEL CAZADOR (Glow Privado):
-     * Usa la API de GlowingEntities para que SOLO el asesino vea a la víctima.
-     */
-    private fun aplicarHuntersMark(killer: Player, victim: Player) {
-        plugin.glowingAPI.setGlowing(victim, killer, org.bukkit.ChatColor.YELLOW)
-
-        killer.sendActionBar(plugin.messageConfig.getMessage(
-            killer,
-            "combat.hunters-mark",
-            Placeholder.parsed("player", victim.name)
-        ))
-        killer.playSound(killer.location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 1.5f)
-
-        combatScope.launch {
-            delay(5000) // 5 segundos de cacería
-
-            runOnMain {
-                if (killer.isOnline && victim.isOnline) {
-                    plugin.glowingAPI.unsetGlowing(victim, killer)
-                }
-            }
-        }
-    }
-
-    // --- SALIDA Y LIMPIEZA ---
     fun removePlayerData(uuid: UUID) {
         val p = Bukkit.getPlayer(uuid)
         p?.let {
@@ -224,14 +217,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         killerCooldowns.clear()
         freezeDeathJobs.values.forEach { it.cancel() }
         freezeDeathJobs.clear()
-        huntedEntities.clear()
-    }
-
-    fun soltarPasajero(vehicle: Player) {
-        vehicle.passengers.forEach {
-            vehicle.removePassenger(it)
-            if (it is Player && it.health <= 4.0) it.isSwimming = true
-        }
     }
 
     private fun handleDeath(victim: Player, isHypothermia: Boolean) {
@@ -241,13 +226,11 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             victim.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
             frozenPlayers.remove(victim.uniqueId)
         }
-
         if (plugin.gameManager.esAsesino(victim.uniqueId)) {
             giveWinRewards(false)
             plugin.gameManager.endGame("game.killer-died-victory", false)
             return
         }
-
         val killer = plugin.gameManager.getCurrentAsesino()
         if (killer != null) {
             Bukkit.getPluginManager().callEvent(MistakenDeathEvent(victim, killer))
@@ -288,9 +271,15 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         val killers = plugin.gameManager.asesinosUUIDs
         val winners = if (killerWon) Bukkit.getOnlinePlayers().filter { killers.contains(it.uniqueId) }
         else Bukkit.getOnlinePlayers().filter { !killers.contains(it.uniqueId) && it.gameMode != GameMode.SPECTATOR }
-
         combatScope.launch(Dispatchers.IO) {
             winners.forEach { Mistaken.economy?.depositPlayer(it, if (killerWon) 500.0 else 200.0) }
+        }
+    }
+
+    fun soltarPasajero(vehicle: Player) {
+        vehicle.passengers.forEach {
+            vehicle.removePassenger(it)
+            if (it is Player && it.health <= 4.0) it.isSwimming = true
         }
     }
 
@@ -306,7 +295,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.0
             victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, false))
             victim.world.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
-
             startFreezeTimer(victim)
             plugin.gameManager.broadcastLocalized("game.player-frozen", Placeholder.parsed("player", victim.name))
             plugin.gameManager.checkWinCondition()
@@ -320,13 +308,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 withContext(plugin.bukkitDispatcher) {
                     if (victim.isOnline) {
                         val timeFormatted = String.format("%d:%02d", timeLeft / 60, timeLeft % 60)
-                        val color = when {
-                            timeLeft <= 20 -> "<red>"
-                            timeLeft <= 60 -> "<yellow>"
-                            else -> "<aqua>"
-                        }
                         victim.showTitle(Title.title(plugin.messageConfig.getMessage(victim, "game.freeze-title"),
-                            plugin.messageConfig.getMessage(victim, "game.freeze-subtitle", Placeholder.parsed("color", color), Placeholder.parsed("time", timeFormatted))))
+                            plugin.messageConfig.getMessage(victim, "game.freeze-subtitle", Placeholder.parsed("time", timeFormatted))))
                     }
                 }
                 delay(1000L); timeLeft--
