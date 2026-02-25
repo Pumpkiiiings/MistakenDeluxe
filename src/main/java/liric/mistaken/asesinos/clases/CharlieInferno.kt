@@ -10,8 +10,15 @@ import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
-import org.bukkit.*
-import org.bukkit.entity.*
+import org.bukkit.Bukkit
+import org.bukkit.Location
+import org.bukkit.Material
+import org.bukkit.Sound
+import org.bukkit.SoundCategory
+import org.bukkit.entity.BlockDisplay
+import org.bukkit.entity.EvokerFangs
+import org.bukkit.entity.ItemDisplay
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -24,9 +31,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * Charlie Inferno: El Heraldo de los Elementos.
- * FIX: Equipamiento robusto, Multi-Lang y optimización de hilos.
+ * FIX: Sistema de música 3D con atenuación natural y Coroutines.
  */
 class CharlieInferno : Asesino(
     "charlie",
@@ -34,11 +41,16 @@ class CharlieInferno : Asesino(
 ) {
 
     private val pathBase = "asesinos.charlie"
+    // 🔥 EL ID DE TU MÚSICA (Debe durar unos 2-3 segundos por loop, o ser un sonido constante)
     private val sonidoId = "mistaken:charlieinferno"
+
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
+
+    // Rastreador del loop de música
     private val musicJobs = ConcurrentHashMap<UUID, Job>()
+
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val orbitMaterials = listOf(Material.MAGMA_BLOCK, Material.PACKED_ICE)
 
@@ -46,16 +58,12 @@ class CharlieInferno : Asesino(
         preLoadKit()
     }
 
-    /**
-     * 🔥 PRE-LOAD (Mecánicas Globales):
-     * Jala los materiales del asesinos.yml de la raíz.
-     */
     private fun preLoadKit() {
         val config = plugin.configManager.getAsesinos()
-        val armor = listOf("casco", "pechera", "pantalones", "botas")
-        val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
+        val armorKeys = listOf("casco", "pechera", "pantalones", "botas")
+        val itemKeys = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
-        armor.forEach { k ->
+        armorKeys.forEach { k ->
             config.getString("$pathBase.armadura.$k")?.let { id ->
                 if (id != "none") {
                     itemKitCache[k] = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.NETHERITE_HELMET)
@@ -63,7 +71,7 @@ class CharlieInferno : Asesino(
             }
         }
 
-        items.forEach { k ->
+        itemKeys.forEach { k ->
             config.getString("$pathBase.items.$k")?.let { id ->
                 if (id != "none") {
                     itemKitCache[k] = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
@@ -81,10 +89,6 @@ class CharlieInferno : Asesino(
         }
     }
 
-    /**
-     * 🛠️ EQUIPAR (SISTEMA MULTI-IDIOMA):
-     * Entrega el kit basado en el idioma del jugador.
-     */
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
@@ -130,9 +134,55 @@ class CharlieInferno : Asesino(
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()
+
+        // 🔥 ¡Que suene la rola del Diablo! 🔥
+        iniciarMusicaCharlie(player)
     }
 
-    // --- 🔥 HABILIDADES (Optimizadas) ---
+    // --- 🎵 MOTOR DE MÚSICA 3D ---
+
+    /**
+     * Inicia un bucle asíncrono que emite el sonido de Charlie constantemente.
+     * La intensidad depende de la distancia gracias al motor nativo de Minecraft.
+     */
+    /**
+     * Inicia un bucle asíncrono que emite el sonido de Charlie constantemente.
+     * FIX: Evita que el sonido se empalme usando stopSound antes del playSound.
+     */
+    private fun iniciarMusicaCharlie(player: Player) {
+        val uuid = player.uniqueId
+        musicJobs.remove(uuid)?.cancel()
+
+        val job = scope.launch {
+            while (isActive && player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
+                withContext(plugin.bukkitDispatcher) {
+
+                    // Detenemos el sonido anterior en todos lados para que no se empalme
+                    Bukkit.getOnlinePlayers().forEach { p ->
+                        p.stopSound(sonidoId, SoundCategory.RECORDS)
+                    }
+
+                    // 🔥 LA MAGIA: Le decimos al mundo que el sonido "sale" del Asesino.
+                    // Al usar el 'player' como fuente en lugar de su location estática,
+                    // Minecraft hace que la música lo siga a él y baje el volumen si los demás se alejan.
+                    player.world.playSound(player, sonidoId, SoundCategory.RECORDS, 2.0f, 1.0f)
+                }
+
+                // Espera de la canción (Asegúrate de que este número sea la duración de tu OGG)
+                delay(74000L)
+            }
+            withContext(plugin.bukkitDispatcher) { detenerMusica(uuid) }
+        }
+        musicJobs[uuid] = job
+        trackJob(job)
+    }
+
+    private fun detenerMusica(uuid: UUID) {
+        musicJobs.remove(uuid)?.cancel()
+        Bukkit.getOnlinePlayers().forEach { it.stopSound(sonidoId, SoundCategory.RECORDS) }
+    }
+
+    // --- 🔥 HABILIDADES ---
 
     private fun habilidadInfierno(player: Player) {
         player.world.getNearbyPlayers(player.location, 7.5).forEach { target ->
@@ -241,7 +291,7 @@ class CharlieInferno : Asesino(
             }.toMutableList()
         }
 
-        val anguloActual = angulos.getOrDefault(uuid, 0.0)
+        val anguloActual = (angulos.getOrDefault(uuid, 0.0) + 0.15) % (Math.PI * 2)
         val radio = 1.3
         for (i in entidades.indices) {
             val offset = if (i == 0) 0.0 else Math.PI
@@ -250,27 +300,6 @@ class CharlieInferno : Asesino(
             entidades[i].teleport(player.location.clone().add(x, if (i == 0) 1.8 else 0.8, z))
         }
         angulos[uuid] = (anguloActual + 0.15) % (Math.PI * 2)
-    }
-
-    private fun iniciarMusicaCharlie(player: Player) {
-        val uuid = player.uniqueId
-        if (musicJobs.containsKey(uuid)) return
-
-        val job = scope.launch {
-            while (isActive && player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
-                withContext(plugin.bukkitDispatcher) {
-                    player.world.players.forEach { p ->
-                        if (p.location.distanceSquared(player.location) < 1600) {
-                            p.stopSound(sonidoId, SoundCategory.RECORDS)
-                            p.playSound(player.location, sonidoId, SoundCategory.RECORDS, 2.0f, 1.0f)
-                        }
-                    }
-                }
-                delay(74000)
-            }
-        }
-        musicJobs[uuid] = job
-        trackJob(job)
     }
 
     override fun mostrarTrail(player: Player) {
@@ -283,11 +312,6 @@ class CharlieInferno : Asesino(
         }
     }
 
-    private fun detenerMusica(uuid: UUID) {
-        musicJobs.remove(uuid)?.cancel()
-        Bukkit.getOnlinePlayers().forEach { it.stopSound(sonidoId, SoundCategory.RECORDS) }
-    }
-
     private fun limpiarEntidades(uuid: UUID) {
         orbitadores.remove(uuid)?.forEach { it.remove() }
         angulos.remove(uuid)
@@ -295,7 +319,10 @@ class CharlieInferno : Asesino(
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        player?.let { limpiarEntidades(it.uniqueId); detenerMusica(it.uniqueId) }
+        player?.let {
+            limpiarEntidades(it.uniqueId)
+            detenerMusica(it.uniqueId)
+        }
         scope.coroutineContext.cancelChildren()
     }
 }
