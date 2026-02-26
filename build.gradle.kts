@@ -36,6 +36,7 @@ repositories {
     maven("https://repo.momirealms.net/releases/")
     maven("https://repo.helpch.at/releases")
     maven("https://repo.infernalsuite.com/repository/maven-snapshots/")
+    maven("https://mvn.lumine.io/repository/maven-public/")
 
     flatDir {
         dirs("libs")
@@ -57,6 +58,7 @@ dependencies {
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
 
     // APIs Externas (Solo para compilar)
+    compileOnly("com.ticxo.modelengine:ModelEngine:R4.0.4")
     compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
         exclude(group = "org.bukkit", module = "bukkit")

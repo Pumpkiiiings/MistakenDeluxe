@@ -101,6 +101,9 @@ abstract class Asesino(val id: String, val nombre: String) {
     /**
      * Limpieza profunda del asesino (Mantenido el fix de espectador).
      */
+
+
+
     open fun cleanup(player: Player?) {
         activeJobs.forEach { if (it.isActive) it.cancel() }
         activeJobs.clear()

@@ -78,6 +78,7 @@ class Mistaken : JavaPlugin() {
     val afkPlayers = mutableSetOf<UUID>()
     var lobbyLocation: Location? = null
     var isReady = false
+    val ignoredTestPlayers = mutableSetOf<UUID>()
 
     // --- Managers (Lateinit: Se inicializan en onEnable) ---
     lateinit var configManager: ConfigManager
@@ -392,7 +393,10 @@ class Mistaken : JavaPlugin() {
     // --- STATE CHECKS ---
     fun isInEditMode(player: Player) = staffEditMode.contains(player.uniqueId)
     fun isAFK(player: Player) = afkPlayers.contains(player.uniqueId)
-    fun isIgnored(player: Player) = isInEditMode(player) || isAFK(player)
+    fun isIgnored(player: Player): Boolean {
+        val uuid = player.uniqueId
+        return uuid in staffEditMode || uuid in afkPlayers || uuid in ignoredTestPlayers
+    }
 
     private fun sendLogo() {
         val b1 = "<#005f73>"
