@@ -32,6 +32,7 @@ import net.milkbowl.vault.economy.Economy
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
+import org.bukkit.plugin.RegisteredServiceProvider
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.plugin.ServicePriority
@@ -74,6 +75,7 @@ class Mistaken : JavaPlugin() {
         private set
 
     // --- Data Structures ---
+    var economy: Economy? = null
     val staffEditMode = mutableSetOf<UUID>()
     val afkPlayers = mutableSetOf<UUID>()
     var lobbyLocation: Location? = null
@@ -256,20 +258,33 @@ class Mistaken : JavaPlugin() {
     }
 
     private fun setupIntegrations(): Boolean {
-        // Economy (Vault)
-        val rsp = server.servicesManager.getRegistration(Economy::class.java)
+        // 1. Buscamos el registro de Vault en el sistema de servicios de Bukkit
+        val rsp: RegisteredServiceProvider<Economy>? = server.servicesManager.getRegistration(Economy::class.java)
+
         if (rsp == null) {
-            componentLogger.error(mm.deserialize("<red>Vault no encontrado o sin plugin de economía.</red>"))
+            // Si no hay registro, es que no tienes un plugin de economía (como Essentials o iConomy)
+            componentLogger.error(mm.deserialize("<red><b>[!]</b> Vault no encontró ningún plugin de economía compatible.</red>"))
             server.pluginManager.disablePlugin(this)
             return false
         }
+
+        // 🔥 LA CLAVE: Llenamos la variable global del companion object
         economy = rsp.provider
 
-        // CraftEngine
-        if (server.pluginManager.isPluginEnabled("CraftEngine")) {
-            craftEngineEnabled = true
-            componentLogger.info(mm.deserialize("<aqua>CraftEngine detectado.</aqua>"))
+        if (economy == null) {
+            componentLogger.error(mm.deserialize("<red><b>[!]</b> El proveedor de economía es nulo. Revisa Vault.</red>"))
+            server.pluginManager.disablePlugin(this)
+            return false
         }
+
+        componentLogger.info(mm.deserialize("<green>✔ Integración con Vault establecida correctamente.</green>"))
+
+        // 2. CraftEngine (Opcional - Soft Depend)
+        craftEngineEnabled = server.pluginManager.isPluginEnabled("CraftEngine")
+        if (craftEngineEnabled) {
+            componentLogger.info(mm.deserialize("<aqua>✔ CraftEngine detectado y vinculado.</aqua>"))
+        }
+
         return true
     }
 

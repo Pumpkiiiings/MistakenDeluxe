@@ -109,25 +109,49 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
     private fun handlePurchaseLogic(player: Player, killerId: String, precio: Int, tiene: Boolean) {
         val uuid = player.uniqueId
         val data = plugin.playerDataManager
+        val actual = data.getSelectedKiller(uuid)
 
+        // 1. Si ya lo tiene seleccionado, ni le movemos
+        if (killerId.equals(actual, ignoreCase = true)) {
+            player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.ya-seleccionado"))
+            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
+            return
+        }
+
+        // 2. Si ya es dueño pero no está seleccionado
         if (tiene) {
             data.setSelectedKiller(uuid, killerId)
             player.persistentDataContainer.set(plugin.assassinKey, PersistentDataType.STRING, killerId)
             player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.seleccionado", Placeholder.parsed("name", killerId)))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
             abrir(player)
+            return
+        }
+
+        // 3. LÓGICA DE COMPRA (CORREGIDA)
+        val econ = Mistaken.economy // O plugin.economy según lo tengas en el companion
+
+        if (econ == null) {
+            player.sendMessage(mm.deserialize("<red><b>[!]</b> Error: No se encontró un sistema de economía (Vault)."))
+            plugin.logger.severe("¡Ojo! Se intentó una compra pero 'Mistaken.economy' es NULL.")
+            return
+        }
+
+        if (econ.has(player, precio.toDouble())) {
+            // TIENE DINERO
+            econ.withdrawPlayer(player, precio.toDouble())
+            data.comprarAsesino(uuid, killerId)
+
+            player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.comprado", Placeholder.parsed("name", killerId)))
+            player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.5f)
+            abrir(player)
         } else {
-            val econ = Mistaken.economy
-            if (econ != null && econ.has(player, precio.toDouble())) {
-                econ.withdrawPlayer(player, precio.toDouble())
-                data.comprarAsesino(uuid, killerId)
-                player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.comprado", Placeholder.parsed("name", killerId)))
-                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.5f)
-                abrir(player)
-            } else {
-                player.sendMessage(plugin.messageConfig.getMessage(player, "errors.no-money"))
-                player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
-            }
+            // NO TIENE DINERO
+            player.sendMessage(plugin.messageConfig.getMessage(player, "errors.no-money"))
+            player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
+
+            // Debug opcional para ti en consola:
+            // println("DEBUG: Player \${player.name} balance: \${econ.getBalance(player)} | Price: \$precio")
         }
     }
 

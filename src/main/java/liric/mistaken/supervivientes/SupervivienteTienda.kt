@@ -18,12 +18,11 @@ import java.util.*
 /**
  * [LIRIC-MISTAKEN 2.0]
  * SupervivienteTienda: Menú de selección de humanos.
- * Optimizado para leer de archivos divididos e inyectar componentes MiniMessage.
+ * FIX: Lógica de compra blindada (Vault null-check) para evitar mensajes de error falsos.
  */
 class SupervivienteTienda : MenuBase("supervivientes_tienda") {
 
     override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
-        // 1. Info local (Textos) y Global (Fierros/Mecánicas)
         val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes")
         val globalMecanicas = plugin.configManager.getSupervivientes()
 
@@ -34,7 +33,6 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
         val uuid = player.uniqueId
         val selected = data.getSelectedSurvivor(uuid)
 
-        // Labels del idioma
         val labelHumano = plugin.messageConfig.getMessage(player, "tienda.clase-humana")
         val labelSeleccionado = plugin.messageConfig.getMessage(player, "tienda.estado-seleccionado")
         val labelPoseido = plugin.messageConfig.getMessage(player, "tienda.estado-poseido")
@@ -46,16 +44,12 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
         for (survivorId in plugin.supervivienteManager.getClasesDisponibles().keys) {
             if (slotIndex >= slots.size) break
 
-            // --- DATOS VISUALES ---
             val nombreVisual = langInfo.getString("supervivientes.$survivorId.nombre") ?: survivorId
             val loreTienda = langInfo.getStringList("supervivientes.$survivorId.lore_tienda")
-
-            // --- DATOS MECÁNICOS ---
             val precio = globalMecanicas.getInt("supervivientes.$survivorId.precio", 0)
             val matStr = globalMecanicas.getString("supervivientes.$survivorId.icono_material", "IRON_CHESTPLATE")!!
             val iconoMat = Material.matchMaterial(matStr) ?: Material.IRON_CHESTPLATE
 
-            // --- LORE DINÁMICO ---
             val fullLore = mutableListOf<Component>().apply {
                 add(labelHumano)
                 add(Component.empty())
@@ -82,7 +76,6 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
                 }
             }
 
-            // --- RENDER ---
             gui.setItem(slots[slotIndex], ItemBuilder.from(iconoMat)
                 .name(mm.deserialize(nombreVisual))
                 .lore(fullLore.toList())
@@ -91,7 +84,6 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
                     handleLogic(player, survivorId, precio, tiene)
                 }
             )
-
             slotIndex++
         }
     }
@@ -99,13 +91,16 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
     private fun handleLogic(player: Player, id: String, precio: Int, tiene: Boolean) {
         val uuid = player.uniqueId
         val data = plugin.playerDataManager
+        val actual = data.getSelectedSurvivor(uuid)
 
-        if (id.equals(data.getSelectedSurvivor(uuid), ignoreCase = true)) {
+        // 1. Si ya lo tiene, no hacemos nada
+        if (id.equals(actual, ignoreCase = true)) {
             player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.ya-seleccionado"))
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
             return
         }
 
+        // 2. Si ya lo compró, solo lo seleccionamos
         if (tiene) {
             data.setSelectedSurvivor(uuid, id)
             val key = NamespacedKey(plugin, "selected_survivor")
@@ -113,18 +108,33 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
             player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.seleccionado", Placeholder.parsed("name", id)))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
             abrir(player)
+            return
+        }
+
+        // 3. 🔥 LÓGICA DE COMPRA BLINDADA 🔥
+        val economy = Mistaken.economy
+
+        // Si el plugin de economía no está cargado (Vault fail)
+        if (economy == null) {
+            player.sendMessage(mm.deserialize("<red><b>[!]</b> Error técnico: No se detectó el sistema de economía."))
+            plugin.logger.severe("Se intentó comprar el superviviente '$id' pero Mistaken.economy es NULL.")
+            return
+        }
+
+        val precioDouble = precio.toDouble()
+
+        if (economy.has(player, precioDouble)) {
+            // SÍ TIENE LANA
+            economy.withdrawPlayer(player, precioDouble)
+            data.comprarSuperviviente(uuid, id)
+
+            player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.comprado", Placeholder.parsed("name", id)))
+            player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
+            abrir(player)
         } else {
-            val economy = Mistaken.economy
-            if (economy != null && economy.has(player, precio.toDouble())) {
-                economy.withdrawPlayer(player, precio.toDouble())
-                data.comprarSuperviviente(uuid, id)
-                player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.comprado", Placeholder.parsed("name", id)))
-                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
-                abrir(player)
-            } else {
-                player.sendMessage(plugin.messageConfig.getMessage(player, "errors.no-money"))
-                player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
-            }
+            // NO TIENE LANA
+            player.sendMessage(plugin.messageConfig.getMessage(player, "errors.no-money"))
+            player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
         }
     }
 }
