@@ -49,9 +49,9 @@ class Mistaken : JavaPlugin() {
         lateinit var instance: Mistaken
             private set
 
-        @JvmStatic
+        @JvmStatic // Visible globalmente
         var economy: Economy? = null
-            private set
+            internal set
 
         @JvmStatic
         fun getHealthAPI(): HealthAPI? = instance.combatManager
@@ -75,7 +75,6 @@ class Mistaken : JavaPlugin() {
         private set
 
     // --- Data Structures ---
-    var economy: Economy? = null
     val staffEditMode = mutableSetOf<UUID>()
     val afkPlayers = mutableSetOf<UUID>()
     var lobbyLocation: Location? = null
