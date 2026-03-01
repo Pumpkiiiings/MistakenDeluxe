@@ -3,18 +3,17 @@ package liric.mistaken.game.managers
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.utils.mainThread
-import org.bukkit.Bukkit
-import org.bukkit.SoundCategory
+import net.kyori.adventure.key.Key
+import net.kyori.adventure.sound.Sound
+import net.kyori.adventure.sound.SoundStop
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import java.io.File
-import java.util.concurrent.ConcurrentHashMap
 
 /**
- * [LIRIC-MISTAKEN 2.0]
- * MusicManager: Motor musical unificado para fases de espera.
- * FIX: Carga de configuración desde la raíz del plugin (music.yml).
+ *[LIRIC-MISTAKEN 2.0]
+ * MusicManager: Motor musical unificado.
+ * FIX: Cero Disk I/O (Variables en caché) y 100% Async-Safe con Kyori Adventure.
  */
 class MusicManager(private val plugin: Mistaken) {
 
@@ -25,6 +24,10 @@ class MusicManager(private val plugin: Mistaken) {
     private var currentTrack: Track? = null
     private var isPlaying = false
 
+    // 🔥 FIX 1: Variables en Caché (RAM). ¡Nunca vuelvas a leer el disco duro en medio del juego!
+    private var cachedVolume: Float = 0.6f
+    private var cachedPitch: Float = 1.0f
+
     data class Track(val id: String, val duration: Int)
 
     init {
@@ -32,21 +35,17 @@ class MusicManager(private val plugin: Mistaken) {
         startMusicLoop()
     }
 
-    /**
-     * Carga la lista de canciones desde el archivo music.yml en la raíz.
-     */
     fun loadMusicConfig() {
         val musicFile = File(plugin.dataFolder, "music.yml")
-
-        // Si por alguna razón no existe, intentamos extraerlo del JAR
-        if (!musicFile.exists()) {
-            plugin.saveResource("music.yml", false)
-        }
+        if (!musicFile.exists()) plugin.saveResource("music.yml", false)
 
         val config = YamlConfiguration.loadConfiguration(musicFile)
         playlist.clear()
 
-        // Leemos la lista de mapas del YAML
+        // Guardamos el volumen y pitch en memoria RAM una sola vez
+        cachedVolume = config.getDouble("music.volume", 0.6).toFloat()
+        cachedPitch = config.getDouble("music.pitch", 1.0).toFloat()
+
         val list = config.getMapList("music.playlist")
         for (item in list) {
             val id = item["id"] as? String ?: continue
@@ -54,58 +53,43 @@ class MusicManager(private val plugin: Mistaken) {
             playlist.add(Track(id, duration))
         }
 
-        plugin.componentLogger.info(plugin.mm.deserialize("<gray>[Music] <white>${playlist.size}</white> canciones cargadas desde la raíz correctamente.</gray>"))
+        plugin.componentLogger.info(plugin.mm.deserialize("<gray>[Music] <white>${playlist.size}</white> canciones listas.</gray>"))
     }
 
     private fun startMusicLoop() {
         musicJob = scope.launch {
-            // Esperar a que el core esté listo (Base de datos, etc.)
             while (isActive && !plugin.isReady) delay(1000L)
 
             while (isActive) {
                 val state = plugin.gameManager.currentState
 
-                // --- LÓGICA DE ACTIVACIÓN ---
                 if (state == GameState.LOBBY || state == GameState.VOTING) {
-                    if (!isPlaying) {
-                        playRandomTrack()
-                    }
+                    if (!isPlaying && playlist.isNotEmpty()) playRandomTrack()
                 } else {
-                    // Si ya empezó la partida (STARTING o INGAME), matamos el sonido
                     if (isPlaying) stopAllMusic()
                 }
 
-                delay(1000L) // Chequeo ligero cada segundo (0 lag)
+                delay(1000L)
             }
         }
     }
 
     private suspend fun playRandomTrack() {
-        if (playlist.isEmpty()) return
-
         val track = playlist.random()
         currentTrack = track
         isPlaying = true
 
-        // Volvemos a leer volumen/pitch por si el admin los cambió en caliente
-        val musicFile = File(plugin.dataFolder, "music.yml")
-        val config = YamlConfiguration.loadConfiguration(musicFile)
+        // 🔥 FIX 2: Usamos Kyori Adventure. No requiere 'Location', suena directo en el cliente.
+        // Y como no usa Location, es 100% seguro enviarlo desde la corrutina sin laguear a Bukkit.
+        val soundPacket = Sound.sound(Key.key(track.id), Sound.Source.RECORD, cachedVolume, cachedPitch)
 
-        val volume = config.getDouble("music.volume", 0.6).toFloat()
-        val pitch = config.getDouble("music.pitch", 1.0).toFloat()
-
-        // Enviar sonido en el hilo principal (API de Bukkit)
-        withContext(plugin.mainThread) {
-            Bukkit.getOnlinePlayers().forEach { p ->
-                p.playSound(p.location, track.id, SoundCategory.RECORDS, volume, pitch)
-            }
+        plugin.server.onlinePlayers.forEach { p ->
+            p.playSound(soundPacket)
         }
 
-        // --- SISTEMA DE ESPERA INTELIGENTE ---
         var remaining = track.duration
         while (remaining > 0 && isPlaying) {
             val state = plugin.gameManager.currentState
-            // Si el estado ya no es de espera, cortamos el sonido en seco
             if (state != GameState.LOBBY && state != GameState.VOTING) {
                 stopAllMusic()
                 break
@@ -121,13 +105,13 @@ class MusicManager(private val plugin: Mistaken) {
         isPlaying = false
         val trackToStop = currentTrack ?: return
 
-        // Usamos el dispatcher para tocar la API de Bukkit
-        scope.launch(plugin.mainThread) {
-            Bukkit.getOnlinePlayers().forEach { p ->
-                p.stopSound(trackToStop.id, SoundCategory.RECORDS)
-            }
-            currentTrack = null
+        // Kyori Adventure también tiene detención de sonido asíncrona segura.
+        val stopPacket = SoundStop.named(Key.key(trackToStop.id))
+
+        plugin.server.onlinePlayers.forEach { p ->
+            p.stopSound(stopPacket)
         }
+        currentTrack = null
     }
 
     fun syncPlayer(player: Player) {
@@ -136,12 +120,9 @@ class MusicManager(private val plugin: Mistaken) {
 
         val track = currentTrack ?: return
         if (isPlaying) {
-            val musicFile = File(plugin.dataFolder, "music.yml")
-            val config = YamlConfiguration.loadConfiguration(musicFile)
-            val volume = config.getDouble("music.volume", 0.6).toFloat()
-            val pitch = config.getDouble("music.pitch", 1.0).toFloat()
-
-            player.playSound(player.location, track.id, SoundCategory.RECORDS, volume, pitch)
+            // Se usa el caché, instantáneo y sin lag.
+            val soundPacket = Sound.sound(Key.key(track.id), Sound.Source.RECORD, cachedVolume, cachedPitch)
+            player.playSound(soundPacket)
         }
     }
 

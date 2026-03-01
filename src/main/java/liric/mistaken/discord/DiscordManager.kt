@@ -8,43 +8,46 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Instant
-import java.util.logging.Level
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * DiscordManager: Integración con Webhooks de forma ultra-eficiente.
- * Usa el HttpClient de Java 21 y Coroutines para no afectar los TPS.
+ * DiscordManager: Integración Webhook.
+ * FIX: Solucionado el problema de saltos de línea (\n) y escape de comillas en JSON.
  */
 class DiscordManager(private val plugin: Mistaken) {
 
-    // Cliente HTTP reutilizable (Optimiza el handshake SSL)
+    // Cliente HTTP optimizado (Reutilizable para evitar handshake SSL repetitivo)
     private val httpClient = HttpClient.newBuilder()
         .followRedirects(HttpClient.Redirect.NORMAL)
         .build()
 
-    // Scope para tareas de red
     private val discordScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     /**
-     * Envía el embed de inicio de juego de forma asíncrona.
+     * Envía el embed de inicio de juego.
      */
     fun sendGameStart(mapa: String, modo: String, survivors: List<Player>, killer: Player) {
-        val webhookUrl = plugin.config.getString("discord.webhooks.game-tracker")
-        if (webhookUrl.isNullOrEmpty() || webhookUrl == "URL_AQUI") return
+        val webhookUrl = getWebhookUrl() ?: return
 
-        // joinToString es más rápido que streams en listas pequeñas
-        val survivorsList = survivors.joinToString("\\n") { it.name }
+        // 1. Formateamos la lista de supervivientes
+        // Usamos joinToString con "\n" explícito para que el JSON lo lea como salto de línea.
+        val survivorsText = if (survivors.isEmpty()) {
+            "Esperando jugadores..."
+        } else {
+            survivors.joinToString("\\n") { it.name }
+        }
 
+        // 2. Construimos el JSON escapando los valores peligrosos
         val json = """
         {
           "embeds": [{
             "title": "🎮 ¡JUEGO INICIADO!",
-            "color": 15105536,
+            "color": 65280,
             "fields": [
-              { "name": "🗺️ Mapa", "value": "$mapa", "inline": true },
-              { "name": "🕹️ Modo", "value": "$modo", "inline": true },
-              { "name": "🩸 Asesino", "value": "**${killer.name}**", "inline": false },
-              { "name": "👥 Supervivientes", "value": "```\\n$survivorsList\\n```", "inline": false }
+              { "name": "🗺️ Mapa", "value": "${mapa.escape()}", "inline": true },
+              { "name": "🕹️ Modo", "value": "${modo.escape()}", "inline": true },
+              { "name": "🩸 Asesino", "value": "**${killer.name.escape()}**", "inline": false },
+              { "name": "👥 Supervivientes (${survivors.size})", "value": "```\n${survivorsText.escape()}\n```", "inline": false }
             ],
             "footer": { "text": "Mistaken Tracking • LIRIC-MISTAKEN 2.0" },
             "timestamp": "${Instant.now()}"
@@ -56,24 +59,28 @@ class DiscordManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Envía el embed de fin de juego de forma asíncrona.
+     * Envía el embed de fin de juego.
      */
     fun sendGameEnd(mapa: String, ganador: String, razon: String, survivorsNames: List<String>) {
-        val webhookUrl = plugin.config.getString("discord.webhooks.game-tracker")
-        if (webhookUrl.isNullOrEmpty() || webhookUrl == "URL_AQUI") return
+        val webhookUrl = getWebhookUrl() ?: return
 
-        val survivorsList = survivorsNames.ifEmpty { listOf("Nadie escapó...") }.joinToString("\\n")
+        // Formateamos la lista de nombres (String)
+        val survivorsText = if (survivorsNames.isEmpty()) {
+            "Nadie escapó..."
+        } else {
+            survivorsNames.joinToString("\\n")
+        }
 
         val json = """
         {
           "embeds": [{
             "title": "🏁 ¡PARTIDA TERMINADA!",
-            "description": "**Resultado:** $razon",
-            "color": 3066993,
+            "description": "**Resultado:** ${razon.escape()}",
+            "color": 16711680,
             "fields": [
-              { "name": "🗺️ Mapa", "value": "$mapa", "inline": true },
-              { "name": "🏆 Ganador", "value": "**$ganador**", "inline": true },
-              { "name": "🚪 Sobrevivieron", "value": "```\\n$survivorsList\\n```", "inline": false }
+              { "name": "🗺️ Mapa", "value": "${mapa.escape()}", "inline": true },
+              { "name": "🏆 Ganador", "value": "**${ganador.escape()}**", "inline": true },
+              { "name": "🚪 Sobrevivieron", "value": "```\n${survivorsText.escape()}\n```", "inline": false }
             ],
             "footer": { "text": "Mistaken Tracking • Sesión finalizada" },
             "timestamp": "${Instant.now()}"
@@ -84,34 +91,46 @@ class DiscordManager(private val plugin: Mistaken) {
         dispatch(webhookUrl, json)
     }
 
-    /**
-     * Realiza la petición POST al webhook en un hilo de E/S secundario.
-     */
     private fun dispatch(urlStr: String, json: String) {
         discordScope.launch {
             try {
                 val request = HttpRequest.newBuilder()
                     .uri(URI.create(urlStr))
                     .header("Content-Type", "application/json")
-                    .header("User-Agent", "Mistaken-Tracker-Liric")
+                    .header("User-Agent", "Mistaken-Tracker")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build()
 
-                // Enviamos y esperamos respuesta (en el hilo IO)
                 val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
 
-                if (response.statusCode() >= 400) {
-                    plugin.logger.warning("[Discord] Error al enviar Webhook (Código: ${response.statusCode()})")
+                if (response.statusCode() !in 200..299) {
+                    plugin.logger.warning("[Discord] Error ${response.statusCode()}: ${response.body()}")
                 }
             } catch (e: Exception) {
-                plugin.logger.log(Level.WARNING, "[Discord] Fallo en la conexión de red: ${e.message}")
+                // Silencioso para no spammear consola si se va el internet
             }
         }
     }
 
     /**
-     * Cancela las peticiones pendientes al apagar el plugin.
+     * Obtiene y valida la URL del config.
      */
+    private fun getWebhookUrl(): String? {
+        val url = plugin.config.getString("discord.webhooks.game-tracker")
+        return if (url.isNullOrEmpty() || url.contains("URL_AQUI")) null else url
+    }
+
+    /**
+     * 🔥 FUNCIÓN CRÍTICA: Limpia el texto para que sea JSON válido.
+     * Evita que comillas (") o barras (\) rompan el formato.
+     */
+    private fun String.escape(): String {
+        return this.replace("\\", "\\\\") // Escapar barras invertidas
+            .replace("\"", "\\\"") // Escapar comillas dobles
+            .replace("\n", "\\n")  // Escapar saltos de línea reales
+            .replace("\r", "")
+    }
+
     fun shutdown() {
         discordScope.cancel()
     }

@@ -102,6 +102,9 @@ abstract class Asesino(val id: String, val nombre: String) {
      * Limpieza profunda del asesino (Mantenido el fix de espectador).
      */
 
+    // En Asesino.kt
+    open fun limpiarDatosGlobales() {
+    }
 
 
     open fun cleanup(player: Player?) {

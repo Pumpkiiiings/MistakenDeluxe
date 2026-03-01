@@ -1,20 +1,19 @@
 package liric.mistaken.game.managers
 
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.utils.FastBoard
-import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 
 /**
- * [LIRIC-MISTAKEN 2.0]
- * ScoreboardManager: Motor Pro+ adaptado a tu estructura YAML.
- * FIX: Ruta de llaves corregida (scoreboard.<estado>).
+ *[LIRIC-MISTAKEN 2.0]
+ * ScoreboardManager: Motor Pro+
+ * FIX: 100% Asíncrono (Zero-Lag TPS), optimización extrema de CPU y memoria.
  */
 class ScoreboardManager(private val plugin: Mistaken) {
 
@@ -22,99 +21,90 @@ class ScoreboardManager(private val plugin: Mistaken) {
     private val mm = plugin.mm
     private val legacy = LegacyComponentSerializer.legacySection()
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    private var updateJob: Job? = null
-
     init {
         startUpdateTask()
     }
 
     private fun startUpdateTask() {
-        updateJob = scope.launch {
-            // Esperar a que el patrón de la luz verde
-            while (isActive && !plugin.isReady) delay(500)
+        // 🔥 FIX 1: Tarea 100% Asíncrona (Fuera del hilo principal)
+        plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
+            if (!plugin.isReady) return@runAtFixedRate
 
-            while (isActive) {
-                try {
-                    updateAll()
-                } catch (e: Exception) {
-                    // Si algo truena, que no se caiga el server, pariente
-                }
-                delay(500L) // Actualiza cada 10 Ticks (2 veces por segundo)
+            try {
+                updateAll()
+            } catch (e: Exception) {
+                // Silencioso para no saturar consola
             }
-        }
+        }, 0L, 500L, TimeUnit.MILLISECONDS) // 500ms = 10 ticks
     }
 
-    /**
-     * Actualiza a un solo jugador (útil cuando le bajan vida).
-     */
     fun updatePlayer(player: Player) {
         val board = boards[player.uniqueId] ?: return
         if (!player.isOnline || !plugin.isReady) return
-        scope.launch { renderBoard(player, board) }
+
+        // También lo mandamos al hilo asíncrono para mantener el rendimiento
+        plugin.server.asyncScheduler.runNow(plugin) { _ ->
+            val gm = plugin.gameManager
+
+            // Calculamos rápidamente las variables solo para este jugador
+            val onlineCount = plugin.server.onlinePlayers.size.toString()
+            val timeStr = if (gm.timer >= 60) String.format("%02d:%02d", gm.timer / 60, gm.timer % 60) else gm.timer.toString()
+            val mapName = gm.currentMapName
+            val completed = plugin.generatorManager.getCompletedCount().toString()
+            val total = plugin.generatorManager.getTotalGenerators().toString()
+            val stateKey = if (gm.currentState == GameState.INGAME) "ingame_${gm.currentMode.name.lowercase()}" else gm.currentState.name.lowercase()
+            val path = "scoreboard.$stateKey"
+            val killerLines = getKillerDisplayStrings(gm)
+
+            // CORRECCIÓN: Le pasamos todos los argumentos que necesita
+            renderBoard(player, board, gm, path, onlineCount, timeStr, mapName, completed, total, killerLines)
+        }
     }
 
     private fun updateAll() {
+        val gm = plugin.gameManager
+
+        // 🔥 FIX 2: Pre-calculamos datos globales UNA SOLA VEZ, no 20 veces por cada jugador.
+        val onlineCount = plugin.server.onlinePlayers.size.toString()
+        val timeStr = if (gm.timer >= 60) String.format("%02d:%02d", gm.timer / 60, gm.timer % 60) else gm.timer.toString()
+        val mapName = gm.currentMapName
+        val completed = plugin.generatorManager.getCompletedCount().toString()
+        val total = plugin.generatorManager.getTotalGenerators().toString()
+        val stateKey = if (gm.currentState == GameState.INGAME) "ingame_${gm.currentMode.name.lowercase()}" else gm.currentState.name.lowercase()
+        val path = "scoreboard.$stateKey"
+
+        val killerLines = getKillerDisplayStrings(gm)
+
         boards.forEach { (uuid, board) ->
-            val player = Bukkit.getPlayer(uuid) ?: return@forEach
-            if (player.isOnline) {
-                renderBoard(player, board)
+            val player = Bukkit.getPlayer(uuid)
+            if (player != null && player.isOnline) {
+                renderBoard(player, board, gm, path, onlineCount, timeStr, mapName, completed, total, killerLines)
+            } else {
+                // Si el jugador se desconectó y quedó colgado, lo borramos de RAM
+                board.delete()
+                boards.remove(uuid)
             }
         }
     }
 
-    private fun renderBoard(player: Player, board: FastBoard) {
-        val gm = plugin.gameManager
-        val uuid = player.uniqueId
-
-        // 1. RECOLECCIÓN DE DATOS
-        val onlineCount = Bukkit.getOnlinePlayers().size
-        val lives = gm.combatManager.getHealth(player).toString()
-
-        // Formateo de tiempo (00:00 o s)
-        val timeStr = if (gm.timer >= 60) {
-            String.format("%02d:%02d", gm.timer / 60, gm.timer % 60)
-        } else {
-            "${gm.timer}"
-        }
-
-        val mapName = gm.currentMapName
-        val completed = plugin.generatorManager.getCompletedCount().toString()
-        val total = plugin.generatorManager.getTotalGenerators().toString()
-
-        val state = gm.currentState
-        val mode = gm.currentMode
-
-        // 2. 🔥 CARGA DE CONFIGURACIÓN
-        // Buscamos en el archivo "messages" de la carpeta del idioma del jugador
+    private fun renderBoard(
+        player: Player, board: FastBoard, gm: GameManager, path: String,
+        onlineCount: String, timeStr: String, mapName: String,
+        completed: String, total: String, killerLines: List<String>
+    ) {
         val config = plugin.messageConfig.getSpecificFile(player, "messages")
 
-        // 3. DETERMINAR RUTA SEGÚN TU YAML
-        // scoreboard:
-        //   lobby: ...
-        //   ingame_classic: ...
-        val stateKey = when (state) {
-            GameState.INGAME -> "ingame_${mode.name.lowercase()}"
-            else -> state.name.lowercase()
-        }
-        val path = "scoreboard.$stateKey"
-
-        // 4. ACTUALIZAR TÍTULO
         val rawTitle = config.getString("scoreboard.title") ?: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN"
         board.updateTitle(legacy.serialize(mm.deserialize(rawTitle)))
 
-        // 5. PROCESAR LÍNEAS
         val rawLines = config.getStringList(path)
         if (rawLines.isEmpty()) {
-            // Si te sale esto en el juego, es que la ruta en el YAML está mal, carnal
             board.updateLines(listOf("§cError: $path", "§cvacío en YAML"))
             return
         }
 
         val processedLines = mutableListOf<String>()
-
-        // Cache de asesinos para no procesar el loop por cada línea
-        val killerLines = if (rawLines.any { it.contains("%killers%") }) getKillerDisplayStrings(gm) else emptyList()
+        val lives = gm.combatManager.getHealth(player).toString()
 
         for (line in rawLines) {
             if (line.contains("%killers%")) {
@@ -122,45 +112,36 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 continue
             }
 
-            // Reemplazo de placeholders al puro centavo
+            // 🔥 FIX 3: Solo parseamos MiniMessage, es rapidísimo en memoria pura
             val formatted = line
                 .replace("%player%", player.name)
                 .replace("%timer%", timeStr)
                 .replace("%map%", mapName)
-                .replace("%online%", onlineCount.toString())
+                .replace("%online%", onlineCount)
                 .replace("%completed%", completed)
                 .replace("%total%", total)
                 .replace("%lives%", lives)
-                .replace("{", "<").replace("}", ">") // Fix por si usas llaves en vez de <>
+                .replace("{", "<").replace("}", ">")
 
-            // Convertimos de MiniMessage a Legacy (§) para que FastBoard mande el paquete
             processedLines.add(legacy.serialize(mm.deserialize(formatted)))
         }
 
-        // 6. ENVIAR PAQUETES
         board.updateLines(processedLines)
     }
 
     private fun getKillerDisplayStrings(gm: GameManager): List<String> {
-        val lines = mutableListOf<String>()
         val ids = gm.asesinosUUIDs
+        if (ids.isEmpty()) return listOf(legacy.serialize(mm.deserialize(" <gray>Ninguno")))
 
-        if (ids.isEmpty()) {
-            lines.add(legacy.serialize(mm.deserialize(" <gray>Ninguno")))
-            return lines
-        }
-
+        val lines = mutableListOf<String>()
         for (id in ids) {
             val killer = Bukkit.getPlayer(id)
             if (killer != null && killer.isOnline) {
-                // Estilo tétrico para la lista de asesinos
                 lines.add(legacy.serialize(mm.deserialize(" <white>• <red>${killer.name}")))
             }
         }
         return lines
     }
-
-    // --- GESTIÓN DE JUGADORES ---
 
     fun addPlayer(player: Player) {
         val uuid = player.uniqueId
@@ -173,9 +154,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
     }
 
     fun removeAll() {
-        updateJob?.cancel()
         boards.values.forEach { if (!it.isDeleted) it.delete() }
         boards.clear()
-        scope.cancel()
     }
 }

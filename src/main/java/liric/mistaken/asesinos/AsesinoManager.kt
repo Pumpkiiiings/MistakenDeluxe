@@ -5,7 +5,6 @@ import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.clases.*
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
-import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
@@ -13,9 +12,9 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * AsesinoManager: El mero jefe de los malos.
- * Optimizado: Se quitó la redundancia de armadura y se afinó el tiempo de carga.
+ * FIX: Memory Leaks parchados (Soporte EntityScheduler y Offline Cleanup).
  */
 class AsesinoManager(private val plugin: Mistaken) {
 
@@ -28,7 +27,7 @@ class AsesinoManager(private val plugin: Mistaken) {
     val catalogo: Map<String, Asesino> get() = clasesDisponibles
 
     init {
-        // Registro de los pesados
+        // Registro de los pesados (Estos son Singletons, cuidado con sus mapas internos)
         listOf(
             Slasher(), Herobrine(), Entity303(), NullAsesino(),
             ColorAndElectricity(), CharlieInferno(), Romeo(), Mariachi(),
@@ -47,23 +46,19 @@ class AsesinoManager(private val plugin: Mistaken) {
         }
         val clase = getClasePorId(claseId) ?: return
 
-        // Usamos el dispatcher que ya arreglamos para que no truene el hilo
+        // Aquí sí está bien usar el Dispatcher síncrono si necesitas animaciones pesadas
         plugin.pluginScope.launch(plugin.bukkitDispatcher) {
             clase.cleanup(player)
         }
         plugin.componentLogger.info(mm.deserialize("<gray>${player.name} sincronizado con ${clase.nombre}</gray>"))
     }
 
-    /**
-     * 🔥 EL FIX DE LA ARMADURA:
-     * Limpiamos todo y dejamos que la clase haga su chamba solita.
-     */
     fun registrarAsesino(player: Player, asesino: Asesino) {
         val uuid = player.uniqueId
 
         // 1. Limpieza total inmediata (Hilo Principal)
         player.inventory.clear()
-        player.inventory.armorContents = arrayOfNulls(4) // Dejarlo en ceros
+        player.inventory.armorContents = arrayOfNulls(4)
         asesinosActivos[uuid] = asesino
 
         // Feedback
@@ -71,19 +66,17 @@ class AsesinoManager(private val plugin: Mistaken) {
             Placeholder.component("name", mm.deserialize(asesino.nombre))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
-        // 2. Equipamiento con un solo delay
-        // Le damos 15 ticks para que el server se relaje después del teleport
-        Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-            if (!player.isOnline || !asesinosActivos.containsKey(uuid)) return@Runnable
+        // 2. 🔥 FIX: EntityScheduler de Paper (Adiós Memory Leak)
+        // A diferencia de Bukkit.getScheduler(), si el jugador se desconecta en este lapso,
+        // Paper destruye esta tarea y libera la RAM del jugador inmediatamente.
+        player.scheduler.execute(plugin, {
+            if (!player.isOnline || !asesinosActivos.containsKey(uuid)) return@execute
 
-            // 🔥 LA CLAVE: La clase se encarga de TODO su equipo
             asesino.equipar(player)
             asesino.mostrarTrail(player)
-
-            // Ajustes finales de inventario
             player.inventory.heldItemSlot = 8
-            player.updateInventory()
-        }, 15L)
+
+        }, null, 15L) // 15 ticks de retraso
     }
 
     fun equiparAsesino(player: Player, claseId: String) {
@@ -91,46 +84,45 @@ class AsesinoManager(private val plugin: Mistaken) {
         clase?.let { registrarAsesino(player, it) }
     }
 
-    /**
-     * Este vato ahora solo sirve como "limpia-sobras" por si algo quedó en el inventario.
-     */
-    private fun autoEquiparArmadura(player: Player) {
-        val inv = player.inventory
-        val contents = inv.contents
-
-        for (i in contents.indices) {
-            val item = contents[i] ?: continue
-            val typeName = item.type.name
-
-            when {
-                typeName.endsWith("_HELMET") && inv.helmet == null -> { inv.helmet = item; inv.setItem(i, null) }
-                typeName.endsWith("_CHESTPLATE") && inv.chestplate == null -> { inv.chestplate = item; inv.setItem(i, null) }
-                typeName.endsWith("_LEGGINGS") && inv.leggings == null -> { inv.leggings = item; inv.setItem(i, null) }
-                typeName.endsWith("_BOOTS") && inv.boots == null -> { inv.boots = item; inv.setItem(i, null) }
-            }
-        }
-    }
-
     fun removerAsesino(player: Player) {
         val asesino = asesinosActivos.remove(player.uniqueId)
 
-        plugin.pluginScope.launch(plugin.bukkitDispatcher) {
-            asesino?.cleanup(player) ?: clasesDisponibles.values.forEach { it.cleanup(player) }
+        // Limpiamos los datos del Asesino
+        asesino?.cleanup(player) ?: clasesDisponibles.values.forEach { it.cleanup(player) }
 
-            // Reset total de los fierros del jugador
-            player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
-            player.health = 20.0
-            player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
-            player.isGlowing = false
-            player.isSwimming = false
-        }
+        // Reset total de los fierros del jugador (Sin corrutinas extrañas, es más rápido directo)
+        player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
+        player.health = 20.0
+        player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
+        player.isGlowing = false
+        player.isSwimming = false
     }
 
     fun removerTodosLosAsesinos() {
-        asesinosActivos.keys.toList().forEach { uuid ->
-            Bukkit.getPlayer(uuid)?.let { removerAsesino(it) }
+        val iterador = asesinosActivos.keys.iterator()
+
+        while (iterador.hasNext()) {
+            val uuid = iterador.next()
+            val player = Bukkit.getPlayer(uuid)
+
+            if (player != null && player.isOnline) {
+                removerAsesino(player)
+            } else {
+                asesinosActivos[uuid]?.let {
+                    plugin.componentLogger.warn(mm.deserialize("<yellow>Limpiando datos fantasma del asesino desconectado: $uuid</yellow>"))
+                }
+            }
+            iterador.remove()
         }
+
         asesinosActivos.clear()
+
+        // 🔥 AQUÍ ESTÁ EL CAMBIO:
+        // Le decimos a todos los asesinos que vacíen su memoria RAM interna
+        clasesDisponibles.values.forEach { asesino ->
+            asesino.limpiarDatosGlobales()
+        }
+
         scope.coroutineContext.cancelChildren()
     }
 

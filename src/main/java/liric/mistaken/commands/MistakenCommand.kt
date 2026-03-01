@@ -122,25 +122,31 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "reload" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
 
-                // Tarea asíncrona para no laguear el hilo principal con I/O de disco
-                // Usamos el scheduler de Bukkit o una corrutina IO
-                plugin.server.scheduler.runTaskAsynchronously(plugin, Runnable {
-                    plugin.reloadConfig()
-                    plugin.messageConfig.loadAllLanguages()
-                    plugin.configManager.loadAsesinosConfig()
-                    plugin.configManager.loadSupervivientesConfig()
-                    plugin.configManager.reloadMenus()
+                // Usamos el scheduler asíncrono de Paper para no colgar el servidor mientras lee el disco
+                plugin.server.asyncScheduler.runNow(plugin) { _ ->
 
-                    // Volvemos al hilo principal para las interfaces de Triumph-GUI y mensajes
-                    plugin.server.scheduler.runTask(plugin, Runnable {
+                    // 1. Recarga de archivos físicos (En el hilo de fondo IO)
+                    plugin.reloadConfig()                  // Primero la config principal de Bukkit
+                    plugin.messageConfig.loadAllLanguages() // Luego el motor de idiomas
+                    plugin.configManager.loadAllConfigs()   // Luego las mecánicas (Asesinos y Supervivientes)
+                    plugin.configManager.reloadMenus()     // Finalmente limpia la caché de los archivos de menús
+
+                    // 2. Volvemos al hilo principal para actualizar las interfaces y enviar mensajes
+                    plugin.server.globalRegionScheduler.execute(plugin) {
+
+                        // Sincronizar las instancias de las tiendas (Triumph-GUI)
+                        // Esto debe ser en el hilo principal porque toca la API de Inventarios
                         plugin.shopSelector.reload()
                         plugin.asesinoTienda.reload()
                         plugin.supervivienteTienda.reload()
 
+                        // Enviar el mensaje de éxito usando el nuevo config cargado
                         sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.reload-success"))
+
+                        // Sonido de feedback (solo si el que ejecutó el comando es un jugador)
                         player?.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f)
-                    })
-                })
+                    }
+                }
             }
 
             "setmode" -> {

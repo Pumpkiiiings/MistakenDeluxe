@@ -1,11 +1,8 @@
 package liric.mistaken.game.managers
 
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.game.TerrorPacketFactory
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.utils.mainThread
-import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Sound
@@ -16,19 +13,17 @@ import org.bukkit.util.Vector
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.TimeUnit
 
+/**
+ * [LIRIC-MISTAKEN 2.0]
+ * AmbientManager: Motor de atmósfera de terror.
+ * FIX: Reemplazo de Corrutinas por AsyncScheduler (Paper) para Thread-Safety y precisión.
+ */
 class AmbientManager(private val plugin: Mistaken) {
 
-    private val mm = MiniMessage.miniMessage()
     private val packetFactory = TerrorPacketFactory(plugin)
-
-    // Optimizamos el Set: ConcurrentHashMap.newKeySet() es más eficiente que Collections.newSetFromMap
     private val trackedSurvivors = ConcurrentHashMap.newKeySet<UUID>()
-
-    private var job: Job? = null
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-
-    // Cache de efectos para evitar recrear objetos PotionEffect cada tick
     private val darknessEffect = PotionEffect(PotionEffectType.DARKNESS, 40, 0, false, false, false)
 
     init {
@@ -36,115 +31,98 @@ class AmbientManager(private val plugin: Mistaken) {
     }
 
     private fun startGlobalTask() {
-        job = scope.launch {
-            // Espera inicial
-            while (isActive && !plugin.isReady) { delay(500L) }
+        // Usamos AsyncScheduler: Ejecuta cada 100ms (10 veces/segundo) con precisión de reloj
+        plugin.server.asyncScheduler.runAtFixedRate(plugin, { task ->
+            if (!plugin.isReady) return@runAtFixedRate
 
-            var tickCounter = 0
+            if (plugin.gameManager.currentState == GameState.INGAME) {
+                val killer = plugin.gameManager.getCurrentAsesino() ?: return@runAtFixedRate
+                if (!killer.isOnline) return@runAtFixedRate
 
-            // OPTIMIZACIÓN: Bajamos a 10 ticks por segundo (delay 100ms)
-            // Para lógica ambiental de terror, 10 TPS es indistinguible de 20 y ahorra 50% de CPU.
-            while (isActive) {
-                if (plugin.gameManager.currentState == GameState.INGAME) {
-                    tickCounter++
+                // 🔥 FIX: Leemos la ubicación del asesino UNA VEZ (Thread-Safe snapshot si es posible)
+                // En Paper moderno, acceder a .location desde async puede ser riesgoso.
+                // Lo ideal es usar la API de rastreo o delegar al scheduler de la entidad.
 
-                    val killer = plugin.gameManager.getCurrentAsesino()
-                    if (killer != null && killer.isOnline) {
-                        val killerLoc = killer.location
-                        val world = killerLoc.world
-
-                        // Lista para agrupar a quiénes debemos darles efectos en el hilo principal
-                        // Esto evita saltar de hilo por cada jugador (Batching)
-                        val targetsForDarkness = mutableListOf<Player>()
-
-                        // NO USAR .toList(): Iteramos directamente sobre el ConcurrentSet
-                        val iterator = trackedSurvivors.iterator()
-                        while (iterator.hasNext()) {
-                            val uuid = iterator.next()
-                            val survivor = Bukkit.getPlayer(uuid)
-
-                            if (survivor == null || !survivor.isOnline) {
-                                iterator.remove()
-                                continue
-                            }
-
-                            // 1. Check de mundo (Matemática rápida antes de distanceSquared)
-                            if (survivor.world != world) continue
-
-                            val distSq = survivor.location.distanceSquared(killerLoc)
-
-                            // 2. Procesar Heartbeat (Async)
-                            // Retorna true si el jugador necesita el efecto de oscuridad
-                            if (processHeartbeat(survivor, distSq, tickCounter)) {
-                                targetsForDarkness.add(survivor)
-                            }
-
-                            // 3. Paranoia (Cada segundo aprox)
-                            if (tickCounter % 10 == 0) {
-                                processParanoia(survivor, distSq)
-                            }
-
-                            // 4. Sonidos (Cada 15 segundos aprox)
-                            if (tickCounter % 150 == 0) {
-                                if (ThreadLocalRandom.current().nextFloat() < 0.3f) {
-                                    playDistortedSound(survivor)
-                                }
-                            }
-                        }
-
-                        // --- EL GRAN AHORRO: UN SOLO SALTO AL HILO PRINCIPAL ---
-                        if (targetsForDarkness.isNotEmpty()) {
-                            withContext(plugin.mainThread) {
-                                for (target in targetsForDarkness) {
-                                    if (target.isOnline) target.addPotionEffect(darknessEffect)
-                                }
-                            }
-                        }
+                // Opción SEGURA: Delegar la lógica pesada a cada jugador
+                trackedSurvivors.forEach { uuid ->
+                    val survivor = Bukkit.getPlayer(uuid)
+                    if (survivor != null && survivor.isOnline) {
+                        // Ejecutamos la lógica en el hilo del jugador (RegionScheduler)
+                        // Esto permite leer .location y .distanceSquared sin crashear el servidor.
+                        survivor.scheduler.execute(plugin, {
+                            processSurvivorLogic(survivor, killer)
+                        }, null, 0L)
+                    } else {
+                        trackedSurvivors.remove(uuid)
                     }
                 }
-                delay(100L) // 10 veces por segundo
             }
-        }
+        }, 1L, 100L, TimeUnit.MILLISECONDS)
     }
 
     /**
-     * @return true si el jugador está lo suficientemente cerca para recibir oscuridad
+     * Lógica individual por superviviente (Ejecutada en el hilo seguro del jugador)
      */
-    private fun processHeartbeat(survivor: Player, distSq: Double, ticks: Int): Boolean {
-        if (distSq > 576.0) return false // 24 bloques
+    private fun processSurvivorLogic(survivor: Player, killer: Player) {
+        // Verificación rápida de mundo
+        if (survivor.world != killer.world) return
 
-        // Ritmo del latido (optimizado con valores fijos)
-        val rate = when {
-            distSq < 49.0 -> 2   // -7 bloques (Latido rápido)
-            distSq < 144.0 -> 4  // -12 bloques
-            else -> 8            // -24 bloques
+        val killerLoc = killer.location
+        val survivorLoc = survivor.location
+        val distSq = survivorLoc.distanceSquared(killerLoc)
+
+        // 1. Heartbeat & Oscuridad
+        // 24 bloques = 576.0
+        if (distSq < 576.0) {
+            val currentTick = Bukkit.getCurrentTick() // Tick actual del servidor
+
+            // Ritmo cardiaco basado en distancia
+            val rate = when {
+                distSq < 49.0 -> 4   // Muy cerca (cada 4 ticks = 5 latidos/seg)
+                distSq < 144.0 -> 10 // Cerca
+                else -> 20           // Lejos
+            }
+
+            if (currentTick % rate == 0) {
+                val isVeryClose = distSq < 64.0
+                val volume = if (isVeryClose) 1.2f else 0.6f
+                val pitch = if (isVeryClose) 1.1f else 0.7f
+                survivor.playSound(survivorLoc, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, volume, pitch)
+            }
+
+            // Aplicar oscuridad si está muy cerca (< 10 bloques)
+            if (distSq < 100.0) {
+                survivor.addPotionEffect(darknessEffect)
+            }
         }
 
-        if (ticks % rate == 0) {
-            val isVeryClose = distSq < 64.0
-            val volume = if (isVeryClose) 1.2f else 0.6f
-            val pitch = if (isVeryClose) 1.1f else 0.7f
-
-            // Sound API de Bukkit es mayormente thread-safe para enviar paquetes
-            survivor.playSound(survivor.location, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, volume, pitch)
-
-            return distSq < 100.0 // Necesita oscuridad
-        }
-
-        return false
-    }
-
-    private suspend fun processParanoia(survivor: Player, distSq: Double) {
-        if (distSq !in 225.0..1225.0) return
-
-        // Usamos nextFloat() que es ligeramente más rápido que nextInt(100)
+        // 2. Paranoia y Sonidos (Probabilidad aleatoria)
         val dice = ThreadLocalRandom.current().nextFloat()
 
-        if (dice < 0.03f) { // ~3% de probabilidad
+        // ~1% de probabilidad por tick (10 ticks/seg = ~10% por segundo)
+        if (dice < 0.005f) { // 0.5%
+            val dist = Math.sqrt(distSq)
+            if (dist in 15.0..35.0) { // Solo si el asesino no está pegado
+                triggerParanoia(survivor)
+            }
+        }
+
+        // Sonidos ambientales raros
+        if (dice > 0.998f) { // 0.2%
+            playDistortedSound(survivor)
+        }
+    }
+
+    private fun triggerParanoia(survivor: Player) {
+        val dice = ThreadLocalRandom.current().nextFloat()
+
+        if (dice < 0.4f) {
+            // Sombra periférica
             val shadowLoc = getPeripheryLocation(survivor)
-            packetFactory.spawnShadowEntity(survivor, shadowLoc, 15)
+            packetFactory.spawnShadowEntity(survivor, shadowLoc, 15) // 15 ticks
             survivor.playSound(survivor.location, Sound.ENTITY_ENDERMAN_STARE, 0.4f, 0.1f)
-        } else if (dice < 0.06f) {
+        } else {
+            // Piso falso
             packetFactory.sendFakeAir(survivor, survivor.location.subtract(0.0, 1.0, 0.0), 12)
             survivor.playSound(survivor.location, Sound.BLOCK_GLASS_BREAK, 0.3f, 0.5f)
         }
@@ -153,8 +131,12 @@ class AmbientManager(private val plugin: Mistaken) {
     private fun getPeripheryLocation(p: Player): Location {
         val loc = p.location
         val dir = loc.direction
+        // Vector perpendicular para obtener "el rabillo del ojo"
         val side = Vector(-dir.z, 0.0, dir.x).normalize()
+
         if (ThreadLocalRandom.current().nextBoolean()) side.multiply(-1.0)
+
+        // 7 bloques adelante, 4 a un lado
         return loc.add(dir.multiply(7.0)).add(side.multiply(4.0))
     }
 
@@ -166,6 +148,7 @@ class AmbientManager(private val plugin: Mistaken) {
             Sound.AMBIENT_CAVE
         )
         val random = ThreadLocalRandom.current()
+        // Sonido en una ubicación aleatoria cercana
         val loc = p.location.add(
             random.nextDouble(-5.0, 5.0),
             0.0,
@@ -183,7 +166,8 @@ class AmbientManager(private val plugin: Mistaken) {
     }
 
     fun stopAll() {
-        job?.cancel()
         trackedSurvivors.clear()
+        // No necesitamos cancelar el Scheduler global,
+        // simplemente dejará de procesar al estar la lista vacía.
     }
 }

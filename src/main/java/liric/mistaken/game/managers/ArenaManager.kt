@@ -3,10 +3,8 @@ package liric.mistaken.game.managers
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.game.Arena
-import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
 import org.bukkit.Location
-import org.bukkit.World
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
 import java.io.IOException
@@ -16,39 +14,47 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * [LIRIC-MISTAKEN 2.0]
  * ArenaManager: Gestión de persistencia ultra-eficiente.
- * Las operaciones de disco ahora son no-bloqueantes.
+ * FIX: Carga y Guardado 100% Asíncronos para evitar tirones en el servidor.
  */
 class ArenaManager(private val plugin: Mistaken) {
 
     private val arenas = ConcurrentHashMap<String, Arena>()
     private val file = File(plugin.dataFolder, "arenas.yml")
-    private var config = YamlConfiguration.loadConfiguration(file)
-    private val mm = MiniMessage.miniMessage()
+    private var config = YamlConfiguration()
 
-    // Scope para operaciones de disco (I/O)
+    // Scope dedicado para I/O (Disco Duro)
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
+        // La carga inicial la hacemos asíncrona para no bloquear el inicio del servidor
         if (!file.exists()) plugin.saveResource("arenas.yml", false)
-        loadArenas()
+        loadArenasAsync()
     }
 
-    private fun loadArenas() {
-        val section = config.getConfigurationSection("arenas") ?: return
-        arenas.clear()
+    private fun loadArenasAsync() {
+        ioScope.launch {
+            config = YamlConfiguration.loadConfiguration(file)
+            val section = config.getConfigurationSection("arenas") ?: return@launch
 
-        for (key in section.getKeys(false)) {
-            val arena = Arena(key)
-            val path = "arenas.$key."
+            // Leemos todo en memoria temporal
+            val tempArenas = mutableMapOf<String, Arena>()
 
-            arena.slimeWorldName = config.getString("${path}slimeWorld", key)
-            arena.asesinoSpawn = loadSafeLocation("${path}asesinoSpawn")
+            for (key in section.getKeys(false)) {
+                val arena = Arena(key)
+                val path = "arenas.$key."
 
-            // Cargar listas usando utilidades de Kotlin
-            loadLocationList("${path}survivorSpawns").forEach { arena.addSurvivorSpawn(it) }
-            loadLocationList("${path}generators").forEach { arena.addGenerator(it) }
+                arena.slimeWorldName = config.getString("${path}slimeWorld", key)
+                arena.asesinoSpawn = loadSafeLocation("${path}asesinoSpawn")
 
-            arenas[key] = arena
+                loadLocationList("${path}survivorSpawns").forEach { arena.addSurvivorSpawn(it) }
+                loadLocationList("${path}generators").forEach { arena.addGenerator(it) }
+
+                tempArenas[key] = arena
+            }
+
+            // Aplicamos los cambios al mapa principal de forma atómica
+            arenas.putAll(tempArenas)
+            plugin.componentLogger.info(plugin.mm.deserialize("<green>[Arenas] ${arenas.size} arenas cargadas.</green>"))
         }
     }
 
@@ -59,8 +65,11 @@ class ArenaManager(private val plugin: Mistaken) {
         val arena = Arena(name)
         arenas[name] = arena
 
+        // Modificamos el objeto config en memoria (es rápido)
         config.set("arenas.$name.name", name)
         config.set("arenas.$name.slimeWorld", name)
+
+        // Guardamos al disco en fondo
         saveAsync()
     }
 
@@ -80,7 +89,6 @@ class ArenaManager(private val plugin: Mistaken) {
             }
             "survivor" -> {
                 arena.addSurvivorSpawn(loc)
-                // Usamos UUID para evitar colisiones en el YAML
                 saveSafeLocation("arenas.$name.survivorSpawns.${UUID.randomUUID()}", loc)
             }
         }
@@ -116,14 +124,15 @@ class ArenaManager(private val plugin: Mistaken) {
 
     private fun loadSafeLocation(path: String): Location? {
         val worldName = config.getString("$path.world") ?: return null
-        var world = Bukkit.getWorld(worldName)
 
-        // Fallback para SlimeWorldManager / ASP
-        if (world == null && Bukkit.getWorlds().isNotEmpty()) {
-            world = Bukkit.getWorlds()[0]
-        }
+        // ¡OJO! Bukkit.getWorld debe llamarse desde el hilo principal si es posible,
+        // pero para configuraciones simples de lectura suele ser seguro.
+        // Si usas SlimeWorldManager, el mundo quizás no exista aún (es normal).
+        val world = Bukkit.getWorld(worldName)
 
-        world ?: return null
+        // Si el mundo es nulo, guardamos la Location con mundo null (SlimeWorld lo cargará después)
+        // O retornamos una Location válida si el mundo existe.
+        if (world == null) return null
 
         return Location(
             world,
@@ -146,16 +155,15 @@ class ArenaManager(private val plugin: Mistaken) {
         saveAsync()
     }
 
-    /**
-     * Guarda la configuración en disco de forma ASÍNCRONA.
-     * Esto evita que el servidor principal sufra tirones (lag spikes).
-     */
     private fun saveAsync() {
         ioScope.launch {
             try {
-                config.save(file)
+                // synchronized evita que dos hilos escriban el archivo a la vez
+                synchronized(file) {
+                    config.save(file)
+                }
             } catch (e: IOException) {
-                plugin.logger.severe("No se pudo guardar arenas.yml: ${e.message}")
+                plugin.componentLogger.error(plugin.mm.deserialize("<red>Error guardando arenas.yml: ${e.message}</red>"))
             }
         }
     }
@@ -163,8 +171,7 @@ class ArenaManager(private val plugin: Mistaken) {
     fun getArenas(): Map<String, Arena> = arenas
     fun getArena(name: String): Arena? = arenas[name]
 
-    fun reloadConfig() {
-        config = YamlConfiguration.loadConfiguration(file)
-        loadArenas()
+    fun shutdown() {
+        ioScope.cancel()
     }
 }

@@ -7,9 +7,7 @@ import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3i
 import com.github.retrooper.packetevents.wrapper.play.server.*
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
-import liric.mistaken.utils.mainThread // IMPORTANTE: Nuestra extensión
 import org.bukkit.Location
 import org.bukkit.Sound
 import org.bukkit.entity.Player
@@ -18,16 +16,13 @@ import java.util.concurrent.ThreadLocalRandom
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * TerrorPacketFactory: Inyección de terror vía paquetes (Thread-Safe).
+ * TerrorPacketFactory: Inyección de terror vía paquetes.
+ * FIX: Reemplazo de Corrutinas por EntityScheduler (Paper) para evitar tareas zombie y crashes.
  */
 class TerrorPacketFactory(private val plugin: Mistaken) {
 
-    // Scope para manejar las tareas de paquetes sin bloquear el servidor
-    private val factoryScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-
     /**
      * Invoca una sombra que solo ve la víctima.
-     * Optimizado: Uso de Coroutines para la limpieza.
      */
     fun spawnShadowEntity(victim: Player, loc: Location, ticks: Int) {
         if (!victim.isOnline) return
@@ -35,8 +30,8 @@ class TerrorPacketFactory(private val plugin: Mistaken) {
         val fakeId = ThreadLocalRandom.current().nextInt(1_000_000, 2_000_000)
         val uuid = UUID.randomUUID()
 
-        // Paquete de Spawn (SKELETON para silueta humana/aterradora)
-        val spawn = WrapperPlayServerSpawnEntity(
+        // 1. Construcción del Paquete (Skeleton para la forma)
+        val spawnPacket = WrapperPlayServerSpawnEntity(
             fakeId,
             Optional.of(uuid),
             EntityTypes.SKELETON,
@@ -48,95 +43,93 @@ class TerrorPacketFactory(private val plugin: Mistaken) {
             Optional.of(Vector3d(0.0, 0.0, 0.0))
         )
 
-        // Metadata: Invisible (0x20) + Glowing (0x40) = 0x60
-        val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x60.toByte()))
-        val metaPacket = WrapperPlayServerEntityMetadata(fakeId, metadata)
+        // 2. Metadata: Invisible (0x20) + Glowing (0x40) = 0x60
+        // Nota: En versiones nuevas de PE, a veces se requiere un constructor específico para EntityData
+        val metadataPacket = WrapperPlayServerEntityMetadata(
+            fakeId,
+            listOf(EntityData(0, EntityDataTypes.BYTE, 0x60.toByte()))
+        )
 
-        val playerManager = PacketEvents.getAPI().playerManager
-        playerManager.sendPacket(victim, spawn)
-        playerManager.sendPacket(victim, metaPacket)
+        // 3. Envío seguro (PacketEvents es Thread-Safe)
+        val pm = PacketEvents.getAPI().playerManager
+        pm.sendPacket(victim, spawnPacket)
+        pm.sendPacket(victim, metadataPacket)
 
-        // Tarea de limpieza asíncrona
-        factoryScope.launch {
-            delay(ticks * 50L) // Convertir ticks a ms
-            if (victim.isOnline) {
-                playerManager.sendPacket(victim, WrapperPlayServerDestroyEntities(fakeId))
-            }
-        }
+        // 4. 🔥 FIX: Usamos EntityScheduler.
+        // Si el jugador se desconecta antes de los 'ticks', esta tarea muere con él.
+        // No necesitamos verificar if(victim.isOnline) dentro.
+        victim.scheduler.runDelayed(plugin, {
+            pm.sendPacket(victim, WrapperPlayServerDestroyEntities(fakeId))
+        }, null, ticks.toLong())
     }
 
     /**
-     * Glitch visual: El suelo desaparece temporalmente para el jugador.
+     * Glitch visual: El suelo desaparece temporalmente.
      */
     fun sendFakeAir(victim: Player, loc: Location, ticks: Int) {
         if (!victim.isOnline) return
 
-        val playerManager = PacketEvents.getAPI().playerManager
+        val pm = PacketEvents.getAPI().playerManager
         val pos = Vector3i(loc.blockX, loc.blockY, loc.blockZ)
 
-        // 0 es AIRE en la mayoría de versiones, pero PacketEvents maneja BlockState ID
-        playerManager.sendPacket(victim, WrapperPlayServerBlockChange(pos, 0))
+        // Enviamos aire (ID 0)
+        pm.sendPacket(victim, WrapperPlayServerBlockChange(pos, 0))
 
-        factoryScope.launch {
-            delay(ticks * 50L)
+        // Restauración automática
+        victim.scheduler.runDelayed(plugin, {
+            // sendBlockChange lee el bloque real del mundo y se lo reenvía al jugador
+            // Al estar en el EntityScheduler, es seguro hacerlo.
             if (victim.isOnline) {
-                // --- ARREGLO: Reemplazado Dispatchers.Main por plugin.mainThread ---
-                withContext(plugin.mainThread) {
-                    victim.sendBlockChange(loc, loc.block.blockData)
-                }
+                victim.sendBlockChange(loc, loc.block.blockData)
             }
-        }
+        }, null, ticks.toLong())
     }
 
     /**
-     * Ataque de pánico: Efecto de daño visual y sonido de dolor.
+     * Ataque de pánico: Efecto de daño visual y sonido.
      */
     fun sendFakeHit(victim: Player) {
         if (!victim.isOnline) return
 
-        // Status 2 = Entity Hurt Animation
+        // Status 2 = Hurt Animation
         PacketEvents.getAPI().playerManager.sendPacket(
             victim,
             WrapperPlayServerEntityStatus(victim.entityId, 2)
         )
 
-        // El sonido se reproduce en el hilo principal para sincronización con el cliente
+        // Sonido directo
         victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1f, 0.5f)
     }
 
     /**
-     * Corrupción de Terreno masiva.
-     * Optimización: Envía paquetes en ráfaga y restaura en una sola pasada.
+     * Corrupción de Terreno masiva (Ráfaga de paquetes).
      */
     fun sendRealityCollapse(victim: Player, radius: Int) {
         if (!victim.isOnline) return
 
         val center = victim.location
-        val affected = mutableListOf<Location>()
-        val playerManager = PacketEvents.getAPI().playerManager
+        val affected = ArrayList<Location>() // ArrayList es más rápido aquí
+        val pm = PacketEvents.getAPI().playerManager
 
-        // Generar ráfaga de paquetes
+        // Generar ráfaga de paquetes (Cálculo matemático ligero)
         for (x in -radius..radius) {
             for (z in -radius..radius) {
+                // Solo afectamos el suelo debajo de ellos (-1)
                 val target = center.clone().add(x.toDouble(), -1.0, z.toDouble())
                 affected.add(target)
 
                 val pos = Vector3i(target.blockX, target.blockY, target.blockZ)
-                playerManager.sendPacket(victim, WrapperPlayServerBlockChange(pos, 0))
+                pm.sendPacket(victim, WrapperPlayServerBlockChange(pos, 0))
             }
         }
 
-        // Restauración optimizada
-        factoryScope.launch {
-            delay(750) // 15 ticks aprox
-            if (victim.isOnline) {
-                // --- ARREGLO: Reemplazado Dispatchers.Main por plugin.mainThread ---
-                withContext(plugin.mainThread) {
-                    affected.forEach { loc ->
-                        victim.sendBlockChange(loc, loc.block.blockData)
-                    }
-                }
+        // Restauración optimizada (15 ticks = 750ms)
+        victim.scheduler.runDelayed(plugin, {
+            // Restauramos en masa
+            // Paper maneja esto eficientemente si son muchos bloques
+            affected.forEach { loc ->
+                victim.sendBlockChange(loc, loc.block.blockData)
             }
-        }
+        }, null, 15L)
     }
 }

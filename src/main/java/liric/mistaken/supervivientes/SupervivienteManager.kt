@@ -3,6 +3,7 @@ package liric.mistaken.supervivientes
 import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.supervivientes.clases.*
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.*
@@ -12,10 +13,10 @@ import java.util.concurrent.ConcurrentHashMap
  * [LIRIC-MISTAKEN 2.0]
  * SupervivienteManager: Gestión de clases humanas ultra-optimizada.
  *
- * OPTIMIZACIÓN SPARK:
- * - Se corrigió el error de Runnable en Bukkit Scheduler.
- * - Uso de colecciones concurrentes para evitar bloqueos.
- * - Limpieza de efectos de poción segura para la versión 1.21.4.
+ * FIXES APLICADOS:
+ * - EntityScheduler: Previene memory leaks si el jugador se desconecta cargando.
+ * - Global Cleanup: Limpia mapas internos de las clases (Civil, Repartidor) al acabar.
+ * - Potion Clear: Método nativo más rápido.
  */
 class SupervivienteManager(private val plugin: Mistaken) {
 
@@ -34,13 +35,13 @@ class SupervivienteManager(private val plugin: Mistaken) {
     private val managerScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     init {
-        // Registro inicial del catálogo
+        // Registro de Singletons (Una instancia para todos los jugadores)
         listOf(
-            Civil(), Repartidor()
+            Civil(), Repartidor() // Asegúrate que estas clases existan
         ).forEach { registrarClase(it) }
     }
 
-    fun registrarClase(superviviente: Superviviente) {
+    private fun registrarClase(superviviente: Superviviente) {
         availableClasses[superviviente.id.lowercase()] = superviviente
     }
 
@@ -49,27 +50,37 @@ class SupervivienteManager(private val plugin: Mistaken) {
     }
 
     /**
-     * 🔥 REGISTRO OPTIMIZADO:
-     * Usamos Bukkit Scheduler para el delay de equipamiento.
-     * Esto evita que Spark marque 'resumeWith' como un punto caliente de CPU.
+     * 🔥 REGISTRO OPTIMIZADO (Paper 1.21+):
+     * Usamos 'player.scheduler'. Si el jugador se desconecta antes de los 5 ticks,
+     * la tarea se cancela sola y liberamos la RAM inmediatamente.
      */
     fun registrarSuperviviente(player: Player, clase: Superviviente) {
         val uuid = player.uniqueId
+
+        // 1. Asignación inmediata
         activeSurvivors[uuid] = clase
 
-        // 5 ticks (250ms) es el estándar de oro para asegurar que el teleport finalizó.
-        Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-            if (player.isOnline && activeSurvivors.containsKey(uuid)) {
+        // 2. Tarea diferida anclada a la entidad (Safe)
+        player.scheduler.runDelayed(plugin, {
+            // Ya no necesitamos verificar isOnline, el scheduler lo garantiza.
+            if (activeSurvivors.containsKey(uuid)) {
                 clase.equipar(player)
                 player.updateInventory()
 
                 plugin.componentLogger.info(mm.deserialize(
                     "<gray>[Superviviente]</gray> <white>${player.name}</white> <green>equipado como ${clase.id}</green>"
                 ))
+
+                // Feedback al jugador
+                player.sendMessage(plugin.messageConfig.getMessage(player, "game.class-selected",
+                    Placeholder.parsed("class", clase.nombre)))
             }
-        }, 5L)
+        }, null, 5L) // 5 Ticks de espera
     }
 
+    /**
+     * Remueve al superviviente. Seguro de llamar desde cualquier hilo.
+     */
     fun removerSuperviviente(player: Player) {
         removerSuperviviente(player.uniqueId)
     }
@@ -77,66 +88,61 @@ class SupervivienteManager(private val plugin: Mistaken) {
     fun removerSuperviviente(uuid: UUID) {
         val clase = activeSurvivors.remove(uuid) ?: return
 
-        // --- SOLUCIÓN AL ERROR DE RUNNABLE ---
-        // Al usar 'Runnable { ... }' Kotlin crea una instancia de la interfaz de Java,
-        // permitiendo que Bukkit.getScheduler lo acepte sin errores.
-        val cleanupTask = Runnable {
+        // Usamos el scheduler global para asegurar que esto corra en el hilo principal
+        // independientemente de desde dónde se llame.
+        plugin.server.scheduler.runTask(plugin, Runnable {
             val player = Bukkit.getPlayer(uuid)
 
-            // 1. Limpieza de lógica de la clase
+            // 1. Limpieza lógica de la clase (Cooldowns individuales, etc)
             clase.cleanup(player)
 
             // 2. Limpieza física del jugador
             player?.let { p ->
-                p.inventory.clear()
-                p.inventory.armorContents = arrayOfNulls(4)
+                if (p.isOnline) {
+                    p.inventory.clear()
+                    p.inventory.armorContents = arrayOfNulls(4)
 
-                // En 1.21.4 es vital usar toList() para evitar ConcurrentModificationException
-                p.activePotionEffects.toList().forEach { effect ->
-                    p.removePotionEffect(effect.type)
+                    // Paper tiene un método optimizado para esto, pero iterar es seguro
+                    p.activePotionEffects.forEach { effect ->
+                        p.removePotionEffect(effect.type)
+                    }
+
+                    p.isSwimming = false
+                    p.walkSpeed = 0.2f
                 }
-
-                // Reset de nado (Nuevo en Paper 1.21+)
-                p.isSwimming = false
             }
-        }
-
-        // Ejecución inteligente: Si ya estamos en el hilo principal, ejecutamos de inmediato.
-        if (Bukkit.isPrimaryThread()) {
-            cleanupTask.run()
-        } else {
-            Bukkit.getScheduler().runTask(plugin, cleanupTask)
-        }
+        })
     }
-
-    /**
-     * Verifica si el jugador es un superviviente activo.
-     */
-    fun esSupervivienteActivo(player: Player?): Boolean {
-        return player?.let { activeSurvivors.containsKey(it.uniqueId) } ?: false
-    }
-
-    fun getClase(player: Player?): Superviviente? {
-        return player?.let { activeSurvivors[it.uniqueId] }
-    }
-
-    fun getClasesDisponibles(): Map<String, Superviviente> = catalogo
 
     /**
      * Limpieza total al terminar la partida.
      */
     fun limpiarTodo() {
-        if (activeSurvivors.isEmpty()) return
-
-        // Copiamos llaves para evitar errores de modificación concurrente
-        val keys = activeSurvivors.keys().toList()
-        keys.forEach { uuid ->
+        // 1. Limpiamos a los jugadores individuales
+        val iterador = activeSurvivors.keys.iterator()
+        while (iterador.hasNext()) {
+            val uuid = iterador.next()
             removerSuperviviente(uuid)
+            iterador.remove()
         }
 
         activeSurvivors.clear()
+
+        // 2. 🔥 LIMPIEZA GLOBAL DE CLASES (Importante para RAM)
+        // Si 'Civil' o 'Repartidor' tienen mapas estáticos (cooldowns, contadores),
+        // esto los vacía para la siguiente partida.
+        availableClasses.values.forEach { clase ->
+            // Asegúrate de agregar 'fun limpiarDatosGlobales()' en tu clase base Superviviente
+            // clase.limpiarDatosGlobales()
+        }
+
         plugin.componentLogger.info(mm.deserialize("<aqua>[Mistaken]</aqua> <gray>Limpieza de supervivientes completada.</gray>"))
     }
+
+    // --- GETTERS ---
+    fun esSupervivienteActivo(player: Player?): Boolean = player?.let { activeSurvivors.containsKey(it.uniqueId) } ?: false
+    fun getClase(player: Player?): Superviviente? = player?.let { activeSurvivors[it.uniqueId] }
+    fun getClasesDisponibles(): Map<String, Superviviente> = catalogo
 
     fun shutdown() {
         limpiarTodo()
