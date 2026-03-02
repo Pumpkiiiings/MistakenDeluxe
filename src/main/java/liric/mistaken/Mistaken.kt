@@ -90,6 +90,7 @@ class Mistaken : JavaPlugin() {
     lateinit var playerStatsManager: PlayerStatsManager
 
     // Game Managers
+    lateinit var antiBlockListener: AntiBlockListener
     lateinit var gameManager: GameManager
     lateinit var arenaManager: ArenaManager
     lateinit var musicManager: MusicManager
@@ -153,6 +154,7 @@ class Mistaken : JavaPlugin() {
         // 6. El Corazón de los Managers
         glowingAPI = GlowingEntities(this)
         combatManager = CombatManager(this)
+        antiBlockListener = AntiBlockListener(this)
         gameManager = GameManager(this)
         mapManager = MapManager(this)
         arenaManager = ArenaManager(this)
@@ -295,7 +297,7 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(StaminaListener(this), this)
         pm.registerEvents(AsesinoHabilidadListener(this), this)
         pm.registerEvents(AsesinoGeneralListener(this), this)
-        pm.registerEvents(AntiBlockListener(this), this)
+        pm.registerEvents(antiBlockListener, this)
         pm.registerEvents(SupervivienteHabilidadListener(this), this)
     }
 
