@@ -165,7 +165,7 @@ class Mistaken : JavaPlugin() {
 
         // 🔥 INICIALIZACIÓN DEL MOTOR MUSICAL
         musicManager = MusicManager(this)
-
+        liric.mistaken.api.MistakenAPI.init(this)
         // UI
         asesinoTienda = AsesinoTienda()
         supervivienteTienda = SupervivienteTienda()

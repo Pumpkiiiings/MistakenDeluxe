@@ -34,7 +34,7 @@ class AsesinoManager(private val plugin: Mistaken) {
         ).forEach { registrarClase(it) }
     }
 
-    private fun registrarClase(asesino: Asesino) {
+    fun registrarClase(asesino: Asesino) {
         clasesDisponibles[asesino.id.lowercase()] = asesino
     }
 
