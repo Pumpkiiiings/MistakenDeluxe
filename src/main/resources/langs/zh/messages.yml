@@ -4,6 +4,9 @@
 
 prefix: "<b><color:#88C6F2>MISTAKEN</color></b> <color:#ADADAD>|</color> "
 
+lobby:
+  welcome: ""
+
 # --- 投票系统 ---
 voting:
   started: "<green>投票已开始！使用 <yellow>/vote <地图名></yellow>"
@@ -247,6 +250,7 @@ game:
   rejoin-msg: "<prefix><red>欢迎回来，杀手。继续你的杀戮。"
   infection-hit: "<prefix><red>系统受损！你已被“错误之星”感染。"
   hunt-start: "<red><bold>杀手已出现！</bold> <white>不要被他们发现...</white>"
+  class-selected: "<red>"
   time-extended: "<green>干得好！由于处决，计时器增加了 <yellow>{seconds}秒</yellow>。"
   mode-reveal-start: "<yellow>正在分析区域异常... <obfuscated>aa</obfuscated>"
   mode-selected: "<white>检测到模式：<aqua>{mode}"

@@ -11,23 +11,24 @@ import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
 import org.bukkit.*
+import org.bukkit.attribute.Attribute
 import org.bukkit.entity.*
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Transformation
+import org.bukkit.util.Vector
 import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * NullAsesino: El Ente del Glitch.
- * FIX: Cargador de armadura blindado por slot y NearbyPlayers Null-Safe.
+ * MEJORAS: Escala 1.1, Animación Ultra-Fluida y Física mejorada.
  */
 class NullAsesino : Asesino(
     "null",
@@ -42,20 +43,16 @@ class NullAsesino : Asesino(
     // Órbita visual
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
+
+    // Materiales del Glitch
     private val orbitMaterials = listOf(Material.BEACON, Material.ENDER_EYE, Material.NETHER_STAR)
 
     init {
         preLoadKit()
     }
 
-    /**
-     * 🔥 CARGADOR BLINDADO (Mecánicas):
-     * Carga materiales desde el asesinos.yml global (la raíz).
-     */
     private fun preLoadKit() {
         val config = plugin.configManager.getAsesinos()
-
-        // Mapa de respaldos correctos por slot
         val armorMap = mapOf(
             "casco" to Material.NETHERITE_HELMET,
             "pechera" to Material.NETHERITE_CHESTPLATE,
@@ -66,13 +63,11 @@ class NullAsesino : Asesino(
         armorMap.forEach { (key, fallbackMat) ->
             val id = config.getString("$pathBase.armadura.$key")
             if (id != null && id != "none") {
-                // Buscamos: CraftEngine -> Material por Nombre -> Fallback de su tipo
                 val item = CraftEngineUtils.getCustomItem(id)
                 itemKitCache[key] = item ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: fallbackMat)
             }
         }
 
-        // Cargar ítems de habilidad
         listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4").forEach { key ->
             val id = config.getString("$pathBase.items.$key")
             if (id != null && id != "none") {
@@ -91,36 +86,29 @@ class NullAsesino : Asesino(
         }
     }
 
-    /**
-     * 🛠️ EQUIPAR:
-     * Entrega armadura y habilidades con los nombres del idioma del jugador.
-     */
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        // 🔥 FIX: Si el caché está vacío o quieres asegurar que lea el YAML de nuevo:
-        // preLoadKit() // Descomenta esta línea si cambias mucho el YAML y quieres que se note sin reiniciar
+        // 🔥 FIX: ESCALA AUMENTADA (1.1)
+        // Hace al jugador un 10% más alto, dándole una apariencia "unnatural".
+        player.getAttribute(Attribute.SCALE)?.baseValue = 1.1
 
         val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
-        val configMecanica = plugin.configManager.getAsesinos() // El global asesinos.yml
+        val configMecanica = plugin.configManager.getAsesinos()
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            // Buscamos el ID en el YAML de la raíz
             val id = configMecanica.getString("$pathBase.armadura.$key") ?:
             configMecanica.getString("$pathBase.items.$key")
 
             if (id == null || id == "none") return
 
-            // Intentamos sacar el ítem real
             val item = CraftEngineUtils.getCustomItem(id) ?: run {
-                // Si no es de CraftEngine, buscamos material vanilla
                 val mat = Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase())
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            // Le ponemos el nombre del idioma del jugador
             val namePath = if (key == "arma") "asesinos.${this.id}.habilidades_nombres.arma"
             else "asesinos.${this.id}.habilidades_nombres.$key"
 
@@ -128,7 +116,6 @@ class NullAsesino : Asesino(
                 item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
-            // Lo ponemos donde va
             if (isArmor) {
                 when(key) {
                     "casco" -> inv.helmet = item
@@ -141,12 +128,10 @@ class NullAsesino : Asesino(
             }
         }
 
-        // Entregamos todo el mugrero
         deliver("casco", 0, true)
         deliver("pechera", 0, true)
         deliver("pantalones", 0, true)
         deliver("botas", 0, true)
-
         deliver("habilidad1", 1)
         deliver("habilidad2", 2)
         deliver("habilidad3", 3)
@@ -154,11 +139,13 @@ class NullAsesino : Asesino(
         deliver("arma", 8)
     }
 
+    // --- HABILIDADES ---
+
     private fun habilidadErrorRender(player: Player) {
         player.world.playSound(player.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
         player.world.spawnParticle(org.bukkit.Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 3, 0.5, 0.5, 0.5, 0.0)
 
-        // Búsqueda rápida de jugadores cercanos (Paper API)
+        // Null-Safe call para Paper 1.21
         player.world.getNearbyPlayers(player.location, 12.0).forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
                 victim.apply {
@@ -174,7 +161,7 @@ class NullAsesino : Asesino(
         val loc = player.location.block.location.add(0.5, 0.1, 0.5)
         val bait = loc.world?.spawn(loc, ArmorStand::class.java) { asEntity ->
             asEntity.isVisible = false
-            asEntity.setGravity(false) // Fix directo
+            asEntity.setGravity(false)
             asEntity.isMarker = true
             asEntity.equipment.helmet = ItemStack(Material.BEACON)
         } ?: return
@@ -223,7 +210,6 @@ class NullAsesino : Asesino(
                     currentLoc.add(direction)
                     if (!currentLoc.block.type.isSolid) {
                         currentLoc.world?.spawn(currentLoc, EvokerFangs::class.java)
-                        // 🔥 FIX: getNearbyPlayers con safe-call (?) para evitar error
                         currentLoc.world?.getNearbyPlayers(currentLoc, 1.5)?.forEach { victim ->
                             if (!plugin.asesinoManager.esElAsesino(victim)) {
                                 plugin.gameManager.combatManager.takeDamage(victim)
@@ -238,39 +224,71 @@ class NullAsesino : Asesino(
         trackJob(job)
     }
 
+    // --- 🔥 ANIMACIÓN DE ÓRBITA ULTRA-FLUIDA (Butter Smooth) ---
+
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { limpiarVisuales(uuid); return }
-        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
+
+        val playerWorld = player.world
+        if (orbitadores[uuid]?.firstOrNull()?.world != playerWorld) limpiarVisuales(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
             mutableListOf<ItemDisplay>().apply {
                 orbitMaterials.forEach { mat ->
-                    add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
-                        id.setItemStack(ItemStack(mat))
-                        id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
-                        id.teleportDuration = 2; id.interpolationDuration = 2
-                    })
+                    add(crearItemOrbitante(player.location, mat))
                 }
             }
         }
 
-        val anguloActual = (angulos.getOrDefault(uuid, 0.0) + 0.10) % (Math.PI * 2)
-        val radio = 1.4
+        val anguloActual = angulos.getOrDefault(uuid, 0.0)
+
+        // Variables pre-calculadas para CPU
+        val radio = 1.5
+        val step = (2 * Math.PI) / entidades.size
+        val playerLoc = player.location
+
         for (i in entidades.indices) {
             val display = entidades[i]
             if (display.isValid) {
-                val offset = (2 * Math.PI / entidades.size) * i
-                val x = radio * cos(anguloActual + offset)
-                val z = radio * sin(anguloActual + offset)
-                display.teleport(player.location.clone().add(x, 1.1 + (0.2 * sin(anguloActual * 2)), z))
+                val currentAngle = anguloActual + (step * i)
+
+                val x = radio * cos(currentAngle)
+                val z = radio * sin(currentAngle)
+                // Oscilación vertical suave
+                val y = 1.3 + (0.2 * sin(currentAngle * 1.5))
+
+                val targetLoc = playerLoc.clone().add(x, y, z)
+
+                // Rotación dinámica sobre su propio eje (Spin effect)
+                targetLoc.yaw = (currentAngle * 120).toFloat() % 360
+                targetLoc.pitch = (currentAngle * 60).toFloat() % 360
+
+                display.teleport(targetLoc)
             }
         }
-        angulos[uuid] = anguloActual
+        // Incremento suave
+        angulos[uuid] = anguloActual + 0.12
+    }
+
+    private fun crearItemOrbitante(loc: Location, mat: Material): ItemDisplay {
+        return loc.world.spawn(loc, ItemDisplay::class.java) { id ->
+            id.setItemStack(ItemStack(mat))
+            // Centrado matemático
+            id.transformation = Transformation(
+                JomlVector3f(0f, 0f, 0f),
+                Quaternionf(),
+                JomlVector3f(0.5f, 0.5f, 0.5f),
+                Quaternionf()
+            )
+            // 🔥 TRUCO DE FLUIDEZ: 3 Ticks de duración para tarea de 2 Ticks
+            id.teleportDuration = 3
+            id.interpolationDuration = 3
+        }
     }
 
     override fun mostrarTrail(player: Player) {
-        val loc = player.location.add(0.0, 1.1, 0.0)
+        val loc = player.location.add(0.0, 1.2, 0.0) // Un poco más alto por la escala 1.1
         val pos = Vector3d(loc.x, loc.y, loc.z)
         val mgr = PacketEvents.getAPI().playerManager
         val packet = WrapperPlayServerParticle(Particle(ParticleTypes.WITCH), false, pos, Vector3f(0.2f, 0.2f, 0.2f), 0.02f, 1)
@@ -279,5 +297,16 @@ class NullAsesino : Asesino(
 
     private fun cleanupTrap(trap: Entity) { trap.remove(); activeTraps.remove(trap) }
     private fun limpiarVisuales(uuid: UUID) { orbitadores.remove(uuid)?.forEach { it.remove() }; angulos.remove(uuid) }
-    override fun cleanup(player: Player?) { super.cleanup(player); player?.let { limpiarVisuales(it.uniqueId) }; activeTraps.forEach { it.remove() }; activeTraps.clear(); scope.coroutineContext.cancelChildren() }
+
+    override fun cleanup(player: Player?) {
+        super.cleanup(player)
+        player?.let {
+            limpiarVisuales(it.uniqueId)
+            // 🔥 RESTAURAR TAMAÑO ORIGINAL
+            it.getAttribute(Attribute.SCALE)?.baseValue = 1.0
+        }
+        activeTraps.forEach { it.remove() }
+        activeTraps.clear()
+        scope.coroutineContext.cancelChildren()
+    }
 }

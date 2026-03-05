@@ -1,0 +1,155 @@
+supervivientes:
+  civil:
+    nombre: "<gradient:#ffffff:#aaaaaa><b>平民</b></gradient>"
+    descripcion:
+      - "<gray>被困在混乱中的市民。"
+      - "<gray>各项属性极其均衡。"
+      - "<white>机制: <aqua>潜行与自卫</aqua>"
+    lore_tienda:
+      - "<italic><gray>\"我只想回家...\"</gray></italic>"
+      - "<white>难度: <green>简单"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ff55ff:#ff99ff>肾上腺素</gradient>"
+      habilidad2: "<gradient:#888888:#cccccc>隐匿</gradient>"
+      habilidad3: "<gradient:#dddddd:#888888>投掷石块</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ff55ff:#ff99ff><b>⚡ 肾上腺素！</b></gradient> <gray>移动速度提升 <white>5秒</white>。"
+      habilidad2: "<gradient:#888888:#cccccc><b>👻 隐身...</b></gradient> <gray>你已隐身 <white>5秒</white>。"
+      habilidad2_fin: "<gradient:#ff5555:#ff0000><b>⚠ 暴露！</b></gradient> <gray>隐身效果已结束。"
+      habilidad3: "<gradient:#dddddd:#888888><b>👊 石块投掷！</b></gradient> <gray>击中可<aqua>减缓</aqua>杀手速度。"
+
+  repartidor:
+    nombre: "<gradient:#ffaa00:#ffee00><b>配送员</b></gradient>"
+    descripcion:
+      - "<gray>Herobrine 也无法阻止这次配送。"
+      - "<white>机制: <gold>辅助与极速</gold>"
+    lore_tienda:
+      - "<italic><gray>\"必须五星好评！\"</gray></italic>"
+      - "<white>难度: <green>简单"
+    habilidades_nombres:
+      habilidad1: "<gradient:#00ffff:#00aaff>能量饮料</gradient>"
+      habilidad2: "<gradient:#ffaa00:#ffffff>投掷订单</gradient>"
+      habilidad3: "<gradient:#ff5555:#aa0000>酱汁泼洒</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#00ffff:#00aaff><b>🥤 咕嘟！</b></gradient> <gray>配送速度<green>已激活</green>。"
+      habilidad2: "<gradient:#ffaa00:#ffffff><b>📦 订单来袭！</b></gradient> <gray>为了好评拼了！"
+      habilidad3: "<gradient:#ff5555:#aa0000><b>🥫 哎呀！</b></gradient> <gray>酱汁洒了！地面变<yellow>滑</yellow>了。"
+
+  jesse:
+    nombre: "<gradient:#ffd700:#ffaa00><b>杰西</b></gradient>"
+    lore_tienda:
+      - "“岩石之令”的"
+      - "传奇领袖。"
+      - ""
+      - "<yellow>支援与救援专家！"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ffd700:#ffffff>秩序之剑</gradient>"
+      habilidad2: "<gradient:#55ffff:#ffffff><b>加布里埃尔护身符</b></gradient>"
+      habilidad3: "<gradient:#ffaa00:#ffff55>秩序的召唤</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ffd700:#ffffff><b>⚔ 为了秩序！</b></gradient> <gray>冲刺已激活。"
+      habilidad2: "<gradient:#55ffff:#ffffff><b>💠 护身符脉冲！</b></gradient> <gray>范围恢复已释放。"
+      habilidad3: "<gradient:#ffaa00:#ffff55><b>🛡 团结！</b></gradient> <gray>你感受到了朋友们的庇护。"
+
+  petra:
+    nombre: "<gradient:#ff3333:#aa0000><b>佩特拉</b></gradient>"
+    lore_tienda:
+      - "岩石之令中最熟练的战士。"
+      - ""
+      - "<red>快速战斗与潜行专家！"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ff5555:#aa0000>佩特拉之剑</gradient>"
+      habilidad2: "<gradient:#ffffff:#999999><b>导弹突袭</b></gradient>"
+      habilidad3: "<gradient:#555555:#000000>烟雾弹</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ff5555:#aa0000><b>⚔ 斩击！</b></gradient> <gray>电光火石的一击。"
+      habilidad2: "<gradient:#ffffff:#999999><b>💨 冲锋！</b></gradient> <gray>佩特拉发起了攻击！"
+      habilidad3: "<gradient:#555555:#000000><b>☁ 消失！</b></gradient> <gray>消失在烟雾中。"
+
+  axel:
+    nombre: "<gradient:#55ff55:#00aa00><b>阿克塞尔</b></gradient>"
+    lore_tienda:
+      - "岩石之令的力量担当。"
+      - ""
+      - "<green>爆炸物与击退专家！"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ff5555:#ff0000>炸药</gradient>"
+      habilidad2: "<gradient:#55ff55:#ffffff><b>击退猛击</b></gradient>"
+      habilidad3: "<gradient:#ffff55:#ffaa00>巨盾</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ff5555:#ff0000><b>💣 爆炸！</b></gradient> <gray>炸药来袭！小心！"
+      habilidad2: "<gradient:#55ff55:#00aa00><b>🪓 退后！</b></gradient> <gray>吃我一斧！"
+      habilidad3: "<gradient:#ffff55:#ffaa00><b>🛡 格挡！</b></gradient> <gray>没人能过去！"
+
+  steve:
+    nombre: "<gradient:#5555ff:#0000aa><b>史蒂夫</b></gradient>"
+    lore_tienda:
+      - "生存之神。"
+      - ""
+      - "<blue>精通技术战斗与建筑！"
+    habilidades_nombres:
+      habilidad1: "<gradient:#5555ff:#aa00aa><b>暴击斧</b></gradient>"
+      habilidad2: "<gradient:#aaaaaa:#555555><b>快速建筑</b></gradient>"
+      habilidad3: "<gradient:#55ffff:#00aaaa><b>落地水</b></gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#5555ff:#aa00aa><b>💥 暴击！</b></gradient> <gray>完美的一击。"
+      habilidad2: "<gradient:#aaaaaa:#555555><b>🧱 筑墙！</b></gradient> <gray>防御墙已放置。"
+      habilidad3: "<gradient:#55ffff:#00aaaa><b>💧 没水了！</b></gradient> <gray>杀手溺水了！"
+
+  gumi:
+    nombre: "<gradient:#a9d14f:#ffffff><b>GUMI</b></gradient>"
+    lore_tienda:
+      - "虚拟失真的歌姬。"
+      - ""
+      - "<color:#a9d14f>掌控回声与数字分身！"
+    habilidades_nombres:
+      habilidad1: "<gradient:#a9d14f:#00ff00><b>系统: ECHO</b></gradient>"
+      habilidad2: "<gradient:#a9d14f:#ffff55><b>Copy Cat</b></gradient>"
+      habilidad3: "<gradient:#ff4d4d:#ff0000><b>俄罗斯套娃</b></gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#a9d14f:#00ff00><b>🔊 ECHO...</b></gradient> <gray><i>The black and white inside my head...</i>"
+      habilidad2: "<gradient:#a9d14f:#ffff55><b>👥 分身！</b></gradient> <gray>你真正追逐的是谁？"
+      habilidad3: "<gradient:#ff4d4d:#ff0000><b>🎭 1, 2, 3, 4!</b></gradient> <gray>俄罗斯套娃狂热！"
+
+  neru:
+    nombre: "<gradient:#ffcc00:#ffff55><b>亚北音留</b></gradient>"
+    lore_tienda:
+      - "冷漠的歌姬。"
+      - ""
+      - "<color:#ffcc00>刷屏与卡顿攻击专家！"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ffcc00:#ffaa00><b>消息轰炸</b></gradient>"
+      habilidad2: "<gradient:#bbbbbb:#ffffff><b>挂机模式</b></gradient>"
+      habilidad3: "<gradient:#ffcc00:#ff5555><b>三重巴卡</b></gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ffcc00:#ffaa00><b>📱 叮！叮！</b></gradient> <gray>正在刷屏杀手的界面！"
+      habilidad2: "<gradient:#bbbbbb:#ffffff><b>💤 无聊...</b></gradient> <gray>音留挂机了（无敌）。"
+      habilidad3: "<gradient:#ffcc00:#ff5555><b>💢 笨蛋！笨蛋！</b></gradient> <gray>三重打击！"
+
+  mariachi:
+    nombre: "<gradient:#fbca03:#ff5555><b>墨西哥乐手</b></gradient>"
+    lore_tienda:
+      - "哎，哎，哎！不唱歌的人会哭泣。"
+      - ""
+      - "<color:#fbca03>音乐支援与逃脱专家。"
+    habilidades_nombres:
+      habilidad1: "<gradient:#fbca03:#ffffff><b>吉他重击</b></gradient>"
+      habilidad2: "<gradient:#fbca03:#ffaa00><b>哈拉贝舞</b></gradient>"
+      habilidad3: "<gradient:#ff5555:#00aa00><b>墨西哥呐喊</b></gradient>"
+
+  minty:
+    nombre: "<gradient:#55ffaa:#00aa55><b>薄荷 (Minty)</b></gradient>"
+    descripcion:
+      - "<gray>拥有动物本能的幸存者。"
+      - "<white>机制: <green>击晕与逃脱</green>"
+    lore_tienda:
+      - "<italic><gray>\"我不是容易捕捉的猎物...\"</gray></italic>"
+      - "<white>难度: <yellow>中等"
+    habilidades_nombres:
+      habilidad1: "<gradient:#aaffaa:#ffffff>爪击</gradient>"
+      habilidad2: "<gradient:#ffffff:#aaffaa>猛扑</gradient>"
+      habilidad3: "<gradient:#00aa00:#55ff55>凶猛咆哮</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#aaffaa:#ffffff><b>🐾 爪击！</b></gradient> <gray>杀手已被击晕 <white>5秒</white>。"
+      habilidad2: "<gradient:#ffffff:#aaffaa><b>💨 跑！</b></gradient> <gray>狼之速度已激活。"
+      habilidad3: "<gradient:#00aa00:#55ff55><b>🐺 咆哮！</b></gradient> <gray>地面在震动！杀手已被击晕。"

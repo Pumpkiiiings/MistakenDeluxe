@@ -40,9 +40,10 @@ class ColorAndElectricity : Asesino(
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
+    // 🔥 FIX: Cambio de SMOOTH_STONE por YELLOW_WOOL para mantener la paleta eléctrica
     private val orbitMaterials = listOf(
         Material.PURPLE_WOOL, Material.BLUE_WOOL, Material.LIGHT_BLUE_WOOL,
-        Material.LIME_WOOL, Material.SMOOTH_STONE, Material.ORANGE_WOOL, Material.RED_WOOL
+        Material.LIME_WOOL, Material.YELLOW_WOOL, Material.ORANGE_WOOL, Material.RED_WOOL
     )
 
     init {
@@ -82,34 +83,26 @@ class ColorAndElectricity : Asesino(
         }
     }
 
-    /**
-     * 🛠️ EQUIPAMIENTO (SISTEMA DE ALTO VOLTAJE):
-     * Jala las mecánicas de asesinos.yml y los nombres de asesinos_info.yml.
-     */
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
-        inv.armorContents = arrayOfNulls(4) // Limpieza total para que no se queden "fantasmas"
+        inv.armorContents = arrayOfNulls(4)
 
-        val configMecanica = plugin.configManager.getAsesinos() // El global (la raíz)
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info") // Los nombres traducidos
+        val configMecanica = plugin.configManager.getAsesinos()
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            // 1. Buscamos el ID del ítem en el archivo de mecánicas (global)
             val id = if (isArmor) configMecanica.getString("asesinos.colorandelectricity.armadura.$key")
             else configMecanica.getString("asesinos.colorandelectricity.items.$key")
 
             if (id == null || id == "none") return
 
-            // 2. Creamos el ítem (CraftEngine o Vanilla fallback)
             val item = CraftEngineUtils.getCustomItem(id) ?: run {
                 val matName = id.replace(".*:".toRegex(), "").uppercase()
                 val mat = Material.matchMaterial(matName)
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            // 3. Le ponemos el nombre según el idioma del jugador (asesinos_info.yml)
-            // Nota: En tu YAML de info, la sección se llama 'habilidades_nombres'
             val namePath = if (key == "arma") "asesinos.colorandelectricity.habilidades_nombres.arma"
             else "asesinos.colorandelectricity.habilidades_nombres.$key"
 
@@ -117,7 +110,6 @@ class ColorAndElectricity : Asesino(
                 item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
-            // 4. Lo mandamos a su lugar correspondiente
             if (isArmor) {
                 when(key) {
                     "casco" -> inv.helmet = item
@@ -130,12 +122,10 @@ class ColorAndElectricity : Asesino(
             }
         }
 
-        // --- SOLTAR EL KIT DE ELECTRICIDAD ---
         deliver("casco", 0, true)
         deliver("pechera", 0, true)
         deliver("pantalones", 0, true)
         deliver("botas", 0, true)
-
         deliver("habilidad1", 1)
         deliver("habilidad2", 2)
         deliver("habilidad3", 3)
@@ -216,35 +206,65 @@ class ColorAndElectricity : Asesino(
         }
     }
 
+    // --- 🔥 ANIMACIÓN ULTRA-FLUIDA Y OPTIMIZADA ---
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { limpiarEntidades(uuid); return }
-        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarEntidades(uuid)
+
+        val playerWorld = player.world
+        if (orbitadores[uuid]?.firstOrNull()?.world != playerWorld) limpiarEntidades(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
             orbitMaterials.map { mat -> crearBloqueOrbitante(player.location, mat) }.toMutableList()
         }
 
         val anguloBase = angulos.getOrDefault(uuid, 0.0)
-        val radio = 1.6
+
+        // Variables cacheadas fuera del bucle para ahorrar CPU
+        val radio = 1.4
+        val step = (2 * Math.PI) / entidades.size
+        val playerLoc = player.location
+
         for (i in entidades.indices) {
             val display = entidades[i]
             if (display.isValid) {
-                val offset = (2 * Math.PI / entidades.size) * i
-                val x = radio * cos(anguloBase + offset)
-                val z = radio * sin(anguloBase + offset)
-                val y = 1.1 + (0.15 * sin((anguloBase + offset) * 3))
-                display.teleport(player.location.clone().add(x, y, z))
+                val currentAngle = anguloBase + (step * i)
+
+                val x = radio * cos(currentAngle)
+                val z = radio * sin(currentAngle)
+                // Oscilación de altura suave (arriba y abajo tipo ola)
+                val y = 1.0 + (0.3 * sin(currentAngle * 2))
+
+                val targetLoc = playerLoc.clone().add(x, y, z)
+
+                // Rotación dinámica: Hacemos que los bloques giren sobre su propio eje
+                targetLoc.yaw = (currentAngle * 100).toFloat() % 360
+                targetLoc.pitch = (currentAngle * 50).toFloat() % 360
+
+                display.teleport(targetLoc)
             }
         }
-        angulos[uuid] = anguloBase + 0.08
+        // Incremento ajustado: 0.15 da una buena velocidad de giro constante
+        angulos[uuid] = anguloBase + 0.15
     }
 
     private fun crearBloqueOrbitante(loc: Location, mat: Material): BlockDisplay {
         return loc.world.spawn(loc, BlockDisplay::class.java) { bd ->
             bd.block = mat.createBlockData()
-            bd.transformation = Transformation(JomlVector3f(-0.1f, -0.1f, -0.1f), Quaternionf(), JomlVector3f(0.25f, 0.25f, 0.25f), Quaternionf())
-            bd.teleportDuration = 2; bd.interpolationDuration = 2
+
+            // Centrado matemático perfecto (-0.125 para una escala de 0.25)
+            bd.transformation = Transformation(
+                JomlVector3f(-0.125f, -0.125f, -0.125f),
+                Quaternionf(),
+                JomlVector3f(0.25f, 0.25f, 0.25f),
+                Quaternionf()
+            )
+
+            // 🔥 TRUCO MÁGICO DE FLUIDEZ (Solapamiento)
+            // Si la tarea corre cada 2 ticks, le decimos que la animación dure 3 ticks.
+            // Así el cliente nunca frena, creando un movimiento 100% fluido (butter smooth).
+            bd.teleportDuration = 3
+            bd.interpolationDuration = 3
         }
     }
 

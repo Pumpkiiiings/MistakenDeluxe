@@ -11,6 +11,7 @@ import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
 import org.bukkit.*
+import org.bukkit.attribute.Attribute
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
@@ -27,7 +28,7 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0]
  * KasaneTeto: La Quimera de las Baguettes.
- * FIX: Sistema de equipamiento híbrido y optimización de habilidades con Coroutines.
+ * FIX: Escala precisa (0.8861), Animación Fluida y Taladros Giratorios.
  */
 class KasaneTeto : Asesino(
     "teto",
@@ -44,10 +45,6 @@ class KasaneTeto : Asesino(
         preLoadKit()
     }
 
-    /**
-     * 🔥 PRE-LOAD (Mecánicas):
-     * Carga materiales desde el asesinos.yml global (la raíz).
-     */
     private fun preLoadKit() {
         val config = plugin.configManager.getAsesinos()
         val armor = listOf("casco", "pechera", "pantalones", "botas")
@@ -71,7 +68,6 @@ class KasaneTeto : Asesino(
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        // Mapeo: Teclas 2, 3, 4, 5 -> Slots 1, 2, 3, 4
         when (slot) {
             1 -> if (!checkCooldown(player, 1)) { habilidadTaladro(player); reproducirEfectosHabilidad(player, 1) }
             2 -> if (!checkCooldown(player, 2)) { habilidadBaguette(player); reproducirEfectosHabilidad(player, 2) }
@@ -80,63 +76,9 @@ class KasaneTeto : Asesino(
         }
     }
 
-    /**
-     * 🛠️ EQUIPAMIENTO (Visuales):
-     * Pone los trapos y las baguettes con nombres traducidos según el jugador.
-     */
-    override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        inv.armorContents = arrayOfNulls(4) // Fix de armadura para Kotlin
-
-        if (itemKitCache.isEmpty()) preLoadKit()
-
-        // Jalamos el archivo de traducción (asesinos_info.yml)
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
-
-        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val item = itemKitCache[key]?.clone() ?: return
-
-            // Ruta de nombres en el nuevo YAML de información
-            val namePath = if (key == "arma") "asesinos.teto.habilidades_nombres.arma"
-            else "asesinos.teto.habilidades_nombres.$key"
-
-            langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
-            }
-
-            if (isArmor) {
-                when(key) {
-                    "casco" -> inv.helmet = item
-                    "pechera" -> inv.chestplate = item
-                    "pantalones" -> inv.leggings = item
-                    "botas" -> inv.boots = item
-                }
-            } else {
-                inv.setItem(slot, item)
-            }
-        }
-
-        // Entregar el kit completo
-        deliver("casco", 0, true)
-        deliver("pechera", 0, true)
-        deliver("pantalones", 0, true)
-        deliver("botas", 0, true)
-
-        deliver("habilidad1", 1)
-        deliver("habilidad2", 2)
-        deliver("habilidad3", 3)
-        deliver("habilidad4", 4)
-        deliver("arma", 8)
-
-        player.inventory.heldItemSlot = 8
-        player.updateInventory()
-    }
-
     // --- 🥖 HABILIDADES ---
 
     private fun habilidadTaladro(player: Player) {
-        // Usamos getNearbyPlayers para no laguear buscando vacas o ítems
         player.world.getNearbyPlayers(player.location, 3.5).forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
                 plugin.gameManager.combatManager.takeDamage(victim)
@@ -161,7 +103,6 @@ class KasaneTeto : Asesino(
         player.world.getNearbyPlayers(player.location, 6.0).forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
-                // Mensaje de broma (Podrías moverlo al messages.yml si quieres, carnal)
                 victim.sendMessage(mm.deserialize("<gradient:#ff66cc:#ff0000><b>¡BAKA!</b> ¿Te la creíste?</gradient>"))
             }
         }
@@ -173,7 +114,7 @@ class KasaneTeto : Asesino(
         player.isGlowing = true
 
         val job = scope.launch {
-            delay(12000) // 12 segundos
+            delay(12000)
             withContext(plugin.bukkitDispatcher) {
                 if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
                     player.isGlowing = false
@@ -184,7 +125,51 @@ class KasaneTeto : Asesino(
         trackJob(job)
     }
 
-    // --- 🚀 VISUALES (Baguettes Orbitantes) ---
+    // --- 🛠️ EQUIPAMIENTO ---
+
+    override fun equipar(player: Player) {
+        val inv = player.inventory
+        inv.clear()
+        inv.armorContents = arrayOfNulls(4)
+
+        // 🔥 FIX: ESCALA DE TETO EXACTA (0.8861)
+        player.getAttribute(Attribute.SCALE)?.baseValue = 0.8861
+
+        if (itemKitCache.isEmpty()) preLoadKit()
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+
+        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
+            val item = itemKitCache[key]?.clone() ?: return
+            val namePath = if (key == "arma") "asesinos.teto.habilidades_nombres.arma"
+            else "asesinos.teto.habilidades_nombres.$key"
+
+            langInfo.getString(namePath)?.let {
+                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+            }
+
+            if (isArmor) {
+                when(key) {
+                    "casco" -> inv.helmet = item
+                    "pechera" -> inv.chestplate = item
+                    "pantalones" -> inv.leggings = item
+                    "botas" -> inv.boots = item
+                }
+            } else {
+                inv.setItem(slot, item)
+            }
+        }
+
+        deliver("casco", 0, true); deliver("pechera", 0, true)
+        deliver("pantalones", 0, true); deliver("botas", 0, true)
+        deliver("habilidad1", 1); deliver("habilidad2", 2)
+        deliver("habilidad3", 3); deliver("habilidad4", 4)
+        deliver("arma", 8)
+
+        player.inventory.heldItemSlot = 8
+        player.updateInventory()
+    }
+
+    // --- 🚀 VISUALES (Taladros Orbitantes) ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
@@ -196,25 +181,43 @@ class KasaneTeto : Asesino(
                 repeat(4) {
                     add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
                         id.setItemStack(ItemStack(Material.BREAD))
-                        id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf(), JomlVector3f(0.8f, 0.8f, 0.8f), Quaternionf())
-                        id.teleportDuration = 1; id.interpolationDuration = 1
+                        // Centrado y tamaño ajustado
+                        id.transformation = Transformation(
+                            JomlVector3f(0f, 0f, 0f),
+                            Quaternionf(),
+                            JomlVector3f(0.8f, 0.8f, 0.8f),
+                            Quaternionf()
+                        )
+                        // 🔥 TRUCO DE FLUIDEZ
+                        id.teleportDuration = 3
+                        id.interpolationDuration = 3
                     })
                 }
             }
         }
 
         val anguloActual = (angulos.getOrDefault(uuid, 0.0) + 0.12) % (Math.PI * 2)
+        val radio = 1.3 // Radio ajustado para la escala 0.88
+        val playerLoc = player.location
+
         for (i in entidades.indices) {
             val display = entidades[i]
             if (display.isValid) {
                 val offset = (2 * Math.PI / entidades.size) * i
-                val x = 1.2 * cos(anguloActual + offset)
-                val z = 1.2 * sin(anguloActual + offset)
-                val y = 1.1 + (0.1 * sin((anguloActual + offset) * 2))
 
-                val loc = player.location.clone().add(x, y, z)
-                loc.yaw = ((anguloActual + offset) * 180 / Math.PI).toFloat() + 90f
-                display.teleport(loc)
+                val x = radio * cos(anguloActual + offset)
+                val z = radio * sin(anguloActual + offset)
+                // Altura ajustada a la cabeza de Teto
+                val y = 1.0 + (0.15 * sin((anguloActual + offset) * 2))
+
+                val targetLoc = playerLoc.clone().add(x, y, z)
+
+                // 🔥 Rotación de Taladro: Giran sobre su eje Y
+                targetLoc.yaw = ((anguloActual + offset) * 180 / Math.PI).toFloat() + 90f
+                // Pitch oscilante para que parezcan flotar
+                targetLoc.pitch = (sin(anguloActual * 5) * 20).toFloat()
+
+                display.teleport(targetLoc)
             }
         }
         angulos[uuid] = anguloActual
@@ -222,6 +225,7 @@ class KasaneTeto : Asesino(
 
     override fun mostrarTrail(player: Player) {
         if (player.velocity.lengthSquared() < 0.001) return
+        // Altura ajustada a la escala 0.8861
         val pos = Vector3d(player.location.x, player.location.y + 0.2, player.location.z)
         val packet = WrapperPlayServerParticle(Particle(ParticleTypes.SPORE_BLOSSOM_AIR), false, pos, Vector3f(0.3f, 0.1f, 0.3f), 0.01f, 1)
 
@@ -243,7 +247,11 @@ class KasaneTeto : Asesino(
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        player?.let { limpiarBaguettes(it.uniqueId) }
+        player?.let {
+            limpiarBaguettes(it.uniqueId)
+            // 🔥 RESTAURAR ESCALA ORIGINAL
+            it.getAttribute(Attribute.SCALE)?.baseValue = 1.0
+        }
         scope.coroutineContext.cancelChildren()
     }
 }

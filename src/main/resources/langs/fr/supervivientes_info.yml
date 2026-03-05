@@ -1,0 +1,155 @@
+supervivientes:
+  civil:
+    nombre: "<gradient:#ffffff:#aaaaaa><b>CIVIL</b></gradient>"
+    descripcion:
+      - "<gray>Un citoyen piégé dans le chaos."
+      - "<gray>Équilibre parfait des statistiques."
+      - "<white>Mécanique : <aqua>Furtivité & Autodéfense</aqua>"
+    lore_tienda:
+      - "<italic><gray>\"Je veux juste rentrer chez moi...\"</gray></italic>"
+      - "<white>Difficulté : <green>Facile"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ff55ff:#ff99ff>Adrénaline</gradient>"
+      habilidad2: "<gradient:#888888:#cccccc>Disparition</gradient>"
+      habilidad3: "<gradient:#dddddd:#888888>Lancer de Pierre</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ff55ff:#ff99ff><b>⚡ ADRÉNALINE !</b></gradient> <gray>Vitesse augmentée pour <white>5s</white>."
+      habilidad2: "<gradient:#888888:#cccccc><b>👻 DISPARITION...</b></gradient> <gray>Tu es invisible pour <white>5s</white>."
+      habilidad2_fin: "<gradient:#ff5555:#ff0000><b>⚠ EXPOSÉ !</b></gradient> <gray>Ton invisibilité a expiré."
+      habilidad3: "<gradient:#dddddd:#888888><b>👊 PIERRE LANCÉE !</b></gradient> <gray>Touche le tueur pour le <aqua>ralentir</aqua>."
+
+  repartidor:
+    nombre: "<gradient:#ffaa00:#ffee00><b>LIVREUR</b></gradient>"
+    descripcion:
+      - "<gray>Même Herobrine n'arrête pas cette livraison."
+      - "<white>Mécanique : <gold>Support & Vitesse Extrême</gold>"
+    lore_tienda:
+      - "<italic><gray>\"Cinq étoiles ou rien !\"</gray></italic>"
+      - "<white>Difficulté : <green>Facile"
+    habilidades_nombres:
+      habilidad1: "<gradient:#00ffff:#00aaff>Boisson Énergétique</gradient>"
+      habilidad2: "<gradient:#ffaa00:#ffffff>Commande Express</gradient>"
+      habilidad3: "<gradient:#ff5555:#aa0000>Sauce Renversée</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<prefix><gradient:#00ffff:#00aaff><b>🥤 GLOUPS !</b></gradient> <gray>Vitesse de livraison <green>activée</green>."
+      habilidad2: "<prefix><gradient:#ffaa00:#ffffff><b>📦 COLIS EN VOL !</b></gradient> <gray>Attention à la note !"
+      habilidad3: "<prefix><gradient:#ff5555:#aa0000><b>🥫 OUPS !</b></gradient> <gray>Sauce renversée ! Le sol est <yellow>glissant</yellow>."
+
+  jesse:
+    nombre: "<gradient:#ffd700:#ffaa00><b>JESSE</b></gradient>"
+    lore_tienda:
+      - "Le chef légendaire du"
+      - "Nouvel Ordre de la Pierre."
+      - ""
+      - "<yellow>Spécialiste du soutien et du sauvetage !"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ffd700:#ffffff>Épée de l'Ordre</gradient>"
+      habilidad2: "<gradient:#55ffff:#ffffff><b>Amulette de Gabriel</b></gradient>"
+      habilidad3: "<gradient:#ffaa00:#ffff55>Appel de l'Ordre</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ffd700:#ffffff><b>⚔ POUR L'ORDRE !</b></gradient> <gray>Impulsion de combat utilisée."
+      habilidad2: "<gradient:#55ffff:#ffffff><b>💠 ONDE D'AMULETTE !</b></gradient> <gray>Régénération de zone."
+      habilidad3: "<gradient:#ffaa00:#ffff55><b>🛡 UNITÉ !</b></gradient> <gray>Tu sens la protection de tes amis."
+
+  petra:
+    nombre: "<gradient:#ff3333:#aa0000><b>PETRA</b></gradient>"
+    lore_tienda:
+      - "La guerrière la plus habile de l'Ordre."
+      - ""
+      - "<red>Spécialiste du combat rapide et de la furtivité !"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ff5555:#aa0000>Épée de Petra</gradient>"
+      habilidad2: "<gradient:#ffffff:#999999><b>Missile Strike</b></gradient>"
+      habilidad3: "<gradient:#555555:#000000>Bombe Fumigène</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ff5555:#aa0000><b>⚔ SLASH !</b></gradient> <gray>Coupe éclair !"
+      habilidad2: "<gradient:#ffffff:#999999><b>💨 CHARGE !</b></gradient> <gray>Petra se lance à l'attaque !"
+      habilidad3: "<gradient:#555555:#000000><b>☁ POOF !</b></gradient> <gray>Disparue dans les ombres."
+
+  axel:
+    nombre: "<gradient:#55ff55:#00aa00><b>AXEL</b></gradient>"
+    lore_tienda:
+      - "Le muscle de l'Ordre."
+      - ""
+      - "<green>Spécialiste des explosifs et du recul !"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ff5555:#ff0000>Dynamite d'Axel</gradient>"
+      habilidad2: "<gradient:#55ff55:#ffffff><b>Coup de Hache</b></gradient>"
+      habilidad3: "<gradient:#ffff55:#ffaa00>Bouclier Géant</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ff5555:#ff0000><b>💣 BOOM !</b></gradient> <gray>Dynamite lancée ! Attention !"
+      habilidad2: "<gradient:#55ff55:#00aa00><b>🪓 DÉGAGE !</b></gradient> <gray>Recule, créature !"
+      habilidad3: "<gradient:#ffff55:#ffaa00><b>🛡 BLOQUÉ !</b></gradient> <gray>Personne ne passe !"
+
+  steve:
+    nombre: "<gradient:#5555ff:#0000aa><b>STEVE</b></gradient>"
+    lore_tienda:
+      - "Le Dieu de la Survie."
+      - ""
+      - "<blue>Maîtrise le combat technique et la construction !"
+    habilidades_nombres:
+      habilidad1: "<gradient:#5555ff:#aa00aa><b>Hache Critique</b></gradient>"
+      habilidad2: "<gradient:#aaaaaa:#555555><b>Mur Rapide</b></gradient>"
+      habilidad3: "<gradient:#55ffff:#00aaaa><b>Water Bucket</b></gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#5555ff:#aa00aa><b>💥 CRITIQUE !</b></gradient> <gray>Coup parfait."
+      habilidad2: "<gradient:#aaaaaa:#555555><b>🧱 MUR !</b></gradient> <gray>Barrière défensive placée."
+      habilidad3: "<gradient:#55ffff:#00aaaa><b>💧 PLOUF !</b></gradient> <gray>Le tueur est ralenti !"
+
+  gumi:
+    nombre: "<gradient:#a9d14f:#ffffff><b>GUMI</b></gradient>"
+    lore_tienda:
+      - "La diva de la distorsion virtuelle."
+      - ""
+      - "<color:#a9d14f>Maîtrise l'écho et les copies numériques !"
+    habilidades_nombres:
+      habilidad1: "<gradient:#a9d14f:#00ff00><b>Système : ECHO</b></gradient>"
+      habilidad2: "<gradient:#a9d14f:#ffff55><b>Copy Cat</b></gradient>"
+      habilidad3: "<gradient:#ff4d4d:#ff0000><b>Matryoshka Frenzy</b></gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#a9d14f:#00ff00><b>🔊 ECHO...</b></gradient> <gray><i>The black and white inside my head...</i>"
+      habilidad2: "<gradient:#a9d14f:#ffff55><b>👥 CLONE !</b></gradient> <gray>Qui poursuis-tu vraiment ?"
+      habilidad3: "<gradient:#ff4d4d:#ff0000><b>🎭 1, 2, 3, 4 !</b></gradient> <gray>Explosion Matryoshka !"
+
+  neru:
+    nombre: "<gradient:#ffcc00:#ffff55><b>AKITA NERU</b></gradient>"
+    lore_tienda:
+      - "La diva du désintérêt."
+      - ""
+      - "<color:#ffcc00>Spécialiste du spam et des attaques de lag !"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ffcc00:#ffaa00><b>Spam Notifs</b></gradient>"
+      habilidad2: "<gradient:#bbbbbb:#ffffff><b>Mode AFK</b></gradient>"
+      habilidad3: "<gradient:#ffcc00:#ff5555><b>Triple Baka</b></gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ffcc00:#ffaa00><b>📱 DING ! DING !</b></gradient> <gray>Spam sur l'écran du tueur !"
+      habilidad2: "<gradient:#bbbbbb:#ffffff><b>💤 ENNUI...</b></gradient> <gray>Neru est partie AFK (Invulnérable)."
+      habilidad3: "<gradient:#ffcc00:#ff5555><b>💢 BAKA ! BAKA !</b></gradient> <gray>Triple impact !"
+
+  mariachi:
+    nombre: "<gradient:#fbca03:#ff5555><b>LE MARIACHI</b></gradient>"
+    lore_tienda:
+      - "Ay, ay, ay ! Celui qui ne chante pas, pleure."
+      - ""
+      - "<color:#fbca03>Support musical et expert en fuite."
+    habilidades_nombres:
+      habilidad1: "<gradient:#fbca03:#ffffff><b>Coup de Guitare</b></gradient>"
+      habilidad2: "<gradient:#fbca03:#ffaa00><b>Jarabe Tapatío</b></gradient>"
+      habilidad3: "<gradient:#ff5555:#00aa00><b>Cri Mexicain</b></gradient>"
+
+  minty:
+    nombre: "<gradient:#55ffaa:#00aa55><b>MINTY</b></gradient>"
+    descripcion:
+      - "<gray>Un survivant aux instincts animaux."
+      - "<white>Mécanique : <green>Étourdissement & Fuite</green>"
+    lore_tienda:
+      - "<italic><gray>\"Je ne suis pas une proie facile...\"</gray></italic>"
+      - "<white>Difficulté : <yellow>Moyenne"
+    habilidades_nombres:
+      habilidad1: "<gradient:#aaffaa:#ffffff>Coup de Griffe</gradient>"
+      habilidad2: "<gradient:#ffffff:#aaffaa>Ruée</gradient>"
+      habilidad3: "<gradient:#00aa00:#55ff55>Hurlement Féroce</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#aaffaa:#ffffff><b>🐾 GRIFFE !</b></gradient> <gray>Tueur étourdi pour <white>5s</white>."
+      habilidad2: "<gradient:#ffffff:#aaffaa><b>💨 COURS !</b></gradient> <gray>Vitesse de loup activée."
+      habilidad3: "<gradient:#00aa00:#55ff55><b>🐺 HURLEMENT !</b></gradient> <gray>Le sol tremble ! Tueur étourdi."

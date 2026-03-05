@@ -8,7 +8,7 @@ import com.infernalsuite.asp.loaders.file.FileLoader
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import liric.mistaken.Mistaken
-import liric.mistaken.utils.mainThread // 1. IMPORTANTE: Usamos nuestro dispatcher
+import liric.mistaken.utils.mainThread
 import org.bukkit.Bukkit
 import org.bukkit.GameRule
 import org.bukkit.World
@@ -19,10 +19,8 @@ import java.util.concurrent.CompletableFuture
  * [LIRIC-MISTAKEN 2.0]
  * MapManager: Gestión de mundos dinámicos con AdvancedSlimePaper (ASP).
  *
- * Optimización:
- * - Reemplazado Dispatchers.Main por plugin.mainThread (Fix crash).
- * - Carga de archivos en Dispatchers.IO.
- * - Registro de mundo en el Hilo Principal de Bukkit.
+ * Actualización:
+ * - Agregado GameRule.FALL_DAMAGE = false para anular daño de caída nativamente.
  */
 class MapManager(private val plugin: Mistaken) {
 
@@ -42,7 +40,6 @@ class MapManager(private val plugin: Mistaken) {
      * Carga un mundo de arena desde una plantilla .slime.
      */
     fun loadArenaWorld(templateName: String): CompletableFuture<World?> {
-        // Ejecutamos todo dentro de un bloque async en el hilo de IO
         return mapScope.async {
             val instanceName = "${templateName}_${System.currentTimeMillis()}"
 
@@ -59,15 +56,12 @@ class MapManager(private val plugin: Mistaken) {
                     setValue(SlimeProperties.PVP, true)
                 }
 
-                // Leer mundo desde el archivo (Esto es pesado, se queda en IO)
                 val template = asp.readWorld(fileLoader, templateName, true, props)
                 val worldInstance = template.clone(instanceName)
 
                 // --- FASE 2: REGISTRO (Hilo Principal de Bukkit) ---
-                // AQUÍ USAMOS plugin.mainThread PARA EVITAR EL CRASH
                 return@async withContext(plugin.mainThread) {
                     try {
-                        // Cargar la instancia en el servidor de Bukkit
                         val instance = asp.loadWorld(worldInstance, false)
                         val bukkitWorld = instance.bukkitWorld ?: return@withContext null
 
@@ -78,10 +72,13 @@ class MapManager(private val plugin: Mistaken) {
 
                             setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false)
                             setGameRule(GameRule.DO_WEATHER_CYCLE, false)
-                            setGameRule(org.bukkit.GameRule.DO_IMMEDIATE_RESPAWN, true)
+                            setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
                             setGameRule(GameRule.DO_MOB_SPAWNING, false)
                             setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false)
                             setGameRule(GameRule.DO_FIRE_TICK, false)
+
+                            // 🔥 AQUÍ ESTÁ EL CAMBIO: Cancelamos daño de caída globalmente en este mundo
+                            setGameRule(GameRule.FALL_DAMAGE, false)
 
                             setStorm(false)
                             isThundering = false
@@ -109,7 +106,6 @@ class MapManager(private val plugin: Mistaken) {
     fun unloadWorld(world: World?) {
         if (world == null) return
 
-        // La descarga debe ocurrir en el hilo principal
         mapScope.launch {
             withContext(plugin.mainThread) {
                 Bukkit.unloadWorld(world, false)
@@ -118,9 +114,6 @@ class MapManager(private val plugin: Mistaken) {
         }
     }
 
-    /**
-     * Cancela todas las cargas pendientes al apagar el plugin.
-     */
     fun shutdown() {
         mapScope.cancel()
     }

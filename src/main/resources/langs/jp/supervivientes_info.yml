@@ -1,0 +1,155 @@
+supervivientes:
+  civil:
+    nombre: "<gradient:#ffffff:#aaaaaa><b>市民</b></gradient>"
+    descripcion:
+      - "<gray>カオスに閉じ込められた市民。"
+      - "<gray>ステータスは完全にバランス型。"
+      - "<white>特徴: <aqua>ステルス＆自己防衛</aqua>"
+    lore_tienda:
+      - "<italic><gray>「ただ家に帰りたいだけ...」</gray></italic>"
+      - "<white>難易度: <green>簡単"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ff55ff:#ff99ff>アドレナリン</gradient>"
+      habilidad2: "<gradient:#888888:#cccccc>消失 (Vanish)</gradient>"
+      habilidad3: "<gradient:#dddddd:#888888>投石</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ff55ff:#ff99ff><b>⚡ アドレナリン全開！</b></gradient> <gray>移動速度が<white>5秒間</white>上昇。"
+      habilidad2: "<gradient:#888888:#cccccc><b>👻 消失...</b></gradient> <gray><white>5秒間</white>透明になります。"
+      habilidad2_fin: "<gradient:#ff5555:#ff0000><b>⚠ 効果終了！</b></gradient> <gray>姿が見えるようになりました。"
+      habilidad3: "<gradient:#dddddd:#888888><b>👊 ロックスロー！</b></gradient> <gray>キラーに命中すると<aqua>減速</aqua>させます。"
+
+  repartidor:
+    nombre: "<gradient:#ffaa00:#ffee00><b>配達員</b></gradient>"
+    descripcion:
+      - "<gray>ヘロブラインすら止められない配達魂。"
+      - "<white>特徴: <gold>サポート＆超高速移動</gold>"
+    lore_tienda:
+      - "<italic><gray>「評価は星5で頼むぜ！」</gray></italic>"
+      - "<white>難易度: <green>簡単"
+    habilidades_nombres:
+      habilidad1: "<gradient:#00ffff:#00aaff>エナジードリンク</gradient>"
+      habilidad2: "<gradient:#ffaa00:#ffffff>高速配達</gradient>"
+      habilidad3: "<gradient:#ff5555:#aa0000>ソースぶちまけ</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#00ffff:#00aaff><b>🥤 ゴクッ！</b></gradient> <gray>配達スピード<green>発動</green>。"
+      habilidad2: "<gradient:#ffaa00:#ffffff><b>📦 お届け物だ！</b></gradient> <gray>注文の品を投げつけろ！"
+      habilidad3: "<gradient:#ff5555:#aa0000><b>🥫 うわっ！</b></gradient> <gray>ソースがこぼれた！地面が<yellow>滑りやすく</yellow>なります。"
+
+  jesse:
+    nombre: "<gradient:#ffd700:#ffaa00><b>ジェシー</b></gradient>"
+    lore_tienda:
+      - "「ストーン・オーダー」の"
+      - "伝説的なリーダー。"
+      - ""
+      - "<yellow>サポートと救助のスペシャリスト！"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ffd700:#ffffff>オーダーの剣</gradient>"
+      habilidad2: "<gradient:#55ffff:#ffffff><b>ガブリエルのアミュレット</b></gradient>"
+      habilidad3: "<gradient:#ffaa00:#ffff55>オーダーの招集</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ffd700:#ffffff><b>⚔ オーダーのために！</b></gradient> <gray>戦闘ブースト発動。"
+      habilidad2: "<gradient:#55ffff:#ffffff><b>💠 癒やしの波動！</b></gradient> <gray>周囲を回復させます。"
+      habilidad3: "<gradient:#ffaa00:#ffff55><b>🛡 結束！</b></gradient> <gray>仲間の加護を感じる。"
+
+  petra:
+    nombre: "<gradient:#ff3333:#aa0000><b>ペトラ</b></gradient>"
+    lore_tienda:
+      - "オーダー最強の戦士。"
+      - ""
+      - "<red>高速戦闘とステルスのスペシャリスト！"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ff5555:#aa0000>ペトラの剣</gradient>"
+      habilidad2: "<gradient:#ffffff:#999999><b>ミサイルストライク</b></gradient>"
+      habilidad3: "<gradient:#555555:#000000>煙玉</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ff5555:#aa0000><b>⚔ 一閃！</b></gradient> <gray>電光石火の一撃。"
+      habilidad2: "<gradient:#ffffff:#999999><b>💨 突撃！</b></gradient> <gray>ペトラが前線へ飛び込む！"
+      habilidad3: "<gradient:#555555:#000000><b>☁ ドロン！</b></gradient> <gray>煙の中に消えた。"
+
+  axel:
+    nombre: "<gradient:#55ff55:#00aa00><b>アクセル</b></gradient>"
+    lore_tienda:
+      - "オーダーの筋肉担当。"
+      - ""
+      - "<green>爆発物とノックバックのスペシャリスト！"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ff5555:#ff0000>ＴＮＴ</gradient>"
+      habilidad2: "<gradient:#55ff55:#ffffff><b>ノックバック斧</b></gradient>"
+      habilidad3: "<gradient:#ffff55:#ffaa00>アクセルの大盾</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ff5555:#ff0000><b>💣 ドカーン！</b></gradient> <gray>爆発注意！"
+      habilidad2: "<gradient:#55ff55:#00aa00><b>🪓 吹っ飛べ！</b></gradient> <gray>近寄るな！"
+      habilidad3: "<gradient:#ffff55:#ffaa00><b>🛡 ガード！</b></gradient> <gray>ここを通すわけにはいかない！"
+
+  steve:
+    nombre: "<gradient:#5555ff:#0000aa><b>スティーブ</b></gradient>"
+    lore_tienda:
+      - "サバイバルの神。"
+      - ""
+      - "<blue>テクニカルな戦闘と建築を極めている！"
+    habilidades_nombres:
+      habilidad1: "<gradient:#5555ff:#aa00aa><b>クリティカル斧</b></gradient>"
+      habilidad2: "<gradient:#aaaaaa:#555555><b>高速建築</b></gradient>"
+      habilidad3: "<gradient:#55ffff:#00aaaa><b>水バケツ</b></gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#5555ff:#aa00aa><b>💥 クリティカル！</b></gradient> <gray>完璧なタイミング。"
+      habilidad2: "<gradient:#aaaaaa:#555555><b>🧱 防壁！</b></gradient> <gray>一瞬で壁を展開。"
+      habilidad3: "<gradient:#55ffff:#00aaaa><b>💧 着水！</b></gradient> <gray>キラーが溺れている！"
+
+  gumi:
+    nombre: "<gradient:#a9d14f:#ffffff><b>GUMI</b></gradient>"
+    lore_tienda:
+      - "仮想歪みの歌姫。"
+      - ""
+      - "<color:#a9d14f>エコーとデジタルコピーを操る！"
+    habilidades_nombres:
+      habilidad1: "<gradient:#a9d14f:#00ff00><b>システム: ECHO</b></gradient>"
+      habilidad2: "<gradient:#a9d14f:#ffff55><b>コピーキャット</b></gradient>"
+      habilidad3: "<gradient:#ff4d4d:#ff0000><b>マトリョシカ</b></gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#a9d14f:#00ff00><b>🔊 ECHO...</b></gradient> <gray><i>The black and white inside my head...</i>"
+      habilidad2: "<gradient:#a9d14f:#ffff55><b>👥 分身！</b></gradient> <gray>君が追っているのは本物？"
+      habilidad3: "<gradient:#ff4d4d:#ff0000><b>🎭 １，２，３，４！</b></gradient> <gray>マトリョシカ・エクスプロージョン！"
+
+  neru:
+    nombre: "<gradient:#ffcc00:#ffff55><b>亞北ネル</b></gradient>"
+    lore_tienda:
+      - "無関心の歌姫。"
+      - ""
+      - "<color:#ffcc00>スパムとラグ攻撃のスペシャリスト！"
+    habilidades_nombres:
+      habilidad1: "<gradient:#ffcc00:#ffaa00><b>通知スパム</b></gradient>"
+      habilidad2: "<gradient:#bbbbbb:#ffffff><b>AFKモード</b></gradient>"
+      habilidad3: "<gradient:#ffcc00:#ff5555><b>トリプル・バカ</b></gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#ffcc00:#ffaa00><b>📱 ピロン！ピロン！</b></gradient> <gray>キラーの画面をメッセージで埋め尽くせ！"
+      habilidad2: "<gradient:#bbbbbb:#ffffff><b>💤 飽きた...</b></gradient> <gray>ネルはAFK（無敵）になった。"
+      habilidad3: "<gradient:#ffcc00:#ff5555><b>💢 バカ！バカ！</b></gradient> <gray>トリプル・インパクト！"
+
+  mariachi:
+    nombre: "<gradient:#fbca03:#ff5555><b>マリアッチ</b></gradient>"
+    lore_tienda:
+      - "アイ、アイ、アイ！歌わぬ者は泣く。"
+      - ""
+      - "<color:#fbca03>音楽サポートと逃走のエキスパート。"
+    habilidades_nombres:
+      habilidad1: "<gradient:#fbca03:#ffffff><b>ギターバッシュ</b></gradient>"
+      habilidad2: "<gradient:#fbca03:#ffaa00><b>ハラベ・タパティオ</b></gradient>"
+      habilidad3: "<gradient:#ff5555:#00aa00><b>メキシカン・エール</b></gradient>"
+
+  minty:
+    nombre: "<gradient:#55ffaa:#00aa55><b>ミンティ</b></gradient>"
+    descripcion:
+      - "<gray>野生の直感を持つサバイバー。"
+      - "<white>メカニズム: <green>スタン＆逃走</green>"
+    lore_tienda:
+      - "<italic><gray>「私は簡単な獲物じゃない...」</gray></italic>"
+      - "<white>難易度: <yellow>普通"
+    habilidades_nombres:
+      habilidad1: "<gradient:#aaffaa:#ffffff>爪撃 (Claw)</gradient>"
+      habilidad2: "<gradient:#ffffff:#aaffaa>突進 (Dash)</gradient>"
+      habilidad3: "<gradient:#00aa00:#55ff55>猛獣の咆哮</gradient>"
+    habilidades_mensajes:
+      habilidad1: "<gradient:#aaffaa:#ffffff><b>🐾 爪撃！</b></gradient> <gray>キラーを<white>5秒間</white>スタンさせました。"
+      habilidad2: "<gradient:#ffffff:#aaffaa><b>💨 走れ！</b></gradient> <gray>狼のスピードが発動。"
+      habilidad3: "<gradient:#00aa00:#55ff55><b>🐺 咆哮！</b></gradient> <gray>地面が揺れる！キラーがスタンしました。"

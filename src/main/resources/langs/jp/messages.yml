@@ -4,6 +4,9 @@
 
 prefix: "<b><color:#88C6F2>MISTAKEN</color></b> <color:#ADADAD>|</color> "
 
+lobby:
+  welcome: ""
+
 # --- 投票 (VOTING) ---
 voting:
   started: "<green>投票が開始されました！ <yellow>/vote <map></yellow> で投票してください。"
@@ -247,6 +250,7 @@ game:
   rejoin-msg: "<prefix><red>おかえりなさい、殺人鬼。虐殺を続けてください。"
   infection-hit: "<prefix><red>システム汚染！Error Starに感染しました。"
   hunt-start: "<red><bold>殺人鬼が出現！</bold> <white>見つからないようにしろ...</white>"
+  class-selected: "<red>"
   time-extended: "<green>ナイスキル！残り時間が <yellow>{seconds}秒</yellow> 追加されました。"
   mode-reveal-start: "<yellow>エリア内の異常を分析中... <obfuscated>aa</obfuscated>"
   mode-selected: "<white>モード検知: <aqua>{mode}"

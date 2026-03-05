@@ -1,6 +1,6 @@
 package liric.mistaken.supervivientes.clases
 
-import kotlinx.coroutines.*
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
 import liric.mistaken.supervivientes.Superviviente
 import liric.mistaken.utils.CraftEngineUtils
@@ -18,12 +18,16 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Civil: La clase balanceada y versátil.
+ * OPTIMIZADO: Separación Mecánica/Info + Schedulers.
  */
-class Civil : Superviviente("civil", "Civil") {
+class Civil : Superviviente(
+    "civil",
+    Mistaken.instance.messageConfig.getRawString(null, "supervivientes.civil.nombre", "Civil", "supervivientes_info")
+) {
 
-    private val pathBase = "supervivientes.civil.items"
+    private val pathBase = "supervivientes.civil"
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
     private val rocaKey = NamespacedKey("mistaken", "roca")
 
     init {
@@ -32,10 +36,8 @@ class Civil : Superviviente("civil", "Civil") {
 
     private fun preLoadKit() {
         val config = plugin.configManager.getSupervivientes()
-        val skillKeys = listOf("habilidad1", "habilidad2", "habilidad3")
-
-        skillKeys.forEach { key ->
-            config.getString("$pathBase.$key")?.let { id ->
+        listOf("habilidad1", "habilidad2", "habilidad3").forEach { key ->
+            config.getString("$pathBase.items.$key")?.let { id ->
                 if (id != "none" && id.isNotEmpty()) {
                     val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
                     itemCache[key] = item
@@ -45,30 +47,38 @@ class Civil : Superviviente("civil", "Civil") {
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes")
+        val mechConfig = plugin.configManager.getSupervivientes()
+        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
 
         when (slot) {
-            0 -> if (!checkCooldown(player, 0, langConfig.getInt("$pathBase.habilidad1_cooldown", 30))) {
+            0 -> if (!checkCooldown(player, 0, mechConfig.getInt("$pathBase.items.habilidad1_cooldown", 30))) {
                 usarAdrenalina(player)
-                sendAbilityMessage(player, langConfig, "habilidad1")
+                sendAbilityMessage(player, langConfig, mechConfig, "habilidad1")
             }
-            1 -> if (!checkCooldown(player, 1, langConfig.getInt("$pathBase.habilidad2_cooldown", 45))) {
-                usarInvisibilidad(player, langConfig.getString("$pathBase.habilidad2_mensaje_fin"))
-                sendAbilityMessage(player, langConfig, "habilidad2")
+            1 -> if (!checkCooldown(player, 1, mechConfig.getInt("$pathBase.items.habilidad2_cooldown", 45))) {
+                val mensajeFin = langConfig.getString("$pathBase.habilidades_mensajes.habilidad2_fin")
+                usarInvisibilidad(player, mensajeFin)
+                sendAbilityMessage(player, langConfig, mechConfig, "habilidad2")
             }
-            2 -> if (!checkCooldown(player, 2, langConfig.getInt("$pathBase.habilidad3_cooldown", 20))) {
+            2 -> if (!checkCooldown(player, 2, mechConfig.getInt("$pathBase.items.habilidad3_cooldown", 20))) {
                 lanzarRoca(player)
-                sendAbilityMessage(player, langConfig, "habilidad3")
+                sendAbilityMessage(player, langConfig, mechConfig, "habilidad3")
             }
         }
     }
 
-    private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, key: String) {
-        val msg = lang.getString("$pathBase.${key}_mensaje")
+    private fun sendAbilityMessage(
+        player: Player,
+        lang: org.bukkit.configuration.file.FileConfiguration,
+        mech: org.bukkit.configuration.file.FileConfiguration,
+        key: String
+    ) {
+        var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) {
-            player.sendMessage(mm.deserialize(msg.replace("{prefix}", plugin.gameManager.getPrefix())))
+            msg = msg.replace("<prefix>", "", true).replace("%prefix%", "", true).trim()
+            player.sendMessage(mm.deserialize(msg))
         }
-        val soundName = lang.getString("$pathBase.${key}_sonido", "UI_BUTTON_CLICK")
+        val soundName = mech.getString("$pathBase.items.${key}_sonido", "UI_BUTTON_CLICK")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
     }
 
@@ -77,11 +87,11 @@ class Civil : Superviviente("civil", "Civil") {
         inv.clear()
         if (itemCache.isEmpty()) preLoadKit()
 
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes")
+        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
-            langConfig.getString("$pathBase.${key}_nombre")?.let {
+            langConfig.getString("$pathBase.habilidades_nombres.$key")?.let {
                 item.editMeta { m -> m.displayName(mm.deserialize(it)) }
             }
             inv.setItem(slot, item)
@@ -96,30 +106,28 @@ class Civil : Superviviente("civil", "Civil") {
 
     private fun usarAdrenalina(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 1))
-        val job = scope.launch {
-            delay(5000)
-            withContext(plugin.bukkitDispatcher) {
-                if (player.isOnline) {
-                    player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 0))
-                    player.playSound(player.location, Sound.ENTITY_PLAYER_BREATH, 0.8f, 1.2f)
-                }
+
+        val task = player.scheduler.runDelayed(plugin, {
+            if (player.isOnline) {
+                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 0))
+                player.playSound(player.location, Sound.ENTITY_HORSE_BREATHE, 0.8f, 0.6f)
             }
-        }
-        trackJob(job)
+        }, null, 100L)
+
+        task?.let { activeTasks.add(it) }
     }
 
     private fun usarInvisibilidad(player: Player, mensajeFin: String?) {
         player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 100, 0, false, false, false))
-        val job = scope.launch {
-            delay(5000)
-            withContext(plugin.bukkitDispatcher) {
-                if (player.isOnline) {
-                    mensajeFin?.let { player.sendMessage(mm.deserialize(it)) }
-                    player.playSound(player.location, Sound.BLOCK_BEACON_DEACTIVATE, 0.5f, 1.5f)
-                }
+
+        val task = player.scheduler.runDelayed(plugin, {
+            if (player.isOnline) {
+                mensajeFin?.let { player.sendMessage(mm.deserialize(it)) }
+                player.playSound(player.location, Sound.BLOCK_BEACON_DEACTIVATE, 0.5f, 1.5f)
             }
-        }
-        trackJob(job)
+        }, null, 100L)
+
+        task?.let { activeTasks.add(it) }
     }
 
     private fun lanzarRoca(player: Player) {
@@ -135,6 +143,7 @@ class Civil : Superviviente("civil", "Civil") {
             it.removePotionEffect(PotionEffectType.DARKNESS)
             it.isSwimming = false
         }
-        scope.coroutineContext.cancelChildren()
+        activeTasks.forEach { it.cancel() }
+        activeTasks.clear()
     }
 }

@@ -27,11 +27,10 @@ class AsesinoManager(private val plugin: Mistaken) {
     val catalogo: Map<String, Asesino> get() = clasesDisponibles
 
     init {
-        // Registro de los pesados (Estos son Singletons, cuidado con sus mapas internos)
         listOf(
             Slasher(), Herobrine(), Entity303(), NullAsesino(),
             ColorAndElectricity(), CharlieInferno(), Romeo(), Mariachi(),
-            Devesto(), KasaneTeto(), Bendy()
+            Devesto(), KasaneTeto(), Bendy(), Colorsito()
         ).forEach { registrarClase(it) }
     }
 

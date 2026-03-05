@@ -12,6 +12,7 @@ import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
 import org.bukkit.*
+import org.bukkit.attribute.Attribute
 import org.bukkit.entity.*
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
@@ -27,7 +28,7 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Entity 303: El Hacker de la Realidad.
- * FIX: Slots 1-4, Carga de armadura, Multi-Idioma y True Damage.
+ * FIX: Animación Ultra-Fluida, Escala 1.1 y sistema de slots optimizado.
  */
 class Entity303 : Asesino(
     "entity303",
@@ -40,14 +41,19 @@ class Entity303 : Asesino(
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    private val orbitMaterials = listOf(Material.REDSTONE_BLOCK, Material.MAGMA_BLOCK, Material.OBSERVER)
+    // Materiales del Glitch (Rojos y Calientes)
+    private val orbitMaterials = listOf(
+        Material.REDSTONE_BLOCK, Material.MAGMA_BLOCK,
+        Material.OBSERVER, Material.NETHER_WART_BLOCK,
+        Material.CRIMSON_HYPHAE
+    )
 
     init {
         preLoadKit()
     }
 
     private fun preLoadKit() {
-        val config = plugin.configManager.getAsesinos() // Raíz
+        val config = plugin.configManager.getAsesinos()
         val armor = listOf("casco", "pechera", "pantalones", "botas")
         val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
@@ -79,7 +85,8 @@ class Entity303 : Asesino(
         }
     }
 
-    // --- 💻 H1: DASH DE CÓDIGO ---
+    // --- HABILIDADES ---
+
     private fun habilidadDashCodigo(player: Player) {
         val dir = player.location.direction.normalize().multiply(2.0).setY(0.2)
         player.velocity = dir
@@ -106,7 +113,6 @@ class Entity303 : Asesino(
         player.playSound(player.location, Sound.ENTITY_GHAST_SHOOT, 1f, 1.5f)
     }
 
-    // --- ☣️ H2: INFECCIÓN DE SISTEMA ---
     private fun habilidadInfeccionSistema(player: Player) {
         val star = player.world.spawn(player.eyeLocation, ItemDisplay::class.java) {
             it.setItemStack(ItemStack(Material.NETHER_STAR))
@@ -141,14 +147,13 @@ class Entity303 : Asesino(
         trackJob(job)
     }
 
-    // --- ✈️ H3: PROTOCOLO DE VUELO ---
     private fun habilidadProtocoloVuelo(player: Player) {
         player.allowFlight = true
         player.isFlying = true
         player.playSound(player.location, Sound.BLOCK_BEACON_ACTIVATE, 1f, 2f)
 
         val job = scope.launch {
-            delay(5000) // 5 segundos de vuelo
+            delay(5000)
             withContext(plugin.bukkitDispatcher) {
                 if (player.isOnline && player.gameMode != GameMode.SPECTATOR) {
                     player.isFlying = false
@@ -161,7 +166,6 @@ class Entity303 : Asesino(
         trackJob(job)
     }
 
-    // --- ❌ H4: CRASH DE PANTALLA ---
     private fun habilidadCrashPantalla(player: Player) {
         Bukkit.getOnlinePlayers().forEach { online ->
             if (!plugin.asesinoManager.esElAsesino(online) && online.location.distanceSquared(player.location) < 1600) {
@@ -172,30 +176,28 @@ class Entity303 : Asesino(
         }
     }
 
-    // --- 🛠️ EQUIPAMIENTO (MULTI-IDIOMA) ---
+    // --- 🛠️ EQUIPAMIENTO ---
 
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
-        inv.armorContents = arrayOfNulls(4) // Limpieza total para que entre el traje nuevo
+        inv.armorContents = arrayOfNulls(4)
 
-        val configMecanica = plugin.configManager.getAsesinos() // El global (la raíz)
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info") // Los nombres pro
+        // 🔥 FIX: ESCALA 1.1 (IMCOMPONENTE)
+        player.getAttribute(Attribute.SCALE)?.baseValue = 1.1
+
+        val configMecanica = plugin.configManager.getAsesinos()
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            // 1. Buscamos el ID del ítem en el archivo de mecánicas (global)
             val id = if (isArmor) configMecanica.getString("$path.armadura.$key")
             else configMecanica.getString("$path.items.$key")
 
             if (id == null || id == "none") return
 
-            // 2. Creamos el ítem (CraftEngine o Vanilla fallback)
             val item = CraftEngineUtils.getCustomItem(id) ?: run {
-                // Si no es de CraftEngine, limpiamos el ID y buscamos material de Minecraft
                 val matName = id.replace(".*:".toRegex(), "").uppercase()
                 val mat = Material.matchMaterial(matName)
-
-                // Fallback de emergencia por si el admin escribió una burrada
                 if (mat != null) ItemStack(mat)
                 else if (isArmor) {
                     val fallback = when(key) {
@@ -208,7 +210,6 @@ class Entity303 : Asesino(
                 } else null
             } ?: return
 
-            // 3. Le ponemos el nombre según el idioma del jugador (asesinos_info.yml)
             val namePath = if (key == "arma") "asesinos.entity303.habilidades_nombres.arma"
             else "asesinos.entity303.habilidades_nombres.$key"
 
@@ -216,7 +217,6 @@ class Entity303 : Asesino(
                 item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
-            // 4. Lo mandamos a su slot correspondiente
             if (isArmor) {
                 when(key) {
                     "casco" -> inv.helmet = item
@@ -229,12 +229,10 @@ class Entity303 : Asesino(
             }
         }
 
-        // --- SOLTAR EL KIT CORRUPTO ---
         deliver("casco", 0, true)
         deliver("pechera", 0, true)
         deliver("pantalones", 0, true)
         deliver("botas", 0, true)
-
         deliver("habilidad1", 1)
         deliver("habilidad2", 2)
         deliver("habilidad3", 3)
@@ -245,38 +243,77 @@ class Entity303 : Asesino(
         player.updateInventory()
     }
 
-    // --- 🧊 MOTOR FÍSICO: GLITCH BLOCKS ---
+    // --- 🧊 MOTOR FÍSICO ULTRA-FLUIDO ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { limpiar(uuid); return }
-        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiar(uuid)
+
+        val playerWorld = player.world
+        if (orbitadores[uuid]?.firstOrNull()?.world != playerWorld) limpiar(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
-            orbitMaterials.map { mat ->
-                player.world.spawn(player.location, BlockDisplay::class.java) { bd ->
-                    bd.block = mat.createBlockData()
-                    bd.transformation = Transformation(JomlVector3f(-0.1f, -0.1f, -0.1f), Quaternionf(), JomlVector3f(0.25f, 0.25f, 0.25f), Quaternionf())
-                    bd.teleportDuration = 2; bd.interpolationDuration = 2
-                }
-            }.toMutableList()
+            orbitMaterials.map { mat -> crearBloqueOrbitante(player.location, mat) }.toMutableList()
         }
 
-        val angulo = (angulos.getOrDefault(uuid, 0.0) + 0.15) % (Math.PI * 2)
-        val radio = 1.3
+        val anguloActual = (angulos.getOrDefault(uuid, 0.0) + 0.15) % (Math.PI * 2)
+
+        // Radio un poco más grande por la escala 1.1
+        val radio = 1.6
+        val step = (2 * Math.PI) / entidades.size
+        val playerLoc = player.location
+
         for (i in entidades.indices) {
-            val offset = (2 * Math.PI / entidades.size) * i
-            val x = radio * cos(angulo + offset)
-            val z = radio * sin(angulo + offset)
-            val y = 1.2 + (0.2 * sin((angulo + offset) * 2))
-            entidades[i].teleport(player.location.clone().add(x, y, z))
+            val display = entidades[i]
+            if (display.isValid) {
+                val currentAngle = anguloActual + (step * i)
+                val x = radio * cos(currentAngle)
+                val z = radio * sin(currentAngle)
+                // Altura ajustada para no chocar con la cabeza gigante
+                val y = 1.3 + (0.2 * sin(currentAngle * 2))
+
+                val targetLoc = playerLoc.clone().add(x, y, z)
+
+                // 🔥 Rotación sobre su propio eje (Glitch effect)
+                targetLoc.yaw = (currentAngle * 100).toFloat() % 360
+                targetLoc.pitch = (currentAngle * 50).toFloat() % 360
+
+                display.teleport(targetLoc)
+            }
         }
-        angulos[uuid] = angulo
+        angulos[uuid] = anguloActual
+    }
+
+    private fun crearBloqueOrbitante(loc: Location, mat: Material): BlockDisplay {
+        return loc.world.spawn(loc, BlockDisplay::class.java) { bd ->
+            bd.block = mat.createBlockData()
+            // Centrado matemático perfecto
+            bd.transformation = Transformation(
+                JomlVector3f(-0.125f, -0.125f, -0.125f),
+                Quaternionf(),
+                JomlVector3f(0.25f, 0.25f, 0.25f),
+                Quaternionf()
+            )
+            // 🔥 TRUCO DE FLUIDEZ: 3 Ticks de interpolación
+            bd.teleportDuration = 3
+            bd.interpolationDuration = 3
+            // Efecto brillante para Entity 303
+            if (mat == Material.MAGMA_BLOCK || mat == Material.REDSTONE_BLOCK) {
+                bd.brightness = Display.Brightness(15, 15)
+            }
+        }
     }
 
     override fun mostrarTrail(player: Player) {
-        val loc = player.location.add(0.0, 1.1, 0.0)
-        val packet = WrapperPlayServerParticle(Particle(ParticleTypes.DUST, ParticleDustData(1f, 0f, 0f, 0.8f)), false, Vector3d(loc.x, loc.y, loc.z), Vector3f(0.2f, 0.2f, 0.2f), 0.01f, 1)
+        val loc = player.location.add(0.0, 1.2, 0.0) // Altura ajustada
+        val packet = WrapperPlayServerParticle(
+            Particle(ParticleTypes.DUST, ParticleDustData(1f, 0f, 0f, 0.8f)),
+            false,
+            Vector3d(loc.x, loc.y, loc.z),
+            Vector3f(0.2f, 0.2f, 0.2f),
+            0.01f,
+            1
+        )
         loc.world.players.forEach { if (it.location.distanceSquared(loc) < 400.0) PacketEvents.getAPI().playerManager.sendPacket(it, packet) }
     }
 
@@ -286,6 +323,8 @@ class Entity303 : Asesino(
         super.cleanup(player)
         player?.let {
             limpiar(it.uniqueId)
+            // 🔥 RESTAURAR ESCALA Y VUELO
+            it.getAttribute(Attribute.SCALE)?.baseValue = 1.0
             it.allowFlight = false
             it.isFlying = false
         }

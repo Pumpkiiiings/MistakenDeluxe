@@ -1,8 +1,7 @@
 package liric.mistaken.supervivientes.clases
 
-import kotlinx.coroutines.*
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
-import liric.mistaken.listeners.supervivientes.SupervivienteHabilidadListener
 import liric.mistaken.supervivientes.Superviviente
 import liric.mistaken.utils.CraftEngineUtils
 import org.bukkit.Material
@@ -20,15 +19,16 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Repartidor: Soporte táctico y control de área.
+ * OPTIMIZADO: Separación Mecánica/Info + Schedulers.
  */
 class Repartidor : Superviviente(
     "repartidor",
-    Mistaken.instance.messageConfig.getRawString(null, "supervivientes.repartidor.nombre", "Repartidor", "supervivientes")
+    Mistaken.instance.messageConfig.getRawString(null, "supervivientes.repartidor.nombre", "Repartidor", "supervivientes_info")
 ) {
 
-    private val pathBase = "supervivientes.repartidor.items"
+    private val pathBase = "supervivientes.repartidor"
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
     private val pedidoKey = NamespacedKey("mistaken", "pedido")
 
     init {
@@ -36,11 +36,9 @@ class Repartidor : Superviviente(
     }
 
     private fun preLoadKit() {
-        val config = plugin.configManager.getSupervivientes() // Global
-        val skillKeys = listOf("habilidad1", "habilidad2", "habilidad3")
-
-        skillKeys.forEach { key ->
-            config.getString("$pathBase.$key")?.let { id ->
+        val config = plugin.configManager.getSupervivientes()
+        listOf("habilidad1", "habilidad2", "habilidad3").forEach { key ->
+            config.getString("$pathBase.items.$key")?.let { id ->
                 if (id != "none" && id.isNotEmpty()) {
                     val item = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
                     itemCache[key] = item
@@ -50,30 +48,37 @@ class Repartidor : Superviviente(
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes")
+        val mechConfig = plugin.configManager.getSupervivientes()
+        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
 
         when (slot) {
-            0 -> if (!checkCooldown(player, 0, langConfig.getInt("$pathBase.habilidad1_cooldown", 30))) {
+            0 -> if (!checkCooldown(player, 0, mechConfig.getInt("$pathBase.items.habilidad1_cooldown", 30))) {
                 usarBebidaEnergetica(player)
-                sendAbilityMessage(player, langConfig, "habilidad1")
+                sendAbilityMessage(player, langConfig, mechConfig, "habilidad1")
             }
-            1 -> if (!checkCooldown(player, 1, langConfig.getInt("$pathBase.habilidad2_cooldown", 25))) {
+            1 -> if (!checkCooldown(player, 1, mechConfig.getInt("$pathBase.items.habilidad2_cooldown", 25))) {
                 lanzarPedido(player)
-                sendAbilityMessage(player, langConfig, "habilidad2")
+                sendAbilityMessage(player, langConfig, mechConfig, "habilidad2")
             }
-            2 -> if (!checkCooldown(player, 2, langConfig.getInt("$pathBase.habilidad3_cooldown", 15))) {
+            2 -> if (!checkCooldown(player, 2, mechConfig.getInt("$pathBase.items.habilidad3_cooldown", 15))) {
                 usarDerrame(player)
-                sendAbilityMessage(player, langConfig, "habilidad3")
+                sendAbilityMessage(player, langConfig, mechConfig, "habilidad3")
             }
         }
     }
 
-    private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, key: String) {
-        val msg = lang.getString("$pathBase.${key}_mensaje")
+    private fun sendAbilityMessage(
+        player: Player,
+        lang: org.bukkit.configuration.file.FileConfiguration,
+        mech: org.bukkit.configuration.file.FileConfiguration,
+        key: String
+    ) {
+        var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) {
-            player.sendMessage(mm.deserialize(msg.replace("{prefix}", plugin.gameManager.getPrefix())))
+            msg = msg.replace("<prefix>", "", true).replace("%prefix%", "", true).trim()
+            player.sendMessage(mm.deserialize(msg))
         }
-        val soundName = lang.getString("$pathBase.${key}_sonido", "ENTITY_GENERIC_EAT")
+        val soundName = mech.getString("$pathBase.items.${key}_sonido", "ENTITY_GENERIC_EAT")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
     }
 
@@ -82,11 +87,11 @@ class Repartidor : Superviviente(
         inv.clear()
         if (itemCache.isEmpty()) preLoadKit()
 
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes")
+        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
-            langConfig.getString("$pathBase.${key}_nombre")?.let {
+            langConfig.getString("$pathBase.habilidades_nombres.$key")?.let {
                 item.editMeta { m -> m.displayName(mm.deserialize(it)) }
             }
             inv.setItem(slot, item)
@@ -101,16 +106,15 @@ class Repartidor : Superviviente(
 
     private fun usarBebidaEnergetica(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 120, 1))
-        val job = scope.launch {
-            delay(6000)
-            withContext(plugin.bukkitDispatcher) {
-                if (player.isOnline) {
-                    player.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, 80, 1))
-                    player.playSound(player.location, Sound.ENTITY_PLAYER_BURP, 0.8f, 0.8f)
-                }
+
+        val task = player.scheduler.runDelayed(plugin, {
+            if (player.isOnline) {
+                player.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, 80, 1))
+                player.playSound(player.location, Sound.ENTITY_PLAYER_BURP, 0.8f, 0.8f)
             }
-        }
-        trackJob(job)
+        }, null, 120L)
+
+        task?.let { activeTasks.add(it) }
     }
 
     private fun lanzarPedido(player: Player) {
@@ -122,23 +126,22 @@ class Repartidor : Superviviente(
 
     private fun usarDerrame(player: Player) {
         val blockLoc = player.location.block.location
-        SupervivienteHabilidadListener.marcarBloque(blockLoc)
+        // SupervivienteHabilidadListener.marcarBloque(blockLoc)
 
         player.world.spawnParticle(Particle.ITEM_SLIME, player.location.add(0.0, 0.1, 0.0), 40, 0.5, 0.0, 0.5, 0.1)
         player.playSound(player.location, Sound.BLOCK_SLIME_BLOCK_PLACE, 1f, 0.5f)
 
-        val job = scope.launch {
-            delay(10000)
-            withContext(plugin.bukkitDispatcher) {
-                SupervivienteHabilidadListener.desmarcarBloque(blockLoc)
-                blockLoc.world.spawnParticle(Particle.DRIPPING_WATER, blockLoc.clone().add(0.5, 0.1, 0.5), 15, 0.2, 0.1, 0.2)
-            }
-        }
-        trackJob(job)
+        val task = plugin.server.regionScheduler.runDelayed(plugin, blockLoc, {
+            // SupervivienteHabilidadListener.desmarcarBloque(blockLoc)
+            blockLoc.world.spawnParticle(Particle.DRIPPING_WATER, blockLoc.clone().add(0.5, 0.1, 0.5), 15, 0.2, 0.1, 0.2)
+        }, 200L)
+
+        task?.let { activeTasks.add(it) }
     }
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        scope.coroutineContext.cancelChildren()
+        activeTasks.forEach { it.cancel() }
+        activeTasks.clear()
     }
 }

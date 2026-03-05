@@ -560,6 +560,7 @@ class GameManager(private val plugin: Mistaken) {
 
     private fun updatePersonalBar(p: Player, online: Int) {
         val uuid = p.uniqueId
+        // Aseguramos que si el estado es LOBBY, busque "lobby" en el YAML
         val stateName = currentState.name.lowercase()
 
         // 1. Formateo de tiempo
@@ -573,18 +574,25 @@ class GameManager(private val plugin: Mistaken) {
 
         val mapDisplay = if (currentState == GameState.LOBBY || currentState == GameState.VOTING) "Lobby" else currentMapName
 
-        // 2. Firma para no procesar si nada cambió (Optimización O(1))
+        // 2. Firma optimizada
         val signature = "S:$stateName|T:$timeStr|O:$online|M:$mapDisplay|MD:${currentMode.name}"
         if (lastProcessedText[uuid] == signature) return
         lastProcessedText[uuid] = signature
 
-        // 3. Resolvemos los tags
+        // 3. Resolvemos los tags (AÑADIDO ONLINE)
         val timeTag = Placeholder.parsed("time", timeStr)
         val mapTag = Placeholder.parsed("map", mapDisplay)
         val modeTag = Placeholder.parsed("mode", currentMode.name)
+        val onlineTag = Placeholder.parsed("online", online.toString()) // 🔥 IMPORTANTE
 
-        // 4. Obtenemos el componente (Asegúrate de que en el YAML no haya '&')
-        val barComponent = plugin.messageConfig.getMessage(p, "bossbar.$stateName", timeTag, mapTag, modeTag)
+        // 4. Obtener el componente
+        // Cambia "messages" por el nombre del archivo donde realmente esté el bloque bossbar:
+        val barComponent = plugin.messageConfig.getMessageFromFile(
+            p,
+            "messages",
+            "bossbar.$stateName",
+            timeTag, mapTag, modeTag, onlineTag
+        )
 
         // 5. Gestión de la barra
         val bar = personalBars.getOrPut(uuid) {
@@ -601,9 +609,10 @@ class GameManager(private val plugin: Mistaken) {
 
         bar.name(barComponent)
 
-        // Actualizar color si cambió el estado
+        // 6. Actualizar color y progreso si es necesario
         if (lastStateForColor != currentState) {
             bar.color(getBossBarColor(p, stateName))
+            // lastStateForColor = currentState // No olvides actualizar esta variable
         }
     }
 

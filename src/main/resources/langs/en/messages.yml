@@ -4,6 +4,9 @@
 
 prefix: "<b><color:#88C6F2>MISTAKEN</color></b> <color:#ADADAD>|</color> "
 
+lobby:
+  welcome: ""
+
 # --- VOTING ---
 voting:
   started: "<green>Voting started! Use <yellow>/vote <map></yellow>"
@@ -247,6 +250,7 @@ game:
   rejoin-msg: "<prefix><red>Welcome back, killer. Continue the massacre."
   infection-hit: "<prefix><red>SYSTEM CORRUPTED! You have been infected by the Error Star."
   hunt-start: "<red><bold>THE KILLER HAS APPEARED!</bold> <white>Don't let them find you...</white>"
+  class-selected: "<red>"
   time-extended: "<green>Well done! For the kill, <yellow>{seconds}s</yellow> added to timer."
   mode-reveal-start: "<yellow>Analyzing anomalies in the area... <obfuscated>aa</obfuscated>"
   mode-selected: "<white>Mode detected: <aqua>{mode}"

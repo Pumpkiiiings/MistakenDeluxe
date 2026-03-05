@@ -206,3 +206,20 @@ asesinos:
       habilidad2: "<black><b>Desbordamiento</b>"
       habilidad3: "<dark_gray><b>Charco Corrosivo</b>"
       habilidad4: "<black><bold>EL DEMONIO DE TINTA</bold>"
+
+  colorsito:
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>COLORSITO</b></gradient>"
+    descripcion:
+      - "<grayUna version mas pequeña de Color And Electricity."
+      - "<gray>Hecha por: MarAgridulce."
+    lore_tienda:
+      - "<gray>\"Es electrico y colorido.\""
+      - "<white>Dificultad: <yellow>Media"
+    habilidades_nombres:
+      arma: "<gradient:#ff0080:#00ffff>Colorsito Blade</gradient>"
+      habilidad1: "<gradient:#ff0080:#ffffff>Vivid Trace</gradient>"
+      habilidad2: "<gradient:#00ffff:#ffffff>Color Drain</gradient>"
+      habilidad3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
+      habilidad4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
+
+

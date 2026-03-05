@@ -1,6 +1,5 @@
 package liric.mistaken.game.entities
 
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.title.Title
@@ -9,36 +8,39 @@ import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.BlockDisplay
+import org.bukkit.entity.Display
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Transformation
 import org.joml.Quaternionf
 import org.joml.Vector3f
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
+import java.util.UUID
 import java.util.concurrent.ThreadLocalRandom
 
 /**
- * [LIRIC-MISTAKEN 2.0] - MODO TROLL SUPREMO
+ *[LIRIC-MISTAKEN 2.0] - MODO TROLL SUPREMO
  * GEOFFREY 3.0: RAGE EDITION.
- * FIX: Sonidos, Daño y Efectos garantizados en modo Misil (12 pasos).
+ * OPTIMIZADO: Schedulers Nativos, Sin Lentitud de Aura.
  */
 class GeoffreyEXE(private val plugin: Mistaken) {
 
     private val parts = mutableListOf<BlockDisplay>()
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var isRunning = true
     private var currentTarget: Player? = null
-
     private var lastVictimUUID: UUID? = null
 
     private val teamWhite = "GeoffreyGlow"
     private val teamRed = "GeoffreyAngry"
     private var consecutiveMisses = 0
 
+    // Constantes para la máquina de estados
+    private enum class State { BUSCANDO, SALTANDO, MISIL, AEREO, FURIA }
+    private var currentState = State.BUSCANDO
+
     fun spawn(startLoc: Location) {
-        plugin.pluginScope.launch(plugin.bukkitDispatcher) {
+        // En Paper 1.21.4, manipular Scoreboards y Entidades DEBE ser en el hilo principal
+        plugin.server.globalRegionScheduler.run(plugin) {
             try {
                 val scoreboard = Bukkit.getScoreboardManager().mainScoreboard
                 val white = scoreboard.getTeam(teamWhite) ?: scoreboard.registerNewTeam(teamWhite).apply { color(NamedTextColor.WHITE) }
@@ -61,9 +63,11 @@ class GeoffreyEXE(private val plugin: Mistaken) {
 
                 setGlowColor(NamedTextColor.WHITE)
                 Bukkit.broadcast(plugin.mm.deserialize("<red><b>[!]</b> <dark_red>ANOMALÍA DETECTADA: <b>GEOFFREY 3.0</b> HA DESPERTADO."))
-                iniciarIAPrincipal()
+
+                // Iniciamos la IA usando el scheduler nativo
+                iniciarIANativa()
             } catch (e: Exception) {
-                plugin.logger.severe("Fallo al invocar al Geoffrey 3.0: ${e.message}")
+                plugin.componentLogger.error(plugin.mm.deserialize("<red>Fallo al invocar al Geoffrey 3.0: ${e.message}</red>"))
             }
         }
     }
@@ -75,7 +79,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
             bd.isPersistent = false
             bd.interpolationDuration = 1
             bd.teleportDuration = 1
-            bd.brightness = org.bukkit.entity.Display.Brightness(15, 15)
+            bd.brightness = Display.Brightness(15, 15)
             bd.isGlowing = true
         }
     }
@@ -86,6 +90,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         val otherTeam = if (color == NamedTextColor.RED) teamWhite else teamRed
         val team = scoreboard.getTeam(targetTeam) ?: return
         val oldTeam = scoreboard.getTeam(otherTeam)
+
         parts.forEach {
             val id = it.uniqueId.toString()
             oldTeam?.removeEntry(id)
@@ -93,171 +98,224 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         }
     }
 
-    private fun iniciarIAPrincipal() {
-        scope.launch {
-            while (isRunning) {
-                val target = withContext(plugin.bukkitDispatcher) {
-                    val bodyLoc = parts.firstOrNull()?.location ?: return@withContext null
-                    val nearbyPlayers = bodyLoc.world.getNearbyPlayers(bodyLoc, 100.0)
-                        .filter { it.gameMode == org.bukkit.GameMode.SURVIVAL && !plugin.isIgnored(it) }
+    /**
+     * 🔥 IA NATIVA (Zero Lag)
+     * Reemplaza el bucle while infinito de las corrutinas por una máquina de estados
+     * basada en Schedulers que no bloquea la RAM.
+     */
+    private fun iniciarIANativa() {
+        // Tarea que corre cada 1 segundo (20 Ticks) para decidir qué hacer
+        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, { task ->
+            if (!isRunning || parts.isEmpty() || !parts[0].isValid) {
+                task.cancel()
+                return@runAtFixedRate
+            }
 
-                    var potentialTarget = nearbyPlayers.filter { it.uniqueId != lastVictimUUID }
-                        .minByOrNull { it.location.distanceSquared(bodyLoc) }
+            // Buscar objetivo
+            val bodyLoc = parts[0].location
+            val nearbyPlayers = bodyLoc.world.getNearbyPlayers(bodyLoc, 100.0)
+                .filter { it.gameMode == org.bukkit.GameMode.SURVIVAL && !plugin.asesinoManager.esElAsesino(it) && !plugin.isIgnored(it) }
 
-                    if (potentialTarget == null) {
-                        potentialTarget = nearbyPlayers.minByOrNull { it.location.distanceSquared(bodyLoc) }
-                    }
-                    potentialTarget
-                }
+            currentTarget = nearbyPlayers.filter { it.uniqueId != lastVictimUUID }
+                .minByOrNull { it.location.distanceSquared(bodyLoc) }
+                ?: nearbyPlayers.minByOrNull { it.location.distanceSquared(bodyLoc) }
 
-                if (target == null) {
-                    withContext(plugin.bukkitDispatcher) { explodeAndRemove() }
-                    break
-                }
-                currentTarget = target
+            if (currentTarget == null) {
+                explodeAndRemove()
+                task.cancel()
+                return@runAtFixedRate
+            }
 
-                // --- ¿MODO FURIA? ---
+            // Decisión de IA
+            if (currentState == State.BUSCANDO) {
                 if (consecutiveMisses >= 5) {
-                    ejecutarModoFuria(target)
-                    consecutiveMisses = 0
-                    continue
-                }
-
-                // --- FASE 1: SALTOS (2.5m) ---
-                repeat(5) {
-                    if (!isRunning || !target.isOnline) return@repeat
-                    withContext(plugin.bukkitDispatcher) {
-                        val bodyLoc = parts[0].location
-                        val nextLoc = bodyLoc.add(target.location.toVector().subtract(bodyLoc.toVector()).normalize().multiply(2.5))
-                        moverTodo(nextLoc, lookAtTarget = true)
-                        aplicarAuraMiedo(nextLoc, 20)
-                        // SONIDO DE YUNQUE SIEMPRE
-                        target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1.2f, 0.8f)
-                    }
-                    delay(800)
-                }
-
-                if (!isRunning || !target.isOnline) continue
-                delay(1000)
-
-                // --- FASE 2: ATAQUE (30% Aereo / 70% Misil) ---
-                val hit = if (ThreadLocalRandom.current().nextInt(100) < 30) {
-                    ejecutarAtaqueAereo(target)
+                    currentState = State.FURIA
+                    ejecutarModoFuria(currentTarget!!)
                 } else {
-                    ejecutarAtaqueMisil(target)
-                }
-
-                if (hit) consecutiveMisses = 0 else consecutiveMisses++
-            }
-        }
-    }
-
-    private suspend fun ejecutarModoFuria(target: Player) {
-        withContext(plugin.bukkitDispatcher) {
-            setGlowColor(NamedTextColor.RED)
-            target.playSound(target.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1.5f, 0.5f)
-            target.showTitle(Title.title(
-                plugin.mm.deserialize("<dark_red><bold>!!! MODO FURIA !!!"),
-                plugin.mm.deserialize("<red>GEOFFREY HA PERDIDO LA PACIENCIA")
-            ))
-        }
-        delay(1000)
-        var hasHit = false
-        val startTime = System.currentTimeMillis()
-        while (isRunning && !hasHit && (System.currentTimeMillis() - startTime) < 5000) {
-            if (!target.isOnline) break
-            withContext(plugin.bukkitDispatcher) {
-                val current = parts[0].location
-                val dir = target.location.add(0.0, 1.0, 0.0).toVector().subtract(current.toVector()).normalize()
-                val nextLoc = current.add(dir.multiply(1.3))
-                moverTodo(nextLoc, lookAtTarget = true)
-                aplicarAuraMiedo(nextLoc, 40)
-                // YUNQUE EN FURIA
-                target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1.0f, 1.5f)
-                if (nextLoc.distanceSquared(target.location) < 2.5) {
-                    ejecutarMuerte(target, enrage = true)
-                    hasHit = true
+                    currentState = State.SALTANDO
+                    ejecutarSaltos(currentTarget!!)
                 }
             }
-            delay(50)
-        }
-        withContext(plugin.bukkitDispatcher) { setGlowColor(NamedTextColor.WHITE) }
-        if (hasHit) delay(5000) else delay(1000)
+
+        }, 1L, 20L) // Chequea su estado cada segundo
     }
 
-    private suspend fun ejecutarAtaqueMisil(target: Player): Boolean {
-        var hitAny = false
-        withContext(plugin.bukkitDispatcher) {
-            target.playSound(target.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.5f)
-            target.showTitle(Title.title(
-                plugin.mm.deserialize("<dark_red><bold>GEOFFREY VIENE"),
-                plugin.mm.deserialize("<red>¡¡¡¡corre!!!!")
-            ))
-        }
-        delay(1200)
+    private fun ejecutarSaltos(target: Player) {
+        var saltos = 0
+        // Hacemos 5 saltos, cada 16 ticks (~800ms)
+        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, { task ->
+            if (!isRunning || !target.isOnline || saltos >= 5) {
+                task.cancel()
 
-        // Fijamos la dirección al inicio del misil
-        val startLoc = withContext(plugin.bukkitDispatcher) { parts[0].location }
-        val dir = withContext(plugin.bukkitDispatcher) { target.location.add(0.0, 1.0, 0.0).toVector().subtract(startLoc.toVector()).normalize() }
+                // Después de los saltos, decidimos el ataque
+                if (isRunning && target.isOnline) {
+                    val isAereo = ThreadLocalRandom.current().nextInt(100) < 30
+                    if (isAereo) {
+                        currentState = State.AEREO
+                        ejecutarAtaqueAereo(target)
+                    } else {
+                        currentState = State.MISIL
+                        ejecutarAtaqueMisil(target)
+                    }
+                } else {
+                    currentState = State.BUSCANDO
+                }
+                return@runAtFixedRate
+            }
 
-        for (i in 1..12) {
-            if (!isRunning || hitAny) break
-            withContext(plugin.bukkitDispatcher) {
+            val bodyLoc = parts[0].location
+            val nextLoc = bodyLoc.add(target.location.toVector().subtract(bodyLoc.toVector()).normalize().multiply(2.5))
+            moverTodo(nextLoc, lookAtTarget = true)
+            aplicarAuraMiedo(nextLoc, 20)
+            target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1.2f, 0.8f)
+
+            saltos++
+        }, 1L, 16L) // 16 Ticks = 800ms
+    }
+
+    private fun ejecutarAtaqueMisil(target: Player) {
+        target.playSound(target.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.5f)
+        target.showTitle(Title.title(
+            plugin.mm.deserialize("<dark_red><bold>GEOFFREY VIENE"),
+            plugin.mm.deserialize("<red>¡¡¡¡corre!!!!")
+        ))
+
+        // Retraso de advertencia (1.2s = 24 Ticks)
+        plugin.server.globalRegionScheduler.runDelayed(plugin, {
+            if (!isRunning || !target.isOnline) {
+                currentState = State.BUSCANDO
+                return@runDelayed
+            }
+
+            val startLoc = parts[0].location
+            val dir = target.location.add(0.0, 1.0, 0.0).toVector().subtract(startLoc.toVector()).normalize()
+            var step = 0
+            var hitAny = false
+
+            // Vuelo del misil: Corre extremadamente rápido (Cada 2 Ticks = 100ms)
+            plugin.server.globalRegionScheduler.runAtFixedRate(plugin, { task ->
+                if (!isRunning || hitAny || step >= 12) {
+                    task.cancel()
+                    if (hitAny) consecutiveMisses = 0 else consecutiveMisses++
+                    currentState = State.BUSCANDO // Volvemos a buscar tras el ataque
+                    return@runAtFixedRate
+                }
+
                 val current = parts[0].location
-                val nextLoc = current.add(dir.clone().multiply(4.0)) // 4 bloques por paso
+                val nextLoc = current.add(dir.clone().multiply(4.0))
                 moverTodo(nextLoc, false)
 
-                // 🔥 EFECTOS Y SONIDOS EN CADA PASO DEL MISIL
                 aplicarAuraMiedo(nextLoc, 40)
                 target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1.5f, 0.3f)
                 nextLoc.world.spawnParticle(org.bukkit.Particle.SOUL_FIRE_FLAME, nextLoc, 10, 0.5, 0.5, 0.5, 0.1)
 
-                // Detección de impacto (Aumentamos a 4.0 para no "brincarse" al jugador)
                 val victims = nextLoc.world.getNearbyPlayers(nextLoc, 4.0).filter { !plugin.asesinoManager.esElAsesino(it) }
                 if (victims.isNotEmpty()) {
                     victims.forEach { ejecutarMuerte(it) }
                     hitAny = true
                 }
-            }
-            delay(120)
-        }
-        return hitAny
+
+                step++
+            }, 1L, 2L)
+
+        }, 24L)
     }
 
-    private suspend fun ejecutarAtaqueAereo(target: Player): Boolean {
-        var hitAny = false
-        withContext(plugin.bukkitDispatcher) {
-            target.showTitle(Title.title(plugin.mm.deserialize("<red>ALERTA AÉREA"), plugin.mm.deserialize("<yellow>PICADO DE GEOFFREY")))
-        }
-        repeat(10) {
-            withContext(plugin.bukkitDispatcher) {
-                val next = parts[0].location.add(0.0, 1.2, 0.0)
-                moverTodo(next, true)
-                target.playSound(next, Sound.BLOCK_ANVIL_LAND, 1f, 2f)
-            }
-            delay(100)
-        }
-        delay(500)
-        val start = withContext(plugin.bukkitDispatcher) { parts[0].location }
-        val dir = withContext(plugin.bukkitDispatcher) { target.location.add(0.0, 1.0, 0.0).toVector().subtract(start.toVector()).normalize() }
-        for (i in 1..25) {
-            if (!isRunning || hitAny) break
-            withContext(plugin.bukkitDispatcher) {
-                val nextLoc = parts[0].location.add(dir.clone().multiply(1.5))
-                parts.forEach { it.transformation = it.transformation.apply { leftRotation.rotateZ(0.4f) } }
-                moverTodo(nextLoc, false)
-                target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1f, 0.5f)
+    private fun ejecutarAtaqueAereo(target: Player) {
+        target.showTitle(Title.title(plugin.mm.deserialize("<red>ALERTA AÉREA"), plugin.mm.deserialize("<yellow>PICADO DE GEOFFREY")))
 
-                val victims = nextLoc.world.getNearbyPlayers(nextLoc, 3.5).filter { !plugin.asesinoManager.esElAsesino(it) }
-                if (victims.isNotEmpty()) {
-                    victims.forEach { ejecutarMuerte(it) }
-                    hitAny = true
-                }
+        var subidas = 0
+        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, { taskSubida ->
+            if (!isRunning || subidas >= 10) {
+                taskSubida.cancel()
+
+                // Después de subir, bajamos en picada
+                plugin.server.globalRegionScheduler.runDelayed(plugin, {
+                    if (!isRunning || !target.isOnline) {
+                        currentState = State.BUSCANDO
+                        return@runDelayed
+                    }
+
+                    val start = parts[0].location
+                    val dir = target.location.add(0.0, 1.0, 0.0).toVector().subtract(start.toVector()).normalize()
+                    var step = 0
+                    var hitAny = false
+
+                    plugin.server.globalRegionScheduler.runAtFixedRate(plugin, { taskBajada ->
+                        if (!isRunning || hitAny || step >= 25) {
+                            taskBajada.cancel()
+                            parts.forEach { it.transformation = it.transformation.apply { leftRotation.set(0f,0f,0f,1f) } }
+                            if (hitAny) consecutiveMisses = 0 else consecutiveMisses++
+                            currentState = State.BUSCANDO
+                            return@runAtFixedRate
+                        }
+
+                        val nextLoc = parts[0].location.add(dir.clone().multiply(1.5))
+                        parts.forEach { it.transformation = it.transformation.apply { leftRotation.rotateZ(0.4f) } }
+                        moverTodo(nextLoc, false)
+                        target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1f, 0.5f)
+
+                        val victims = nextLoc.world.getNearbyPlayers(nextLoc, 3.5).filter { !plugin.asesinoManager.esElAsesino(it) }
+                        if (victims.isNotEmpty()) {
+                            victims.forEach { ejecutarMuerte(it) }
+                            hitAny = true
+                        }
+                        step++
+                    }, 1L, 1L)
+
+                }, 10L) // 500ms de delay
+
+                return@runAtFixedRate
             }
-            delay(50)
-        }
-        withContext(plugin.bukkitDispatcher) { parts.forEach { it.transformation = it.transformation.apply { leftRotation.set(0f,0f,0f,1f) } } }
-        return hitAny
+
+            val next = parts[0].location.add(0.0, 1.2, 0.0)
+            moverTodo(next, true)
+            target.playSound(next, Sound.BLOCK_ANVIL_LAND, 1f, 2f)
+            subidas++
+
+        }, 1L, 2L) // 2 Ticks = 100ms
+    }
+
+    private fun ejecutarModoFuria(target: Player) {
+        setGlowColor(NamedTextColor.RED)
+        target.playSound(target.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1.5f, 0.5f)
+        target.showTitle(Title.title(
+            plugin.mm.deserialize("<dark_red><bold>!!! MODO FURIA !!!"),
+            plugin.mm.deserialize("<red>GEOFFREY HA PERDIDO LA PACIENCIA")
+        ))
+
+        var hasHit = false
+        var ticks = 0
+
+        plugin.server.globalRegionScheduler.runDelayed(plugin, {
+            plugin.server.globalRegionScheduler.runAtFixedRate(plugin, { task ->
+                if (!isRunning || hasHit || ticks >= 100 || !target.isOnline) { // 100 Ticks = 5 Segundos max
+                    task.cancel()
+                    setGlowColor(NamedTextColor.WHITE)
+
+                    // Cooldown post-furia
+                    plugin.server.globalRegionScheduler.runDelayed(plugin, {
+                        currentState = State.BUSCANDO
+                    }, if (hasHit) 100L else 20L)
+
+                    return@runAtFixedRate
+                }
+
+                val current = parts[0].location
+                val dir = target.location.add(0.0, 1.0, 0.0).toVector().subtract(current.toVector()).normalize()
+                val nextLoc = current.add(dir.multiply(1.3))
+
+                moverTodo(nextLoc, lookAtTarget = true)
+                aplicarAuraMiedo(nextLoc, 40)
+                target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1.0f, 1.5f)
+
+                if (nextLoc.distanceSquared(target.location) < 2.5) {
+                    ejecutarMuerte(target, enrage = true)
+                    hasHit = true
+                }
+                ticks++
+            }, 1L, 1L) // Persigue cada Tick (Súper Rápido)
+        }, 20L) // Espera 1s tras la advertencia
     }
 
     private fun ejecutarMuerte(victim: Player, enrage: Boolean = false) {
@@ -265,9 +323,10 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         victim.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, victim.location, 3)
         victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2f, 0.5f)
 
-        // --- 💀 DAÑO Y EFECTOS ---
+        // --- 💀 DAÑO MÚLTIPLE ---
         repeat(5) { plugin.gameManager.combatManager.takeDamage(victim) }
 
+        // Aplicamos solo Darkness, Slowness fuerte y Weakness
         victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, true))
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3, false, false, true))
         victim.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 1, false, false, true))
@@ -277,10 +336,10 @@ class GeoffreyEXE(private val plugin: Mistaken) {
     }
 
     private fun aplicarAuraMiedo(loc: Location, duration: Int) {
+        // 🔥 PETICIÓN APLICADA: Ahora solo da oscuridad, NO da lentitud.
         loc.world.getNearbyPlayers(loc, 12.0).forEach { p ->
             if (!plugin.asesinoManager.esElAsesino(p)) {
                 p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, duration, 0, false, false, false))
-                p.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, duration, 2, false, false, false))
             }
         }
     }
@@ -295,7 +354,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
     }
 
     private fun explodeAndRemove() {
-        if (parts.isNotEmpty()) {
+        if (parts.isNotEmpty() && parts[0].isValid) {
             val loc = parts[0].location
             loc.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, loc, 5)
             loc.world.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1.5f, 0.5f)
@@ -305,8 +364,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
 
     fun remove() {
         isRunning = false
-        parts.forEach { it.remove() }
+        parts.forEach { if (it.isValid) it.remove() }
         parts.clear()
-        scope.cancel()
     }
 }

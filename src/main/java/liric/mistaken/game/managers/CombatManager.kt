@@ -1,6 +1,5 @@
 package liric.mistaken.game.managers
 
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.api.events.MistakenDeathEvent
@@ -23,34 +22,29 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 /**
- *[LIRIC-MISTAKEN 2.0]
- * CombatManager: Motor de Daño y Radar de Latidos (NERFED).
- * FIX: Optimizado con AsyncScheduler, Math sin lag (distanceSquared) y Anti-Crash de Mundos.
+ * [LIRIC-MISTAKEN 2.0]
+ * CombatManager: Adaptación fiel a la lógica Java (KB Nativo).
  */
 class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
     private val frozenPlayers = ConcurrentHashMap.newKeySet<UUID>()
     private val originalHelmets = ConcurrentHashMap<UUID, ItemStack>()
     private val killerCooldowns = ConcurrentHashMap<UUID, Long>()
+    private val survivorCooldowns = ConcurrentHashMap<UUID, Long>()
 
-    // Eliminado: freezeDeathJobs. ¡Ya no lo necesitamos gracias a Paper!
+    // Tiempos de Cooldown
+    private val KILLER_COOLDOWN = 2000L
+    private val SURVIVOR_COOLDOWN = 3000L // 3 Segundos exactos
 
-    private val combatScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    private val cooldownMs = 2000L
     private val mm = plugin.mm
 
     init {
         startRadarTask()
     }
 
-    /**
-     * 🛰️ MOTOR DE RASTREO (VERSIÓN NERFEADA Y ZERO-LAG):
-     */
     private fun startRadarTask() {
-        // 🔥 FIX 1: Usamos AsyncScheduler de Paper, es mucho más ligero que una Corrutina en bucle
         plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return@runAtFixedRate
-
             val killer = plugin.gameManager.getCurrentAsesino() ?: return@runAtFixedRate
             if (!killer.isOnline) return@runAtFixedRate
 
@@ -59,22 +53,16 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             var foundSomeone = false
 
             for (target in plugin.server.onlinePlayers) {
-                // 🔥 FIX 2: Seguridad total (Mismo mundo, no es el asesino, no está ignorado)
                 if (target == killer || target.world != killerLoc.world ||
                     target.gameMode != GameMode.SURVIVAL || plugin.isIgnored(target)) continue
 
-                // 🔥 FIX 3: distanceSquared() = Cero lag matemático
                 val distSq = killerLoc.distanceSquared(target.location)
 
-                // GLOW A 10 BLOQUES (10 * 10 = 100)
-                if (distSq <= 100.0) {
-                    // Aplicar poción de forma segura en el hilo de la entidad
+                if (distSq <= 100.0) { // 10 bloques
                     target.scheduler.execute(plugin, {
                         if (target.isOnline) target.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, 30, 0, false, false, false))
                     }, null, 0L)
                 }
-
-                // LATIDOS A 30 METROS (30 * 30 = 900)
                 if (distSq <= 900.0) {
                     if (distSq < minDistanceSq) {
                         minDistanceSq = distSq
@@ -83,26 +71,17 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 }
             }
 
-            // FEEDBACK SENSORIAL (Sonidos y Actionbar son Thread-Safe en Paper)
             if (foundSomeone) {
-                val realDist = Math.sqrt(minDistanceSq) // Solo sacamos la raíz 1 vez si encontró a alguien
+                val realDist = Math.sqrt(minDistanceSq)
                 killer.sendActionBar(mm.deserialize("<yellow>Escuchas el latido de alguien.."))
-
-                val volume = when {
-                    realDist < 5.0 -> 1.2f
-                    realDist < 15.0 -> 0.8f
-                    else -> 0.4f
+                val (vol, pitch) = when {
+                    realDist < 5.0 -> 1.2f to 1.5f
+                    realDist < 15.0 -> 0.8f to 1.0f
+                    else -> 0.4f to 0.6f
                 }
-                val pitch = when {
-                    realDist < 5.0 -> 1.5f
-                    realDist < 15.0 -> 1.0f
-                    else -> 0.6f
-                }
-
-                killer.playSound(killer.location, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, volume, pitch)
+                killer.playSound(killer.location, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, vol, pitch)
             }
-
-        }, 0L, 500L, TimeUnit.MILLISECONDS) // Corre cada 500ms (10 Ticks)
+        }, 0L, 500L, TimeUnit.MILLISECONDS)
     }
 
     private inline fun runOnMain(crossinline block: () -> Unit) {
@@ -110,15 +89,13 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         else plugin.server.scheduler.runTask(plugin, Runnable { block() })
     }
 
-    // --- MÉTODOS DE LA API ---
+    // --- API Methods ---
     override fun getHealth(player: Player): Int = player.health.toInt()
 
-    override fun setHealth(player: Player, health: Int) {
-        runOnMain {
-            val maxHP = player.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
-            player.health = health.toDouble().coerceIn(0.0, maxHP)
-            if (plugin.isReady) plugin.scoreboardManager.updatePlayer(player)
-        }
+    override fun setHealth(player: Player, health: Int) = runOnMain {
+        val max = player.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
+        player.health = health.toDouble().coerceIn(0.0, max)
+        if (plugin.isReady) plugin.scoreboardManager.updatePlayer(player)
     }
 
     override fun isFrozen(player: Player): Boolean = frozenPlayers.contains(player.uniqueId)
@@ -128,34 +105,110 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         resetHealth(player)
     }
 
-    fun resetHealth(player: Player) {
+    fun resetHealth(player: Player) = runOnMain {
         val isKiller = plugin.gameManager.esAsesino(player.uniqueId)
-        runOnMain {
-            val maxHP = if (isKiller) 160.0 else 20.0
-            player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
-            player.health = maxHP
-            player.removePotionEffect(PotionEffectType.DARKNESS)
-            player.isSwimming = false
-            if (plugin.isReady) plugin.scoreboardManager.updatePlayer(player)
+        val maxHP = if (isKiller) 160.0 else 20.0
+        player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
+        player.health = maxHP
+        player.removePotionEffect(PotionEffectType.DARKNESS)
+        player.isSwimming = false
+        if (plugin.isReady) plugin.scoreboardManager.updatePlayer(player)
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onArenaCombat(event: EntityDamageByEntityEvent) {
+        // Evitar bucles infinitos si nosotros mismos causamos el daño
+        if (event.entity.hasMetadata("mistaken_processing")) return
+
+        val victim = event.entity as? Player ?: return
+        val attacker = event.damager as? Player ?: return
+
+        // Verificar mundo de juego (simple check por nombre o lógica del GM)
+        if (plugin.gameManager.currentState != GameState.INGAME) return
+
+        val isAttackerKiller = plugin.gameManager.esAsesino(attacker.uniqueId)
+        val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
+
+        // Si no hay asesino involucrado, salimos (o manejamos lógica de PvP normal)
+        if (!isAttackerKiller && !isVictimKiller) return
+
+        val now = System.currentTimeMillis()
+
+        // 1. Fuego Amigo (Bloqueado totalmente)
+        if (isAttackerKiller == isVictimKiller) {
+            event.isCancelled = true
+            return
+        }
+
+        // 2. Asesino vs Humano
+        if (isAttackerKiller && !isVictimKiller) {
+            val lastHit = killerCooldowns.getOrDefault(attacker.uniqueId, 0L)
+
+            // Check Cooldown (2s)
+            if (now - lastHit < KILLER_COOLDOWN) {
+                val remaining = (KILLER_COOLDOWN - (now - lastHit)) / 1000.0
+                attacker.sendActionBar(plugin.messageConfig.getMessage(attacker, "combat.cooldown", Placeholder.parsed("time", String.format(Locale.US, "%.1f", remaining))))
+                event.isCancelled = true
+                return
+            }
+
+            killerCooldowns[attacker.uniqueId] = now
+
+            // 🔥 TRUCO DEL JAVA: No cancelamos, ponemos daño 0.0 para que haya KB natural
+            event.damage = 0.1
+
+            // Procesamos nuestro daño lógico
+            processTrueDamage(victim, attacker, 3.0)
+            return
+        }
+
+        // 3. Humano vs Asesino
+        if (!isAttackerKiller && isVictimKiller) {
+            val lastHit = survivorCooldowns.getOrDefault(attacker.uniqueId, 0L)
+
+            // Check Cooldown (3s)
+            if (now - lastHit < SURVIVOR_COOLDOWN) {
+                val remaining = (SURVIVOR_COOLDOWN - (now - lastHit)) / 1000.0
+                attacker.sendActionBar(plugin.messageConfig.getMessage(attacker, "combat.cooldown", Placeholder.parsed("time", String.format(Locale.US, "%.1f", remaining))))
+                event.isCancelled = true
+                return
+            }
+
+            survivorCooldowns[attacker.uniqueId] = now
+
+            // 🔥 TRUCO DEL JAVA: No cancelamos, ponemos daño 0.0
+            // Esto permite que el asesino reciba el empuje (Knockback) nativo de Minecraft.
+            event.damage = 0.0
+
+            // Procesamos nuestro daño lógico (4 golpes para matar)
+            processTrueDamage(victim, attacker, 4.0)
+
+            // Sonido extra de golpe
+            victim.world.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1f, 1f)
+            return
         }
     }
 
     fun processTrueDamage(victim: Player, attacker: Player?, amount: Double) {
         if (isFrozen(victim)) return
-        val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
 
         runOnMain {
+            // Bajamos la vida "lógica" (corazones visuales o custom health)
             val nextHP = (victim.health - amount).coerceAtLeast(0.0)
             victim.health = nextHP
 
-            if (!isVictimKiller && nextHP <= 4.0 && nextHP > 0.0) {
+            // Efectos de sangrado para supervivientes
+            val isSurvivor = !plugin.gameManager.esAsesino(victim.uniqueId)
+
+            if (isSurvivor && nextHP <= 4.0 && nextHP > 0.0) {
                 if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {
-                    val rawMsg = plugin.messageConfig.getRawString(victim, "combat.critical-wound", "<red><bold>¡TUS PIERNAS FALLAN!</bold>")
-                    victim.sendMessage(mm.deserialize(rawMsg))
+                    val msg = plugin.messageConfig.getRawString(victim, "combat.critical-wound", "<red><bold>¡HERIDA CRÍTICA!</bold>")
+                    victim.sendMessage(mm.deserialize(msg))
                     victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, Int.MAX_VALUE, 0, false, false, true))
                 }
             }
-            victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1.0f, 1.0f)
+
+            // Efectos visuales de sangre (Redstone Block)
             victim.world.spawnParticle(Particle.BLOCK, victim.location.add(0.0, 1.0, 0.0), 10, 0.2, 0.2, 0.2, Material.REDSTONE_BLOCK.createBlockData())
 
             if (plugin.isReady) plugin.scoreboardManager.updatePlayer(victim)
@@ -163,39 +216,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun onArenaCombat(event: EntityDamageByEntityEvent) {
-        if (event.entity.hasMetadata("mistaken_processing")) return
-        val victim = event.entity as? Player ?: return
-        val attacker = event.damager as? Player ?: return
-
-        val isAttackerKiller = plugin.gameManager.esAsesino(attacker.uniqueId)
-        val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
-
-        if (isAttackerKiller && !isVictimKiller) {
-            val now = System.currentTimeMillis()
-            if (now - killerCooldowns.getOrDefault(attacker.uniqueId, 0L) < cooldownMs) {
-                event.isCancelled = true
-                return
-            }
-            killerCooldowns[attacker.uniqueId] = now
-            event.isCancelled = true
-            processTrueDamage(victim, attacker, 3.0)
-            return
-        }
-
-        if (!isAttackerKiller && isVictimKiller) {
-            event.isCancelled = true
-            try {
-                victim.setMetadata("mistaken_processing", FixedMetadataValue(plugin, true))
-                processTrueDamage(victim, attacker, 4.0)
-            } finally {
-                // 🔥 FIX 4: Usamos finally por si un error ocurre, el jugador no se quede inmortal para siempre.
-                victim.removeMetadata("mistaken_processing", plugin)
-            }
-            return
-        }
-    }
+    // --- Métodos de Gestión ---
 
     fun removePlayerData(uuid: UUID) {
         val p = Bukkit.getPlayer(uuid)
@@ -205,6 +226,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             it.isSwimming = false
         }
         killerCooldowns.remove(uuid)
+        survivorCooldowns.remove(uuid)
         frozenPlayers.remove(uuid)
         originalHelmets.remove(uuid)
     }
@@ -214,6 +236,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         frozenPlayers.clear()
         originalHelmets.clear()
         killerCooldowns.clear()
+        survivorCooldowns.clear()
     }
 
     private fun handleDeath(victim: Player, isHypothermia: Boolean) {
@@ -231,9 +254,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         val killer = plugin.gameManager.getCurrentAsesino()
         if (killer != null) {
             Bukkit.getPluginManager().callEvent(MistakenDeathEvent(victim, killer))
-            plugin.pluginScope.launch(Dispatchers.IO) {
-                plugin.playerStatsManager.addStat(killer.uniqueId, killer.name, "kills")
-                plugin.playerStatsManager.addStat(victim.uniqueId, victim.name, "deaths")
+            plugin.server.asyncScheduler.runNow(plugin) {
+                plugin.statsManager.incrementStat(killer.uniqueId, "kills")
+                plugin.statsManager.incrementStat(victim.uniqueId, "deaths")
             }
             plugin.gameManager.addTime(15)
         }
@@ -300,33 +323,26 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
     private fun startFreezeTimer(victim: Player) {
         var timeLeft = 120
-
-        // 🔥 FIX 5: ELIMINADO EL MAPA FANTASMA.
-        // El temporizador ahora está anclado a la Entidad. Si el jugador desconecta,
-        // Paper detiene esta tarea automáticamente. Cero Memory Leaks.
         victim.scheduler.runAtFixedRate(plugin, { task ->
             if (!isFrozen(victim) || !victim.isOnline) {
                 task.cancel()
                 return@runAtFixedRate
             }
-
-            val timeFormatted = String.format("%d:%02d", timeLeft / 60, timeLeft % 60)
+            val timeFormatted = String.format(Locale.US, "%d:%02d", timeLeft / 60, timeLeft % 60)
             victim.showTitle(Title.title(
                 plugin.messageConfig.getMessage(victim, "game.freeze-title"),
                 plugin.messageConfig.getMessage(victim, "game.freeze-subtitle", Placeholder.parsed("time", timeFormatted))
             ))
-
             timeLeft--
             if (timeLeft <= 0) {
                 task.cancel()
                 runOnMain { handleDeath(victim, true) }
             }
-        }, null, 0L, 20L) // 20 Ticks de retraso = 1 Segundo
+        }, null, 0L, 20L)
     }
 
     fun shutdown() {
         clearAll()
-        combatScope.cancel()
     }
 
     override fun takeDamage(victim: Player) { processTrueDamage(victim, null, 3.0) }

@@ -13,21 +13,20 @@ import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.persistence.PersistentDataType
-import java.util.*
 
 /**
- *[LIRIC-MISTAKEN 2.0]
+ * [LIRIC-MISTAKEN 2.0]
  * SupervivienteTienda: Menú de selección de humanos.
- * Optimizado para Paper 1.21.4+ y blindado contra desyncs de Vault.
+ * OPTIMIZADO: Lectura híbrida (Mecánicas Globales + Info Localizada).
  */
 class SupervivienteTienda : MenuBase("supervivientes_tienda") {
 
-    // Key estática para evitar crear una nueva instancia cada que alguien da click
     private val survivorKey by lazy { NamespacedKey(plugin, "selected_survivor") }
 
     override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes")
-        val globalMecanicas = plugin.configManager.getSupervivientes()
+        // 1. Cargamos las dos fuentes de datos
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info") // Texto
+        val globalMecanicas = plugin.configManager.getSupervivientes() // Números e Ítems
 
         val slots = config.getIntegerList("ajustes.slots-disponibles")
         if (slots.isEmpty()) return
@@ -36,6 +35,7 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
         val uuid = player.uniqueId
         val selected = data.getSelectedSurvivor(uuid)
 
+        // Labels generales desde messages.yml
         val labelHumano = plugin.messageConfig.getMessage(player, "tienda.clase-humana")
         val labelSeleccionado = plugin.messageConfig.getMessage(player, "tienda.estado-seleccionado")
         val labelPoseido = plugin.messageConfig.getMessage(player, "tienda.estado-poseido")
@@ -47,12 +47,16 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
         for (survivorId in plugin.supervivienteManager.getClasesDisponibles().keys) {
             if (slotIndex >= slots.size) break
 
-            // --- 🎨 DATOS VISUALES ---
-            val nombreVisual = langInfo.getString("supervivientes.$survivorId.nombre") ?: survivorId
+            // --- 🎨 DATOS VISUALES (Desde supervivientes_info.yml) ---
+            // Ruta: supervivientes.<id>.nombre
+            val nombreVisual = langInfo.getString("supervivientes.$survivorId.nombre") ?: survivorId.uppercase()
+            // Ruta: supervivientes.<id>.lore_tienda
             val loreTienda = langInfo.getStringList("supervivientes.$survivorId.lore_tienda")
 
-            // --- ⚙️ DATOS MECÁNICOS ---
+            // --- ⚙️ DATOS MECÁNICOS (Desde supervivientes.yml) ---
+            // Ruta: supervivientes.<id>.precio
             val precio = globalMecanicas.getInt("supervivientes.$survivorId.precio", 0)
+            // Ruta: supervivientes.<id>.icono_material
             val matStr = globalMecanicas.getString("supervivientes.$survivorId.icono_material", "IRON_CHESTPLATE")!!
             val iconoMat = Material.matchMaterial(matStr) ?: Material.IRON_CHESTPLATE
 
@@ -60,16 +64,27 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
             val fullLore = mutableListOf<Component>().apply {
                 add(labelHumano)
                 add(Component.empty())
-                loreTienda.forEach { add(mm.deserialize("<i><gray>$it</gray></i>")) }
+
+                // Descripción del personaje
+                loreTienda.forEach { line ->
+                    add(mm.deserialize("<i><gray>$line</gray></i>"))
+                }
+
                 add(Component.empty())
                 add(labelHabilidades)
+
+                // Listar habilidades (Nombres desde INFO)
+                // Ruta: supervivientes.<id>.habilidades_nombres.habilidadX
                 for (i in 1..3) {
-                    val habName = langInfo.getString("supervivientes.$survivorId.items.habilidad${i}_nombre")
-                    if (habName != null) add(mm.deserialize(" <dark_gray>•</dark_gray> <white>$habName</white>"))
+                    val habName = langInfo.getString("supervivientes.$survivorId.habilidades_nombres.habilidad$i")
+                    if (!habName.isNullOrEmpty()) {
+                        add(mm.deserialize(" <dark_gray>•</dark_gray> <white>$habName</white>"))
+                    }
                 }
                 add(Component.empty())
             }
 
+            // Estado de Compra/Selección
             val tiene = data.tieneSuperviviente(uuid, survivorId)
             val esSeleccionado = selected.equals(survivorId, ignoreCase = true)
 
@@ -82,13 +97,13 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
                 }
             }
 
-            // --- RENDERIZADO EN EL GUI ---
+            // --- RENDERIZADO ---
             gui.setItem(slots[slotIndex], ItemBuilder.from(iconoMat)
                 .name(mm.deserialize(nombreVisual))
                 .lore(fullLore.toList())
                 .flags(*ItemFlag.entries.toTypedArray())
                 .asGuiItem { event ->
-                    event.isCancelled = true // 🛡️ Seguridad TriumphGUI extra
+                    event.isCancelled = true
                     handleLogic(player, survivorId, precio, tiene)
                 }
             )
@@ -101,59 +116,53 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
         val data = plugin.playerDataManager
         val actual = data.getSelectedSurvivor(uuid)
 
-        // 1. Si ya lo tiene, no hacemos nada
+        // 1. Ya seleccionado
         if (id.equals(actual, ignoreCase = true)) {
             player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.ya-seleccionado"))
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
             return
         }
 
-        // 2. Si ya lo compró, solo lo seleccionamos
+        // 2. Ya comprado -> Seleccionar
         if (tiene) {
             data.setSelectedSurvivor(uuid, id)
             player.persistentDataContainer.set(survivorKey, PersistentDataType.STRING, id)
-            player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.seleccionado", Placeholder.parsed("name", id)))
+
+            // Obtenemos el nombre bonito para el mensaje de confirmación
+            val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+            val nombreVisual = langInfo.getString("supervivientes.$id.nombre") ?: id
+
+            player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.seleccionado", Placeholder.component("name", mm.deserialize(nombreVisual))))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
-            abrir(player) // Recargar menú
+            abrir(player)
             return
         }
 
-        // 3. 🚨 LÓGICA DE COMPRA ESTRICTA (VAULT SAFE) 🚨
+        // 3. Comprar (Vault)
         val econ = Mistaken.economy
-
         if (econ == null) {
-            player.sendMessage(mm.deserialize("<red><b>[!]</b> Error interno: El sistema de economía (Vault) no está conectado.</red>"))
-            plugin.componentLogger.error(mm.deserialize("<red>Se intentó comprar el superviviente '$id' por ${player.name} pero Mistaken.economy es NULL.</red>"))
+            player.sendMessage(mm.deserialize("<red>Error: Vault no está conectado.</red>"))
             return
         }
 
-        val costo = precio.toDouble() // Siempre trabajar con Double explícito para Vault
+        val costo = precio.toDouble()
 
         if (econ.has(player, costo)) {
-
-            // Retiramos el dinero y GUARDAMOS LA RESPUESTA
             val response = econ.withdrawPlayer(player, costo)
-
             if (response.transactionSuccess()) {
-                // ✅ COMPRA EXITOSA (EssentialsX / CMI lo aprobó)
                 data.comprarSuperviviente(uuid, id)
-                player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.comprado", Placeholder.parsed("name", id)))
+
+                val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+                val nombreVisual = langInfo.getString("supervivientes.$id.nombre") ?: id
+
+                player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.comprado", Placeholder.component("name", mm.deserialize(nombreVisual))))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
                 abrir(player)
             } else {
-                // ❌ FALLÓ EL RETIRO DESDE EL LADO DE LA ECONOMÍA
-                player.sendMessage(mm.deserialize("<red>Hubo un problema con tu banco al cobrarte: ${response.errorMessage}</red>"))
-                player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
+                player.sendMessage(mm.deserialize("<red>Error bancario: ${response.errorMessage}</red>"))
             }
-
         } else {
-            // ❌ NO TIENE DINERO
-            val balanceActual = econ.getBalance(player)
-
             player.sendMessage(plugin.messageConfig.getMessage(player, "errors.no-money"))
-
-            // MENSAJE DE DEPURACIÓN ÚTIL
-            // player.sendMessage(mm.deserialize("<gray><i>(Debug: El costo es <gold>$$costo</gold> pero el banco detecta que tienes <gold>$$balanceActual</gold>)</i></gray>"))
             player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
         }
     }
