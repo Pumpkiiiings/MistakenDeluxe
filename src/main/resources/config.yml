@@ -22,16 +22,24 @@ discord:
     game-tracker: "URL_AQUI"
     alerts: "URL_AQUI"
 
+# ==========================================
+#         SISTEMA DE ESTAMINA (EXP)
+# ==========================================
+stamina:
+  # Cuánta estamina (en %) pierde un superviviente por cada 0.25s corriendo. (Por defecto 2.0 = 12.5 segs de sprint)
+  loss-survivor: 1.0
+  # Cuánta estamina pierde el asesino. (Por defecto 1.0 = 25 segs de sprint)
+  loss-killer: 2.0
+  # Cuánta estamina se recupera por cada 0.25s caminando/quieto. (Por defecto 1.5)
+  recovery-rate: 1.5
+  # Nivel del efecto de lentitud (Slowness) al cansarse al 0%. (1 = Lentitud I, 2 = Lentitud II)
+  exhaustion-slowness-level: 1
+
 # --- BALANCE DE COMBATE & JUEGO ---
 gameplay:
   killer:
     damage: 2.9           # Muere al 7mo golpe (Perfect balance)
     health: 200.0         # 100 Corazones
-    stamina-loss: 0.8
-  survivor:
-    stamina-loss: 1.5
-    stamina-recovery: 1.2
-    exhaustion-level: 2   # Slowness al cansarce
   rewards:
     kill: 50.0
     win-killer: 500.0

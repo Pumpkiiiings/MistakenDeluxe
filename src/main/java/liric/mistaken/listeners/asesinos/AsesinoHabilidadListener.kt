@@ -12,16 +12,16 @@ import org.bukkit.entity.Snowball
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.block.Action
 import org.bukkit.event.entity.ProjectileHitEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * AsesinoHabilidadListener: Gestión de disparadores y proyectiles especiales.
- * Optimización: Cortocircuitos lógicos y uso nativo de Adventure Component para 1.21.4.
+ * FIX: Prevención de doble-ejecución (MainHand/OffHand) y fusión de código duplicado.
  */
 class AsesinoHabilidadListener(private val plugin: Mistaken) : Listener {
 
@@ -33,22 +33,26 @@ class AsesinoHabilidadListener(private val plugin: Mistaken) : Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onUseAbility(event: PlayerInteractEvent) {
-        // 1. Filtro de Estado (Acceso a variable en RAM)
-        if (plugin.gameManager.currentState != GameState.INGAME) return
+        // 1. 🔥 FIX CRÍTICO: Evitar doble ejecución.
+        // Bukkit dispara este evento para la mano principal y la secundaria. Solo nos importa la principal.
+        if (event.hand != EquipmentSlot.HAND) return
 
-        // 2. Filtro de Acción (isRightClick es un helper de Paper)
+        // 2. Filtro Rápido de Acción
         if (!event.action.isRightClick) return
+
+        // 3. Filtro de Estado
+        if (plugin.gameManager.currentState != GameState.INGAME) return
 
         val player = event.player
         val slot = player.inventory.heldItemSlot
 
-        // 3. Filtro de Slot (Solo slots del 1 al 4 disparan habilidades)
+        // 4. Filtro de Slot (Solo slots del 1 al 4 disparan habilidades)
         if (slot !in 1..4) return
 
-        // 4. Búsqueda de Clase (Operación O(1))
+        // 5. Búsqueda de Clase (Operación O(1))
         val asesino = plugin.asesinoManager.getAsesinoDelJugador(player) ?: return
 
-        // 5. Validación de Item
+        // 6. Validación de Item
         val item = player.inventory.itemInMainHand
         if (item.type == Material.AIR) return
 
@@ -58,14 +62,13 @@ class AsesinoHabilidadListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * Lógica de impacto: Habilidades basadas en proyectiles (Entity 303 / Infección).
-     * Optimizado para Paper 1.21.4 con soporte para Display Names como Componentes.
+     * Lógica de impacto: Habilidades basadas en proyectiles.
      */
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun onProjectileHit(event: ProjectileHitEvent) {
+        // Casting rápido para no gastar recursos si es una flecha de esqueleto vanilla
         val snowball = event.entity as? Snowball ?: return
 
-        // Obtenemos el nombre del proyectil de forma eficiente (Component -> String simple)
         val nameComp = snowball.customName() ?: return
         val rawName = plain.serialize(nameComp)
 
@@ -73,10 +76,9 @@ class AsesinoHabilidadListener(private val plugin: Mistaken) : Listener {
             val loc = snowball.location
             val world = loc.world ?: return
 
-            // --- 1. EFECTOS VISUALES (Cero recursos en hilos de red) ---
+            // --- 1. EFECTOS VISUALES ---
             world.spawnParticle(Particle.ENCHANTED_HIT, loc, 15, 0.3, 0.3, 0.3, 0.1)
 
-            // Fix de partículas 1.21.4 (DustOptions optimizado)
             val dust = Particle.DustOptions(Color.fromRGB(0, 255, 240), 1.0f)
             world.spawnParticle(Particle.DUST, loc, 10, 0.2, 0.2, 0.2, 0.1, dust)
 
@@ -86,22 +88,17 @@ class AsesinoHabilidadListener(private val plugin: Mistaken) : Listener {
             // --- 2. LÓGICA DE IMPACTO EN SUPERVIVIENTE ---
             val victim = event.hitEntity as? Player ?: return
 
-            // Evitar fuego amigo entre asesinos (si hubiera más de uno)
             if (plugin.asesinoManager.esElAsesino(victim)) return
 
-            // Aplicar efectos de Hacker (Costo: 0.001ms)
             victim.apply {
                 addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 1))
                 addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
 
-                // Usamos el CombatManager centralizado para reducir la vida del humano
                 plugin.gameManager.combatManager.takeDamage(this)
 
-                // Partículas estéticas en víctima
                 world.spawnParticle(Particle.ANGRY_VILLAGER, location.add(0.0, 1.5, 0.0), 5, 0.2, 0.2, 0.2, 0.1)
                 playSound(location, Sound.BLOCK_ANVIL_LAND, 0.7f, 1.5f)
 
-                // Mensaje de terror
                 sendMessage(mm.deserialize("<red><bold>[!]</bold> <gray>SISTEMA CORROMPIDO: <white>Has sido infectado por la Estrella del Error."))
             }
         }

@@ -15,46 +15,53 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.entity.ProjectileHitEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ThreadLocalRandom
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * SupervivienteHabilidadListener: Gestión de habilidades ultra-optimizada.
  *
- * FIXES DE RENDIMIENTO:
- * - Eliminado Block Metadata (reemplazado por HashSet en memoria).
- * - Eliminado Entity Metadata (reemplazado por PDC API).
- * - Culling de eventos de movimiento.
+ * FIXES:
+ * - Prevención de doble disparo (MainHand Check).
+ * - Cero Garbage Collection en PlayerMoveEvent usando Keys de String.
  */
 class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
-    // --- OPTIMIZACIÓN SÉNIOR: Registro de bloques en RAM ---
-    // Usamos esto en lugar de block.hasMetadata(). ¡100 veces más rápido!
+    // --- OPTIMIZACIÓN EXTREMA: Registro de bloques en RAM ---
+    // Usar Strings (Mundo_X_Y_Z) consume mucha menos RAM que guardar objetos Location enteros.
     companion object {
-        val bloquesDerrame = ConcurrentHashMap.newKeySet<org.bukkit.Location>()
+        val bloquesDerrame = ConcurrentHashMap.newKeySet<String>()
 
-        // Llaves para proyectiles (Paper PDC)
         private val ROCA_KEY = NamespacedKey("mistaken", "roca")
         private val PEDIDO_KEY = NamespacedKey("mistaken", "pedido")
 
-        // Métodos de utilidad para que las clases Civil/Repartidor usen
-        fun marcarBloque(loc: org.bukkit.Location) = bloquesDerrame.add(loc.block.location)
-        fun desmarcarBloque(loc: org.bukkit.Location) = bloquesDerrame.remove(loc.block.location)
+        fun marcarBloque(loc: org.bukkit.Location) {
+            val key = "${loc.world.name}_${loc.blockX}_${loc.blockY}_${loc.blockZ}"
+            bloquesDerrame.add(key)
+        }
+
+        fun desmarcarBloque(loc: org.bukkit.Location) {
+            val key = "${loc.world.name}_${loc.blockX}_${loc.blockY}_${loc.blockZ}"
+            bloquesDerrame.remove(key)
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onUseSurvivorAbility(event: PlayerInteractEvent) {
+        // 1. 🔥 FIX: Evitar doble ejecución por las manos
+        if (event.hand != EquipmentSlot.HAND) return
+
         if (plugin.gameManager.currentState != GameState.INGAME) return
 
         val player = event.player
         val action = event.action
-
-        // Slot check rápido antes de buscar la clase
         val slot = player.inventory.heldItemSlot
+
+        // Solo permitimos uso de habilidades en los slots 0, 1 y 2
         if (slot > 2) return
 
         val clase = plugin.supervivienteManager.getClase(player) ?: return
@@ -82,7 +89,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
         val pdc = snowball.persistentDataContainer
 
-        // 1. Lógica de la Roca (Civil) - Usando PDC
+        // 1. Roca (Civil)
         if (pdc.has(ROCA_KEY, PersistentDataType.BYTE)) {
             victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 1))
             victim.playSound(victim.location, Sound.BLOCK_STONE_BREAK, 1f, 0.8f)
@@ -93,7 +100,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // 2. Lógica del Pedido (Repartidor) - Usando PDC
+        // 2. Pedido (Repartidor)
         if (pdc.has(PEDIDO_KEY, PersistentDataType.BYTE)) {
             val isKiller = plugin.gameManager.esAsesino(victim.uniqueId)
 
@@ -103,10 +110,8 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
                 victim.sendMessage(plugin.messageConfig.getMessage(victim, "habilidades.pedido-impacto-asesino"))
                 victim.playSound(victim.location, Sound.ENTITY_GENERIC_SPLASH, 1f, 1f)
             } else {
-                // Curación con API de Atributos 1.21.4
                 val maxHealth = victim.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
                 victim.health = (victim.health + 4.0).coerceAtMost(maxHealth)
-
                 victim.sendMessage(plugin.messageConfig.getMessage(victim, "habilidades.pedido-recibido-cura"))
                 victim.playSound(victim.location, Sound.ENTITY_PLAYER_BURP, 1f, 1f)
             }
@@ -114,29 +119,26 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * 🔥 FIX AL 0.03% DE SPARK:
-     * Eliminamos 'hasMetadata'. Ahora buscamos la Location en un HashSet.
+     * 🔥 Cero Garbage Collection
      */
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     fun onSalsaMove(event: PlayerMoveEvent) {
-        // Culling rápido por estado de juego
         if (plugin.gameManager.currentState != GameState.INGAME) return
 
-        val from = event.from
         val to = event.to ?: return
+        val from = event.from
 
-        // 1. Filtro de bloque: Si solo movió la cabeza, ignoramos.
+        // 1. Filtro: Solo nos importa si el jugador cambia de bloque entero
         if (from.blockX == to.blockX && from.blockZ == to.blockZ && from.blockY == to.blockY) return
 
-        // 2. Búsqueda instantánea en el Set de coordenadas
-        // block.location crea un objeto nuevo, pero comparado con Metadata es insignificante.
-        if (bloquesDerrame.contains(to.block.location)) {
-            event.player.apply {
-                // Solo aplicamos si no lo tiene para no resetear el efecto cada tick
-                if (!hasPotionEffect(PotionEffectType.SLOWNESS)) {
-                    addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 2))
-                    playSound(location, Sound.BLOCK_SLIME_BLOCK_STEP, 0.5f, 0.5f)
-                }
+        // 2. Buscamos en el HashSet armando el String (Súper ligero)
+        val key = "${to.world.name}_${to.blockX}_${to.blockY}_${to.blockZ}"
+
+        if (bloquesDerrame.contains(key)) {
+            val player = event.player
+            if (!player.hasPotionEffect(PotionEffectType.SLOWNESS)) {
+                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 2))
+                player.playSound(player.location, Sound.BLOCK_SLIME_BLOCK_STEP, 0.5f, 0.5f)
             }
         }
     }

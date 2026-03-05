@@ -51,23 +51,33 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     }
 
     fun loadTemplates() {
-        val defaultLang = plugin.config.getString("settings.default-language", "es") ?: "es"
-        val langConfig = plugin.messageConfig.getSpecificFile(null, defaultLang)
+        // 🔥 FIX: Leemos explícitamente del archivo "messages.yml" del idioma por defecto
+        val langConfig = plugin.messageConfig.getSpecificFile(null, "messages")
 
+        // Usamos tus nuevas líneas por defecto si el YAML llega a fallar
         idleLines = langConfig.getStringList("generators.hologram.lines-idle").ifEmpty {
-            listOf("<gold>{name}", "<white>Progreso: <gray>{progress}%")
+            listOf(
+                "<gold><bold>{name}",
+                "<white>Progreso: <gray>{progress}%",
+                "<yellow>¡Click para reparar!"
+            )
         }
+
         completedLines = langConfig.getStringList("generators.hologram.lines-completed").ifEmpty {
-            listOf("<green><bold>✔ ENERGÍA RESTAURADA ✔")
+            listOf(
+                "<green><bold>✔ ENERGÍA RESTAURADA ✔",
+                "<gray>¡Buen trabajo!"
+            )
         }
+
         nameCache.clear()
-        plugin.componentLogger.info(mm.deserialize("<gray>[Generadores] Plantillas cargadas correctamente (<white>$defaultLang</white>)."))
+        plugin.componentLogger.info(mm.deserialize("<gray>[Generadores] Plantillas y nombres cargados correctamente.</gray>"))
     }
 
     private fun getFriendlyName(material: Material): String {
         return nameCache.getOrPut(material) {
-            val defaultLang = plugin.config.getString("settings.default-language", "es") ?: "es"
-            val langConfig = plugin.messageConfig.getSpecificFile(null, defaultLang)
+            // Buscamos el nombre en messages.yml -> generators.names.MATERIAL
+            val langConfig = plugin.messageConfig.getSpecificFile(null, "messages")
 
             langConfig.getString("generators.names.${material.name}")
                 ?: material.name.lowercase().replace("_", " ").split(" ")
@@ -179,10 +189,15 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val typeName = getFriendlyName(state.originalMaterial)
         val lines = if (state.completed) completedLines else idleLines
 
-        val text = lines.joinToString("\n<reset>") { line ->
-            line.replace("{name}", typeName).replace("{progress}", state.progress.toString())
+        // 🔥 FIX: Reemplazamos "\n<reset>" por "<newline><reset>"
+        // En MiniMessage moderno, "\n" a veces puede romperse en entidades Display.
+        // Al usar <newline>, nos aseguramos de que el TextDisplay lo renderice perfecto.
+        val text = lines.joinToString("<newline><reset>") { line ->
+            line.replace("{name}", typeName)
+                .replace("{progress}", state.progress.toString())
         }
 
+        // Parseamos el texto final (se inicia con un reset de seguridad)
         entity.text(mm.deserialize("<reset>$text"))
     }
 

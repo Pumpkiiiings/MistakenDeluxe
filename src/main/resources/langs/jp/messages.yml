@@ -32,6 +32,10 @@ bossbar:
     ingame: "RED"
     ending: "PINK"
 
+# --- HABILIDADES ---
+habilidades:
+  pedido-impacto-asesino: "&a¡Bien hecho! &fEl pedido le ha llegado al asesino"
+
 # --- 戦闘 (COMBAT) ---
 combat:
   heart-icon-on: "❤"
