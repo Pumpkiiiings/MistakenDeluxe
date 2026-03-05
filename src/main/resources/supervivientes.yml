@@ -193,3 +193,27 @@ supervivientes:
       habilidad3: "GOAT_HORN"
       habilidad3_cooldown: 30
       habilidad3_sonido: "ENTITY_WOLF_HOWL"
+
+  raincoatkid:
+    precio: 3500
+    icono_material: "YELLOW_DYE" # O GOLD_NUGGET
+    armadura:
+      casco: "mistaken:raincoat_helmet"
+      pechera: "mistaken:raincoat_chestplate"
+      pantalones: "none"
+      botas: "none"
+    items:
+      # Habilidad 1: Correr
+      habilidad1: "SUGAR"
+      habilidad1_cooldown: 25
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_SWEEP"
+
+      # Habilidad 2: Dash
+      habilidad2: "FEATHER"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_BAT_TAKEOFF"
+
+      # Habilidad 3: Palo Aturdidor (Arma)
+      habilidad3: "STICK"
+      habilidad3_cooldown: 40 # Cooldown alto porque es muy fuerte
+      habilidad3_sonido: "ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR"

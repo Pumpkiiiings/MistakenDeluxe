@@ -153,3 +153,20 @@ supervivientes:
       habilidad1: "<gradient:#aaffaa:#ffffff><b>🐾 SWIPE!</b></gradient> <gray>Killer stunned for <white>5s</white>."
       habilidad2: "<gradient:#ffffff:#aaffaa><b>💨 RUN!</b></gradient> <gray>Wolf speed activated."
       habilidad3: "<gradient:#00aa00:#55ff55><b>🐺 HOWL!</b></gradient> <gray>The ground shakes! Killer stunned."
+
+  raincoatkid:
+    nombre: "<gradient:#ffff55:#ffaa00><b>RAINCOAT KID</b></gradient>"
+    descripcion:
+      - "<gray>Un niño pequeño con un impermeable amarillo."
+      - "<white>Mecánica: <yellow>Agilidad y Sigilo</yellow>"
+    lore_tienda:
+      - "<italic><gray>\"¡No puedes atraparme!\"</gray></italic>"
+      - "<white>Dificultad: <green>Fácil"
+    habilidades_nombres:
+      habilidad1: "<yellow>Subidón de Azúcar</yellow>"
+      habilidad2: "<gold>Salto de Charco</gold>"
+      habilidad3: "<red>Rama Afilada</red>"
+    habilidades_mensajes:
+      habilidad1: "<yellow><b>¡CORRE!</b></yellow> <gray>Velocidad aumentada (Cansancio en 5s)."
+      habilidad2: "<gold><b>¡HOP!</b></gold> <gray>Impulso rápido."
+      habilidad3: "" # Sin mensaje, es un ítem de golpe

@@ -29,7 +29,8 @@ class SupervivienteManager(private val plugin: Mistaken) {
         listOf(
             Civil(),
             Repartidor(),
-            Minty()
+            Minty(),
+            RaincoatKid()
         ).forEach { registrarClase(it) }
     }
 
