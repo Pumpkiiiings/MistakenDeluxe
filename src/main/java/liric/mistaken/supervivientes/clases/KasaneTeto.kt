@@ -9,6 +9,7 @@ import org.bukkit.NamespacedKey
 import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
+import org.bukkit.entity.Snowball
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
@@ -17,40 +18,42 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Raincoat Kid: El niño del impermeable.
+ * Kasane Teto: La Quimera.
  * FIX: Sistema de Equipamiento igual al del Asesino Slasher (100% CraftEngine).
  */
-class RaincoatKid : Superviviente(
-    "raincoatkid",
-    Mistaken.instance.messageConfig.getRawString(null, "supervivientes.raincoatkid.nombre", "Raincoat Kid", "supervivientes_info")
+class KasaneTeto : Superviviente(
+    "teto",
+    Mistaken.instance.messageConfig.getRawString(null, "supervivientes.teto.nombre", "Kasane Teto", "supervivientes_info")
 ) {
 
-    private val pathBase = "supervivientes.raincoatkid"
+    private val pathBase = "supervivientes.teto"
     private val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
-    private val STICK_KEY = NamespacedKey("mistaken", "kid_stick")
+
+    val MELEE_BAGUETTE_KEY = NamespacedKey("mistaken", "teto_melee")
+    val THROW_BAGUETTE_KEY = NamespacedKey("mistaken", "teto_throw")
 
     override fun usarHabilidad(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSupervivientes()
         val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
 
         when (slot) {
-            0 -> if (!checkCooldown(player, 0, mechConfig.getInt("$pathBase.items.habilidad1_cooldown", 25))) {
-                usarSprint(player)
+            0 -> if (!checkCooldown(player, 0, mechConfig.getInt("$pathBase.items.habilidad1_cooldown", 15))) {
+                usarDash(player)
                 sendAbilityMessage(player, langConfig, mechConfig, "habilidad1")
             }
-            1 -> if (!checkCooldown(player, 1, mechConfig.getInt("$pathBase.items.habilidad2_cooldown", 15))) {
-                usarDash(player)
-                sendAbilityMessage(player, langConfig, mechConfig, "habilidad2")
+            1 -> { /* Melee */ }
+            2 -> if (!checkCooldown(player, 2, mechConfig.getInt("$pathBase.items.habilidad3_cooldown", 25))) {
+                lanzarBaguette(player)
+                sendAbilityMessage(player, langConfig, mechConfig, "habilidad3")
             }
         }
     }
 
     private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
         var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) {
-            player.sendMessage(mm.deserialize(msg))
-        }
-        val soundName = mech.getString("$pathBase.items.${key}_sonido", "ENTITY_BAT_TAKEOFF")
+        if (!msg.isNullOrEmpty()) player.sendMessage(mm.deserialize(msg))
+
+        val soundName = mech.getString("$pathBase.items.${key}_sonido", "ENTITY_PLAYER_ATTACK_SWEEP")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
     }
 
@@ -60,7 +63,7 @@ class RaincoatKid : Superviviente(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        player.getAttribute(Attribute.SCALE)?.baseValue = 0.8
+        player.getAttribute(Attribute.SCALE)?.baseValue = 0.8861
 
         val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
         val configMecanica = plugin.configManager.getSupervivientes() // El global supervivientes.yml
@@ -78,18 +81,16 @@ class RaincoatKid : Superviviente(
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            // Si es el palo, le ponemos la marca
-            if (key == "habilidad3") {
-                val meta = item.itemMeta
-                meta.persistentDataContainer.set(STICK_KEY, PersistentDataType.BYTE, 1.toByte())
-                item.itemMeta = meta
-            }
+            // Si son baguettes, les ponemos marcas PDC
+            val meta = item.itemMeta
+            if (key == "habilidad2") meta.persistentDataContainer.set(MELEE_BAGUETTE_KEY, PersistentDataType.BYTE, 1.toByte())
 
             // Le ponemos el nombre
             val namePath = "$pathBase.habilidades_nombres.$key"
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+                meta.displayName(mm.deserialize(it))
             }
+            item.itemMeta = meta
 
             if (isArmor) {
                 when(key) {
@@ -115,43 +116,48 @@ class RaincoatKid : Superviviente(
         player.updateInventory()
     }
 
-    // --- HABILIDADES ---
-    private fun usarSprint(player: Player) {
-        player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 2))
-        player.world.spawnParticle(org.bukkit.Particle.CLOUD, player.location, 5, 0.2, 0.1, 0.2, 0.05)
-
-        val task = player.scheduler.runDelayed(plugin, {
-            if (player.isOnline) {
-                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 0))
-                player.playSound(player.location, Sound.ENTITY_PLAYER_BREATH, 1f, 0.8f)
-                player.sendActionBar(mm.deserialize("<red><i>*jadeo*</i>"))
-            }
-        }, null, 100L)
-
-        task?.let { activeTasks.add(it) }
-    }
-
+    // --- H1: DASH (Con Debuff) ---
     private fun usarDash(player: Player) {
-        val dir = player.location.direction.normalize().multiply(1.8).setY(0.4)
+        val dir = player.location.direction.normalize().multiply(2.0).setY(0.3)
         player.velocity = dir
-        player.playSound(player.location, Sound.ITEM_TRIDENT_RIPTIDE_1, 1f, 1.2f)
-        player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 0))
+        player.world.spawnParticle(org.bukkit.Particle.CRIT, player.location, 10, 0.2, 0.2, 0.2, 0.1)
+        aplicarDebuff(player)
     }
 
-    fun aplicarGolpePalo(victim: Player) {
-        victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
-        victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
-        victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, 1f, 0.5f)
-        victim.world.spawnParticle(org.bukkit.Particle.CRIT, victim.eyeLocation, 10)
+    // --- H2: MELEE BAGUETTE ---
+    fun aplicarGolpeBaguette(victim: Player, attacker: Player) {
+        val knockback = victim.location.toVector().subtract(attacker.location.toVector()).normalize().multiply(3.5).setY(0.6)
+        victim.velocity = knockback
+
+        victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0)) // 5s
+        victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 0))  // 5s
+        victim.world.playSound(victim.location, Sound.ENTITY_IRON_GOLEM_ATTACK, 1f, 0.5f)
+
+        aplicarDebuff(attacker)
+    }
+
+    // --- H3: BAGUETTE LANZABLE ---
+    private fun lanzarBaguette(player: Player) {
+        // Al lanzarla, necesitamos crear un pan temporal porque ya no usamos la caché vieja
+        val projItem = CraftEngineUtils.getCustomItem(plugin.configManager.getSupervivientes().getString("$pathBase.items.habilidad3")) ?: ItemStack(Material.BREAD)
+
+        val projectile = player.launchProjectile(Snowball::class.java)
+        projectile.item = projItem
+        projectile.persistentDataContainer.set(THROW_BAGUETTE_KEY, PersistentDataType.BYTE, 1.toByte())
+
+        player.playSound(player.location, Sound.ENTITY_EGG_THROW, 1f, 0.8f)
+        aplicarDebuff(player)
+    }
+
+    private fun aplicarDebuff(player: Player) {
+        player.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
+        player.sendActionBar(mm.deserialize("<red><i>¡Sobrecarga sensorial!</i>"))
     }
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        player?.let {
-            it.getAttribute(Attribute.SCALE)?.baseValue = 1.0
-            it.removePotionEffect(PotionEffectType.SPEED)
-            it.removePotionEffect(PotionEffectType.SLOWNESS)
-        }
+        player?.removePotionEffect(PotionEffectType.BLINDNESS)
+        player?.getAttribute(Attribute.SCALE)?.baseValue = 1.0
         activeTasks.forEach { it.cancel() }
         activeTasks.clear()
     }

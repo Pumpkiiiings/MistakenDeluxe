@@ -170,3 +170,20 @@ supervivientes:
       habilidad1: "<yellow><b>¡CORRE!</b></yellow> <gray>Velocidad aumentada (Cansancio en 5s)."
       habilidad2: "<gold><b>¡HOP!</b></gold> <gray>Impulso rápido."
       habilidad3: "" # Sin mensaje, es un ítem de golpe
+
+  teto:
+    nombre: "<gradient:#ff66cc:#ff0000><b>KASANE TETO</b></gradient>"
+    descripcion:
+      - "<gray>Quimera virtual con un arsenal de pan."
+      - "<white>Mecánica: <light_purple>Control y Distancia</light_purple>"
+    lore_tienda:
+      - "<italic><gray>\"¿De verdad eres quimera?\"</gray></italic>"
+      - "<white>Dificultad: <red>Difícil"
+    habilidades_nombres:
+      habilidad1: "<light_purple>Salto Quimera</light_purple>"
+      habilidad2: "<gold>La Gran Baguette</gold>"
+      habilidad3: "<yellow>Proyectil de Pan</yellow>"
+    habilidades_mensajes:
+      habilidad1: "<light_purple><b>¡SALTO!</b></light_purple> <gray>Pero te mareaste..."
+      habilidad2: "" # Es melee, no mensaje
+      habilidad3: "<yellow><b>¡LANZAMIENTO!</b></yellow> <gray>Tu visión se nubla."

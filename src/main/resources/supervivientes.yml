@@ -217,3 +217,27 @@ supervivientes:
       habilidad3: "STICK"
       habilidad3_cooldown: 40 # Cooldown alto porque es muy fuerte
       habilidad3_sonido: "ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR"
+
+  teto:
+    precio: 4500
+    icono_material: "BREAD"
+    armadura:
+      casco: "mistaken:kasane_teto_helmet"
+      pechera: "mistaken:kasane_teto_chestplate"
+      pantalones: "mistaken:kasane_teto_leggings"
+      botas: "mistaken:kasane_teto_boots"
+    items:
+      # H1: Dash
+      habilidad1: "FEATHER"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_BAT_TAKEOFF"
+
+      # H2: Baguette Melee (Arma de empuje)
+      habilidad2: "BREAD"
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "ENTITY_PLAYER_ATTACK_STRONG"
+
+      # H3: Baguette Lanzable
+      habilidad3: "BREAD"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ENTITY_EGG_THROW"
