@@ -46,25 +46,6 @@ supervivientes:
       habilidad3_cooldown: 50
       habilidad3_sonido: "BLOCK_SLIME_BLOCK_PLACE"
 
-  jesse:
-    precio: 5000
-    icono_material: "GOLDEN_SWORD"
-    ajustes:
-      radio_curacion: 15.0
-      cooldown_rastreo: 10
-    items:
-      habilidad1: "GOLDEN_SWORD"
-      habilidad1_cooldown: 12
-      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_SWEEP"
-
-      habilidad2: "NETHER_STAR"
-      habilidad2_cooldown: 25
-      habilidad2_sonido: "BLOCK_BEACON_ACTIVATE"
-
-      habilidad3: "GOLDEN_CHESTPLATE"
-      habilidad3_cooldown: 40
-      habilidad3_sonido: "ITEM_ARMOR_EQUIP_GOLD"
-
   petra:
     precio: 6000
     icono_material: "IRON_SWORD"
@@ -241,3 +222,75 @@ supervivientes:
       habilidad3: "BREAD"
       habilidad3_cooldown: 25
       habilidad3_sonido: "ENTITY_EGG_THROW"
+
+
+  jesse:
+    precio: 5000
+    icono_material: "IRON_SWORD"
+    armadura:
+      casco: "mistaken:jesse_helmet"
+      pechera: "mistaken:jesse_chestplate"
+      pantalones: "mistaken:jesse_leggings"
+      botas: "mistaken:jesse_boots"
+    items:
+      habilidad1: "FEATHER" # Hero Dash
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "ENTITY_ENDER_DRAGON_FLAP"
+
+      habilidad2: "IRON_NUGGET" # Puñetazo
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_PLAYER_ATTACK_CRIT"
+
+      habilidad3: "SHIELD" # Sonic Boom
+      habilidad3_cooldown: 35
+      habilidad3_sonido: "ENTITY_WARDEN_SONIC_CHARGE"
+
+  aldeano:
+    precio: 3000
+    icono_material: "EMERALD"
+    armadura:
+      # Puedes poner armadura de cuero café si quieres que parezca aldeano
+      casco: "LEATHER_HELMET"
+      pechera: "LEATHER_CHESTPLATE"
+      pantalones: "LEATHER_LEGGINGS"
+      botas: "LEATHER_BOOTS"
+    items:
+      # H1: Pánico (Velocidad)
+      habilidad1: "SUGAR"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "ENTITY_VILLAGER_NO"
+
+      # H2: Soborno (Lanzar)
+      habilidad2: "EMERALD"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_SNOWBALL_THROW"
+
+      # H3: Golem (Empuje Área)
+      habilidad3: "IRON_INGOT"
+      habilidad3_cooldown: 40
+      habilidad3_sonido: "ENTITY_IRON_GOLEM_ATTACK"
+
+
+  notch:
+    precio: 8000
+    icono_material: "ENCHANTED_GOLDEN_APPLE"
+    armadura:
+      casco: "GOLDEN_HELMET"
+      pechera: "GOLDEN_CHESTPLATE"
+      pantalones: "GOLDEN_LEGGINGS"
+      botas: "GOLDEN_BOOTS"
+    items:
+      # H1: Salto Creativo
+      habilidad1: "FEATHER"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+
+      # H2: Muro de Bedrock
+      habilidad2: "BEDROCK"
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "BLOCK_ANVIL_LAND"
+
+      # H3: Manzana de Dios
+      habilidad3: "ENCHANTED_GOLDEN_APPLE"
+      habilidad3_cooldown: 60
+      habilidad3_sonido: "ITEM_TOTEM_USE"

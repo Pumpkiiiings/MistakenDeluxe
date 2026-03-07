@@ -35,22 +35,6 @@ supervivientes:
       habilidad2: "<gradient:#ffaa00:#ffffff><b>📦 お届け物だ！</b></gradient> <gray>注文の品を投げつけろ！"
       habilidad3: "<gradient:#ff5555:#aa0000><b>🥫 うわっ！</b></gradient> <gray>ソースがこぼれた！地面が<yellow>滑りやすく</yellow>なります。"
 
-  jesse:
-    nombre: "<gradient:#ffd700:#ffaa00><b>ジェシー</b></gradient>"
-    lore_tienda:
-      - "「ストーン・オーダー」の"
-      - "伝説的なリーダー。"
-      - ""
-      - "<yellow>サポートと救助のスペシャリスト！"
-    habilidades_nombres:
-      habilidad1: "<gradient:#ffd700:#ffffff>オーダーの剣</gradient>"
-      habilidad2: "<gradient:#55ffff:#ffffff><b>ガブリエルのアミュレット</b></gradient>"
-      habilidad3: "<gradient:#ffaa00:#ffff55>オーダーの招集</gradient>"
-    habilidades_mensajes:
-      habilidad1: "<gradient:#ffd700:#ffffff><b>⚔ オーダーのために！</b></gradient> <gray>戦闘ブースト発動。"
-      habilidad2: "<gradient:#55ffff:#ffffff><b>💠 癒やしの波動！</b></gradient> <gray>周囲を回復させます。"
-      habilidad3: "<gradient:#ffaa00:#ffff55><b>🛡 結束！</b></gradient> <gray>仲間の加護を感じる。"
-
   petra:
     nombre: "<gradient:#ff3333:#aa0000><b>ペトラ</b></gradient>"
     lore_tienda:
@@ -187,3 +171,20 @@ supervivientes:
       habilidad1: "<light_purple><b>¡SALTO!</b></light_purple> <gray>Pero te mareaste..."
       habilidad2: "" # Es melee, no mensaje
       habilidad3: "<yellow><b>¡LANZAMIENTO!</b></yellow> <gray>Tu visión se nubla."
+
+  jesse:
+    nombre: "<gradient:#00aaff:#ffffff><b>JESSE</b></gradient>"
+    descripcion:
+      - "<gray>El líder de la Orden de la Piedra."
+      - "<white>Mecánica: <aqua>Protección y Empuje</aqua>"
+    lore_tienda:
+      - "<italic><gray>\"Nada se interpondrá en mi camino.\"</gray></italic>"
+      - "<white>Dificultad: <yellow>Media"
+    habilidades_nombres:
+      habilidad1: "<aqua>Embestida Heroica</aqua>"
+      habilidad2: "<gold>Puño Pesado</gold>"
+      habilidad3: "<dark_aqua>Bloqueo Sónico</dark_aqua>"
+    habilidades_mensajes:
+      habilidad1: "<aqua><b>¡A LA CARGA!</b></aqua>"
+      habilidad2: "" # Melee
+      habilidad3: "<dark_aqua><b>¡FUERA DE AQUÍ!</b></dark_aqua>"

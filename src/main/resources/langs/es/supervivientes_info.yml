@@ -38,22 +38,6 @@ supervivientes:
       habilidad2: "<gradient:#ffaa00:#ffffff><b>📦 ¡PEDIDO EN CAMINO!</b></gradient> <gray>Cuidando la calificación."
       habilidad3: "<gradient:#ff5555:#aa0000><b>🥫 ¡UPS!</b></gradient> <gray>¡Se tiró la salsa! El suelo resbala."
 
-  jesse:
-    nombre: "<gradient:#ffd700:#ffaa00><b>JESSE</b></gradient>"
-    lore_tienda:
-      - "El legendario líder de la"
-      - "Nueva Orden de la Piedra."
-      - ""
-      - "<yellow>¡Especialista en apoyo y rescate!"
-    habilidades_nombres:
-      habilidad1: "<gradient:#ffd700:#ffffff>Espada de la Orden</gradient>"
-      habilidad2: "<gradient:#55ffff:#ffffff><b>Amuleto de Gabriel</b></gradient>"
-      habilidad3: "<gradient:#ffaa00:#ffff55>Llamado de la Orden</gradient>"
-    habilidades_mensajes:
-      habilidad1: "<gradient:#ffd700:#ffffff><b>⚔ ¡POR LA ORDEN!</b></gradient> <gray>Has usado el impulso de combate."
-      habilidad2: "<gradient:#55ffff:#ffffff><b>💠 ¡PULSO DEL AMULETO!</b></gradient> <gray>Onda regenerativa emitida."
-      habilidad3: "<gradient:#ffaa00:#ffff55><b>🛡 ¡UNIDAD!</b></gradient> <gray>Sientes la protección de tus amigos."
-
   petra:
     nombre: "<gradient:#ff3333:#aa0000><b>PETRA</b></gradient>"
     lore_tienda:
@@ -190,3 +174,54 @@ supervivientes:
       habilidad1: "<light_purple><b>¡SALTO!</b></light_purple> <gray>Pero te mareaste..."
       habilidad2: "" # Es melee, no mensaje
       habilidad3: "<yellow><b>¡LANZAMIENTO!</b></yellow> <gray>Tu visión se nubla."
+
+  jesse:
+    nombre: "<gradient:#00aaff:#ffffff><b>JESSE</b></gradient>"
+    descripcion:
+      - "<gray>El líder de la Orden de la Piedra."
+      - "<white>Mecánica: <aqua>Protección y Empuje</aqua>"
+    lore_tienda:
+      - "<italic><gray>\"Nada se interpondrá en mi camino.\"</gray></italic>"
+      - "<white>Dificultad: <yellow>Media"
+    habilidades_nombres:
+      habilidad1: "<aqua>Embestida Heroica</aqua>"
+      habilidad2: "<gold>Puño Pesado</gold>"
+      habilidad3: "<dark_aqua>Bloqueo Sónico</dark_aqua>"
+    habilidades_mensajes:
+      habilidad1: "<aqua><b>¡A LA CARGA!</b></aqua>"
+      habilidad2: "" # Melee
+      habilidad3: "<dark_aqua><b>¡FUERA DE AQUÍ!</b></dark_aqua>"
+
+  aldeano:
+    nombre: "<gradient:#55ff55:#00aa00><b>ALDEANO</b></gradient>"
+    descripcion:
+      - "<gray>Un comerciante experto en huir."
+      - "<white>Mecánica: <green>Distracción y Evasión</green>"
+    lore_tienda:
+      - "<italic><gray>\"Hrmmm...\"</gray></italic>"
+      - "<white>Dificultad: <green>Fácil"
+    habilidades_nombres:
+      habilidad1: "<white>¡Pánico!</white>"
+      habilidad2: "<green>Soborno</green>"
+      habilidad3: "<gray>Guardaespaldas</gray>"
+    habilidades_mensajes:
+      habilidad1: "<red><b>¡CORRE!</b></red> <gray>¡El asesino viene!</gray>"
+      habilidad2: "<green><b>¡TOMA!</b></green> <gray>¡Déjame en paz!</gray>"
+      habilidad3: "<gray><b>¡GOLEM!</b></gray> <white>¡Defiéndeme!</white>"
+
+  notch:
+    nombre: "<gradient:#ffff55:#ffaa00><bold>NOTCH</bold></gradient>"
+    descripcion:
+      - "<gray>El creador de todo lo cúbico."
+      - "<white>Mecánica: <yellow>Defensa y Control Divino</yellow>"
+    lore_tienda:
+      - "<italic><gray>\"¿Al matarlo te dara una manzana?\"</gray></italic>"
+      - "<white>Dificultad: <red>Difícil"
+    habilidades_nombres:
+      habilidad1: "<white>Ascensión Creativa</white>"
+      habilidad2: "<dark_gray>Acceso Denegado</dark_gray>"
+      habilidad3: "<yellow>Manzana Divina</yellow>"
+    habilidades_mensajes:
+      habilidad1: "<white><b>¡VUELO!</b></white> <gray>Modo creativo temporal activado."
+      habilidad2: "<dark_gray><b>¡DENEGADO!</b></dark_gray> <gray>El asesino ha sido rechazado."
+      habilidad3: "<yellow><b>¡PODER!</b></yellow> <gray>Regeneración y fuerza sagrada."

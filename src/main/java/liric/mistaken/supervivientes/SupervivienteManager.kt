@@ -31,7 +31,10 @@ class SupervivienteManager(private val plugin: Mistaken) {
             Repartidor(),
             Minty(),
             RaincoatKid(),
-            KasaneTeto()
+            KasaneTeto(),
+            Jesse(),
+            Aldeano(),
+            Notch()
         ).forEach { registrarClase(it) }
     }
 

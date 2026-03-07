@@ -35,22 +35,6 @@ supervivientes:
       habilidad2: "<gradient:#ffaa00:#ffffff><b>📦 订单来袭！</b></gradient> <gray>为了好评拼了！"
       habilidad3: "<gradient:#ff5555:#aa0000><b>🥫 哎呀！</b></gradient> <gray>酱汁洒了！地面变<yellow>滑</yellow>了。"
 
-  jesse:
-    nombre: "<gradient:#ffd700:#ffaa00><b>杰西</b></gradient>"
-    lore_tienda:
-      - "“岩石之令”的"
-      - "传奇领袖。"
-      - ""
-      - "<yellow>支援与救援专家！"
-    habilidades_nombres:
-      habilidad1: "<gradient:#ffd700:#ffffff>秩序之剑</gradient>"
-      habilidad2: "<gradient:#55ffff:#ffffff><b>加布里埃尔护身符</b></gradient>"
-      habilidad3: "<gradient:#ffaa00:#ffff55>秩序的召唤</gradient>"
-    habilidades_mensajes:
-      habilidad1: "<gradient:#ffd700:#ffffff><b>⚔ 为了秩序！</b></gradient> <gray>冲刺已激活。"
-      habilidad2: "<gradient:#55ffff:#ffffff><b>💠 护身符脉冲！</b></gradient> <gray>范围恢复已释放。"
-      habilidad3: "<gradient:#ffaa00:#ffff55><b>🛡 团结！</b></gradient> <gray>你感受到了朋友们的庇护。"
-
   petra:
     nombre: "<gradient:#ff3333:#aa0000><b>佩特拉</b></gradient>"
     lore_tienda:
@@ -187,3 +171,20 @@ supervivientes:
       habilidad1: "<light_purple><b>¡SALTO!</b></light_purple> <gray>Pero te mareaste..."
       habilidad2: "" # Es melee, no mensaje
       habilidad3: "<yellow><b>¡LANZAMIENTO!</b></yellow> <gray>Tu visión se nubla."
+
+  jesse:
+    nombre: "<gradient:#00aaff:#ffffff><b>JESSE</b></gradient>"
+    descripcion:
+      - "<gray>El líder de la Orden de la Piedra."
+      - "<white>Mecánica: <aqua>Protección y Empuje</aqua>"
+    lore_tienda:
+      - "<italic><gray>\"Nada se interpondrá en mi camino.\"</gray></italic>"
+      - "<white>Dificultad: <yellow>Media"
+    habilidades_nombres:
+      habilidad1: "<aqua>Embestida Heroica</aqua>"
+      habilidad2: "<gold>Puño Pesado</gold>"
+      habilidad3: "<dark_aqua>Bloqueo Sónico</dark_aqua>"
+    habilidades_mensajes:
+      habilidad1: "<aqua><b>¡A LA CARGA!</b></aqua>"
+      habilidad2: "" # Melee
+      habilidad3: "<dark_aqua><b>¡FUERA DE AQUÍ!</b></dark_aqua>"

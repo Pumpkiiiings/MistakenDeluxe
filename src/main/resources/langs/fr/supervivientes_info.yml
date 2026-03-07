@@ -35,22 +35,6 @@ supervivientes:
       habilidad2: "<prefix><gradient:#ffaa00:#ffffff><b>📦 COLIS EN VOL !</b></gradient> <gray>Attention à la note !"
       habilidad3: "<prefix><gradient:#ff5555:#aa0000><b>🥫 OUPS !</b></gradient> <gray>Sauce renversée ! Le sol est <yellow>glissant</yellow>."
 
-  jesse:
-    nombre: "<gradient:#ffd700:#ffaa00><b>JESSE</b></gradient>"
-    lore_tienda:
-      - "Le chef légendaire du"
-      - "Nouvel Ordre de la Pierre."
-      - ""
-      - "<yellow>Spécialiste du soutien et du sauvetage !"
-    habilidades_nombres:
-      habilidad1: "<gradient:#ffd700:#ffffff>Épée de l'Ordre</gradient>"
-      habilidad2: "<gradient:#55ffff:#ffffff><b>Amulette de Gabriel</b></gradient>"
-      habilidad3: "<gradient:#ffaa00:#ffff55>Appel de l'Ordre</gradient>"
-    habilidades_mensajes:
-      habilidad1: "<gradient:#ffd700:#ffffff><b>⚔ POUR L'ORDRE !</b></gradient> <gray>Impulsion de combat utilisée."
-      habilidad2: "<gradient:#55ffff:#ffffff><b>💠 ONDE D'AMULETTE !</b></gradient> <gray>Régénération de zone."
-      habilidad3: "<gradient:#ffaa00:#ffff55><b>🛡 UNITÉ !</b></gradient> <gray>Tu sens la protection de tes amis."
-
   petra:
     nombre: "<gradient:#ff3333:#aa0000><b>PETRA</b></gradient>"
     lore_tienda:
@@ -187,3 +171,20 @@ supervivientes:
       habilidad1: "<light_purple><b>¡SALTO!</b></light_purple> <gray>Pero te mareaste..."
       habilidad2: "" # Es melee, no mensaje
       habilidad3: "<yellow><b>¡LANZAMIENTO!</b></yellow> <gray>Tu visión se nubla."
+
+  jesse:
+    nombre: "<gradient:#00aaff:#ffffff><b>JESSE</b></gradient>"
+    descripcion:
+      - "<gray>El líder de la Orden de la Piedra."
+      - "<white>Mecánica: <aqua>Protección y Empuje</aqua>"
+    lore_tienda:
+      - "<italic><gray>\"Nada se interpondrá en mi camino.\"</gray></italic>"
+      - "<white>Dificultad: <yellow>Media"
+    habilidades_nombres:
+      habilidad1: "<aqua>Embestida Heroica</aqua>"
+      habilidad2: "<gold>Puño Pesado</gold>"
+      habilidad3: "<dark_aqua>Bloqueo Sónico</dark_aqua>"
+    habilidades_mensajes:
+      habilidad1: "<aqua><b>¡A LA CARGA!</b></aqua>"
+      habilidad2: "" # Melee
+      habilidad3: "<dark_aqua><b>¡FUERA DE AQUÍ!</b></dark_aqua>"

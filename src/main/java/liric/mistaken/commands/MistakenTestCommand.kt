@@ -22,6 +22,8 @@ object MistakenTestCommand {
     private val activeAxos = ConcurrentHashMap<Int, Axolotl>()
     private val activeObservants = ConcurrentHashMap<Int, ObservantEXE>()
     private val activeEyedrooms = ConcurrentHashMap<Int, EyedroomsEXE>()
+    // 🔥 NUEVO: Registro de Wither Storms
+    private val activeWitherStorms = ConcurrentHashMap<Int, WitherStorm>()
 
     private var instanceCounter = 0
 
@@ -29,7 +31,7 @@ object MistakenTestCommand {
         return Commands.literal("mistakentest")
             .requires { it.sender.hasPermission("mistaken.admin") }
 
-            // --- 🔥 NUEVO: COMANDO IGNORE ---
+            // --- IGNORAR JUGADORES ---
             .then(Commands.literal("ignore")
                 .then(Commands.argument("player", StringArgumentType.word())
                     .suggests { _, builder ->
@@ -125,12 +127,23 @@ object MistakenTestCommand {
                 })
             )
 
-            // --- 7. 🔥 SPAWN ALL ---
+            // --- 7. 🔥 WITHER STORM ---
+            .then(Commands.literal("witherstorm")
+                .then(Commands.literal("start").executes { ctx ->
+                    val p = ctx.source.sender as? Player ?: return@executes 0
+                    val entity = WitherStorm(plugin).apply { spawn(p.location.add(p.location.direction.multiply(-10))) }
+                    activeWitherStorms[instanceCounter++] = entity
+                    p.sendMessage("§5[!] §d¡ALERTA SÍSMICA! §5§lWITHER STORM §dha llegado.")
+                    1
+                })
+            )
+
+            // --- 8. 🔥 SPAWN ALL (CAOS TOTAL) ---
             .then(Commands.literal("spawnall")
                 .executes { ctx ->
                     val p = ctx.source.sender as? Player ?: return@executes 0
                     val loc = p.location
-                    p.sendMessage("§4§l[!] ADVERTENCIA: §cIniciando colapso de realidad... 6 ANOMALÍAS DETECTADAS.")
+                    p.sendMessage("§4§l[!] ADVERTENCIA: §cIniciando colapso de realidad... 7 ANOMALÍAS DETECTADAS.")
 
                     activeGeoffreys[instanceCounter++] = GeoffreyEXE(plugin).apply { spawn(loc.clone().add(5.0, 0.0, 0.0)) }
                     activeSus[instanceCounter++] = AmongUsEXE(plugin).apply { spawn(loc.clone().add(-5.0, 0.0, 0.0)) }
@@ -138,41 +151,33 @@ object MistakenTestCommand {
                     activeAxos[instanceCounter++] = Axolotl(plugin).apply { spawn(loc.clone().add(0.0, 0.0, -5.0)) }
                     activeObservants[instanceCounter++] = ObservantEXE(plugin).apply { spawn(loc.clone().add(0.0, 10.0, 0.0)) }
                     activeEyedrooms[instanceCounter++] = EyedroomsEXE(plugin).apply { spawn(loc.clone().add(5.0, 5.0, 5.0)) }
+                    activeWitherStorms[instanceCounter++] = WitherStorm(plugin).apply { spawn(loc.clone().add(0.0, 15.0, 0.0)) }
 
                     p.showTitle(net.kyori.adventure.title.Title.title(
                         plugin.mm.deserialize("<dark_red><bold>APOCALIPSIS EXE"),
-                        plugin.mm.deserialize("<red>6 ENTES HAN APARECIDO. No sobreviviras...")
+                        plugin.mm.deserialize("<red>7 ENTES HAN APARECIDO. No sobrevivirás...")
                     ))
                     1
                 }
             )
 
-            // --- 8. STOP ---
-// --- EL MERO MERO COMANDO DE STOP ---
+            // --- 9. STOP ---
             .then(Commands.literal("stop")
                 .executes { ctx ->
                     val sender = ctx.source.sender
 
-                    // Borramos a los vatos uno por uno por su especie
-                    activeGeoffreys.values.forEach { it.remove() }
-                    activeGeoffreys.clear()
+                    activeGeoffreys.values.forEach { it.remove() }; activeGeoffreys.clear()
+                    activeSus.values.forEach { it.remove() }; activeSus.clear()
+                    activePous.values.forEach { it.remove() }; activePous.clear()
+                    activeAxos.values.forEach { it.remove() }; activeAxos.clear()
+                    activeObservants.values.forEach { it.remove() }; activeObservants.clear()
+                    activeEyedrooms.values.forEach { it.remove() }; activeEyedrooms.clear()
 
-                    activeSus.values.forEach { it.remove() }
-                    activeSus.clear()
+                    // Detenemos la Tormenta
+                    activeWitherStorms.values.forEach { it.remove() }
+                    activeWitherStorms.clear()
 
-                    activePous.values.forEach { it.remove() }
-                    activePous.clear()
-
-                    activeAxos.values.forEach { it.remove() }
-                    activeAxos.clear()
-
-                    activeObservants.values.forEach { it.remove() }
-                    activeObservants.clear()
-
-                    activeEyedrooms.values.forEach { it.remove() }
-                    activeEyedrooms.clear()
-
-                    sender.sendMessage("§a§l[✔] §aProtocolo de contención exitoso.")
+                    sender.sendMessage("§a§l[✔] §aProtocolo de contención exitoso. Todas las anomalías eliminadas.")
                     1
                 }
             )

@@ -35,22 +35,6 @@ supervivientes:
       habilidad2: "<gradient:#ffaa00:#ffffff><b>📦 ORDER INCOMING!</b></gradient> <gray>Protecting the rating!"
       habilidad3: "<gradient:#ff5555:#aa0000><b>🥫 OOPS!</b></gradient> <gray>Spilled the sauce! The floor is <yellow>slippery</yellow>."
 
-  jesse:
-    nombre: "<gradient:#ffd700:#ffaa00><b>JESSE</b></gradient>"
-    lore_tienda:
-      - "The legendary leader of the"
-      - "New Order of the Stone."
-      - ""
-      - "<yellow>Specialist in support and rescue!"
-    habilidades_nombres:
-      habilidad1: "<gradient:#ffd700:#ffffff>Sword of the Order</gradient>"
-      habilidad2: "<gradient:#55ffff:#ffffff><b>Gabriel's Amulet</b></gradient>"
-      habilidad3: "<gradient:#ffaa00:#ffff55>Call of the Order</gradient>"
-    habilidades_mensajes:
-      habilidad1: "<gradient:#ffd700:#ffffff><b>⚔ FOR THE ORDER!</b></gradient> <gray>Combat boost activated."
-      habilidad2: "<gradient:#55ffff:#ffffff><b>💠 AMULET PULSE!</b></gradient> <gray>Regeneration wave emitted."
-      habilidad3: "<gradient:#ffaa00:#ffff55><b>🛡 UNITY!</b></gradient> <gray>You feel the protection of your friends."
-
   petra:
     nombre: "<gradient:#ff3333:#aa0000><b>PETRA</b></gradient>"
     lore_tienda:
@@ -187,3 +171,20 @@ supervivientes:
       habilidad1: "<light_purple><b>¡SALTO!</b></light_purple> <gray>Pero te mareaste..."
       habilidad2: "" # Es melee, no mensaje
       habilidad3: "<yellow><b>¡LANZAMIENTO!</b></yellow> <gray>Tu visión se nubla."
+
+  jesse:
+    nombre: "<gradient:#00aaff:#ffffff><b>JESSE</b></gradient>"
+    descripcion:
+      - "<gray>El líder de la Orden de la Piedra."
+      - "<white>Mecánica: <aqua>Protección y Empuje</aqua>"
+    lore_tienda:
+      - "<italic><gray>\"Nada se interpondrá en mi camino.\"</gray></italic>"
+      - "<white>Dificultad: <yellow>Media"
+    habilidades_nombres:
+      habilidad1: "<aqua>Embestida Heroica</aqua>"
+      habilidad2: "<gold>Puño Pesado</gold>"
+      habilidad3: "<dark_aqua>Bloqueo Sónico</dark_aqua>"
+    habilidades_mensajes:
+      habilidad1: "<aqua><b>¡A LA CARGA!</b></aqua>"
+      habilidad2: "" # Melee
+      habilidad3: "<dark_aqua><b>¡FUERA DE AQUÍ!</b></dark_aqua>"

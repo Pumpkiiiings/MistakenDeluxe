@@ -1,6 +1,14 @@
 package liric.mistaken.supervivientes.clases
 
+import com.github.retrooper.packetevents.PacketEvents
+import com.github.retrooper.packetevents.protocol.particle.Particle
+import com.github.retrooper.packetevents.protocol.particle.data.ParticleDustData
+import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
+import com.github.retrooper.packetevents.util.Vector3d
+import com.github.retrooper.packetevents.util.Vector3f
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
+import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.supervivientes.Superviviente
 import liric.mistaken.utils.CraftEngineUtils
@@ -19,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Kasane Teto: La Quimera.
- * FIX: Sistema de Equipamiento igual al del Asesino Slasher (100% CraftEngine).
+ * FIX: Removidos los debuffs de usuario y añadido Dash Sonoro + Partículas Custom.
  */
 class KasaneTeto : Superviviente(
     "teto",
@@ -27,7 +35,9 @@ class KasaneTeto : Superviviente(
 ) {
 
     private val pathBase = "supervivientes.teto"
+    private val itemCache = ConcurrentHashMap<String, ItemStack>()
     private val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     val MELEE_BAGUETTE_KEY = NamespacedKey("mistaken", "teto_melee")
     val THROW_BAGUETTE_KEY = NamespacedKey("mistaken", "teto_throw")
@@ -52,12 +62,8 @@ class KasaneTeto : Superviviente(
     private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
         var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) player.sendMessage(mm.deserialize(msg))
-
-        val soundName = mech.getString("$pathBase.items.${key}_sonido", "ENTITY_PLAYER_ATTACK_SWEEP")
-        runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
     }
 
-    // --- 🛠️ EQUIPAMIENTO (ESTILO SLASHER) ---
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
@@ -66,7 +72,7 @@ class KasaneTeto : Superviviente(
         player.getAttribute(Attribute.SCALE)?.baseValue = 0.8861
 
         val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
-        val configMecanica = plugin.configManager.getSupervivientes() // El global supervivientes.yml
+        val configMecanica = plugin.configManager.getSupervivientes()
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val id = if (isArmor) configMecanica.getString("$pathBase.armadura.$key")
@@ -74,20 +80,16 @@ class KasaneTeto : Superviviente(
 
             if (id == null || id == "none") return
 
-            // Intentamos sacar el ítem de CraftEngine
             val item = CraftEngineUtils.getCustomItem(id) ?: run {
                 val matName = id.replace(".*:".toRegex(), "").uppercase()
                 val mat = Material.matchMaterial(matName)
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            // Si son baguettes, les ponemos marcas PDC
             val meta = item.itemMeta
             if (key == "habilidad2") meta.persistentDataContainer.set(MELEE_BAGUETTE_KEY, PersistentDataType.BYTE, 1.toByte())
 
-            // Le ponemos el nombre
-            val namePath = "$pathBase.habilidades_nombres.$key"
-            langInfo.getString(namePath)?.let {
+            langInfo.getString("$pathBase.habilidades_nombres.$key")?.let {
                 meta.displayName(mm.deserialize(it))
             }
             item.itemMeta = meta
@@ -104,24 +106,38 @@ class KasaneTeto : Superviviente(
             }
         }
 
-        deliver("casco", 0, true)
-        deliver("pechera", 0, true)
-        deliver("pantalones", 0, true)
-        deliver("botas", 0, true)
-
-        deliver("habilidad1", 0)
-        deliver("habilidad2", 1)
-        deliver("habilidad3", 2)
+        deliver("casco", 0, true); deliver("pechera", 0, true)
+        deliver("pantalones", 0, true); deliver("botas", 0, true)
+        deliver("habilidad1", 0); deliver("habilidad2", 1); deliver("habilidad3", 2)
 
         player.updateInventory()
     }
 
-    // --- H1: DASH (Con Debuff) ---
+    // --- H1: DASH TÁCTICO SONORO ---
     private fun usarDash(player: Player) {
         val dir = player.location.direction.normalize().multiply(2.0).setY(0.3)
         player.velocity = dir
+
+        // Partículas iniciales
         player.world.spawnParticle(org.bukkit.Particle.CRIT, player.location, 10, 0.2, 0.2, 0.2, 0.1)
-        aplicarDebuff(player)
+
+        // Tarea asíncrona para sonido repetitivo durante el vuelo
+        val job = scope.launch {
+            var count = 0
+            while (isActive && count < 8 && player.isOnline) { // 8 ticks de vuelo aprox
+                withContext(plugin.bukkitDispatcher) {
+                    player.world.playSound(player.location, Sound.ITEM_TRIDENT_RIPTIDE_2, 0.8f, 1.5f)
+
+                    // Rastro rosa de Teto
+                    val pos = Vector3d(player.location.x, player.location.y + 0.5, player.location.z)
+                    val particle = WrapperPlayServerParticle(Particle(ParticleTypes.DUST, ParticleDustData(1f, 0.4f, 0.8f, 1f)), false, pos, Vector3f(0.2f, 0.2f, 0.2f), 0.01f, 5)
+                    PacketEvents.getAPI().playerManager.sendPacket(player, particle)
+                }
+                delay(50)
+                count++
+            }
+        }
+        trackJob(job)
     }
 
     // --- H2: MELEE BAGUETTE ---
@@ -129,36 +145,31 @@ class KasaneTeto : Superviviente(
         val knockback = victim.location.toVector().subtract(attacker.location.toVector()).normalize().multiply(3.5).setY(0.6)
         victim.velocity = knockback
 
-        victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0)) // 5s
-        victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 0))  // 5s
+        victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
+        victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 0))
         victim.world.playSound(victim.location, Sound.ENTITY_IRON_GOLEM_ATTACK, 1f, 0.5f)
 
-        aplicarDebuff(attacker)
+        // Efecto visual al golpear
+        victim.world.spawnParticle(org.bukkit.Particle.EXPLOSION, victim.eyeLocation, 1)
     }
 
     // --- H3: BAGUETTE LANZABLE ---
     private fun lanzarBaguette(player: Player) {
-        // Al lanzarla, necesitamos crear un pan temporal porque ya no usamos la caché vieja
-        val projItem = CraftEngineUtils.getCustomItem(plugin.configManager.getSupervivientes().getString("$pathBase.items.habilidad3")) ?: ItemStack(Material.BREAD)
+        val projId = plugin.configManager.getSupervivientes().getString("$pathBase.items.habilidad3")
+        val projItem = CraftEngineUtils.getCustomItem(projId) ?: ItemStack(Material.BREAD)
 
         val projectile = player.launchProjectile(Snowball::class.java)
         projectile.item = projItem
         projectile.persistentDataContainer.set(THROW_BAGUETTE_KEY, PersistentDataType.BYTE, 1.toByte())
 
         player.playSound(player.location, Sound.ENTITY_EGG_THROW, 1f, 0.8f)
-        aplicarDebuff(player)
-    }
-
-    private fun aplicarDebuff(player: Player) {
-        player.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
-        player.sendActionBar(mm.deserialize("<red><i>¡Sobrecarga sensorial!</i>"))
     }
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        player?.removePotionEffect(PotionEffectType.BLINDNESS)
         player?.getAttribute(Attribute.SCALE)?.baseValue = 1.0
         activeTasks.forEach { it.cancel() }
         activeTasks.clear()
+        scope.coroutineContext.cancelChildren()
     }
 }

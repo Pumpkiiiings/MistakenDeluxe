@@ -5,10 +5,7 @@ import com.infernalsuite.asp.api.loaders.SlimeLoader
 import com.infernalsuite.asp.api.world.properties.SlimeProperties
 import com.infernalsuite.asp.api.world.properties.SlimePropertyMap
 import com.infernalsuite.asp.loaders.file.FileLoader
-import kotlinx.coroutines.*
-import kotlinx.coroutines.future.asCompletableFuture
 import liric.mistaken.Mistaken
-import liric.mistaken.utils.mainThread
 import org.bukkit.Bukkit
 import org.bukkit.GameRule
 import org.bukkit.World
@@ -16,19 +13,17 @@ import java.io.File
 import java.util.concurrent.CompletableFuture
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * MapManager: Gestión de mundos dinámicos con AdvancedSlimePaper (ASP).
  *
- * Actualización:
- * - Agregado GameRule.FALL_DAMAGE = false para anular daño de caída nativamente.
+ * ACTUALIZACIONES:
+ * - Agregado GameRule.FALL_DAMAGE = false nativo.
+ * - Threading 100% Paper-Safe (Cero crashes al cargar el mundo).
  */
 class MapManager(private val plugin: Mistaken) {
 
     private val asp = AdvancedSlimePaperAPI.instance()
     private val fileLoader: SlimeLoader
-
-    // Scope dedicado para operaciones de mapas (IO)
-    private val mapScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
         val slimeFolder = File(plugin.dataFolder, "slime_worlds")
@@ -40,14 +35,16 @@ class MapManager(private val plugin: Mistaken) {
      * Carga un mundo de arena desde una plantilla .slime.
      */
     fun loadArenaWorld(templateName: String): CompletableFuture<World?> {
-        return mapScope.async {
-            val instanceName = "${templateName}_${System.currentTimeMillis()}"
+        val future = CompletableFuture<World?>()
+        val instanceName = "${templateName}_${System.currentTimeMillis()}"
 
+        // --- FASE 1: DISCO (Hilo Asíncrono de Paper para no laguear el server) ---
+        plugin.server.asyncScheduler.runNow(plugin) { _ ->
             try {
-                // --- FASE 1: DISCO (Hilo IO) ---
                 if (!fileLoader.worldExists(templateName)) {
                     plugin.componentLogger.error(plugin.mm.deserialize("<red>[MapManager] El archivo .slime '$templateName' no existe.</red>"))
-                    return@async null
+                    future.complete(null)
+                    return@runNow
                 }
 
                 val props = SlimePropertyMap().apply {
@@ -59,13 +56,19 @@ class MapManager(private val plugin: Mistaken) {
                 val template = asp.readWorld(fileLoader, templateName, true, props)
                 val worldInstance = template.clone(instanceName)
 
-                // --- FASE 2: REGISTRO (Hilo Principal de Bukkit) ---
-                return@async withContext(plugin.mainThread) {
+                // --- FASE 2: REGISTRO (Hilo Principal Global de Paper) ---
+                plugin.server.globalRegionScheduler.execute(plugin) {
                     try {
                         val instance = asp.loadWorld(worldInstance, false)
-                        val bukkitWorld = instance.bukkitWorld ?: return@withContext null
+                        val bukkitWorld = instance.bukkitWorld
 
-                        // --- CONFIGURACIÓN DE AMBIENTE (1.21.4) ---
+                        if (bukkitWorld == null) {
+                            plugin.componentLogger.error(plugin.mm.deserialize("<red>[MapManager] Bukkit devolvió un mundo nulo.</red>"))
+                            future.complete(null)
+                            return@execute
+                        }
+
+                        // --- CONFIGURACIÓN DE AMBIENTE (Tu lógica intacta) ---
                         bukkitWorld.apply {
                             isAutoSave = false
                             time = 18000L // Noche
@@ -77,7 +80,7 @@ class MapManager(private val plugin: Mistaken) {
                             setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false)
                             setGameRule(GameRule.DO_FIRE_TICK, false)
 
-                            // 🔥 AQUÍ ESTÁ EL CAMBIO: Cancelamos daño de caída globalmente en este mundo
+                            // 🔥 TU CAMBIO: Anulamos el daño de caída globalmente
                             setGameRule(GameRule.FALL_DAMAGE, false)
 
                             setStorm(false)
@@ -85,19 +88,22 @@ class MapManager(private val plugin: Mistaken) {
                         }
 
                         plugin.componentLogger.info(plugin.mm.deserialize("<green>[MapManager] Mundo instanciado: ${bukkitWorld.name}</green>"))
-                        bukkitWorld
+                        future.complete(bukkitWorld)
+
                     } catch (e: Exception) {
                         plugin.componentLogger.error(plugin.mm.deserialize("<red>[MapManager] Error al registrar mundo en Bukkit: ${e.message}</red>"))
-                        null
+                        future.complete(null)
                     }
                 }
 
             } catch (e: Exception) {
                 plugin.componentLogger.error(plugin.mm.deserialize("<red>[MapManager] Fallo crítico cargando $templateName: ${e.message}</red>"))
                 e.printStackTrace()
-                null
+                future.complete(null)
             }
-        }.asCompletableFuture()
+        }
+
+        return future
     }
 
     /**
@@ -106,15 +112,15 @@ class MapManager(private val plugin: Mistaken) {
     fun unloadWorld(world: World?) {
         if (world == null) return
 
-        mapScope.launch {
-            withContext(plugin.mainThread) {
-                Bukkit.unloadWorld(world, false)
-                plugin.componentLogger.info(plugin.mm.deserialize("<gray>Mundo ${world.name} descargado.</gray>"))
-            }
+        // La descarga SIEMPRE debe ocurrir en el hilo principal
+        plugin.server.globalRegionScheduler.execute(plugin) {
+            Bukkit.unloadWorld(world, false)
+            plugin.componentLogger.info(plugin.mm.deserialize("<gray>Mundo ${world.name} descargado.</gray>"))
         }
     }
 
     fun shutdown() {
-        mapScope.cancel()
+        // En Paper 1.21.4 ya no ocupamos cancelar corrutinas porque los schedulers
+        // del servidor se limpian solos al apagar el plugin. ¡Menos RAM gastada!
     }
 }
