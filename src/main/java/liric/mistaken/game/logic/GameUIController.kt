@@ -1,0 +1,120 @@
+package liric.mistaken.game.logic
+
+import liric.mistaken.game.GameManager
+import liric.mistaken.game.enums.GameState
+import net.kyori.adventure.bossbar.BossBar
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import net.kyori.adventure.title.Title
+import net.luckperms.api.LuckPermsProvider
+import net.luckperms.api.node.types.PrefixNode
+import org.bukkit.Sound
+import org.bukkit.entity.Player
+import java.time.Duration
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+
+class GameUIController(private val game: GameManager) {
+
+    private val personalBars = ConcurrentHashMap<UUID, BossBar>()
+    private val lastProcessedText = ConcurrentHashMap<UUID, String>()
+
+    fun updatePersonalBar(p: Player, online: Int) {
+        val uuid = p.uniqueId
+        val stateName = game.currentState.name.lowercase()
+
+        val mins = game.timer / 60
+        val secs = game.timer % 60
+        val timeStr = if (game.currentState == GameState.INGAME || game.currentState == GameState.STARTING) {
+            String.format("%02d:%02d", mins, secs)
+        } else {
+            game.timer.toString()
+        }
+
+        val mapDisplay = if (game.currentState == GameState.LOBBY || game.currentState == GameState.VOTING) "Lobby" else game.currentMapName
+        val signature = "S:$stateName|T:$timeStr|O:$online|M:$mapDisplay|MD:${game.currentMode.name}"
+
+        if (lastProcessedText[uuid] == signature) return
+        lastProcessedText[uuid] = signature
+
+        val barComponent = game.plugin.messageConfig.getMessageFromFile(
+            p, "messages", "bossbar.$stateName",
+            Placeholder.parsed("time", timeStr),
+            Placeholder.parsed("map", mapDisplay),
+            Placeholder.parsed("mode", game.currentMode.name),
+            Placeholder.parsed("online", online.toString())
+        )
+
+        val bar = personalBars.getOrPut(uuid) {
+            val colorStr = game.plugin.messageConfig.getRawString(p, "bossbar.colors.$stateName", "WHITE", "messages")
+            val color = try { BossBar.Color.valueOf(colorStr.uppercase()) } catch (e: Exception) { BossBar.Color.WHITE }
+
+            val newBar = BossBar.bossBar(barComponent, 1.0f, color, BossBar.Overlay.PROGRESS)
+            p.showBossBar(newBar)
+            newBar
+        }
+
+        bar.name(barComponent)
+        // Actualización de color si cambia de estado
+        val colorStr = game.plugin.messageConfig.getRawString(p, "bossbar.colors.$stateName", "WHITE", "messages")
+        try { bar.color(BossBar.Color.valueOf(colorStr.uppercase())) } catch (_: Exception) {}
+    }
+
+    fun playRoleTitle(p: Player, isKiller: Boolean) {
+        val rp = if (isKiller) "killer" else "survivor"
+        p.showTitle(Title.title(
+            game.plugin.messageConfig.getMessage(p, "roles.$rp.title"),
+            game.plugin.messageConfig.getMessage(p, "roles.$rp.subtitle")
+        ))
+    }
+
+    fun playModeTitle(players: Collection<Player>) {
+        players.forEach { p ->
+            p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f)
+            p.showTitle(Title.title(
+                game.plugin.messageConfig.getMessage(p, "modes.${game.currentMode.name.lowercase()}.title"),
+                game.plugin.messageConfig.getMessage(p, "modes.${game.currentMode.name.lowercase()}.subtitle"),
+                Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(3), Duration.ofMillis(500))
+            ))
+        }
+    }
+
+    fun playAmbientForPlayer(p: Player, killersOnline: List<Player>) {
+        var closestKiller: Player? = null
+        var minDist = Double.MAX_VALUE
+        val pLoc = p.location
+
+        for (k in killersOnline) {
+            if (k.world != pLoc.world) continue
+            val dist = pLoc.distanceSquared(k.location)
+            if (dist < minDist) {
+                minDist = dist
+                closestKiller = k
+            }
+        }
+        closestKiller?.let { game.ambientManager.playSurvivorAmbience(p) }
+    }
+
+    fun checkHeartbeat(p: Player, killer: Player) {
+        if (p.world != killer.world) return
+        val d2 = p.location.distanceSquared(killer.location)
+        if (d2 <= 225.0) {
+            val pitch = if (d2 < 36.0) 1.4f else 0.8f
+            p.playSound(p.location, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 0.7f, pitch)
+        }
+    }
+
+    fun setLuckPermsPrefix(player: Player, colorTag: String) {
+        // Ejecución Asíncrona sin corrutinas
+        game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
+            try {
+                val lp = LuckPermsProvider.get()
+                lp.userManager.modifyUser(player.uniqueId) { user ->
+                    user.data().clear { it is PrefixNode }
+                    if (colorTag.isNotEmpty()) {
+                        user.data().add(PrefixNode.builder(colorTag, 100).build())
+                    }
+                }
+            } catch (ignored: Exception) {}
+        }
+    }
+}

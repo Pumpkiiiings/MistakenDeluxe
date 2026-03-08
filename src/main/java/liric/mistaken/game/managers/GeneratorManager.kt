@@ -106,9 +106,9 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
                     // 🔥 FIX: Llave única que incluye el Mundo
                     val coordKey = "${blockLoc.world.name}_${blockLoc.blockX}_${blockLoc.blockY}_${blockLoc.blockZ}"
 
-                    val savedProgress: Int
-                    val isDone: Boolean
-                    val original: Material
+                    var savedProgress = 0
+                    var isDone = false
+                    var original = Material.RAW_IRON_BLOCK
 
                     synchronized(fileLock) {
                         savedProgress = dataConfig.getInt("session.$coordKey.progress", 0)
@@ -160,7 +160,8 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         saveStateToConfigAsync(loc, state)
         updateHologramVisual(state)
 
-        plugin.gameManager.checkWinCondition()
+        // 🔥 CORREGIDO: Ahora usamos el playerController para la condición de victoria
+        plugin.gameManager.playerController.checkWinCondition()
     }
 
     private fun spawnHologram(loc: Location, state: GeneratorState) {
@@ -177,13 +178,14 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
                 display.backgroundColor = Color.fromARGB(0, 0, 0, 0)
                 display.isPersistent = false
                 display.transformation = Transformation(Vector3f(), Quaternionf(), Vector3f(1.1f, 1.1f, 1.1f), Quaternionf())
+                updateHologramVisual(state, display) // Pasamos la entidad directa para evitar nulos
             }
-            updateHologramVisual(state)
         })
     }
 
-    private fun updateHologramVisual(state: GeneratorState) {
-        val entity = state.displayEntity ?: return
+    // Helper para actualizar visualmente usando la referencia directa o la del estado
+    private fun updateHologramVisual(state: GeneratorState, directEntity: TextDisplay? = null) {
+        val entity = directEntity ?: state.displayEntity ?: return
         if (entity.isDead) return
 
         val typeName = getFriendlyName(state.originalMaterial)

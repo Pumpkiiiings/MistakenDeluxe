@@ -1,103 +1,116 @@
 package liric.mistaken.game.managers
 
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
-import net.kyori.adventure.title.Title
-import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Sound
 import org.bukkit.entity.Player
-import java.util.*
+import org.bukkit.Particle
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * CinematicManager: Motor de presentaciones con BossBar dinámica.
+ * FIX: Reemplazo de Corrutinas por GlobalRegionScheduler para animaciones por ticks.
  */
 class CinematicManager(private val plugin: Mistaken) {
-
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     /**
      * Lanza la presentación del asesino.
      */
     fun playKillerIntro(asesino: Asesino, killerPlayer: Player, viewers: Collection<Player>, spawnLoc: Location) {
-        scope.launch {
-            // 1. CREAR LA BOSSBAR (Configurable en el YAML de mensajes)
-            // Ruta: cinematic.intro-bar: "El asesino <assassin> estará en esta ronda. Jugador <player>"
-            val barComponent = plugin.messageConfig.getMessage(
-                null,
-                "cinematic.intro-bar",
-                Placeholder.parsed("assassin", asesino.nombre),
-                Placeholder.parsed("player", killerPlayer.name)
-            )
+        // 1. CREAR LA BOSSBAR
+        val barComponent = plugin.messageConfig.getMessage(
+            null,
+            "cinematic.intro-bar",
+            Placeholder.parsed("assassin", asesino.nombre),
+            Placeholder.parsed("player", killerPlayer.name)
+        )
 
-            val bossBar = BossBar.bossBar(
-                barComponent,
-                1.0f, // Llena al 100%
-                BossBar.Color.RED,
-                BossBar.Overlay.NOTCHED_10
-            )
+        val bossBar = BossBar.bossBar(
+            barComponent,
+            1.0f, // Llena al 100%
+            BossBar.Color.RED,
+            BossBar.Overlay.NOTCHED_10
+        )
 
-            // 2. PREPARACIÓN (Main Thread)
-            withContext(plugin.bukkitDispatcher) {
-                viewers.forEach { p ->
-                    p.showBossBar(bossBar)
-                    p.gameMode = GameMode.SPECTATOR
+        // 2. PREPARACIÓN INICIAL (Síncrona en el hilo global)
+        // Usamos GlobalRegionScheduler porque afecta a múltiples jugadores y coordenadas
+        plugin.server.globalRegionScheduler.run(plugin) { _ ->
+            // Cálculo de cámara: 6 bloques frente al asesino, mirando hacia él
+            val camLoc = spawnLoc.clone().add(spawnLoc.direction.multiply(-6)).add(0.0, 2.5, 0.0)
+            val vectorToKiller = spawnLoc.toVector().subtract(camLoc.toVector())
+            camLoc.direction = vectorToKiller
 
-                    // Cámara: 6 bloques frente al asesino, mirando hacia él
-                    val camLoc = spawnLoc.clone().add(spawnLoc.direction.multiply(-6)).add(0.0, 2.5, 0.0)
-                    camLoc.setDirection(spawnLoc.toVector().subtract(camLoc.toVector()))
-                    p.teleport(camLoc)
-                }
+            viewers.forEach { p ->
+                p.showBossBar(bossBar)
+                p.gameMode = GameMode.SPECTATOR
+                // Teleport asíncrono para suavidad
+                p.teleportAsync(camLoc)
             }
 
-            // 3. EFECTOS SEGÚN ASESINO
-            playSpecificEffects(asesino, spawnLoc, viewers)
+            // 3. EFECTOS
+            playSpecificEffects(asesino, spawnLoc)
 
-            // 4. EL CONTEO DE LA BARRA (Efecto de carga)
-            for (i in 1..100) {
-                delay(50) // 5 segundos en total (100 * 50ms)
-                bossBar.progress(1.0f - (i / 100f)) // La barra se va vaciando
-            }
+            // 4. ANIMACIÓN DE LA BARRA (Scheduler por Ticks)
+            startCinematicLoop(bossBar, viewers, killerPlayer, spawnLoc)
+        }
+    }
 
-            // 5. LIMPIEZA FINAL
-            withContext(plugin.bukkitDispatcher) {
+    private fun startCinematicLoop(bossBar: BossBar, viewers: Collection<Player>, killerPlayer: Player, spawnLoc: Location) {
+        var ticks = 0
+        val totalTicks = 100 // 5 segundos (20 ticks * 5)
+
+        // Ejecutamos cada tick (50ms)
+        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, { task ->
+            ticks++
+
+            // Actualizar progreso
+            val progress = (1.0f - (ticks.toFloat() / totalTicks.toFloat())).coerceIn(0f, 1f)
+            bossBar.progress(progress)
+
+            // Si termina el tiempo
+            if (ticks >= totalTicks) {
+                task.cancel()
+
+                // 5. LIMPIEZA FINAL
                 viewers.forEach { p ->
                     p.hideBossBar(bossBar)
                     p.gameMode = GameMode.SURVIVAL
 
-                    // Teleport a sus posiciones reales de juego
                     if (p.uniqueId == killerPlayer.uniqueId) {
-                        p.teleport(spawnLoc)
+                        p.teleportAsync(spawnLoc)
                     } else {
-                        // El GameManager se encarga de los spawns de supervivientes después de esto
+                        // Aquí podrías disparar el TP de supervivientes si no lo hace el setupPlayers
+                        // O simplemente dejarlos listos para que el GameManager maneje su lógica
                     }
                 }
+
+                // Notificar al GameManager
                 plugin.gameManager.broadcastLocalized("game.hunt-start")
-                // Le avisamos al GameManager que ya puede soltar a los perros
+                // Aquí podrías llamar a un método en GameManager para indicar que la intro terminó
+                // plugin.gameManager.onCinematicFinished()
             }
-        }
+        }, 1L, 1L)
     }
 
-    private suspend fun playSpecificEffects(asesino: Asesino, loc: Location, viewers: Collection<Player>) {
-        withContext(plugin.bukkitDispatcher) {
-            when (asesino.id) {
-                "herobrine" -> {
-                    loc.world.playSound(loc, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f)
-                    loc.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, loc, 1)
-                }
-                "slasher" -> {
-                    loc.world.playSound(loc, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
-                }
-                "null" -> {
-                    loc.world.playSound(loc, Sound.BLOCK_GLASS_BREAK, 1f, 0.1f)
-                    loc.world.spawnParticle(org.bukkit.Particle.FLASH, loc, 5)
-                }
+    private fun playSpecificEffects(asesino: Asesino, loc: Location) {
+        // Al estar dentro del scheduler global, esto es Thread-Safe
+        when (asesino.id.lowercase()) {
+            "herobrine" -> {
+                loc.world.playSound(loc, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f)
+                loc.world.spawnParticle(Particle.EXPLOSION_EMITTER, loc, 1)
             }
+            "slasher" -> {
+                loc.world.playSound(loc, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
+            }
+            "null", "the_null" -> {
+                loc.world.playSound(loc, Sound.BLOCK_GLASS_BREAK, 1f, 0.1f)
+                loc.world.spawnParticle(Particle.FLASH, loc, 5)
+            }
+            // Puedes agregar más casos aquí
         }
     }
 }

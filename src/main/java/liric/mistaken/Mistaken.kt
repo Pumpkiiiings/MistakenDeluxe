@@ -2,7 +2,6 @@ package liric.mistaken
 
 import com.github.retrooper.packetevents.PacketEvents
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
-import kotlinx.coroutines.*
 import fr.skytasul.glowingentities.GlowingEntities
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.database.StatsManager
@@ -18,6 +17,7 @@ import liric.mistaken.database.DatabaseManager
 import liric.mistaken.database.PlayerStatsManager
 import liric.mistaken.discord.DiscordManager
 import liric.mistaken.game.enums.GameState
+import liric.mistaken.game.GameManager // El nuevo GameManager
 import liric.mistaken.game.managers.*
 import liric.mistaken.listeners.*
 import liric.mistaken.listeners.asesinos.AsesinoGeneralListener
@@ -29,7 +29,7 @@ import liric.mistaken.supervivientes.SupervivienteTienda
 import liric.mistaken.utils.MistakenExpansion
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.milkbowl.vault.economy.Economy
-import org.bukkit.Bukkit
+import org.bukkit.GameRule
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
 import org.bukkit.plugin.RegisteredServiceProvider
@@ -38,18 +38,17 @@ import org.bukkit.entity.Player
 import org.bukkit.plugin.ServicePriority
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
-import java.util.*
-import kotlin.coroutines.CoroutineContext // AGREGADO
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 class Mistaken : JavaPlugin() {
 
     companion object {
-
         @JvmStatic
         lateinit var instance: Mistaken
             private set
 
-        @JvmStatic // Visible globalmente
+        @JvmStatic
         var economy: Economy? = null
             internal set
 
@@ -58,18 +57,7 @@ class Mistaken : JavaPlugin() {
     }
 
     // --- Core Variables ---
-    val pluginScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     val mm = MiniMessage.miniMessage()
-
-    // 🔥 AGREGADO: El motor que conecta las Corrutinas con el Hilo Principal de Bukkit
-    val bukkitDispatcher = object : CoroutineDispatcher() {
-        override fun dispatch(context: CoroutineContext, block: java.lang.Runnable) {
-            if (!isEnabled) return
-            if (Bukkit.isPrimaryThread()) block.run()
-            else Bukkit.getScheduler().runTask(this@Mistaken, block)
-        }
-    }
-
     lateinit var assassinKey: NamespacedKey
     var craftEngineEnabled: Boolean = false
         private set
@@ -81,7 +69,7 @@ class Mistaken : JavaPlugin() {
     var isReady = false
     val ignoredTestPlayers = mutableSetOf<UUID>()
 
-    // --- Managers (Lateinit: Se inicializan en onEnable) ---
+    // --- Managers ---
     lateinit var configManager: ConfigManager
     lateinit var messageConfig: MessageConfig
     lateinit var statsManager: StatsManager
@@ -91,6 +79,7 @@ class Mistaken : JavaPlugin() {
 
     // Game Managers
     lateinit var antiBlockListener: AntiBlockListener
+    lateinit var voteManager: VoteManager // Añadido para el nuevo GameManager
     lateinit var gameManager: GameManager
     lateinit var arenaManager: ArenaManager
     lateinit var musicManager: MusicManager
@@ -119,14 +108,7 @@ class Mistaken : JavaPlugin() {
 
     override fun onEnable() {
         val start = System.currentTimeMillis()
-
-        // 0. 🔥 INICIALIZACIÓN CRÍTICA
         instance = this
-
-        // Warm-up de corrutinas para evitar lag spikes iniciales
-        pluginScope.launch(Dispatchers.Default) {
-            delay(1)
-        }
 
         // 1. PacketEvents & Keys
         PacketEvents.getAPI().init()
@@ -155,7 +137,11 @@ class Mistaken : JavaPlugin() {
         glowingAPI = GlowingEntities(this)
         combatManager = CombatManager(this)
         antiBlockListener = AntiBlockListener(this)
+        voteManager = VoteManager() // Inicializado antes del GameManager
+
+        // ¡Aquí entra en acción el nuevo GameManager!
         gameManager = GameManager(this)
+
         mapManager = MapManager(this)
         arenaManager = ArenaManager(this)
         asesinoManager = AsesinoManager(this)
@@ -163,9 +149,9 @@ class Mistaken : JavaPlugin() {
         discordManager = DiscordManager(this)
         generatorManager = GeneratorManager(this)
 
-        // 🔥 INICIALIZACIÓN DEL MOTOR MUSICAL
         musicManager = MusicManager(this)
         liric.mistaken.api.MistakenAPI.init(this)
+
         // UI
         asesinoTienda = AsesinoTienda()
         supervivienteTienda = SupervivienteTienda()
@@ -183,69 +169,53 @@ class Mistaken : JavaPlugin() {
             MistakenExpansion(this).register()
         }
 
-        // 9. Eventos y Comandos Brigadier
+        // 9. Eventos y Comandos
         registerEvents()
         CommandRegistry(this).registerAll()
 
         // 10. 🏁 TAREAS FINALES Y ACTIVACIÓN DEL LOBBY
-
-        // Marcamos el plugin como listo
         isReady = true
 
-        // --- 🏥 SINCRONIZACIÓN DE JUGADORES (Lobby Ready) ---
-        // Aplicamos la salud 20/200 y corazones a todos los que ya estén dentro
-        Bukkit.getOnlinePlayers().forEach { player ->
+        server.onlinePlayers.forEach { player ->
             combatManager.resetHealth(player)
-            musicManager.syncPlayer(player) // Para que escuchen la música del lobby de una
+            musicManager.syncPlayer(player)
         }
 
-        // --- 🌍 REGLAS DEL MUNDO LOBBY ---
-        lobbyLocation?.world?.let { world ->
-            // Activa reaparición instantánea en el lobby
-            world.setGameRule(org.bukkit.GameRule.DO_IMMEDIATE_RESPAWN, true)
-            // Opcional: Activar música en el mundo del lobby si no lo has hecho en el MusicManager
-        }
+        lobbyLocation?.world?.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
 
-        // --- 🚀 MOTORES EN MARCHA ---
         iniciarMotorDeParticulas()
         sendLogo()
 
         val time = System.currentTimeMillis() - start
-        componentLogger.info(mm.deserialize("<gradient:green:aqua>Mistaken v${description.version} habilitado en ${time}ms (Full Lobby Sync)</gradient>"))
+        componentLogger.info(mm.deserialize("<gradient:green:aqua>Mistaken v${pluginMeta.version} habilitado en ${time}ms (Full Lobby Sync)</gradient>"))
     }
 
     override fun onDisable() {
         isReady = false
 
-        pluginScope.cancel("Plugin shutting down")
-
         if (::ambientManager.isInitialized) runCatching { ambientManager.stopAll() }
         if (::musicManager.isInitialized) musicManager.shutdown()
         if (::generatorManager.isInitialized) runCatching { generatorManager.clearGenerators() }
         if (::scoreboardManager.isInitialized) runCatching { scoreboardManager.removeAll() }
-        if (::asesinoManager.isInitialized) runCatching { asesinoManager.shutdown() } // Llama a su propio método de limpieza total
+        if (::asesinoManager.isInitialized) runCatching { asesinoManager.shutdown() }
         if (::supervivienteManager.isInitialized) runCatching { supervivienteManager.shutdown() }
         if (::glowingAPI.isInitialized) runCatching { glowingAPI.disable() }
         if (::databaseManager.isInitialized) runCatching { databaseManager.close() }
 
         PacketEvents.getAPI().terminate()
 
-        componentLogger.info(mm.deserialize(
-            "<newline><red>║ <bold>MISTAKEN</bold> ha sido desactivado con éxito.</red><newline>"
-        ))
+        componentLogger.info(mm.deserialize("<newline><red>║ <bold>MISTAKEN</bold> ha sido desactivado con éxito.</red><newline>"))
     }
 
     // --- SETUP HELPERS ---
 
     private fun setupDatabase(): Boolean {
         return try {
-            // Cargamos la config de DB
             val dbFile = File(dataFolder, "database.yml")
             if (!dbFile.exists()) saveResource("database.yml", false)
             val dbConfig = YamlConfiguration.loadConfiguration(dbFile)
 
-            // Inicializamos managers
-            databaseManager = DatabaseManager(this, dbConfig) // Usamos el constructor que espera FileConfiguration
+            databaseManager = DatabaseManager(this, dbConfig)
             playerStatsManager = PlayerStatsManager(this)
 
             componentLogger.info(mm.deserialize("<green>[DB] Conexión HikariCP establecida.</green>"))
@@ -259,17 +229,14 @@ class Mistaken : JavaPlugin() {
     }
 
     private fun setupIntegrations(): Boolean {
-        // 1. Buscamos el registro de Vault en el sistema de servicios de Bukkit
         val rsp: RegisteredServiceProvider<Economy>? = server.servicesManager.getRegistration(Economy::class.java)
 
         if (rsp == null) {
-            // Si no hay registro, es que no tienes un plugin de economía (como Essentials o iConomy)
             componentLogger.error(mm.deserialize("<red><b>[!]</b> Vault no encontró ningún plugin de economía compatible.</red>"))
             server.pluginManager.disablePlugin(this)
             return false
         }
 
-        // 🔥 LA CLAVE: Llenamos la variable global del companion object
         economy = rsp.provider
 
         if (economy == null) {
@@ -280,7 +247,6 @@ class Mistaken : JavaPlugin() {
 
         componentLogger.info(mm.deserialize("<green>✔ Integración con Vault establecida correctamente.</green>"))
 
-        // 2. CraftEngine (Opcional - Soft Depend)
         craftEngineEnabled = server.pluginManager.isPluginEnabled("CraftEngine")
         if (craftEngineEnabled) {
             componentLogger.info(mm.deserialize("<aqua>✔ CraftEngine detectado y vinculado.</aqua>"))
@@ -301,54 +267,47 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(SupervivienteHabilidadListener(this), this)
     }
 
+    // 🔥 MOTOR DE PARTÍCULAS ACTUALIZADO PARA PAPER SCHEDULER
     private fun iniciarMotorDeParticulas() {
-        // Usamos el scheduler asíncrono de Paper para el filtrado y cálculos matemáticos
-        server.scheduler.runTaskTimerAsynchronously(this, Runnable {
-            if (gameManager.currentState != GameState.INGAME) return@Runnable
+        // Usamos el AsyncScheduler nativo de Paper (Apto para Folia)
+        // 100 milisegundos = 2 Ticks
+        server.asyncScheduler.runAtFixedRate(this, { _ ->
+            if (gameManager.currentState != GameState.INGAME) return@runAtFixedRate
 
-            // Lista para agrupar a quiénes debemos aplicarles efectos físicos en el hilo principal
             val targetsForPhysicalTrail = mutableListOf<Pair<Player, Asesino>>()
 
-            // 1. FILTRADO ASÍNCRONO (Aquí no lagueamos a nadie)
             asesinoManager.asesinosActivos.forEach { (uuid, asesino) ->
-                val p = Bukkit.getPlayer(uuid) ?: return@forEach
+                val p = server.getPlayer(uuid) ?: return@forEach
 
-                // Verificaciones rápidas (Matemática simple)
                 if (p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
-
-                    // A. Mostrar Trail de Paquetes (PacketEvents es ASYNC-SAFE)
-                    // Esto se queda en este hilo asíncrono. ¡Súper rápido!
+                    // El envío de paquetes es seguro desde un hilo asíncrono
                     asesino.mostrarTrail(p)
-
-                    // B. Agregamos a la lista para el proceso síncrono
                     targetsForPhysicalTrail.add(p to asesino)
                 }
             }
 
-            // 2. PROCESO SÍNCRONO AGRUPADO (Batching)
             if (targetsForPhysicalTrail.isNotEmpty()) {
-                // Saltamos al hilo principal una sola vez para todos los asesinos
-                // Usamos el scheduler de Bukkit directo que es más liviano que 'launch' para tareas de alta frecuencia
-                server.scheduler.runTask(this, Runnable {
+                // Volvemos al GlobalRegionScheduler solo si necesitamos aplicar efectos físicos al mundo
+                server.globalRegionScheduler.run(this) { _ ->
                     for (pair in targetsForPhysicalTrail) {
                         val player = pair.first
                         val asesino = pair.second
 
-                        // Doble check de seguridad
                         if (player.isOnline) {
                             asesino.mostrarTrailFisico(player)
                         }
                     }
-                })
+                }
             }
-        }, 0L, 2L)
+        }, 0L, 100L, TimeUnit.MILLISECONDS)
     }
+
     // --- UTILS & LOCATION ---
 
     private fun loadLobbyLocation() {
         val section = config.getConfigurationSection("settings.lobby") ?: return
         val worldName = section.getString("world", "world") ?: "world"
-        val world = Bukkit.getWorld(worldName) ?: return
+        val world = server.getWorld(worldName) ?: return
 
         lobbyLocation = Location(
             world,
@@ -369,41 +328,24 @@ class Mistaken : JavaPlugin() {
         saveConfig()
     }
 
-    /**
-     * Prepara los directorios base y archivos de configuración raíz.
-     * La extracción de idiomas y menús la maneja automáticamente el MessageConfig.
-     */
     private fun createRequiredFolders() {
-        // 1. Asegurar que la carpeta principal del plugin existe
         if (!dataFolder.exists()) dataFolder.mkdirs()
 
-        // 2. Crear la carpeta raíz de idiomas (langs/)
-        // Es vital que exista para que el extractor del MessageConfig pueda escribir en ella
         val langFolder = File(dataFolder, "langs")
-        if (!langFolder.exists()) {
-            langFolder.mkdirs()
-        }
+        if (!langFolder.exists()) langFolder.mkdirs()
 
-        // 3. Archivos base en la raíz del plugin
-        // Estos son archivos técnicos que no dependen de la carpeta de idiomas
         val baseFiles = listOf("database.yml", "music.yml")
-
         baseFiles.forEach { fileName ->
             val file = File(dataFolder, fileName)
             if (!file.exists()) {
                 runCatching {
                     saveResource(fileName, false)
                 }.onFailure {
-                    componentLogger.warn(mm.deserialize("<yellow>⚠️ No se pudo exportar el archivo base: $fileName (¿Está en el JAR?)</yellow>"))
+                    componentLogger.warn(mm.deserialize("<yellow>⚠️ No se pudo exportar el archivo base: $fileName</yellow>"))
                 }
             }
         }
-
-        // 💡 NOTA PARA EL ADMIN:
-        // El motor de MessageConfig detectará automáticamente cualquier carpeta (es, en, jp)
-        // y cualquier subcarpeta (menus, skills, etc.) que pongas dentro de 'langs/'.
-
-        componentLogger.info(mm.deserialize("<gray>[System] Estructura base verificada. Sincronizando con el motor I18n...</gray>"))
+        componentLogger.info(mm.deserialize("<gray>[System] Estructura base verificada.</gray>"))
     }
 
     // --- STATE CHECKS ---
@@ -422,7 +364,6 @@ class Mistaken : JavaPlugin() {
         val b5 = "<#004488>"
         val info = "<#00d4ff>"
 
-        // Paper Logger soporta componentes directos, mucho más limpio
         componentLogger.info(mm.deserialize("""
             <newline>
              $b1<bold> </bold>$b1

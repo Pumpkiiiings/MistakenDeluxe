@@ -10,15 +10,9 @@ import org.bukkit.Bukkit
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * MistakenCommand: Comando maestro optimizado con Brigadier.
- * Implementa lógica de privacidad y ejecución asíncrona para tareas pesadas.
- */
 class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
     private val mm = plugin.mm
-    // Usamos Set para búsqueda O(1) instantánea
     private val publicSubs = setOf("shop", "tienda", "langs", "language", "stats", "estadisticas", "afk")
 
     override fun execute(stack: CommandSourceStack, args: Array<String>) {
@@ -44,7 +38,6 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
         }
 
         // --- [CAPA DE PRIVACIDAD] ---
-        // Si no es público y no es admin, fingimos que no existe
         if (sub !in publicSubs && !sender.hasPermission("mistaken.admin")) {
             sender.sendMessage(mm.deserialize("<red>Unknown command. Type \"/help\" for help."))
             return
@@ -61,7 +54,6 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     return
                 }
                 val targetLang = args[1].lowercase()
-                // Verificamos si el idioma existe en el mapa de configuraciones
                 if (plugin.messageConfig.getLoadedLanguages().contains(targetLang)) {
                     plugin.playerDataManager.setLanguage(player.uniqueId, targetLang)
                     player.sendMessage(plugin.messageConfig.getMessage(player, "admin.lang-set", Placeholder.parsed("langs", targetLang)))
@@ -99,7 +91,8 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     plugin.afkPlayers.add(uuid)
                     player.sendMessage(plugin.messageConfig.getMessage(player, "game.afk-enable"))
                     player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 0.5f)
-                    plugin.gameManager.checkWinCondition()
+                    // 🔥 ARREGLADO: Ahora se llama desde playerController
+                    plugin.gameManager.playerController.checkWinCondition()
                 }
             }
 
@@ -121,29 +114,17 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
             "reload" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
-
-                // Usamos el scheduler asíncrono de Paper para no colgar el servidor mientras lee el disco
                 plugin.server.asyncScheduler.runNow(plugin) { _ ->
+                    plugin.reloadConfig()
+                    plugin.messageConfig.loadAllLanguages()
+                    plugin.configManager.loadAllConfigs()
+                    plugin.configManager.reloadMenus()
 
-                    // 1. Recarga de archivos físicos (En el hilo de fondo IO)
-                    plugin.reloadConfig()                  // Primero la config principal de Bukkit
-                    plugin.messageConfig.loadAllLanguages() // Luego el motor de idiomas
-                    plugin.configManager.loadAllConfigs()   // Luego las mecánicas (Asesinos y Supervivientes)
-                    plugin.configManager.reloadMenus()     // Finalmente limpia la caché de los archivos de menús
-
-                    // 2. Volvemos al hilo principal para actualizar las interfaces y enviar mensajes
                     plugin.server.globalRegionScheduler.execute(plugin) {
-
-                        // Sincronizar las instancias de las tiendas (Triumph-GUI)
-                        // Esto debe ser en el hilo principal porque toca la API de Inventarios
                         plugin.shopSelector.reload()
                         plugin.asesinoTienda.reload()
                         plugin.supervivienteTienda.reload()
-
-                        // Enviar el mensaje de éxito usando el nuevo config cargado
                         sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.reload-success"))
-
-                        // Sonido de feedback (solo si el que ejecutó el comando es un jugador)
                         player?.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f)
                     }
                 }
@@ -157,24 +138,13 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 }
                 try {
                     val mode = MistakenMode.valueOf(args[1].uppercase())
-                    plugin.gameManager.setCurrentMode(mode)
+                    // 🔥 ARREGLADO: Acceso directo a propiedades en lugar de setCurrentMode()
+                    plugin.gameManager.currentMode = mode
+                    plugin.gameManager.modeForced = true
                     sender.sendMessage(mm.deserialize("<green>Modo forzado a: <aqua>${mode.name}"))
                     player?.playSound(player.location, Sound.BLOCK_ANVIL_USE, 1f, 1f)
                 } catch (e: Exception) {
                     sender.sendMessage(mm.deserialize("<red>Modo inválido. Usa: CLASSIC, DOUBLE_KILLER, ONE_BOUNCE o FREEZE_TAG."))
-                }
-            }
-
-            "removekiller" -> {
-                if (!sender.hasPermission("mistaken.admin")) return
-                if (args.size == 1) {
-                    player?.let { plugin.asesinoManager.removerAsesino(it) }
-                } else {
-                    val target = Bukkit.getPlayer(args[1])
-                    if (target != null) {
-                        plugin.asesinoManager.removerAsesino(target)
-                        sender.sendMessage(mm.deserialize("<green>Asesino removido: ${target.name}"))
-                    }
                 }
             }
 
@@ -184,7 +154,11 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.start-already-ingame"))
                 } else {
                     sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.start-forcing"))
-                    plugin.gameManager.forceStart()
+                    // 🔥 ARREGLADO: Lógica manual de inicio en lugar de forceStart()
+                    if (plugin.gameManager.currentState == GameState.LOBBY || plugin.gameManager.currentState == GameState.VOTING) {
+                        plugin.gameManager.stateController.startVotingProcess()
+                        plugin.gameManager.timer = 5
+                    }
                 }
             }
 
@@ -193,7 +167,8 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 if (plugin.gameManager.currentState == GameState.LOBBY) {
                     sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.stop-no-active"))
                 } else {
-                    plugin.gameManager.endGame("admin.stop-broadcast", false)
+                    // 🔥 ARREGLADO: Ahora se llama desde stateController
+                    plugin.gameManager.stateController.endGame("admin.stop-broadcast", false)
                     sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.stop-success"))
                 }
             }
@@ -242,6 +217,19 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 }
             }
 
+            "removekiller" -> {
+                if (!sender.hasPermission("mistaken.admin")) return
+                if (args.size == 1) {
+                    player?.let { plugin.asesinoManager.removerAsesino(it) }
+                } else {
+                    val target = Bukkit.getPlayer(args[1])
+                    if (target != null) {
+                        plugin.asesinoManager.removerAsesino(target)
+                        sender.sendMessage(mm.deserialize("<green>Asesino removido: ${target.name}"))
+                    }
+                }
+            }
+
             else -> sender.sendMessage(plugin.messageConfig.getMessage(player, "errors.unknown-command"))
         }
     }
@@ -270,10 +258,6 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
         stack.sender.sendMessage(plugin.messageConfig.getMessage(player, "help.footer"))
     }
 
-    /**
-     * Autocompletado optimizado.
-     * Solo muestra sugerencias de admin si el usuario tiene permiso.
-     */
     override fun suggest(stack: CommandSourceStack, args: Array<String>): List<String> {
         val isAdmin = stack.sender.hasPermission("mistaken.admin")
 
