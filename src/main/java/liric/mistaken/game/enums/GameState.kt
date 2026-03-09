@@ -5,9 +5,10 @@ package liric.mistaken.game.enums
  * GameState: Define el estado actual del servidor.
  */
 enum class GameState(val isJoinable: Boolean) {
-    LOBBY(true),      // Jugadores pueden entrar y esperar
-    VOTING(true),     // Jugadores pueden entrar y votar mapa
-    STARTING(false),   // El juego está cargando (teleports, etc)
-    INGAME(false),     // Partida en curso
-    ENDING(false);    // Limpiando mapa y enviando al lobby
+    LOBBY(true),      // Esperando jugadores mínimos
+    BREAK(true),      // 🔥 Descanso post-partida (espera antes de votar)
+    VOTING(true),     // Elección de mapa por los jugadores
+    STARTING(false),  // Secuencia de inicio (revelación de roles/modo)
+    INGAME(false),    // Partida en curso
+    ENDING(false);    // Celebración de victoria y limpieza
 }
