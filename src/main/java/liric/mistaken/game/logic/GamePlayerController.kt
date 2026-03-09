@@ -4,7 +4,6 @@ import liric.mistaken.game.GameManager
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
-import net.kyori.adventure.title.Title
 import org.bukkit.GameMode
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
@@ -173,27 +172,19 @@ class GamePlayerController(private val game: GameManager) {
         }
     }
 
-    // 🔥 NUEVA FUNCIÓN: Ejecución de LMS (Música, Efectos y Mensajes)
+    // 🔥 NUEVA FUNCIÓN: Ejecución de LMS
     private fun triggerLMS(player: Player) {
-        val titleText = game.plugin.mm.deserialize("<red><bold>ÚLTIMO EN PIE</bold></red>")
-        val subtitleText = game.plugin.mm.deserialize("<gray>${player.name} está solo contra el asesino</gray>")
-        val broadcastMsg = game.plugin.mm.deserialize("\n<red><b>[!]</b></red> <white>${player.name} es el <b>Último Superviviente</b>.\n")
-
-        game.plugin.server.onlinePlayers.forEach { p ->
-            p.sendMessage(broadcastMsg)
-
-            // Reproducimos tu música personalizada
-            // Usamos SoundCategory.RECORDS/MUSIC para que el jugador pueda bajarle el volumen si quiere
-            p.playSound(p.location, "mistaken:lms", SoundCategory.RECORDS, 1f, 1f)
-
-            p.showTitle(Title.title(titleText, subtitleText))
-        }
+        // Llamamos al GameUIController que ya tiene los mensajes dinámicos
+        game.uiController.broadcastLMS(player)
 
         // Le damos un pequeño buff al último jugador para darle esperanza
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 20 * 60, 0)) // Velocidad I por 60 seg
     }
 
     fun handlePlayerDeath(player: Player) {
+        // 🔥 EL ESCUDO: Si ya está en espectador, ignoramos el código (Evita muerte triple)
+        if (player.gameMode == GameMode.SPECTATOR) return
+
         if (game.esAsesino(player.uniqueId)) {
             game.asesinosUUIDs.remove(player.uniqueId)
             player.gameMode = GameMode.SPECTATOR
@@ -203,6 +194,7 @@ class GamePlayerController(private val game: GameManager) {
             return
         }
 
+        // Pasamos al jugador a espectador INMEDIATAMENTE
         player.gameMode = GameMode.SPECTATOR
         player.isSwimming = false
         game.ambientManager.stopAmbience(player)
@@ -261,7 +253,7 @@ class GamePlayerController(private val game: GameManager) {
 
             liric.mistaken.utils.SpectatorUtils.setSafeSpectator(p)
 
-            p.showTitle(Title.title(
+            p.showTitle(net.kyori.adventure.title.Title.title(
                 game.plugin.messageConfig.getMessage(p, "game.$type-title"),
                 game.plugin.messageConfig.getMessage(p, "game.$type-subtitle")
             ))

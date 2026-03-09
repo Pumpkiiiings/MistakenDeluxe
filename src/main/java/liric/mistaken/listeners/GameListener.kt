@@ -109,7 +109,10 @@ class GameListener(private val plugin: Mistaken) : Listener {
         event.droppedExp = 0
         event.deathMessage(null)
 
-        plugin.gameManager.playerController.handlePlayerDeath(victim)
+        // Solo procesamos la muerte si el jugador no ha sido marcado como espectador
+        if (victim.gameMode != org.bukkit.GameMode.SPECTATOR) {
+            plugin.gameManager.playerController.handlePlayerDeath(victim)
+        }
 
         victim.scheduler.runDelayed(plugin, Consumer { _ ->
             if (victim.isOnline && victim.isDead) {
