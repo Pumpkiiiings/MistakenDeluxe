@@ -6,7 +6,6 @@ import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
@@ -16,20 +15,20 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.util.Transformation
 import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
+import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * Mariachi Muerte: El Charro del Inframundo.
- * ACTUALIZACIÓN: Órbita de calaveras místicas y optimización de hilos.
+ * ACTUALIZACIÓN: Sin corrutinas, Scheduler nativo.
  */
 class Mariachi : Asesino(
     "mariachi",
@@ -40,10 +39,8 @@ class Mariachi : Asesino(
     private val sonidoMúsicaId = "mistaken:jarabetapatio"
 
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
-    private val musicTasks = ConcurrentHashMap<UUID, BukkitRunnable>()
     private val skullsOrbit = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     init {
         preLoadKit()
@@ -146,14 +143,13 @@ class Mariachi : Asesino(
         player.sendMessage(mm.deserialize("<green>¡Salud! Eres inmune al dolor por 6 segundos.</green>"))
     }
 
-    // --- 🚀 VISUALES (ÓRBITA DE CALAVERAS) ---
+    // --- 🚀 VISUALES ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { limpiarVisuales(uuid); return }
         if (skullsOrbit[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
 
-        // Spawneamos 3 calaveras si no existen
         val skulls = skullsOrbit.getOrPut(uuid) {
             mutableListOf<ItemDisplay>().apply {
                 repeat(3) {
@@ -173,14 +169,10 @@ class Mariachi : Asesino(
             val offset = (2 * Math.PI / skulls.size) * i
             val x = radio * cos(anguloActual + offset)
             val z = radio * sin(anguloActual + offset)
-
-            // Efecto de levitación (Y dinámica)
             val y = 1.2 + (0.15 * sin((anguloActual + offset) * 2))
 
             val loc = player.location.clone().add(x, y, z)
-            // Hacemos que las calaveras miren siempre hacia afuera o roten sobre sí mismas
             loc.yaw = ((anguloActual + offset) * 180 / Math.PI).toFloat()
-
             skulls[i].teleport(loc)
         }
         angulos[uuid] = anguloActual
@@ -192,13 +184,11 @@ class Mariachi : Asesino(
         val pos = Vector3d(loc.x, loc.y, loc.z)
         val mgr = PacketEvents.getAPI().playerManager
 
-        // Partícula de fuego azul (fantasmal)
         val flame = WrapperPlayServerParticle(Particle(ParticleTypes.SOUL_FIRE_FLAME), false, pos, Vector3f(0.15f, 0.1f, 0.15f), 0.02f, 1)
 
         player.world.players.forEach { p ->
             if (p != player && p.location.distanceSquared(loc) < 625.0) {
                 mgr.sendPacket(p, flame)
-                // Notas musicales ocasionales
                 if (ThreadLocalRandom.current().nextFloat() < 0.15f) {
                     mgr.sendPacket(p, WrapperPlayServerParticle(Particle(ParticleTypes.NOTE), false, pos.add(0.0, 1.8, 0.0), Vector3f(0.1f, 0.1f, 0.1f), 0.5f, 1))
                 }
@@ -209,20 +199,21 @@ class Mariachi : Asesino(
     private fun iniciarMusica(player: Player) {
         val uuid = player.uniqueId
         detenerMusica(uuid)
-        val job = scope.launch {
-            while (isActive && player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
-                withContext(plugin.bukkitDispatcher) {
-                    player.world.players.forEach { p ->
-                        if (p.location.distanceSquared(player.location) < 1600) {
-                            p.stopSound(sonidoMúsicaId, SoundCategory.RECORDS)
-                            p.playSound(player.location, sonidoMúsicaId, SoundCategory.RECORDS, 1.5f, 1.0f)
-                        }
-                    }
-                }
-                delay(74000) // Duración del Jarabe Tapatío aprox
+
+        // 74000ms = 1480 ticks
+        player.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (!player.isOnline || !plugin.asesinoManager.esElAsesino(player)) {
+                detenerMusica(uuid)
+                task.cancel()
+                return@Consumer
             }
-        }
-        trackJob(job)
+            player.world.players.forEach { p ->
+                if (p.location.distanceSquared(player.location) < 1600) {
+                    p.stopSound(sonidoMúsicaId, SoundCategory.RECORDS)
+                    p.playSound(player.location, sonidoMúsicaId, SoundCategory.RECORDS, 1.5f, 1.0f)
+                }
+            }
+        }, null, 1L, 1480L)
     }
 
     private fun limpiarVisuales(uuid: UUID) {
@@ -240,6 +231,5 @@ class Mariachi : Asesino(
             limpiarVisuales(it.uniqueId)
             detenerMusica(it.uniqueId)
         }
-        scope.coroutineContext.cancelChildren()
     }
 }

@@ -6,7 +6,6 @@ import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
@@ -22,13 +21,14 @@ import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * KasaneTeto: La Quimera de las Baguettes.
- * FIX: Escala precisa (0.8861), Animación Fluida y Taladros Giratorios.
+ * FIX: Escala precisa (0.8861), Schedulers Nativos y Taladros Giratorios.
  */
 class KasaneTeto : Asesino(
     "teto",
@@ -39,7 +39,6 @@ class KasaneTeto : Asesino(
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     init {
         preLoadKit()
@@ -113,16 +112,13 @@ class KasaneTeto : Asesino(
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 240, 1))
         player.isGlowing = true
 
-        val job = scope.launch {
-            delay(12000)
-            withContext(plugin.bukkitDispatcher) {
-                if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
-                    player.isGlowing = false
-                    player.playSound(player.location, Sound.BLOCK_BEACON_DEACTIVATE, 1f, 0.5f)
-                }
+        // 12000ms = 240 ticks
+        player.scheduler.runDelayed(plugin, Consumer { _ ->
+            if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
+                player.isGlowing = false
+                player.playSound(player.location, Sound.BLOCK_BEACON_DEACTIVATE, 1f, 0.5f)
             }
-        }
-        trackJob(job)
+        }, null, 240L)
     }
 
     // --- 🛠️ EQUIPAMIENTO ---
@@ -181,14 +177,12 @@ class KasaneTeto : Asesino(
                 repeat(4) {
                     add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
                         id.setItemStack(ItemStack(Material.BREAD))
-                        // Centrado y tamaño ajustado
                         id.transformation = Transformation(
                             JomlVector3f(0f, 0f, 0f),
                             Quaternionf(),
                             JomlVector3f(0.8f, 0.8f, 0.8f),
                             Quaternionf()
                         )
-                        // 🔥 TRUCO DE FLUIDEZ
                         id.teleportDuration = 3
                         id.interpolationDuration = 3
                     })
@@ -197,24 +191,19 @@ class KasaneTeto : Asesino(
         }
 
         val anguloActual = (angulos.getOrDefault(uuid, 0.0) + 0.12) % (Math.PI * 2)
-        val radio = 1.3 // Radio ajustado para la escala 0.88
+        val radio = 1.3
         val playerLoc = player.location
 
         for (i in entidades.indices) {
             val display = entidades[i]
             if (display.isValid) {
                 val offset = (2 * Math.PI / entidades.size) * i
-
                 val x = radio * cos(anguloActual + offset)
                 val z = radio * sin(anguloActual + offset)
-                // Altura ajustada a la cabeza de Teto
                 val y = 1.0 + (0.15 * sin((anguloActual + offset) * 2))
 
                 val targetLoc = playerLoc.clone().add(x, y, z)
-
-                // 🔥 Rotación de Taladro: Giran sobre su eje Y
                 targetLoc.yaw = ((anguloActual + offset) * 180 / Math.PI).toFloat() + 90f
-                // Pitch oscilante para que parezcan flotar
                 targetLoc.pitch = (sin(anguloActual * 5) * 20).toFloat()
 
                 display.teleport(targetLoc)
@@ -225,7 +214,6 @@ class KasaneTeto : Asesino(
 
     override fun mostrarTrail(player: Player) {
         if (player.velocity.lengthSquared() < 0.001) return
-        // Altura ajustada a la escala 0.8861
         val pos = Vector3d(player.location.x, player.location.y + 0.2, player.location.z)
         val packet = WrapperPlayServerParticle(Particle(ParticleTypes.SPORE_BLOSSOM_AIR), false, pos, Vector3f(0.3f, 0.1f, 0.3f), 0.01f, 1)
 
@@ -249,9 +237,7 @@ class KasaneTeto : Asesino(
         super.cleanup(player)
         player?.let {
             limpiarBaguettes(it.uniqueId)
-            // 🔥 RESTAURAR ESCALA ORIGINAL
             it.getAttribute(Attribute.SCALE)?.baseValue = 1.0
         }
-        scope.coroutineContext.cancelChildren()
     }
 }

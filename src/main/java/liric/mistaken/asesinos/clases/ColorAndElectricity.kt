@@ -7,11 +7,9 @@ import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
-import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -26,9 +24,15 @@ import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
+/**
+ * [LIRIC-MISTAKEN 2.0]
+ * ColorAndElectricity
+ * FIX: Coroutines eliminadas. Fluididad mantenida con EntitySchedulers.
+ */
 class ColorAndElectricity : Asesino(
     "colorandelectricity",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.colorandelectricity.nombre", "<gradient:#ff0080:#00ffff:#ffff00><b>色彩電気</b></gradient>", "asesinos_info")
@@ -38,9 +42,7 @@ class ColorAndElectricity : Asesino(
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    // 🔥 FIX: Cambio de SMOOTH_STONE por YELLOW_WOOL para mantener la paleta eléctrica
     private val orbitMaterials = listOf(
         Material.PURPLE_WOOL, Material.BLUE_WOOL, Material.LIGHT_BLUE_WOOL,
         Material.LIME_WOOL, Material.YELLOW_WOOL, Material.ORANGE_WOOL, Material.RED_WOOL
@@ -122,14 +124,10 @@ class ColorAndElectricity : Asesino(
             }
         }
 
-        deliver("casco", 0, true)
-        deliver("pechera", 0, true)
-        deliver("pantalones", 0, true)
-        deliver("botas", 0, true)
-        deliver("habilidad1", 1)
-        deliver("habilidad2", 2)
-        deliver("habilidad3", 3)
-        deliver("habilidad4", 4)
+        deliver("casco", 0, true); deliver("pechera", 0, true)
+        deliver("pantalones", 0, true); deliver("botas", 0, true)
+        deliver("habilidad1", 1); deliver("habilidad2", 2)
+        deliver("habilidad3", 3); deliver("habilidad4", 4)
         deliver("arma", 8)
 
         player.inventory.heldItemSlot = 8
@@ -141,25 +139,23 @@ class ColorAndElectricity : Asesino(
         player.velocity = dir
         player.playSound(player.location, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1f, 2f)
 
-        val job = scope.launch {
-            var count = 0
-            val hitted = mutableSetOf<UUID>()
-            while (isActive && count < 10 && player.isOnline) {
-                withContext(plugin.bukkitDispatcher) {
-                    player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
-                        if (!plugin.asesinoManager.esElAsesino(victim) && !hitted.contains(victim.uniqueId)) {
-                            hitted.add(victim.uniqueId)
-                            plugin.gameManager.combatManager.takeDamage(victim)
-                            victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
-                            victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 1.5f)
-                        }
-                    }
-                }
-                delay(50)
-                count++
+        var count = 0
+        val hitted = mutableSetOf<UUID>()
+
+        player.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (count >= 10 || !player.isOnline) {
+                task.cancel()
+                return@Consumer
             }
-        }
-        trackJob(job)
+            player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
+                if (!plugin.asesinoManager.esElAsesino(victim) && hitted.add(victim.uniqueId)) {
+                    plugin.gameManager.combatManager.takeDamage(victim)
+                    victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
+                    victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 1.5f)
+                }
+            }
+            count++
+        }, null, 1L, 1L) // 50ms = 1 tick
     }
 
     private fun habilidadColorDrain(player: Player) {
@@ -174,34 +170,32 @@ class ColorAndElectricity : Asesino(
     }
 
     private fun habilidadPulseStatic(player: Player) {
-        val job = scope.launch {
-            var ticks = 0
-            while (isActive && ticks <= 3 && player.isOnline) {
-                withContext(plugin.bukkitDispatcher) {
-                    player.world.spawnParticle(org.bukkit.Particle.ELECTRIC_SPARK, player.location, 20, 2.0, 2.0, 2.0, 0.05)
-                    player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { victim ->
-                        if (!plugin.asesinoManager.esElAsesino(victim)) {
-                            plugin.gameManager.combatManager.takeDamage(victim)
-                            victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(0.8).setY(0.3)
-                        }
-                    }
-                }
-                delay(250)
-                ticks++
+        var ticks = 0
+        player.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (ticks > 3 || !player.isOnline) {
+                task.cancel()
+                return@Consumer
             }
-        }
-        trackJob(job)
+            player.world.spawnParticle(org.bukkit.Particle.ELECTRIC_SPARK, player.location, 20, 2.0, 2.0, 2.0, 0.05)
+            player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { victim ->
+                if (!plugin.asesinoManager.esElAsesino(victim)) {
+                    plugin.gameManager.combatManager.takeDamage(victim)
+                    victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(0.8).setY(0.3)
+                }
+            }
+            ticks++
+        }, null, 1L, 5L) // 250ms = 5 ticks
     }
 
     private fun habilidadShikisaiEnd(player: Player) {
         val target = player.getNearbyEntities(15.0, 15.0, 15.0).filterIsInstance<Player>().find { !plugin.asesinoManager.esElAsesino(it) }
         target?.let { t ->
             player.teleportAsync(t.location).thenAccept {
-                Bukkit.getScheduler().runTask(plugin, Runnable {
+                player.scheduler.run(plugin, Consumer { _ ->
                     player.world.spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, player.location, 30, 0.5, 1.0, 0.5, 0.5)
                     t.sendMessage(mm.deserialize("<red><b>[!] SOBRECARGA CROMÁTICA</b></red>"))
                     t.velocity = Vector(0.0, 1.2, 0.0)
-                })
+                }, null)
             }
         }
     }
@@ -220,7 +214,6 @@ class ColorAndElectricity : Asesino(
 
         val anguloBase = angulos.getOrDefault(uuid, 0.0)
 
-        // Variables cacheadas fuera del bucle para ahorrar CPU
         val radio = 1.4
         val step = (2 * Math.PI) / entidades.size
         val playerLoc = player.location
@@ -232,37 +225,28 @@ class ColorAndElectricity : Asesino(
 
                 val x = radio * cos(currentAngle)
                 val z = radio * sin(currentAngle)
-                // Oscilación de altura suave (arriba y abajo tipo ola)
                 val y = 1.0 + (0.3 * sin(currentAngle * 2))
 
                 val targetLoc = playerLoc.clone().add(x, y, z)
 
-                // Rotación dinámica: Hacemos que los bloques giren sobre su propio eje
                 targetLoc.yaw = (currentAngle * 100).toFloat() % 360
                 targetLoc.pitch = (currentAngle * 50).toFloat() % 360
 
                 display.teleport(targetLoc)
             }
         }
-        // Incremento ajustado: 0.15 da una buena velocidad de giro constante
         angulos[uuid] = anguloBase + 0.15
     }
 
     private fun crearBloqueOrbitante(loc: Location, mat: Material): BlockDisplay {
         return loc.world.spawn(loc, BlockDisplay::class.java) { bd ->
             bd.block = mat.createBlockData()
-
-            // Centrado matemático perfecto (-0.125 para una escala de 0.25)
             bd.transformation = Transformation(
                 JomlVector3f(-0.125f, -0.125f, -0.125f),
                 Quaternionf(),
                 JomlVector3f(0.25f, 0.25f, 0.25f),
                 Quaternionf()
             )
-
-            // 🔥 TRUCO MÁGICO DE FLUIDEZ (Solapamiento)
-            // Si la tarea corre cada 2 ticks, le decimos que la animación dure 3 ticks.
-            // Así el cliente nunca frena, creando un movimiento 100% fluido (butter smooth).
             bd.teleportDuration = 3
             bd.interpolationDuration = 3
         }
@@ -284,6 +268,5 @@ class ColorAndElectricity : Asesino(
     override fun cleanup(player: Player?) {
         super.cleanup(player)
         player?.let { limpiarEntidades(it.uniqueId) }
-        scope.coroutineContext.cancelChildren()
     }
 }

@@ -7,7 +7,6 @@ import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
@@ -21,37 +20,31 @@ import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Transformation
 import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * Slasher (Pumpkin White): El carnicero implacable.
- * FIX: Slots 0-3, ItemDisplay para Machete, Multi-Lang y True Damage.
+ * FIX: Slots 0-3, ItemDisplay para Machete, Multi-Lang y sin corrutinas.
  */
 class Slasher : Asesino(
     "slasher",
-    // Nombre dinámico según el idioma por defecto del server
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.slasher.nombre", "<white><b>PUMPKIN WHITE</b>", "asesinos_info")
 ) {
 
     private val pathBase = "asesinos.slasher"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val temporaryEntities = ConcurrentHashMap.newKeySet<Entity>()
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     init {
         preLoadKit()
     }
 
-    /**
-     * 🔥 PRE-LOAD LÓGICO:
-     * Carga los materiales y IDs del archivo asesinos.yml central (Raíz).
-     */
     private fun preLoadKit() {
-        val config = plugin.configManager.getAsesinos() // Archivo global de mecánicas
+        val config = plugin.configManager.getAsesinos()
         val armor = listOf("casco", "pechera", "pantalones", "botas")
         val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
 
@@ -73,7 +66,6 @@ class Slasher : Asesino(
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
-        // 🔥 FIX SLOTS: 1, 2, 3, 4 corresponden a las teclas 2, 3, 4, 5
         when (slot) {
             1 -> if (!checkCooldown(player, 1)) { habilidadSedDeSangre(player); reproducirEfectosHabilidad(player, 1) }
             2 -> if (!checkCooldown(player, 2)) { habilidadMacheteLanzable(player); reproducirEfectosHabilidad(player, 2) }
@@ -89,27 +81,20 @@ class Slasher : Asesino(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        // 🔥 FIX: Si el caché está vacío o quieres asegurar que lea el YAML de nuevo:
-        // preLoadKit() // Descomenta esta línea si cambias mucho el YAML y quieres que se note sin reiniciar
-
         val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
-        val configMecanica = plugin.configManager.getAsesinos() // El global asesinos.yml
+        val configMecanica = plugin.configManager.getAsesinos()
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            // Buscamos el ID en el YAML de la raíz
             val id = configMecanica.getString("$pathBase.armadura.$key") ?:
             configMecanica.getString("$pathBase.items.$key")
 
             if (id == null || id == "none") return
 
-            // Intentamos sacar el ítem real
             val item = CraftEngineUtils.getCustomItem(id) ?: run {
-                // Si no es de CraftEngine, buscamos material vanilla
                 val mat = Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase())
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            // Le ponemos el nombre del idioma del jugador
             val namePath = if (key == "arma") "asesinos.${this.id}.habilidades_nombres.arma"
             else "asesinos.${this.id}.habilidades_nombres.$key"
 
@@ -117,7 +102,6 @@ class Slasher : Asesino(
                 item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
-            // Lo ponemos donde va
             if (isArmor) {
                 when(key) {
                     "casco" -> inv.helmet = item
@@ -130,7 +114,6 @@ class Slasher : Asesino(
             }
         }
 
-        // Entregamos todo el mugrero
         deliver("casco", 0, true)
         deliver("pechera", 0, true)
         deliver("pantalones", 0, true)
@@ -149,18 +132,15 @@ class Slasher : Asesino(
         player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 160, 1))
         dibujarEstrella(player, Color.RED, 1.5, 5)
 
-        val job = scope.launch {
-            delay(8000) // 8 segundos
-            withContext(plugin.bukkitDispatcher) {
-                if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
-                    player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 1))
-                }
+        // 8000ms = 160 ticks
+        player.scheduler.runDelayed(plugin, Consumer { _ ->
+            if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
+                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 1))
             }
-        }
-        trackJob(job)
+        }, null, 160L)
     }
 
-    // --- 🗡️ H2: MACHETE LANZABLE (ItemDisplay 1.21.4) ---
+    // --- 🗡️ H2: MACHETE LANZABLE ---
     private fun habilidadMacheteLanzable(player: Player) {
         val macheteItem = itemKitCache["arma"]?.clone() ?: ItemStack(Material.IRON_SWORD)
         val spawnLoc = player.eyeLocation.clone()
@@ -174,33 +154,30 @@ class Slasher : Asesino(
         temporaryEntities.add(machete)
         val direction = player.location.direction.multiply(1.4)
 
-        val job = scope.launch {
-            var ticks = 0
-            while (isActive && ticks < 30 && machete.isValid) {
-                withContext(plugin.bukkitDispatcher) {
-                    machete.teleport(machete.location.add(direction))
-
-                    // Rotación visual glitchy
-                    val t = machete.transformation
-                    t.leftRotation.rotateZ(0.6f)
-                    machete.transformation = t
-
-                    val hit = machete.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
-                    if (hit != null || machete.location.block.type.isSolid) {
-                        hit?.let {
-                            plugin.gameManager.combatManager.takeDamage(it)
-                            it.playSound(it.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.8f)
-                        }
-                        machete.remove()
-                        cancel()
-                    }
-                }
-                delay(50)
-                ticks++
+        var ticks = 0
+        machete.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (ticks >= 30 || !machete.isValid) {
+                if (machete.isValid) machete.remove()
+                task.cancel()
+                return@Consumer
             }
-            withContext(plugin.bukkitDispatcher) { if (machete.isValid) machete.remove() }
-        }
-        trackJob(job)
+
+            machete.teleport(machete.location.add(direction))
+            val t = machete.transformation
+            t.leftRotation.rotateZ(0.6f)
+            machete.transformation = t
+
+            val hit = machete.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
+            if (hit != null || machete.location.block.type.isSolid) {
+                hit?.let {
+                    plugin.gameManager.combatManager.takeDamage(it)
+                    it.playSound(it.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.8f)
+                }
+                machete.remove()
+                task.cancel()
+            }
+            ticks++
+        }, null, 1L, 1L)
     }
 
     // --- 🔊 H3: PRESENCIA ---
@@ -220,15 +197,12 @@ class Slasher : Asesino(
         player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 300, 2))
         dibujarEstrella(player, Color.MAROON, 2.5, 5)
 
-        val job = scope.launch {
-            delay(15000)
-            withContext(plugin.bukkitDispatcher) {
-                if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
-                    player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
-                }
+        // 15000ms = 300 ticks
+        player.scheduler.runDelayed(plugin, Consumer { _ ->
+            if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
+                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
             }
-        }
-        trackJob(job)
+        }, null, 300L)
     }
 
     // --- 🚀 TRAIL ASÍNCRONO ---
@@ -252,10 +226,14 @@ class Slasher : Asesino(
             val dir = p2.toVector().subtract(p1.toVector())
             val len = dir.length(); dir.normalize()
             var d = 0.0
-            while (d < len) {
-                player.world.spawnParticle(org.bukkit.Particle.DUST, p1.clone().add(dir.clone().multiply(d)), 1, dust)
-                d += 0.3
-            }
+
+            // Spawnear partículas es seguro en el hilo regional
+            plugin.server.regionScheduler.run(plugin, loc, Consumer { _ ->
+                while (d < len) {
+                    player.world.spawnParticle(org.bukkit.Particle.DUST, p1.clone().add(dir.clone().multiply(d)), 1, dust)
+                    d += 0.3
+                }
+            })
         }
     }
 
@@ -263,6 +241,5 @@ class Slasher : Asesino(
         super.cleanup(player)
         temporaryEntities.forEach { it.remove() }
         temporaryEntities.clear()
-        scope.coroutineContext.cancelChildren()
     }
 }

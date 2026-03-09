@@ -6,12 +6,11 @@ import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
-import kotlinx.coroutines.*
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
 import org.bukkit.Bukkit
-import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
@@ -27,13 +26,14 @@ import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
  *[LIRIC-MISTAKEN 2.0]
  * Charlie Inferno: El Heraldo de los Elementos.
- * FIX: Sistema de música 3D con atenuación natural y Coroutines.
+ * FIX: Sistema de música 3D con atenuación natural nativo y Region Schedulers seguros.
  */
 class CharlieInferno : Asesino(
     "charlie",
@@ -41,17 +41,13 @@ class CharlieInferno : Asesino(
 ) {
 
     private val pathBase = "asesinos.charlie"
-    // 🔥 EL ID DE TU MÚSICA (Debe durar unos 2-3 segundos por loop, o ser un sonido constante)
     private val sonidoId = "mistaken:charlieinferno"
 
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
 
-    // Rastreador del loop de música
-    private val musicJobs = ConcurrentHashMap<UUID, Job>()
-
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val musicTasks = ConcurrentHashMap<UUID, ScheduledTask>()
     private val orbitMaterials = listOf(Material.MAGMA_BLOCK, Material.PACKED_ICE)
 
     init {
@@ -135,50 +131,33 @@ class CharlieInferno : Asesino(
         player.inventory.heldItemSlot = 8
         player.updateInventory()
 
-        // 🔥 ¡Que suene la rola del Diablo! 🔥
         iniciarMusicaCharlie(player)
     }
 
-    // --- 🎵 MOTOR DE MÚSICA 3D ---
-
-    /**
-     * Inicia un bucle asíncrono que emite el sonido de Charlie constantemente.
-     * La intensidad depende de la distancia gracias al motor nativo de Minecraft.
-     */
-    /**
-     * Inicia un bucle asíncrono que emite el sonido de Charlie constantemente.
-     * FIX: Evita que el sonido se empalme usando stopSound antes del playSound.
-     */
     private fun iniciarMusicaCharlie(player: Player) {
         val uuid = player.uniqueId
-        musicJobs.remove(uuid)?.cancel()
+        detenerMusica(uuid)
 
-        val job = scope.launch {
-            while (isActive && player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
-                withContext(plugin.bukkitDispatcher) {
-
-                    // Detenemos el sonido anterior en todos lados para que no se empalme
-                    Bukkit.getOnlinePlayers().forEach { p ->
-                        p.stopSound(sonidoId, SoundCategory.RECORDS)
-                    }
-
-                    // 🔥 LA MAGIA: Le decimos al mundo que el sonido "sale" del Asesino.
-                    // Al usar el 'player' como fuente en lugar de su location estática,
-                    // Minecraft hace que la música lo siga a él y baje el volumen si los demás se alejan.
-                    player.world.playSound(player, sonidoId, SoundCategory.RECORDS, 2.0f, 1.0f)
-                }
-
-                // Espera de la canción (Asegúrate de que este número sea la duración de tu OGG)
-                delay(74000L)
+        // 74000ms = 1480 ticks
+        val task = player.scheduler.runAtFixedRate(plugin, Consumer { t ->
+            if (!player.isOnline || !plugin.asesinoManager.esElAsesino(player)) {
+                detenerMusica(uuid)
+                return@Consumer
             }
-            withContext(plugin.bukkitDispatcher) { detenerMusica(uuid) }
+            Bukkit.getOnlinePlayers().forEach { p ->
+                p.stopSound(sonidoId, SoundCategory.RECORDS)
+            }
+            player.world.playSound(player, sonidoId, SoundCategory.RECORDS, 2.0f, 1.0f)
+        }, null, 1L, 1480L)
+
+        // 🔥 FIX DEL ERROR: Verificamos que task no sea nulo antes de agregarlo al mapa.
+        if (task != null) {
+            musicTasks[uuid] = task
         }
-        musicJobs[uuid] = job
-        trackJob(job)
     }
 
     private fun detenerMusica(uuid: UUID) {
-        musicJobs.remove(uuid)?.cancel()
+        musicTasks.remove(uuid)?.cancel()
         Bukkit.getOnlinePlayers().forEach { it.stopSound(sonidoId, SoundCategory.RECORDS) }
     }
 
@@ -201,17 +180,15 @@ class CharlieInferno : Asesino(
         val targets = player.world.getNearbyPlayers(player.location, 10.0).toMutableList()
         targets.forEach { it.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 60, 0)) }
 
-        scope.launch {
-            delay(3000)
-            withContext(plugin.bukkitDispatcher) {
-                targets.forEach {
-                    if (it.isOnline) {
-                        it.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0))
-                        it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
-                        it.playSound(it.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1f, 0.8f)
-                    }
+        // 3000ms = 60 ticks
+        targets.forEach { target ->
+            target.scheduler.runDelayed(plugin, Consumer { _ ->
+                if (target.isOnline) {
+                    target.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0))
+                    target.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
+                    target.playSound(target.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1f, 0.8f)
                 }
-            }
+            }, null, 60L)
         }
     }
 
@@ -222,56 +199,55 @@ class CharlieInferno : Asesino(
         }
         val dir = player.location.direction.multiply(1.2)
 
-        val job = scope.launch {
-            var ticks = 0
-            while (isActive && ticks < 40 && ice.isValid) {
-                withContext(plugin.bukkitDispatcher) {
-                    ice.teleport(ice.location.add(dir))
-                    val hit = player.world.getNearbyPlayers(ice.location, 1.0).firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
-
-                    if (hit != null || ice.location.block.type.isSolid) {
-                        ice.world.spawnParticle(org.bukkit.Particle.SNOWFLAKE, ice.location, 30, 0.5, 0.5, 0.5, 0.1)
-                        ice.world.playSound(ice.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
-                        hit?.let {
-                            it.freezeTicks = 140
-                            it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
-                        }
-                        ice.remove()
-                        cancel()
-                    }
-                }
-                delay(50)
-                ticks++
-            }
-            withContext(plugin.bukkitDispatcher) {
+        var ticks = 0
+        ice.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (ticks >= 40 || !ice.isValid) {
                 if (ice.isValid) ice.remove()
-                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
+                player.scheduler.run(plugin, Consumer { _ ->
+                    if (player.isOnline) player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
+                }, null)
+                task.cancel()
+                return@Consumer
             }
-        }
-        trackJob(job)
+
+            ice.teleport(ice.location.add(dir))
+            val hit = player.world.getNearbyPlayers(ice.location, 1.0).firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
+
+            if (hit != null || ice.location.block.type.isSolid) {
+                ice.world.spawnParticle(org.bukkit.Particle.SNOWFLAKE, ice.location, 30, 0.5, 0.5, 0.5, 0.1)
+                ice.world.playSound(ice.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
+                hit?.let {
+                    it.freezeTicks = 140
+                    it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
+                }
+                ice.remove()
+                task.cancel()
+            }
+            ticks++
+        }, null, 1L, 1L) // 50ms = 1 tick
     }
 
     private fun habilidadColmillosInfierno(player: Player) {
         val direction = player.location.direction.setY(0.0).normalize()
         val startLoc = player.location.clone()
-        val job = scope.launch {
-            val current = startLoc.clone()
-            repeat(12) {
-                if (!isActive) return@launch
-                withContext(plugin.bukkitDispatcher) {
-                    current.add(direction)
-                    current.world.spawn(current, EvokerFangs::class.java)
-                    current.world.getNearbyPlayers(current, 1.5).forEach { victim ->
-                        if (!plugin.asesinoManager.esElAsesino(victim)) {
-                            victim.fireTicks = 100
-                            plugin.gameManager.combatManager.takeDamage(victim)
-                        }
+
+        // 🔥 Para evitar problemas de regiones al mover la location 12 bloques,
+        // programamos 12 tareas en las locaciones futuras exactamente calculadas.
+        val current = startLoc.clone()
+        for (i in 0 until 12) {
+            current.add(direction)
+            val locToSpawn = current.clone()
+
+            plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
+                locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
+                locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
+                    if (!plugin.asesinoManager.esElAsesino(victim)) {
+                        victim.fireTicks = 100
+                        plugin.gameManager.combatManager.takeDamage(victim)
                     }
                 }
-                delay(100)
-            }
+            }, (i * 2 + 1).toLong()) // 2 ticks de diferencia entre cada uno (100ms)
         }
-        trackJob(job)
     }
 
     // --- 🚀 VISUALES ---
@@ -323,6 +299,5 @@ class CharlieInferno : Asesino(
             limpiarEntidades(it.uniqueId)
             detenerMusica(it.uniqueId)
         }
-        scope.coroutineContext.cancelChildren()
     }
 }

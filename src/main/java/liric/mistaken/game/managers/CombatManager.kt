@@ -18,11 +18,11 @@ import org.bukkit.potion.PotionEffectType
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
-import kotlin.math.min
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * CombatManager: Adaptación fiel a la lógica Java (KB Nativo).
+ * FIX: Cooldown de 3 segundos por golpe con indicador visual nativo (Attack Speed).
  */
 class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
@@ -30,9 +30,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     private val killerCooldowns = ConcurrentHashMap<UUID, Long>()
     private val survivorCooldowns = ConcurrentHashMap<UUID, Long>()
 
-    // Tiempos de Cooldown
-    private val KILLER_COOLDOWN = 2000L
-    private val SURVIVOR_COOLDOWN = 3000L // 3 Segundos exactos
+    // 🔥 TIEMPOS DE COOLDOWN (Ambos en 3 segundos exactos)
+    private val KILLER_COOLDOWN = 3000L
+    private val SURVIVOR_COOLDOWN = 3000L
 
     private val mm = plugin.mm
 
@@ -41,7 +41,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     }
 
     private fun startRadarTask() {
-        // Radar asíncrono (No afecta TPS)
         plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return@runAtFixedRate
             val killer = plugin.gameManager.getCurrentAsesino() ?: return@runAtFixedRate
@@ -57,8 +56,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
                 val distSq = killerLoc.distanceSquared(target.location)
 
-                if (distSq <= 100.0) { // 10 bloques
-                    // Efecto Glowing Síncrono (Entity Scheduler)
+                if (distSq <= 100.0) {
                     target.scheduler.run(plugin, { _ ->
                         if (target.isOnline) target.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, 30, 0, false, false, false))
                     }, null)
@@ -108,10 +106,18 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     fun resetHealth(player: Player) = runOnMain {
         val isKiller = plugin.gameManager.esAsesino(player.uniqueId)
         val maxHP = if (isKiller) 160.0 else 20.0
+
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
         player.health = maxHP
         player.removePotionEffect(PotionEffectType.DARKNESS)
         player.isSwimming = false
+
+        // 🔥 FIX MAGICO VISUAL: Modificamos el Attack Speed nativo de Minecraft.
+        // Fórmula: Tiempo en segundos = 1.0 / Attack Speed
+        // Para 3 segundos de cooldown -> 1.0 / 3.0 = 0.333333
+        // Esto hace que la espadita debajo de la mira tarde 3s en llenarse visualmente.
+        player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 0.333333
+
         if (plugin.isReady) plugin.scoreboardManager.updatePlayer(player)
     }
 
@@ -194,14 +200,11 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             if (plugin.isReady) plugin.scoreboardManager.updatePlayer(victim)
 
-            // Si la vida llega a 0, delegamos la muerte al PlayerController
             if (nextHP <= 0.0) {
-                // Reiniciamos stats visuales antes de notificar muerte
                 victim.removePotionEffect(PotionEffectType.DARKNESS)
                 victim.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
                 frozenPlayers.remove(victim.uniqueId)
 
-                // Notificar al Logic Controller
                 plugin.gameManager.playerController.handlePlayerDeath(victim)
             }
         }
@@ -214,12 +217,16 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         p?.let {
             it.removePotionEffect(PotionEffectType.DARKNESS)
             it.isSwimming = false
-            // Reset attributes si estaba congelado
+
+            // Reset atributos de Freeze
             if (frozenPlayers.contains(uuid)) {
                 it.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
                 it.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
                 it.clearTitle()
             }
+
+            // 🔥 Restaurar Attack Speed a Default (4.0 es la velocidad normal de puños en Minecraft)
+            it.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
         }
         killerCooldowns.remove(uuid)
         survivorCooldowns.remove(uuid)
@@ -238,11 +245,10 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             victim.removePotionEffect(PotionEffectType.DARKNESS)
             victim.isSwimming = false
 
-            // Reset físico
             victim.clearTitle()
             victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
             victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
-            victim.inventory.helmet = null // Quitamos hielo
+            victim.inventory.helmet = null
 
             victim.health = 10.0
             victim.world.playSound(victim.location, Sound.BLOCK_FIRE_EXTINGUISH, 1f, 1.5f)
@@ -266,7 +272,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         }
     }
 
-    // Método para congelar (llamado desde habilidades o lógica externa)
     fun freezePlayer(victim: Player) {
         if (!frozenPlayers.add(victim.uniqueId)) return
         runOnMain {
@@ -285,7 +290,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
     private fun startFreezeTimer(victim: Player) {
         var timeLeft = 120
-        // Usamos EntityScheduler para el timer del jugador
         victim.scheduler.runAtFixedRate(plugin, { task ->
             if (!isFrozen(victim) || !victim.isOnline) {
                 task.cancel()
@@ -300,7 +304,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             if (timeLeft <= 0) {
                 task.cancel()
                 runOnMain {
-                    // Muerte por congelamiento
                     plugin.gameManager.playerController.handlePlayerDeath(victim)
                 }
             }

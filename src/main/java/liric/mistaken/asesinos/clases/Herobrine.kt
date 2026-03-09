@@ -11,7 +11,6 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEn
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams.ScoreBoardTeamInfo
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
@@ -27,13 +26,14 @@ import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Herobrine: El Rey del Vacío.
- * MEJORA: Animación Ultra-Fluida y Efectos Pulidos.
+ * MEJORA: Animación Ultra-Fluida, EntitySchedulers y PacketEvents asíncrono.
  */
 class Herobrine : Asesino(
     "herobrine",
@@ -44,7 +44,6 @@ class Herobrine : Asesino(
     private val blockOrbiters = ConcurrentHashMap<UUID, BlockDisplay>()
     private val itemOrbiters = ConcurrentHashMap<UUID, MutableList<Entity>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     override fun usarHabilidad(player: Player, slot: Int) {
         if (checkCooldown(player, slot)) return
@@ -57,44 +56,43 @@ class Herobrine : Asesino(
         reproducirEfectosHabilidad(player, slot)
     }
 
-    // --- HABILIDADES (Mismo código optimizado) ---
+    // --- HABILIDADES ---
 
     private fun habilidadDashVacio(player: Player) {
         val dir = player.location.direction.normalize()
         player.velocity = dir.clone().multiply(2.5).setY(0.2)
         player.world.spawnParticle(org.bukkit.Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 5, 0.2, 0.2, 0.2, 0.0)
 
-        val job = scope.launch {
-            var ticks = 0
-            val hitted = mutableSetOf<UUID>()
-            while (isActive && ticks < 12 && player.isOnline) {
-                withContext(plugin.bukkitDispatcher) {
-                    player.world.spawnParticle(org.bukkit.Particle.SOUL_FIRE_FLAME, player.location, 3, 0.1, 0.1, 0.1, 0.02)
-                    player.world.spawnParticle(org.bukkit.Particle.WHITE_SMOKE, player.location, 2, 0.05, 0.05, 0.05, 0.01)
+        var ticks = 0
+        val hitted = mutableSetOf<UUID>()
 
-                    val eyeLoc = player.eyeLocation.add(dir.clone().multiply(0.8))
-                    if (eyeLoc.block.type.isSolid) {
-                        player.sendMessage(mm.deserialize("<red><b>[!]</b> ¡Te estampaste contra el muro!"))
-                        repeat(3) { plugin.gameManager.combatManager.takeDamage(player) }
-                        player.playSound(player.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
-                        cancel()
-                        return@withContext
-                    }
-
-                    player.getNearbyEntities(1.5, 1.5, 1.5).filterIsInstance<Player>().forEach { victim ->
-                        if (!plugin.asesinoManager.esElAsesino(victim) && victim.uniqueId !in hitted) {
-                            hitted.add(victim.uniqueId)
-                            repeat(3) { plugin.gameManager.combatManager.takeDamage(victim) }
-                            victim.playSound(victim.location, Sound.ENTITY_WITHER_BREAK_BLOCK, 1f, 0.8f)
-                            victim.sendMessage(mm.deserialize("<red><b>[!]</b> Herobrine te ha embestido con el poder del Vacío."))
-                        }
-                    }
-                }
-                delay(50)
-                ticks++
+        player.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (ticks >= 12 || !player.isOnline) {
+                task.cancel()
+                return@Consumer
             }
-        }
-        trackJob(job)
+            player.world.spawnParticle(org.bukkit.Particle.SOUL_FIRE_FLAME, player.location, 3, 0.1, 0.1, 0.1, 0.02)
+            player.world.spawnParticle(org.bukkit.Particle.WHITE_SMOKE, player.location, 2, 0.05, 0.05, 0.05, 0.01)
+
+            val eyeLoc = player.eyeLocation.add(dir.clone().multiply(0.8))
+            if (eyeLoc.block.type.isSolid) {
+                player.sendMessage(mm.deserialize("<red><b>[!]</b> ¡Te estampaste contra el muro!"))
+                repeat(3) { plugin.gameManager.combatManager.takeDamage(player) }
+                player.playSound(player.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
+                task.cancel()
+                return@Consumer
+            }
+
+            player.getNearbyEntities(1.5, 1.5, 1.5).filterIsInstance<Player>().forEach { victim ->
+                if (!plugin.asesinoManager.esElAsesino(victim) && victim.uniqueId !in hitted) {
+                    hitted.add(victim.uniqueId)
+                    repeat(3) { plugin.gameManager.combatManager.takeDamage(victim) }
+                    victim.playSound(victim.location, Sound.ENTITY_WITHER_BREAK_BLOCK, 1f, 0.8f)
+                    victim.sendMessage(mm.deserialize("<red><b>[!]</b> Herobrine te ha embestido con el poder del Vacío."))
+                }
+            }
+            ticks++
+        }, null, 1L, 1L)
     }
 
     private fun habilidadSaltoDimensional(player: Player) {
@@ -103,32 +101,33 @@ class Herobrine : Asesino(
         player.world.spawnParticle(org.bukkit.Particle.REVERSE_PORTAL, player.location.add(0.0, 1.0, 0.0), 30, 0.5, 1.0, 0.5, 0.1)
         player.playSound(player.location, Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1f, 0.5f)
         val target = gens.random().clone().add(0.5, 1.1, 0.5)
-        player.teleport(target)
-        player.world.spawnParticle(org.bukkit.Particle.DRAGON_BREATH, player.location.add(0.0, 1.0, 0.0), 25, 0.4, 0.8, 0.4, 0.05)
-        player.playSound(player.location, Sound.BLOCK_PORTAL_TRAVEL, 0.6f, 1.8f)
+
+        player.teleportAsync(target).thenAccept {
+            player.world.spawnParticle(org.bukkit.Particle.DRAGON_BREATH, player.location.add(0.0, 1.0, 0.0), 25, 0.4, 0.8, 0.4, 0.05)
+            player.playSound(player.location, Sound.BLOCK_PORTAL_TRAVEL, 0.6f, 1.8f)
+        }
     }
 
     private fun habilidadEstrellaWither(player: Player) {
         val skull = player.launchProjectile(WitherSkull::class.java)
         skull.yield = 0f
-        val job = scope.launch {
-            var life = 0
-            while (isActive && life < 60 && !skull.isDead) {
-                withContext(plugin.bukkitDispatcher) {
-                    skull.world.spawnParticle(org.bukkit.Particle.WITCH, skull.location, 3, 0.05, 0.05, 0.05, 0.01)
-                    val hit = player.world.getNearbyPlayers(skull.location, 1.2).firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
-                    hit?.let {
-                        plugin.gameManager.combatManager.takeDamage(it)
-                        it.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
-                        skull.remove()
-                        cancel()
-                    }
-                }
-                delay(50)
-                life++
+
+        var life = 0
+        skull.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (life >= 60 || !skull.isValid) {
+                task.cancel()
+                return@Consumer
             }
-        }
-        trackJob(job)
+            skull.world.spawnParticle(org.bukkit.Particle.WITCH, skull.location, 3, 0.05, 0.05, 0.05, 0.01)
+            val hit = player.world.getNearbyPlayers(skull.location, 1.2).firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
+            hit?.let {
+                plugin.gameManager.combatManager.takeDamage(it)
+                it.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
+                skull.remove()
+                task.cancel()
+            }
+            life++
+        }, null, 1L, 1L)
     }
 
     private fun habilidadErrorMundo(player: Player) {
@@ -139,7 +138,7 @@ class Herobrine : Asesino(
             NamedTextColor.DARK_PURPLE, WrapperPlayServerTeams.OptionData.NONE
         )
 
-        Bukkit.getOnlinePlayers().forEach { online ->
+        plugin.server.onlinePlayers.forEach { online ->
             if (plugin.asesinoManager.esElAsesino(online)) return@forEach
             val createTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, listOf(online.name))
             PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
@@ -149,15 +148,13 @@ class Herobrine : Asesino(
             online.world.spawnParticle(org.bukkit.Particle.ENCHANTED_HIT, online.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
         }
 
-        scope.launch {
-            delay(10000)
-            withContext(plugin.bukkitDispatcher) {
-                if (player.isOnline) {
-                    val removeTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.REMOVE, Optional.empty())
-                    PacketEvents.getAPI().playerManager.sendPacket(player, removeTeam)
-                }
+        // 10000ms = 200 ticks
+        player.scheduler.runDelayed(plugin, Consumer { _ ->
+            if (player.isOnline) {
+                val removeTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.REMOVE, Optional.empty())
+                PacketEvents.getAPI().playerManager.sendPacket(player, removeTeam)
             }
-        }
+        }, null, 200L)
     }
 
     // --- EQUIPAMIENTO ---
@@ -215,15 +212,13 @@ class Herobrine : Asesino(
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { limpiarVisuales(uuid); return }
 
-        // Reiniciar si cambia de mundo
         if (blockOrbiters[uuid]?.world != player.world) limpiarVisuales(uuid)
 
-        // 1. Inicialización de entidades
         if (!blockOrbiters.containsKey(uuid)) {
             val bMain = player.world.spawn(player.location, BlockDisplay::class.java) { bd ->
                 bd.block = Material.NETHERRACK.createBlockData()
                 bd.transformation = Transformation(JomlVector3f(-0.15f, -0.15f, -0.15f), Quaternionf(), JomlVector3f(0.3f, 0.3f, 0.3f), Quaternionf())
-                bd.teleportDuration = 3 // 🔥 TRUCO DE FLUIDEZ
+                bd.teleportDuration = 3
                 bd.interpolationDuration = 3
             }
             blockOrbiters[uuid] = bMain
@@ -245,27 +240,22 @@ class Herobrine : Asesino(
             itemOrbiters[uuid] = extras
         }
 
-        // 2. Cálculos en memoria
         val anguloBase = (angulos.getOrDefault(uuid, 0.0) + 0.12) % (Math.PI * 2)
         val radio = 1.4
         val pLoc = player.location
 
-        // 3. Movimiento Sincronizado
         val bMain = blockOrbiters[uuid]!!
         val extras = itemOrbiters[uuid]!!
 
-        // Bloque Principal (Netherrack)
         val loc1 = pLoc.clone().add(radio * cos(anguloBase), 1.2 + (0.2 * sin(anguloBase * 2)), radio * sin(anguloBase))
-        loc1.yaw = (anguloBase * 100).toFloat() % 360 // Rotación propia
+        loc1.yaw = (anguloBase * 100).toFloat() % 360
         bMain.teleport(loc1)
 
-        // Item Estrella
         val angle2 = anguloBase + 2.09
         val loc2 = pLoc.clone().add(radio * cos(angle2), 1.0 + (0.2 * cos(anguloBase * 2)), radio * sin(angle2))
         loc2.yaw = (angle2 * 80).toFloat() % 360
         extras[0].teleport(loc2)
 
-        // Bloque Oro
         val angle3 = anguloBase + 4.18
         val loc3 = pLoc.clone().add(radio * cos(angle3), 0.8 + (0.2 * sin(anguloBase)), radio * sin(angle3))
         loc3.yaw = (angle3 * 100).toFloat() % 360
@@ -283,7 +273,6 @@ class Herobrine : Asesino(
             0.01f,
             1
         )
-        // Enviar solo a los que están cerca (ahorro de red)
         player.world.players.forEach {
             if (it.location.distanceSquared(l) < 400.0) PacketEvents.getAPI().playerManager.sendPacket(it, packet)
         }
@@ -298,6 +287,5 @@ class Herobrine : Asesino(
     override fun cleanup(player: Player?) {
         super.cleanup(player)
         player?.let { limpiarVisuales(it.uniqueId) }
-        scope.coroutineContext.cancelChildren()
     }
 }

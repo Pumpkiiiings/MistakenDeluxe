@@ -25,11 +25,12 @@ import org.bukkit.event.player.PlayerToggleSneakEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ThreadLocalRandom
+import java.util.function.Consumer
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * GameListener: El árbitro supremo.
- * FIX: Knockback nativo activado usando el truco del daño 0.01.
+ * FIX: Lógica de daño delegada al CombatManager para respetar el Cooldown de 3s.
  */
 class GameListener(private val plugin: Mistaken) : Listener {
 
@@ -63,10 +64,11 @@ class GameListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * 🔥 MOTOR DE COMBATE: KB Nativo + Visuales Originales.
+     * 🔥 EFECTOS VISUALES DEL COMBATE
+     * Usamos MONITOR para asegurarnos de que el CombatManager ya procesó el daño y validó el cooldown.
      */
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun onDamageByEntity(event: EntityDamageByEntityEvent) {
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onDamageEffects(event: EntityDamageByEntityEvent) {
         if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
 
         val victim = event.entity as? Player ?: return
@@ -76,54 +78,15 @@ class GameListener(private val plugin: Mistaken) : Listener {
             else -> null
         } ?: return
 
-        // 🧊 REGLA FREEZE
-        if (plugin.combatManager.isFrozen(victim)) {
-            event.isCancelled = true
-            return
-        }
-
         val isDamagerKiller = plugin.gameManager.esAsesino(damager.uniqueId)
         val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
 
-        // --- CASO A: EL ASESINO REPARTE LEÑA ---
-        if (isDamagerKiller && !isVictimKiller) {
-            // 🔥 FIX KB: Ponemos daño mínimo para que Minecraft lo empuje
-            event.damage = 0.01
-            plugin.combatManager.takeDamage(victim)
-
-            victim.world.spawnParticle(
-                Particle.BLOCK, victim.location.add(0.0, 1.0, 0.0), 10,
-                0.1, 0.1, 0.1, Material.REDSTONE_BLOCK.createBlockData()
-            )
-            victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 0.8f, 0.5f)
-            return
-        }
-
-        // --- CASO B: EL SOBREVIVIENTE SE DEFIENDE (Ataca al Boss) ---
+        // --- CASO B: EL SOBREVIVIENTE SE DEFIENDE ---
+        // Si llegamos a esta línea, significa que el CombatManager permitió el golpe (no había cooldown).
         if (!isDamagerKiller && isVictimKiller) {
 
-            // 🛡️ COOLDOWN CHECK (Evita que lo maten en 1 segundo)
-            // Esto es necesario ahora que el evento NO se cancela del todo
-            val now = System.currentTimeMillis()
-            // (Esta parte asume que el CombatManager maneja los survivorCooldowns)
-
-            // 1. 🔥 FIX KB: Seteamos daño 0.01. NO cancelamos el evento.
-            // Esto hace que el Asesino reciba el empuje nativo de Minecraft.
-            event.damage = 0.01
-
-            // 2. Calculamos el daño real (4.0 = 2 corazones)
-            val damageToBoss = plugin.config.getDouble("gameplay.killer.damage", 4.0)
-
-            // 3. Modificamos la salud directo (El boss usa vida de Minecraft, no corazones custom)
-            val nuevaSalud = (victim.health - damageToBoss).coerceAtLeast(0.0)
-            victim.health = nuevaSalud
-
-            // 4. Visuales (Mantenemos todo lo que pediste)
-            victim.playHurtAnimation(damager.location.yaw)
-            victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1.0f, 1.0f)
-
-            // 5. Feedback visual de la vida restante del Boss
-            val killerHealth = nuevaSalud.toInt()
+            // Feedback visual de la vida restante del Boss
+            val killerHealth = plugin.combatManager.getHealth(victim)
             damager.sendActionBar(plugin.messageConfig.getMessage(damager, "game.killer-hit-actionbar",
                 Placeholder.parsed("health", killerHealth.toString())))
 
@@ -131,17 +94,6 @@ class GameListener(private val plugin: Mistaken) : Listener {
             if (ThreadLocalRandom.current().nextInt(100) < 15) {
                 aplicarStunAlAsesino(victim, damager)
             }
-
-            // Si el Boss muere
-            if (nuevaSalud <= 0.0) {
-                plugin.gameManager.handlePlayerDeath(victim)
-            }
-            return
-        }
-
-        // --- CASO C: FUEGO AMIGO ---
-        if (isDamagerKiller == isVictimKiller) {
-            event.isCancelled = true
         }
     }
 
@@ -157,13 +109,13 @@ class GameListener(private val plugin: Mistaken) : Listener {
         event.droppedExp = 0
         event.deathMessage(null)
 
-        plugin.gameManager.handlePlayerDeath(victim)
+        plugin.gameManager.playerController.handlePlayerDeath(victim)
 
-        plugin.server.scheduler.runTask(plugin, Runnable {
+        victim.scheduler.runDelayed(plugin, Consumer { _ ->
             if (victim.isOnline && victim.isDead) {
                 victim.spigot().respawn()
             }
-        })
+        }, null, 1L)
     }
 
     private fun aplicarStunAlAsesino(killer: Player, damager: Player) {
@@ -177,8 +129,6 @@ class GameListener(private val plugin: Mistaken) : Listener {
         killer.sendMessage(plugin.messageConfig.getMessage(killer, "game.killer-stunned-victim"))
         damager.sendMessage(plugin.messageConfig.getMessage(damager, "game.killer-stunned-damager"))
     }
-
-    // --- EL RESTO DE TUS EVENTOS (Sin cambios, ya estaban bien) ---
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onEnvironmentalDamage(event: EntityDamageEvent) {

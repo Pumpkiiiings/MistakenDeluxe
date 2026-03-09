@@ -8,9 +8,9 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerQuitEvent
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * PlayerQuitListener: Limpieza profunda y persistencia.
- * FIX: Lógica de juego corregida y guardado de datos seguro.
+ * FIX: Llamadas actualizadas a la nueva lógica modular de GameManager.
  */
 class PlayerQuitListener(private val plugin: Mistaken) : Listener {
 
@@ -25,32 +25,39 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
             // Si el jugador es un asesino, realizamos limpieza física
             if (plugin.gameManager.esAsesino(uuid)) {
 
-                // Limpiar partículas y efectos visuales
+                // Limpiar partículas y efectos visuales del asesino
                 plugin.asesinoManager.removerAsesino(player)
 
-                // Verificar condición de victoria por abandono
-                // Filtramos la lista actual quitando al que se acaba de ir
-                val remainingKillers = plugin.gameManager.asesinosUUIDs.filter { it != uuid }
+                // Lo sacamos de la lista activa de la partida
+                plugin.gameManager.asesinosUUIDs.remove(uuid)
 
-                if (remainingKillers.isEmpty()) {
-                    plugin.gameManager.endGame("game.killer-disconnected", false)
+                // Si era el último asesino, la partida termina y ganan los supervivientes
+                if (plugin.gameManager.asesinosUUIDs.isEmpty()) {
+                    plugin.gameManager.stateController.endGame("game.killer-disconnected", false)
                 }
+            } else {
+                // Si era superviviente, lo forzamos a morir/desconectarse para checar victoria
+                plugin.gameManager.playerController.handlePlayerDeath(player)
             }
         }
 
         // 2. LIMPIEZA DE MEMORIA (Hilo Principal)
         // Quitamos al jugador de todos los mapas y sets para evitar Memory Leaks
-        plugin.gameManager.removePlayerData(uuid)
+        plugin.gameManager.asesinosUUIDs.remove(uuid)
+
+        // Si justo era el asesino trakeado, lo limpiamos
+        if (plugin.gameManager.currentAsesinoUUID == uuid) {
+            plugin.gameManager.currentAsesinoUUID = null
+        }
+
         plugin.combatManager.removePlayerData(uuid)
         plugin.scoreboardManager.removePlayer(player)
         plugin.ambientManager.stopAmbience(player) // Importante detener sonidos
 
         // 3. PERSISTENCIA DE DATOS (Delegada a Managers)
-        // StatsManager ya tiene su propio scope IO, así que es seguro llamarlo aquí.
         plugin.statsManager.unloadPlayer(uuid)
 
-        // Limpieza de LuckPerms (Si tienes el hook)
-        // Usamos runAsync de Paper para no bloquear el quit event
+        // Limpieza de LuckPerms (Asíncrona)
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
             try {
                 if (plugin.server.pluginManager.isPluginEnabled("LuckPerms")) {
@@ -60,12 +67,11 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
                     }
                 }
             } catch (e: Exception) {
-                // Ignorar errores de LP
+                // Ignorar errores de LP si falla la conexión
             }
         }
 
         // Guardar datos del perfil (Estamina, lenguaje, etc)
-        // saveConfigSync es rápido si solo vuelca memoria a disco
         plugin.playerDataManager.saveConfigSync()
         plugin.playerDataManager.removeData(uuid)
     }

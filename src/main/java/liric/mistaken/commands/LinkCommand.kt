@@ -3,15 +3,13 @@ package liric.mistaken.commands
 import com.mojang.brigadier.tree.LiteralCommandNode
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import liric.mistaken.Mistaken
 import org.bukkit.entity.Player
 import java.sql.SQLException
 import java.util.concurrent.ThreadLocalRandom
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * LinkCommand: Sistema de vinculación con Discord (Versión Nodo).
  * Optimización: JDBC asíncrono y permisos nativos.
  */
@@ -28,8 +26,8 @@ object LinkCommand {
                     return@executes 0
                 }
 
-                // Usamos el scope del plugin para que sea asíncrono
-                plugin.pluginScope.launch(Dispatchers.IO) {
+                // 🔥 ARREGLADO: Usamos el AsyncScheduler nativo de Paper
+                plugin.server.asyncScheduler.runNow(plugin) { _ ->
                     val uuid = player.uniqueId.toString()
                     val name = player.name
 
@@ -51,7 +49,8 @@ object LinkCommand {
                                             <gray>Tu cuenta de Minecraft ya está enlazada a un Discord.
                                             <dark_gray><i>Si perdiste acceso a tu cuenta, contacta al Staff.</i><newline>
                                         """.trimIndent()))
-                                        return@launch
+                                        // 🔥 ARREGLADO: El return ahora apunta a runNow
+                                        return@runNow
                                     }
                                 }
                             }
@@ -84,7 +83,7 @@ object LinkCommand {
                         }
                     } catch (e: SQLException) {
                         player.sendMessage(plugin.mm.deserialize("<red><bold>[!]</bold> Error de conexión con Clever Cloud."))
-                        plugin.logger.severe("Fallo en LinkCommand SQL: ${e.message}")
+                        plugin.componentLogger.error("Fallo en LinkCommand SQL: ${e.message}")
                     }
                 }
                 1 // Éxito para Brigadier

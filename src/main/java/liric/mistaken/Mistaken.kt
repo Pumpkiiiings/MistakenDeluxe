@@ -79,7 +79,7 @@ class Mistaken : JavaPlugin() {
 
     // Game Managers
     lateinit var antiBlockListener: AntiBlockListener
-    lateinit var voteManager: VoteManager // Añadido para el nuevo GameManager
+    lateinit var voteManager: VoteManager
     lateinit var gameManager: GameManager
     lateinit var arenaManager: ArenaManager
     lateinit var musicManager: MusicManager
@@ -137,9 +137,13 @@ class Mistaken : JavaPlugin() {
         glowingAPI = GlowingEntities(this)
         combatManager = CombatManager(this)
         antiBlockListener = AntiBlockListener(this)
-        voteManager = VoteManager() // Inicializado antes del GameManager
+        voteManager = VoteManager()
 
-        // ¡Aquí entra en acción el nuevo GameManager!
+        // 🔥 FIX: Inicializamos managers que el GameManager necesita antes de crearlo
+        ambientManager = AmbientManager(this)
+        generatorManager = GeneratorManager(this)
+
+        // Ahora sí, instanciamos el GameManager de forma segura
         gameManager = GameManager(this)
 
         mapManager = MapManager(this)
@@ -147,8 +151,6 @@ class Mistaken : JavaPlugin() {
         asesinoManager = AsesinoManager(this)
         supervivienteManager = SupervivienteManager(this)
         discordManager = DiscordManager(this)
-        generatorManager = GeneratorManager(this)
-
         musicManager = MusicManager(this)
         liric.mistaken.api.MistakenAPI.init(this)
 
@@ -157,8 +159,7 @@ class Mistaken : JavaPlugin() {
         supervivienteTienda = SupervivienteTienda()
         shopSelector = ShopSelector()
 
-        // Bucles de fondo
-        ambientManager = AmbientManager(this)
+        // Scoreboard (Requiere que gameManager ya exista)
         scoreboardManager = ScoreboardManager(this)
 
         // 7. Servicios API

@@ -6,7 +6,6 @@ import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.supervivientes.Superviviente
 import liric.mistaken.utils.CraftEngineUtils
@@ -18,14 +17,12 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import java.util.function.Consumer
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Jesse (MCSM): El Héroe Protector.
- * MECÁNICAS:
- * - Dash de Impacto (Empuje + Daño).
- * - Puñetazo Pesado (Ceguera + Nausea 6s).
- * - Bloqueo Sónico (Rayo Warden, KB masivo).
+ * FIX: Corrutinas eliminadas, Schedulers nativos aplicados.
  */
 class Jesse : Superviviente(
     "jesse",
@@ -33,9 +30,6 @@ class Jesse : Superviviente(
 ) {
 
     private val pathBase = "supervivientes.jesse"
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-
-    // Llave para el puñetazo melee
     val MELEE_PUNCH_KEY = NamespacedKey("mistaken", "jesse_punch")
 
     override fun usarHabilidad(player: Player, slot: Int) {
@@ -47,7 +41,7 @@ class Jesse : Superviviente(
                 usarHeroDash(player)
                 sendAbilityMessage(player, langConfig, mechConfig, "habilidad1")
             }
-            1 -> { /* H2: Puñetazo (Listener Melee) */ }
+            1 -> { /* H2: Puñetazo (Lógica en Listener Melee) */ }
             2 -> if (!checkCooldown(player, 2, mechConfig.getInt("$pathBase.items.habilidad3_cooldown", 35))) {
                 usarBloqueoSonic(player)
                 sendAbilityMessage(player, langConfig, mechConfig, "habilidad3")
@@ -56,7 +50,7 @@ class Jesse : Superviviente(
     }
 
     private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
-        var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
+        val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) player.sendMessage(mm.deserialize(msg))
 
         val soundName = mech.getString("$pathBase.items.${key}_sonido", "ENTITY_PLAYER_ATTACK_SWEEP")
@@ -115,41 +109,40 @@ class Jesse : Superviviente(
         val dir = player.location.direction.normalize().multiply(2.2).setY(0.3)
         player.velocity = dir
 
-        val job = scope.launch {
-            var count = 0
-            val hitted = mutableSetOf<java.util.UUID>()
+        var count = 0
+        val hitted = mutableSetOf<java.util.UUID>()
 
-            while (isActive && count < 10 && player.isOnline) {
-                withContext(plugin.bukkitDispatcher) {
-                    // Sonido y viento continuo
-                    player.world.playSound(player.location, Sound.ENTITY_ENDER_DRAGON_FLAP, 0.5f, 1.5f)
-
-                    val pos = Vector3d(player.location.x, player.location.y + 1.0, player.location.z)
-                    val particle = WrapperPlayServerParticle(Particle(ParticleTypes.CLOUD), false, pos, Vector3f(0.3f, 0.3f, 0.3f), 0.05f, 5)
-                    PacketEvents.getAPI().playerManager.sendPacket(player, particle)
-
-                    // Chocar contra el asesino
-                    player.getNearbyEntities(1.5, 1.5, 1.5).filterIsInstance<Player>().forEach { victim ->
-                        if (plugin.gameManager.esAsesino(victim.uniqueId) && !hitted.contains(victim.uniqueId)) {
-                            hitted.add(victim.uniqueId)
-
-                            plugin.gameManager.combatManager.takeDamage(victim) // Hace daño
-
-                            val knockback = player.location.direction.multiply(1.5).setY(0.4)
-                            victim.velocity = knockback
-
-                            victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
-                            victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
-
-                            victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
-                        }
-                    }
-                }
-                delay(50)
-                count++
+        player.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (count >= 10 || !player.isOnline) {
+                task.cancel()
+                return@Consumer
             }
-        }
-        trackJob(job)
+
+            // Sonido y viento continuo
+            player.world.playSound(player.location, Sound.ENTITY_ENDER_DRAGON_FLAP, 0.5f, 1.5f)
+
+            val pos = Vector3d(player.location.x, player.location.y + 1.0, player.location.z)
+            val particle = WrapperPlayServerParticle(Particle(ParticleTypes.CLOUD), false, pos, Vector3f(0.3f, 0.3f, 0.3f), 0.05f, 5)
+            PacketEvents.getAPI().playerManager.sendPacket(player, particle)
+
+            // Chocar contra el asesino
+            player.getNearbyEntities(1.5, 1.5, 1.5).filterIsInstance<Player>().forEach { victim ->
+                if (plugin.gameManager.esAsesino(victim.uniqueId) && !hitted.contains(victim.uniqueId)) {
+                    hitted.add(victim.uniqueId)
+
+                    plugin.gameManager.combatManager.takeDamage(victim)
+
+                    val knockback = player.location.direction.multiply(1.5).setY(0.4)
+                    victim.velocity = knockback
+
+                    victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
+                    victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
+
+                    victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
+                }
+            }
+            count++
+        }, null, 1L, 1L) // 50ms = 1 tick
     }
 
     // --- H2: PUÑETAZO (Lógica en Listener) ---
@@ -166,47 +159,42 @@ class Jesse : Superviviente(
 
         player.playSound(player.location, Sound.ENTITY_WARDEN_SONIC_CHARGE, 1f, 1f)
 
-        val job = scope.launch {
-            delay(1500) // 1.5s de carga (como el Warden real)
+        // 1500ms de carga = 30 ticks
+        player.scheduler.runDelayed(plugin, Consumer { _ ->
+            if (!player.isOnline) return@Consumer
 
-            withContext(plugin.bukkitDispatcher) {
-                if (!player.isOnline) return@withContext
+            player.world.playSound(player.location, Sound.ENTITY_WARDEN_SONIC_BOOM, 2f, 1f)
 
-                player.world.playSound(player.location, Sound.ENTITY_WARDEN_SONIC_BOOM, 2f, 1f)
+            var currentLoc = startLoc.clone()
+            var hitTarget = false
 
-                var currentLoc = startLoc.clone()
-                var hitTarget = false
+            for (i in 0..15) { // Distancia de 15 bloques
+                currentLoc.add(direction)
 
-                for (i in 0..15) { // Distancia de 15 bloques
-                    currentLoc.add(direction)
+                // Rayo visual del Warden usando PacketEvents
+                val pos = Vector3d(currentLoc.x, currentLoc.y, currentLoc.z)
+                val particle = WrapperPlayServerParticle(Particle(ParticleTypes.SONIC_BOOM), false, pos, Vector3f(), 0f, 1)
+                player.world.players.forEach { PacketEvents.getAPI().playerManager.sendPacket(it, particle) }
 
-                    // Rayo visual del Warden usando PacketEvents
-                    val pos = Vector3d(currentLoc.x, currentLoc.y, currentLoc.z)
-                    val particle = WrapperPlayServerParticle(Particle(ParticleTypes.SONIC_BOOM), false, pos, Vector3f(), 0f, 1)
-                    player.world.players.forEach { PacketEvents.getAPI().playerManager.sendPacket(it, particle) }
+                // Impacto
+                if (!hitTarget) {
+                    currentLoc.world.getNearbyPlayers(currentLoc, 1.5).forEach { victim ->
+                        if (plugin.gameManager.esAsesino(victim.uniqueId)) {
+                            val kb = direction.clone().multiply(2.5).setY(0.5)
+                            victim.velocity = kb
 
-                    // Impacto
-                    if (!hitTarget) {
-                        currentLoc.world.getNearbyPlayers(currentLoc, 1.5).forEach { victim ->
-                            if (plugin.gameManager.esAsesino(victim.uniqueId)) {
-                                val kb = direction.clone().multiply(2.5).setY(0.5)
-                                victim.velocity = kb
+                            victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 2)) // 2s
+                            victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1))  // 5s
 
-                                victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 2)) // 2s
-                                victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1))  // 5s
-
-                                hitTarget = true
-                            }
+                            hitTarget = true
                         }
                     }
                 }
             }
-        }
-        trackJob(job)
+        }, null, 30L)
     }
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        scope.coroutineContext.cancelChildren()
     }
 }

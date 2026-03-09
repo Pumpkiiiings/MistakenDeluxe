@@ -8,6 +8,7 @@ import net.kyori.adventure.title.Title
 import net.luckperms.api.LuckPermsProvider
 import net.luckperms.api.node.types.PrefixNode
 import org.bukkit.Sound
+import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
 import java.time.Duration
 import java.util.UUID
@@ -78,6 +79,44 @@ class GameUIController(private val game: GameManager) {
         }
     }
 
+    // 🔥 NUEVA FUNCIÓN: LAST MAN STANDING (LMS)
+    fun broadcastLMS(lastSurvivor: Player) {
+        // Título principal en ROJO, igual para todos
+        val titleMain = game.plugin.mm.deserialize("<red><bold>LAST MAN STANDING")
+
+        game.plugin.server.onlinePlayers.forEach { p ->
+            val isKiller = game.esAsesino(p.uniqueId)
+            val isTheSurvivor = p.uniqueId == lastSurvivor.uniqueId
+
+            // 1. Subtítulos Dinámicos (Diferentes para cada rol)
+            val subtitle = when {
+                isTheSurvivor -> game.plugin.mm.deserialize("<gray>¡Estás solo! <red>SOBREVIVE.")
+                isKiller -> game.plugin.mm.deserialize("<dark_red>Solo queda uno... ¡CÁZALO!")
+                else -> game.plugin.mm.deserialize("<gold>${lastSurvivor.name} <gray>es la última esperanza.")
+            }
+
+            // 2. Mensajes de Chat Dinámicos
+            val chatMsg = if (isTheSurvivor) {
+                "<newline><red><b>[!]</b> <white>Tus compañeros han caído. Eres el <b>ÚLTIMO HOMBRE EN PIE</b>.<newline>"
+            } else {
+                "<newline><red><b>[!]</b> <white>${lastSurvivor.name} es el <b>ÚLTIMO HOMBRE EN PIE</b>.<newline>"
+            }
+
+            // 3. Ejecución de efectos
+            p.sendMessage(game.plugin.mm.deserialize(chatMsg))
+
+            // Tiempos: FadeIn 0.5s | Stay 4s | FadeOut 1s
+            p.showTitle(Title.title(titleMain, subtitle, Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(4), Duration.ofMillis(1000))))
+
+            // Sonidos
+            p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f) // Tensión
+            p.playSound(p.location, Sound.AMBIENT_CAVE, 1f, 0.5f) // Ambiente oscuro
+
+            // Tu música personalizada (Si existe en resourcepack)
+            p.playSound(p.location, "mistaken:lms", SoundCategory.RECORDS, 1f, 1f)
+        }
+    }
+
     fun playAmbientForPlayer(p: Player, killersOnline: List<Player>) {
         var closestKiller: Player? = null
         var minDist = Double.MAX_VALUE
@@ -104,7 +143,6 @@ class GameUIController(private val game: GameManager) {
     }
 
     fun setLuckPermsPrefix(player: Player, colorTag: String) {
-        // Ejecución Asíncrona sin corrutinas
         game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
             try {
                 val lp = LuckPermsProvider.get()

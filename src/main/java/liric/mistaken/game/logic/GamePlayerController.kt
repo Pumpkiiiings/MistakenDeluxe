@@ -4,17 +4,22 @@ import liric.mistaken.game.GameManager
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import net.kyori.adventure.title.Title
 import org.bukkit.GameMode
 import org.bukkit.Sound
+import org.bukkit.SoundCategory
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ThreadLocalRandom
-import java.util.function.Consumer // Importante para el scheduler
+import java.util.function.Consumer
 import kotlin.math.min
 
 class GamePlayerController(private val game: GameManager) {
+
+    // 🔥 Variable para controlar que el evento LMS no se dispare más de 1 vez por partida
+    private var lmsActivado = false
 
     fun setupPlayers(arena: liric.mistaken.game.Arena) {
         val onlinePlayers = game.plugin.server.onlinePlayers.filter { !game.plugin.isIgnored(it) }.toMutableList()
@@ -54,7 +59,6 @@ class GamePlayerController(private val game: GameManager) {
                 game.uiController.setLuckPermsPrefix(p, "<red>")
                 val spawnLoc = arena.asesinoSpawn ?: p.world.spawnLocation
 
-                // 🚀 TP Asíncrono Nativo
                 p.teleportAsync(spawnLoc).thenAccept { success ->
                     if (success && p.isOnline) {
                         val claseID = game.plugin.playerDataManager.getSelectedKiller(p.uniqueId)
@@ -70,7 +74,6 @@ class GamePlayerController(private val game: GameManager) {
                 val delayTicks = (survivorIndex / 2).toLong()
                 survivorIndex++
 
-                // 🚀 FIX: Usamos 'p.scheduler' (sin paréntesis) y definimos tipos explícitos
                 p.scheduler.runDelayed(
                     game.plugin,
                     Consumer { _ ->
@@ -90,7 +93,6 @@ class GamePlayerController(private val game: GameManager) {
             game.uiController.playRoleTitle(p, isKiller)
         }
 
-        // Tarea asíncrona para Discord
         game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
             game.getCurrentAsesino()?.let { killer ->
                 game.plugin.discordManager.sendGameStart(game.currentMapName, game.currentMode.name, survivorsSolo, killer)
@@ -109,17 +111,14 @@ class GamePlayerController(private val game: GameManager) {
         for (p in players) {
             if (game.plugin.isIgnored(p) || game.esAsesino(p.uniqueId) || p.gameMode == GameMode.SPECTATOR) continue
 
-            // Ambiente
             if ((ticks + (p.uniqueId.hashCode() and 0xFFFF)) % 5 == 0) {
                 game.uiController.playAmbientForPlayer(p, killersOnline)
             }
 
-            // Latidos
             if (ticks % 10 == 0 && killersOnline.isNotEmpty()) {
                 game.uiController.checkHeartbeat(p, killersOnline[0])
             }
 
-            // Efectos de herido
             if (ticks % 2 == 0 && game.currentMode != MistakenMode.FREEZE_TAG && game.combatManager.getHealth(p) == 1 && p.vehicle == null) {
                 if (!p.isSwimming) p.isSwimming = true
                 if (ticks % 40 == 0) {
@@ -128,7 +127,6 @@ class GamePlayerController(private val game: GameManager) {
                 }
             }
 
-            // Estamina
             if (ticks % 5 == 0 && p.passengers.isNotEmpty() && p.isSprinting) {
                 game.plugin.playerDataManager.consumeStamina(p.uniqueId, 0.4)
             }
@@ -157,6 +155,42 @@ class GamePlayerController(private val game: GameManager) {
                 game.stateController.endGame("game.victory-killer", true)
             }
         }
+    }
+
+    // 🔥 NUEVA FUNCIÓN: Chequeo de Last Man Standing
+    private fun checkLastManStanding() {
+        if (game.currentState != GameState.INGAME || lmsActivado) return
+
+        val supervivientesVivos = game.plugin.server.onlinePlayers.filter {
+            !game.esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL
+        }
+
+        // Si solo queda 1 superviviente y el modo NO es Freeze Tag (opcional)
+        if (supervivientesVivos.size == 1 && game.currentMode != MistakenMode.FREEZE_TAG) {
+            lmsActivado = true
+            val ultimoHeroe = supervivientesVivos[0]
+            triggerLMS(ultimoHeroe)
+        }
+    }
+
+    // 🔥 NUEVA FUNCIÓN: Ejecución de LMS (Música, Efectos y Mensajes)
+    private fun triggerLMS(player: Player) {
+        val titleText = game.plugin.mm.deserialize("<red><bold>ÚLTIMO EN PIE</bold></red>")
+        val subtitleText = game.plugin.mm.deserialize("<gray>${player.name} está solo contra el asesino</gray>")
+        val broadcastMsg = game.plugin.mm.deserialize("\n<red><b>[!]</b></red> <white>${player.name} es el <b>Último Superviviente</b>.\n")
+
+        game.plugin.server.onlinePlayers.forEach { p ->
+            p.sendMessage(broadcastMsg)
+
+            // Reproducimos tu música personalizada
+            // Usamos SoundCategory.RECORDS/MUSIC para que el jugador pueda bajarle el volumen si quiere
+            p.playSound(p.location, "mistaken:lms", SoundCategory.RECORDS, 1f, 1f)
+
+            p.showTitle(Title.title(titleText, subtitleText))
+        }
+
+        // Le damos un pequeño buff al último jugador para darle esperanza
+        player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 20 * 60, 0)) // Velocidad I por 60 seg
     }
 
     fun handlePlayerDeath(player: Player) {
@@ -195,14 +229,23 @@ class GamePlayerController(private val game: GameManager) {
             }
             killer.playSound(killer.location, Sound.ENTITY_WITCH_DRINK, 1f, 0.8f)
         }
+
+        // 🔥 Se llama aquí para checar si la muerte dejó a un solo jugador vivo
+        checkLastManStanding()
         checkWinCondition()
     }
 
     fun cleanupAllPlayers(killerWon: Boolean) {
+        // 🔥 Reseteamos el LMS para la siguiente partida
+        lmsActivado = false
+
         val winSound = if (killerWon) Sound.ENTITY_WITHER_SPAWN else Sound.UI_TOAST_CHALLENGE_COMPLETE
         val type = if (killerWon) "killer" else "survivor"
 
         game.plugin.server.onlinePlayers.forEach { p ->
+            // Detener la música LMS si seguía sonando al acabar la partida
+            p.stopSound("mistaken:lms", SoundCategory.RECORDS)
+
             p.passengers.forEach { p.removePassenger(it) }
             p.vehicle?.removePassenger(p)
             p.fireTicks = 0
@@ -218,7 +261,7 @@ class GamePlayerController(private val game: GameManager) {
 
             liric.mistaken.utils.SpectatorUtils.setSafeSpectator(p)
 
-            p.showTitle(net.kyori.adventure.title.Title.title(
+            p.showTitle(Title.title(
                 game.plugin.messageConfig.getMessage(p, "game.$type-title"),
                 game.plugin.messageConfig.getMessage(p, "game.$type-subtitle")
             ))

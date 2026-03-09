@@ -7,8 +7,6 @@ import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.supervivientes.Superviviente
 import liric.mistaken.utils.CraftEngineUtils
@@ -23,11 +21,12 @@ import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Kasane Teto: La Quimera.
- * FIX: Removidos los debuffs de usuario y añadido Dash Sonoro + Partículas Custom.
+ * FIX: Corrutinas eliminadas, EntitySchedulers en funcionamiento.
  */
 class KasaneTeto : Superviviente(
     "teto",
@@ -36,8 +35,6 @@ class KasaneTeto : Superviviente(
 
     private val pathBase = "supervivientes.teto"
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
-    private val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     val MELEE_BAGUETTE_KEY = NamespacedKey("mistaken", "teto_melee")
     val THROW_BAGUETTE_KEY = NamespacedKey("mistaken", "teto_throw")
@@ -60,7 +57,7 @@ class KasaneTeto : Superviviente(
     }
 
     private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
-        var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
+        val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) player.sendMessage(mm.deserialize(msg))
     }
 
@@ -121,23 +118,23 @@ class KasaneTeto : Superviviente(
         // Partículas iniciales
         player.world.spawnParticle(org.bukkit.Particle.CRIT, player.location, 10, 0.2, 0.2, 0.2, 0.1)
 
-        // Tarea asíncrona para sonido repetitivo durante el vuelo
-        val job = scope.launch {
-            var count = 0
-            while (isActive && count < 8 && player.isOnline) { // 8 ticks de vuelo aprox
-                withContext(plugin.bukkitDispatcher) {
-                    player.world.playSound(player.location, Sound.ITEM_TRIDENT_RIPTIDE_2, 0.8f, 1.5f)
-
-                    // Rastro rosa de Teto
-                    val pos = Vector3d(player.location.x, player.location.y + 0.5, player.location.z)
-                    val particle = WrapperPlayServerParticle(Particle(ParticleTypes.DUST, ParticleDustData(1f, 0.4f, 0.8f, 1f)), false, pos, Vector3f(0.2f, 0.2f, 0.2f), 0.01f, 5)
-                    PacketEvents.getAPI().playerManager.sendPacket(player, particle)
-                }
-                delay(50)
-                count++
+        // Tarea para sonido repetitivo durante el vuelo
+        var count = 0
+        player.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (count >= 8 || !player.isOnline) { // 8 ticks de vuelo aprox
+                task.cancel()
+                return@Consumer
             }
-        }
-        trackJob(job)
+
+            player.world.playSound(player.location, Sound.ITEM_TRIDENT_RIPTIDE_2, 0.8f, 1.5f)
+
+            // Rastro rosa de Teto
+            val pos = Vector3d(player.location.x, player.location.y + 0.5, player.location.z)
+            val particle = WrapperPlayServerParticle(Particle(ParticleTypes.DUST, ParticleDustData(1f, 0.4f, 0.8f, 1f)), false, pos, Vector3f(0.2f, 0.2f, 0.2f), 0.01f, 5)
+            PacketEvents.getAPI().playerManager.sendPacket(player, particle)
+
+            count++
+        }, null, 1L, 1L)
     }
 
     // --- H2: MELEE BAGUETTE ---
@@ -168,8 +165,5 @@ class KasaneTeto : Superviviente(
     override fun cleanup(player: Player?) {
         super.cleanup(player)
         player?.getAttribute(Attribute.SCALE)?.baseValue = 1.0
-        activeTasks.forEach { it.cancel() }
-        activeTasks.clear()
-        scope.coroutineContext.cancelChildren()
     }
 }

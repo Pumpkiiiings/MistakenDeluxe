@@ -6,7 +6,6 @@ import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
@@ -20,11 +19,12 @@ import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * Bendy: El Demonio de Tinta.
- * FIX: Nuevo sistema de equipamiento robusto y multi-idioma.
+ * FIX: Nuevo sistema de equipamiento robusto y EntityScheduler.
  */
 class Bendy : Asesino(
     "bendy",
@@ -32,7 +32,6 @@ class Bendy : Asesino(
 ) {
 
     private val pathBase = "asesinos.bendy"
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var isBeastMode = false
     private val auras = ConcurrentHashMap<UUID, BlockDisplay>()
 
@@ -49,33 +48,26 @@ class Bendy : Asesino(
         player.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 0, false, false, true))
     }
 
-    /**
-     * 🔥 NUEVO MÉTODO EQUIPAR (REVISADO):
-     * Jala los fierros de asesinos.yml y los nombres de asesinos_info.yml
-     */
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
-        inv.armorContents = arrayOfNulls(4) // Limpieza total de armadura
+        inv.armorContents = arrayOfNulls(4)
 
-        val configMecanica = plugin.configManager.getAsesinos() // El global (la raíz)
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info") // Los nombres traducidos
+        val configMecanica = plugin.configManager.getAsesinos()
+        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            // 1. Buscamos el ID en el archivo global de mecánicas
             val id = if (isArmor) configMecanica.getString("$pathBase.armadura.$key")
             else configMecanica.getString("$pathBase.items.$key")
 
             if (id == null || id == "none") return
 
-            // 2. Intentamos crear el ítem (CraftEngine o Vanilla)
             val item = CraftEngineUtils.getCustomItem(id) ?: run {
                 val matName = id.replace(".*:".toRegex(), "").uppercase()
                 val mat = Material.matchMaterial(matName)
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            // 3. Le ponemos el nombre según el idioma del jugador
             val namePath = if (key == "arma") "asesinos.bendy.habilidades_nombres.arma"
             else "asesinos.bendy.habilidades_nombres.$key"
 
@@ -83,7 +75,6 @@ class Bendy : Asesino(
                 item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
             }
 
-            // 4. Lo ponemos en su lugar
             if (isArmor) {
                 when(key) {
                     "casco" -> inv.helmet = item
@@ -91,21 +82,14 @@ class Bendy : Asesino(
                     "pantalones" -> inv.leggings = item
                     "botas" -> inv.boots = item
                 }
-            } else {
-                inv.setItem(slot, item)
-            }
+            } else inv.setItem(slot, item)
         }
 
-        // --- EJECUCIÓN DEL EQUIPO ---
-        deliver("casco", 0, true)
-        deliver("pechera", 0, true)
-        deliver("pantalones", 0, true)
-        deliver("botas", 0, true)
+        deliver("casco", 0, true); deliver("pechera", 0, true)
+        deliver("pantalones", 0, true); deliver("botas", 0, true)
 
-        deliver("habilidad1", 1)
-        deliver("habilidad2", 2)
-        deliver("habilidad3", 3)
-        deliver("habilidad4", 4)
+        deliver("habilidad1", 1); deliver("habilidad2", 2)
+        deliver("habilidad3", 3); deliver("habilidad4", 4)
         deliver("arma", 8)
 
         player.inventory.heldItemSlot = 8
@@ -123,11 +107,10 @@ class Bendy : Asesino(
         player.world.spawnParticle(org.bukkit.Particle.SQUID_INK, player.location, 50, 0.5, 1.0, 0.5, 0.1)
         player.playSound(player.location, Sound.ENTITY_SQUID_SQUIRT, 1f, 0.5f)
 
-        val job = scope.launch {
-            delay(1500)
-            withContext(plugin.bukkitDispatcher) {
-                if (player.isOnline) {
-                    player.teleport(targetLoc)
+        // 1500ms = 30 ticks
+        player.scheduler.runDelayed(plugin, Consumer { _ ->
+            if (player.isOnline) {
+                player.teleportAsync(targetLoc).thenAccept {
                     player.world.spawnParticle(org.bukkit.Particle.SQUID_INK, player.location, 50, 0.5, 1.0, 0.5, 0.1)
                     player.world.getNearbyPlayers(player.location, 4.0).forEach { victim ->
                         if (!plugin.asesinoManager.esElAsesino(victim)) {
@@ -137,8 +120,7 @@ class Bendy : Asesino(
                     }
                 }
             }
-        }
-        trackJob(job)
+        }, null, 30L)
     }
 
     private fun habilidadInkFlow(player: Player) {
@@ -159,40 +141,37 @@ class Bendy : Asesino(
             it.block = Material.BLACK_CONCRETE.createBlockData()
             it.transformation = Transformation(JomlVector3f(-0.75f, 0f, -0.75f), Quaternionf(), JomlVector3f(1.5f, 0.02f, 1.5f), Quaternionf())
         }
-        val job = scope.launch {
-            var duration = 200
-            while (isActive && duration > 0 && puddle.isValid) {
-                withContext(plugin.bukkitDispatcher) {
-                    puddle.world.getNearbyPlayers(puddle.location, 1.0).forEach { victim ->
-                        if (!plugin.asesinoManager.esElAsesino(victim)) {
-                            victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 1))
-                        }
-                    }
-                }
-                delay(100)
-                duration--
+
+        var duration = 200 // 200 iteraciones = 20 segundos
+        puddle.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (duration <= 0 || !puddle.isValid) {
+                if (puddle.isValid) puddle.remove()
+                task.cancel()
+                return@Consumer
             }
-            if (isActive) withContext(plugin.bukkitDispatcher) { puddle.remove() }
-        }
-        trackJob(job)
+            puddle.world.getNearbyPlayers(puddle.location, 1.0).forEach { victim ->
+                if (!plugin.asesinoManager.esElAsesino(victim)) {
+                    victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 1))
+                }
+            }
+            duration--
+        }, null, 1L, 2L) // 2 ticks = 100ms
     }
 
     private fun habilidadTheBeast(player: Player) {
         isBeastMode = true
         player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 200, 1))
         player.isGlowing = true
-        val job = scope.launch {
-            delay(10000)
-            withContext(plugin.bukkitDispatcher) {
-                if (player.isOnline) {
-                    isBeastMode = false
-                    player.isGlowing = false
-                    player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
-                    applyInkFatigue(player)
-                }
+
+        // 10000ms = 200 ticks
+        player.scheduler.runDelayed(plugin, Consumer { _ ->
+            if (player.isOnline) {
+                isBeastMode = false
+                player.isGlowing = false
+                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
+                applyInkFatigue(player)
             }
-        }
-        trackJob(job)
+        }, null, 200L)
     }
 
     // --- 🚀 MOTORES VISUALES ---
@@ -230,5 +209,10 @@ class Bendy : Asesino(
     }
 
     private fun limpiarAura(uuid: UUID) { auras.remove(uuid)?.remove() }
-    override fun cleanup(player: Player?) { super.cleanup(player); isBeastMode = false; player?.let { limpiarAura(it.uniqueId) }; scope.coroutineContext.cancelChildren() }
+
+    override fun cleanup(player: Player?) {
+        super.cleanup(player)
+        isBeastMode = false
+        player?.let { limpiarAura(it.uniqueId) }
+    }
 }

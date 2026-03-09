@@ -6,7 +6,6 @@ import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
-import kotlinx.coroutines.*
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
@@ -17,18 +16,18 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Transformation
-import org.bukkit.util.Vector
 import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * NullAsesino: El Ente del Glitch.
- * MEJORAS: Escala 1.1, Animación Ultra-Fluida y Física mejorada.
+ * MEJORAS: Escala 1.1, Schedulers nativos sin corrutinas.
  */
 class NullAsesino : Asesino(
     "null",
@@ -38,13 +37,9 @@ class NullAsesino : Asesino(
     private val pathBase = "asesinos.null"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val activeTraps = ConcurrentHashMap.newKeySet<Entity>()
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    // Órbita visual
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
-
-    // Materiales del Glitch
     private val orbitMaterials = listOf(Material.BEACON, Material.ENDER_EYE, Material.NETHER_STAR)
 
     init {
@@ -91,8 +86,7 @@ class NullAsesino : Asesino(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        // 🔥 FIX: ESCALA AUMENTADA (1.1)
-        // Hace al jugador un 10% más alto, dándole una apariencia "unnatural".
+        // 🔥 ESCALA AUMENTADA
         player.getAttribute(Attribute.SCALE)?.baseValue = 1.1
 
         val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
@@ -123,20 +117,13 @@ class NullAsesino : Asesino(
                     "pantalones" -> inv.leggings = item
                     "botas" -> inv.boots = item
                 }
-            } else {
-                inv.setItem(slot, item)
-            }
+            } else inv.setItem(slot, item)
         }
 
-        deliver("casco", 0, true)
-        deliver("pechera", 0, true)
-        deliver("pantalones", 0, true)
-        deliver("botas", 0, true)
-        deliver("habilidad1", 1)
-        deliver("habilidad2", 2)
-        deliver("habilidad3", 3)
-        deliver("habilidad4", 4)
-        deliver("arma", 8)
+        deliver("casco", 0, true); deliver("pechera", 0, true)
+        deliver("pantalones", 0, true); deliver("botas", 0, true)
+        deliver("habilidad1", 1); deliver("habilidad2", 2)
+        deliver("habilidad3", 3); deliver("habilidad4", 4); deliver("arma", 8)
     }
 
     // --- HABILIDADES ---
@@ -145,7 +132,6 @@ class NullAsesino : Asesino(
         player.world.playSound(player.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
         player.world.spawnParticle(org.bukkit.Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 3, 0.5, 0.5, 0.5, 0.0)
 
-        // Null-Safe call para Paper 1.21
         player.world.getNearbyPlayers(player.location, 12.0).forEach { victim ->
             if (!plugin.asesinoManager.esElAsesino(victim)) {
                 victim.apply {
@@ -167,27 +153,28 @@ class NullAsesino : Asesino(
         } ?: return
         activeTraps.add(bait)
 
-        val job = scope.launch {
-            var timer = 0
-            while (isActive && timer < 400 && !bait.isDead) {
-                withContext(plugin.bukkitDispatcher) {
-                    val angle = timer * 0.4
-                    val x = cos(angle) * 0.7
-                    val z = sin(angle) * 0.7
-                    loc.world?.spawnParticle(org.bukkit.Particle.END_ROD, loc.clone().add(x, 1.0, z), 1, 0.0, 0.0, 0.0, 0.0)
-
-                    val victim = loc.world?.getNearbyPlayers(loc, 3.5)?.firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
-                    victim?.let { v ->
-                        plugin.gameManager.combatManager.takeDamage(v)
-                        v.playSound(v.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.1f)
-                        cleanupTrap(bait); cancel()
-                    }
-                }
-                delay(100); timer++
+        var timer = 0
+        bait.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (timer >= 400 || !bait.isValid) {
+                cleanupTrap(bait)
+                task.cancel()
+                return@Consumer
             }
-            if (isActive) withContext(plugin.bukkitDispatcher) { cleanupTrap(bait) }
-        }
-        trackJob(job)
+
+            val angle = timer * 0.4
+            val x = cos(angle) * 0.7
+            val z = sin(angle) * 0.7
+            loc.world.spawnParticle(org.bukkit.Particle.END_ROD, loc.clone().add(x, 1.0, z), 1, 0.0, 0.0, 0.0, 0.0)
+
+            val victim = loc.world.getNearbyPlayers(loc, 3.5).firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
+            if (victim != null) {
+                plugin.gameManager.combatManager.takeDamage(victim)
+                victim.playSound(victim.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.1f)
+                cleanupTrap(bait)
+                task.cancel()
+            }
+            timer++
+        }, null, 1L, 2L) // 100ms = 2 ticks
     }
 
     private fun habilidadPrisionVacio(player: Player) {
@@ -202,29 +189,26 @@ class NullAsesino : Asesino(
     private fun habilidadColmillosVacio(player: Player) {
         val startLoc = player.location
         val direction = startLoc.direction.setY(0.0).normalize()
-        val job = scope.launch {
-            val currentLoc = startLoc.clone()
-            repeat(15) {
-                if (!isActive) return@launch
-                withContext(plugin.bukkitDispatcher) {
-                    currentLoc.add(direction)
-                    if (!currentLoc.block.type.isSolid) {
-                        currentLoc.world?.spawn(currentLoc, EvokerFangs::class.java)
-                        currentLoc.world?.getNearbyPlayers(currentLoc, 1.5)?.forEach { victim ->
-                            if (!plugin.asesinoManager.esElAsesino(victim)) {
-                                plugin.gameManager.combatManager.takeDamage(victim)
-                                victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
-                            }
+
+        val currentLoc = startLoc.clone()
+        for (i in 0 until 15) {
+            currentLoc.add(direction)
+            val locToSpawn = currentLoc.clone()
+            plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
+                if (!locToSpawn.block.type.isSolid) {
+                    locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
+                    locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
+                        if (!plugin.asesinoManager.esElAsesino(victim)) {
+                            plugin.gameManager.combatManager.takeDamage(victim)
+                            victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
                         }
                     }
                 }
-                delay(50)
-            }
+            }, (i + 1).toLong()) // 50ms = 1 tick de diferencia
         }
-        trackJob(job)
     }
 
-    // --- 🔥 ANIMACIÓN DE ÓRBITA ULTRA-FLUIDA (Butter Smooth) ---
+    // --- 🔥 ANIMACIÓN ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
@@ -243,7 +227,6 @@ class NullAsesino : Asesino(
 
         val anguloActual = angulos.getOrDefault(uuid, 0.0)
 
-        // Variables pre-calculadas para CPU
         val radio = 1.5
         val step = (2 * Math.PI) / entidades.size
         val playerLoc = player.location
@@ -252,43 +235,36 @@ class NullAsesino : Asesino(
             val display = entidades[i]
             if (display.isValid) {
                 val currentAngle = anguloActual + (step * i)
-
                 val x = radio * cos(currentAngle)
                 val z = radio * sin(currentAngle)
-                // Oscilación vertical suave
                 val y = 1.3 + (0.2 * sin(currentAngle * 1.5))
 
                 val targetLoc = playerLoc.clone().add(x, y, z)
-
-                // Rotación dinámica sobre su propio eje (Spin effect)
                 targetLoc.yaw = (currentAngle * 120).toFloat() % 360
                 targetLoc.pitch = (currentAngle * 60).toFloat() % 360
 
                 display.teleport(targetLoc)
             }
         }
-        // Incremento suave
         angulos[uuid] = anguloActual + 0.12
     }
 
     private fun crearItemOrbitante(loc: Location, mat: Material): ItemDisplay {
         return loc.world.spawn(loc, ItemDisplay::class.java) { id ->
             id.setItemStack(ItemStack(mat))
-            // Centrado matemático
             id.transformation = Transformation(
                 JomlVector3f(0f, 0f, 0f),
                 Quaternionf(),
                 JomlVector3f(0.5f, 0.5f, 0.5f),
                 Quaternionf()
             )
-            // 🔥 TRUCO DE FLUIDEZ: 3 Ticks de duración para tarea de 2 Ticks
             id.teleportDuration = 3
             id.interpolationDuration = 3
         }
     }
 
     override fun mostrarTrail(player: Player) {
-        val loc = player.location.add(0.0, 1.2, 0.0) // Un poco más alto por la escala 1.1
+        val loc = player.location.add(0.0, 1.2, 0.0)
         val pos = Vector3d(loc.x, loc.y, loc.z)
         val mgr = PacketEvents.getAPI().playerManager
         val packet = WrapperPlayServerParticle(Particle(ParticleTypes.WITCH), false, pos, Vector3f(0.2f, 0.2f, 0.2f), 0.02f, 1)
@@ -302,11 +278,9 @@ class NullAsesino : Asesino(
         super.cleanup(player)
         player?.let {
             limpiarVisuales(it.uniqueId)
-            // 🔥 RESTAURAR TAMAÑO ORIGINAL
             it.getAttribute(Attribute.SCALE)?.baseValue = 1.0
         }
         activeTraps.forEach { it.remove() }
         activeTraps.clear()
-        scope.coroutineContext.cancelChildren()
     }
 }
