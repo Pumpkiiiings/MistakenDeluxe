@@ -9,6 +9,17 @@ import java.util.concurrent.ThreadLocalRandom
 
 class GameStateController(private val game: GameManager) {
 
+    // 🔥 NUEVO: Sistema de descanso (0 hardcode)
+    fun startBreakProcess() {
+        if (game.currentState == GameState.BREAK) return
+        game.currentState = GameState.BREAK
+
+        // Lee de la config, si no existe, usa 10 segundos por defecto.
+        game.timer = game.plugin.config.getInt("settings.break-duration", 10)
+
+        game.broadcastLocalized("game.break-start")
+    }
+
     fun startVotingProcess() {
         if (game.currentState == GameState.VOTING) return
         game.currentState = GameState.VOTING
@@ -132,6 +143,7 @@ class GameStateController(private val game: GameManager) {
         path?.let { game.broadcastLocalized(it) }
         game.worldController.limpiarMapa()
         game.currentState = GameState.LOBBY
+        game.timer = 0 // Aseguramos que el timer no siga loco en la BossBar
         game.currentAsesinoUUID = null
         game.asesinosUUIDs.clear()
         game.ambientManager.stopAll()

@@ -33,6 +33,16 @@ class GameLoopTask(private val game: GameManager) {
                     when (game.currentState) {
                         GameState.LOBBY -> {
                             if (validCount >= game.plugin.config.getInt("settings.min-players", 2)) {
+                                // En lugar de ir directo a votar, empezamos el descanso
+                                game.stateController.startBreakProcess()
+                            }
+                        }
+                        GameState.BREAK -> {
+                            // Si alguien se sale y ya no hay gente suficiente, volvemos al Lobby
+                            if (validCount < game.plugin.config.getInt("settings.min-players", 2)) {
+                                game.stateController.resetToLobby("voting.not-enough-players")
+                            } else if (game.timer <= 0) {
+                                // Al terminar el descanso, iniciamos votaciones
                                 game.stateController.startVotingProcess()
                             }
                         }
@@ -43,11 +53,14 @@ class GameLoopTask(private val game: GameManager) {
                                 game.stateController.startInGame()
                             }
                         }
-                        GameState.STARTING -> game.stateController.handleStartingSequence()
+                        GameState.STARTING -> {
+                            game.stateController.handleStartingSequence()
+                        }
                         GameState.ENDING -> {
                             if (game.timer <= 0) {
                                 game.playerController.teleportAllToLobby()
-                                game.stateController.resetToLobby(null)
+                                // 🔥 En lugar de ir a LOBBY con reset, vamos a BREAK para continuar el ciclo
+                                game.stateController.startBreakProcess()
                             }
                         }
                         else -> {}

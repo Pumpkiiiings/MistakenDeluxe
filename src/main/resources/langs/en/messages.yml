@@ -21,16 +21,30 @@ voting:
 # --- BOSSBAR ---
 bossbar:
   lobby: "<gradient:#ffcc00:#ffaa00><bold>WAITING FOR PLAYERS...</bold></gradient> <gray>({online})"
+  break: "<yellow>Next round in: <white><time>s"
   voting: "<b><color:#8AFF73>VOTING IN PROGRESS</color></b> <gray>| <white>Ends in: <yellow>{time}s"
   starting: "<red><bold>PREPARE YOURSELF!</bold> <white>Starting in <yellow>{time}s"
   ingame: "<white>Map: <yellow>{map}</yellow> <dark_gray>|</dark_gray> Mode: <aqua>{mode}</aqua> <dark_gray>|</dark_gray> Time: <green>{time}</green>"
   ending: "<b><color:#FF001D>MATCH FINISHED!</color></b>"
   colors:
+    break: "YELLOW"
     lobby: "YELLOW"
     voting: "WHITE"
     starting: "PURPLE"
     ingame: "RED"
     ending: "PINK"
+
+# --- LMS ---
+
+lms:
+  title: "<red><bold>LAST MAN STANDING"
+  subtitle:
+    survivor: "<gray>You are alone! <red>SURVIVE."
+    killer: "<dark_red>Only one left... HUNT THEM DOWN!"
+    other: "<gold><player> <gray>is the last hope."
+  chat:
+    survivor: "<newline><red><b>[!]</b> <white>Your teammates have fallen. You are the <b>LAST MAN STANDING</b>.<newline>"
+    other: "<newline><red><b>[!]</b> <white><player> is the <b>LAST MAN STANDING</b>.<newline>"
 
 # --- HABILIDADES ---
 habilidades:

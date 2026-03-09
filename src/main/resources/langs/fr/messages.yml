@@ -32,6 +32,18 @@ bossbar:
     ingame: "RED"
     ending: "PINK"
 
+# --- LMS ---
+
+lms:
+  title: "<red><bold>LAST MAN STANDING"
+  subtitle:
+    survivor: "<gray>You are alone! <red>SURVIVE."
+    killer: "<dark_red>Only one left... HUNT THEM DOWN!"
+    other: "<gold><player> <gray>is the last hope."
+  chat:
+    survivor: "<newline><red><b>[!]</b> <white>Your teammates have fallen. You are the <b>LAST MAN STANDING</b>.<newline>"
+    other: "<newline><red><b>[!]</b> <white><player> is the <b>LAST MAN STANDING</b>.<newline>"
+
 # --- HABILIDADES ---
 habilidades:
   pedido-impacto-asesino: "&a¡Bien hecho! &fEl pedido le ha llegado al asesino"

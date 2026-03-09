@@ -21,16 +21,30 @@ voting:
 # --- BOSSBAR ---
 bossbar:
   lobby: "<gradient:#ffcc00:#ffaa00><bold>ESPERANDO JUGADORES...</bold></gradient> <gray>({online})"
+  break: "<yellow>Descaso <gray>| <white><time>s"
   voting: "<b><color:#8AFF73>VOTACIÓN EN CURSO</color></b> <gray>| <white>Termina en: <yellow>{time}s"
   starting: "<red><bold>¡PREPÁRATE!</bold> <white>Empezamos en <yellow>{time}s"
   ingame: "<white>Mapa: <yellow>{map}</yellow> <dark_gray>|</dark_gray> Modo: <aqua>{mode}</aqua> <dark_gray>|</dark_gray> Tiempo: <green>{time}</green>"
   ending: "<b><color:#FF001D>¡PARTIDA TERMINADA!</color></b>"
   colors:
     lobby: "YELLOW"
+    break: "YELLOW"
     voting: "WHITE"
     starting: "PURPLE"
     ingame: "RED"
     ending: "PINK"
+
+# --- LMS ---
+
+lms:
+  title: "<red><bold>LAST MAN STANDING"
+  subtitle:
+    survivor: "<gray>¡Estás solo! <red>SOBREVIVE."
+    killer: "<dark_red>Solo queda uno... ¡CÁZALO!"
+    other: "<gold><player> <gray>es la última esperanza."
+  chat:
+    survivor: "<newline><red><b>[!]</b> <white>Tus compañeros han caído. Eres el <b>ÚLTIMO HOMBRE EN PIE</b>.<newline>"
+    other: "<newline><red><b>[!]</b> <white><player> es el <b>ÚLTIMO HOMBRE EN PIE</b>.<newline>"
 
 # --- HABILIDADES ---
 habilidades:
@@ -70,6 +84,13 @@ scoreboard:
     - "<white>Tiempo: <yellow>%timer%s"
     - ""
     - "<gray>Usa /vote"
+    - ""
+  break:
+    - ""
+    - "<white>Estado: <yellow>Descanso"
+    - "<white>Jugadores: <green>%online%"
+    - ""
+    - "<white>Perfil: <aqua>%player%"
     - ""
   starting:
     - ""
@@ -236,6 +257,7 @@ modes:
 
 # --- JUEGO ---
 game:
+  break-start: "<green>Descanso de <yellow>10s</yellow>. Despues del descanso empezara la votacion."
   map-loaded: "<green>Mapa <yellow>{map}</yellow> seleccionado."
   player-died: "<red><white>{player}</white> ha sido eliminado."
   player-frozen-death: "<red><white>{player}</white> murió congelado."

@@ -31,7 +31,8 @@ class GameUIController(private val game: GameManager) {
             game.timer.toString()
         }
 
-        val mapDisplay = if (game.currentState == GameState.LOBBY || game.currentState == GameState.VOTING) "Lobby" else game.currentMapName
+        // 🔥 Agregamos GameState.BREAK para que el mapa muestre "Lobby" o texto por defecto durante el descanso
+        val mapDisplay = if (game.currentState == GameState.LOBBY || game.currentState == GameState.VOTING || game.currentState == GameState.BREAK) "Lobby" else game.currentMapName
         val signature = "S:$stateName|T:$timeStr|O:$online|M:$mapDisplay|MD:${game.currentMode.name}"
 
         if (lastProcessedText[uuid] == signature) return
@@ -79,31 +80,33 @@ class GameUIController(private val game: GameManager) {
         }
     }
 
-    // 🔥 NUEVA FUNCIÓN: LAST MAN STANDING (LMS)
+    // 🔥 0 HARDCODE: LAST MAN STANDING (LMS)
     fun broadcastLMS(lastSurvivor: Player) {
-        // Título principal en ROJO, igual para todos
-        val titleMain = game.plugin.mm.deserialize("<red><bold>LAST MAN STANDING")
+        val parsedSurvivorName = Placeholder.parsed("player", lastSurvivor.name)
 
         game.plugin.server.onlinePlayers.forEach { p ->
             val isKiller = game.esAsesino(p.uniqueId)
             val isTheSurvivor = p.uniqueId == lastSurvivor.uniqueId
 
+            // Título principal
+            val titleMain = game.plugin.messageConfig.getMessage(p, "lms.title")
+
             // 1. Subtítulos Dinámicos (Diferentes para cada rol)
             val subtitle = when {
-                isTheSurvivor -> game.plugin.mm.deserialize("<gray>¡Estás solo! <red>SOBREVIVE.")
-                isKiller -> game.plugin.mm.deserialize("<dark_red>Solo queda uno... ¡CÁZALO!")
-                else -> game.plugin.mm.deserialize("<gold>${lastSurvivor.name} <gray>es la última esperanza.")
+                isTheSurvivor -> game.plugin.messageConfig.getMessage(p, "lms.subtitle.survivor")
+                isKiller -> game.plugin.messageConfig.getMessage(p, "lms.subtitle.killer")
+                else -> game.plugin.messageConfig.getMessage(p, "lms.subtitle.other", parsedSurvivorName)
             }
 
             // 2. Mensajes de Chat Dinámicos
             val chatMsg = if (isTheSurvivor) {
-                "<newline><red><b>[!]</b> <white>Tus compañeros han caído. Eres el <b>ÚLTIMO HOMBRE EN PIE</b>.<newline>"
+                game.plugin.messageConfig.getMessage(p, "lms.chat.survivor")
             } else {
-                "<newline><red><b>[!]</b> <white>${lastSurvivor.name} es el <b>ÚLTIMO HOMBRE EN PIE</b>.<newline>"
+                game.plugin.messageConfig.getMessage(p, "lms.chat.other", parsedSurvivorName)
             }
 
             // 3. Ejecución de efectos
-            p.sendMessage(game.plugin.mm.deserialize(chatMsg))
+            p.sendMessage(chatMsg)
 
             // Tiempos: FadeIn 0.5s | Stay 4s | FadeOut 1s
             p.showTitle(Title.title(titleMain, subtitle, Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(4), Duration.ofMillis(1000))))
