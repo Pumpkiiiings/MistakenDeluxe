@@ -26,11 +26,6 @@ import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * Romeo: El Administrador del Mundo.
- * FIX: Animación Fluida y sin Corrutinas.
- */
 class Romeo : Asesino(
     "romeo",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.romeo.nombre", "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient>", "asesinos_info")
@@ -80,8 +75,6 @@ class Romeo : Asesino(
         }
     }
 
-    // --- HABILIDADES ---
-
     private fun habilidadAdminDash(player: Player) {
         player.playSound(player.location, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 0.5f)
         var duration = 100
@@ -102,13 +95,12 @@ class Romeo : Asesino(
                 return@Consumer
             }
 
-            player.world.getNearbyPlayers(player.location, 2.0).firstOrNull {
-                !plugin.asesinoManager.esElAsesino(it)
-            }?.let { victim ->
+            // 🔥 Uso de la función centralizada
+            player.world.getNearbyPlayers(player.location, 2.0).firstOrNull { esObjetivoValido(player, it) }?.let { victim ->
                 plugin.gameManager.combatManager.takeDamage(victim)
                 victim.velocity = player.location.direction.normalize().multiply(1.5).setY(0.4)
                 player.playSound(player.location, Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.2f, 0.8f)
-                duration = 0 // Fuerza la cancelación en la siguiente iteración
+                duration = 0
             }
             duration--
         }, null, 1L, 1L)
@@ -123,7 +115,8 @@ class Romeo : Asesino(
         )
 
         player.world.getNearbyPlayers(player.location, 100.0).forEach { victim ->
-            if (!plugin.asesinoManager.esElAsesino(victim)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, victim)) {
                 val createTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, listOf(victim.name))
                 PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
                 val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x40.toByte()))
@@ -131,7 +124,6 @@ class Romeo : Asesino(
             }
         }
 
-        // 10000ms = 200 ticks
         player.scheduler.runDelayed(plugin, Consumer { _ ->
             if (player.isOnline) {
                 val removeTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.REMOVE, Optional.empty())
@@ -155,14 +147,16 @@ class Romeo : Asesino(
                     if (!locToSpawn.block.type.isSolid) {
                         locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
                         locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
-                            if (!plugin.asesinoManager.esElAsesino(victim)) {
+
+                            // 🔥 Uso de la función centralizada
+                            if (esObjetivoValido(player, victim)) {
                                 plugin.gameManager.combatManager.takeDamage(victim)
                                 victim.velocity = Vector(0.0, 0.5, 0.0)
                                 victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
                             }
                         }
                     }
-                }, (i * 2 + 1).toLong()) // 100ms = 2 ticks de diferencia
+                }, (i * 2 + 1).toLong())
             }
         }
     }
@@ -183,7 +177,10 @@ class Romeo : Asesino(
                 return@Consumer
             }
             star.teleport(star.location.add(direction))
-            val hit = player.world.getNearbyPlayers(star.location, 1.5).firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
+
+            // 🔥 Uso de la función centralizada
+            val hit = player.world.getNearbyPlayers(star.location, 1.5).firstOrNull { esObjetivoValido(player, it) }
+
             if (hit != null || star.location.block.type.isSolid) {
                 star.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, star.location, 1)
                 hit?.let { plugin.gameManager.combatManager.takeDamage(it) }
@@ -193,8 +190,6 @@ class Romeo : Asesino(
             ticks++
         }, null, 1L, 1L)
     }
-
-    // --- EQUIPAMIENTO ---
 
     override fun equipar(player: Player) {
         val inv = player.inventory
@@ -243,8 +238,6 @@ class Romeo : Asesino(
         player.updateInventory()
     }
 
-    // --- 🔥 ANIMACIÓN DE ÓRBITA ULTRA-FLUIDA ---
-
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { limpiar(uuid); return }
@@ -279,7 +272,6 @@ class Romeo : Asesino(
         targetLoc.pitch = (angulo * 60).toFloat() % 360
 
         display.teleport(targetLoc)
-
         angulos[uuid] = angulo
     }
 

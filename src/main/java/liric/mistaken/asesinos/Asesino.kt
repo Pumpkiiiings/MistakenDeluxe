@@ -3,7 +3,6 @@ package liric.mistaken.asesinos
 import kotlinx.coroutines.Job
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
@@ -11,13 +10,14 @@ import org.bukkit.scheduler.BukkitTask
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * Asesino: Clase base polimórfica ultra-optimizada.
  *
  * MEJORAS:
  * - Sincronizado con el motor de subcarpetas de idiomas.
  * - Soporte para Atributos avanzados de la 1.21.4 (Scale, Step Height, Gravity).
  * - Cooldowns dinámicos (Lógica centralizada + Nombres localizados).
+ * - 🔥 Lógica centralizada de validación de daño (Soporte Assassin PvP y Fuego Amigo).
  */
 abstract class Asesino(val id: String, val nombre: String) {
 
@@ -101,8 +101,6 @@ abstract class Asesino(val id: String, val nombre: String) {
     /**
      * Limpieza profunda del asesino (Mantenido el fix de espectador).
      */
-
-    // En Asesino.kt
     open fun limpiarDatosGlobales() {
     }
 
@@ -166,6 +164,36 @@ abstract class Asesino(val id: String, val nombre: String) {
                 instance.baseValue = instance.defaultValue
             }
         }
+    }
+
+    /**
+     * 🔥 Verifica de forma segura y central si una habilidad le debe hacer daño a este jugador.
+     * Toma en cuenta el Fuego Amigo, Modo Asesino PvP y si está en supervivencia.
+     */
+    protected fun esObjetivoValido(atacante: Player, victima: Player): Boolean {
+        // 1. Inmortales o Espectadores ignorados
+        if (victima.gameMode != org.bukkit.GameMode.SURVIVAL) return false
+        if (plugin.isIgnored(victima)) return false
+
+        // 2. No se puede pegar a sí mismo con un área
+        if (atacante.uniqueId == victima.uniqueId) return false
+
+        // 3. Revisión de Fuego Amigo
+        val atacanteEsAsesino = plugin.gameManager.esAsesino(atacante.uniqueId)
+        val victimaEsAsesino = plugin.gameManager.esAsesino(victima.uniqueId)
+
+        // Si el modo es Assassin PvP, todos se pueden pegar
+        if (plugin.gameManager.currentMode == liric.mistaken.game.enums.MistakenMode.ASSASSIN_PVP) {
+            return true
+        }
+
+        // Si es el modo normal y ambos son asesinos, no hay fuego amigo
+        if (atacanteEsAsesino && victimaEsAsesino) {
+            return false
+        }
+
+        // En cualquier otro caso (Asesino vs Superviviente) es válido
+        return true
     }
 
     // --- MÉTODOS ABSTRACTOS ---

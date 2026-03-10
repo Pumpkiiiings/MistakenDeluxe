@@ -28,11 +28,6 @@ import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * ColorAndElectricity
- * FIX: Coroutines eliminadas. Fluididad mantenida con EntitySchedulers.
- */
 class ColorAndElectricity : Asesino(
     "colorandelectricity",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.colorandelectricity.nombre", "<gradient:#ff0080:#00ffff:#ffff00><b>色彩電気</b></gradient>", "asesinos_info")
@@ -148,20 +143,22 @@ class ColorAndElectricity : Asesino(
                 return@Consumer
             }
             player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
-                if (!plugin.asesinoManager.esElAsesino(victim) && hitted.add(victim.uniqueId)) {
+                // 🔥 Uso de la función centralizada
+                if (esObjetivoValido(player, victim) && hitted.add(victim.uniqueId)) {
                     plugin.gameManager.combatManager.takeDamage(victim)
                     victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
                     victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 1.5f)
                 }
             }
             count++
-        }, null, 1L, 1L) // 50ms = 1 tick
+        }, null, 1L, 1L)
     }
 
     private fun habilidadColorDrain(player: Player) {
         player.playSound(player.location, Sound.BLOCK_CONDUIT_ATTACK_TARGET, 1f, 1.8f)
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
-            if (!plugin.asesinoManager.esElAsesino(victim)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
                 victim.sendMessage(mm.deserialize("<gradient:#ff0080:#00ffff><i>\"Dame tus colores...\"</i></gradient>"))
@@ -178,17 +175,19 @@ class ColorAndElectricity : Asesino(
             }
             player.world.spawnParticle(org.bukkit.Particle.ELECTRIC_SPARK, player.location, 20, 2.0, 2.0, 2.0, 0.05)
             player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { victim ->
-                if (!plugin.asesinoManager.esElAsesino(victim)) {
+                // 🔥 Uso de la función centralizada
+                if (esObjetivoValido(player, victim)) {
                     plugin.gameManager.combatManager.takeDamage(victim)
                     victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(0.8).setY(0.3)
                 }
             }
             ticks++
-        }, null, 1L, 5L) // 250ms = 5 ticks
+        }, null, 1L, 5L)
     }
 
     private fun habilidadShikisaiEnd(player: Player) {
-        val target = player.getNearbyEntities(15.0, 15.0, 15.0).filterIsInstance<Player>().find { !plugin.asesinoManager.esElAsesino(it) }
+        // 🔥 Uso de la función centralizada
+        val target = player.getNearbyEntities(15.0, 15.0, 15.0).filterIsInstance<Player>().find { esObjetivoValido(player, it) }
         target?.let { t ->
             player.teleportAsync(t.location).thenAccept {
                 player.scheduler.run(plugin, Consumer { _ ->
@@ -200,7 +199,6 @@ class ColorAndElectricity : Asesino(
         }
     }
 
-    // --- 🔥 ANIMACIÓN ULTRA-FLUIDA Y OPTIMIZADA ---
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { limpiarEntidades(uuid); return }

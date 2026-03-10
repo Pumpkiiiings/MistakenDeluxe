@@ -30,11 +30,6 @@ import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * Charlie Inferno: El Heraldo de los Elementos.
- * FIX: Sistema de música 3D con atenuación natural nativo y Region Schedulers seguros.
- */
 class CharlieInferno : Asesino(
     "charlie",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.charlie.nombre", "<gradient:#ff4500:#ff8c00><b>CHARLIE INFERNO</b></gradient>", "asesinos_info")
@@ -138,7 +133,6 @@ class CharlieInferno : Asesino(
         val uuid = player.uniqueId
         detenerMusica(uuid)
 
-        // 74000ms = 1480 ticks
         val task = player.scheduler.runAtFixedRate(plugin, Consumer { t ->
             if (!player.isOnline || !plugin.asesinoManager.esElAsesino(player)) {
                 detenerMusica(uuid)
@@ -150,7 +144,6 @@ class CharlieInferno : Asesino(
             player.world.playSound(player, sonidoId, SoundCategory.RECORDS, 2.0f, 1.0f)
         }, null, 1L, 1480L)
 
-        // 🔥 FIX DEL ERROR: Verificamos que task no sea nulo antes de agregarlo al mapa.
         if (task != null) {
             musicTasks[uuid] = task
         }
@@ -165,7 +158,8 @@ class CharlieInferno : Asesino(
 
     private fun habilidadInfierno(player: Player) {
         player.world.getNearbyPlayers(player.location, 7.5).forEach { target ->
-            if (!plugin.asesinoManager.esElAsesino(target)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, target)) {
                 target.fireTicks = 100
                 plugin.gameManager.combatManager.takeDamage(target)
                 target.playSound(target.location, Sound.ITEM_FIRECHARGE_USE, 1f, 1f)
@@ -180,7 +174,6 @@ class CharlieInferno : Asesino(
         val targets = player.world.getNearbyPlayers(player.location, 10.0).toMutableList()
         targets.forEach { it.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 60, 0)) }
 
-        // 3000ms = 60 ticks
         targets.forEach { target ->
             target.scheduler.runDelayed(plugin, Consumer { _ ->
                 if (target.isOnline) {
@@ -211,7 +204,9 @@ class CharlieInferno : Asesino(
             }
 
             ice.teleport(ice.location.add(dir))
-            val hit = player.world.getNearbyPlayers(ice.location, 1.0).firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
+
+            // 🔥 Uso de la función centralizada
+            val hit = player.world.getNearbyPlayers(ice.location, 1.0).firstOrNull { esObjetivoValido(player, it) }
 
             if (hit != null || ice.location.block.type.isSolid) {
                 ice.world.spawnParticle(org.bukkit.Particle.SNOWFLAKE, ice.location, 30, 0.5, 0.5, 0.5, 0.1)
@@ -224,15 +219,13 @@ class CharlieInferno : Asesino(
                 task.cancel()
             }
             ticks++
-        }, null, 1L, 1L) // 50ms = 1 tick
+        }, null, 1L, 1L)
     }
 
     private fun habilidadColmillosInfierno(player: Player) {
         val direction = player.location.direction.setY(0.0).normalize()
         val startLoc = player.location.clone()
 
-        // 🔥 Para evitar problemas de regiones al mover la location 12 bloques,
-        // programamos 12 tareas en las locaciones futuras exactamente calculadas.
         val current = startLoc.clone()
         for (i in 0 until 12) {
             current.add(direction)
@@ -241,12 +234,14 @@ class CharlieInferno : Asesino(
             plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
                 locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
                 locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
-                    if (!plugin.asesinoManager.esElAsesino(victim)) {
+
+                    // 🔥 Uso de la función centralizada
+                    if (esObjetivoValido(player, victim)) {
                         victim.fireTicks = 100
                         plugin.gameManager.combatManager.takeDamage(victim)
                     }
                 }
-            }, (i * 2 + 1).toLong()) // 2 ticks de diferencia entre cada uno (100ms)
+            }, (i * 2 + 1).toLong())
         }
     }
 

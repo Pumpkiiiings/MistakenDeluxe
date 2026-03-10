@@ -30,11 +30,6 @@ import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * Herobrine: El Rey del Vacío.
- * MEJORA: Animación Ultra-Fluida, EntitySchedulers y PacketEvents asíncrono.
- */
 class Herobrine : Asesino(
     "herobrine",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.herobrine.nombre", "<white><b>HEROBRINE</b>", "asesinos_info")
@@ -55,8 +50,6 @@ class Herobrine : Asesino(
         }
         reproducirEfectosHabilidad(player, slot)
     }
-
-    // --- HABILIDADES ---
 
     private fun habilidadDashVacio(player: Player) {
         val dir = player.location.direction.normalize()
@@ -84,7 +77,8 @@ class Herobrine : Asesino(
             }
 
             player.getNearbyEntities(1.5, 1.5, 1.5).filterIsInstance<Player>().forEach { victim ->
-                if (!plugin.asesinoManager.esElAsesino(victim) && victim.uniqueId !in hitted) {
+                // 🔥 Uso de la función centralizada
+                if (esObjetivoValido(player, victim) && victim.uniqueId !in hitted) {
                     hitted.add(victim.uniqueId)
                     repeat(3) { plugin.gameManager.combatManager.takeDamage(victim) }
                     victim.playSound(victim.location, Sound.ENTITY_WITHER_BREAK_BLOCK, 1f, 0.8f)
@@ -119,7 +113,10 @@ class Herobrine : Asesino(
                 return@Consumer
             }
             skull.world.spawnParticle(org.bukkit.Particle.WITCH, skull.location, 3, 0.05, 0.05, 0.05, 0.01)
-            val hit = player.world.getNearbyPlayers(skull.location, 1.2).firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
+
+            // 🔥 Uso de la función centralizada
+            val hit = player.world.getNearbyPlayers(skull.location, 1.2).firstOrNull { esObjetivoValido(player, it) }
+
             hit?.let {
                 plugin.gameManager.combatManager.takeDamage(it)
                 it.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
@@ -139,7 +136,9 @@ class Herobrine : Asesino(
         )
 
         plugin.server.onlinePlayers.forEach { online ->
-            if (plugin.asesinoManager.esElAsesino(online)) return@forEach
+            // 🔥 Uso de la función centralizada
+            if (!esObjetivoValido(player, online)) return@forEach
+
             val createTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, listOf(online.name))
             PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
             val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x40.toByte()))
@@ -148,7 +147,6 @@ class Herobrine : Asesino(
             online.world.spawnParticle(org.bukkit.Particle.ENCHANTED_HIT, online.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
         }
 
-        // 10000ms = 200 ticks
         player.scheduler.runDelayed(plugin, Consumer { _ ->
             if (player.isOnline) {
                 val removeTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.REMOVE, Optional.empty())
@@ -156,8 +154,6 @@ class Herobrine : Asesino(
             }
         }, null, 200L)
     }
-
-    // --- EQUIPAMIENTO ---
 
     override fun equipar(player: Player) {
         val inv = player.inventory
@@ -205,8 +201,6 @@ class Herobrine : Asesino(
         player.inventory.heldItemSlot = 8
         player.updateInventory()
     }
-
-    // --- 🔥 ANIMACIÓN FÍSICA ULTRA-FLUIDA (Butter Smooth) ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId

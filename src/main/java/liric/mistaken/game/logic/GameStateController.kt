@@ -9,14 +9,12 @@ import java.util.concurrent.ThreadLocalRandom
 
 class GameStateController(private val game: GameManager) {
 
-    // 🔥 NUEVO: Sistema de descanso (0 hardcode)
     fun startBreakProcess() {
         if (game.currentState == GameState.BREAK) return
         game.currentState = GameState.BREAK
 
         // Lee de la config, si no existe, usa 10 segundos por defecto.
         game.timer = game.plugin.config.getInt("settings.break-duration", 10)
-
         game.broadcastLocalized("game.break-start")
     }
 
@@ -59,9 +57,8 @@ class GameStateController(private val game: GameManager) {
         game.currentState = GameState.STARTING
         game.currentMapName = winner
 
-        // 🚀 Carga de mundo usando CompletableFuture de Java en lugar de Coroutines
+        // 🚀 Carga de mundo usando CompletableFuture
         game.plugin.mapManager.loadArenaWorld(winner).thenAccept { aspWorld ->
-            // Volvemos al Hilo Principal/Global
             game.plugin.server.globalRegionScheduler.run(game.plugin) { _ ->
                 if (aspWorld == null) {
                     resetToLobby(null)
@@ -71,7 +68,6 @@ class GameStateController(private val game: GameManager) {
                 game.timer = 15
                 determineGameMode()
 
-                // Setup del mapa
                 arena.asesinoSpawn?.world = aspWorld
                 arena.survivorSpawns.forEach { it.world = aspWorld }
 
@@ -96,7 +92,7 @@ class GameStateController(private val game: GameManager) {
                 chance <= 60 -> MistakenMode.CLASSIC
                 chance <= 75 -> MistakenMode.ONE_BOUNCE
                 chance <= 90 -> MistakenMode.DOUBLE_KILLER
-                else -> MistakenMode.FREEZE_TAG
+                else -> MistakenMode.ASSASSIN_PVP
             }
             if (selected == MistakenMode.DOUBLE_KILLER && onlineCount < 4) selected = MistakenMode.CLASSIC
             game.currentMode = selected
@@ -110,14 +106,24 @@ class GameStateController(private val game: GameManager) {
 
         val mapName = game.currentMapName
         val killer = game.getCurrentAsesino()
-        val ganadorNombre = if (killerWon) (killer?.name ?: "El Asesino") else "Supervivientes"
-        val razon = if (killerWon) "¡El asesino ganó!" else "¡Los supervivientes sobrevivieron!"
+
+        // 🔥 0 HARDCODE: Obtenemos los nombres desde la config (para Discord / Logs)
+        val defaultAssassinWord = game.plugin.messageConfig.getRawString(null, "words.assassin", "El Asesino", "messages")
+        val defaultSurvivorsWord = game.plugin.messageConfig.getRawString(null, "words.survivors", "Supervivientes", "messages")
+
+        val ganadorNombre = if (killerWon) (killer?.name ?: defaultAssassinWord) else defaultSurvivorsWord
+
+        val razon = if (killerWon) {
+            game.plugin.messageConfig.getRawString(null, "discord.reason_killer_won", "¡El asesino ganó!", "messages")
+        } else {
+            game.plugin.messageConfig.getRawString(null, "discord.reason_survivors_won", "¡Los supervivientes escaparon!", "messages")
+        }
 
         val escapados = game.plugin.server.onlinePlayers.filter {
             !game.esAsesino(it.uniqueId) && it.gameMode == org.bukkit.GameMode.SURVIVAL
         }.map { it.name }
 
-        // 🚀 Tareas IO Asíncronas nativas de Paper
+        // 🚀 Tareas IO Asíncronas
         game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
             game.plugin.discordManager.sendGameEnd(mapName, ganadorNombre, razon, escapados)
             game.plugin.server.onlinePlayers.forEach { p ->
@@ -143,7 +149,7 @@ class GameStateController(private val game: GameManager) {
         path?.let { game.broadcastLocalized(it) }
         game.worldController.limpiarMapa()
         game.currentState = GameState.LOBBY
-        game.timer = 0 // Aseguramos que el timer no siga loco en la BossBar
+        game.timer = 0
         game.currentAsesinoUUID = null
         game.asesinosUUIDs.clear()
         game.ambientManager.stopAll()

@@ -25,11 +25,6 @@ import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * Slasher (Pumpkin White): El carnicero implacable.
- * FIX: Slots 0-3, ItemDisplay para Machete, Multi-Lang y sin corrutinas.
- */
 class Slasher : Asesino(
     "slasher",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.slasher.nombre", "<white><b>PUMPKIN WHITE</b>", "asesinos_info")
@@ -74,8 +69,6 @@ class Slasher : Asesino(
         }
     }
 
-    // --- 🛠️ EQUIPAMIENTO (SISTEMA MULTI-IDIOMA) ---
-
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
@@ -118,7 +111,6 @@ class Slasher : Asesino(
         deliver("pechera", 0, true)
         deliver("pantalones", 0, true)
         deliver("botas", 0, true)
-
         deliver("habilidad1", 1)
         deliver("habilidad2", 2)
         deliver("habilidad3", 3)
@@ -126,13 +118,11 @@ class Slasher : Asesino(
         deliver("arma", 8)
     }
 
-    // --- 🩸 H1: SED DE SANGRE ---
     private fun habilidadSedDeSangre(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 160, 2))
         player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 160, 1))
         dibujarEstrella(player, Color.RED, 1.5, 5)
 
-        // 8000ms = 160 ticks
         player.scheduler.runDelayed(plugin, Consumer { _ ->
             if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 1))
@@ -140,7 +130,6 @@ class Slasher : Asesino(
         }, null, 160L)
     }
 
-    // --- 🗡️ H2: MACHETE LANZABLE ---
     private fun habilidadMacheteLanzable(player: Player) {
         val macheteItem = itemKitCache["arma"]?.clone() ?: ItemStack(Material.IRON_SWORD)
         val spawnLoc = player.eyeLocation.clone()
@@ -167,7 +156,9 @@ class Slasher : Asesino(
             t.leftRotation.rotateZ(0.6f)
             machete.transformation = t
 
-            val hit = machete.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
+            // 🔥 Uso de la función centralizada
+            val hit = machete.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { esObjetivoValido(player, it) }
+
             if (hit != null || machete.location.block.type.isSolid) {
                 hit?.let {
                     plugin.gameManager.combatManager.takeDamage(it)
@@ -180,24 +171,22 @@ class Slasher : Asesino(
         }, null, 1L, 1L)
     }
 
-    // --- 🔊 H3: PRESENCIA ---
     private fun habilidadPresencia(player: Player) {
         player.playSound(player.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1.5f, 0.8f)
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
-            if (!plugin.asesinoManager.esElAsesino(victim)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, 100, 1))
             }
         }
     }
 
-    // --- 💀 H4: MODO EJECUCIÓN ---
     private fun habilidadEjecucion(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 300, 3))
         player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 300, 2))
         dibujarEstrella(player, Color.MAROON, 2.5, 5)
 
-        // 15000ms = 300 ticks
         player.scheduler.runDelayed(plugin, Consumer { _ ->
             if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
@@ -205,7 +194,6 @@ class Slasher : Asesino(
         }, null, 300L)
     }
 
-    // --- 🚀 TRAIL ASÍNCRONO ---
     override fun mostrarTrail(player: Player) {
         if (player.velocity.lengthSquared() < 0.001) return
         val pos = Vector3d(player.location.x, player.location.y + 1.2, player.location.z)
@@ -227,7 +215,6 @@ class Slasher : Asesino(
             val len = dir.length(); dir.normalize()
             var d = 0.0
 
-            // Spawnear partículas es seguro en el hilo regional
             plugin.server.regionScheduler.run(plugin, loc, Consumer { _ ->
                 while (d < len) {
                     player.world.spawnParticle(org.bukkit.Particle.DUST, p1.clone().add(dir.clone().multiply(d)), 1, dust)

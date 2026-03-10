@@ -3,6 +3,7 @@ package liric.mistaken.game.managers
 import liric.mistaken.Mistaken
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.game.enums.GameState
+import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.title.Title
 import org.bukkit.*
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit
 /**
  * [LIRIC-MISTAKEN 2.0]
  * CombatManager: Adaptación fiel a la lógica Java (KB Nativo).
- * FIX: Cooldown de 3 segundos por golpe con indicador visual nativo (Attack Speed).
+ * FIX: Cooldown dinámico de 1.5 segundos por golpe con indicador visual nativo y soporte Asesino vs Asesino.
  */
 class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
@@ -30,9 +31,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     private val killerCooldowns = ConcurrentHashMap<UUID, Long>()
     private val survivorCooldowns = ConcurrentHashMap<UUID, Long>()
 
-    // 🔥 TIEMPOS DE COOLDOWN (Ambos en 3 segundos exactos)
-    private val KILLER_COOLDOWN = 3000L
-    private val SURVIVOR_COOLDOWN = 3000L
+    // 🔥 TIEMPOS DE COOLDOWN (Bajados a 1.5 segundos para más dinamismo)
+    private val KILLER_COOLDOWN = 1500L
+    private val SURVIVOR_COOLDOWN = 1500L
 
     private val mm = plugin.mm
 
@@ -112,11 +113,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         player.removePotionEffect(PotionEffectType.DARKNESS)
         player.isSwimming = false
 
-        // 🔥 FIX MAGICO VISUAL: Modificamos el Attack Speed nativo de Minecraft.
-        // Fórmula: Tiempo en segundos = 1.0 / Attack Speed
-        // Para 3 segundos de cooldown -> 1.0 / 3.0 = 0.333333
-        // Esto hace que la espadita debajo de la mira tarde 3s en llenarse visualmente.
-        player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 0.333333
+        // 🔥 FIX MAGICO VISUAL para coincidir con 1.5 segundos
+        // Fórmula: 1.0 / Tiempo deseado (1.5) = 0.666666
+        player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 0.666666
 
         if (plugin.isReady) plugin.scoreboardManager.updatePlayer(player)
     }
@@ -132,19 +131,24 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
         val isAttackerKiller = plugin.gameManager.esAsesino(attacker.uniqueId)
         val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
+        val isAssassinPvpMode = plugin.gameManager.currentMode == MistakenMode.ASSASSIN_PVP
 
-        if (!isAttackerKiller && !isVictimKiller) return
-
-        val now = System.currentTimeMillis()
-
-        // 1. Fuego Amigo
-        if (isAttackerKiller == isVictimKiller) {
+        // 1. Fuego Amigo (Bloqueado, EXCEPTO si estamos en modo ASSASSIN_PVP)
+        if (isAttackerKiller == isVictimKiller && !isAssassinPvpMode) {
             event.isCancelled = true
             return
         }
 
-        // 2. Asesino vs Humano
-        if (isAttackerKiller && !isVictimKiller) {
+        // Si ambos son supervivientes normales, no se pueden pegar
+        if (!isAttackerKiller && !isVictimKiller) {
+            event.isCancelled = true
+            return
+        }
+
+        val now = System.currentTimeMillis()
+
+        // 2. Ataque de un Asesino (Hacia superviviente o hacia otro asesino en PVP)
+        if (isAttackerKiller) {
             val lastHit = killerCooldowns.getOrDefault(attacker.uniqueId, 0L)
 
             if (now - lastHit < KILLER_COOLDOWN) {
@@ -156,11 +160,14 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             killerCooldowns[attacker.uniqueId] = now
             event.damage = 0.1 // KB Nativo
-            processTrueDamage(victim, attacker, 3.0)
+
+            // 🔥 En ASSASSIN_PVP pegan de 4 en 4 (2 corazones), en clásico de 3 en 3 (1.5 corazones)
+            val dmg = if (isAssassinPvpMode) 4.0 else 3.0
+            processTrueDamage(victim, attacker, dmg)
             return
         }
 
-        // 3. Humano vs Asesino
+        // 3. Humano vs Asesino (Defensa del Superviviente)
         if (!isAttackerKiller && isVictimKiller) {
             val lastHit = survivorCooldowns.getOrDefault(attacker.uniqueId, 0L)
 
@@ -225,7 +232,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 it.clearTitle()
             }
 
-            // 🔥 Restaurar Attack Speed a Default (4.0 es la velocidad normal de puños en Minecraft)
+            // 🔥 Restaurar Attack Speed a Vanilla (4.0 es la velocidad normal de espadas/puños)
             it.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
         }
         killerCooldowns.remove(uuid)

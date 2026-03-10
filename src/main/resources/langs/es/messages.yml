@@ -26,6 +26,7 @@ bossbar:
   starting: "<red><bold>¡PREPÁRATE!</bold> <white>Empezamos en <yellow>{time}s"
   ingame: "<white>Mapa: <yellow>{map}</yellow> <dark_gray>|</dark_gray> Modo: <aqua>{mode}</aqua> <dark_gray>|</dark_gray> Tiempo: <green>{time}</green>"
   ending: "<b><color:#FF001D>¡PARTIDA TERMINADA!</color></b>"
+  assassin_pvp: "<red>⚔ <white>ASESINOS RESTANTES: <red><online> <white>| <red><time>"
   colors:
     lobby: "YELLOW"
     break: "YELLOW"
@@ -33,6 +34,16 @@ bossbar:
     starting: "PURPLE"
     ingame: "RED"
     ending: "PINK"
+    assassin_pvp: "RED"
+
+words:
+  lobby: "Lobby Principal"
+  assassin: "El Asesino"
+  survivors: "Supervivientes"
+
+discord:
+  reason_killer_won: "¡El asesino masacró a todos!"
+  reason_survivors_won: "¡Los supervivientes lograron escapar!"
 
 # --- LMS ---
 
@@ -254,6 +265,9 @@ modes:
   freeze_tag:
     title: "<aqua><bold>FREEZE TAG"
     subtitle: "<white>Las entidades te congelarán. ¡Rescata a tus compas!"
+  assassin_pvp:
+    title: "<dark_red><bold>ASESINO VS ASESINO"
+    subtitle: "<gray>¡No confíes en nadie! Último en pie gana."
 
 # --- JUEGO ---
 game:

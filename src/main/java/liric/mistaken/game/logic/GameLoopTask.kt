@@ -3,6 +3,7 @@ package liric.mistaken.game.logic
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.game.GameManager
 import liric.mistaken.game.enums.GameState
+import liric.mistaken.game.enums.MistakenMode
 
 class GameLoopTask(private val game: GameManager) {
     private var gameTask: ScheduledTask? = null
@@ -56,6 +57,25 @@ class GameLoopTask(private val game: GameManager) {
                         GameState.STARTING -> {
                             game.stateController.handleStartingSequence()
                         }
+                        GameState.INGAME -> {
+                            // 🔥 LÓGICA AISLADA: Solo se ejecuta para el nuevo modo ASSASSIN_PVP
+                            if (game.currentMode == MistakenMode.ASSASSIN_PVP) {
+
+                                // Filtramos jugadores en supervivencia (vivos)
+                                val alivePlayers = onlinePlayers.filter {
+                                    !game.plugin.isIgnored(it) && it.gameMode == org.bukkit.GameMode.SURVIVAL
+                                }
+
+                                if (alivePlayers.size <= 1) {
+                                    // Si queda 1 o ninguno, alguien ganó la masacre
+                                    // true -> simula victoria del asesino para que reparta bien las recompensas en este modo extremo
+                                    game.stateController.endGame("discord.reason_killer_won", true)
+                                } else if (game.timer <= 0) {
+                                    // Se acabó el tiempo y hay 2+ vivos (Empate)
+                                    game.stateController.endGame("discord.reason_survivors_won", false)
+                                }
+                            }
+                        }
                         GameState.ENDING -> {
                             if (game.timer <= 0) {
                                 game.playerController.teleportAllToLobby()
@@ -63,12 +83,12 @@ class GameLoopTask(private val game: GameManager) {
                                 game.stateController.startBreakProcess()
                             }
                         }
-                        else -> {}
                     }
                 }
 
                 // --- CADA TICK (INGAME) ---
                 if (game.currentState == GameState.INGAME) {
+                    // La lógica del resto de modos y ticks rápidos sigue totalmente intacta aquí
                     game.playerController.handleInGameTick(onlinePlayers, tickCounter)
                 }
             }

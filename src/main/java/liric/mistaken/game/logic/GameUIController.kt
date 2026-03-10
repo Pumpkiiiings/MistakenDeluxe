@@ -31,8 +31,15 @@ class GameUIController(private val game: GameManager) {
             game.timer.toString()
         }
 
-        // 🔥 Agregamos GameState.BREAK para que el mapa muestre "Lobby" o texto por defecto durante el descanso
-        val mapDisplay = if (game.currentState == GameState.LOBBY || game.currentState == GameState.VOTING || game.currentState == GameState.BREAK) "Lobby" else game.currentMapName
+        // 🔥 0 HARDCODE: El texto "Lobby" ahora se saca de la configuración
+        val lobbyWord = game.plugin.messageConfig.getRawString(p, "words.lobby", "Lobby", "messages")
+
+        val mapDisplay = if (game.currentState == GameState.LOBBY || game.currentState == GameState.VOTING || game.currentState == GameState.BREAK) {
+            lobbyWord
+        } else {
+            game.currentMapName
+        }
+
         val signature = "S:$stateName|T:$timeStr|O:$online|M:$mapDisplay|MD:${game.currentMode.name}"
 
         if (lastProcessedText[uuid] == signature) return
@@ -56,7 +63,6 @@ class GameUIController(private val game: GameManager) {
         }
 
         bar.name(barComponent)
-        // Actualización de color si cambia de estado
         val colorStr = game.plugin.messageConfig.getRawString(p, "bossbar.colors.$stateName", "WHITE", "messages")
         try { bar.color(BossBar.Color.valueOf(colorStr.uppercase())) } catch (_: Exception) {}
     }
@@ -80,7 +86,6 @@ class GameUIController(private val game: GameManager) {
         }
     }
 
-    // 🔥 0 HARDCODE: LAST MAN STANDING (LMS)
     fun broadcastLMS(lastSurvivor: Player) {
         val parsedSurvivorName = Placeholder.parsed("player", lastSurvivor.name)
 
@@ -88,34 +93,24 @@ class GameUIController(private val game: GameManager) {
             val isKiller = game.esAsesino(p.uniqueId)
             val isTheSurvivor = p.uniqueId == lastSurvivor.uniqueId
 
-            // Título principal
             val titleMain = game.plugin.messageConfig.getMessage(p, "lms.title")
 
-            // 1. Subtítulos Dinámicos (Diferentes para cada rol)
             val subtitle = when {
                 isTheSurvivor -> game.plugin.messageConfig.getMessage(p, "lms.subtitle.survivor")
                 isKiller -> game.plugin.messageConfig.getMessage(p, "lms.subtitle.killer")
                 else -> game.plugin.messageConfig.getMessage(p, "lms.subtitle.other", parsedSurvivorName)
             }
 
-            // 2. Mensajes de Chat Dinámicos
             val chatMsg = if (isTheSurvivor) {
                 game.plugin.messageConfig.getMessage(p, "lms.chat.survivor")
             } else {
                 game.plugin.messageConfig.getMessage(p, "lms.chat.other", parsedSurvivorName)
             }
 
-            // 3. Ejecución de efectos
             p.sendMessage(chatMsg)
-
-            // Tiempos: FadeIn 0.5s | Stay 4s | FadeOut 1s
             p.showTitle(Title.title(titleMain, subtitle, Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(4), Duration.ofMillis(1000))))
-
-            // Sonidos
-            p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f) // Tensión
-            p.playSound(p.location, Sound.AMBIENT_CAVE, 1f, 0.5f) // Ambiente oscuro
-
-            // Tu música personalizada (Si existe en resourcepack)
+            p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f)
+            p.playSound(p.location, Sound.AMBIENT_CAVE, 1f, 0.5f)
             p.playSound(p.location, "mistaken:lms", SoundCategory.RECORDS, 1f, 1f)
         }
     }

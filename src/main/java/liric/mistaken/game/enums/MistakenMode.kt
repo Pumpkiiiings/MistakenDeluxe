@@ -9,6 +9,6 @@ enum class MistakenMode(val isTagMode: Boolean) {
     DOUBLE_KILLER(false),  //  Asesinos vs Todos
     ONE_BOUNCE(false),     //  Superviviente vs Todos Asesinos
     FREEZE_TAG(true),     // Los asesinos congelan, los humanos rescatan
-    INITIALIZES(false),   // Entidades vs Asesinos vs Supervivientes
+    ASSASSIN_PVP(false),   // Entidades vs Asesinos vs Supervivientes
     INFECCION(true);   // Asesinos infectan a los supervivientes
 }
