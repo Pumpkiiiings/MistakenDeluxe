@@ -28,7 +28,7 @@ class AsesinoManager(private val plugin: Mistaken) {
         listOf(
             Slasher(), Herobrine(), Entity303(), NullAsesino(),
             ColorAndElectricity(), CharlieInferno(), Romeo(), Mariachi(),
-            Devesto(), KasaneTeto(), Bendy(), Colorsito()
+            Devesto(), KasaneTeto(), Bendy(), Colorsito(), Sowoul ()
         ).forEach { registrarClase(it) }
     }
 

@@ -24,11 +24,6 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * Devesto: El Arquitecto.
- * FIX: Animación Fluida y Materiales de Construcción (F3X).
- */
 class Devesto : Asesino(
     "devesto",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.devesto.nombre", "<gradient:#4b0082:#000000><b>DEVESTO</b></gradient>", "asesinos_info")
@@ -41,9 +36,8 @@ class Devesto : Asesino(
     private val backupMapa = ConcurrentHashMap<Location, Material>()
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    // 🔥 ÍTEMS DE ÓRBITA ESPECÍFICOS
     private val toolMaterials = listOf(
-        Material.REPEATING_COMMAND_BLOCK, // Morado
+        Material.REPEATING_COMMAND_BLOCK,
         Material.WOODEN_AXE,
         Material.STRUCTURE_BLOCK
     )
@@ -84,8 +78,6 @@ class Devesto : Asesino(
             4 -> if (!checkCooldown(player, 4)) { habilidadDeleteTool(player); reproducirEfectosHabilidad(player, 4) }
         }
     }
-
-    // --- 🛠️ EQUIPAMIENTO ---
 
     override fun equipar(player: Player) {
         val inv = player.inventory
@@ -136,12 +128,11 @@ class Devesto : Asesino(
         player.updateInventory()
     }
 
-    // --- HABILIDADES DE F3X ---
-
     private fun habilidadMoveTool(player: Player) {
         player.sendMessage(mm.deserialize("<blue>[F3X]</blue> <gray>Herramienta: <white>MOVE"))
         player.getNearbyEntities(10.0, 10.0, 10.0).filterIsInstance<Player>().forEach { target ->
-            if (!plugin.asesinoManager.esElAsesino(target)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, target)) {
                 val push = player.location.direction.normalize().multiply(2.2).setY(0.4)
                 target.velocity = push
             }
@@ -151,7 +142,8 @@ class Devesto : Asesino(
     private fun habilidadPaintTool(player: Player) {
         player.sendMessage(mm.deserialize("<blue>[F3X]</blue> <gray>Herramienta: <white>PAINT"))
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { target ->
-            if (!plugin.asesinoManager.esElAsesino(target)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, target)) {
                 target.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
                 target.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 80, 1))
             }
@@ -161,7 +153,8 @@ class Devesto : Asesino(
     private fun habilidadResizeTool(player: Player) {
         player.sendMessage(mm.deserialize("<blue>[F3X]</blue> <gray>Herramienta: <white>RESIZE"))
         player.getNearbyEntities(12.0, 12.0, 12.0).filterIsInstance<Player>().forEach { target ->
-            if (!plugin.asesinoManager.esElAsesino(target)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, target)) {
                 target.addPotionEffect(PotionEffect(PotionEffectType.LEVITATION, 35, 2))
             }
         }
@@ -170,7 +163,6 @@ class Devesto : Asesino(
     private fun habilidadDeleteTool(player: Player) {
         val targetBlock = player.getTargetBlockExact(5)
         if (targetBlock != null && !targetBlock.type.isAir) {
-            // RegionScheduler para modificar bloques
             plugin.server.regionScheduler.execute(plugin, targetBlock.location) {
                 for (x in -1..1) {
                     for (y in -1..1) {
@@ -187,15 +179,14 @@ class Devesto : Asesino(
         }
 
         player.world.getNearbyPlayers(player.location, 6.0).forEach { victim ->
-            if (!plugin.asesinoManager.esElAsesino(victim)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, victim)) {
                 plugin.gameManager.combatManager.takeDamage(victim)
                 val kb = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.5)
                 victim.velocity = kb
             }
         }
     }
-
-    // --- 🔥 ANIMACIÓN F3X ULTRA-FLUIDA ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
@@ -209,8 +200,6 @@ class Devesto : Asesino(
         }
 
         val anguloActual = angulos.getOrDefault(uuid, 0.0)
-
-        // Variables pre-calculadas
         val radio = 1.6
         val step = (2 * Math.PI) / entidades.size
         val playerLoc = player.location
@@ -219,41 +208,34 @@ class Devesto : Asesino(
             val display = entidades[i]
             if (display.isValid) {
                 val currentAngle = anguloActual + (step * i)
-
                 val x = radio * cos(currentAngle)
                 val z = radio * sin(currentAngle)
-                // Altura estable pero flotante
                 val y = 1.2 + (0.15 * sin(currentAngle * 2))
 
                 val targetLoc = playerLoc.clone().add(x, y, z)
-
-                // Rotación dinámica sobre su eje Y
                 targetLoc.yaw = (currentAngle * 100).toFloat() % 360
 
                 display.teleport(targetLoc)
             }
         }
-        angulos[uuid] = anguloActual + 0.12 // Velocidad de giro
+        angulos[uuid] = anguloActual + 0.12
     }
 
     private fun crearDisplayHerramienta(loc: Location, mat: Material): ItemDisplay {
         return loc.world.spawn(loc, ItemDisplay::class.java) { id ->
             id.setItemStack(ItemStack(mat))
-
-            // Hacha en Vertical, Bloques normales
             val rotation = if (mat == Material.WOODEN_AXE) {
-                Quaternionf().rotateZ(Math.toRadians(45.0).toFloat()) // Inclinación para que se vea vertical
+                Quaternionf().rotateZ(Math.toRadians(45.0).toFloat())
             } else {
-                Quaternionf() // Bloques rectos
+                Quaternionf()
             }
 
             id.transformation = Transformation(
                 JomlVector3f(0f, 0f, 0f),
                 rotation,
-                JomlVector3f(0.7f, 0.7f, 0.7f), // Escala grande para que se vean bien
+                JomlVector3f(0.7f, 0.7f, 0.7f),
                 Quaternionf()
             )
-            // 🔥 TRUCO DE FLUIDEZ
             id.teleportDuration = 3
             id.interpolationDuration = 3
         }

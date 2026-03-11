@@ -25,11 +25,6 @@ import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * Entity 303: El Hacker de la Realidad.
- * FIX: Schedulers nativos, Animación Ultra-Fluida y Escala 1.1 segura.
- */
 class Entity303 : Asesino(
     "entity303",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.entity303.nombre", "<red><b>ENTITY 303</b>", "asesinos_info")
@@ -83,8 +78,6 @@ class Entity303 : Asesino(
         }
     }
 
-    // --- HABILIDADES ---
-
     private fun habilidadDashCodigo(player: Player) {
         val dir = player.location.direction.normalize().multiply(2.0).setY(0.2)
         player.velocity = dir
@@ -99,7 +92,8 @@ class Entity303 : Asesino(
                 return@Consumer
             }
             player.world.getNearbyPlayers(player.location, 2.0).forEach { victim ->
-                if (!plugin.asesinoManager.esElAsesino(victim) && victim.uniqueId !in hitted) {
+                // 🔥 Uso de la función centralizada
+                if (esObjetivoValido(player, victim) && victim.uniqueId !in hitted) {
                     hitted.add(victim.uniqueId)
                     plugin.gameManager.combatManager.takeDamage(victim)
                     victim.velocity = player.location.direction.normalize().multiply(1.5).setY(0.4)
@@ -107,7 +101,7 @@ class Entity303 : Asesino(
                 }
             }
             count++
-        }, null, 1L, 1L) // 50ms = 1 tick
+        }, null, 1L, 1L)
     }
 
     private fun habilidadInfeccionSistema(player: Player) {
@@ -128,7 +122,9 @@ class Entity303 : Asesino(
             star.teleport(star.location.add(direction))
             star.world.spawnParticle(org.bukkit.Particle.ENCHANT, star.location, 5, 0.1, 0.1, 0.1, 0.05)
 
-            val hit = star.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
+            // 🔥 Uso de la función centralizada
+            val hit = star.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { esObjetivoValido(player, it) }
+
             if (hit != null || star.location.block.type.isSolid) {
                 star.world.spawnParticle(org.bukkit.Particle.EXPLOSION, star.location, 1)
                 hit?.let {
@@ -148,7 +144,6 @@ class Entity303 : Asesino(
         player.isFlying = true
         player.playSound(player.location, Sound.BLOCK_BEACON_ACTIVATE, 1f, 2f)
 
-        // 5000ms = 100 ticks
         player.scheduler.runDelayed(plugin, Consumer { _ ->
             if (player.isOnline && player.gameMode != GameMode.SPECTATOR) {
                 player.isFlying = false
@@ -161,15 +156,14 @@ class Entity303 : Asesino(
 
     private fun habilidadCrashPantalla(player: Player) {
         plugin.server.onlinePlayers.forEach { online ->
-            if (!plugin.asesinoManager.esElAsesino(online) && online.location.distanceSquared(player.location) < 1600) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, online) && online.location.distanceSquared(player.location) < 1600) {
                 online.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
                 online.playSound(online.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.1f)
                 online.sendMessage(mm.deserialize("<red><bold>SYSTEM ERROR: 303 FOUND"))
             }
         }
     }
-
-    // --- 🛠️ EQUIPAMIENTO ---
 
     override fun equipar(player: Player) {
         val inv = player.inventory
@@ -230,8 +224,6 @@ class Entity303 : Asesino(
         player.inventory.heldItemSlot = 8
         player.updateInventory()
     }
-
-    // --- 🧊 MOTOR FÍSICO ULTRA-FLUIDO ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId

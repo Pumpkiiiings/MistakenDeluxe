@@ -300,26 +300,25 @@ asesinos:
       habilidad4_cooldown: 120
       habilidad4_sonido: "ENTITY_WITHER_SPAWN"
 
-  colorsito:
-    precio: 900000
-    icono_material: "LIGHTNING_ROD"
+  sowoul:
+    precio: 850000
+    icono_material: "ENCHANTED_BOOK"
     armadura:
-      casco: "mistaken:muship_helmet"
-      pechera: "mistaken:muship_chestplate"
-      pantalones: "mistaken:muship_leggings"
-      botas: "mistaken:muship_boots"
+      casco: "LEATHER_HELMET"
+      pechera: "LEATHER_CHESTPLATE"
+      pantalones: "LEATHER_LEGGINGS"
+      botas: "LEATHER_BOOTS"
     items:
-      arma: "GOLDEN_SWORD"
-      habilidad1: "FEATHER"
-      habilidad1_cooldown: 8
-      habilidad1_sonido: "BLOCK_AMETHYST_BLOCK_CHIME"
-      habilidad2: "CYAN_DYE"
-      habilidad2_cooldown: 20
-      habilidad2_sonido: "BLOCK_CONDUIT_ATTACK_TARGET"
-      habilidad3: "COPPER_INGOT"
-      habilidad3_cooldown: 15
-      habilidad3_sonido: "BLOCK_NOTE_BLOCK_BIT"
-      habilidad4: "NETHER_STAR"
-      habilidad4_cooldown: 50
-      habilidad4_sonido: "ENTITY_FIREWORK_ROCKET_TWINKLE"
-
+      arma: "BOOK"
+      habilidad1: "ENDER_PEARL"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_ENDERMAN_TELEPORT"
+      habilidad2: "PAPER"
+      habilidad2_cooldown: 8
+      habilidad2_sonido: "ENTITY_SNOWBALL_THROW"
+      habilidad3: "SCULK_SENSOR"
+      habilidad3_cooldown: 45
+      habilidad3_sonido: "ENTITY_WARDEN_EMERGE"
+      habilidad4: "COMPASS"
+      habilidad4_cooldown: 30
+      habilidad4_sonido: "ENTITY_ILLUSIONER_CAST_SPELL"

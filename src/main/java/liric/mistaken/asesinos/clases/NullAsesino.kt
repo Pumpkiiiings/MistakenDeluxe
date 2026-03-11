@@ -24,11 +24,6 @@ import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * NullAsesino: El Ente del Glitch.
- * MEJORAS: Escala 1.1, Schedulers nativos sin corrutinas.
- */
 class NullAsesino : Asesino(
     "null",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.null.nombre", "<dark_gray><b>NULL</b>", "asesinos_info")
@@ -126,14 +121,13 @@ class NullAsesino : Asesino(
         deliver("habilidad3", 3); deliver("habilidad4", 4); deliver("arma", 8)
     }
 
-    // --- HABILIDADES ---
-
     private fun habilidadErrorRender(player: Player) {
         player.world.playSound(player.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
         player.world.spawnParticle(org.bukkit.Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 3, 0.5, 0.5, 0.5, 0.0)
 
         player.world.getNearbyPlayers(player.location, 12.0).forEach { victim ->
-            if (!plugin.asesinoManager.esElAsesino(victim)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, victim)) {
                 victim.apply {
                     addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 200, 0))
                     addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 200, 0))
@@ -166,7 +160,9 @@ class NullAsesino : Asesino(
             val z = sin(angle) * 0.7
             loc.world.spawnParticle(org.bukkit.Particle.END_ROD, loc.clone().add(x, 1.0, z), 1, 0.0, 0.0, 0.0, 0.0)
 
-            val victim = loc.world.getNearbyPlayers(loc, 3.5).firstOrNull { !plugin.asesinoManager.esElAsesino(it) }
+            // 🔥 Uso de la función centralizada
+            val victim = loc.world.getNearbyPlayers(loc, 3.5).firstOrNull { esObjetivoValido(player, it) }
+
             if (victim != null) {
                 plugin.gameManager.combatManager.takeDamage(victim)
                 victim.playSound(victim.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.1f)
@@ -174,12 +170,13 @@ class NullAsesino : Asesino(
                 task.cancel()
             }
             timer++
-        }, null, 1L, 2L) // 100ms = 2 ticks
+        }, null, 1L, 2L)
     }
 
     private fun habilidadPrisionVacio(player: Player) {
+        // 🔥 Uso de la función centralizada
         val ray = player.world.rayTraceEntities(player.eyeLocation, player.location.direction, 15.0) {
-            it is Player && !plugin.asesinoManager.esElAsesino(it)
+            it is Player && esObjetivoValido(player, it)
         }
         val victim = ray?.hitEntity as? Player ?: return
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 10))
@@ -198,17 +195,16 @@ class NullAsesino : Asesino(
                 if (!locToSpawn.block.type.isSolid) {
                     locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
                     locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
-                        if (!plugin.asesinoManager.esElAsesino(victim)) {
+                        // 🔥 Uso de la función centralizada
+                        if (esObjetivoValido(player, victim)) {
                             plugin.gameManager.combatManager.takeDamage(victim)
                             victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
                         }
                     }
                 }
-            }, (i + 1).toLong()) // 50ms = 1 tick de diferencia
+            }, (i + 1).toLong())
         }
     }
-
-    // --- 🔥 ANIMACIÓN ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId

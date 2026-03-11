@@ -151,6 +151,14 @@ scoreboard:
     - "<white>Asesino:"
     - "%killers%"
     - ""
+  ingame_assassin_pvp:
+    - ""
+    - "<white>Mapa: <green>%map%"
+    - "<white>Tiempo: <yellow>%timer%"
+    - ""
+    - "<yellow>Todos son asesinos,"
+    - "<yellow>El mejor asesino gana."
+    - ""
   ending:
     - ""
     - "<white>Estado: <red>TERMINADO"

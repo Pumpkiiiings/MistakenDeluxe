@@ -25,11 +25,6 @@ import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * KasaneTeto: La Quimera de las Baguettes.
- * FIX: Escala precisa (0.8861), Schedulers Nativos y Taladros Giratorios.
- */
 class KasaneTeto : Asesino(
     "teto",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.teto.nombre", "<gradient:#ff66cc:#ff0000><b>KASANE TETO</b></gradient>", "asesinos_info")
@@ -75,11 +70,10 @@ class KasaneTeto : Asesino(
         }
     }
 
-    // --- 🥖 HABILIDADES ---
-
     private fun habilidadTaladro(player: Player) {
         player.world.getNearbyPlayers(player.location, 3.5).forEach { victim ->
-            if (!plugin.asesinoManager.esElAsesino(victim)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, victim)) {
                 plugin.gameManager.combatManager.takeDamage(victim)
                 victim.addPotionEffect(PotionEffect(PotionEffectType.MINING_FATIGUE, 40, 1))
                 victim.playSound(victim.location, Sound.BLOCK_ANVIL_LAND, 0.5f, 1.5f)
@@ -91,7 +85,8 @@ class KasaneTeto : Asesino(
     private fun habilidadBaguette(player: Player) {
         player.velocity = player.location.direction.multiply(1.1).setY(0.2)
         player.world.getNearbyPlayers(player.location, 2.5).forEach { victim ->
-            if (!plugin.asesinoManager.esElAsesino(victim)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, victim)) {
                 victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.2).setY(0.3)
             }
         }
@@ -100,7 +95,8 @@ class KasaneTeto : Asesino(
     private fun habilidadBroma(player: Player) {
         player.world.spawnParticle(org.bukkit.Particle.EXPLOSION, player.location, 1)
         player.world.getNearbyPlayers(player.location, 6.0).forEach { victim ->
-            if (!plugin.asesinoManager.esElAsesino(victim)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
                 victim.sendMessage(mm.deserialize("<gradient:#ff66cc:#ff0000><b>¡BAKA!</b> ¿Te la creíste?</gradient>"))
             }
@@ -112,7 +108,6 @@ class KasaneTeto : Asesino(
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 240, 1))
         player.isGlowing = true
 
-        // 12000ms = 240 ticks
         player.scheduler.runDelayed(plugin, Consumer { _ ->
             if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
                 player.isGlowing = false
@@ -121,14 +116,11 @@ class KasaneTeto : Asesino(
         }, null, 240L)
     }
 
-    // --- 🛠️ EQUIPAMIENTO ---
-
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        // 🔥 FIX: ESCALA DE TETO EXACTA (0.8861)
         player.getAttribute(Attribute.SCALE)?.baseValue = 0.8861
 
         if (itemKitCache.isEmpty()) preLoadKit()
@@ -164,8 +156,6 @@ class KasaneTeto : Asesino(
         player.inventory.heldItemSlot = 8
         player.updateInventory()
     }
-
-    // --- 🚀 VISUALES (Taladros Orbitantes) ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId

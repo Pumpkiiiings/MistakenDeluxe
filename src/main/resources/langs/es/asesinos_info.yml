@@ -210,8 +210,8 @@ asesinos:
   colorsito:
     nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>COLORSITO</b></gradient>"
     descripcion:
-      - "<grayUna version mas pequeña de Color And Electricity."
-      - "<gray>Hecha por: MarAgridulce."
+      - "<gray>Una version mas pequeña de Color And Electricity."
+      - "<yellow>Hecha por: MarAgridulce."
     lore_tienda:
       - "<gray>\"Es electrico y colorido.\""
       - "<white>Dificultad: <yellow>Media"
@@ -222,4 +222,17 @@ asesinos:
       habilidad3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
       habilidad4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
 
-
+  sowoul:
+    nombre: "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>"
+    descripcion:
+      - "<gray>Un misterioso ilusionista que domina"
+      - "<gray>el arte del engaño y la magia oscura."
+    lore_tienda:
+      - "<gray>\"Nada de lo que ves es real...\""
+      - "<white>Dificultad: <red>Alta"
+    habilidades_nombres:
+      arma: "<dark_purple>Grimorio de las Ilusiones</dark_purple>"
+      habilidad1: "<light_purple>Dash Mágico</light_purple>"
+      habilidad2: "<white>Lluvia de Cartas</white>"
+      habilidad3: "<dark_aqua>Ilusión de Warden</dark_aqua>"
+      habilidad4: "<blue><bold>TP A GENERADOR</bold></blue>"

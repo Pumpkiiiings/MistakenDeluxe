@@ -25,11 +25,6 @@ import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * Mariachi Muerte: El Charro del Inframundo.
- * ACTUALIZACIÓN: Sin corrutinas, Scheduler nativo.
- */
 class Mariachi : Asesino(
     "mariachi",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.mariachi.nombre", "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>", "asesinos_info")
@@ -109,11 +104,10 @@ class Mariachi : Asesino(
         iniciarMusica(player)
     }
 
-    // --- 🎸 HABILIDADES ---
-
     private fun habilidadGrito(player: Player) {
         player.world.getNearbyPlayers(player.location, 8.0).forEach { victim ->
-            if (!plugin.asesinoManager.esElAsesino(victim)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
                 victim.sendMessage(mm.deserialize("<red>¡El grito del Mariachi ha corrompido tus oídos!</red>"))
@@ -129,7 +123,8 @@ class Mariachi : Asesino(
 
     private fun habilidadGuitarrazo(player: Player) {
         player.world.getNearbyPlayers(player.location, 6.0).forEach { victim ->
-            if (!plugin.asesinoManager.esElAsesino(victim)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, victim)) {
                 plugin.gameManager.combatManager.takeDamage(victim)
                 victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
                 victim.playSound(victim.location, Sound.BLOCK_ANVIL_LAND, 0.8f, 0.5f)
@@ -142,8 +137,6 @@ class Mariachi : Asesino(
         player.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 160, 0))
         player.sendMessage(mm.deserialize("<green>¡Salud! Eres inmune al dolor por 6 segundos.</green>"))
     }
-
-    // --- 🚀 VISUALES ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
@@ -200,7 +193,6 @@ class Mariachi : Asesino(
         val uuid = player.uniqueId
         detenerMusica(uuid)
 
-        // 74000ms = 1480 ticks
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
             if (!player.isOnline || !plugin.asesinoManager.esElAsesino(player)) {
                 detenerMusica(uuid)

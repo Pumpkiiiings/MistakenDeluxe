@@ -41,9 +41,6 @@ class Colorsito : Asesino(
     private val sonidoId = "mistaken:colorsito"
 
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
-    // Ya no necesitamos 'angulos' porque usaremos tiempo real para suavidad extrema
-
-    // Renombrado para evitar conflicto con la clase padre
     private val colorsitoTasks: MutableSet<ScheduledTask> = ConcurrentHashMap.newKeySet()
     private val musicTasks: MutableMap<UUID, ScheduledTask> = ConcurrentHashMap()
 
@@ -65,7 +62,6 @@ class Colorsito : Asesino(
     }
 
     override fun equipar(player: Player) {
-        // --- 📏 EFECTO MINI ---
         player.getAttribute(Attribute.SCALE)?.baseValue = 0.5
 
         val inv = player.inventory
@@ -76,7 +72,6 @@ class Colorsito : Asesino(
         val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            // Lectura directa para asegurar que CraftEngine funcione
             val id = if (isArmor) configMecanica.getString("$path.armadura.$key")
             else configMecanica.getString("$path.items.$key")
 
@@ -119,7 +114,6 @@ class Colorsito : Asesino(
         iniciarMusicaColorsito(player)
     }
 
-    // --- 🎵 MÚSICA EN BUCLE ---
     private fun iniciarMusicaColorsito(player: Player) {
         val uuid = player.uniqueId
         detenerMusica(uuid)
@@ -130,7 +124,6 @@ class Colorsito : Asesino(
                 scheduledTask.cancel()
                 return@runAtFixedRate
             }
-            // Sonido solo para los demás o global
             player.world.playSound(player, sonidoId, SoundCategory.RECORDS, 2.0f, 1.0f)
         }, null, 1L, 2280L)
 
@@ -141,8 +134,6 @@ class Colorsito : Asesino(
         musicTasks.remove(uuid)?.cancel()
         Bukkit.getOnlinePlayers().forEach { it.stopSound(sonidoId, SoundCategory.RECORDS) }
     }
-
-    // --- ⚔️ HABILIDADES ---
 
     private fun habilidadVividTrace(player: Player) {
         val dir = player.location.direction.normalize().multiply(1.8).setY(0.2)
@@ -158,7 +149,8 @@ class Colorsito : Asesino(
                 return@runAtFixedRate
             }
             player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
-                if (!plugin.asesinoManager.esElAsesino(victim) && hitted.add(victim.uniqueId)) {
+                // 🔥 Uso de la función centralizada
+                if (esObjetivoValido(player, victim) && hitted.add(victim.uniqueId)) {
                     plugin.gameManager.combatManager.takeDamage(victim)
                     victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
                     victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 1.5f)
@@ -173,7 +165,8 @@ class Colorsito : Asesino(
     private fun habilidadColorDrain(player: Player) {
         player.playSound(player.location, Sound.BLOCK_CONDUIT_ATTACK_TARGET, 1f, 1.8f)
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
-            if (!plugin.asesinoManager.esElAsesino(victim)) {
+            // 🔥 Uso de la función centralizada
+            if (esObjetivoValido(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
                 victim.sendMessage(mm.deserialize("<gradient:#ff0080:#00ffff><i>\"Dame tus colores...\"</i></gradient>"))
@@ -190,7 +183,8 @@ class Colorsito : Asesino(
             }
             player.world.spawnParticle(org.bukkit.Particle.ELECTRIC_SPARK, player.location, 20, 2.0, 2.0, 2.0, 0.05)
             player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { victim ->
-                if (!plugin.asesinoManager.esElAsesino(victim)) {
+                // 🔥 Uso de la función centralizada
+                if (esObjetivoValido(player, victim)) {
                     plugin.gameManager.combatManager.takeDamage(victim)
                     victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(0.8).setY(0.3)
                 }
@@ -202,7 +196,8 @@ class Colorsito : Asesino(
     }
 
     private fun habilidadShikisaiEnd(player: Player) {
-        val target = player.getNearbyEntities(15.0, 15.0, 15.0).filterIsInstance<Player>().find { !plugin.asesinoManager.esElAsesino(it) } ?: return
+        // 🔥 Uso de la función centralizada
+        val target = player.getNearbyEntities(15.0, 15.0, 15.0).filterIsInstance<Player>().find { esObjetivoValido(player, it) } ?: return
 
         player.teleportAsync(target.location).thenAccept {
             player.scheduler.run(plugin, { _ ->
@@ -213,13 +208,10 @@ class Colorsito : Asesino(
         }
     }
 
-    // --- 🌀 RENDERIZADO VISUAL ULTRA-FLUIDO ---
-
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { limpiarEntidades(uuid); return }
 
-        // Verificamos mundo
         val listaExistente = orbitadores[uuid]
         if (listaExistente != null && listaExistente.isNotEmpty() && listaExistente[0].world != player.world) {
             limpiarEntidades(uuid)
@@ -229,26 +221,18 @@ class Colorsito : Asesino(
             orbitMaterials.map { mat -> crearBloqueOrbitante(player.location, mat) }.toMutableList()
         }
 
-        // 🔥 MAGIA MATEMÁTICA: Usamos System.currentTimeMillis() para un movimiento suave independiente del TPS.
-        // Velocidad controlada: Dividimos entre 700.0 (más bajo = más rápido)
         val timeFactor = System.currentTimeMillis() / 700.0
-        val radio = 1.35 // Ajustado para scale 0.5
+        val radio = 1.35
 
         for (i in entidades.indices) {
             val display = entidades[i]
             if (display.isValid) {
-                // Calculamos el ángulo para este bloque específico
                 val angle = timeFactor + (2 * Math.PI / entidades.size) * i
-
                 val x = radio * cos(angle)
                 val z = radio * sin(angle)
-                // Movimiento "Onda" vertical suave
                 val y = 0.6 + (0.15 * sin(angle * 2))
 
-                // Aplicamos rotación al bloque para que "mire" hacia donde gira (Efecto Tornado)
                 display.setRotation(Math.toDegrees(-angle).toFloat(), 0f)
-
-                // Teleportación con suavizado del cliente
                 display.teleport(player.location.clone().add(x, y, z))
             }
         }
@@ -257,35 +241,25 @@ class Colorsito : Asesino(
     private fun crearBloqueOrbitante(loc: Location, mat: Material): BlockDisplay {
         return loc.world.spawn(loc, BlockDisplay::class.java) { bd ->
             bd.block = mat.createBlockData()
-
-            // Transformación inicial (Escala pequeña)
             bd.transformation = Transformation(
                 JomlVector3f(-0.1f, -0.1f, -0.1f),
                 Quaternionf(),
-                JomlVector3f(0.2f, 0.2f, 0.2f), // Escala 0.2
+                JomlVector3f(0.2f, 0.2f, 0.2f),
                 Quaternionf()
             )
-
-            // 🔥 CLAVE DE LA FLUIDEZ:
-            // teleportDuration: 3 ticks. Le dice al cliente "tarda 150ms en llegar al destino".
-            // Como actualizamos cada 1 tick (50ms), el cliente siempre está interpolando suavemente.
             bd.teleportDuration = 3
             bd.interpolationDuration = 0
-
-            // Iluminación máxima para evitar sombras feas al girar
             bd.brightness = Display.Brightness(15, 15)
         }
     }
 
     override fun mostrarTrail(player: Player) {
-        // Partículas sutiles
         val loc = player.location.add(0.0, 0.3, 0.0)
         val packet = WrapperPlayServerParticle(
             Particle(ParticleTypes.DUST, ParticleDustData(1f, 0f, 0.8f, 1.2f)),
             false, Vector3d(loc.x, loc.y, loc.z), Vector3f(0.1f, 0.1f, 0.1f), 0.01f, 1
         )
-        // Usamos una distancia de renderizado menor para no saturar clientes lejanos
-        val distSq = 400.0 // 20 bloques
+        val distSq = 400.0
         for (p in player.world.players) {
             if (p.location.distanceSquared(loc) < distSq) {
                 PacketEvents.getAPI().playerManager.sendPacket(p, packet)
