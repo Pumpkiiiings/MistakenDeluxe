@@ -312,13 +312,22 @@ class Sowoul : Asesino(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        if (itemKitCache.isEmpty()) preLoadKit()
         val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        val configMecanica = plugin.configManager.getAsesinos()
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val item = itemKitCache[key]?.clone() ?: return
-            val namePath = if (key == "arma") "asesinos.sowoul.habilidades_nombres.arma"
-            else "asesinos.sowoul.habilidades_nombres.$key"
+            val id = configMecanica.getString("$pathBase.armadura.$key") ?:
+            configMecanica.getString("$pathBase.items.$key")
+
+            if (id == null || id == "none") return
+
+            val item = CraftEngineUtils.getCustomItem(id) ?: run {
+                val mat = Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase())
+                if (mat != null) ItemStack(mat) else null
+            } ?: return
+
+            val namePath = if (key == "arma") "asesinos.${this.id}.habilidades_nombres.arma"
+            else "asesinos.${this.id}.habilidades_nombres.$key"
 
             langInfo.getString(namePath)?.let {
                 item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
@@ -336,14 +345,15 @@ class Sowoul : Asesino(
             }
         }
 
-        deliver("casco", 0, true); deliver("pechera", 0, true)
-        deliver("pantalones", 0, true); deliver("botas", 0, true)
-        deliver("habilidad1", 1); deliver("habilidad2", 2)
-        deliver("habilidad3", 3); deliver("habilidad4", 4)
+        deliver("casco", 0, true)
+        deliver("pechera", 0, true)
+        deliver("pantalones", 0, true)
+        deliver("botas", 0, true)
+        deliver("habilidad1", 1)
+        deliver("habilidad2", 2)
+        deliver("habilidad3", 3)
+        deliver("habilidad4", 4)
         deliver("arma", 8)
-
-        player.inventory.heldItemSlot = 8
-        player.updateInventory()
     }
 
     // --- 🃏 VISUALES (CARTAS ORBITANTES) ---
