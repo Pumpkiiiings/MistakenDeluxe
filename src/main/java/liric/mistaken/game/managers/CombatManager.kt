@@ -19,11 +19,12 @@ import org.bukkit.potion.PotionEffectType
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * CombatManager: Adaptación fiel a la lógica Java (KB Nativo).
- * FIX: Cooldown dinámico de 1.5 segundos por golpe con indicador visual nativo y soporte Asesino vs Asesino.
+ * FIX: Glow exclusivo usando la API GlowingEntities y Cooldown ágil.
  */
 class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
@@ -31,9 +32,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     private val killerCooldowns = ConcurrentHashMap<UUID, Long>()
     private val survivorCooldowns = ConcurrentHashMap<UUID, Long>()
 
-    // 🔥 TIEMPOS DE COOLDOWN (Bajados a 1.5 segundos para más dinamismo)
-    private val KILLER_COOLDOWN = 1500L
-    private val SURVIVOR_COOLDOWN = 1500L
+    // 🔥 TIEMPOS DE COOLDOWN (Bajados a 1 segundo para combates ágiles)
+    private val KILLER_COOLDOWN = 1000L
+    private val SURVIVOR_COOLDOWN = 1000L
 
     private val mm = plugin.mm
 
@@ -55,14 +56,28 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 if (target == killer || target.world != killerLoc.world ||
                     target.gameMode != GameMode.SURVIVAL || plugin.isIgnored(target)) continue
 
+                // Evitamos procesar a otros asesinos en modo PVP
+                if (plugin.gameManager.esAsesino(target.uniqueId)) continue
+
                 val distSq = killerLoc.distanceSquared(target.location)
 
-                if (distSq <= 100.0) {
-                    target.scheduler.run(plugin, { _ ->
-                        if (target.isOnline) target.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, 30, 0, false, false, false))
+                // 🔥 FIX: Glow exclusivo para el asesino usando GlowingEntities (Seguro para Folia)
+                if (distSq <= 100.0) { // 10 bloques
+                    target.scheduler.run(plugin, Consumer { _ ->
+                        if (target.isOnline && killer.isOnline) {
+                            try { plugin.glowingAPI.setGlowing(target, killer, ChatColor.RED) } catch (_: Exception) {}
+                        }
+                    }, null)
+                } else {
+                    // Si se aleja, le quitamos el glow exclusivo al asesino
+                    target.scheduler.run(plugin, Consumer { _ ->
+                        if (target.isOnline && killer.isOnline) {
+                            try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                        }
                     }, null)
                 }
-                if (distSq <= 900.0) {
+
+                if (distSq <= 900.0) { // 30 bloques
                     if (distSq < minDistanceSq) {
                         minDistanceSq = distSq
                         foundSomeone = true
@@ -113,9 +128,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         player.removePotionEffect(PotionEffectType.DARKNESS)
         player.isSwimming = false
 
-        // 🔥 FIX MAGICO VISUAL para coincidir con 1.5 segundos
-        // Fórmula: 1.0 / Tiempo deseado (1.5) = 0.666666
-        player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 0.666666
+        // Carga visual de 1.0 = 1 segundo
+        player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 1.0
 
         if (plugin.isReady) plugin.scoreboardManager.updatePlayer(player)
     }
@@ -131,15 +145,14 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
         val isAttackerKiller = plugin.gameManager.esAsesino(attacker.uniqueId)
         val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
-        val isAssassinPvpMode = plugin.gameManager.currentMode == MistakenMode.ASSASSIN_PVP
+        val isAssassinPvpMode = plugin.gameManager.currentMode == MistakenMode.DOUBLE_KILLER
 
-        // 1. Fuego Amigo (Bloqueado, EXCEPTO si estamos en modo ASSASSIN_PVP)
+        // 1. Fuego Amigo
         if (isAttackerKiller == isVictimKiller && !isAssassinPvpMode) {
             event.isCancelled = true
             return
         }
 
-        // Si ambos son supervivientes normales, no se pueden pegar
         if (!isAttackerKiller && !isVictimKiller) {
             event.isCancelled = true
             return
@@ -147,7 +160,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
         val now = System.currentTimeMillis()
 
-        // 2. Ataque de un Asesino (Hacia superviviente o hacia otro asesino en PVP)
+        // 2. Ataque de un Asesino
         if (isAttackerKiller) {
             val lastHit = killerCooldowns.getOrDefault(attacker.uniqueId, 0L)
 
@@ -161,13 +174,12 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             killerCooldowns[attacker.uniqueId] = now
             event.damage = 0.1 // KB Nativo
 
-            // 🔥 En ASSASSIN_PVP pegan de 4 en 4 (2 corazones), en clásico de 3 en 3 (1.5 corazones)
             val dmg = if (isAssassinPvpMode) 4.0 else 3.0
             processTrueDamage(victim, attacker, dmg)
             return
         }
 
-        // 3. Humano vs Asesino (Defensa del Superviviente)
+        // 3. Humano vs Asesino
         if (!isAttackerKiller && isVictimKiller) {
             val lastHit = survivorCooldowns.getOrDefault(attacker.uniqueId, 0L)
 
@@ -190,6 +202,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         if (isFrozen(victim)) return
 
         runOnMain {
+            // Escudo anti-doble muerte
+            if (victim.gameMode == GameMode.SPECTATOR) return@runOnMain
+
             val nextHP = (victim.health - amount).coerceAtLeast(0.0)
             victim.health = nextHP
 
@@ -212,6 +227,11 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 victim.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
                 frozenPlayers.remove(victim.uniqueId)
 
+                // Limpiamos el Glow personal en caso de muerte
+                plugin.gameManager.getCurrentAsesino()?.let { killer ->
+                    try { plugin.glowingAPI.unsetGlowing(victim, killer) } catch (_: Exception) {}
+                }
+
                 plugin.gameManager.playerController.handlePlayerDeath(victim)
             }
         }
@@ -225,15 +245,23 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             it.removePotionEffect(PotionEffectType.DARKNESS)
             it.isSwimming = false
 
-            // Reset atributos de Freeze
             if (frozenPlayers.contains(uuid)) {
                 it.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
                 it.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
                 it.clearTitle()
             }
 
-            // 🔥 Restaurar Attack Speed a Vanilla (4.0 es la velocidad normal de espadas/puños)
+            // Restaurar Attack Speed a Vanilla (4.0)
             it.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
+
+            // Limpiar glows si el jugador se va
+            plugin.gameManager.getCurrentAsesino()?.let { killer ->
+                it.scheduler.run(plugin, Consumer { _ ->
+                    if (it.isOnline && killer.isOnline) {
+                        try { plugin.glowingAPI.unsetGlowing(it, killer) } catch (_: Exception) {}
+                    }
+                }, null)
+            }
         }
         killerCooldowns.remove(uuid)
         survivorCooldowns.remove(uuid)
@@ -275,7 +303,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     fun soltarPasajero(vehicle: Player) {
         vehicle.passengers.forEach {
             vehicle.removePassenger(it)
-            if (it is Player && it.health <= 4.0) it.isSwimming = true
         }
     }
 
@@ -297,10 +324,10 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
     private fun startFreezeTimer(victim: Player) {
         var timeLeft = 120
-        victim.scheduler.runAtFixedRate(plugin, { task ->
+        victim.scheduler.runAtFixedRate(plugin, Consumer { task ->
             if (!isFrozen(victim) || !victim.isOnline) {
                 task.cancel()
-                return@runAtFixedRate
+                return@Consumer
             }
             val timeFormatted = String.format(Locale.US, "%d:%02d", timeLeft / 60, timeLeft % 60)
             victim.showTitle(Title.title(

@@ -4,6 +4,7 @@ import liric.mistaken.game.GameManager
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import net.kyori.adventure.title.Title
 import org.bukkit.GameMode
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
@@ -17,7 +18,6 @@ import kotlin.math.min
 
 class GamePlayerController(private val game: GameManager) {
 
-    // 🔥 Variable para controlar que el evento LMS no se dispare más de 1 vez por partida
     private var lmsActivado = false
 
     fun setupPlayers(arena: liric.mistaken.game.Arena) {
@@ -29,7 +29,7 @@ class GamePlayerController(private val game: GameManager) {
         // --- 1. MODO ASESINO PVP (Extremo) ---
         if (game.currentMode == MistakenMode.ASSASSIN_PVP) {
             onlinePlayers.shuffled().forEachIndexed { index, p ->
-                game.asesinosUUIDs.add(p.uniqueId) // Todos son asesinos
+                game.asesinosUUIDs.add(p.uniqueId)
 
                 val spawns = arena.survivorSpawns
                 val spawnLoc = if (spawns.isEmpty()) arena.asesinoSpawn ?: p.world.spawnLocation else spawns[index % spawns.size]
@@ -42,14 +42,13 @@ class GamePlayerController(private val game: GameManager) {
 
                 p.teleportAsync(spawnLoc).thenAccept { success ->
                     if (success && p.isOnline) {
-                        // 🔥 0 HARDCODE: Cargamos la clase de asesino que el jugador tenga equipada
                         val claseID = game.plugin.playerDataManager.getSelectedKiller(p.uniqueId)
                         game.plugin.asesinoManager.equiparAsesino(p, claseID)
                     }
                 }
                 game.uiController.playRoleTitle(p, true)
             }
-            return // Salimos para no ejecutar la lógica de los otros modos
+            return
         }
 
         // --- 2. MODOS CLÁSICOS ---
@@ -135,15 +134,23 @@ class GamePlayerController(private val game: GameManager) {
 
         val killersOnline = game.asesinosUUIDs.mapNotNull { game.plugin.server.getPlayer(it) }.filter { it.isOnline }
 
+        // BUCLE SOLO PARA SUPERVIVIENTES
         for (p in players) {
-            if (game.plugin.isIgnored(p) || game.esAsesino(p.uniqueId) || p.gameMode == GameMode.SPECTATOR || game.currentMode == MistakenMode.ASSASSIN_PVP) continue
+            // Filtro maestro: Si es ignorado, asesino, espectador o modo es PVP Asesinos -> SALTAMOS
+            if (game.plugin.isIgnored(p) || game.esAsesino(p.uniqueId) || p.gameMode == GameMode.SPECTATOR || p.isInvisible || game.currentMode == MistakenMode.ASSASSIN_PVP) continue
 
             if ((ticks + (p.uniqueId.hashCode() and 0xFFFF)) % 5 == 0) {
                 game.uiController.playAmbientForPlayer(p, killersOnline)
             }
 
             if (ticks % 10 == 0 && killersOnline.isNotEmpty()) {
-                game.uiController.checkHeartbeat(p, killersOnline[0])
+                val closestKiller = killersOnline[0] // Podrías mejorar esto buscando al más cercano si hay varios (Double Killer)
+                game.uiController.checkHeartbeat(p, closestKiller)
+
+                // 🔥 OSCURIDAD POR PROXIMIDAD (Exclusivo Supervivientes)
+                if (p.world == closestKiller.world && p.location.distanceSquared(closestKiller.location) <= 100.0) {
+                    p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0, false, false, false))
+                }
             }
 
             if (ticks % 2 == 0 && game.currentMode != MistakenMode.FREEZE_TAG && game.combatManager.getHealth(p) == 1 && p.vehicle == null) {
@@ -172,14 +179,14 @@ class GamePlayerController(private val game: GameManager) {
         if (game.currentState != GameState.INGAME) return
 
         if (game.currentMode == MistakenMode.ASSASSIN_PVP) {
-            val aliveAssassins = game.plugin.server.onlinePlayers.count { !game.plugin.isIgnored(it) && it.gameMode == GameMode.SURVIVAL }
+            val aliveAssassins = game.plugin.server.onlinePlayers.count { !game.plugin.isIgnored(it) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible }
             if (aliveAssassins <= 1) {
                 game.stateController.endGame("discord.reason_killer_won", true)
             }
             return
         }
 
-        val allSurvivors = game.plugin.server.onlinePlayers.filter { !game.esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL }
+        val allSurvivors = game.plugin.server.onlinePlayers.filter { !game.esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible }
 
         if (allSurvivors.isEmpty()) {
             game.stateController.endGame("game.victory-killer", true)
@@ -200,7 +207,7 @@ class GamePlayerController(private val game: GameManager) {
         if (game.currentState != GameState.INGAME || lmsActivado || game.currentMode == MistakenMode.ASSASSIN_PVP) return
 
         val supervivientesVivos = game.plugin.server.onlinePlayers.filter {
-            !game.esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL
+            !game.esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible
         }
 
         if (supervivientesVivos.size == 1 && game.currentMode != MistakenMode.FREEZE_TAG) {
@@ -216,10 +223,12 @@ class GamePlayerController(private val game: GameManager) {
     }
 
     fun handlePlayerDeath(player: Player) {
-        if (player.gameMode == GameMode.SPECTATOR) return
+        // 🔥 ESCUDO: Si ya está en nuestro modo espectador, no hacemos nada
+        if (player.gameMode == GameMode.SPECTATOR || player.isInvisible) return
 
+        // 1. MODO ASSASSIN PVP
         if (game.currentMode == MistakenMode.ASSASSIN_PVP) {
-            player.gameMode = GameMode.SPECTATOR
+            game.plugin.spectatorManager.setCustomSpectator(player)
             player.isSwimming = false
             game.broadcastLocalized("game.player-died", Placeholder.parsed("player", player.name))
             player.playSound(player.location, Sound.ENTITY_PLAYER_DEATH, 1f, 1f)
@@ -228,16 +237,19 @@ class GamePlayerController(private val game: GameManager) {
             return
         }
 
+        // 2. EL ASESINO MUERE
         if (game.esAsesino(player.uniqueId)) {
             game.asesinosUUIDs.remove(player.uniqueId)
-            player.gameMode = GameMode.SPECTATOR
+            game.plugin.spectatorManager.setCustomSpectator(player)
+
             if (game.asesinosUUIDs.isEmpty() && game.currentState == GameState.INGAME) {
                 game.stateController.endGame("game.victory-survivors", false)
             }
             return
         }
 
-        player.gameMode = GameMode.SPECTATOR
+        // 3. EL SUPERVIVIENTE MUERE
+        game.plugin.spectatorManager.setCustomSpectator(player)
         player.isSwimming = false
         game.ambientManager.stopAmbience(player)
 
@@ -284,26 +296,26 @@ class GamePlayerController(private val game: GameManager) {
             p.inventory.armorContents = arrayOfNulls(4)
             p.activePotionEffects.forEach { p.removePotionEffect(it.type) }
 
-            // 🔥 FIX CLEANUP: Ahora limpiamos la clase del asesino sin importar el modo, porque en Assassin PvP también cargan clases.
             if (game.esAsesino(p.uniqueId)) {
                 game.plugin.asesinoManager.getAsesinoDelJugador(p)?.cleanup(p)
             } else {
                 game.plugin.supervivienteManager.getClase(p)?.cleanup(p)
             }
 
-            liric.mistaken.utils.SpectatorUtils.setSafeSpectator(p)
-
-            if (game.currentMode == MistakenMode.ASSASSIN_PVP) {
-                p.showTitle(net.kyori.adventure.title.Title.title(
-                    game.plugin.messageConfig.getMessage(p, "lms.title"), // Título en rojo
-                    game.plugin.messageConfig.getMessage(p, "game.killer-subtitle")
-                ))
-            } else {
-                p.showTitle(net.kyori.adventure.title.Title.title(
-                    game.plugin.messageConfig.getMessage(p, "game.$type-title"),
-                    game.plugin.messageConfig.getMessage(p, "game.$type-subtitle")
-                ))
+            // Al terminar la partida, quitamos a los muertos de su invisibilidad antes de mandarlos al lobby
+            if (p.isInvisible) {
+                p.isInvisible = false
+                p.isCollidable = true
+                p.isInvulnerable = false
+                p.allowFlight = false
+                p.isFlying = false
+                game.plugin.server.onlinePlayers.forEach { online -> online.showPlayer(game.plugin, p) }
             }
+
+            p.showTitle(Title.title(
+                game.plugin.messageConfig.getMessage(p, if (game.currentMode == MistakenMode.ASSASSIN_PVP) "lms.title" else "game.$type-title"),
+                game.plugin.messageConfig.getMessage(p, if (game.currentMode == MistakenMode.ASSASSIN_PVP) "game.killer-subtitle" else "game.$type-subtitle")
+            ))
 
             p.playSound(p.location, winSound, 1f, 1f)
         }
