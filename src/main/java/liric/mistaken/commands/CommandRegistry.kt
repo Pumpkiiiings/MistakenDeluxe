@@ -6,6 +6,7 @@ import liric.mistaken.Mistaken
 /**
  * [LIRIC-MISTAKEN 2.0]
  * CommandRegistry: El cerebro del registro de comandos.
+ * FIX: Alias duplicados arreglados, ComponentLogger añadido y nuevo comando Espectear registrado.
  */
 class CommandRegistry(private val plugin: Mistaken) {
 
@@ -36,13 +37,25 @@ class CommandRegistry(private val plugin: Mistaken) {
                 emptyList()
             )
 
+            registrar.register(
+                LinkCommand.get(plugin),
+                "Vincular Discord",
+                emptyList()
+            )
+
+            registrar.register(
+                MistakenTestCommand.get(plugin),
+                "Comando de pruebas secretas para Admins",
+                listOf("mtest") // Quité el 'mt' para evitar conflictos con el comando principal
+            )
+
             // --- GRUPO B: COMANDOS BÁSICOS (Clases BasicCommand) ---
             // Estos SÍ llevan '()' porque son instancias de clase
 
             registrar.register(
                 "mistaken",
                 "Comando principal",
-                listOf("ms", "mt"),
+                listOf("ms", "mt"), // 'mt' se queda solo aquí
                 MistakenCommand(plugin)
             )
 
@@ -52,20 +65,15 @@ class CommandRegistry(private val plugin: Mistaken) {
                 ArenaCommand(plugin)
             )
 
+            // 🔥 NUEVO COMANDO: ESPECTADOR INVISIBLE
             registrar.register(
-                LinkCommand.get(plugin),
-                "Vincular Discord",
-                emptyList()
-            )
-
-            // Adentro del manager.registerEventHandler(LifecycleEvents.COMMANDS)
-            registrar.register(
-                MistakenTestCommand.get(plugin),
-                "Comando de pruebas secretas para Admins",
-                listOf("mtest", "mt") // Alias cortos para no escribir tanto
+                "espectear",
+                "Entrar al modo espectador invisible con TP",
+                listOf("spectate"),
+                EspectearCommand(plugin)
             )
         }
 
-        plugin.logger.info("[CommandRegistry] Comandos registrados correctamente")
+        plugin.componentLogger.info(plugin.mm.deserialize("<green>[CommandRegistry] Comandos registrados correctamente.</green>"))
     }
 }
