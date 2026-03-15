@@ -21,11 +21,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * CombatManager: Adaptación fiel a la lógica Java (KB Nativo).
- * FIX: Glow exclusivo usando la API GlowingEntities y Cooldown ágil.
- */
 class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
     private val frozenPlayers = ConcurrentHashMap.newKeySet<UUID>()
@@ -53,35 +48,50 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             var foundSomeone = false
 
             for (target in plugin.server.onlinePlayers) {
-                if (target == killer || target.world != killerLoc.world ||
-                    target.gameMode != GameMode.SURVIVAL || plugin.isIgnored(target)) continue
+                val isValidSurvivor = target != killer &&
+                        target.world == killerLoc.world &&
+                        target.gameMode == GameMode.SURVIVAL &&
+                        !plugin.isIgnored(target) &&
+                        !plugin.gameManager.esAsesino(target.uniqueId)
 
-                // Evitamos procesar a otros asesinos en modo PVP
-                if (plugin.gameManager.esAsesino(target.uniqueId)) continue
+                if (isValidSurvivor) {
+                    val distSq = killerLoc.distanceSquared(target.location)
 
-                val distSq = killerLoc.distanceSquared(target.location)
+                    // 15 Bloques al cuadrado = 225.0
+                    if (distSq <= 225.0) {
+                        target.scheduler.run(plugin, Consumer { _ ->
+                            if (target.isOnline && killer.isOnline) {
+                                // 🔥 FIX: Condición de carrera. Verificamos que el juego SIGA ESTANDO EN CURSO
+                                // al momento de ejecutar la tarea, por si terminó milisegundos antes.
+                                if (plugin.gameManager.currentState == GameState.INGAME) {
+                                    try { plugin.glowingAPI.setGlowing(target, killer, ChatColor.RED) } catch (_: Exception) {}
+                                } else {
+                                    try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                                }
+                            }
+                        }, null)
+                    } else {
+                        // Si está a más de 15 bloques, apagar
+                        target.scheduler.run(plugin, Consumer { _ ->
+                            if (target.isOnline && killer.isOnline) {
+                                try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                            }
+                        }, null)
+                    }
 
-                // 🔥 FIX: Glow exclusivo para el asesino usando GlowingEntities (Seguro para Folia)
-                if (distSq <= 100.0) { // 10 bloques
-                    target.scheduler.run(plugin, Consumer { _ ->
-                        if (target.isOnline && killer.isOnline) {
-                            try { plugin.glowingAPI.setGlowing(target, killer, ChatColor.RED) } catch (_: Exception) {}
+                    // 30 Bloques para latidos = 900.0
+                    if (distSq <= 900.0) {
+                        if (distSq < minDistanceSq) {
+                            minDistanceSq = distSq
+                            foundSomeone = true
                         }
-                    }, null)
+                    }
                 } else {
-                    // Si se aleja, le quitamos el glow exclusivo al asesino
                     target.scheduler.run(plugin, Consumer { _ ->
                         if (target.isOnline && killer.isOnline) {
                             try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
                         }
                     }, null)
-                }
-
-                if (distSq <= 900.0) { // 30 bloques
-                    if (distSq < minDistanceSq) {
-                        minDistanceSq = distSq
-                        foundSomeone = true
-                    }
                 }
             }
 
@@ -126,9 +136,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
         player.health = maxHP
         player.removePotionEffect(PotionEffectType.DARKNESS)
-        player.isSwimming = false
 
-        // Carga visual de 1.0 = 1 segundo
         player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 1.0
 
         if (plugin.isReady) plugin.scoreboardManager.updatePlayer(player)
@@ -147,7 +155,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
         val isAssassinPvpMode = plugin.gameManager.currentMode == MistakenMode.DOUBLE_KILLER
 
-        // 1. Fuego Amigo
         if (isAttackerKiller == isVictimKiller && !isAssassinPvpMode) {
             event.isCancelled = true
             return
@@ -160,7 +167,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
         val now = System.currentTimeMillis()
 
-        // 2. Ataque de un Asesino
         if (isAttackerKiller) {
             val lastHit = killerCooldowns.getOrDefault(attacker.uniqueId, 0L)
 
@@ -172,14 +178,13 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             }
 
             killerCooldowns[attacker.uniqueId] = now
-            event.damage = 0.1 // KB Nativo
+            event.damage = 0.1
 
             val dmg = if (isAssassinPvpMode) 4.0 else 3.0
             processTrueDamage(victim, attacker, dmg)
             return
         }
 
-        // 3. Humano vs Asesino
         if (!isAttackerKiller && isVictimKiller) {
             val lastHit = survivorCooldowns.getOrDefault(attacker.uniqueId, 0L)
 
@@ -191,7 +196,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             }
 
             survivorCooldowns[attacker.uniqueId] = now
-            event.damage = 0.0 // KB Nativo
+            event.damage = 0.0
             processTrueDamage(victim, attacker, 4.0)
             victim.world.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1f, 1f)
             return
@@ -202,7 +207,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         if (isFrozen(victim)) return
 
         runOnMain {
-            // Escudo anti-doble muerte
             if (victim.gameMode == GameMode.SPECTATOR) return@runOnMain
 
             val nextHP = (victim.health - amount).coerceAtLeast(0.0)
@@ -227,41 +231,33 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 victim.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
                 frozenPlayers.remove(victim.uniqueId)
 
-                // Limpiamos el Glow personal en caso de muerte
-                plugin.gameManager.getCurrentAsesino()?.let { killer ->
-                    try { plugin.glowingAPI.unsetGlowing(victim, killer) } catch (_: Exception) {}
-                }
-
                 plugin.gameManager.playerController.handlePlayerDeath(victim)
             }
         }
     }
 
-    // --- Métodos de Gestión ---
-
     fun removePlayerData(uuid: UUID) {
         val p = Bukkit.getPlayer(uuid)
-        p?.let {
-            it.removePotionEffect(PotionEffectType.DARKNESS)
-            it.isSwimming = false
+        p?.let { target ->
+            target.removePotionEffect(PotionEffectType.DARKNESS)
 
             if (frozenPlayers.contains(uuid)) {
-                it.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
-                it.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
-                it.clearTitle()
+                target.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
+                target.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
+                target.clearTitle()
             }
 
-            // Restaurar Attack Speed a Vanilla (4.0)
-            it.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
+            target.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
 
-            // Limpiar glows si el jugador se va
-            plugin.gameManager.getCurrentAsesino()?.let { killer ->
-                it.scheduler.run(plugin, Consumer { _ ->
-                    if (it.isOnline && killer.isOnline) {
-                        try { plugin.glowingAPI.unsetGlowing(it, killer) } catch (_: Exception) {}
+            // Limpieza absoluta de Glow para este jugador
+            target.scheduler.run(plugin, Consumer { _ ->
+                plugin.server.onlinePlayers.forEach { viewer ->
+                    if (target.isOnline && viewer.isOnline) {
+                        try { plugin.glowingAPI.unsetGlowing(target, viewer) } catch (_: Exception) {}
+                        try { plugin.glowingAPI.unsetGlowing(viewer, target) } catch (_: Exception) {}
                     }
-                }, null)
-            }
+                }
+            }, null)
         }
         killerCooldowns.remove(uuid)
         survivorCooldowns.remove(uuid)
@@ -272,13 +268,25 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         frozenPlayers.clear()
         killerCooldowns.clear()
         survivorCooldowns.clear()
+
+        // 🔥 FIX ETERNO: Limpieza profunda de Glows al terminar la partida.
+        // Hacemos que cada jugador quite de forma segura sus glows pendientes.
+        plugin.server.globalRegionScheduler.run(plugin) { _ ->
+            for (p1 in plugin.server.onlinePlayers) {
+                p1.scheduler.run(plugin, Consumer { _ ->
+                    for (p2 in plugin.server.onlinePlayers) {
+                        try { plugin.glowingAPI.unsetGlowing(p1, p2) } catch (_: Exception) {}
+                        try { plugin.glowingAPI.unsetGlowing(p2, p1) } catch (_: Exception) {}
+                    }
+                }, null)
+            }
+        }
     }
 
     override fun unfreeze(victim: Player, rescuer: Player) {
         if (!frozenPlayers.remove(victim.uniqueId)) return
         runOnMain {
             victim.removePotionEffect(PotionEffectType.DARKNESS)
-            victim.isSwimming = false
 
             victim.clearTitle()
             victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1

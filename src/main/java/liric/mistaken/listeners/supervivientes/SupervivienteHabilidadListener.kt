@@ -5,7 +5,8 @@ import liric.mistaken.game.enums.GameState
 import liric.mistaken.supervivientes.clases.RaincoatKid
 import liric.mistaken.supervivientes.clases.KasaneTeto
 import liric.mistaken.supervivientes.clases.Jesse
-import liric.mistaken.supervivientes.clases.Aldeano // 🔥 NUEVO IMPORT
+import liric.mistaken.supervivientes.clases.Aldeano
+import org.bukkit.GameMode
 import org.bukkit.NamespacedKey
 import org.bukkit.attribute.Attribute
 import org.bukkit.Sound
@@ -28,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * [LIRIC-MISTAKEN 2.0]
  * SupervivienteHabilidadListener.
- * FIX: Agregado Aldeano (Soborno) y soporte completo para proyectiles.
+ * FIX: Seguridad añadida contra interacciones post-mortem (Modo Espectador).
  */
 class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
@@ -40,7 +41,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
         // Llaves para proyectiles especiales
         private val TETO_THROW_KEY = NamespacedKey("mistaken", "teto_throw")
-        private val EMERALD_KEY = NamespacedKey("mistaken", "villager_emerald") // 🔥 NUEVA KEY
+        private val EMERALD_KEY = NamespacedKey("mistaken", "villager_emerald")
 
         // Llaves para Melee
         private val STICK_KEY = NamespacedKey("mistaken", "kid_stick")
@@ -64,9 +65,15 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
         if (plugin.gameManager.currentState != GameState.INGAME) return
 
         val player = event.player
+
+        // 🔥 LA SOLUCIÓN: Si está especteando o muerto, bloqueamos el click
+        if (player.gameMode != GameMode.SURVIVAL) return
+        if (player.isInvisible) return
+
         val slot = player.inventory.heldItemSlot
 
         if (slot > 2) return
+        if (plugin.gameManager.esAsesino(player.uniqueId)) return
 
         val clase = plugin.supervivienteManager.getClase(player) ?: return
         if (player.inventory.itemInMainHand.type.isAir) return
@@ -100,6 +107,9 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
         if (plugin.gameManager.esAsesino(attacker.uniqueId)) return
         if (!plugin.gameManager.esAsesino(victim.uniqueId)) return
+
+        // Seguridad post-mortem
+        if (attacker.gameMode != GameMode.SURVIVAL || attacker.isInvisible) return
 
         val item = attacker.inventory.itemInMainHand
         if (!item.hasItemMeta()) return
@@ -150,6 +160,9 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
         val snowball = event.entity as? Snowball ?: return
         val victim = event.hitEntity as? Player ?: return
         val pdc = snowball.persistentDataContainer
+
+        // Verificamos que la víctima esté viva
+        if (victim.gameMode != GameMode.SURVIVAL || victim.isInvisible) return
 
         // 1. Roca (Civil)
         if (pdc.has(ROCA_KEY, PersistentDataType.BYTE)) {
@@ -209,13 +222,16 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     fun onSalsaMove(event: PlayerMoveEvent) {
         if (plugin.gameManager.currentState != GameState.INGAME) return
+        val player = event.player
+
+        if (player.gameMode != GameMode.SURVIVAL || player.isInvisible) return
+
         val to = event.to ?: return
         val from = event.from
         if (from.blockX == to.blockX && from.blockZ == to.blockZ && from.blockY == to.blockY) return
 
         val key = "${to.world.name}_${to.blockX}_${to.blockY}_${to.blockZ}"
         if (bloquesDerrame.contains(key)) {
-            val player = event.player
             if (!player.hasPotionEffect(PotionEffectType.SLOWNESS)) {
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 2))
                 player.playSound(player.location, Sound.BLOCK_SLIME_BLOCK_STEP, 0.5f, 0.5f)

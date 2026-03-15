@@ -4,6 +4,7 @@ import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Color
+import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.Sound
@@ -19,9 +20,9 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * AsesinoHabilidadListener: Gestión de disparadores y proyectiles especiales.
- * FIX: Prevención de doble-ejecución (MainHand/OffHand) y fusión de código duplicado.
+ * FIX: Prevención de uso en modo espectador (Muertos).
  */
 class AsesinoHabilidadListener(private val plugin: Mistaken) : Listener {
 
@@ -33,30 +34,25 @@ class AsesinoHabilidadListener(private val plugin: Mistaken) : Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onUseAbility(event: PlayerInteractEvent) {
-        // 1. 🔥 FIX CRÍTICO: Evitar doble ejecución.
-        // Bukkit dispara este evento para la mano principal y la secundaria. Solo nos importa la principal.
+        // Evitar doble ejecución
         if (event.hand != EquipmentSlot.HAND) return
-
-        // 2. Filtro Rápido de Acción
         if (!event.action.isRightClick) return
-
-        // 3. Filtro de Estado
         if (plugin.gameManager.currentState != GameState.INGAME) return
 
         val player = event.player
-        val slot = player.inventory.heldItemSlot
 
-        // 4. Filtro de Slot (Solo slots del 1 al 4 disparan habilidades)
+        // 🔥 FIX MUERTES: Bloqueamos si el asesino está muerto/especteando
+        if (player.gameMode != GameMode.SURVIVAL) return
+        if (player.isInvisible) return
+
+        val slot = player.inventory.heldItemSlot
         if (slot !in 1..4) return
 
-        // 5. Búsqueda de Clase (Operación O(1))
         val asesino = plugin.asesinoManager.getAsesinoDelJugador(player) ?: return
 
-        // 6. Validación de Item
         val item = player.inventory.itemInMainHand
         if (item.type == Material.AIR) return
 
-        // Ejecución
         event.isCancelled = true
         asesino.usarHabilidad(player, slot)
     }
@@ -66,7 +62,6 @@ class AsesinoHabilidadListener(private val plugin: Mistaken) : Listener {
      */
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun onProjectileHit(event: ProjectileHitEvent) {
-        // Casting rápido para no gastar recursos si es una flecha de esqueleto vanilla
         val snowball = event.entity as? Snowball ?: return
 
         val nameComp = snowball.customName() ?: return
@@ -89,6 +84,9 @@ class AsesinoHabilidadListener(private val plugin: Mistaken) : Listener {
             val victim = event.hitEntity as? Player ?: return
 
             if (plugin.asesinoManager.esElAsesino(victim)) return
+
+            // Verificamos que la víctima esté viva
+            if (victim.gameMode != GameMode.SURVIVAL || victim.isInvisible) return
 
             victim.apply {
                 addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 1))

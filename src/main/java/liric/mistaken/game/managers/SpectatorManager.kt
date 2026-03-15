@@ -1,6 +1,7 @@
 package liric.mistaken.game.managers
 
 import liric.mistaken.Mistaken
+import liric.mistaken.game.enums.GameState
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -14,6 +15,7 @@ import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
@@ -21,7 +23,6 @@ import org.bukkit.inventory.meta.SkullMeta
 
 class SpectatorManager(private val plugin: Mistaken) : Listener {
 
-    // Holder seguro para evitar que otros plugins choquen con el menú
     class SpectatorHolder : InventoryHolder {
         override fun getInventory(): Inventory = Bukkit.createInventory(this, 9)
     }
@@ -34,14 +35,13 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         player.isCollidable = false
         player.isInvulnerable = true
 
-        // Ocultarlo de los vivos para que su Hitbox NO bloquee ataques
+        // Ocultarlo de los vivos
         Bukkit.getOnlinePlayers().forEach { online ->
             if (online.gameMode == GameMode.SURVIVAL) {
                 online.hidePlayer(plugin, player)
             }
         }
 
-        // Dar ítems
         player.inventory.clear()
 
         val tpItem = ItemStack(Material.COMPASS).apply {
@@ -53,9 +53,38 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
 
         player.inventory.setItem(0, tpItem)
         player.inventory.setItem(4, speedItem)
-        player.flySpeed = 0.1f // Velocidad por defecto
+        player.flySpeed = 0.1f
 
         player.sendMessage(plugin.mm.deserialize("<green>Estás muerto. Has entrado al modo espectador con ítems."))
+    }
+
+    // 🔥 NUEVA FUNCIÓN: Restauración Forzada Total
+    fun removeCustomSpectator(player: Player) {
+        player.isInvisible = false
+        player.isCollidable = true
+        player.isInvulnerable = false
+        player.allowFlight = false
+        player.isFlying = false
+        player.flySpeed = 0.1f
+
+        // Fuerza a Bukkit a volver a enviarle los paquetes de este jugador a TODO el servidor
+        Bukkit.getOnlinePlayers().forEach { online ->
+            online.showPlayer(plugin, player)
+            // Aseguramos que él también pueda ver a todos (Por si se bugueó su propio cliente)
+            player.showPlayer(plugin, online)
+        }
+    }
+
+    // 🔥 SEGURIDAD: Si alguien entra a mitad de la partida, que no vea a los muertos flotando
+    @EventHandler
+    fun onJoin(e: PlayerJoinEvent) {
+        if (plugin.gameManager.currentState == GameState.INGAME) {
+            Bukkit.getOnlinePlayers().forEach { online ->
+                if (online.gameMode == GameMode.ADVENTURE && online.isInvisible) {
+                    e.player.hidePlayer(plugin, online)
+                }
+            }
+        }
     }
 
     @EventHandler
@@ -63,7 +92,7 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         val p = e.player
         if (p.gameMode != GameMode.ADVENTURE || !p.isInvisible) return
 
-        e.isCancelled = true // Evita que interactúen con el mapa real
+        e.isCancelled = true
         val item = e.item ?: return
 
         if (e.action == Action.RIGHT_CLICK_AIR || e.action == Action.RIGHT_CLICK_BLOCK) {
@@ -113,15 +142,12 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     fun onInventoryClick(e: InventoryClickEvent) {
         val p = e.whoClicked as? Player ?: return
 
-        // Evitamos que los muertos muevan sus ítems (Brújula y Pluma)
         if (p.gameMode == GameMode.ADVENTURE && p.isInvisible) {
             e.isCancelled = true
 
-            // Si le dieron click al menú de TP
             if (e.inventory.holder is SpectatorHolder) {
                 val clicked = e.currentItem ?: return
                 if (clicked.type == Material.PLAYER_HEAD) {
-                    // Extraemos el nombre del item plano para hacer el TP
                     val targetName = PlainTextComponentSerializer.plainText().serialize(clicked.itemMeta.displayName()!!)
                     val target = Bukkit.getPlayerExact(targetName)
 
@@ -137,7 +163,6 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         }
     }
 
-    // --- BLOQUEOS DE SEGURIDAD ---
     @EventHandler fun onDrop(e: PlayerDropItemEvent) { if (e.player.gameMode == GameMode.ADVENTURE && e.player.isInvisible) e.isCancelled = true }
     @EventHandler fun onPickup(e: EntityPickupItemEvent) { val p = e.entity as? Player ?: return; if (p.gameMode == GameMode.ADVENTURE && p.isInvisible) e.isCancelled = true }
     @EventHandler fun onDamageHit(e: EntityDamageByEntityEvent) { val p = e.damager as? Player ?: return; if (p.gameMode == GameMode.ADVENTURE && p.isInvisible) e.isCancelled = true }

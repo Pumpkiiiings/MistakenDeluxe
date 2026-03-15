@@ -28,9 +28,9 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * GameListener: El árbitro supremo.
- * FIX: Lógica de daño delegada al CombatManager para respetar el Cooldown de 3s.
+ * FIX: Salvado de ubicación al morir (Evita ir al lobby) y permisos para menú de espectador.
  */
 class GameListener(private val plugin: Mistaken) : Listener {
 
@@ -82,7 +82,6 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
 
         // --- CASO B: EL SOBREVIVIENTE SE DEFIENDE ---
-        // Si llegamos a esta línea, significa que el CombatManager permitió el golpe (no había cooldown).
         if (!isDamagerKiller && isVictimKiller) {
 
             // Feedback visual de la vida restante del Boss
@@ -98,25 +97,37 @@ class GameListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * 🔥 INSTA-RESPAWN
+     * 🔥 INSTA-RESPAWN & TP-BACK
+     * Te regresa al lugar donde moriste como Espectador Fantasma
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
         if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
 
         val victim = event.entity
+        val deathLoc = victim.location // 🔥 GUARDAMOS LA UBICACIÓN EXACTA DE LA MUERTE
+
         event.drops.clear()
         event.droppedExp = 0
         event.deathMessage(null)
 
-        // Solo procesamos la muerte si el jugador no ha sido marcado como espectador
-        if (victim.gameMode != org.bukkit.GameMode.SPECTATOR) {
+        // Verificamos que no sea ya un fantasma
+        if (victim.gameMode != org.bukkit.GameMode.ADVENTURE || !victim.isInvisible) {
             plugin.gameManager.playerController.handlePlayerDeath(victim)
         }
 
         victim.scheduler.runDelayed(plugin, Consumer { _ ->
             if (victim.isOnline && victim.isDead) {
+                // Forzamos la reaparición (Bukkit por defecto lo manda al spawn/lobby y le borra el inventario)
                 victim.spigot().respawn()
+
+                // 🔥 Teleportamos de regreso a donde murió de forma asíncrona
+                victim.teleportAsync(deathLoc).thenAccept { success ->
+                    if (success && plugin.gameManager.currentState == GameState.INGAME) {
+                        // Le volvemos a dar su modo espectador con ítems
+                        plugin.spectatorManager.setCustomSpectator(victim)
+                    }
+                }
             }
         }, null, 1L)
     }
@@ -152,8 +163,11 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val type = event.inventory.type
         if (type == InventoryType.PLAYER || type == InventoryType.CRAFTING) return
         val title = plain.serialize(event.view.title())
-        val allowed = listOf("Reparando", "Skill Check", "ENTES", "Tienda", "Selecciona")
+
+        // 🔥 FIX: Añadimos "Espectear" a la lista blanca para que la brújula abra
+        val allowed = listOf("Reparando", "Skill Check", "ENTES", "Tienda", "Selecciona", "Espectear")
         if (allowed.any { title.contains(it, ignoreCase = true) }) return
+
         event.isCancelled = true
     }
 

@@ -76,6 +76,10 @@ class GamePlayerController(private val game: GameManager) {
         val survivorsSolo = mutableListOf<Player>()
 
         for (p in onlinePlayers) {
+            // 🔥 DOBLE SEGURO: Sacamos al jugador del modo fantasma ANTES de equiparlo
+            // Esto asegura que vuelva a aparecer en el TAB y sea visible para todos.
+            game.plugin.spectatorManager.removeCustomSpectator(p)
+
             val isKiller = game.esAsesino(p.uniqueId)
             p.inventory.clear()
             game.combatManager.resetHealth(p)
@@ -302,6 +306,9 @@ class GamePlayerController(private val game: GameManager) {
                 game.plugin.supervivienteManager.getClase(p)?.cleanup(p)
             }
 
+            // 🔥 AÑADIDO: Limpiamos la data del combate y quitamos explícitamente el Glow de este jugador
+            game.combatManager.removePlayerData(p.uniqueId)
+
             // Al terminar la partida, quitamos a los muertos de su invisibilidad antes de mandarlos al lobby
             if (p.isInvisible) {
                 p.isInvisible = false
@@ -319,6 +326,9 @@ class GamePlayerController(private val game: GameManager) {
 
             p.playSound(p.location, winSound, 1f, 1f)
         }
+
+        // 🔥 AÑADIDO: Nos aseguramos de forzar la limpieza general del CombatManager
+        game.combatManager.clearAll()
 
         game.asesinosUUIDs.clear()
         game.plugin.asesinoManager.removerTodosLosAsesinos()
