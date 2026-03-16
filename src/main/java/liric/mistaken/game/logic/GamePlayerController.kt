@@ -76,8 +76,6 @@ class GamePlayerController(private val game: GameManager) {
         val survivorsSolo = mutableListOf<Player>()
 
         for (p in onlinePlayers) {
-            // 🔥 DOBLE SEGURO: Sacamos al jugador del modo fantasma ANTES de equiparlo
-            // Esto asegura que vuelva a aparecer en el TAB y sea visible para todos.
             game.plugin.spectatorManager.removeCustomSpectator(p)
 
             val isKiller = game.esAsesino(p.uniqueId)
@@ -91,6 +89,11 @@ class GamePlayerController(private val game: GameManager) {
 
                 p.teleportAsync(spawnLoc).thenAccept { success ->
                     if (success && p.isOnline) {
+                        // 🔥 ESCUDO EXTRA DE INICIO: Le quitamos la oscuridad forzosamente al terminar el TP
+                        p.scheduler.run(game.plugin, Consumer { _ ->
+                            p.removePotionEffect(PotionEffectType.DARKNESS)
+                        }, null)
+
                         val claseID = game.plugin.playerDataManager.getSelectedKiller(p.uniqueId)
                         game.plugin.asesinoManager.equiparAsesino(p, claseID)
                     }
@@ -148,10 +151,9 @@ class GamePlayerController(private val game: GameManager) {
             }
 
             if (ticks % 10 == 0 && killersOnline.isNotEmpty()) {
-                val closestKiller = killersOnline[0] // Podrías mejorar esto buscando al más cercano si hay varios (Double Killer)
+                val closestKiller = killersOnline[0]
                 game.uiController.checkHeartbeat(p, closestKiller)
 
-                // 🔥 OSCURIDAD POR PROXIMIDAD (Exclusivo Supervivientes)
                 if (p.world == closestKiller.world && p.location.distanceSquared(closestKiller.location) <= 100.0) {
                     p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0, false, false, false))
                 }
@@ -227,10 +229,8 @@ class GamePlayerController(private val game: GameManager) {
     }
 
     fun handlePlayerDeath(player: Player) {
-        // 🔥 ESCUDO: Si ya está en nuestro modo espectador, no hacemos nada
         if (player.gameMode == GameMode.SPECTATOR || player.isInvisible) return
 
-        // 1. MODO ASSASSIN PVP
         if (game.currentMode == MistakenMode.ASSASSIN_PVP) {
             game.plugin.spectatorManager.setCustomSpectator(player)
             player.isSwimming = false
@@ -241,7 +241,6 @@ class GamePlayerController(private val game: GameManager) {
             return
         }
 
-        // 2. EL ASESINO MUERE
         if (game.esAsesino(player.uniqueId)) {
             game.asesinosUUIDs.remove(player.uniqueId)
             game.plugin.spectatorManager.setCustomSpectator(player)
@@ -252,7 +251,6 @@ class GamePlayerController(private val game: GameManager) {
             return
         }
 
-        // 3. EL SUPERVIVIENTE MUERE
         game.plugin.spectatorManager.setCustomSpectator(player)
         player.isSwimming = false
         game.ambientManager.stopAmbience(player)
@@ -306,10 +304,8 @@ class GamePlayerController(private val game: GameManager) {
                 game.plugin.supervivienteManager.getClase(p)?.cleanup(p)
             }
 
-            // 🔥 AÑADIDO: Limpiamos la data del combate y quitamos explícitamente el Glow de este jugador
             game.combatManager.removePlayerData(p.uniqueId)
 
-            // Al terminar la partida, quitamos a los muertos de su invisibilidad antes de mandarlos al lobby
             if (p.isInvisible) {
                 p.isInvisible = false
                 p.isCollidable = true
@@ -327,7 +323,6 @@ class GamePlayerController(private val game: GameManager) {
             p.playSound(p.location, winSound, 1f, 1f)
         }
 
-        // 🔥 AÑADIDO: Nos aseguramos de forzar la limpieza general del CombatManager
         game.combatManager.clearAll()
 
         game.asesinosUUIDs.clear()

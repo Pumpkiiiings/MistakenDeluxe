@@ -5,6 +5,7 @@ import liric.mistaken.api.HealthAPI
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.kyori.adventure.title.Title
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
@@ -13,6 +14,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.entity.EntityPotionEffectEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -46,13 +48,20 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             val killerLoc = killer.location
             var minDistanceSq = Double.MAX_VALUE
             var foundSomeone = false
+            var ghostName = ""
 
             for (target in plugin.server.onlinePlayers) {
+                // 🔥 FIX: Convertimos el Componente de Paper a texto plano para poder saber si está vacío
+                val tabName = PlainTextComponentSerializer.plainText().serialize(target.playerListName())
+                val isNPC = target.hasMetadata("NPC") || target.name.isEmpty() || tabName.isBlank()
+
                 val isValidSurvivor = target != killer &&
                         target.world == killerLoc.world &&
                         target.gameMode == GameMode.SURVIVAL &&
+                        !isNPC &&
                         !plugin.isIgnored(target) &&
-                        !plugin.gameManager.esAsesino(target.uniqueId)
+                        !plugin.gameManager.esAsesino(target.uniqueId) &&
+                        !plugin.spectatorManager.isSpectator(target) // Ignorar fantasmas
 
                 if (isValidSurvivor) {
                     val distSq = killerLoc.distanceSquared(target.location)
@@ -61,8 +70,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                     if (distSq <= 225.0) {
                         target.scheduler.run(plugin, Consumer { _ ->
                             if (target.isOnline && killer.isOnline) {
-                                // 🔥 FIX: Condición de carrera. Verificamos que el juego SIGA ESTANDO EN CURSO
-                                // al momento de ejecutar la tarea, por si terminó milisegundos antes.
+                                // FIX: Condición de carrera.
                                 if (plugin.gameManager.currentState == GameState.INGAME) {
                                     try { plugin.glowingAPI.setGlowing(target, killer, ChatColor.RED) } catch (_: Exception) {}
                                 } else {
@@ -84,6 +92,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                         if (distSq < minDistanceSq) {
                             minDistanceSq = distSq
                             foundSomeone = true
+                            ghostName = target.name
                         }
                     }
                 } else {
@@ -98,6 +107,11 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             if (foundSomeone) {
                 val realDist = Math.sqrt(minDistanceSq)
                 killer.sendActionBar(mm.deserialize("<yellow>Escuchas el latido de alguien.."))
+
+                if (realDist < 5.0) {
+                    plugin.logger.warning("[Radar] Detectado a '$ghostName' muy cerca. Si no hay nadie, es un NPC bugeado.")
+                }
+
                 val (vol, pitch) = when {
                     realDist < 5.0 -> 1.2f to 1.5f
                     realDist < 15.0 -> 0.8f to 1.0f
@@ -249,7 +263,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             target.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
 
-            // Limpieza absoluta de Glow para este jugador
             target.scheduler.run(plugin, Consumer { _ ->
                 plugin.server.onlinePlayers.forEach { viewer ->
                     if (target.isOnline && viewer.isOnline) {
@@ -269,8 +282,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         killerCooldowns.clear()
         survivorCooldowns.clear()
 
-        // 🔥 FIX ETERNO: Limpieza profunda de Glows al terminar la partida.
-        // Hacemos que cada jugador quite de forma segura sus glows pendientes.
         plugin.server.globalRegionScheduler.run(plugin) { _ ->
             for (p1 in plugin.server.onlinePlayers) {
                 p1.scheduler.run(plugin, Consumer { _ ->
@@ -353,4 +364,20 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     }
 
     override fun takeDamage(victim: Player) { processTrueDamage(victim, null, 3.0) }
+
+    // 🔥 EL ESCUDO ABSOLUTO DE TU IDEA: Pase lo que pase, el asesino NUNCA recibe Oscuridad.
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun onKillerDarkness(event: EntityPotionEffectEvent) {
+        val player = event.entity as? Player ?: return
+
+        // Solo nos importa si es el efecto de oscuridad
+        val effect = event.newEffect ?: return
+        if (effect.type == PotionEffectType.DARKNESS) {
+
+            // Si el jugador es asesino (y no es el modo doble/PVP donde podrían atacarse), cancelamos.
+            if (plugin.gameManager.esAsesino(player.uniqueId)) {
+                event.isCancelled = true
+            }
+        }
+    }
 }
