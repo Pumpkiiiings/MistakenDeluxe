@@ -1,6 +1,7 @@
 package liric.mistaken.game.managers
 
 import liric.mistaken.Mistaken
+import liric.mistaken.game.enums.GameState
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -77,20 +78,28 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     }
 
     fun removeCustomSpectator(player: Player) {
-        if (!activeSpectators.remove(player.uniqueId)) return // Si no era espectador, no hacemos nada
+        // 🔥 FIX CRÍTICO: Aunque no esté en la lista, forzamos la restauración de propiedades visuales/físicas
+        // para asegurarnos de que Bukkit lo resetee al 100%.
+        activeSpectators.remove(player.uniqueId)
 
+        // Restaurar físicas y modo de juego
+        player.gameMode = GameMode.SURVIVAL
         player.isInvisible = false
         player.isCollidable = true
         player.isInvulnerable = false
         player.allowFlight = false
         player.isFlying = false
         player.flySpeed = 0.1f
+
+        // Limpiamos los ítems de vuelo (Brújula y Pluma)
         player.inventory.clear()
 
-        // Forzar a todos a volver a ver a este jugador
+        // 🔥 FIX CRÍTICO: Forzar a TODO EL SERVIDOR a volver a ver a este jugador
         Bukkit.getOnlinePlayers().forEach { online ->
-            online.showPlayer(plugin, player)
-            player.showPlayer(plugin, online)
+            if (online != player) {
+                online.showPlayer(plugin, player)
+                player.showPlayer(plugin, online)
+            }
         }
     }
 
@@ -103,7 +112,13 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     fun onJoin(e: PlayerJoinEvent) {
         val p = e.player
 
-        // Si el jugador que entra NO es espectador, le ocultamos a todos los que sí lo son
+        // Si el juego NO está en curso, asegúrate de que el que entra pueda ver a todos (y todos a él)
+        if (plugin.gameManager.currentState != GameState.INGAME) {
+            removeCustomSpectator(p)
+            return
+        }
+
+        // Si el juego ESTÁ en curso, le ocultamos a todos los que son espectadores
         activeSpectators.forEach { specUUID ->
             val spectator = Bukkit.getPlayer(specUUID)
             if (spectator != null && spectator.isOnline) {
