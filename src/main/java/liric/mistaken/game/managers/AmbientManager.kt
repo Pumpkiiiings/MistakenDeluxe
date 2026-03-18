@@ -4,6 +4,7 @@ import liric.mistaken.Mistaken
 import liric.mistaken.game.TerrorPacketFactory
 import liric.mistaken.game.enums.GameState
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Sound
 import org.bukkit.entity.Player
@@ -18,7 +19,7 @@ import java.util.concurrent.TimeUnit
 /**
  * [LIRIC-MISTAKEN 2.0]
  * AmbientManager: Motor de atmósfera de terror.
- * FIX: Reemplazo de Corrutinas por AsyncScheduler (Paper) para Thread-Safety y precisión.
+ * FIX: Escudo Anti-Asesinos (Evita que el asesino se asuste a sí mismo con distancia 0).
  */
 class AmbientManager(private val plugin: Mistaken) {
 
@@ -32,23 +33,16 @@ class AmbientManager(private val plugin: Mistaken) {
 
     private fun startGlobalTask() {
         // Usamos AsyncScheduler: Ejecuta cada 100ms (10 veces/segundo) con precisión de reloj
-        plugin.server.asyncScheduler.runAtFixedRate(plugin, { task ->
+        plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             if (!plugin.isReady) return@runAtFixedRate
 
             if (plugin.gameManager.currentState == GameState.INGAME) {
                 val killer = plugin.gameManager.getCurrentAsesino() ?: return@runAtFixedRate
                 if (!killer.isOnline) return@runAtFixedRate
 
-                // 🔥 FIX: Leemos la ubicación del asesino UNA VEZ (Thread-Safe snapshot si es posible)
-                // En Paper moderno, acceder a .location desde async puede ser riesgoso.
-                // Lo ideal es usar la API de rastreo o delegar al scheduler de la entidad.
-
-                // Opción SEGURA: Delegar la lógica pesada a cada jugador
                 trackedSurvivors.forEach { uuid ->
                     val survivor = Bukkit.getPlayer(uuid)
                     if (survivor != null && survivor.isOnline) {
-                        // Ejecutamos la lógica en el hilo del jugador (RegionScheduler)
-                        // Esto permite leer .location y .distanceSquared sin crashear el servidor.
                         survivor.scheduler.execute(plugin, {
                             processSurvivorLogic(survivor, killer)
                         }, null, 0L)
@@ -64,6 +58,21 @@ class AmbientManager(private val plugin: Mistaken) {
      * Lógica individual por superviviente (Ejecutada en el hilo seguro del jugador)
      */
     private fun processSurvivorLogic(survivor: Player, killer: Player) {
+
+        // 🔥 EL FIX SUPREMO AL PUTO BUG:
+        // Si este "superviviente" en realidad fue elegido como el Asesino en esta ronda,
+        // lo sacamos de la lista de víctimas, le quitamos la ceguera residual y abortamos.
+        if (plugin.gameManager.esAsesino(survivor.uniqueId)) {
+            trackedSurvivors.remove(survivor.uniqueId)
+            survivor.removePotionEffect(PotionEffectType.DARKNESS)
+            return
+        }
+
+        // Filtro de seguridad: Si está muerto, en modo espectador fantasma o en vanish, no lo asustamos
+        if (survivor.gameMode != GameMode.SURVIVAL || survivor.isInvisible || plugin.isIgnored(survivor)) {
+            return
+        }
+
         // Verificación rápida de mundo
         if (survivor.world != killer.world) return
 
@@ -167,7 +176,5 @@ class AmbientManager(private val plugin: Mistaken) {
 
     fun stopAll() {
         trackedSurvivors.clear()
-        // No necesitamos cancelar el Scheduler global,
-        // simplemente dejará de procesar al estar la lista vacía.
     }
 }

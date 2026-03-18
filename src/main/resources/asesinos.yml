@@ -304,10 +304,10 @@ asesinos:
     precio: 850000
     icono_material: "ENCHANTED_BOOK"
     armadura:
-      casco: "LEATHER_HELMET"
-      pechera: "LEATHER_CHESTPLATE"
-      pantalones: "LEATHER_LEGGINGS"
-      botas: "LEATHER_BOOTS"
+      casco: "mistaken:sowoul_helmet"
+      pechera: "mistaken:sowoul_chestplate"
+      pantalones: "mistaken:sowoul_leggings"
+      botas: "mistaken:sowoul_boots"
     items:
       arma: "BOOK"
       habilidad1: "ENDER_PEARL"
@@ -316,9 +316,51 @@ asesinos:
       habilidad2: "PAPER"
       habilidad2_cooldown: 8
       habilidad2_sonido: "ENTITY_SNOWBALL_THROW"
-      habilidad3: "SCULK_SENSOR"
+      habilidad3: "FERMENTED_SPIDER_EYE"
+      habilidad3_cooldown: 15
+      habilidad3_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
+      habilidad4: "WITHER_SKELETON_SKULL"
+      habilidad4_cooldown: 45
+      habilidad4_sonido: "ENTITY_WITHER_SPAWN"
+
+  pizzano:
+    precio: 950000
+    icono_material: "SUGAR"
+    armadura:
+      casco: "mistaken:pizzano_helmet"
+      pechera: "mistaken:pizzano_chestplate"
+      pantalones: "mistaken:pizzano_leggings"
+      botas: "mistaken:pizzano_boots"
+    items:
+      arma: "GOLDEN_SWORD"
+      habilidad1: "BLUE_DYE"
+      habilidad1_cooldown: 8
+      habilidad1_sonido: "ENTITY_BAT_TAKEOFF"
+      habilidad2: "STRING"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_PHANTOM_FLAP"
+      habilidad3: "SUGAR"
       habilidad3_cooldown: 45
-      habilidad3_sonido: "ENTITY_WARDEN_EMERGE"
-      habilidad4: "COMPASS"
-      habilidad4_cooldown: 30
-      habilidad4_sonido: "ENTITY_ILLUSIONER_CAST_SPELL"
+      habilidad3_sonido: "ENTITY_WITHER_SPAWN"
+      habilidad4: "none" # Es pasiva, no requiere ítem
+
+  error_estatico:
+    precio: 1000000
+    icono_material: "MUSIC_DISC_5"
+    armadura:
+      casco: "LEATHER_HELMET"
+      pechera: "LEATHER_CHESTPLATE"
+      pantalones: "LEATHER_LEGGINGS"
+      botas: "LEATHER_BOOTS"
+    items:
+      arma: "IRON_SWORD"
+      habilidad1: "ENDER_PEARL"
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_ENDERMAN_TELEPORT"
+      habilidad2: "NOTE_BLOCK"
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "BLOCK_NOTE_BLOCK_BIT"
+      habilidad3: "REDSTONE_BLOCK"
+      habilidad3_cooldown: 65
+      habilidad3_sonido: "ENTITY_WITHER_SPAWN"
+      habilidad4: "none" # Es pasiva

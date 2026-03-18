@@ -222,17 +222,47 @@ asesinos:
       habilidad3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
       habilidad4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
 
-  sowoul:
-    nombre: "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>"
-    descripcion:
-      - "<gray>Un misterioso ilusionista que domina"
-      - "<gray>el arte del engaño y la magia oscura."
-    lore_tienda:
-      - "<gray>\"Nada de lo que ves es real...\""
-      - "<white>Dificultad: <red>Alta"
-    habilidades_nombres:
-      arma: "<dark_purple>Grimorio de las Ilusiones</dark_purple>"
-      habilidad1: "<light_purple>Dash Mágico</light_purple>"
-      habilidad2: "<white>Lluvia de Cartas</white>"
-      habilidad3: "<dark_aqua>Ilusión de Warden</dark_aqua>"
-      habilidad4: "<blue><bold>TP A GENERADOR</bold></blue>"
+sowoul:
+  nombre: "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>"
+  descripcion:
+    - "<gray>Un misterioso ilusionista que domina"
+    - "<gray>el arte del engaño y la magia oscura."
+  lore_tienda:
+    - "<gray>\"Nada de lo que ves es real...\""
+    - "<white>Dificultad: <red>Alta"
+  habilidades_nombres:
+    arma: "<dark_purple>Grimorio de las Ilusiones</dark_purple>"
+    habilidad1: "<light_purple>Dash Mágico</light_purple>"
+    habilidad2: "<white>Lluvia de Cartas</white>"
+    habilidad3: "<dark_aqua>Fauces de Evocador</dark_aqua>"
+    habilidad4: "<dark_red><bold>INVENCIÓN: GEOFFREY 3.0</bold></dark_red>"
+
+pizzano:
+  nombre: "<gradient:#ff4500:#ff8c00><b>PIZZANO</b></gradient>"
+  descripcion:
+    - "<gray>Un loco hiperactivo impulsado por"
+    - "<gray>una sobredosis de azúcar y caos."
+  lore_tienda:
+    - "<gray>\"¡No puedo parar! ¡NO PUEDO PARAR!\""
+    - "<white>Dificultad: <green>Fácil"
+  habilidades_nombres:
+    arma: "<red>Cortador Frenético</red>"
+    habilidad1: "<blue>Embestida de Regaliz</blue>"
+    habilidad2: "<yellow>Tornado de Espiral</yellow>"
+    habilidad3: "<dark_red><bold>ESCAPE FRENÉTICO</bold></dark_red>"
+    habilidad4: "<gray>Subidón de Azúcar (Pasiva)</gray>"
+
+error_estatico:
+  nombre: "<gradient:#00ffff:#ff00ff><b>ERROR ESTÁTICO</b></gradient>"
+  descripcion:
+    - "<gray>Un ente digital corrupto que tomó"
+    - "<gray>la forma de una idol virtual."
+  lore_tienda:
+    - "<gray>\"This is how it should be...\""
+    - "<white>Dificultad: <dark_purple>Extrema"
+  habilidades_nombres:
+    arma: "<aqua>Micrófono Corrupto</aqua>"
+    habilidad1: "<light_purple>Salto de Cuadro</light_purple>"
+    habilidad2: "<blue>Sintonía Forzada</blue>"
+    habilidad3: "<dark_red><bold>PANTALLAZO AZUL</bold></dark_red>"
+    habilidad4: "<gray>Frecuencia Distorsionada (Pasiva)</gray>"

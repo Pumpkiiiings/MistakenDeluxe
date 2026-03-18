@@ -31,7 +31,6 @@ class GameUIController(private val game: GameManager) {
             game.timer.toString()
         }
 
-        // 🔥 0 HARDCODE: El texto "Lobby" ahora se saca de la configuración
         val lobbyWord = game.plugin.messageConfig.getRawString(p, "words.lobby", "Lobby", "messages")
 
         val mapDisplay = if (game.currentState == GameState.LOBBY || game.currentState == GameState.VOTING || game.currentState == GameState.BREAK) {

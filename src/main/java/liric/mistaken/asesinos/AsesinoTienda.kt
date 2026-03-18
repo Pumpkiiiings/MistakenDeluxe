@@ -22,7 +22,7 @@ import java.util.*
 class AsesinoTienda : MenuBase("asesinos_tienda") {
 
     companion object {
-        private val EXCLUSIVE_IDS = setOf("devesto", "mariachi", "romeo", "bendy", "coolkid", "sowoul")
+        private val EXCLUSIVE_IDS = setOf("devesto", "mariachi", "romeo", "bendy", "coolkid", "sowoul", "pizzano", "errorestatico")
         private val SPECIAL_IDS = setOf("teto", "miku", "charlie", "colorandelectricity")
     }
 

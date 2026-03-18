@@ -13,6 +13,7 @@ import org.bukkit.Sound
 import org.bukkit.entity.Player
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
+import java.util.function.Consumer
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -44,21 +45,19 @@ class TerrorPacketFactory(private val plugin: Mistaken) {
         )
 
         // 2. Metadata: Invisible (0x20) + Glowing (0x40) = 0x60
-        // Nota: En versiones nuevas de PE, a veces se requiere un constructor específico para EntityData
         val metadataPacket = WrapperPlayServerEntityMetadata(
             fakeId,
             listOf(EntityData(0, EntityDataTypes.BYTE, 0x60.toByte()))
         )
 
-        // 3. Envío seguro (PacketEvents es Thread-Safe)
+        // 3. Envío seguro
         val pm = PacketEvents.getAPI().playerManager
         pm.sendPacket(victim, spawnPacket)
         pm.sendPacket(victim, metadataPacket)
 
-        // 4. 🔥 FIX: Usamos EntityScheduler.
-        // Si el jugador se desconecta antes de los 'ticks', esta tarea muere con él.
-        // No necesitamos verificar if(victim.isOnline) dentro.
-        victim.scheduler.runDelayed(plugin, {
+        // 4. 🔥 FIX: Destrucción de entidad usando Consumer para el EntityScheduler.
+        // Además, en PacketEvents moderno WrapperPlayServerDestroyEntities toma un `int...` (vararg de ints).
+        victim.scheduler.runDelayed(plugin, Consumer { _ ->
             pm.sendPacket(victim, WrapperPlayServerDestroyEntities(fakeId))
         }, null, ticks.toLong())
     }
@@ -72,14 +71,13 @@ class TerrorPacketFactory(private val plugin: Mistaken) {
         val pm = PacketEvents.getAPI().playerManager
         val pos = Vector3i(loc.blockX, loc.blockY, loc.blockZ)
 
-        // Enviamos aire (ID 0)
+        // Enviamos aire (GlobalState 0 suele representar el aire en la mayoría de mappers de PE)
         pm.sendPacket(victim, WrapperPlayServerBlockChange(pos, 0))
 
         // Restauración automática
-        victim.scheduler.runDelayed(plugin, {
-            // sendBlockChange lee el bloque real del mundo y se lo reenvía al jugador
-            // Al estar en el EntityScheduler, es seguro hacerlo.
+        victim.scheduler.runDelayed(plugin, Consumer { _ ->
             if (victim.isOnline) {
+                // Al estar en el EntityScheduler, es seguro hacer sendBlockChange (API de Bukkit)
                 victim.sendBlockChange(loc, loc.block.blockData)
             }
         }, null, ticks.toLong())
@@ -97,7 +95,6 @@ class TerrorPacketFactory(private val plugin: Mistaken) {
             WrapperPlayServerEntityStatus(victim.entityId, 2)
         )
 
-        // Sonido directo
         victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1f, 0.5f)
     }
 
@@ -108,7 +105,7 @@ class TerrorPacketFactory(private val plugin: Mistaken) {
         if (!victim.isOnline) return
 
         val center = victim.location
-        val affected = ArrayList<Location>() // ArrayList es más rápido aquí
+        val affected = ArrayList<Location>()
         val pm = PacketEvents.getAPI().playerManager
 
         // Generar ráfaga de paquetes (Cálculo matemático ligero)
@@ -124,11 +121,12 @@ class TerrorPacketFactory(private val plugin: Mistaken) {
         }
 
         // Restauración optimizada (15 ticks = 750ms)
-        victim.scheduler.runDelayed(plugin, {
-            // Restauramos en masa
-            // Paper maneja esto eficientemente si son muchos bloques
+        victim.scheduler.runDelayed(plugin, Consumer { _ ->
+            // Restauramos en masa usando Bukkit
             affected.forEach { loc ->
-                victim.sendBlockChange(loc, loc.block.blockData)
+                if (victim.isOnline) {
+                    victim.sendBlockChange(loc, loc.block.blockData)
+                }
             }
         }, null, 15L)
     }
