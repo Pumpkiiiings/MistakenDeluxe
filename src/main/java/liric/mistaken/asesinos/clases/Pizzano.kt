@@ -17,11 +17,6 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * Pizzano: Asesino hiperactivo impulsado por azúcar.
- * FIX: Corrutinas eliminadas, EntityScheduler activo y físicas seguras.
- */
 class Pizzano : Asesino(
     "pizzano",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.pizzano.nombre", "<gradient:#ff4500:#ff8c00><b>PIZZANO</b></gradient>", "asesinos_info")
@@ -94,12 +89,13 @@ class Pizzano : Asesino(
                 val ticks = moveTicks.getOrDefault(uuid, 0) + 1
                 moveTicks[uuid] = ticks
 
-                // Cada 2 segundos (40 ticks en esta aproximación) gana una carga
+                // Cada 2 segundos (40 ticks) gana una carga
                 if (ticks % 40 == 0) {
                     val currentStacks = sugarStacks.getOrDefault(uuid, 0)
-                    if (currentStacks < 5) {
+                    // 🔥 FIX: Aumentamos el máximo a 10 niveles de velocidad
+                    if (currentStacks < 10) {
                         sugarStacks[uuid] = currentStacks + 1
-                        player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1.5f + (currentStacks * 0.1f))
+                        player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1.5f + (currentStacks * 0.05f))
                         player.world.spawnParticle(Particle.HAPPY_VILLAGER, player.location.add(0.0, 1.0, 0.0), 5, 0.3, 0.3, 0.3, 0.0)
                     }
                 }
@@ -117,9 +113,12 @@ class Pizzano : Asesino(
         // Aplicar los bufos según las cargas
         val stacks = sugarStacks.getOrDefault(uuid, 0)
         if (stacks > 0) {
-            // Speed aumenta según cargas (Nivel 1 al 5)
+            // Speed aumenta según cargas (Nivel 1 al 10)
             player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 40, stacks - 1, false, false, false))
-            player.addPotionEffect(PotionEffect(PotionEffectType.HASTE, 40, stacks, false, false, false))
+
+            // Limitamos el Haste para que no se bugee el visual del arma
+            val hasteLevel = if (stacks > 4) 4 else stacks
+            player.addPotionEffect(PotionEffect(PotionEffectType.HASTE, 40, hasteLevel, false, false, false))
 
             // Partículas de "Azúcar"
             player.world.spawnParticle(Particle.CLOUD, player.location.add(0.0, 0.1, 0.0), stacks, 0.2, 0.0, 0.2, 0.05)
@@ -130,7 +129,7 @@ class Pizzano : Asesino(
 
     private fun habilidadEmbestidaRegaliz(player: Player) {
         player.playSound(player.location, Sound.ENTITY_BAT_TAKEOFF, 1f, 0.5f)
-        val dir = player.location.direction.normalize().multiply(1.8).setY(0.2)
+        val dir = player.location.direction.normalize().multiply(1.8).setY(0.2) // Disparo potente
         var ticks = 0
         var hitEntity = false
 
@@ -150,11 +149,10 @@ class Pizzano : Asesino(
             if (victims.isNotEmpty()) {
                 hitEntity = true
                 victims.forEach { victim ->
-                    // Aturdimiento de 1 segundo (Slowness 10 + Blindness)
                     plugin.gameManager.combatManager.takeDamage(victim)
                     victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 20, 10, false, false, false))
                     victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 20, 0, false, false, false))
-                    victim.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, 20, 200, false, false, false)) // No puede saltar
+                    victim.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, 20, 200, false, false, false))
 
                     val knockback = dir.clone().multiply(0.8).setY(0.4)
                     victim.velocity = knockback
@@ -172,7 +170,6 @@ class Pizzano : Asesino(
                 loc.world.spawnParticle(Particle.EXPLOSION, loc, 2)
                 loc.world.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1.2f)
 
-                // Daño en área pequeño
                 loc.world.getNearbyPlayers(loc, 3.0).forEach { victim ->
                     if (esObjetivoValido(player, victim)) {
                         plugin.gameManager.combatManager.takeDamage(victim)
@@ -192,14 +189,14 @@ class Pizzano : Asesino(
         var ticks = 0
 
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (ticks >= 60 || !player.isOnline) { // Dura 3 segundos (60 ticks)
+            if (ticks >= 60 || !player.isOnline) {
                 task.cancel()
                 return@Consumer
             }
 
             val loc = player.location
-            val angle = ticks * 0.5
 
+            val angle = ticks * 0.5
             for (i in 0..2) {
                 val y = i * 0.8
                 val radius = 0.5 + (i * 0.5)
@@ -218,7 +215,6 @@ class Pizzano : Asesino(
                         victim.velocity = pullDir
                     }
 
-                    // Daño constante cada 10 ticks (0.5s)
                     if (ticks % 10 == 0) {
                         plugin.gameManager.combatManager.takeDamage(victim)
                         victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 0.5f, 1.5f)
@@ -232,29 +228,34 @@ class Pizzano : Asesino(
 
     private fun habilidadEscapeFrenetico(player: Player) {
         val uuid = player.uniqueId
+
+        // 🔥 FIX MÚSICA: Si la definitiva ya estaba activa, no ponemos la música de nuevo
+        val yaEstabaActiva = isUltimateActive.contains(uuid)
+
         isUltimateActive.add(uuid)
 
-        // Activar música local
-        player.world.getNearbyPlayers(player.location, 30.0).forEach {
-            it.playSound(player.location, "mistaken:lms", 1.5f, 1f)
+        if (!yaEstabaActiva) {
+            player.world.getNearbyPlayers(player.location, 30.0).forEach {
+                it.playSound(player.location, "mistaken:lms", 1.5f, 1f)
+            }
         }
 
         player.world.spawnParticle(Particle.FLASH, player.location, 1)
 
         var ticks = 0
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (ticks >= 160 || !player.isOnline) { // 8 segundos exactos
+            if (ticks >= 160 || !player.isOnline) { // 8 segundos exactos (160 ticks)
                 isUltimateActive.remove(uuid)
                 task.cancel()
                 return@Consumer
             }
 
-            // Inmunidad a la lentitud/aturdimiento
+            // 1. Inmunidad a la lentitud/aturdimiento
             player.removePotionEffect(PotionEffectType.SLOWNESS)
             player.removePotionEffect(PotionEffectType.BLINDNESS)
             player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 10, 2, false, false, false))
 
-            // Rastro de Regaliz Pegajoso (Piso falso)
+            // 2. Rastro de Regaliz Pegajoso
             if (ticks % 3 == 0) {
                 val trailLoc = player.location.clone()
                 trailLoc.world.spawnParticle(Particle.FALLING_HONEY, trailLoc.add(0.0, 0.5, 0.0), 5, 0.3, 0.0, 0.3, 0.0)
@@ -278,12 +279,16 @@ class Pizzano : Asesino(
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
+        // Verificar que sea Pizzano atacando, y que su definitiva esté activa
         if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
             if (isUltimateActive.contains(attacker.uniqueId)) {
+
+                // +25% Daño Extra verdadero (Bypassea el CombatManager ligeramente reduciendo vida directa)
                 if (esObjetivoValido(attacker, victim)) {
                     val extraDamage = 1.0
                     val newHp = (victim.health - extraDamage).coerceAtLeast(0.0)
                     victim.health = newHp
+
                     victim.world.spawnParticle(Particle.DAMAGE_INDICATOR, victim.location.add(0.0, 1.0, 0.0), 3, 0.2, 0.2, 0.2, 0.1)
                 }
             }
@@ -311,8 +316,8 @@ class Pizzano : Asesino(
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            val namePath = if (key == "arma") "asesinos.pizzano.habilidades_nombres.arma"
-            else "asesinos.pizzano.habilidades_nombres.$key"
+            val namePath = if (key == "arma") "asesinos.${this.id}.habilidades_nombres.arma"
+            else "asesinos.${this.id}.habilidades_nombres.$key"
 
             langInfo.getString(namePath)?.let {
                 item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
@@ -337,7 +342,7 @@ class Pizzano : Asesino(
         deliver("habilidad1", 1)
         deliver("habilidad2", 2)
         deliver("habilidad3", 3)
-        // habilidad4 (Pasiva)
+        // habilidad4 (Pasiva, no se entrega ítem físico)
         deliver("arma", 8)
     }
 

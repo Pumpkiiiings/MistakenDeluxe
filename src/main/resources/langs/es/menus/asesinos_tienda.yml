@@ -10,6 +10,10 @@ ajustes:
   # Aquí defines en qué cuadritos se van a ir acomodando tus asesinos
   slots-disponibles: [19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34]
 
+  slots-fijos:
+    pizzano: 38
+    romeodebuff: 39
+
 # Decoración facha para los bordes
 decoraciones:
   bordes_grises:

@@ -20,20 +20,15 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import kotlin.math.max
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * Error Estático (Miku Glitch Edition).
- * FIX: Schedulers Nativos y Físicas Estables.
- */
 class ErrorEstatico : Asesino(
     "error_estatico",
+    // 🔥 FIX: Ruta correcta "asesinos.error_estatico.nombre"
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.error_estatico.nombre", "<gradient:#00ffff:#ff00ff><b>ERROR ESTÁTICO</b></gradient>", "asesinos_info")
 ), Listener {
 
     private val pathBase = "asesinos.error_estatico"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
 
-    // Variables de control
     private val isUltimateActive = ConcurrentHashMap.newKeySet<UUID>()
     private val passiveTicks = ConcurrentHashMap<UUID, Int>()
 
@@ -75,8 +70,6 @@ class ErrorEstatico : Asesino(
         reproducirEfectosHabilidad(player, slot)
     }
 
-    // --- 📡 PASIVA: FRECUENCIA DISTORSIONADA ---
-
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.esElAsesino(player)) { cleanup(player); return }
@@ -84,7 +77,6 @@ class ErrorEstatico : Asesino(
         val ticks = passiveTicks.getOrDefault(uuid, 0) + 1
         passiveTicks[uuid] = ticks
 
-        // Cada 5 segundos (100 ticks) da un "parpadeo" visual
         if (ticks % 100 == 0) {
             player.world.spawnParticle(Particle.WHITE_ASH, player.location.add(0.0, 1.0, 0.0), 30, 0.5, 1.0, 0.5, 0.1)
             player.world.playSound(player.location, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 2.0f)
@@ -96,7 +88,6 @@ class ErrorEstatico : Asesino(
         val victim = event.entity as? Player ?: return
 
         if (plugin.gameManager.esAsesino(victim.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(victim.uniqueId)) {
-            // 20% de probabilidad de esquivar un golpe por completo
             if (Math.random() <= 0.20) {
                 event.isCancelled = true
                 victim.world.playSound(victim.location, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.5f)
@@ -107,8 +98,6 @@ class ErrorEstatico : Asesino(
             }
         }
     }
-
-    // --- 🏃‍♂️ HABILIDAD 1: SALTO DE CUADRO (GLITCH DASH) ---
 
     private fun habilidadSaltoCuadro(player: Player) {
         player.playSound(player.location, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 0.5f)
@@ -127,18 +116,15 @@ class ErrorEstatico : Asesino(
 
         player.teleportAsync(endLoc)
 
-        // Rastro trampa en la vieja ubicación
         val affectedPlayers = mutableSetOf<UUID>()
         var ticks = 0
 
-        // Creamos una tarea estática en el lugar donde inició el dash
         plugin.server.regionScheduler.runAtFixedRate(plugin, startLoc, Consumer { task ->
-            if (ticks >= 60) { // Dura 3 segundos la trampa
+            if (ticks >= 60) {
                 task.cancel()
                 return@Consumer
             }
 
-            // Partículas de "colores invertidos" (Rosa neón y Cian)
             startLoc.world.spawnParticle(Particle.DUST, startLoc.clone().add(0.0, 1.0, 0.0), 5, 0.4, 0.8, 0.4, DustOptions(Color.FUCHSIA, 1f))
             startLoc.world.spawnParticle(Particle.DUST, startLoc.clone().add(0.0, 1.0, 0.0), 5, 0.4, 0.8, 0.4, DustOptions(Color.AQUA, 1f))
 
@@ -156,14 +142,11 @@ class ErrorEstatico : Asesino(
         }, 1L, 1L)
     }
 
-    // --- 🎵 HABILIDAD 2: SINTONÍA FORZADA ---
-
     private fun habilidadSintoniaForzada(player: Player) {
         val loc = player.location
         loc.world.playSound(loc, Sound.BLOCK_NOTE_BLOCK_BIT, 2f, 0.5f)
         loc.world.playSound(loc, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 1.5f)
 
-        // Onda expansiva visual
         for (i in 1..8) {
             plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                 loc.world.spawnParticle(Particle.SONIC_BOOM, loc, 1, (i * 0.5), 0.0, (i * 0.5), 0.0)
@@ -176,12 +159,11 @@ class ErrorEstatico : Asesino(
 
                 var ticks = 0
                 victim.scheduler.runAtFixedRate(plugin, Consumer { task ->
-                    if (ticks >= 60 || !victim.isOnline) { // 3 Segundos
+                    if (ticks >= 60 || !victim.isOnline) {
                         task.cancel()
                         return@Consumer
                     }
 
-                    // Sacude la cámara (Solo en Paper)
                     val randomYaw = (Math.random() * 30 - 15).toFloat()
                     val randomPitch = (Math.random() * 20 - 10).toFloat()
                     victim.setRotation(victim.yaw + randomYaw, victim.pitch + randomPitch)
@@ -189,19 +171,17 @@ class ErrorEstatico : Asesino(
                     if (ticks % 10 == 0) {
                         victim.playSound(victim.location, Sound.BLOCK_NOTE_BLOCK_BELL, 1f, (Math.random() * 2f).toFloat())
                     }
+
                     ticks++
                 }, null, 1L, 1L)
             }
         }
     }
 
-    // --- 🖥️ HABILIDAD 3: PANTALLAZO AZUL (ULTIMATE) ---
-
     private fun habilidadPantallazoAzul(player: Player) {
         val uuid = player.uniqueId
         isUltimateActive.add(uuid)
 
-        // Efecto global inicial
         player.world.players.forEach { online ->
             online.playSound(online.location, Sound.ENTITY_WITHER_DEATH, 0.5f, 0.5f)
             if (esObjetivoValido(player, online)) {
@@ -212,7 +192,6 @@ class ErrorEstatico : Asesino(
             }
         }
 
-        // Retraso de 5 segundos
         player.scheduler.runDelayed(plugin, Consumer { _ ->
             isUltimateActive.remove(uuid)
             if (!player.isOnline) return@Consumer
@@ -240,10 +219,8 @@ class ErrorEstatico : Asesino(
                     }
                 }
             }
-        }, null, 100L) // 100 ticks = 5 segundos
+        }, null, 100L)
     }
-
-    // --- ⚔️ IGNORAR ARMADURA DURANTE LA ULTIMATE ---
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun onUltimateDamage(event: EntityDamageByEntityEvent) {
@@ -260,8 +237,6 @@ class ErrorEstatico : Asesino(
             }
         }
     }
-
-    // --- 🛠️ EQUIPAMIENTO Y LIMPIEZA ---
 
     override fun equipar(player: Player) {
         val inv = player.inventory
@@ -282,6 +257,7 @@ class ErrorEstatico : Asesino(
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
+            // 🔥 FIX: RUTA CORREGIDA PARA BUSCAR "asesinos.error_estatico.habilidades_nombres.arma"
             val namePath = if (key == "arma") "asesinos.error_estatico.habilidades_nombres.arma"
             else "asesinos.error_estatico.habilidades_nombres.$key"
 

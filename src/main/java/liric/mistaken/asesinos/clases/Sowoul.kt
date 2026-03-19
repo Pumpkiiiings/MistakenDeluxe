@@ -27,25 +27,19 @@ import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * Sowoul: El Mago de las Ilusiones.
- * FIX: Corrutinas eliminadas y Nombres de Habilidades corregidos en el YAML.
- */
 class Sowoul : Asesino(
     "sowoul",
-    Mistaken.instance.messageConfig.getRawString(null, "sowoul.nombre", "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>", "asesinos_info")
+    // 🔥 FIX: Ruta correcta "asesinos.sowoul.nombre"
+    Mistaken.instance.messageConfig.getRawString(null, "asesinos.sowoul.nombre", "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>", "asesinos_info")
 ) {
 
     private val pathBase = "asesinos.sowoul"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
 
-    // Visuales y cooldowns manuales
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val fakeEntities = ConcurrentHashMap.newKeySet<Entity>()
 
-    // Cooldown manual estricto para Geoffrey (45 segundos)
     private val geoffreyCooldown = ConcurrentHashMap<UUID, Long>()
 
     init {
@@ -82,7 +76,6 @@ class Sowoul : Asesino(
             2 -> { habilidadLanzarCartas(player); dibujarEspiral(player, org.bukkit.Particle.ENCHANT, 1.5) }
             3 -> { habilidadFaucesEvocador(player); dibujarPentagrama(player, org.bukkit.Particle.WITCH, 3.0) }
             4 -> {
-                // Cooldown estricto de 45 segundos exclusivo para esta habilidad super rota
                 val lastUsed = geoffreyCooldown.getOrDefault(player.uniqueId, 0L)
                 val timeLeft = 45000L - (System.currentTimeMillis() - lastUsed)
                 if (timeLeft > 0) {
@@ -97,8 +90,6 @@ class Sowoul : Asesino(
         }
         reproducirEfectosHabilidad(player, slot)
     }
-
-    // --- 🎨 FUNCIONES DE DIBUJO GEOMÉTRICO ---
 
     private fun dibujarCirculoMagico(player: Player, particula: org.bukkit.Particle, radio: Double) {
         val loc = player.location.clone().add(0.0, 0.1, 0.0)
@@ -168,8 +159,6 @@ class Sowoul : Asesino(
             }
         })
     }
-
-    // --- 🎩 HABILIDADES DEL MAGO ---
 
     private fun habilidadDashMagico(player: Player) {
         val dir = player.location.direction.normalize().multiply(3.0).setY(0.4)
@@ -248,7 +237,6 @@ class Sowoul : Asesino(
         val loc = player.location
         val dir = loc.direction.setY(0).normalize()
 
-        // Genera 8 fauces en línea recta, como el ataque clásico del Evocador
         for (i in 1..8) {
             val offsetLoc = loc.clone().add(dir.clone().multiply(i * 1.5))
 
@@ -276,11 +264,8 @@ class Sowoul : Asesino(
 
     private fun habilidadGeoffreyEXE(player: Player) {
         val geoffrey = GeoffreyEXE(plugin)
-        // Lo invocamos un poco más arriba de la cabeza del mago
         geoffrey.spawn(player.location.clone().add(0.0, 2.0, 0.0))
     }
-
-    // --- 🛠️ EQUIPAMIENTO ---
 
     override fun equipar(player: Player) {
         val inv = player.inventory
@@ -301,9 +286,9 @@ class Sowoul : Asesino(
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            // 🔥 FIX: Ruta correcta al YAML "asesinos_info.yml"
-            val namePath = if (key == "arma") "sowoul.habilidades_nombres.arma"
-            else "sowoul.habilidades_nombres.$key"
+            // 🔥 FIX: RUTA CORREGIDA PARA BUSCAR "asesinos.sowoul.habilidades_nombres.arma"
+            val namePath = if (key == "arma") "asesinos.sowoul.habilidades_nombres.arma"
+            else "asesinos.sowoul.habilidades_nombres.$key"
 
             langInfo.getString(namePath)?.let {
                 item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
@@ -331,8 +316,6 @@ class Sowoul : Asesino(
         deliver("habilidad4", 4)
         deliver("arma", 8)
     }
-
-    // --- 🃏 VISUALES (CARTAS ORBITANTES) ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
