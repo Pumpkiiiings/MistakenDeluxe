@@ -17,6 +17,11 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 
+/**
+ *[LIRIC-MISTAKEN 2.0]
+ * Pizzano: Asesino hiperactivo impulsado por azúcar (VERSIÓN DEV OP).
+ * FIX: Pasiva de velocidad infinita de subida rápida y música anti-spam.
+ */
 class Pizzano : Asesino(
     "pizzano",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.pizzano.nombre", "<gradient:#ff4500:#ff8c00><b>PIZZANO</b></gradient>", "asesinos_info")
@@ -71,7 +76,7 @@ class Pizzano : Asesino(
         reproducirEfectosHabilidad(player, slot)
     }
 
-    // --- 🏃‍♂️ PASIVA: SUBIDÓN DE AZÚCAR ---
+    // --- 🏃‍♂️ PASIVA: SUBIDÓN DE AZÚCAR (VERSIÓN OP) ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
@@ -89,15 +94,15 @@ class Pizzano : Asesino(
                 val ticks = moveTicks.getOrDefault(uuid, 0) + 1
                 moveTicks[uuid] = ticks
 
-                // Cada 2 segundos (40 ticks) gana una carga
-                if (ticks % 40 == 0) {
+                // 🔥 DEV BUFF: Sube de nivel cada 13 ticks (casi el triple de rápido que antes) y SIN LÍMITE.
+                if (ticks % 13 == 0) {
                     val currentStacks = sugarStacks.getOrDefault(uuid, 0)
-                    // 🔥 FIX: Aumentamos el máximo a 10 niveles de velocidad
-                    if (currentStacks < 10) {
-                        sugarStacks[uuid] = currentStacks + 1
-                        player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1.5f + (currentStacks * 0.05f))
-                        player.world.spawnParticle(Particle.HAPPY_VILLAGER, player.location.add(0.0, 1.0, 0.0), 5, 0.3, 0.3, 0.3, 0.0)
-                    }
+                    sugarStacks[uuid] = currentStacks + 1
+
+                    // Limitar el pitch del sonido para que no se rompa el audio en Java
+                    val pitch = (1.5f + (currentStacks * 0.05f)).coerceAtMost(2.0f)
+                    player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, pitch)
+                    player.world.spawnParticle(Particle.HAPPY_VILLAGER, player.location.add(0.0, 1.0, 0.0), 5, 0.3, 0.3, 0.3, 0.0)
                 }
             } else {
                 // Se detuvo. Pierde todo al instante.
@@ -113,15 +118,16 @@ class Pizzano : Asesino(
         // Aplicar los bufos según las cargas
         val stacks = sugarStacks.getOrDefault(uuid, 0)
         if (stacks > 0) {
-            // Speed aumenta según cargas (Nivel 1 al 10)
+            // 🔥 DEV BUFF: Speed infinito según cargas
             player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 40, stacks - 1, false, false, false))
 
-            // Limitamos el Haste para que no se bugee el visual del arma
+            // Limitamos el Haste para que no se bugee la animación de pegar, pero la velocidad de caminar no tiene tope.
             val hasteLevel = if (stacks > 4) 4 else stacks
             player.addPotionEffect(PotionEffect(PotionEffectType.HASTE, 40, hasteLevel, false, false, false))
 
-            // Partículas de "Azúcar"
-            player.world.spawnParticle(Particle.CLOUD, player.location.add(0.0, 0.1, 0.0), stacks, 0.2, 0.0, 0.2, 0.05)
+            // Partículas de "Azúcar" (Máximo 20 partículas para no laguear el cliente si llega a stacks absurdos)
+            val particulasVis = stacks.coerceAtMost(20)
+            player.world.spawnParticle(Particle.CLOUD, player.location.add(0.0, 0.1, 0.0), particulasVis, 0.2, 0.0, 0.2, 0.05)
         }
     }
 
@@ -195,8 +201,8 @@ class Pizzano : Asesino(
             }
 
             val loc = player.location
-
             val angle = ticks * 0.5
+
             for (i in 0..2) {
                 val y = i * 0.8
                 val radius = 0.5 + (i * 0.5)
@@ -229,15 +235,13 @@ class Pizzano : Asesino(
     private fun habilidadEscapeFrenetico(player: Player) {
         val uuid = player.uniqueId
 
-        // 🔥 FIX MÚSICA: Si la definitiva ya estaba activa, no ponemos la música de nuevo
-        val yaEstabaActiva = isUltimateActive.contains(uuid)
+        // 🔥 FIX MÚSICA ANTI-SPAM: Si ya está activa, no hacemos NADA (ni efectos ni sonidos nuevos).
+        if (isUltimateActive.contains(uuid)) return
 
         isUltimateActive.add(uuid)
 
-        if (!yaEstabaActiva) {
-            player.world.getNearbyPlayers(player.location, 30.0).forEach {
-                it.playSound(player.location, "mistaken:lms", 1.5f, 1f)
-            }
+        player.world.getNearbyPlayers(player.location, 30.0).forEach {
+            it.playSound(player.location, "mistaken:lms", 1.5f, 1f)
         }
 
         player.world.spawnParticle(Particle.FLASH, player.location, 1)
@@ -255,7 +259,7 @@ class Pizzano : Asesino(
             player.removePotionEffect(PotionEffectType.BLINDNESS)
             player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 10, 2, false, false, false))
 
-            // 2. Rastro de Regaliz Pegajoso
+            // 2. Rastro de Regaliz Pegajoso (Piso falso)
             if (ticks % 3 == 0) {
                 val trailLoc = player.location.clone()
                 trailLoc.world.spawnParticle(Particle.FALLING_HONEY, trailLoc.add(0.0, 0.5, 0.0), 5, 0.3, 0.0, 0.3, 0.0)
@@ -283,7 +287,7 @@ class Pizzano : Asesino(
         if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
             if (isUltimateActive.contains(attacker.uniqueId)) {
 
-                // +25% Daño Extra verdadero (Bypassea el CombatManager ligeramente reduciendo vida directa)
+                // +25% Daño Extra verdadero
                 if (esObjetivoValido(attacker, victim)) {
                     val extraDamage = 1.0
                     val newHp = (victim.health - extraDamage).coerceAtLeast(0.0)
@@ -366,6 +370,11 @@ class Pizzano : Asesino(
             moveTicks.remove(uuid)
             sugarStacks.remove(uuid)
             isUltimateActive.remove(uuid)
+
+            // 🔥 Detenemos la música si termina la partida y él la estaba escuchando
+            it.world.players.forEach { p ->
+                p.stopSound("mistaken:lms", SoundCategory.MASTER)
+            }
         }
     }
 }

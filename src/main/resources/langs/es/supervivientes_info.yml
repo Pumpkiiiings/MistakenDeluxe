@@ -225,3 +225,13 @@ supervivientes:
       habilidad1: "<white><b>¡VUELO!</b></white> <gray>Modo creativo temporal activado."
       habilidad2: "<dark_gray><b>¡DENEGADO!</b></dark_gray> <gray>El asesino ha sido rechazado."
       habilidad3: "<yellow><b>¡PODER!</b></yellow> <gray>Regeneración y fuerza sagrada."
+
+  troll:
+    nombre: "<green><b>EL TROLL</b></green>"
+    descripcion:
+      - "<gray>Un maestro del engaño que"
+      - "<gray>disfruta haciendo sufrir al asesino."
+    habilidades_nombres:
+      habilidad1: "<green>Holograma Troll"
+      habilidad2: "<yellow>Cáscara de Plátano"
+      habilidad3: "<gold>Caja Sorpresa"

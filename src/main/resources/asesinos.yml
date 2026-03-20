@@ -208,6 +208,10 @@ asesinos:
       habilidad4_cooldown: 100
       habilidad4_sonido: "UI_TOAST_CHALLENGE_COMPLETE"
 
+  romeodebuff:
+    precio: 30000
+    icono_material: "COMMAND_BLOCK"
+
   romeo:
     precio: 30000
     icono_material: "COMMAND_BLOCK"
@@ -230,6 +234,10 @@ asesinos:
       habilidad4: "NETHER_STAR"
       habilidad4_cooldown: 60
       habilidad4_sonido: "ENTITY_WITHER_DEATH"
+
+  colorsito:
+    precio: 50000
+    icono_material: "YELLOW_DYE"
 
   colorandelectricity:
     precio: 10500
@@ -279,7 +287,7 @@ asesinos:
 
   bendy:
     precio: 25000
-    icono_material: "SQUID_INK"
+    icono_material: "COAL"
     armadura:
       casco: "mistaken:bendy_helmet"
       pechera: "mistaken:bendy_chestplate"

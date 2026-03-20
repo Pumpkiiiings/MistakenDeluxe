@@ -14,12 +14,17 @@ import org.bukkit.*
 import org.bukkit.entity.Entity
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
+import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Transformation
 import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import kotlin.math.cos
@@ -28,14 +33,19 @@ import kotlin.math.sin
 class Slasher : Asesino(
     "slasher",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.slasher.nombre", "<white><b>PUMPKIN WHITE</b>", "asesinos_info")
-) {
+), Listener { // 🔥 Agregamos Listener para escuchar el daño
 
     private val pathBase = "asesinos.slasher"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val temporaryEntities = ConcurrentHashMap.newKeySet<Entity>()
 
+    // 🔥 Sistema de sonidos sin repetición
+    private val attackSoundsQueue = ConcurrentHashMap<UUID, MutableList<Int>>()
+
     init {
         preLoadKit()
+        // Registramos el listener al iniciar el asesino
+        plugin.server.pluginManager.registerEvents(this, plugin)
     }
 
     private fun preLoadKit() {
@@ -118,6 +128,37 @@ class Slasher : Asesino(
         deliver("arma", 8)
     }
 
+    // --- 🔥 SONIDO DE ATAQUE MELEE ---
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onSlasherAttack(event: EntityDamageByEntityEvent) {
+        val attacker = event.damager as? Player ?: return
+        val victim = event.entity as? Player ?: return
+
+        // Validamos que el atacante sea el Asesino y tenga a Slasher equipado
+        if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
+
+            // Validar que la víctima sea válida (No espectador, no fuego amigo no deseado)
+            if (esObjetivoValido(attacker, victim)) {
+
+                val uuid = attacker.uniqueId
+                val queue = attackSoundsQueue.getOrPut(uuid) { mutableListOf(1, 2, 3, 4).apply { shuffle() } }
+
+                if (queue.isEmpty()) {
+                    queue.addAll(listOf(1, 2, 3, 4))
+                    queue.shuffle()
+                }
+
+                val soundIndex = queue.removeAt(0)
+                val soundName = "mistaken:whitepumpkin_ataque_$soundIndex"
+
+                // Se escucha para ambos (el atacante y la víctima) a un volumen moderado
+                attacker.playSound(attacker.location, soundName, SoundCategory.PLAYERS, 1.2f, 1.0f)
+                victim.playSound(victim.location, soundName, SoundCategory.PLAYERS, 1.2f, 1.0f)
+            }
+        }
+    }
+
     private fun habilidadSedDeSangre(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 160, 2))
         player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 160, 1))
@@ -156,7 +197,6 @@ class Slasher : Asesino(
             t.leftRotation.rotateZ(0.6f)
             machete.transformation = t
 
-            // 🔥 Uso de la función centralizada
             val hit = machete.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { esObjetivoValido(player, it) }
 
             if (hit != null || machete.location.block.type.isSolid) {
@@ -174,7 +214,6 @@ class Slasher : Asesino(
     private fun habilidadPresencia(player: Player) {
         player.playSound(player.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1.5f, 0.8f)
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
-            // 🔥 Uso de la función centralizada
             if (esObjetivoValido(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, 100, 1))
@@ -226,6 +265,7 @@ class Slasher : Asesino(
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
+        player?.let { attackSoundsQueue.remove(it.uniqueId) }
         temporaryEntities.forEach { it.remove() }
         temporaryEntities.clear()
     }

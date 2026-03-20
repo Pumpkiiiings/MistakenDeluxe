@@ -294,3 +294,24 @@ supervivientes:
       habilidad3: "ENCHANTED_GOLDEN_APPLE"
       habilidad3_cooldown: 60
       habilidad3_sonido: "ITEM_TOTEM_USE"
+
+  troll:
+    precio: 300
+    icono_material: "YELLOW_DYE"
+    armadura:
+      casco: "none"
+      pechera: "LEATHER_CHESTPLATE"
+      pantalones: "LEATHER_LEGGINGS"
+      botas: "LEATHER_BOOTS"
+    items:
+      habilidad1: "ARMOR_STAND"
+      habilidad1_cooldown: 30
+      habilidad1_sonido: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+
+      habilidad2: "YELLOW_DYE"
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "ENTITY_EGG_THROW"
+
+      habilidad3: "CHEST"
+      habilidad3_cooldown: 30
+      habilidad3_sonido: "BLOCK_WOOD_PLACE"
