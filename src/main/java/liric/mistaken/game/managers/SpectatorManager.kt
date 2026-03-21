@@ -82,8 +82,13 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         // para asegurarnos de que Bukkit lo resetee al 100%.
         activeSpectators.remove(player.uniqueId)
 
-        // Restaurar físicas y modo de juego
-        player.gameMode = GameMode.SURVIVAL
+        // 🔥 FIX CINEMÁTICA: Si el juego está en fase ENDING, NO le quitamos el GameMode SPECTATOR
+        // Porque el CinematicManager lo necesita así para rotar la cámara.
+        if (plugin.gameManager.currentState != GameState.ENDING) {
+            player.gameMode = GameMode.SURVIVAL
+        }
+
+        // Restaurar físicas y visibilidad siempre
         player.isInvisible = false
         player.isCollidable = true
         player.isInvulnerable = false

@@ -89,6 +89,7 @@ class Mistaken : JavaPlugin() {
     lateinit var ambientManager: AmbientManager
     lateinit var combatManager: CombatManager
     lateinit var discordManager: DiscordManager
+    lateinit var cinematicManager: CinematicManager
 
     // Roles & Shops
     lateinit var spectatorManager: SpectatorManager
@@ -154,6 +155,7 @@ class Mistaken : JavaPlugin() {
         discordManager = DiscordManager(this)
         musicManager = MusicManager(this)
         spectatorManager = SpectatorManager(this)
+        cinematicManager = CinematicManager(this)
         server.pluginManager.registerEvents(spectatorManager, this)
         liric.mistaken.api.MistakenAPI.init(this)
 

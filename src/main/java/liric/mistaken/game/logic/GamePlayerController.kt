@@ -229,7 +229,9 @@ class GamePlayerController(private val game: GameManager) {
     }
 
     fun handlePlayerDeath(player: Player) {
-        if (player.gameMode == GameMode.SPECTATOR || player.isInvisible) return
+        // 🔥 ESCUDO: Si el juego ya está terminando, o el jugador ya es espectador, ignorar.
+        // Esto evita dobles ejecuciones cuando el último jugador muere.
+        if (game.currentState == GameState.ENDING || player.gameMode == GameMode.SPECTATOR || player.isInvisible) return
 
         if (game.currentMode == MistakenMode.ASSASSIN_PVP) {
             game.plugin.spectatorManager.setCustomSpectator(player)
@@ -279,6 +281,8 @@ class GamePlayerController(private val game: GameManager) {
         }
 
         checkLastManStanding()
+
+        // 🔥 Al matar al último jugador, esto llamará a endGame y luego a CinematicManager
         checkWinCondition()
     }
 

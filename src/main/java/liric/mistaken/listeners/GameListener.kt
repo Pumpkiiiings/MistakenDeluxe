@@ -8,6 +8,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.Sound
+import org.bukkit.SoundCategory
 import org.bukkit.entity.Player
 import org.bukkit.entity.Projectile
 import org.bukkit.event.EventHandler
@@ -24,18 +25,23 @@ import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerToggleSneakEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 
 /**
- *[LIRIC-MISTAKEN 2.0]
+ * [LIRIC-MISTAKEN 2.0]
  * GameListener: El árbitro supremo.
- * FIX: Salvado de ubicación al morir (Evita ir al lobby) y permisos para menú de espectador.
+ * FIX: Salvado de ubicación al morir (Evita ir al lobby) y sonidos de stun para Slasher sin repetición.
  */
 class GameListener(private val plugin: Mistaken) : Listener {
 
     private val mm = plugin.mm
     private val plain = PlainTextComponentSerializer.plainText()
+
+    // 🔥 Sistema de sonidos de stun sin repetición
+    private val stunSoundsQueue = ConcurrentHashMap<UUID, MutableList<Int>>()
 
     /**
      * 🧊 SISTEMA DE RESCATE (Freeze Tag)
@@ -65,7 +71,6 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
     /**
      * 🔥 EFECTOS VISUALES DEL COMBATE
-     * Usamos MONITOR para asegurarnos de que el CombatManager ya procesó el daño y validó el cooldown.
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onDamageEffects(event: EntityDamageByEntityEvent) {
@@ -98,33 +103,28 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
     /**
      * 🔥 INSTA-RESPAWN & TP-BACK
-     * Te regresa al lugar donde moriste como Espectador Fantasma
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
         if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
 
         val victim = event.entity
-        val deathLoc = victim.location // 🔥 GUARDAMOS LA UBICACIÓN EXACTA DE LA MUERTE
+        val deathLoc = victim.location
 
         event.drops.clear()
         event.droppedExp = 0
         event.deathMessage(null)
 
-        // Verificamos que no sea ya un fantasma
         if (victim.gameMode != org.bukkit.GameMode.ADVENTURE || !victim.isInvisible) {
             plugin.gameManager.playerController.handlePlayerDeath(victim)
         }
 
         victim.scheduler.runDelayed(plugin, Consumer { _ ->
             if (victim.isOnline && victim.isDead) {
-                // Forzamos la reaparición (Bukkit por defecto lo manda al spawn/lobby y le borra el inventario)
                 victim.spigot().respawn()
 
-                // 🔥 Teleportamos de regreso a donde murió de forma asíncrona
                 victim.teleportAsync(deathLoc).thenAccept { success ->
                     if (success && plugin.gameManager.currentState == GameState.INGAME) {
-                        // Le volvemos a dar su modo espectador con ítems
                         plugin.spectatorManager.setCustomSpectator(victim)
                     }
                 }
@@ -142,6 +142,23 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
         killer.sendMessage(plugin.messageConfig.getMessage(killer, "game.killer-stunned-victim"))
         damager.sendMessage(plugin.messageConfig.getMessage(damager, "game.killer-stunned-damager"))
+
+        // 🔥 Lógica especial para Slasher: Sonidos custom aleatorios de stun sin repetición
+        val claseAsesino = plugin.playerDataManager.getSelectedKiller(killer.uniqueId)
+        if (claseAsesino == "slasher") {
+            val uuid = killer.uniqueId
+            val queue = stunSoundsQueue.getOrPut(uuid) { mutableListOf(1, 2).apply { shuffle() } }
+
+            if (queue.isEmpty()) {
+                queue.addAll(listOf(1, 2))
+                queue.shuffle()
+            }
+
+            val soundIndex = queue.removeAt(0)
+            val soundName = "mistaken:whitepumpkin_stun_$soundIndex"
+
+            killer.world.playSound(killer.location, soundName, SoundCategory.PLAYERS, 3.0f, 1.0f)
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -164,7 +181,6 @@ class GameListener(private val plugin: Mistaken) : Listener {
         if (type == InventoryType.PLAYER || type == InventoryType.CRAFTING) return
         val title = plain.serialize(event.view.title())
 
-        // 🔥 FIX: Añadimos "Espectear" a la lista blanca para que la brújula abra
         val allowed = listOf("Reparando", "Skill Check", "ENTES", "Tienda", "Selecciona", "Espectear")
         if (allowed.any { title.contains(it, ignoreCase = true) }) return
 

@@ -33,7 +33,7 @@ import kotlin.math.sin
 class Slasher : Asesino(
     "slasher",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.slasher.nombre", "<white><b>PUMPKIN WHITE</b>", "asesinos_info")
-), Listener { // 🔥 Agregamos Listener para escuchar el daño
+), Listener {
 
     private val pathBase = "asesinos.slasher"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
@@ -44,7 +44,6 @@ class Slasher : Asesino(
 
     init {
         preLoadKit()
-        // Registramos el listener al iniciar el asesino
         plugin.server.pluginManager.registerEvents(this, plugin)
     }
 
@@ -132,13 +131,12 @@ class Slasher : Asesino(
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onSlasherAttack(event: EntityDamageByEntityEvent) {
+        // IMPORTANTE: ignoreCancelled = true asegura que solo suene si el golpe fue validado
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        // Validamos que el atacante sea el Asesino y tenga a Slasher equipado
         if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
 
-            // Validar que la víctima sea válida (No espectador, no fuego amigo no deseado)
             if (esObjetivoValido(attacker, victim)) {
 
                 val uuid = attacker.uniqueId
@@ -152,9 +150,8 @@ class Slasher : Asesino(
                 val soundIndex = queue.removeAt(0)
                 val soundName = "mistaken:whitepumpkin_ataque_$soundIndex"
 
-                // Se escucha para ambos (el atacante y la víctima) a un volumen moderado
-                attacker.playSound(attacker.location, soundName, SoundCategory.PLAYERS, 1.2f, 1.0f)
-                victim.playSound(victim.location, soundName, SoundCategory.PLAYERS, 1.2f, 1.0f)
+                // Volumen a 3.0f para asegurar que ambos lo escuchen claramente
+                attacker.world.playSound(attacker.location, soundName, SoundCategory.PLAYERS, 3.0f, 1.0f)
             }
         }
     }

@@ -49,6 +49,13 @@ class CommandRegistry(private val plugin: Mistaken) {
                 listOf("mtest") // Quité el 'mt' para evitar conflictos con el comando principal
             )
 
+            // 🔥 NUEVO COMANDO: CINEMÁTICA (Para probar los Outros épicos)
+            registrar.register(
+                CinematicaCommand.get(plugin),
+                "Reproducir cinemáticas de asesinos",
+                listOf("cine")
+            )
+
             // --- GRUPO B: COMANDOS BÁSICOS (Clases BasicCommand) ---
             // Estos SÍ llevan '()' porque son instancias de clase
 

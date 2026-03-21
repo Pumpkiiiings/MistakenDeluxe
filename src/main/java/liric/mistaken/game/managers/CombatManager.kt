@@ -276,6 +276,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             if (plugin.isReady) plugin.scoreboardManager.updatePlayer(victim)
 
             if (nextHP <= 0.0) {
+                // 🔥 EVITAMOS EL RESPAWN: Mantenemos al jugador vivo lógicamente para el servidor
+                // Esto previene que Minecraft intente enviarlo al punto de regeneración (Lobby).
                 victim.health = 20.0
                 victim.removePotionEffect(PotionEffectType.DARKNESS)
                 victim.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
@@ -285,6 +287,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                     try { plugin.glowingAPI.unsetGlowing(victim, killer) } catch (_: Exception) {}
                 }
 
+                // Disparamos nuestra lógica custom de muerte
                 plugin.gameManager.playerController.handlePlayerDeath(victim)
             }
         }

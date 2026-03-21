@@ -4,17 +4,35 @@ import liric.mistaken.game.GameManager
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import org.bukkit.GameMode
 import org.bukkit.Sound
 import java.util.concurrent.ThreadLocalRandom
 
 class GameStateController(private val game: GameManager) {
 
+    // Cache local para el resultado de la partida
+    private var lastKillerWon = false
+
     fun startBreakProcess() {
+        // Detectamos si venimos de una partida que acaba de terminar (estado ENDING)
+        val venimosDePartida = game.currentState == GameState.ENDING
+
         if (game.currentState == GameState.BREAK) return
         game.currentState = GameState.BREAK
 
-        // Lee de la config, si no existe, usa 10 segundos por defecto.
+        // Configuración del tiempo de descanso
         game.timer = game.plugin.config.getInt("settings.break-duration", 10)
+
+        // --- LIMPIEZA POST-CINEMÁTICA ---
+        if (venimosDePartida) {
+            // Limpiamos todo: esto quita el Glow, resetea vida, quita el dummy de la cinemática, etc.
+            game.playerController.cleanupAllPlayers(lastKillerWon)
+            game.worldController.limpiarMapa()
+
+            // Devolvemos a todos al punto de spawn del Lobby
+            game.playerController.teleportAllToLobby()
+        }
+
         game.broadcastLocalized("game.break-start")
     }
 
@@ -57,7 +75,6 @@ class GameStateController(private val game: GameManager) {
         game.currentState = GameState.STARTING
         game.currentMapName = winner
 
-        // 🚀 Carga de mundo usando CompletableFuture
         game.plugin.mapManager.loadArenaWorld(winner).thenAccept { aspWorld ->
             game.plugin.server.globalRegionScheduler.run(game.plugin) { _ ->
                 if (aspWorld == null) {
@@ -102,17 +119,21 @@ class GameStateController(private val game: GameManager) {
     fun endGame(configPath: String, killerWon: Boolean) {
         if (game.currentState == GameState.ENDING) return
         game.currentState = GameState.ENDING
-        game.timer = 15
+
+        // Sincronizamos el resultado con el GameManager y localmente
+        this.lastKillerWon = killerWon
+        game.lastKillerWon = killerWon
+
+        // 12 segundos para dar tiempo a la cinemática de 10 segundos
+        game.timer = 12
 
         val mapName = game.currentMapName
         val killer = game.getCurrentAsesino()
 
-        // 🔥 0 HARDCODE: Obtenemos los nombres desde la config (para Discord / Logs)
         val defaultAssassinWord = game.plugin.messageConfig.getRawString(null, "words.assassin", "El Asesino", "messages")
         val defaultSurvivorsWord = game.plugin.messageConfig.getRawString(null, "words.survivors", "Supervivientes", "messages")
 
         val ganadorNombre = if (killerWon) (killer?.name ?: defaultAssassinWord) else defaultSurvivorsWord
-
         val razon = if (killerWon) {
             game.plugin.messageConfig.getRawString(null, "discord.reason_killer_won", "¡El asesino ganó!", "messages")
         } else {
@@ -120,10 +141,10 @@ class GameStateController(private val game: GameManager) {
         }
 
         val escapados = game.plugin.server.onlinePlayers.filter {
-            !game.esAsesino(it.uniqueId) && it.gameMode == org.bukkit.GameMode.SURVIVAL
+            !game.esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL
         }.map { it.name }
 
-        // 🚀 Tareas IO Asíncronas
+        // Tareas en segundo plano
         game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
             game.plugin.discordManager.sendGameEnd(mapName, ganadorNombre, razon, escapados)
             game.plugin.server.onlinePlayers.forEach { p ->
@@ -133,21 +154,41 @@ class GameStateController(private val game: GameManager) {
                     else game.plugin.statsManager.incrementStat(uuid, "losses_survivor")
                 } else {
                     if (game.esAsesino(uuid)) game.plugin.statsManager.incrementStat(uuid, "losses_assassin")
-                    else if (p.gameMode != org.bukkit.GameMode.SPECTATOR) game.plugin.statsManager.incrementStat(uuid, "wins_survivor")
+                    else if (p.gameMode != GameMode.SPECTATOR) game.plugin.statsManager.incrementStat(uuid, "wins_survivor")
                 }
             }
         }
 
-        game.broadcastLocalized(configPath)
+        // --- LÓGICA DE CINEMÁTICA ---
+        if (killerWon && killer != null) {
+            val claseAsesino = game.plugin.asesinoManager.getAsesinoDelJugador(killer)
+            if (claseAsesino != null) {
+                // playKillerOutro ahora se encarga de teletransportar a todos (vivos y muertos)
+                // al centro para que nadie se pierda la escena.
+                game.plugin.cinematicManager.playKillerOutro(killer, claseAsesino)
+            } else {
+                game.broadcastLocalized(configPath)
+            }
+        } else {
+            // Si ganan supervivientes, mensaje normal y sonidos de victoria
+            game.broadcastLocalized(configPath)
+            game.plugin.server.onlinePlayers.forEach { it.playSound(it.location, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f) }
+        }
+
         game.combatManager.giveWinRewards(killerWon)
-        game.playerController.cleanupAllPlayers(killerWon)
-        game.worldController.limpiarMapa()
         game.modeForced = false
     }
 
     fun resetToLobby(path: String?) {
         path?.let { game.broadcastLocalized(it) }
-        game.worldController.limpiarMapa()
+
+        // Si hay una partida en curso o empezando, limpiar forzosamente
+        if (game.currentState == GameState.INGAME || game.currentState == GameState.STARTING || game.currentState == GameState.ENDING) {
+            game.playerController.cleanupAllPlayers(lastKillerWon)
+            game.worldController.limpiarMapa()
+            game.playerController.teleportAllToLobby()
+        }
+
         game.currentState = GameState.LOBBY
         game.timer = 0
         game.currentAsesinoUUID = null

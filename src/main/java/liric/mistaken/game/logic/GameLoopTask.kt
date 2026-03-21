@@ -78,7 +78,13 @@ class GameLoopTask(private val game: GameManager) {
                         }
                         GameState.ENDING -> {
                             if (game.timer <= 0) {
+                                // 🔥 AÑADIDO: Limpieza profunda de inventarios, roles, glows y mapa
+                                game.playerController.cleanupAllPlayers(game.lastKillerWon)
+                                game.worldController.limpiarMapa()
+
+                                // Los devolvemos al lobby 100% limpios
                                 game.playerController.teleportAllToLobby()
+
                                 // 🔥 En lugar de ir a LOBBY con reset, vamos a BREAK para continuar el ciclo
                                 game.stateController.startBreakProcess()
                             }
