@@ -18,14 +18,14 @@ class GameManager(val plugin: Mistaken) {
     var modeForced = false
 
     var currentAsesinoUUID: UUID? = null
-    var lastKillerWon: Boolean = false // 🔥 AÑADIDO: Guarda quién ganó la partida para usarlo en la limpieza
+    var lastKillerWon: Boolean = false
 
     val asesinosUUIDs = ConcurrentHashMap.newKeySet<UUID>()
     val yaJugaronAsesino = ConcurrentHashMap.newKeySet<UUID>()
     val changedBlocks = ConcurrentHashMap<org.bukkit.Location, org.bukkit.Material>()
 
     // --- MANAGERS EXISTENTES ---
-    val voteManager = plugin.voteManager // Asumiendo que se inicializa en el plugin
+    val voteManager = plugin.voteManager
     val ambientManager = plugin.ambientManager
     val combatManager = plugin.combatManager
 

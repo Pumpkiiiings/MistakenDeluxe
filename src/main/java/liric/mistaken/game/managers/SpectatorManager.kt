@@ -40,12 +40,15 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         activeSpectators.add(player.uniqueId) // Lo registramos primero
 
         player.gameMode = GameMode.ADVENTURE
-        player.allowFlight = true
-        player.isFlying = true
         player.isInvisible = true // Ayuda extra visual
         player.isCollidable = false
         player.isInvulnerable = true
-        player.flySpeed = 0.1f
+
+        plugin.server.globalRegionScheduler.runDelayed(plugin, { _ ->
+            player.allowFlight = true
+            player.isFlying = true
+            player.flySpeed = 0.1f
+        }, 1L)
 
         player.inventory.clear()
 
@@ -213,7 +216,37 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
                     p.closeInventory()
                 }
             }
+            @EventHandler(priority = EventPriority.MONITOR)
+            fun onWorldChange(e: org.bukkit.event.player.PlayerChangedWorldEvent) {
+                val p = e.player
+                if (isSpectator(p)) {
+                    // Necesitamos un delay de 1 tick porque Bukkit resetea el vuelo justo DESPUÉS del cambio de mundo
+                    plugin.server.globalRegionScheduler.runDelayed(plugin, { _ ->
+                        if (p.isOnline && isSpectator(p)) {
+                            p.allowFlight = true
+                            p.isFlying = true
+                            // Opcional: asegurarnos que la velocidad sea la correcta
+                            p.flySpeed = 0.1f
+                        }
+                    }, 1L)
+                }
+            }
+
+            @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+            fun onTeleport(e: org.bukkit.event.player.PlayerTeleportEvent) {
+                val p = e.player
+                if (isSpectator(p)) {
+                    // Forzamos que después de cualquier TP siga volando
+                    plugin.server.globalRegionScheduler.runDelayed(plugin, { _ ->
+                        if (p.isOnline && isSpectator(p)) {
+                            p.allowFlight = true
+                            p.isFlying = true
+                        }
+                    }, 2L) // 2 ticks para estar seguros
+                }
+            }
         }
+
     }
 
     // 🔥 PREVENIR INTERACCIONES MIENTRAS ESTÁN EN VANISH

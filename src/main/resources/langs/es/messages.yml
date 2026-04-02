@@ -159,6 +159,15 @@ scoreboard:
     - "<yellow>Todos son asesinos,"
     - "<yellow>El mejor asesino gana."
     - ""
+  ingame_initializes:
+    - ""
+    - "<white>Mapa: <green>%map%"
+    - "<white>Tiempo: <yellow>%timer%"
+    - ""
+    - "<white>Gens: <green>%completed%/%total%"
+    - "<white>Asesino:"
+    - "%killers%"
+    - ""
   ending:
     - ""
     - "<white>Estado: <red>TERMINADO"
@@ -276,6 +285,9 @@ modes:
   assassin_pvp:
     title: "<dark_red><bold>ASESINO VS ASESINO"
     subtitle: "<gray>¡No confíes en nadie! Último en pie gana."
+  initializes:
+    title: "<dark_red><bold>INITIALIZES"
+    subtitle: "<gray>´P+'¿OP-,.´+LÑK"
 
 # --- JUEGO ---
 game:

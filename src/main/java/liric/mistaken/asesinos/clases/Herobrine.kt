@@ -18,6 +18,10 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.*
 import org.bukkit.entity.*
+import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
+import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -26,6 +30,7 @@ import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
@@ -33,12 +38,42 @@ import kotlin.math.sin
 class Herobrine : Asesino(
     "herobrine",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.herobrine.nombre", "<white><b>HEROBRINE</b>", "asesinos_info")
-) {
+), Listener { // 🔥 Listener añadido para los Finishers
 
     private val pathBase = "asesinos.herobrine"
     private val blockOrbiters = ConcurrentHashMap<UUID, BlockDisplay>()
     private val itemOrbiters = ConcurrentHashMap<UUID, MutableList<Entity>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
+    private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
+
+    // Anti-spam para los efectos de muerte
+    private val lastKillEffect = ConcurrentHashMap<UUID, Long>()
+
+    init {
+        plugin.server.pluginManager.registerEvents(this, plugin)
+    }
+
+    private fun preLoadKit() {
+        val config = plugin.configManager.getAsesinos()
+        val armor = listOf("casco", "pechera", "pantalones", "botas")
+        val items = listOf("arma", "habilidad1", "habilidad2", "habilidad3", "habilidad4")
+
+        armor.forEach { k ->
+            config.getString("$pathBase.armadura.$k")?.let { id ->
+                if (id != "none") {
+                    itemKitCache[k] = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.LEATHER_HELMET)
+                }
+            }
+        }
+
+        items.forEach { k ->
+            config.getString("$pathBase.items.$k")?.let { id ->
+                if (id != "none") {
+                    itemKitCache[k] = CraftEngineUtils.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
+                }
+            }
+        }
+    }
 
     override fun usarHabilidad(player: Player, slot: Int) {
         if (checkCooldown(player, slot)) return
@@ -50,6 +85,110 @@ class Herobrine : Asesino(
         }
         reproducirEfectosHabilidad(player, slot)
     }
+
+    // --- 💀 FINISHERS: EFECTOS DE ASESINATO ALEATORIOS DE HEROBRINE ---
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onHerobrineKill(event: EntityDamageByEntityEvent) {
+        val attacker = event.damager as? Player ?: return
+        val victim = event.entity as? Player ?: return
+
+        if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
+            if (victim.gameMode == GameMode.SPECTATOR) {
+                val now = System.currentTimeMillis()
+                if (now - lastKillEffect.getOrDefault(victim.uniqueId, 0L) > 2000L) {
+                    lastKillEffect[victim.uniqueId] = now
+                    triggerFinisherAleatorio(victim.location)
+                }
+            }
+        }
+    }
+
+    private fun triggerFinisherAleatorio(loc: Location) {
+        val effectType = ThreadLocalRandom.current().nextInt(3)
+        val world = loc.world ?: return
+
+        when (effectType) {
+            0 -> {
+                // EFECTO 1: LA CRUZ DE OBSIDIANA
+                world.playSound(loc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.5f, 0.5f)
+
+                val cruz = world.spawn(loc.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) {
+                    it.block = Material.OBSIDIAN.createBlockData()
+                    it.transformation = Transformation(JomlVector3f(-1.5f, -2.5f, -0.5f), Quaternionf(), JomlVector3f(3f, 5f, 1f), Quaternionf())
+                }
+                val brazoCruz = world.spawn(loc.clone().add(0.0, 2.5, 0.0), BlockDisplay::class.java) {
+                    it.block = Material.OBSIDIAN.createBlockData()
+                    it.transformation = Transformation(JomlVector3f(-2.5f, -0.5f, -0.5f), Quaternionf(), JomlVector3f(5f, 1f, 1f), Quaternionf())
+                }
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    world.playSound(loc, Sound.ENTITY_WITHER_SPAWN, 1f, 0.1f)
+                    world.spawnParticle(org.bukkit.Particle.SOUL_FIRE_FLAME, loc.clone().add(0.0, 2.0, 0.0), 100, 1.0, 3.0, 1.0, 0.1)
+                }, 10L)
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    cruz.remove()
+                    brazoCruz.remove()
+                    // 🔥 FIX: BLOCK_CRACK -> BLOCK
+                    world.spawnParticle(org.bukkit.Particle.BLOCK, loc, 150, 1.0, 2.0, 1.0, Material.OBSIDIAN.createBlockData())
+                }, 30L)
+            }
+            1 -> {
+                // EFECTO 2: ASCENSIÓN FALSA (RAYO BEACON + MURCIÉLAGOS)
+                world.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 2f, 1f)
+
+                val beacon = world.spawn(loc, BlockDisplay::class.java) {
+                    it.block = Material.BEACON.createBlockData()
+                    it.transformation = Transformation(JomlVector3f(-0.5f, 0f, -0.5f), Quaternionf(), JomlVector3f(1f, 10f, 1f), Quaternionf())
+                    it.isGlowing = true
+                }
+
+                val pm = PacketEvents.getAPI().playerManager
+                for(i in 1..5) {
+                    val fakeId = ThreadLocalRandom.current().nextInt(500000, 600000)
+                    val spawnPacket = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity(
+                        fakeId, Optional.of(UUID.randomUUID()), com.github.retrooper.packetevents.protocol.entity.type.EntityTypes.BAT,
+                        Vector3d(loc.x, loc.y + 2.0, loc.z), loc.pitch, loc.yaw, loc.yaw, 0, Optional.empty()
+                    )
+                    world.players.forEach { pm.sendPacket(it, spawnPacket) }
+
+                    plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                        world.players.forEach { pm.sendPacket(it, com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities(fakeId)) }
+                    }, 25L)
+                }
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    world.playSound(loc, Sound.ENTITY_ENDER_DRAGON_FLAP, 2f, 0.5f)
+                    world.spawnParticle(org.bukkit.Particle.CLOUD, loc, 100, 1.0, 3.0, 1.0, 0.1)
+                    beacon.remove()
+                }, 25L)
+            }
+            2 -> {
+                // EFECTO 3: TEMPLO DEL VACÍO (MARCO DE PIEDRA Y ANTORCHAS)
+                world.playSound(loc, Sound.BLOCK_STONE_PLACE, 1f, 0.1f)
+                val altar = world.spawn(loc, BlockDisplay::class.java) {
+                    it.block = Material.MOSSY_COBBLESTONE.createBlockData()
+                    it.transformation = Transformation(JomlVector3f(-1.5f, -0.5f, -1.5f), Quaternionf(), JomlVector3f(3f, 1f, 3f), Quaternionf())
+                }
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    world.spawnParticle(org.bukkit.Particle.FLAME, loc.clone().add(1.5, 0.5, 1.5), 10, 0.0, 0.0, 0.0, 0.0)
+                    world.spawnParticle(org.bukkit.Particle.FLAME, loc.clone().add(-1.5, 0.5, -1.5), 10, 0.0, 0.0, 0.0, 0.0)
+                    world.playSound(loc, Sound.ITEM_FLINTANDSTEEL_USE, 1f, 1f)
+                }, 10L)
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    // 🔥 FIX: SMOKE_LARGE -> LARGE_SMOKE
+                    world.spawnParticle(org.bukkit.Particle.LARGE_SMOKE, loc, 100, 1.5, 0.5, 1.5, 0.1)
+                    world.playSound(loc, Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1f, 0.5f)
+                    altar.remove()
+                }, 20L)
+            }
+        }
+    }
+
+    // --- HABILIDADES ---
 
     private fun habilidadDashVacio(player: Player) {
         val dir = player.location.direction.normalize()
@@ -77,7 +216,6 @@ class Herobrine : Asesino(
             }
 
             player.getNearbyEntities(1.5, 1.5, 1.5).filterIsInstance<Player>().forEach { victim ->
-                // 🔥 Uso de la función centralizada
                 if (esObjetivoValido(player, victim) && victim.uniqueId !in hitted) {
                     hitted.add(victim.uniqueId)
                     repeat(3) { plugin.gameManager.combatManager.takeDamage(victim) }
@@ -114,7 +252,6 @@ class Herobrine : Asesino(
             }
             skull.world.spawnParticle(org.bukkit.Particle.WITCH, skull.location, 3, 0.05, 0.05, 0.05, 0.01)
 
-            // 🔥 Uso de la función centralizada
             val hit = player.world.getNearbyPlayers(skull.location, 1.2).firstOrNull { esObjetivoValido(player, it) }
 
             hit?.let {
@@ -136,7 +273,6 @@ class Herobrine : Asesino(
         )
 
         plugin.server.onlinePlayers.forEach { online ->
-            // 🔥 Uso de la función centralizada
             if (!esObjetivoValido(player, online)) return@forEach
 
             val createTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, listOf(online.name))
@@ -155,10 +291,14 @@ class Herobrine : Asesino(
         }, null, 200L)
     }
 
+    // --- EQUIPAMIENTO Y CARGA ---
+
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
+
+        if (itemKitCache.isEmpty()) preLoadKit()
 
         val configMecanica = plugin.configManager.getAsesinos()
         val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
@@ -280,6 +420,9 @@ class Herobrine : Asesino(
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        player?.let { limpiarVisuales(it.uniqueId) }
+        player?.let {
+            limpiarVisuales(it.uniqueId)
+            lastKillEffect.remove(it.uniqueId)
+        }
     }
 }

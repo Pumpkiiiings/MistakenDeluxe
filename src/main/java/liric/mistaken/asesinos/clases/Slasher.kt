@@ -10,7 +10,11 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPa
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
-import org.bukkit.*
+import liric.mistaken.utils.HitboxVisualizer
+import org.bukkit.Color
+import org.bukkit.Material
+import org.bukkit.Sound
+import org.bukkit.SoundCategory
 import org.bukkit.entity.Entity
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
@@ -111,34 +115,23 @@ class Slasher : Asesino(
                     "pantalones" -> inv.leggings = item
                     "botas" -> inv.boots = item
                 }
-            } else {
-                inv.setItem(slot, item)
-            }
+            } else inv.setItem(slot, item)
         }
 
-        deliver("casco", 0, true)
-        deliver("pechera", 0, true)
-        deliver("pantalones", 0, true)
-        deliver("botas", 0, true)
-        deliver("habilidad1", 1)
-        deliver("habilidad2", 2)
-        deliver("habilidad3", 3)
-        deliver("habilidad4", 4)
+        deliver("casco", 0, true); deliver("pechera", 0, true)
+        deliver("pantalones", 0, true); deliver("botas", 0, true)
+        deliver("habilidad1", 1); deliver("habilidad2", 2)
+        deliver("habilidad3", 3); deliver("habilidad4", 4)
         deliver("arma", 8)
     }
 
-    // --- 🔥 SONIDO DE ATAQUE MELEE ---
-
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onSlasherAttack(event: EntityDamageByEntityEvent) {
-        // IMPORTANTE: ignoreCancelled = true asegura que solo suene si el golpe fue validado
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
         if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
-
             if (esObjetivoValido(attacker, victim)) {
-
                 val uuid = attacker.uniqueId
                 val queue = attackSoundsQueue.getOrPut(uuid) { mutableListOf(1, 2, 3, 4).apply { shuffle() } }
 
@@ -146,11 +139,8 @@ class Slasher : Asesino(
                     queue.addAll(listOf(1, 2, 3, 4))
                     queue.shuffle()
                 }
-
                 val soundIndex = queue.removeAt(0)
                 val soundName = "mistaken:whitepumpkin_ataque_$soundIndex"
-
-                // Volumen a 3.0f para asegurar que ambos lo escuchen claramente
                 attacker.world.playSound(attacker.location, soundName, SoundCategory.PLAYERS, 3.0f, 1.0f)
             }
         }
@@ -181,18 +171,20 @@ class Slasher : Asesino(
         temporaryEntities.add(machete)
         val direction = player.location.direction.multiply(1.4)
 
+        // 🔥 HITBOX: Proyectil
+        val hitbox = HitboxVisualizer.createHitbox(spawnLoc, 1.2, 1.2, 1.2, Material.ORANGE_STAINED_GLASS)
+
         var ticks = 0
         machete.scheduler.runAtFixedRate(plugin, Consumer { task ->
             if (ticks >= 30 || !machete.isValid) {
                 if (machete.isValid) machete.remove()
+                hitbox?.remove()
                 task.cancel()
                 return@Consumer
             }
 
             machete.teleport(machete.location.add(direction))
-            val t = machete.transformation
-            t.leftRotation.rotateZ(0.6f)
-            machete.transformation = t
+            hitbox?.teleport(machete.location) // Sigue al machete
 
             val hit = machete.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { esObjetivoValido(player, it) }
 
@@ -200,8 +192,11 @@ class Slasher : Asesino(
                 hit?.let {
                     plugin.gameManager.combatManager.takeDamage(it)
                     it.playSound(it.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.8f)
+                    hitbox?.block = Material.RED_STAINED_GLASS.createBlockData() // Feedback visual
                 }
                 machete.remove()
+
+                player.scheduler.runDelayed(plugin, Consumer { _ -> hitbox?.remove() }, null, 2L)
                 task.cancel()
             }
             ticks++
@@ -210,6 +205,10 @@ class Slasher : Asesino(
 
     private fun habilidadPresencia(player: Player) {
         player.playSound(player.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1.5f, 0.8f)
+
+        // 🔥 HITBOX: Grito en área
+        HitboxVisualizer.drawInstantHitbox(plugin, player.location, 8.0, 8.0, 8.0, 20L, Material.PURPLE_STAINED_GLASS)
+
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
             if (esObjetivoValido(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))

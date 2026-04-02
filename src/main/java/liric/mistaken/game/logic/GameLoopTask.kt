@@ -58,7 +58,10 @@ class GameLoopTask(private val game: GameManager) {
                             game.stateController.handleStartingSequence()
                         }
                         GameState.INGAME -> {
-                            // 🔥 LÓGICA AISLADA: Solo se ejecuta para el nuevo modo ASSASSIN_PVP
+                            // 🔥 REVISIÓN DE MODO APOCALIPSIS (Chequea si debe soltar a Geoffrey en el segundo exacto)
+                            game.stateController.checkGeoffreySpawn()
+
+                            // 🔥 LÓGICA AISLADA: Solo se ejecuta para el modo ASSASSIN_PVP
                             if (game.currentMode == MistakenMode.ASSASSIN_PVP) {
 
                                 // Filtramos jugadores en supervivencia (vivos)
@@ -78,14 +81,8 @@ class GameLoopTask(private val game: GameManager) {
                         }
                         GameState.ENDING -> {
                             if (game.timer <= 0) {
-                                // 🔥 AÑADIDO: Limpieza profunda de inventarios, roles, glows y mapa
-                                game.playerController.cleanupAllPlayers(game.lastKillerWon)
-                                game.worldController.limpiarMapa()
-
-                                // Los devolvemos al lobby 100% limpios
-                                game.playerController.teleportAllToLobby()
-
-                                // 🔥 En lugar de ir a LOBBY con reset, vamos a BREAK para continuar el ciclo
+                                // 🔥 Todo lo de limpiar el mapa y los jugadores ya lo hace startBreakProcess() por dentro.
+                                // Solo mandamos a llamar a la función para continuar el ciclo de juego.
                                 game.stateController.startBreakProcess()
                             }
                         }

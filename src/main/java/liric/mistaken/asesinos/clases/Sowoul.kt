@@ -8,13 +8,17 @@ import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
-import liric.mistaken.game.entities.GeoffreyEXE
 import liric.mistaken.utils.CraftEngineUtils
 import org.bukkit.*
+import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Entity
 import org.bukkit.entity.EvokerFangs
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
+import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -23,15 +27,20 @@ import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
+/**
+ *[LIRIC-MISTAKEN 2.0]
+ * Sowoul: El Mago de las Ilusiones.
+ * FIX: Habilidad de Atracción (Mano), Fauces en cono (x3), y Efectos de Asesinato Aleatorios.
+ */
 class Sowoul : Asesino(
     "sowoul",
-    // 🔥 FIX: Ruta correcta "asesinos.sowoul.nombre"
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.sowoul.nombre", "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>", "asesinos_info")
-) {
+), Listener { // 🔥 Agregamos el Listener para los Finishers
 
     private val pathBase = "asesinos.sowoul"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
@@ -40,10 +49,12 @@ class Sowoul : Asesino(
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val fakeEntities = ConcurrentHashMap.newKeySet<Entity>()
 
-    private val geoffreyCooldown = ConcurrentHashMap<UUID, Long>()
+    // Anti-spam de los efectos de muerte
+    private val lastKillEffect = ConcurrentHashMap<UUID, Long>()
 
     init {
         preLoadKit()
+        plugin.server.pluginManager.registerEvents(this, plugin)
     }
 
     private fun preLoadKit() {
@@ -74,22 +85,13 @@ class Sowoul : Asesino(
         when (slot) {
             1 -> { habilidadDashMagico(player); dibujarCirculoMagico(player, org.bukkit.Particle.PORTAL, 2.0) }
             2 -> { habilidadLanzarCartas(player); dibujarEspiral(player, org.bukkit.Particle.ENCHANT, 1.5) }
-            3 -> { habilidadFaucesEvocador(player); dibujarPentagrama(player, org.bukkit.Particle.WITCH, 3.0) }
-            4 -> {
-                val lastUsed = geoffreyCooldown.getOrDefault(player.uniqueId, 0L)
-                val timeLeft = 45000L - (System.currentTimeMillis() - lastUsed)
-                if (timeLeft > 0) {
-                    player.sendActionBar(mm.deserialize("<red>Geoffrey 3.0 recargando... (${timeLeft / 1000}s)"))
-                    return
-                }
-                geoffreyCooldown[player.uniqueId] = System.currentTimeMillis()
-
-                habilidadGeoffreyEXE(player)
-                dibujarCoronaEstrellas(player, org.bukkit.Particle.DRAGON_BREATH, 2.5)
-            }
+            3 -> { habilidadFaucesTriples(player); dibujarPentagrama(player, org.bukkit.Particle.WITCH, 3.0) } // 🔥 Mejorado
+            4 -> { habilidadManoAtraccion(player) } // 🔥 Nueva Ulti: Atrapar y Jalar
         }
         reproducirEfectosHabilidad(player, slot)
     }
+
+    // --- 🎨 FUNCIONES DE DIBUJO GEOMÉTRICO (Mantienen igual) ---
 
     private fun dibujarCirculoMagico(player: Player, particula: org.bukkit.Particle, radio: Double) {
         val loc = player.location.clone().add(0.0, 0.1, 0.0)
@@ -145,20 +147,7 @@ class Sowoul : Asesino(
         })
     }
 
-    private fun dibujarCoronaEstrellas(player: Player, particula: org.bukkit.Particle, radio: Double) {
-        val loc = player.location.clone().add(0.0, 2.5, 0.0)
-        plugin.server.regionScheduler.run(plugin, loc, Consumer { _ ->
-            for (i in 0 until 8) {
-                val angulo = Math.toRadians(i * 45.0)
-                val x = radio * cos(angulo)
-                val z = radio * sin(angulo)
-                val pLoc = loc.clone().add(x, 0.0, z)
-
-                loc.world.spawnParticle(particula, pLoc, 5, 0.1, 0.1, 0.1, 0.05)
-                loc.world.spawnParticle(org.bukkit.Particle.END_ROD, pLoc, 2, 0.0, -0.5, 0.0, 0.02)
-            }
-        })
-    }
+    // --- 🎩 HABILIDADES DEL MAGO ---
 
     private fun habilidadDashMagico(player: Player) {
         val dir = player.location.direction.normalize().multiply(3.0).setY(0.4)
@@ -232,40 +221,196 @@ class Sowoul : Asesino(
         }, null, 1L, 1L)
     }
 
-    private fun habilidadFaucesEvocador(player: Player) {
+    // 🔥 FIX: 3 Líneas en Cono
+    private fun habilidadFaucesTriples(player: Player) {
         player.playSound(player.location, Sound.ENTITY_EVOKER_PREPARE_ATTACK, 1f, 1f)
-        val loc = player.location
-        val dir = loc.direction.setY(0).normalize()
+        val startLoc = player.location
+        val angles = listOf(-25.0, 0.0, 25.0)
 
-        for (i in 1..8) {
-            val offsetLoc = loc.clone().add(dir.clone().multiply(i * 1.5))
+        angles.forEach { offset ->
+            val direction = startLoc.direction.clone().rotateAroundY(Math.toRadians(offset)).setY(0.0).normalize()
+            val currentLoc = startLoc.clone()
 
-            player.scheduler.runDelayed(plugin, Consumer { _ ->
-                if (!player.isOnline) return@Consumer
+            for (i in 1..12) {
+                currentLoc.add(direction.clone().multiply(1.2))
+                val locToSpawn = currentLoc.clone()
 
-                var targetY = offsetLoc.blockY
-                val world = offsetLoc.world
+                plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
+                    if (!player.isOnline) return@Consumer
 
-                while (world.getBlockAt(offsetLoc.blockX, targetY, offsetLoc.blockZ).isPassable && targetY > loc.blockY - 3) {
-                    targetY--
-                }
-                while (!world.getBlockAt(offsetLoc.blockX, targetY, offsetLoc.blockZ).isPassable && targetY < loc.blockY + 3) {
-                    targetY++
-                }
+                    var targetY = locToSpawn.blockY
+                    val world = locToSpawn.world
 
-                offsetLoc.y = targetY.toDouble()
+                    // Adaptación al terreno seguro
+                    while (world.getBlockAt(locToSpawn.blockX, targetY, locToSpawn.blockZ).isPassable && targetY > startLoc.blockY - 3) {
+                        targetY--
+                    }
+                    while (!world.getBlockAt(locToSpawn.blockX, targetY, locToSpawn.blockZ).isPassable && targetY < startLoc.blockY + 3) {
+                        targetY++
+                    }
 
-                world.spawn(offsetLoc, EvokerFangs::class.java) { fangs ->
-                    fangs.owner = player
-                }
-            }, null, (i * 2).toLong())
+                    locToSpawn.y = targetY.toDouble()
+
+                    if (!locToSpawn.block.type.isSolid) {
+                        world.spawn(locToSpawn, EvokerFangs::class.java) { fangs ->
+                            fangs.owner = player
+                        }
+                    }
+                }, (i * 2).toLong())
+            }
         }
     }
 
-    private fun habilidadGeoffreyEXE(player: Player) {
-        val geoffrey = GeoffreyEXE(plugin)
-        geoffrey.spawn(player.location.clone().add(0.0, 2.0, 0.0))
+    // 🔥 NUEVA ULTI: ATRACCIÓN ILUSORIA
+    private fun habilidadManoAtraccion(player: Player) {
+        val target = player.world.getNearbyPlayers(player.location, 25.0).firstOrNull { esObjetivoValido(player, it) }
+
+        if (target == null) {
+            player.sendActionBar(mm.deserialize("<red>Nadie en tu rango de visión. Se gastó la habilidad."))
+            return
+        }
+
+        player.playSound(player.location, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1.5f, 0.5f)
+        target.playSound(target.location, Sound.ENTITY_ENDERMAN_STARE, 1.5f, 0.1f)
+        target.sendActionBar(mm.deserialize("<dark_purple><b>¡UNA MANO MÁGICA TE HA ATRAPADO!</b>"))
+
+        // Creamos una "Mano Gigante" usando bloques de Purpur (Color mágico morado)
+        val manoDisplay = target.world.spawn(target.location.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) { bd ->
+            bd.block = Material.PURPUR_PILLAR.createBlockData()
+            bd.transformation = Transformation(
+                JomlVector3f(-1.0f, -1.0f, -1.0f),
+                Quaternionf(),
+                JomlVector3f(2f, 2f, 2f), // Mano GIGANTE 2x2x2
+                Quaternionf()
+            )
+            bd.teleportDuration = 2
+        }
+
+        var ticks = 0
+        player.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (ticks >= 40 || !target.isOnline || !player.isOnline || target.gameMode == GameMode.SPECTATOR) {
+                manoDisplay.remove()
+                task.cancel()
+                return@Consumer
+            }
+
+            // Jala agresivamente a la víctima hacia el Mago
+            val pullDir = player.location.toVector().subtract(target.location.toVector()).normalize().multiply(0.8)
+            target.velocity = pullDir.setY(0.2)
+
+            // La mano abraza al jugador
+            manoDisplay.teleport(target.location.clone().add(0.0, 1.0, 0.0))
+            manoDisplay.world.spawnParticle(org.bukkit.Particle.PORTAL, manoDisplay.location, 20, 1.0, 1.0, 1.0, 0.5)
+
+            // Impacto Final
+            if (target.location.distanceSquared(player.location) < 4.0) {
+                plugin.gameManager.combatManager.takeDamage(target)
+                target.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
+                target.playSound(target.location, Sound.ENTITY_IRON_GOLEM_HURT, 1f, 0.5f)
+
+                manoDisplay.world.spawnParticle(org.bukkit.Particle.EXPLOSION, manoDisplay.location, 2)
+                manoDisplay.world.playSound(manoDisplay.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1.5f)
+
+                manoDisplay.remove()
+                task.cancel()
+            }
+            ticks++
+        }, null, 1L, 1L)
     }
+
+    // --- 💀 FINISHERS: EFECTOS DE ASESINATO ALEATORIOS ---
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onSowoulKill(event: EntityDamageByEntityEvent) {
+        val attacker = event.damager as? Player ?: return
+        val victim = event.entity as? Player ?: return
+
+        if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
+            // El CombatManager ya procesó la muerte en HIGHEST y lo puso en Espectador si su vida era 0
+            if (victim.gameMode == GameMode.SPECTATOR) {
+                val now = System.currentTimeMillis()
+                // Evitamos spam si se murieron dos juntos, esperamos al menos 1 segundo por jugador
+                if (now - lastKillEffect.getOrDefault(victim.uniqueId, 0L) > 2000L) {
+                    lastKillEffect[victim.uniqueId] = now
+                    triggerFinisherAleatorio(victim.location)
+                }
+            }
+        }
+    }
+
+    private fun triggerFinisherAleatorio(loc: Location) {
+        val effectType = ThreadLocalRandom.current().nextInt(3)
+        val world = loc.world ?: return
+
+        when (effectType) {
+            0 -> {
+                // EFECTO 1: MANOS TRITURADORAS DE HUESO
+                val hand1 = world.spawn(loc.clone().add(2.0, 1.0, 0.0), BlockDisplay::class.java) {
+                    it.block = Material.BONE_BLOCK.createBlockData()
+                    it.transformation = Transformation(JomlVector3f(-0.5f, -1.5f, -0.5f), Quaternionf(), JomlVector3f(1f, 3f, 1f), Quaternionf())
+                    it.teleportDuration = 5
+                }
+                val hand2 = world.spawn(loc.clone().add(-2.0, 1.0, 0.0), BlockDisplay::class.java) {
+                    it.block = Material.BONE_BLOCK.createBlockData()
+                    it.transformation = Transformation(JomlVector3f(-0.5f, -1.5f, -0.5f), Quaternionf(), JomlVector3f(1f, 3f, 1f), Quaternionf())
+                    it.teleportDuration = 5
+                }
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    // Se aplastan al centro
+                    hand1.teleport(loc.clone().add(0.2, 1.0, 0.0))
+                    hand2.teleport(loc.clone().add(-0.2, 1.0, 0.0))
+                    world.playSound(loc, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 0.5f)
+                }, 5L)
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    // Explota la sangre
+                    world.spawnParticle(org.bukkit.Particle.BLOCK, loc.clone().add(0.0, 1.0, 0.0), 100, 0.5, 1.0, 0.5, Material.REDSTONE_BLOCK.createBlockData())
+                    world.playSound(loc, Sound.ENTITY_IRON_GOLEM_DEATH, 1f, 0.5f)
+                    hand1.remove()
+                    hand2.remove()
+                }, 12L)
+            }
+            1 -> {
+                // EFECTO 2: GUILLOTINA MÁGICA (ESTACA GIGANTE)
+                world.playSound(loc, Sound.ENTITY_EVOKER_FANGS_ATTACK, 1f, 0.1f)
+                val spike = world.spawn(loc.clone().subtract(0.0, 3.0, 0.0), BlockDisplay::class.java) {
+                    it.block = Material.POINTED_DRIPSTONE.createBlockData()
+                    it.transformation = Transformation(JomlVector3f(-0.5f, 0f, -0.5f), Quaternionf(), JomlVector3f(1f, 5f, 1f), Quaternionf())
+                    it.teleportDuration = 3
+                }
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    spike.teleport(loc.clone().add(0.0, 0.5, 0.0))
+                    world.spawnParticle(org.bukkit.Particle.BLOCK, loc, 50, 0.5, 0.5, 0.5, Material.REDSTONE_BLOCK.createBlockData())
+                }, 1L)
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ -> spike.remove() }, 25L)
+            }
+            2 -> {
+                // EFECTO 3: IMPLOSIÓN DE AGUJERO NEGRO
+                world.playSound(loc, Sound.BLOCK_BEACON_DEACTIVATE, 1f, 0.5f)
+                val hole = world.spawn(loc.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) {
+                    it.block = Material.BLACK_CONCRETE.createBlockData()
+                    it.transformation = Transformation(JomlVector3f(-1.5f, -1.5f, -1.5f), Quaternionf(), JomlVector3f(3f, 3f, 3f), Quaternionf())
+                    it.interpolationDuration = 10
+                }
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    // Se encoje hasta 0
+                    val t = hole.transformation
+                    t.scale.set(0f, 0f, 0f)
+                    hole.transformation = t
+
+                    world.spawnParticle(org.bukkit.Particle.SQUID_INK, loc.clone().add(0.0, 1.0, 0.0), 50, 1.0, 1.0, 1.0, 0.1)
+                    world.playSound(loc, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 0.5f)
+                }, 3L)
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ -> hole.remove() }, 15L)
+            }
+        }
+    }
+
+    // --- 🛠️ EQUIPAMIENTO Y LIMPIEZA ---
 
     override fun equipar(player: Player) {
         val inv = player.inventory
@@ -286,7 +431,6 @@ class Sowoul : Asesino(
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            // 🔥 FIX: RUTA CORREGIDA PARA BUSCAR "asesinos.sowoul.habilidades_nombres.arma"
             val namePath = if (key == "arma") "asesinos.sowoul.habilidades_nombres.arma"
             else "asesinos.sowoul.habilidades_nombres.$key"
 
@@ -316,6 +460,8 @@ class Sowoul : Asesino(
         deliver("habilidad4", 4)
         deliver("arma", 8)
     }
+
+    // --- 🃏 VISUALES (CARTAS ORBITANTES) ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
@@ -384,7 +530,6 @@ class Sowoul : Asesino(
         super.cleanup(player)
         player?.let {
             limpiarVisuales(it.uniqueId)
-            geoffreyCooldown.remove(it.uniqueId)
         }
         fakeEntities.forEach { it.remove() }
         fakeEntities.clear()

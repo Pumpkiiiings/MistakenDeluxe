@@ -10,6 +10,7 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
+import liric.mistaken.utils.HitboxVisualizer
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -45,9 +46,7 @@ class CharlieInferno : Asesino(
     private val musicTasks = ConcurrentHashMap<UUID, ScheduledTask>()
     private val orbitMaterials = listOf(Material.MAGMA_BLOCK, Material.PACKED_ICE)
 
-    init {
-        preLoadKit()
-    }
+    init { preLoadKit() }
 
     private fun preLoadKit() {
         val config = plugin.configManager.getAsesinos()
@@ -157,8 +156,10 @@ class CharlieInferno : Asesino(
     // --- 🔥 HABILIDADES ---
 
     private fun habilidadInfierno(player: Player) {
+        // 🔥 HITBOX: Explosión de Fuego
+        HitboxVisualizer.drawInstantHitbox(plugin, player.location, 7.5, 7.5, 7.5, 10L, Material.ORANGE_STAINED_GLASS)
+
         player.world.getNearbyPlayers(player.location, 7.5).forEach { target ->
-            // 🔥 Uso de la función centralizada
             if (esObjetivoValido(player, target)) {
                 target.fireTicks = 100
                 plugin.gameManager.combatManager.takeDamage(target)
@@ -171,6 +172,9 @@ class CharlieInferno : Asesino(
     }
 
     private fun habilidadDemonRun(player: Player) {
+        // 🔥 HITBOX: Rango de Marcado
+        HitboxVisualizer.drawInstantHitbox(plugin, player.location, 10.0, 10.0, 10.0, 20L, Material.GRAY_STAINED_GLASS)
+
         val targets = player.world.getNearbyPlayers(player.location, 10.0).toMutableList()
         targets.forEach { it.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 60, 0)) }
 
@@ -192,10 +196,14 @@ class CharlieInferno : Asesino(
         }
         val dir = player.location.direction.multiply(1.2)
 
+        // 🔥 HITBOX: Proyectil
+        val hitbox = HitboxVisualizer.createHitbox(player.eyeLocation, 1.0, 1.0, 1.0, Material.LIGHT_BLUE_STAINED_GLASS)
+
         var ticks = 0
         ice.scheduler.runAtFixedRate(plugin, Consumer { task ->
             if (ticks >= 40 || !ice.isValid) {
                 if (ice.isValid) ice.remove()
+                hitbox?.remove()
                 player.scheduler.run(plugin, Consumer { _ ->
                     if (player.isOnline) player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
                 }, null)
@@ -204,8 +212,8 @@ class CharlieInferno : Asesino(
             }
 
             ice.teleport(ice.location.add(dir))
+            hitbox?.teleport(ice.location)
 
-            // 🔥 Uso de la función centralizada
             val hit = player.world.getNearbyPlayers(ice.location, 1.0).firstOrNull { esObjetivoValido(player, it) }
 
             if (hit != null || ice.location.block.type.isSolid) {
@@ -214,8 +222,12 @@ class CharlieInferno : Asesino(
                 hit?.let {
                     it.freezeTicks = 140
                     it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
+                    hitbox?.block = Material.RED_STAINED_GLASS.createBlockData() // Feedback visual de hit
                 }
                 ice.remove()
+
+                // Retraso de 2 ticks para ver el hit rojo
+                player.scheduler.runDelayed(plugin, Consumer { _ -> hitbox?.remove() }, null, 2L)
                 task.cancel()
             }
             ticks++
@@ -225,17 +237,19 @@ class CharlieInferno : Asesino(
     private fun habilidadColmillosInfierno(player: Player) {
         val direction = player.location.direction.setY(0.0).normalize()
         val startLoc = player.location.clone()
-
         val current = startLoc.clone()
+
         for (i in 0 until 12) {
             current.add(direction)
             val locToSpawn = current.clone()
 
             plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
                 locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
-                locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
 
-                    // 🔥 Uso de la función centralizada
+                // 🔥 HITBOX: Diente individual
+                HitboxVisualizer.drawInstantHitbox(plugin, locToSpawn, 1.5, 1.5, 1.5, 5L, Material.RED_STAINED_GLASS)
+
+                locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
                     if (esObjetivoValido(player, victim)) {
                         victim.fireTicks = 100
                         plugin.gameManager.combatManager.takeDamage(victim)

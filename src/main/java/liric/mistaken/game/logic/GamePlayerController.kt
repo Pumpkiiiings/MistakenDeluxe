@@ -36,6 +36,9 @@ class GamePlayerController(private val game: GameManager) {
 
                 p.inventory.clear()
                 game.combatManager.resetHealth(p)
+
+                // 🔥 Asegurarnos de limpiar espectador antes de forzar Survival
+                if (p.gameMode == GameMode.SPECTATOR) p.spectatorTarget = null
                 p.gameMode = GameMode.SURVIVAL
 
                 game.uiController.setLuckPermsPrefix(p, "<dark_red>")
@@ -81,6 +84,9 @@ class GamePlayerController(private val game: GameManager) {
             val isKiller = game.esAsesino(p.uniqueId)
             p.inventory.clear()
             game.combatManager.resetHealth(p)
+
+            // 🔥 Asegurarnos de limpiar espectador antes de forzar Survival
+            if (p.gameMode == GameMode.SPECTATOR) p.spectatorTarget = null
             p.gameMode = GameMode.SURVIVAL
 
             if (isKiller) {
@@ -89,7 +95,7 @@ class GamePlayerController(private val game: GameManager) {
 
                 p.teleportAsync(spawnLoc).thenAccept { success ->
                     if (success && p.isOnline) {
-                        // 🔥 ESCUDO EXTRA DE INICIO: Le quitamos la oscuridad forzosamente al terminar el TP
+                        // ESCUDO EXTRA DE INICIO
                         p.scheduler.run(game.plugin, Consumer { _ ->
                             p.removePotionEffect(PotionEffectType.DARKNESS)
                         }, null)
@@ -229,8 +235,6 @@ class GamePlayerController(private val game: GameManager) {
     }
 
     fun handlePlayerDeath(player: Player) {
-        // 🔥 ESCUDO: Si el juego ya está terminando, o el jugador ya es espectador, ignorar.
-        // Esto evita dobles ejecuciones cuando el último jugador muere.
         if (game.currentState == GameState.ENDING || player.gameMode == GameMode.SPECTATOR || player.isInvisible) return
 
         if (game.currentMode == MistakenMode.ASSASSIN_PVP) {
@@ -282,7 +286,6 @@ class GamePlayerController(private val game: GameManager) {
 
         checkLastManStanding()
 
-        // 🔥 Al matar al último jugador, esto llamará a endGame y luego a CinematicManager
         checkWinCondition()
     }
 
@@ -337,8 +340,14 @@ class GamePlayerController(private val game: GameManager) {
     fun teleportAllToLobby() {
         game.plugin.lobbyLocation?.let { loc ->
             game.plugin.server.onlinePlayers.forEach { p ->
-                p.teleportAsync(loc)
-                p.gameMode = GameMode.SURVIVAL
+                // 🔥 Asegurarnos de limpiar espectador antes de moverlos y cambiar de GameMode
+                if (p.gameMode == GameMode.SPECTATOR) {
+                    p.spectatorTarget = null
+                }
+
+                p.teleportAsync(loc).thenRun {
+                    p.gameMode = GameMode.SURVIVAL
+                }
             }
         }
     }

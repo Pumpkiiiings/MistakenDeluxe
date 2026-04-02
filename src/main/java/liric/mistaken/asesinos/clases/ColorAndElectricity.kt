@@ -10,6 +10,8 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPa
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
+import liric.mistaken.utils.HitboxVisualizer
+import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -43,9 +45,7 @@ class ColorAndElectricity : Asesino(
         Material.LIME_WOOL, Material.YELLOW_WOOL, Material.ORANGE_WOOL, Material.RED_WOOL
     )
 
-    init {
-        preLoadKit()
-    }
+    init { preLoadKit() }
 
     private fun preLoadKit() {
         val config = plugin.configManager.getAsesinos()
@@ -114,9 +114,7 @@ class ColorAndElectricity : Asesino(
                     "pantalones" -> inv.leggings = item
                     "botas" -> inv.boots = item
                 }
-            } else {
-                inv.setItem(slot, item)
-            }
+            } else inv.setItem(slot, item)
         }
 
         deliver("casco", 0, true); deliver("pechera", 0, true)
@@ -137,17 +135,24 @@ class ColorAndElectricity : Asesino(
         var count = 0
         val hitted = mutableSetOf<UUID>()
 
+        // 🔥 HITBOX: Caja Dinámica
+        val hitbox = HitboxVisualizer.createHitbox(player.location, 2.5, 2.5, 2.5, Material.CYAN_STAINED_GLASS)
+
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
             if (count >= 10 || !player.isOnline) {
+                hitbox?.remove()
                 task.cancel()
                 return@Consumer
             }
+
+            hitbox?.teleport(player.location) // Actualiza visual
+
             player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
-                // 🔥 Uso de la función centralizada
                 if (esObjetivoValido(player, victim) && hitted.add(victim.uniqueId)) {
                     plugin.gameManager.combatManager.takeDamage(victim)
                     victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
                     victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 1.5f)
+                    hitbox?.block = Material.RED_STAINED_GLASS.createBlockData() // Feedback visual de hit
                 }
             }
             count++
@@ -156,8 +161,11 @@ class ColorAndElectricity : Asesino(
 
     private fun habilidadColorDrain(player: Player) {
         player.playSound(player.location, Sound.BLOCK_CONDUIT_ATTACK_TARGET, 1f, 1.8f)
+
+        // 🔥 HITBOX: Caja Instantánea
+        HitboxVisualizer.drawInstantHitbox(plugin, player.location, 8.0, 8.0, 8.0, 15L, Material.PURPLE_STAINED_GLASS)
+
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
-            // 🔥 Uso de la función centralizada
             if (esObjetivoValido(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
@@ -168,14 +176,20 @@ class ColorAndElectricity : Asesino(
 
     private fun habilidadPulseStatic(player: Player) {
         var ticks = 0
+        // 🔥 HITBOX: Caja Intermitente (Dura todo el efecto)
+        val hitbox = HitboxVisualizer.createHitbox(player.location, 6.0, 6.0, 6.0, Material.YELLOW_STAINED_GLASS)
+
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
             if (ticks > 3 || !player.isOnline) {
+                hitbox?.remove()
                 task.cancel()
                 return@Consumer
             }
+
+            hitbox?.teleport(player.location) // Sigue al jugador
             player.world.spawnParticle(org.bukkit.Particle.ELECTRIC_SPARK, player.location, 20, 2.0, 2.0, 2.0, 0.05)
+
             player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { victim ->
-                // 🔥 Uso de la función centralizada
                 if (esObjetivoValido(player, victim)) {
                     plugin.gameManager.combatManager.takeDamage(victim)
                     victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(0.8).setY(0.3)
@@ -186,7 +200,9 @@ class ColorAndElectricity : Asesino(
     }
 
     private fun habilidadShikisaiEnd(player: Player) {
-        // 🔥 Uso de la función centralizada
+        // 🔥 HITBOX: Area de Búsqueda
+        HitboxVisualizer.drawInstantHitbox(plugin, player.location, 15.0, 15.0, 15.0, 20L, Material.ORANGE_STAINED_GLASS)
+
         val target = player.getNearbyEntities(15.0, 15.0, 15.0).filterIsInstance<Player>().find { esObjetivoValido(player, it) }
         target?.let { t ->
             player.teleportAsync(t.location).thenAccept {
@@ -211,7 +227,6 @@ class ColorAndElectricity : Asesino(
         }
 
         val anguloBase = angulos.getOrDefault(uuid, 0.0)
-
         val radio = 1.4
         val step = (2 * Math.PI) / entidades.size
         val playerLoc = player.location
@@ -220,16 +235,13 @@ class ColorAndElectricity : Asesino(
             val display = entidades[i]
             if (display.isValid) {
                 val currentAngle = anguloBase + (step * i)
-
                 val x = radio * cos(currentAngle)
                 val z = radio * sin(currentAngle)
                 val y = 1.0 + (0.3 * sin(currentAngle * 2))
 
                 val targetLoc = playerLoc.clone().add(x, y, z)
-
                 targetLoc.yaw = (currentAngle * 100).toFloat() % 360
                 targetLoc.pitch = (currentAngle * 50).toFloat() % 360
-
                 display.teleport(targetLoc)
             }
         }
@@ -239,14 +251,8 @@ class ColorAndElectricity : Asesino(
     private fun crearBloqueOrbitante(loc: Location, mat: Material): BlockDisplay {
         return loc.world.spawn(loc, BlockDisplay::class.java) { bd ->
             bd.block = mat.createBlockData()
-            bd.transformation = Transformation(
-                JomlVector3f(-0.125f, -0.125f, -0.125f),
-                Quaternionf(),
-                JomlVector3f(0.25f, 0.25f, 0.25f),
-                Quaternionf()
-            )
-            bd.teleportDuration = 3
-            bd.interpolationDuration = 3
+            bd.transformation = Transformation(JomlVector3f(-0.125f, -0.125f, -0.125f), Quaternionf(), JomlVector3f(0.25f, 0.25f, 0.25f), Quaternionf())
+            bd.teleportDuration = 3; bd.interpolationDuration = 3
         }
     }
 

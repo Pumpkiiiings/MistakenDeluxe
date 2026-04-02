@@ -3,9 +3,14 @@ package liric.mistaken.game.logic
 import liric.mistaken.game.GameManager
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
+import liric.mistaken.game.entities.GeoffreyEXE
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import net.kyori.adventure.title.Title
 import org.bukkit.GameMode
 import org.bukkit.Sound
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
+import java.time.Duration
 import java.util.concurrent.ThreadLocalRandom
 
 class GameStateController(private val game: GameManager) {
@@ -13,23 +18,21 @@ class GameStateController(private val game: GameManager) {
     // Cache local para el resultado de la partida
     private var lastKillerWon = false
 
+    // Referencia a Geoffrey para poder eliminarlo cuando acaba la partida
+    private var geoffreyEntity: GeoffreyEXE? = null
+
     fun startBreakProcess() {
-        // Detectamos si venimos de una partida que acaba de terminar (estado ENDING)
         val venimosDePartida = game.currentState == GameState.ENDING
 
         if (game.currentState == GameState.BREAK) return
         game.currentState = GameState.BREAK
 
-        // Configuración del tiempo de descanso
         game.timer = game.plugin.config.getInt("settings.break-duration", 10)
 
         // --- LIMPIEZA POST-CINEMÁTICA ---
         if (venimosDePartida) {
-            // Limpiamos todo: esto quita el Glow, resetea vida, quita el dummy de la cinemática, etc.
             game.playerController.cleanupAllPlayers(lastKillerWon)
             game.worldController.limpiarMapa()
-
-            // Devolvemos a todos al punto de spawn del Lobby
             game.playerController.teleportAllToLobby()
         }
 
@@ -56,13 +59,63 @@ class GameStateController(private val game: GameManager) {
                 online.forEach { it.playSound(it.location, Sound.BLOCK_BEACON_DEACTIVATE, 1f, 0.1f) }
             }
             8 -> {
+                // Revelar modo
                 game.broadcastLocalized("game.mode-selected", Placeholder.parsed("mode", game.currentMode.name))
                 game.uiController.playModeTitle(online)
+
+                // 🔥 REPRODUCIR INTRO DEL ASESINO 🔥
+                val killer = game.getCurrentAsesino()
+                if (killer != null && killer.isOnline) {
+                    val claseAsesino = game.plugin.asesinoManager.getAsesinoDelJugador(killer)
+                    if (claseAsesino != null) {
+                        game.plugin.cinematicManager.playKillerIntro(killer, claseAsesino)
+                    }
+                }
             }
             0 -> {
                 game.currentState = GameState.INGAME
                 game.timer = game.plugin.config.getInt("settings.game-duration", 300)
                 game.broadcastLocalized("game.hunt-start")
+
+                // 🔥 RESTAURAR VISTAS
+                online.forEach { p ->
+                    if (p.gameMode == GameMode.SPECTATOR && !game.plugin.spectatorManager.isSpectator(p)) {
+                        p.spectatorTarget = null // Limpiamos primero en modo SPECTATOR
+                        p.gameMode = GameMode.SURVIVAL // Y luego lo pasamos a SURVIVAL
+                    }
+                }
+            }
+        }
+    }
+
+    // 🔥 NUEVA FUNCIÓN: Invocación Programada de Geoffrey
+    fun checkGeoffreySpawn() {
+        // Solo ocurre en el modo GEOFFREY_APOCALYPSE y exactamente a los 290 segundos (10s del inicio)
+        if (game.currentMode == MistakenMode.INITIALIZES && game.timer == 290) {
+
+            // 1. Títulos de Terror a todos los jugadores (Incluyendo el Asesino)
+            val title = game.plugin.mm.deserialize("<dark_red><bold><obfuscated>||</obfuscated> ¡GEOFFREY ESTÁ AQUÍ! <obfuscated>||</obfuscated>")
+            val subtitle = game.plugin.mm.deserialize("<dark_gray>Nadie sobrevivirá...")
+            val times = Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(4), Duration.ofMillis(500))
+
+            game.plugin.server.onlinePlayers.forEach { p ->
+                p.showTitle(Title.title(title, subtitle, times))
+                p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1.5f, 0.5f)
+                p.playSound(p.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.5f)
+
+                // Efecto de Estática (Ceguera + Nausea fugaz)
+                p.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
+                p.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1))
+            }
+
+            // 2. Invocar la entidad en el centro (Spawn de Supervivientes o del Asesino)
+            val spawnLoc = game.getCurrentAsesino()?.location ?: game.plugin.server.onlinePlayers.firstOrNull()?.location
+
+            if (spawnLoc != null) {
+                // Hacemos que spawnee a cierta altura y empiece a cazar
+                val geoffreyLoc = spawnLoc.clone().add(0.0, 10.0, 0.0)
+                geoffreyEntity = GeoffreyEXE(game.plugin)
+                geoffreyEntity?.spawn(geoffreyLoc)
             }
         }
     }
@@ -106,10 +159,11 @@ class GameStateController(private val game: GameManager) {
         } else {
             val chance = ThreadLocalRandom.current().nextInt(1, 101)
             var selected = when {
-                chance <= 60 -> MistakenMode.CLASSIC
-                chance <= 75 -> MistakenMode.ONE_BOUNCE
-                chance <= 90 -> MistakenMode.DOUBLE_KILLER
-                else -> MistakenMode.ASSASSIN_PVP
+                chance <= 50 -> MistakenMode.CLASSIC
+                chance <= 65 -> MistakenMode.ONE_BOUNCE
+                chance <= 80 -> MistakenMode.DOUBLE_KILLER
+                chance <= 90 -> MistakenMode.ASSASSIN_PVP
+                else -> MistakenMode.INITIALIZES // 🔥 Añadido con 10% de probabilidad
             }
             if (selected == MistakenMode.DOUBLE_KILLER && onlineCount < 4) selected = MistakenMode.CLASSIC
             game.currentMode = selected
@@ -120,11 +174,13 @@ class GameStateController(private val game: GameManager) {
         if (game.currentState == GameState.ENDING) return
         game.currentState = GameState.ENDING
 
-        // Sincronizamos el resultado con el GameManager y localmente
+        // 🔥 Limpieza de Anomalía
+        geoffreyEntity?.remove()
+        geoffreyEntity = null
+
         this.lastKillerWon = killerWon
         game.lastKillerWon = killerWon
 
-        // 12 segundos para dar tiempo a la cinemática de 10 segundos
         game.timer = 12
 
         val mapName = game.currentMapName
@@ -144,7 +200,6 @@ class GameStateController(private val game: GameManager) {
             !game.esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL
         }.map { it.name }
 
-        // Tareas en segundo plano
         game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
             game.plugin.discordManager.sendGameEnd(mapName, ganadorNombre, razon, escapados)
             game.plugin.server.onlinePlayers.forEach { p ->
@@ -159,18 +214,14 @@ class GameStateController(private val game: GameManager) {
             }
         }
 
-        // --- LÓGICA DE CINEMÁTICA ---
         if (killerWon && killer != null) {
             val claseAsesino = game.plugin.asesinoManager.getAsesinoDelJugador(killer)
             if (claseAsesino != null) {
-                // playKillerOutro ahora se encarga de teletransportar a todos (vivos y muertos)
-                // al centro para que nadie se pierda la escena.
                 game.plugin.cinematicManager.playKillerOutro(killer, claseAsesino)
             } else {
                 game.broadcastLocalized(configPath)
             }
         } else {
-            // Si ganan supervivientes, mensaje normal y sonidos de victoria
             game.broadcastLocalized(configPath)
             game.plugin.server.onlinePlayers.forEach { it.playSound(it.location, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f) }
         }
@@ -182,7 +233,10 @@ class GameStateController(private val game: GameManager) {
     fun resetToLobby(path: String?) {
         path?.let { game.broadcastLocalized(it) }
 
-        // Si hay una partida en curso o empezando, limpiar forzosamente
+        // 🔥 Limpieza de Anomalía por Abandono
+        geoffreyEntity?.remove()
+        geoffreyEntity = null
+
         if (game.currentState == GameState.INGAME || game.currentState == GameState.STARTING || game.currentState == GameState.ENDING) {
             game.playerController.cleanupAllPlayers(lastKillerWon)
             game.worldController.limpiarMapa()

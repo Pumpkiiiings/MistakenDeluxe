@@ -11,8 +11,13 @@ import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
 import org.bukkit.*
+import org.bukkit.Particle.DustOptions
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.*
+import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
+import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -21,19 +26,28 @@ import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
+/**
+ *[LIRIC-MISTAKEN 2.0]
+ * Entity 303: El Hacker de la Realidad.
+ * FIX: Animación Ultra-Fluida, Escala 1.1 y Finishers (Efectos de muerte) añadidos.
+ */
 class Entity303 : Asesino(
     "entity303",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.entity303.nombre", "<red><b>ENTITY 303</b>", "asesinos_info")
-) {
+), Listener { // 🔥 Agregado Listener para Finishers
 
     private val path = "asesinos.entity303"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
+
+    // Anti-spam para los efectos de muerte
+    private val lastKillEffect = ConcurrentHashMap<UUID, Long>()
 
     private val orbitMaterials = listOf(
         Material.REDSTONE_BLOCK, Material.MAGMA_BLOCK,
@@ -43,6 +57,7 @@ class Entity303 : Asesino(
 
     init {
         preLoadKit()
+        plugin.server.pluginManager.registerEvents(this, plugin)
     }
 
     private fun preLoadKit() {
@@ -77,6 +92,93 @@ class Entity303 : Asesino(
             4 -> if (!checkCooldown(player, 4)) { habilidadCrashPantalla(player); reproducirEfectosHabilidad(player, 4) }
         }
     }
+
+    // --- 💀 FINISHERS: EFECTOS DE ASESINATO ALEATORIOS DE 303 ---
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onEntity303Kill(event: EntityDamageByEntityEvent) {
+        val attacker = event.damager as? Player ?: return
+        val victim = event.entity as? Player ?: return
+
+        if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
+            if (victim.gameMode == GameMode.SPECTATOR) {
+                val now = System.currentTimeMillis()
+                if (now - lastKillEffect.getOrDefault(victim.uniqueId, 0L) > 2000L) {
+                    lastKillEffect[victim.uniqueId] = now
+                    triggerFinisherAleatorio(victim.location)
+                }
+            }
+        }
+    }
+
+    private fun triggerFinisherAleatorio(loc: Location) {
+        val effectType = ThreadLocalRandom.current().nextInt(3)
+        val world = loc.world ?: return
+
+        when (effectType) {
+            0 -> {
+                // EFECTO 1: DELETE(ENTITY)
+                world.playSound(loc, Sound.ENTITY_ILLUSIONER_PREPARE_BLINDNESS, 1.5f, 0.5f)
+
+                var ticks = 0
+                plugin.server.regionScheduler.runAtFixedRate(plugin, loc, Consumer { task ->
+                    if (ticks >= 30) { task.cancel(); return@Consumer }
+
+                    world.spawnParticle(org.bukkit.Particle.DUST, loc.clone().add(0.0, 1.0, 0.0), 10, 0.5, 1.0, 0.5, DustOptions(Color.RED, 1f))
+                    world.spawnParticle(org.bukkit.Particle.DUST, loc.clone().add(0.0, 1.0, 0.0), 10, 0.5, 1.0, 0.5, DustOptions(Color.AQUA, 1f))
+                    ticks++
+                }, 1L, 1L)
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    world.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1f, 2f)
+                    world.spawnParticle(org.bukkit.Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 5, 0.0, 0.0, 0.0, 0.0)
+                    world.spawnParticle(org.bukkit.Particle.WHITE_ASH, loc.clone().add(0.0, 1.0, 0.0), 100, 1.0, 1.0, 1.0, 0.5)
+                }, 30L)
+            }
+            1 -> {
+                // EFECTO 2: CRASH.DUMP (BARRERA VISUAL)
+                world.playSound(loc, Sound.BLOCK_ANVIL_LAND, 2f, 0.1f)
+                world.spawnParticle(org.bukkit.Particle.EXPLOSION, loc, 1)
+
+                val barrier = world.spawn(loc.clone().add(0.0, 1.0, 0.0), ItemDisplay::class.java) {
+                    it.setItemStack(ItemStack(Material.BARRIER))
+                    it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(2f, 2f, 2f), Quaternionf())
+                    it.isGlowing = true
+                    it.glowColorOverride = Color.RED
+                }
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    world.playSound(loc, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
+                    world.spawnParticle(org.bukkit.Particle.BLOCK, loc, 50, 0.5, 0.5, 0.5, Material.REDSTONE_BLOCK.createBlockData())
+                    barrier.remove()
+                }, 40L)
+            }
+            2 -> {
+                // EFECTO 3: FORCE EXIT (TNT GIRATORIA)
+                world.playSound(loc, Sound.ENTITY_TNT_PRIMED, 1f, 1f)
+                val tnt = world.spawn(loc.clone().add(0.0, 0.5, 0.0), BlockDisplay::class.java) {
+                    it.block = Material.TNT.createBlockData()
+                    it.transformation = Transformation(JomlVector3f(-0.5f, -0.5f, -0.5f), Quaternionf(), JomlVector3f(1f, 1f, 1f), Quaternionf())
+                    it.teleportDuration = 20
+                }
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    tnt.teleport(loc.clone().add(0.0, 3.0, 0.0))
+                    val t = tnt.transformation
+                    t.leftRotation.rotateY(5f).rotateX(2f)
+                    tnt.transformation = t
+                }, 1L)
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    world.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 2f, 1f)
+                    world.spawnParticle(org.bukkit.Particle.EXPLOSION, loc.clone().add(0.0, 3.0, 0.0), 2)
+                    tnt.remove()
+                }, 21L)
+            }
+        }
+    }
+
+    // --- HABILIDADES ---
 
     private fun habilidadDashCodigo(player: Player) {
         val dir = player.location.direction.normalize().multiply(2.0).setY(0.2)
@@ -271,7 +373,7 @@ class Entity303 : Asesino(
             bd.teleportDuration = 3
             bd.interpolationDuration = 3
             if (mat == Material.MAGMA_BLOCK || mat == Material.REDSTONE_BLOCK) {
-                bd.brightness = Display.Brightness(15, 15)
+                bd.brightness = org.bukkit.entity.Display.Brightness(15, 15)
             }
         }
     }
@@ -289,7 +391,11 @@ class Entity303 : Asesino(
         loc.world.players.forEach { if (it.location.distanceSquared(loc) < 400.0) PacketEvents.getAPI().playerManager.sendPacket(it, packet) }
     }
 
-    private fun limpiar(uuid: UUID) { orbitadores.remove(uuid)?.forEach { it.remove() }; angulos.remove(uuid) }
+    private fun limpiar(uuid: UUID) {
+        orbitadores.remove(uuid)?.forEach { it.remove() }
+        angulos.remove(uuid)
+        lastKillEffect.remove(uuid)
+    }
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)

@@ -79,6 +79,13 @@ class CommandRegistry(private val plugin: Mistaken) {
                 listOf("spectate"),
                 EspectearCommand(plugin)
             )
+
+            // 🔥 COMANDO DE DEBUG DE HITBOXES
+            registrar.register(
+                HitboxCommand.get(plugin),
+                "Alternar el visor de hitboxes 3D",
+                listOf("hitboxes") // Alias opcional
+            )
         }
 
         plugin.componentLogger.info(plugin.mm.deserialize("<green>[CommandRegistry] Comandos registrados correctamente.</green>"))

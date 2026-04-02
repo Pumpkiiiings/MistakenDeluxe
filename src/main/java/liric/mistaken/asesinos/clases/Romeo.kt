@@ -13,6 +13,10 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.*
 import org.bukkit.entity.*
+import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
+import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -22,22 +26,32 @@ import org.joml.Quaternionf
 import org.joml.Vector3f as JomlVector3f
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
 
+/**
+ * [LIRIC-MISTAKEN 2.0]
+ * Romeo: El Administrador del Mundo.
+ * FIX: Finishers Aleatorios de Admin agregados.
+ */
 class Romeo : Asesino(
     "romeo",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.romeo.nombre", "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient>", "asesinos_info")
-) {
+), Listener { // 🔥 Agregado Listener para los Finishers
 
     private val pathBase = "asesinos.romeo"
     private val orbitadores = ConcurrentHashMap<UUID, BlockDisplay>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
 
+    // Anti-spam para los efectos de muerte
+    private val lastKillEffect = ConcurrentHashMap<UUID, Long>()
+
     init {
         preLoadKit()
+        plugin.server.pluginManager.registerEvents(this, plugin)
     }
 
     private fun preLoadKit() {
@@ -67,13 +81,109 @@ class Romeo : Asesino(
     }
 
     override fun usarHabilidad(player: Player, slot: Int) {
+        if (checkCooldown(player, slot)) return
         when (slot) {
-            1 -> if (!checkCooldown(player, 1)) { habilidadAdminDash(player); reproducirEfectosHabilidad(player, 1) }
-            2 -> if (!checkCooldown(player, 2)) { habilidadAdminVision(player); reproducirEfectosHabilidad(player, 2) }
-            3 -> if (!checkCooldown(player, 3)) { habilidadTripleColmillo(player); reproducirEfectosHabilidad(player, 3) }
-            4 -> if (!checkCooldown(player, 4)) { habilidadNetherStar(player); reproducirEfectosHabilidad(player, 4) }
+            1 -> { habilidadAdminDash(player); reproducirEfectosHabilidad(player, 1) }
+            2 -> { habilidadAdminVision(player); reproducirEfectosHabilidad(player, 2) }
+            3 -> { habilidadTripleColmillo(player); reproducirEfectosHabilidad(player, 3) }
+            4 -> { habilidadNetherStar(player); reproducirEfectosHabilidad(player, 4) }
         }
     }
+
+    // --- 💀 FINISHERS: EFECTOS DE ASESINATO ALEATORIOS DE ADMIN ---
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onRomeoKill(event: EntityDamageByEntityEvent) {
+        val attacker = event.damager as? Player ?: return
+        val victim = event.entity as? Player ?: return
+
+        if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
+            // Verificamos que la víctima haya muerto (GameMode cambiado por CombatManager)
+            if (victim.gameMode == GameMode.SPECTATOR) {
+                val now = System.currentTimeMillis()
+                if (now - lastKillEffect.getOrDefault(victim.uniqueId, 0L) > 2000L) {
+                    lastKillEffect[victim.uniqueId] = now
+                    triggerFinisherAleatorio(victim.location)
+                }
+            }
+        }
+    }
+
+    private fun triggerFinisherAleatorio(loc: Location) {
+        val effectType = ThreadLocalRandom.current().nextInt(3)
+        val world = loc.world ?: return
+
+        when (effectType) {
+            0 -> {
+                // EFECTO 1: //SET 0 (BORRADO DE CÓDIGO)
+                world.playSound(loc, Sound.BLOCK_BEACON_DEACTIVATE, 1.5f, 0.5f)
+
+                // Cárcel de cristal rojo glitch
+                val jail = world.spawn(loc.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) {
+                    it.block = Material.RED_STAINED_GLASS.createBlockData()
+                    it.transformation = Transformation(JomlVector3f(-1f, -1f, -1f), Quaternionf(), JomlVector3f(2f, 2f, 2f), Quaternionf())
+                    it.isGlowing = true
+                }
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    world.playSound(loc, Sound.ENTITY_ENDERMAN_TELEPORT, 2f, 2f)
+                    world.spawnParticle(Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 3, 0.5, 0.5, 0.5, 0.0)
+                    world.spawnParticle(Particle.WHITE_ASH, loc, 300, 1.0, 1.0, 1.0, 0.5)
+                    jail.remove()
+                }, 20L) // 1 segundo
+            }
+            1 -> {
+                // EFECTO 2: JUICIO DEL ADMINISTRADOR (BLOQUE APLASTANTE)
+                val dropLoc = loc.clone().add(0.0, 10.0, 0.0)
+                val block = world.spawn(dropLoc, BlockDisplay::class.java) {
+                    it.block = Material.COMMAND_BLOCK.createBlockData()
+                    it.transformation = Transformation(JomlVector3f(-1.5f, -1.5f, -1.5f), Quaternionf(), JomlVector3f(3f, 3f, 3f), Quaternionf())
+                    it.teleportDuration = 10 // Cae súper rápido
+                }
+
+                // Lo hacemos caer al suelo
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    block.teleport(loc)
+                }, 1L)
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    world.playSound(loc, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 2f, 0.1f)
+                    world.playSound(loc, Sound.BLOCK_ANVIL_LAND, 2f, 0.5f)
+                    world.spawnParticle(Particle.EXPLOSION, loc, 2)
+                    world.spawnParticle(Particle.CAMPFIRE_COSY_SMOKE, loc, 50, 1.5, 0.5, 1.5, 0.1)
+                }, 11L)
+
+                // El bloque desaparece poco a poco
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ -> block.remove() }, 30L)
+            }
+            2 -> {
+                // EFECTO 3: ASCENSIÓN A LA TERMINAL
+                world.playSound(loc, Sound.BLOCK_PORTAL_TRIGGER, 0.5f, 2f)
+                val star = world.spawn(loc.clone().add(0.0, 0.5, 0.0), ItemDisplay::class.java) {
+                    it.setItemStack(ItemStack(Material.NETHER_STAR))
+                    it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(1f, 1f, 1f), Quaternionf())
+                    it.teleportDuration = 30 // Sube lento
+                    it.interpolationDuration = 30
+                }
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    star.teleport(loc.clone().add(0.0, 4.0, 0.0)) // Asciende 4 bloques
+                    val t = star.transformation
+                    t.leftRotation.rotateY(5f) // Gira como loco
+                    star.transformation = t
+                }, 1L)
+
+                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
+                    world.playSound(loc.clone().add(0.0, 4.0, 0.0), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.5f)
+                    world.spawnParticle(Particle.FIREWORK, loc.clone().add(0.0, 4.0, 0.0), 100, 0.5, 0.5, 0.5, 0.2)
+                    world.spawnParticle(Particle.END_ROD, loc.clone().add(0.0, 4.0, 0.0), 50, 0.5, 0.5, 0.5, 0.5)
+                    star.remove()
+                }, 31L)
+            }
+        }
+    }
+
+    // --- HABILIDADES ---
 
     private fun habilidadAdminDash(player: Player) {
         player.playSound(player.location, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1f, 0.5f)
@@ -95,7 +205,6 @@ class Romeo : Asesino(
                 return@Consumer
             }
 
-            // 🔥 Uso de la función centralizada
             player.world.getNearbyPlayers(player.location, 2.0).firstOrNull { esObjetivoValido(player, it) }?.let { victim ->
                 plugin.gameManager.combatManager.takeDamage(victim)
                 victim.velocity = player.location.direction.normalize().multiply(1.5).setY(0.4)
@@ -115,7 +224,6 @@ class Romeo : Asesino(
         )
 
         player.world.getNearbyPlayers(player.location, 100.0).forEach { victim ->
-            // 🔥 Uso de la función centralizada
             if (esObjetivoValido(player, victim)) {
                 val createTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, listOf(victim.name))
                 PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
@@ -147,8 +255,6 @@ class Romeo : Asesino(
                     if (!locToSpawn.block.type.isSolid) {
                         locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
                         locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
-
-                            // 🔥 Uso de la función centralizada
                             if (esObjetivoValido(player, victim)) {
                                 plugin.gameManager.combatManager.takeDamage(victim)
                                 victim.velocity = Vector(0.0, 0.5, 0.0)
@@ -178,7 +284,6 @@ class Romeo : Asesino(
             }
             star.teleport(star.location.add(direction))
 
-            // 🔥 Uso de la función centralizada
             val hit = player.world.getNearbyPlayers(star.location, 1.5).firstOrNull { esObjetivoValido(player, it) }
 
             if (hit != null || star.location.block.type.isSolid) {
@@ -284,6 +389,9 @@ class Romeo : Asesino(
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        player?.let { limpiar(it.uniqueId) }
+        player?.let {
+            limpiar(it.uniqueId)
+            lastKillEffect.remove(it.uniqueId)
+        }
     }
 }
