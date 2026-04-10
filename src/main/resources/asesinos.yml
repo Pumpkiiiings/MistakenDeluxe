@@ -372,3 +372,34 @@ asesinos:
       habilidad3_cooldown: 65
       habilidad3_sonido: "ENTITY_WITHER_SPAWN"
       habilidad4: "none" # Es pasiva
+
+  caine:
+    precio: 67000000
+    icono_material: "RED_CONCRETE"
+    armadura:
+      casco: "mistaken:caine_helmet"
+      pechera: "mistaken:caine_chestplate" # Se recomienda color Rojo en el código de equipar
+      pantalones: "mistaken:caine_leggings"
+      botas: "mistaken:caine_boots"
+    items:
+      arma: "STICK"
+
+      # Mazo Chillón (Te aplasta desde el cielo)
+      habilidad1: "RED_CONCRETE"
+      habilidad1_cooldown: 18
+      habilidad1_sonido: "ENTITY_ILLUSIONER_CAST_SPELL"
+
+      # Dash Potente (Te manda a volar)
+      habilidad2: "FEATHER"
+      habilidad2_cooldown: 10
+      habilidad2_sonido: "ENTITY_ENDER_DRAGON_FLAP"
+
+      # Danza Obligatoria (Control de masas)
+      habilidad3: "MUSIC_DISC_CAT"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "BLOCK_NOTE_BLOCK_BELL"
+
+      # Proyectil Ojo (Te ciega y daña)
+      habilidad4: "SNOWBALL"
+      habilidad4_cooldown: 8
+      habilidad4_sonido: "ENTITY_EGG_THROW"

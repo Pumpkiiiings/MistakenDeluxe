@@ -35,12 +35,12 @@ import kotlin.math.sin
 /**
  *[LIRIC-MISTAKEN 2.0]
  * Sowoul: El Mago de las Ilusiones.
- * FIX: Habilidad de Atracción (Mano), Fauces en cono (x3), y Efectos de Asesinato Aleatorios.
+ * FIX: Los efectos de muerte (Finishers) ahora detectan correctamente el modo espectador del plugin.
  */
 class Sowoul : Asesino(
     "sowoul",
     Mistaken.instance.messageConfig.getRawString(null, "asesinos.sowoul.nombre", "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>", "asesinos_info")
-), Listener { // 🔥 Agregamos el Listener para los Finishers
+), Listener {
 
     private val pathBase = "asesinos.sowoul"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
@@ -85,13 +85,11 @@ class Sowoul : Asesino(
         when (slot) {
             1 -> { habilidadDashMagico(player); dibujarCirculoMagico(player, org.bukkit.Particle.PORTAL, 2.0) }
             2 -> { habilidadLanzarCartas(player); dibujarEspiral(player, org.bukkit.Particle.ENCHANT, 1.5) }
-            3 -> { habilidadFaucesTriples(player); dibujarPentagrama(player, org.bukkit.Particle.WITCH, 3.0) } // 🔥 Mejorado
-            4 -> { habilidadManoAtraccion(player) } // 🔥 Nueva Ulti: Atrapar y Jalar
+            3 -> { habilidadFaucesTriples(player); dibujarPentagrama(player, org.bukkit.Particle.WITCH, 3.0) }
+            4 -> { habilidadManoAtraccion(player) }
         }
         reproducirEfectosHabilidad(player, slot)
     }
-
-    // --- 🎨 FUNCIONES DE DIBUJO GEOMÉTRICO (Mantienen igual) ---
 
     private fun dibujarCirculoMagico(player: Player, particula: org.bukkit.Particle, radio: Double) {
         val loc = player.location.clone().add(0.0, 0.1, 0.0)
@@ -146,8 +144,6 @@ class Sowoul : Asesino(
             dibujarCirculoMagico(player, particula, radio)
         })
     }
-
-    // --- 🎩 HABILIDADES DEL MAGO ---
 
     private fun habilidadDashMagico(player: Player) {
         val dir = player.location.direction.normalize().multiply(3.0).setY(0.4)
@@ -221,7 +217,6 @@ class Sowoul : Asesino(
         }, null, 1L, 1L)
     }
 
-    // 🔥 FIX: 3 Líneas en Cono
     private fun habilidadFaucesTriples(player: Player) {
         player.playSound(player.location, Sound.ENTITY_EVOKER_PREPARE_ATTACK, 1f, 1f)
         val startLoc = player.location
@@ -241,7 +236,6 @@ class Sowoul : Asesino(
                     var targetY = locToSpawn.blockY
                     val world = locToSpawn.world
 
-                    // Adaptación al terreno seguro
                     while (world.getBlockAt(locToSpawn.blockX, targetY, locToSpawn.blockZ).isPassable && targetY > startLoc.blockY - 3) {
                         targetY--
                     }
@@ -261,7 +255,6 @@ class Sowoul : Asesino(
         }
     }
 
-    // 🔥 NUEVA ULTI: ATRACCIÓN ILUSORIA
     private fun habilidadManoAtraccion(player: Player) {
         val target = player.world.getNearbyPlayers(player.location, 25.0).firstOrNull { esObjetivoValido(player, it) }
 
@@ -274,13 +267,12 @@ class Sowoul : Asesino(
         target.playSound(target.location, Sound.ENTITY_ENDERMAN_STARE, 1.5f, 0.1f)
         target.sendActionBar(mm.deserialize("<dark_purple><b>¡UNA MANO MÁGICA TE HA ATRAPADO!</b>"))
 
-        // Creamos una "Mano Gigante" usando bloques de Purpur (Color mágico morado)
         val manoDisplay = target.world.spawn(target.location.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) { bd ->
             bd.block = Material.PURPUR_PILLAR.createBlockData()
             bd.transformation = Transformation(
                 JomlVector3f(-1.0f, -1.0f, -1.0f),
                 Quaternionf(),
-                JomlVector3f(2f, 2f, 2f), // Mano GIGANTE 2x2x2
+                JomlVector3f(2f, 2f, 2f),
                 Quaternionf()
             )
             bd.teleportDuration = 2
@@ -288,21 +280,18 @@ class Sowoul : Asesino(
 
         var ticks = 0
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (ticks >= 40 || !target.isOnline || !player.isOnline || target.gameMode == GameMode.SPECTATOR) {
+            if (ticks >= 40 || !target.isOnline || !player.isOnline || plugin.spectatorManager.isSpectator(target)) {
                 manoDisplay.remove()
                 task.cancel()
                 return@Consumer
             }
 
-            // Jala agresivamente a la víctima hacia el Mago
             val pullDir = player.location.toVector().subtract(target.location.toVector()).normalize().multiply(0.8)
             target.velocity = pullDir.setY(0.2)
 
-            // La mano abraza al jugador
             manoDisplay.teleport(target.location.clone().add(0.0, 1.0, 0.0))
             manoDisplay.world.spawnParticle(org.bukkit.Particle.PORTAL, manoDisplay.location, 20, 1.0, 1.0, 1.0, 0.5)
 
-            // Impacto Final
             if (target.location.distanceSquared(player.location) < 4.0) {
                 plugin.gameManager.combatManager.takeDamage(target)
                 target.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
@@ -326,10 +315,9 @@ class Sowoul : Asesino(
         val victim = event.entity as? Player ?: return
 
         if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
-            // El CombatManager ya procesó la muerte en HIGHEST y lo puso en Espectador si su vida era 0
-            if (victim.gameMode == GameMode.SPECTATOR) {
+            // 🔥 FIX: Revisamos si el plugin lo acaba de convertir en Espectador real del minijuego
+            if (plugin.spectatorManager.isSpectator(victim)) {
                 val now = System.currentTimeMillis()
-                // Evitamos spam si se murieron dos juntos, esperamos al menos 1 segundo por jugador
                 if (now - lastKillEffect.getOrDefault(victim.uniqueId, 0L) > 2000L) {
                     lastKillEffect[victim.uniqueId] = now
                     triggerFinisherAleatorio(victim.location)
@@ -344,7 +332,6 @@ class Sowoul : Asesino(
 
         when (effectType) {
             0 -> {
-                // EFECTO 1: MANOS TRITURADORAS DE HUESO
                 val hand1 = world.spawn(loc.clone().add(2.0, 1.0, 0.0), BlockDisplay::class.java) {
                     it.block = Material.BONE_BLOCK.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-0.5f, -1.5f, -0.5f), Quaternionf(), JomlVector3f(1f, 3f, 1f), Quaternionf())
@@ -357,14 +344,12 @@ class Sowoul : Asesino(
                 }
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
-                    // Se aplastan al centro
                     hand1.teleport(loc.clone().add(0.2, 1.0, 0.0))
                     hand2.teleport(loc.clone().add(-0.2, 1.0, 0.0))
                     world.playSound(loc, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 0.5f)
                 }, 5L)
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
-                    // Explota la sangre
                     world.spawnParticle(org.bukkit.Particle.BLOCK, loc.clone().add(0.0, 1.0, 0.0), 100, 0.5, 1.0, 0.5, Material.REDSTONE_BLOCK.createBlockData())
                     world.playSound(loc, Sound.ENTITY_IRON_GOLEM_DEATH, 1f, 0.5f)
                     hand1.remove()
@@ -372,7 +357,6 @@ class Sowoul : Asesino(
                 }, 12L)
             }
             1 -> {
-                // EFECTO 2: GUILLOTINA MÁGICA (ESTACA GIGANTE)
                 world.playSound(loc, Sound.ENTITY_EVOKER_FANGS_ATTACK, 1f, 0.1f)
                 val spike = world.spawn(loc.clone().subtract(0.0, 3.0, 0.0), BlockDisplay::class.java) {
                     it.block = Material.POINTED_DRIPSTONE.createBlockData()
@@ -387,7 +371,6 @@ class Sowoul : Asesino(
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ -> spike.remove() }, 25L)
             }
             2 -> {
-                // EFECTO 3: IMPLOSIÓN DE AGUJERO NEGRO
                 world.playSound(loc, Sound.BLOCK_BEACON_DEACTIVATE, 1f, 0.5f)
                 val hole = world.spawn(loc.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) {
                     it.block = Material.BLACK_CONCRETE.createBlockData()
@@ -396,7 +379,6 @@ class Sowoul : Asesino(
                 }
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
-                    // Se encoje hasta 0
                     val t = hole.transformation
                     t.scale.set(0f, 0f, 0f)
                     hole.transformation = t
@@ -409,8 +391,6 @@ class Sowoul : Asesino(
             }
         }
     }
-
-    // --- 🛠️ EQUIPAMIENTO Y LIMPIEZA ---
 
     override fun equipar(player: Player) {
         val inv = player.inventory
@@ -460,8 +440,6 @@ class Sowoul : Asesino(
         deliver("habilidad4", 4)
         deliver("arma", 8)
     }
-
-    // --- 🃏 VISUALES (CARTAS ORBITANTES) ---
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId

@@ -282,3 +282,26 @@ asesinos:
       habilidad2: "<white><b>Visión Reducida</b>"
       habilidad3: "<dark_purple><b>Colmillo Simple</b>"
       habilidad4: "<gold><b>Estrella Menor</b>"
+
+  caine:
+    nombre: "<gradient:#ff0000:#ffffff><b>CAINE</b></gradient> <gray>[CIRCO]</gray>"
+    descripcion:
+      - "<gray>El inestable maestro de ceremonias"
+      - "<gray>del Asombroso Circo Digital."
+      - "<white>Mecánica: <red>Humillación cómica y"
+      - "<red>control de masas caótico."
+    lore_tienda:
+      - "<gray>\"¡Soy Caine, vuestro humilde"
+      - "<gray>maestro de ceremonias!\""
+      - "<white>Dificultad: <dark_purple>EXTREMA"
+    habilidades_nombres:
+      arma: "<red>Batuta de Ceremonias</red>"
+      habilidad1: "<red><bold>¡MAZO CHILLÓN!</bold></red>"
+      habilidad2: "<aqua>Dash Estrepitoso</aqua>"
+      habilidad3: "<light_purple>Danza Obligatoria</light_purple>"
+      habilidad4: "<white>Ojo Explorador</white>"
+    habilidades_mensajes:
+      habilidad1: "<red>¡ZAS! ¡Aplastado como un insecto!"
+      habilidad2: "<aqua>¡FWOOSH! ¡Abran paso al maestro!"
+      habilidad3: "<light_purple>¡Todos a bailar, es una orden!"
+      habilidad4: "<white>¡No me pierdo de ningún detalle!"

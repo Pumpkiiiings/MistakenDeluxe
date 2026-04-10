@@ -27,9 +27,9 @@ import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * SupervivienteHabilidadListener.
- * FIX: Seguridad añadida contra interacciones post-mortem (Modo Espectador).
+ * FIX: Adaptado a la nueva Comandante Teto (Azada Revólver) y seguridad post-mortem.
  */
 class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
@@ -38,14 +38,10 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
         private val ROCA_KEY = NamespacedKey("mistaken", "roca")
         private val PEDIDO_KEY = NamespacedKey("mistaken", "pedido")
-
-        // Llaves para proyectiles especiales
-        private val TETO_THROW_KEY = NamespacedKey("mistaken", "teto_throw")
         private val EMERALD_KEY = NamespacedKey("mistaken", "villager_emerald")
 
         // Llaves para Melee
         private val STICK_KEY = NamespacedKey("mistaken", "kid_stick")
-        private val TETO_MELEE_KEY = NamespacedKey("mistaken", "teto_melee")
         private val JESSE_PUNCH_KEY = NamespacedKey("mistaken", "jesse_punch")
 
         fun marcarBloque(loc: org.bukkit.Location) {
@@ -66,9 +62,10 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
         val player = event.player
 
-        // 🔥 LA SOLUCIÓN: Si está especteando o muerto, bloqueamos el click
+        // 🔥 LA SOLUCIÓN: Si está especteando, invisible, o congelado, bloqueamos el click
         if (player.gameMode != GameMode.SURVIVAL) return
         if (player.isInvisible) return
+        if (plugin.gameManager.combatManager.isFrozen(player)) return
 
         val slot = player.inventory.heldItemSlot
 
@@ -80,18 +77,23 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
         when (event.action) {
             Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> {
-                // Ignorar armas Melee para no spammear el chat
+                // Ignorar armas Melee que se usan pegando en vez de click derecho
                 if (clase is RaincoatKid && slot == 2) return
-                if (clase is KasaneTeto && slot == 1) return
                 if (clase is Jesse && slot == 1) return
 
                 event.isCancelled = true
                 clase.usarHabilidad(player, slot)
             }
             Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> {
-                if (slot == 1) {
+                // Trackear heridos si tienen la habilidad en el slot 1
+                if (slot == 1 && clase !is KasaneTeto) {
                     event.isCancelled = true
                     clase.trackearHeridos(player)
+                }
+                // 🔥 NUEVO: Para Kasane Teto, el click izquierdo dispara el Revólver (Slot 0)
+                else if (clase is KasaneTeto && slot == 0) {
+                    event.isCancelled = true
+                    clase.usarHabilidad(player, slot)
                 }
             }
             else -> {}
@@ -108,8 +110,8 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
         if (plugin.gameManager.esAsesino(attacker.uniqueId)) return
         if (!plugin.gameManager.esAsesino(victim.uniqueId)) return
 
-        // Seguridad post-mortem
-        if (attacker.gameMode != GameMode.SURVIVAL || attacker.isInvisible) return
+        // Seguridad post-mortem y anti-congelamiento
+        if (attacker.gameMode != GameMode.SURVIVAL || attacker.isInvisible || plugin.gameManager.combatManager.isFrozen(attacker)) return
 
         val item = attacker.inventory.itemInMainHand
         if (!item.hasItemMeta()) return
@@ -130,19 +132,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // 2. Kasane Teto (Baguette Melee)
-        if (pdc.has(TETO_MELEE_KEY, PersistentDataType.BYTE) && clase is KasaneTeto) {
-            val cooldownTime = plugin.configManager.getSupervivientes()
-                .getInt("supervivientes.teto.items.habilidad2_cooldown", 30)
-
-            if (!clase.checkCooldown(attacker, 1, cooldownTime)) {
-                clase.aplicarGolpeBaguette(victim, attacker)
-                attacker.sendMessage(plugin.mm.deserialize("<gradient:#ff66cc:#ff0000><b>¡BAGUETTE SMASH!</b></gradient>"))
-            }
-            return
-        }
-
-        // 3. Jesse (Puñetazo)
+        // 2. Jesse (Puñetazo)
         if (pdc.has(JESSE_PUNCH_KEY, PersistentDataType.BYTE) && clase is Jesse) {
             val cooldownTime = plugin.configManager.getSupervivientes()
                 .getInt("supervivientes.jesse.items.habilidad2_cooldown", 15)
@@ -161,7 +151,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
         val victim = event.hitEntity as? Player ?: return
         val pdc = snowball.persistentDataContainer
 
-        // Verificamos que la víctima esté viva
+        // Verificamos que la víctima esté viva y activa en el juego
         if (victim.gameMode != GameMode.SURVIVAL || victim.isInvisible) return
 
         // 1. Roca (Civil)
@@ -191,19 +181,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // 3. Baguette Lanzable (Kasane Teto)
-        if (pdc.has(TETO_THROW_KEY, PersistentDataType.BYTE)) {
-            val isKiller = plugin.gameManager.esAsesino(victim.uniqueId)
-            if (isKiller) {
-                victim.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 0))
-                victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
-                victim.sendMessage(plugin.mm.deserialize("<red>¡Una baguette te golpeó en la cara!"))
-                victim.playSound(victim.location, Sound.BLOCK_WOOL_BREAK, 1f, 1.2f)
-            }
-            return
-        }
-
-        // 4. 🔥 Soborno (Aldeano) 🔥
+        // 3. 🔥 Soborno (Aldeano) 🔥
         if (pdc.has(EMERALD_KEY, PersistentDataType.BYTE)) {
             val isKiller = plugin.gameManager.esAsesino(victim.uniqueId)
             if (isKiller) {

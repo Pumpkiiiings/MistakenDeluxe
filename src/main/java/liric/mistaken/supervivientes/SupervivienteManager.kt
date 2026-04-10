@@ -31,7 +31,6 @@ class SupervivienteManager(private val plugin: Mistaken) {
             Repartidor(),
             Minty(),
             RaincoatKid(),
-            KasaneTeto(),
             Jesse(),
             Aldeano(),
             Notch(),
