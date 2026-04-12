@@ -93,7 +93,8 @@ class Herobrine : Asesino(
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
+        val session = plugin.sessionManager.getSession(attacker) ?: return
+        if (session.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
             if (victim.gameMode == GameMode.SPECTATOR) {
                 val now = System.currentTimeMillis()
                 if (now - lastKillEffect.getOrDefault(victim.uniqueId, 0L) > 2000L) {
@@ -209,7 +210,7 @@ class Herobrine : Asesino(
             val eyeLoc = player.eyeLocation.add(dir.clone().multiply(0.8))
             if (eyeLoc.block.type.isSolid) {
                 player.sendMessage(mm.deserialize("<red><b>[!]</b> ¡Te estampaste contra el muro!"))
-                repeat(3) { plugin.gameManager.combatManager.takeDamage(player) }
+                repeat(3) { plugin.combatManager.takeDamage(player) }
                 player.playSound(player.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
                 task.cancel()
                 return@Consumer
@@ -218,7 +219,7 @@ class Herobrine : Asesino(
             player.getNearbyEntities(1.5, 1.5, 1.5).filterIsInstance<Player>().forEach { victim ->
                 if (esObjetivoValido(player, victim) && victim.uniqueId !in hitted) {
                     hitted.add(victim.uniqueId)
-                    repeat(3) { plugin.gameManager.combatManager.takeDamage(victim) }
+                    repeat(3) { plugin.combatManager.takeDamage(player) }
                     victim.playSound(victim.location, Sound.ENTITY_WITHER_BREAK_BLOCK, 1f, 0.8f)
                     victim.sendMessage(mm.deserialize("<red><b>[!]</b> Herobrine te ha embestido con el poder del Vacío."))
                 }
@@ -255,7 +256,7 @@ class Herobrine : Asesino(
             val hit = player.world.getNearbyPlayers(skull.location, 1.2).firstOrNull { esObjetivoValido(player, it) }
 
             hit?.let {
-                plugin.gameManager.combatManager.takeDamage(it)
+                plugin.combatManager.takeDamage(it)
                 it.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
                 skull.remove()
                 task.cancel()

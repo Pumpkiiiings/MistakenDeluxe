@@ -2,14 +2,16 @@ package liric.mistaken.api
 
 import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
+import liric.mistaken.game.enums.GameState
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import java.util.*
 
 /**
- *[LIRIC-MISTAKEN 2.0]
+ * [LIRIC-MISTAKEN 2.0]
  * API Pública de Mistaken.
- * Permite a desarrolladores externos interactuar con el minijuego y registrar contenido custom.
+ * Adaptada al nuevo sistema Multiarena / SessionManager.
  */
+@Suppress("unused") // Quita la advertencia amarilla de getInstance
 class MistakenAPI(private val plugin: Mistaken) {
 
     companion object {
@@ -34,7 +36,7 @@ class MistakenAPI(private val plugin: Mistaken) {
 
     /**
      * Registra una clase Asesino personalizada desde un plugin externo.
-     * @param asesino La instancia de la clase que hereda de [Asesino].
+     * @param asesino La instancia de la clase que hereda de[Asesino].
      */
     fun registerCustomAssassin(asesino: Asesino) {
         val id = asesino.id.lowercase()
@@ -49,27 +51,35 @@ class MistakenAPI(private val plugin: Mistaken) {
         plugin.componentLogger.info(plugin.mm.deserialize("<green>[API] Asesino externo registrado con éxito: ${asesino.nombre} ($id)</green>"))
     }
 
-    // --- UTILIDADES PÚBLICAS ---
+    // --- UTILIDADES PÚBLICAS MULTIARENA ---
 
     /**
-     * Devuelve true si la partida actual está en curso.
+     * Devuelve true si la partida en la que se encuentra el jugador está en curso.
+     * @param player El jugador del cual queremos comprobar su sesión.
      */
-    fun isGameRunning(): Boolean {
-        return plugin.gameManager.currentState == liric.mistaken.game.enums.GameState.INGAME
+    fun isGameRunning(player: Player): Boolean {
+        val session = plugin.sessionManager.getSession(player) ?: return false
+        return session.currentState == GameState.INGAME
     }
 
     /**
-     * Verifica si un jugador es el asesino actual.
+     * Verifica si un jugador es el asesino en su partida actual.
      */
     fun isAssassin(player: Player): Boolean {
-        return plugin.gameManager.esAsesino(player.uniqueId)
+        val session = plugin.sessionManager.getSession(player) ?: return false
+        return session.asesinosUUIDs.contains(player.uniqueId)
     }
 
     /**
-     * Obtiene al jugador que actualmente es el asesino.
-     * @return El Player si está online, o null si no hay partida o está desconectado.
+     * Obtiene al jugador que es el asesino en la misma partida que el jugador dado.
+     * @param player Un jugador cualquiera dentro de una arena.
+     * @return El Player que es el asesino en esa arena, o null si no hay partida o está desconectado.
      */
-    fun getCurrentAssassinPlayer(): Player? {
-        return plugin.gameManager.getCurrentAsesino()
+    fun getAssassinInSession(player: Player): Player? {
+        val session = plugin.sessionManager.getSession(player) ?: return null
+
+        // Asumiendo que solo hay 1 asesino por arena, tomamos el primero
+        val assassinUUID = session.asesinosUUIDs.firstOrNull() ?: return null
+        return Bukkit.getPlayer(assassinUUID)
     }
 }

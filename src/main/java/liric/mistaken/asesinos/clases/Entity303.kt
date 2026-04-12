@@ -100,7 +100,8 @@ class Entity303 : Asesino(
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
+        val session = plugin.sessionManager.getSession(attacker) ?: return
+        if (session.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
             if (victim.gameMode == GameMode.SPECTATOR) {
                 val now = System.currentTimeMillis()
                 if (now - lastKillEffect.getOrDefault(victim.uniqueId, 0L) > 2000L) {
@@ -197,7 +198,7 @@ class Entity303 : Asesino(
                 // 🔥 Uso de la función centralizada
                 if (esObjetivoValido(player, victim) && victim.uniqueId !in hitted) {
                     hitted.add(victim.uniqueId)
-                    plugin.gameManager.combatManager.takeDamage(victim)
+                    plugin.combatManager.takeDamage(victim)
                     victim.velocity = player.location.direction.normalize().multiply(1.5).setY(0.4)
                     victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
                 }
@@ -230,7 +231,7 @@ class Entity303 : Asesino(
             if (hit != null || star.location.block.type.isSolid) {
                 star.world.spawnParticle(org.bukkit.Particle.EXPLOSION, star.location, 1)
                 hit?.let {
-                    plugin.gameManager.combatManager.takeDamage(it)
+                    plugin.combatManager.takeDamage(it)
                     it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
                     it.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, 100, 1))
                 }

@@ -1,8 +1,9 @@
 package liric.mistaken.commands
 
+import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.StringArgumentType
+import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.mojang.brigadier.tree.LiteralCommandNode
-import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import liric.mistaken.Mistaken
@@ -23,42 +24,36 @@ object VoteCommand {
             }
             .then(
                 Commands.argument("mapName", StringArgumentType.greedyString())
-                    .suggests { _, builder ->
-                        // 🔥 FIX: Aquí es donde estaba el detalle.
-                        // Recorremos las llaves y sugerimos cada una por separado.
+                    .suggests { _, builder: SuggestionsBuilder ->
                         plugin.arenaManager.getArenas().keys.forEach { mapName ->
-                            builder.suggest(mapName)
+                            if (mapName.startsWith(builder.remainingLowerCase, ignoreCase = true)) {
+                                builder.suggest(mapName)
+                            }
                         }
                         builder.buildFuture()
                     }
                     .executes { ctx ->
                         val sender = ctx.source.sender
-                        val player = sender as? Player
+                        val player = sender as? Player ?: return@executes 0
 
-                        // A. Solo jugadores, bro
-                        if (player == null) {
-                            sender.sendMessage(plugin.messageConfig.getMessage(null, "errors.only-players"))
+                        val session = plugin.sessionManager.getSession(player)
+                        if (session == null) {
+                            player.sendMessage(plugin.mm.deserialize("<red>No estás en ninguna partida activa para votar."))
                             return@executes 0
                         }
 
-                        // B. ¿Estamos en tiempo de votación?
-                        if (plugin.gameManager.currentState != GameState.VOTING) {
+                        if (session.currentState != GameState.VOTING) {
                             player.sendMessage(plugin.messageConfig.getMessage(player, "voting.not-active"))
                             return@executes 0
                         }
 
-                        val voteManager = plugin.gameManager.voteManager
-
-                        // C. ¿Ya soltó su voto el compa?
+                        val voteManager = session.voteManager
                         if (voteManager.hasVoted(player.uniqueId)) {
                             player.sendMessage(plugin.messageConfig.getMessage(player, "voting.already-voted"))
                             return@executes 0
                         }
 
-                        // D. Validación del Mapa
                         val inputName = StringArgumentType.getString(ctx, "mapName")
-
-                        // Buscamos el mapa ignorando mayúsculas/minúsculas
                         val actualMapName = plugin.arenaManager.getArenas().keys
                             .firstOrNull { it.equals(inputName, ignoreCase = true) }
 
@@ -73,10 +68,8 @@ object VoteCommand {
                             return@executes 0
                         }
 
-                        // E. ¡Voto registrado!
                         voteManager.addVote(player.uniqueId, actualMapName)
 
-                        // F. Feedback visual y sonoro
                         player.sendMessage(
                             plugin.messageConfig.getMessage(
                                 player,
@@ -86,7 +79,7 @@ object VoteCommand {
                         )
                         player.playSound(player.location, Sound.UI_BUTTON_CLICK, 1.0f, 1.2f)
 
-                        1
+                        Command.SINGLE_SUCCESS
                     }
             )
             .build()

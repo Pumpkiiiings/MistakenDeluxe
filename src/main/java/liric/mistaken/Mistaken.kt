@@ -12,12 +12,11 @@ import liric.mistaken.commands.CommandRegistry
 import liric.mistaken.config.ConfigManager
 import liric.mistaken.config.MessageConfig
 import liric.mistaken.data.PlayerDataManager
-import liric.mistaken.asesinos.Asesino
+import liric.mistaken.asesinos.Asesino // 🔥 IMPORT AÑADIDO
 import liric.mistaken.database.DatabaseManager
 import liric.mistaken.database.PlayerStatsManager
 import liric.mistaken.discord.DiscordManager
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.game.GameManager // El nuevo GameManager
 import liric.mistaken.game.managers.*
 import liric.mistaken.listeners.*
 import liric.mistaken.listeners.asesinos.AsesinoGeneralListener
@@ -56,20 +55,19 @@ class Mistaken : JavaPlugin() {
         fun getHealthAPI(): HealthAPI? = instance.combatManager
     }
 
-    // --- Core Variables ---
     val mm = MiniMessage.miniMessage()
     lateinit var assassinKey: NamespacedKey
     var craftEngineEnabled: Boolean = false
         private set
+    var serverMode: String = "VELOCITY"
+        private set
 
-    // --- Data Structures ---
     val staffEditMode = mutableSetOf<UUID>()
     val afkPlayers = mutableSetOf<UUID>()
     var lobbyLocation: Location? = null
     var isReady = false
     val ignoredTestPlayers = mutableSetOf<UUID>()
 
-    // --- Managers ---
     lateinit var configManager: ConfigManager
     lateinit var messageConfig: MessageConfig
     lateinit var statsManager: StatsManager
@@ -77,10 +75,11 @@ class Mistaken : JavaPlugin() {
     lateinit var databaseManager: DatabaseManager
     lateinit var playerStatsManager: PlayerStatsManager
 
-    // Game Managers
+    lateinit var sessionManager: SessionManager
+    lateinit var isolationManager: IsolationManager
+
     lateinit var antiBlockListener: AntiBlockListener
     lateinit var voteManager: VoteManager
-    lateinit var gameManager: GameManager
     lateinit var arenaManager: ArenaManager
     lateinit var musicManager: MusicManager
     lateinit var generatorManager: GeneratorManager
@@ -91,7 +90,6 @@ class Mistaken : JavaPlugin() {
     lateinit var discordManager: DiscordManager
     lateinit var cinematicManager: CinematicManager
 
-    // Roles & Shops
     lateinit var spectatorManager: SpectatorManager
     lateinit var asesinoManager: AsesinoManager
     lateinit var supervivienteManager: SupervivienteManager
@@ -102,7 +100,6 @@ class Mistaken : JavaPlugin() {
 
     override fun onLoad() {
         instance = this
-        // PacketEvents Load (Antes de iniciar el servidor)
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this))
         PacketEvents.getAPI().settings.checkForUpdates(false).bStats(true)
         PacketEvents.getAPI().load()
@@ -112,41 +109,43 @@ class Mistaken : JavaPlugin() {
         val start = System.currentTimeMillis()
         instance = this
 
-        // 1. PacketEvents & Keys
         PacketEvents.getAPI().init()
         assassinKey = NamespacedKey(this, "selected_assassin")
+        server.messenger.registerOutgoingPluginChannel(this, "BungeeCord")
 
-        // 2. Configuración y Carpetas
         saveDefaultConfig()
         createRequiredFolders()
-        loadLobbyLocation()
 
-        messageConfig = MessageConfig(this)
         configManager = ConfigManager(this).apply { loadAllConfigs() }
+        messageConfig = MessageConfig(this)
+        serverMode = config.getString("server-mode", "VELOCITY")?.uppercase() ?: "VELOCITY"
+        componentLogger.info(mm.deserialize("<yellow>[Red] Modo del servidor configurado como: <bold>$serverMode</bold></yellow>"))
 
-        // 3. Hooks (Vault, etc)
+        if (serverMode == "MULTIARENA") {
+            loadLobbyLocation()
+            if (lobbyLocation != null) {
+                lobbyLocation?.world?.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
+            } else {
+                componentLogger.warn(mm.deserialize("<red>[!] Modo MULTIARENA requiere establecer el lobby (/setlobby).</red>"))
+            }
+        }
+
         if (!setupIntegrations()) return
-
-        // 4. Base de Datos
         if (!setupDatabase()) return
 
-        // 5. Datos Base
         playerStatsManager = PlayerStatsManager(this)
         statsManager = StatsManager(this)
         playerDataManager = PlayerDataManager(this)
 
-        // 6. El Corazón de los Managers
         glowingAPI = GlowingEntities(this)
         combatManager = CombatManager(this)
         antiBlockListener = AntiBlockListener(this)
         voteManager = VoteManager()
-
-        // 🔥 FIX: Inicializamos managers que el GameManager necesita antes de crearlo
         ambientManager = AmbientManager(this)
         generatorManager = GeneratorManager(this)
 
-        // Ahora sí, instanciamos el GameManager de forma segura
-        gameManager = GameManager(this)
+        sessionManager = SessionManager(this)
+        isolationManager = IsolationManager(this)
 
         mapManager = MapManager(this)
         arenaManager = ArenaManager(this)
@@ -159,45 +158,43 @@ class Mistaken : JavaPlugin() {
         server.pluginManager.registerEvents(spectatorManager, this)
         liric.mistaken.api.MistakenAPI.init(this)
 
-        // UI
         asesinoTienda = AsesinoTienda()
         supervivienteTienda = SupervivienteTienda()
         shopSelector = ShopSelector()
-
-        // Scoreboard (Requiere que gameManager ya exista)
         scoreboardManager = ScoreboardManager(this)
 
-        // 7. Servicios API
         server.servicesManager.register(HealthAPI::class.java, combatManager, this, ServicePriority.Normal)
-
-        // 8. Placeholders
         if (server.pluginManager.isPluginEnabled("PlaceholderAPI")) {
             MistakenExpansion(this).register()
         }
 
-        // 9. Eventos y Comandos
         registerEvents()
         CommandRegistry(this).registerAll()
 
-        // 10. 🏁 TAREAS FINALES Y ACTIVACIÓN DEL LOBBY
         isReady = true
 
         server.onlinePlayers.forEach { player ->
             combatManager.resetHealth(player)
             musicManager.syncPlayer(player)
-        }
 
-        lobbyLocation?.world?.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
+            if (serverMode == "VELOCITY") {
+                val autoSession = sessionManager.activeSessions.values.firstOrNull()
+                    ?: sessionManager.createSession("Esperando...")
+                sessionManager.joinSession(player, autoSession.sessionId)
+            }
+        }
 
         iniciarMotorDeParticulas()
         sendLogo()
 
         val time = System.currentTimeMillis() - start
-        componentLogger.info(mm.deserialize("<gradient:green:aqua>Mistaken v${pluginMeta.version} habilitado en ${time}ms (Full Lobby Sync)</gradient>"))
+        componentLogger.info(mm.deserialize("<gradient:green:aqua>Mistaken v${pluginMeta.version} habilitado en ${time}ms ($serverMode)</gradient>"))
     }
 
     override fun onDisable() {
         isReady = false
+
+        sessionManager.activeSessions.values.forEach { it.shutdown() }
 
         if (::ambientManager.isInitialized) runCatching { ambientManager.stopAll() }
         if (::musicManager.isInitialized) musicManager.shutdown()
@@ -212,8 +209,6 @@ class Mistaken : JavaPlugin() {
 
         componentLogger.info(mm.deserialize("<newline><red>║ <bold>MISTAKEN</bold> ha sido desactivado con éxito.</red><newline>"))
     }
-
-    // --- SETUP HELPERS ---
 
     private fun setupDatabase(): Boolean {
         return try {
@@ -242,21 +237,10 @@ class Mistaken : JavaPlugin() {
             server.pluginManager.disablePlugin(this)
             return false
         }
-
         economy = rsp.provider
 
-        if (economy == null) {
-            componentLogger.error(mm.deserialize("<red><b>[!]</b> El proveedor de economía es nulo. Revisa Vault.</red>"))
-            server.pluginManager.disablePlugin(this)
-            return false
-        }
-
-        componentLogger.info(mm.deserialize("<green>✔ Integración con Vault establecida correctamente.</green>"))
-
         craftEngineEnabled = server.pluginManager.isPluginEnabled("CraftEngine")
-        if (craftEngineEnabled) {
-            componentLogger.info(mm.deserialize("<aqua>✔ CraftEngine detectado y vinculado.</aqua>"))
-        }
+        if (craftEngineEnabled) componentLogger.info(mm.deserialize("<aqua>✔ CraftEngine detectado y vinculado.</aqua>"))
 
         return true
     }
@@ -273,42 +257,34 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(SupervivienteHabilidadListener(this), this)
     }
 
-    // 🔥 MOTOR DE PARTÍCULAS ACTUALIZADO PARA PAPER SCHEDULER
+    // 🔥 FIX: Motor de partículas para MULTIARENA
     private fun iniciarMotorDeParticulas() {
-        // Usamos el AsyncScheduler nativo de Paper (Apto para Folia)
-        // 100 milisegundos = 2 Ticks
         server.asyncScheduler.runAtFixedRate(this, { _ ->
-            if (gameManager.currentState != GameState.INGAME) return@runAtFixedRate
+            sessionManager.activeSessions.values.forEach { session ->
+                if (session.currentState != GameState.INGAME) return@forEach
 
-            val targetsForPhysicalTrail = mutableListOf<Pair<Player, Asesino>>()
+                val targetsForPhysicalTrail = mutableListOf<Pair<Player, Asesino>>()
 
-            asesinoManager.asesinosActivos.forEach { (uuid, asesino) ->
-                val p = server.getPlayer(uuid) ?: return@forEach
+                session.asesinosUUIDs.forEach { uuid ->
+                    val p = server.getPlayer(uuid) ?: return@forEach
+                    val asesino = asesinoManager.getAsesinoDelJugador(p) ?: return@forEach
 
-                if (p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
-                    // El envío de paquetes es seguro desde un hilo asíncrono
-                    asesino.mostrarTrail(p)
-                    targetsForPhysicalTrail.add(p to asesino)
+                    if (p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
+                        asesino.mostrarTrail(p)
+                        targetsForPhysicalTrail.add(p to asesino)
+                    }
                 }
-            }
 
-            if (targetsForPhysicalTrail.isNotEmpty()) {
-                // Volvemos al GlobalRegionScheduler solo si necesitamos aplicar efectos físicos al mundo
-                server.globalRegionScheduler.run(this) { _ ->
-                    for (pair in targetsForPhysicalTrail) {
-                        val player = pair.first
-                        val asesino = pair.second
-
-                        if (player.isOnline) {
-                            asesino.mostrarTrailFisico(player)
+                if (targetsForPhysicalTrail.isNotEmpty()) {
+                    server.globalRegionScheduler.run(this) { _ ->
+                        for (pair in targetsForPhysicalTrail) {
+                            if (pair.first.isOnline) pair.second.mostrarTrailFisico(pair.first)
                         }
                     }
                 }
             }
         }, 0L, 100L, TimeUnit.MILLISECONDS)
     }
-
-    // --- UTILS & LOCATION ---
 
     private fun loadLobbyLocation() {
         val section = config.getConfigurationSection("settings.lobby") ?: return
@@ -344,17 +320,11 @@ class Mistaken : JavaPlugin() {
         baseFiles.forEach { fileName ->
             val file = File(dataFolder, fileName)
             if (!file.exists()) {
-                runCatching {
-                    saveResource(fileName, false)
-                }.onFailure {
-                    componentLogger.warn(mm.deserialize("<yellow>⚠️ No se pudo exportar el archivo base: $fileName</yellow>"))
-                }
+                runCatching { saveResource(fileName, false) }
             }
         }
-        componentLogger.info(mm.deserialize("<gray>[System] Estructura base verificada.</gray>"))
     }
 
-    // --- STATE CHECKS ---
     fun isInEditMode(player: Player) = staffEditMode.contains(player.uniqueId)
     fun isAFK(player: Player) = afkPlayers.contains(player.uniqueId)
     fun isIgnored(player: Player): Boolean {
@@ -384,8 +354,7 @@ class Mistaken : JavaPlugin() {
              $b5<bold>       ░    ░        ░                 ░  ░░  ░      ░  ░         ░ </bold>$b5
             <newline>
                <white>Autor:</white> $info Pumpkingz$info
-               <white>Estado:</white> <green>● Operativo</green>
-               <white>Addons Detectados:</white> $info MistakenGenerators, PumpkinEffects, CraftEngine $info
+               <white>Modo Red:</white> <green>● $serverMode</green>
             <newline>
         """.trimIndent()))
     }

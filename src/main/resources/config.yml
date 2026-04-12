@@ -23,6 +23,16 @@ discord:
     alerts: "URL_AQUI"
 
 # ==========================================
+# MODO DE SERVIDOR (Arquitectura de Red)
+# ==========================================
+# MULTIARENA: Un solo servidor aloja el lobby y múltiples partidas.
+# VELOCITY: Cada servidor es una arena aislada. Al terminar, los jugadores vuelven al servidor 'lobby'.
+server-mode: "MULTIARENA"
+
+# Solo se usa si server-mode es "VELOCITY"
+proxy-lobby-server: "lobby"
+
+# ==========================================
 #         SISTEMA DE ESTAMINA (EXP)
 # ==========================================
 stamina:

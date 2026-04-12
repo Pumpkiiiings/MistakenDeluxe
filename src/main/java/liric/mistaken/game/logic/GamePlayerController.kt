@@ -1,6 +1,6 @@
 package liric.mistaken.game.logic
 
-import liric.mistaken.game.GameManager
+import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
@@ -16,19 +16,20 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.min
 
-class GamePlayerController(private val game: GameManager) {
+class GamePlayerController(private val game: GameSession) {
 
     private var lmsActivado = false
 
     fun setupPlayers(arena: liric.mistaken.game.Arena) {
-        val onlinePlayers = game.plugin.server.onlinePlayers.filter { !game.plugin.isIgnored(it) }.toMutableList()
-        if (onlinePlayers.isEmpty()) return
+        // 🔥 FIX: Solo tomamos los jugadores de ESTA sesión
+        val sessionPlayers = game.getPlayers().filter { !game.plugin.isIgnored(it) }.toMutableList()
+        if (sessionPlayers.isEmpty()) return
 
         game.asesinosUUIDs.clear()
 
         // --- 1. MODO ASESINO PVP (Extremo) ---
         if (game.currentMode == MistakenMode.ASSASSIN_PVP) {
-            onlinePlayers.shuffled().forEachIndexed { index, p ->
+            sessionPlayers.shuffled().forEachIndexed { index, p ->
                 game.asesinosUUIDs.add(p.uniqueId)
 
                 val spawns = arena.survivorSpawns
@@ -37,7 +38,6 @@ class GamePlayerController(private val game: GameManager) {
                 p.inventory.clear()
                 game.combatManager.resetHealth(p)
 
-                // 🔥 Asegurarnos de limpiar espectador antes de forzar Survival
                 if (p.gameMode == GameMode.SPECTATOR) p.spectatorTarget = null
                 p.gameMode = GameMode.SURVIVAL
 
@@ -55,16 +55,16 @@ class GamePlayerController(private val game: GameManager) {
         }
 
         // --- 2. MODOS CLÁSICOS ---
-        val candidatos = onlinePlayers.filter { !game.yaJugaronAsesino.contains(it.uniqueId) }.toMutableList()
+        val candidatos = sessionPlayers.filter { !game.yaJugaronAsesino.contains(it.uniqueId) }.toMutableList()
         if (candidatos.isEmpty()) {
             game.yaJugaronAsesino.clear()
-            candidatos.addAll(onlinePlayers)
+            candidatos.addAll(sessionPlayers)
         }
         candidatos.shuffle()
 
         val killersToSelect = when (game.currentMode) {
-            MistakenMode.DOUBLE_KILLER -> if (onlinePlayers.size >= 4) 2 else 1
-            MistakenMode.ONE_BOUNCE -> (onlinePlayers.size - 1).coerceAtLeast(1)
+            MistakenMode.DOUBLE_KILLER -> if (sessionPlayers.size >= 4) 2 else 1
+            MistakenMode.ONE_BOUNCE -> (sessionPlayers.size - 1).coerceAtLeast(1)
             else -> 1
         }
 
@@ -78,14 +78,13 @@ class GamePlayerController(private val game: GameManager) {
         var survivorIndex = 0
         val survivorsSolo = mutableListOf<Player>()
 
-        for (p in onlinePlayers) {
+        for (p in sessionPlayers) {
             game.plugin.spectatorManager.removeCustomSpectator(p)
 
             val isKiller = game.esAsesino(p.uniqueId)
             p.inventory.clear()
             game.combatManager.resetHealth(p)
 
-            // 🔥 Asegurarnos de limpiar espectador antes de forzar Survival
             if (p.gameMode == GameMode.SPECTATOR) p.spectatorTarget = null
             p.gameMode = GameMode.SURVIVAL
 
@@ -95,7 +94,6 @@ class GamePlayerController(private val game: GameManager) {
 
                 p.teleportAsync(spawnLoc).thenAccept { success ->
                     if (success && p.isOnline) {
-                        // ESCUDO EXTRA DE INICIO
                         p.scheduler.run(game.plugin, Consumer { _ ->
                             p.removePotionEffect(PotionEffectType.DARKNESS)
                         }, null)
@@ -145,11 +143,10 @@ class GamePlayerController(private val game: GameManager) {
             return
         }
 
+        // Solo evalúa a los asesinos de esta sesión
         val killersOnline = game.asesinosUUIDs.mapNotNull { game.plugin.server.getPlayer(it) }.filter { it.isOnline }
 
-        // BUCLE SOLO PARA SUPERVIVIENTES
         for (p in players) {
-            // Filtro maestro: Si es ignorado, asesino, espectador o modo es PVP Asesinos -> SALTAMOS
             if (game.plugin.isIgnored(p) || game.esAsesino(p.uniqueId) || p.gameMode == GameMode.SPECTATOR || p.isInvisible || game.currentMode == MistakenMode.ASSASSIN_PVP) continue
 
             if ((ticks + (p.uniqueId.hashCode() and 0xFFFF)) % 5 == 0) {
@@ -190,15 +187,18 @@ class GamePlayerController(private val game: GameManager) {
     fun checkWinCondition() {
         if (game.currentState != GameState.INGAME) return
 
+        // 🔥 FIX: Obtenemos solo los jugadores de esta sesión
+        val sessionPlayers = game.getPlayers()
+
         if (game.currentMode == MistakenMode.ASSASSIN_PVP) {
-            val aliveAssassins = game.plugin.server.onlinePlayers.count { !game.plugin.isIgnored(it) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible }
+            val aliveAssassins = sessionPlayers.count { !game.plugin.isIgnored(it) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible }
             if (aliveAssassins <= 1) {
                 game.stateController.endGame("discord.reason_killer_won", true)
             }
             return
         }
 
-        val allSurvivors = game.plugin.server.onlinePlayers.filter { !game.esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible }
+        val allSurvivors = sessionPlayers.filter { !game.esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible }
 
         if (allSurvivors.isEmpty()) {
             game.stateController.endGame("game.victory-killer", true)
@@ -218,7 +218,8 @@ class GamePlayerController(private val game: GameManager) {
     private fun checkLastManStanding() {
         if (game.currentState != GameState.INGAME || lmsActivado || game.currentMode == MistakenMode.ASSASSIN_PVP) return
 
-        val supervivientesVivos = game.plugin.server.onlinePlayers.filter {
+        // 🔥 FIX: Solo evaluamos en esta sesión
+        val supervivientesVivos = game.getPlayers().filter {
             !game.esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible
         }
 
@@ -285,7 +286,6 @@ class GamePlayerController(private val game: GameManager) {
         }
 
         checkLastManStanding()
-
         checkWinCondition()
     }
 
@@ -295,7 +295,8 @@ class GamePlayerController(private val game: GameManager) {
         val winSound = if (killerWon) Sound.ENTITY_WITHER_SPAWN else Sound.UI_TOAST_CHALLENGE_COMPLETE
         val type = if (killerWon) "killer" else "survivor"
 
-        game.plugin.server.onlinePlayers.forEach { p ->
+        // 🔥 FIX: Solo limpiamos a los jugadores de ESTA sesión
+        game.getPlayers().forEach { p ->
             p.stopSound("mistaken:lms", SoundCategory.RECORDS)
 
             p.passengers.forEach { p.removePassenger(it) }
@@ -319,7 +320,9 @@ class GamePlayerController(private val game: GameManager) {
                 p.isInvulnerable = false
                 p.allowFlight = false
                 p.isFlying = false
-                game.plugin.server.onlinePlayers.forEach { online -> online.showPlayer(game.plugin, p) }
+
+                // Mostrar jugador nuevamente solo a los de esta sesión
+                game.getPlayers().forEach { online -> online.showPlayer(game.plugin, p) }
             }
 
             p.showTitle(Title.title(
@@ -331,22 +334,27 @@ class GamePlayerController(private val game: GameManager) {
         }
 
         game.combatManager.clearAll()
-
         game.asesinosUUIDs.clear()
+
+        // AsesinoManager y SupervivienteManager manejan la limpieza individual por UUID, no deberian afectar a otras partidas.
         game.plugin.asesinoManager.removerTodosLosAsesinos()
         game.plugin.supervivienteManager.limpiarTodo()
     }
 
     fun teleportAllToLobby() {
-        game.plugin.lobbyLocation?.let { loc ->
-            game.plugin.server.onlinePlayers.forEach { p ->
-                // 🔥 Asegurarnos de limpiar espectador antes de moverlos y cambiar de GameMode
-                if (p.gameMode == GameMode.SPECTATOR) {
-                    p.spectatorTarget = null
-                }
+        val serverMode = game.plugin.config.getString("server-mode", "VELOCITY")?.uppercase()
 
-                p.teleportAsync(loc).thenRun {
-                    p.gameMode = GameMode.SURVIVAL
+        game.getPlayers().forEach { p ->
+            p.gameMode = org.bukkit.GameMode.SURVIVAL
+
+            if (serverMode == "VELOCITY") {
+                // Modo Network: Los pateamos al proxy (Servidor Lobby)
+                val lobbyName = game.plugin.config.getString("proxy-lobby-server", "lobby") ?: "lobby"
+                liric.mistaken.utils.BungeeUtils.sendToServer(game.plugin, p, lobbyName)
+            } else {
+                // Modo Multiarena: Los mandamos al punto de spawn local
+                game.plugin.lobbyLocation?.let { loc ->
+                    p.teleportAsync(loc)
                 }
             }
         }

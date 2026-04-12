@@ -5,11 +5,10 @@ import liric.mistaken.game.enums.GameState
 import liric.mistaken.supervivientes.clases.RaincoatKid
 import liric.mistaken.supervivientes.clases.KasaneTeto
 import liric.mistaken.supervivientes.clases.Jesse
-import liric.mistaken.supervivientes.clases.Aldeano
 import org.bukkit.GameMode
 import org.bukkit.NamespacedKey
-import org.bukkit.attribute.Attribute
 import org.bukkit.Sound
+import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
 import org.bukkit.entity.Snowball
 import org.bukkit.event.EventHandler
@@ -27,9 +26,9 @@ import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- *[LIRIC-MISTAKEN 2.0]
- * SupervivienteHabilidadListener.
- * FIX: Adaptado a la nueva Comandante Teto (Azada Revólver) y seguridad post-mortem.
+ * [LIRIC-MISTAKEN 2.0]
+ * SupervivienteHabilidadListener: Adaptado para MULTIARENA / VELOCITY.
+ * FIX: Ahora detecta la sesión individual de cada jugador para procesar sus habilidades.
  */
 class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
@@ -58,26 +57,28 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onUseSurvivorAbility(event: PlayerInteractEvent) {
         if (event.hand != EquipmentSlot.HAND) return
-        if (plugin.gameManager.currentState != GameState.INGAME) return
-
         val player = event.player
 
-        // 🔥 LA SOLUCIÓN: Si está especteando, invisible, o congelado, bloqueamos el click
-        if (player.gameMode != GameMode.SURVIVAL) return
-        if (player.isInvisible) return
-        if (plugin.gameManager.combatManager.isFrozen(player)) return
+        // 🔥 MULTIARENA: Buscamos la sesión del jugador
+        val session = plugin.sessionManager.getSession(player) ?: return
+        if (session.currentState != GameState.INGAME) return
+
+        // Seguridad: Solo en Survival e ignora congelados
+        if (player.gameMode != GameMode.SURVIVAL || player.isInvisible) return
+        if (plugin.combatManager.isFrozen(player)) return
 
         val slot = player.inventory.heldItemSlot
-
         if (slot > 2) return
-        if (plugin.gameManager.esAsesino(player.uniqueId)) return
+
+        // Verifica que NO sea el asesino de SU sesión
+        if (session.esAsesino(player.uniqueId)) return
 
         val clase = plugin.supervivienteManager.getClase(player) ?: return
         if (player.inventory.itemInMainHand.type.isAir) return
 
         when (event.action) {
             Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> {
-                // Ignorar armas Melee que se usan pegando en vez de click derecho
+                // El RaincoatKid y Jesse usan melee en ciertos slots, saltamos el mensaje de habilidad
                 if (clase is RaincoatKid && slot == 2) return
                 if (clase is Jesse && slot == 1) return
 
@@ -85,15 +86,14 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
                 clase.usarHabilidad(player, slot)
             }
             Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> {
-                // Trackear heridos si tienen la habilidad en el slot 1
-                if (slot == 1 && clase !is KasaneTeto) {
-                    event.isCancelled = true
-                    clase.trackearHeridos(player)
-                }
-                // 🔥 NUEVO: Para Kasane Teto, el click izquierdo dispara el Revólver (Slot 0)
-                else if (clase is KasaneTeto && slot == 0) {
+                // Comandante Teto dispara su Revólver con Click Izquierdo en el Slot 0
+                if (clase is KasaneTeto && slot == 0) {
                     event.isCancelled = true
                     clase.usarHabilidad(player, slot)
+                } else if (slot == 1) {
+                    // Otros supervivientes usan rastreador en slot 1
+                    event.isCancelled = true
+                    clase.trackearHeridos(player)
                 }
             }
             else -> {}
@@ -102,16 +102,18 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun onSurvivorMeleeAttack(event: EntityDamageByEntityEvent) {
-        if (plugin.gameManager.currentState != GameState.INGAME) return
-
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        if (plugin.gameManager.esAsesino(attacker.uniqueId)) return
-        if (!plugin.gameManager.esAsesino(victim.uniqueId)) return
+        // 🔥 MULTIARENA: Buscamos la sesión del atacante
+        val session = plugin.sessionManager.getSession(attacker) ?: return
+        if (session.currentState != GameState.INGAME) return
 
-        // Seguridad post-mortem y anti-congelamiento
-        if (attacker.gameMode != GameMode.SURVIVAL || attacker.isInvisible || plugin.gameManager.combatManager.isFrozen(attacker)) return
+        // Reglas de equipo: El atacante debe ser humano y la víctima asesino en la MISMA sesión
+        if (session.esAsesino(attacker.uniqueId)) return
+        if (!session.esAsesino(victim.uniqueId)) return
+
+        if (attacker.gameMode != GameMode.SURVIVAL || attacker.isInvisible || plugin.combatManager.isFrozen(attacker)) return
 
         val item = attacker.inventory.itemInMainHand
         if (!item.hasItemMeta()) return
@@ -121,9 +123,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
         // 1. Raincoat Kid (Palo)
         if (pdc.has(STICK_KEY, PersistentDataType.BYTE) && clase is RaincoatKid) {
-            val cooldownTime = plugin.configManager.getSupervivientes()
-                .getInt("supervivientes.raincoatkid.items.habilidad3_cooldown", 40)
-
+            val cooldownTime = plugin.configManager.getSupervivientes().getInt("supervivientes.raincoatkid.items.habilidad3_cooldown", 40)
             if (!clase.checkCooldown(attacker, 2, cooldownTime)) {
                 clase.aplicarGolpePalo(victim)
                 attacker.sendMessage(plugin.mm.deserialize("<green><bold>¡BAM!</bold> <gray>Asesino aturdido."))
@@ -134,9 +134,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
         // 2. Jesse (Puñetazo)
         if (pdc.has(JESSE_PUNCH_KEY, PersistentDataType.BYTE) && clase is Jesse) {
-            val cooldownTime = plugin.configManager.getSupervivientes()
-                .getInt("supervivientes.jesse.items.habilidad2_cooldown", 15)
-
+            val cooldownTime = plugin.configManager.getSupervivientes().getInt("supervivientes.jesse.items.habilidad2_cooldown", 15)
             if (!clase.checkCooldown(attacker, 1, cooldownTime)) {
                 clase.aplicarGolpePuno(victim)
                 attacker.sendMessage(plugin.mm.deserialize("<gold><b>¡TOMA ESO!</b></gold>"))
@@ -151,7 +149,9 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
         val victim = event.hitEntity as? Player ?: return
         val pdc = snowball.persistentDataContainer
 
-        // Verificamos que la víctima esté viva y activa en el juego
+        // 🔥 MULTIARENA: Buscamos la sesión de la víctima para validar el rol
+        val session = plugin.sessionManager.getSession(victim) ?: return
+
         if (victim.gameMode != GameMode.SURVIVAL || victim.isInvisible) return
 
         // 1. Roca (Civil)
@@ -166,7 +166,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
         // 2. Pedido (Repartidor)
         if (pdc.has(PEDIDO_KEY, PersistentDataType.BYTE)) {
-            val isKiller = plugin.gameManager.esAsesino(victim.uniqueId)
+            val isKiller = session.esAsesino(victim.uniqueId)
             if (isKiller) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
@@ -181,16 +181,13 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // 3. 🔥 Soborno (Aldeano) 🔥
+        // 3. Soborno (Aldeano)
         if (pdc.has(EMERALD_KEY, PersistentDataType.BYTE)) {
-            val isKiller = plugin.gameManager.esAsesino(victim.uniqueId)
+            val isKiller = session.esAsesino(victim.uniqueId)
             if (isKiller) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1))
-
                 victim.world.playSound(victim.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                victim.world.spawnParticle(org.bukkit.Particle.HAPPY_VILLAGER, victim.eyeLocation, 10)
-
                 victim.sendMessage(plugin.mm.deserialize("<green>¡Ooh! ¡Una esmeralda! (Te has distraído)"))
             }
             return
@@ -199,8 +196,9 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     fun onSalsaMove(event: PlayerMoveEvent) {
-        if (plugin.gameManager.currentState != GameState.INGAME) return
         val player = event.player
+        val session = plugin.sessionManager.getSession(player) ?: return
+        if (session.currentState != GameState.INGAME) return
 
         if (player.gameMode != GameMode.SURVIVAL || player.isInvisible) return
 

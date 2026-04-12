@@ -159,7 +159,8 @@ class Aldeano : Superviviente(
 
         // Empujar al asesino si está cerca (5 bloques)
         player.world.getNearbyPlayers(player.location, 5.0).forEach { victim ->
-            if (plugin.gameManager.esAsesino(victim.uniqueId)) {
+            val session = plugin.sessionManager.getSession(victim)
+            if (session?.esAsesino(victim.uniqueId) == true) {
                 // Vector de empuje fuerte hacia atrás
                 val knockback = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(2.5).setY(0.5)
                 victim.velocity = knockback

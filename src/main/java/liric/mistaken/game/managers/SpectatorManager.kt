@@ -87,7 +87,9 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         player.flySpeed = 0.1f
         player.inventory.clear()
 
-        if (plugin.gameManager.currentState != GameState.ENDING) {
+        val session = plugin.sessionManager.getSession(player)
+
+        if (session?.currentState != GameState.ENDING) {
             player.gameMode = GameMode.SURVIVAL
         }
 
@@ -125,15 +127,26 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
 
     @EventHandler
     fun onJoin(e: PlayerJoinEvent) {
-        if (plugin.gameManager.currentState == GameState.INGAME) {
+        val player = e.player
+        // 🔥 MULTIARENA: Buscamos la sesión a la que acaba de entrar el jugador
+        val session = plugin.sessionManager.getSession(player)
+
+        // Si la sesión existe y ya están jugando
+        if (session != null && session.currentState == GameState.INGAME) {
             activeSpectators.forEach { specUUID ->
-                Bukkit.getPlayer(specUUID)?.let { e.player.hidePlayer(plugin, it) }
+                val spectator = Bukkit.getPlayer(specUUID)
+                if (spectator != null && spectator.isOnline) {
+                    // 🔥 Solo ocultamos al espectador si pertenece a la MISMA arena que el que entra
+                    if (plugin.sessionManager.getSession(spectator) == session) {
+                        player.hidePlayer(plugin, spectator)
+                    }
+                }
             }
         } else {
-            removeCustomSpectator(e.player)
+            // Si entra al Lobby o la partida no ha empezado, nos aseguramos que no sea espectador
+            removeCustomSpectator(player)
         }
     }
-
     @EventHandler fun onQuit(e: PlayerQuitEvent) = removeCustomSpectator(e.player)
 
     @EventHandler(priority = EventPriority.HIGHEST)

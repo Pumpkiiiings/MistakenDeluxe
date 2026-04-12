@@ -1,6 +1,6 @@
 package liric.mistaken.game.logic
 
-import liric.mistaken.game.GameManager
+import liric.mistaken.game.GameSession
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -8,7 +8,7 @@ import org.bukkit.attribute.Attribute
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
 
-class GameWorldController(private val game: GameManager) {
+class GameWorldController(private val game: GameSession) {
 
     fun addProgress(block: Block, amount: Int, player: Player?) {
         if (player != null && game.esAsesino(player.uniqueId)) return

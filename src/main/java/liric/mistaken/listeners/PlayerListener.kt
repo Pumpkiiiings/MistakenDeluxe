@@ -10,11 +10,11 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import java.util.function.Consumer
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * PlayerListener: Gestión de ciclo de vida del jugador.
- * FIX: Thread-Safety y uso correcto de Paper API.
+ * PlayerListener: Gestión de ciclo de vida adaptada a Sesiones (Multiarena/Velocity).
  */
 class PlayerListener(private val plugin: Mistaken) : Listener {
 
@@ -23,17 +23,14 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val uuid = player.uniqueId
 
-        // 🔥 FIX: Sincronizar música inmediatamente
+        // 1. SINCRONIZACIÓN INICIAL
         plugin.musicManager.syncPlayer(player)
 
-        // 1. CARGA DE DATOS ASÍNCRONA (Base de Datos)
-        // Usamos AsyncScheduler para no bloquear el login
+        // 2. CARGA DE DATOS ASÍNCRONA
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
-            // Cargar stats y perfil
             plugin.statsManager.loadStats(uuid, player.name)
             plugin.playerDataManager.loadPlayerData(player)
 
-            // 2. REGRESO AL HILO PRINCIPAL (Para Scoreboard y Bukkit API)
             plugin.server.globalRegionScheduler.execute(plugin) {
                 if (player.isOnline) {
                     plugin.scoreboardManager.addPlayer(player)
@@ -41,50 +38,75 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
             }
         }
 
-        // 3. LÓGICA DE ESTADO DE PARTIDA (Hilo Principal - Evento Síncrono)
-        val currentState = plugin.gameManager.currentState
+        // 3. DETERMINAR ENTRADA SEGÚN EL MODO DE RED
+        val serverMode = plugin.serverMode // "MULTIARENA" o "VELOCITY"
 
-        if (currentState != GameState.LOBBY && currentState != GameState.VOTING) {
-            // Juego en curso -> Espectador o Reconnect
-            if (!plugin.gameManager.esAsesino(uuid)) {
-                player.gameMode = GameMode.SPECTATOR
-                player.sendMessage(plugin.messageConfig.getMessage(player, "game.join-as-spectator"))
+        if (serverMode == "VELOCITY") {
+            // 🔥 MODO NETWORK: El jugador entra directo a la sesión
+            val session = plugin.sessionManager.activeSessions.values.firstOrNull()
+                ?: plugin.sessionManager.createSession("Cargando...")
 
-                // Teletransportar al asesino o centro del mapa si es posible
-                val killer = plugin.gameManager.getCurrentAsesino()
-                if (killer != null) {
-                    player.teleportAsync(killer.location)
-                }
-            } else {
-                player.sendMessage(plugin.messageConfig.getMessage(player, "killer.rejoin-msg"))
-                // Restaurar kit de asesino (delegamos al manager)
-                plugin.asesinoManager.getAsesinoDelJugador(player)?.equipar(player)
-            }
+            plugin.sessionManager.joinSession(player, session.sessionId)
+            handleGameEntry(player, session)
+
         } else {
-            // Lobby -> Reset y Teleport
+            // 🔥 MODO MULTIARENA: El jugador entra al LOBBY primero
             resetPlayerStatus(player)
+
+            // Lo hacemos invisible para los que están jugando en arenas
+            plugin.isolationManager.updateVisibility(player)
 
             plugin.lobbyLocation?.let { loc ->
                 player.teleportAsync(loc).thenAccept { success ->
                     if (success) {
-                        // Mensaje de bienvenida limpio
                         val welcome = plugin.messageConfig.getMessage(player, "lobby.welcome")
-                        player.sendMessage(welcome)
+                        if (!welcome.toString().isEmpty()) player.sendMessage(welcome)
                     }
                 }
             }
         }
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
-    fun onPlayerQuit(event: PlayerQuitEvent) {
-        // La lógica pesada de Quit ya está en PlayerQuitListener.kt
-        // Aquí solo mantenemos limpieza visual inmediata si fuera necesaria.
+    /**
+     * Lógica para cuando un jugador entra a una sesión específica (sea en Velocity o Multiarena).
+     */
+    private fun handleGameEntry(player: Player, session: liric.mistaken.game.GameSession) {
+        val uuid = player.uniqueId
+        val state = session.currentState
+
+        if (state != GameState.LOBBY && state != GameState.VOTING && state != GameState.BREAK) {
+            // La partida ya empezó o está terminando
+            if (!session.esAsesino(uuid)) {
+                // Es un espectador nuevo
+                player.gameMode = GameMode.SPECTATOR
+                player.sendMessage(plugin.messageConfig.getMessage(player, "game.join-as-spectator"))
+
+                val killer = session.getCurrentAsesino()
+                if (killer != null) {
+                    player.teleportAsync(killer.location)
+                }
+            } else {
+                // El asesino se reconectó
+                player.sendMessage(plugin.messageConfig.getMessage(player, "killer.rejoin-msg"))
+                plugin.asesinoManager.getAsesinoDelJugador(player)?.equipar(player)
+            }
+        } else {
+            // Aún están en Lobby/Votación de la arena
+            resetPlayerStatus(player)
+
+            // Teleport al spawn de la arena si existe, si no al centro
+            val spawn = session.plugin.arenaManager.getArena(session.currentMapName)?.survivorSpawns?.firstOrNull()
+            if (spawn != null) player.teleportAsync(spawn)
+        }
     }
 
-    /**
-     * Limpia al jugador totalmente.
-     */
+    @EventHandler(priority = EventPriority.NORMAL)
+    fun onPlayerQuit(event: PlayerQuitEvent) {
+        // Limpiamos su rastro de las sesiones
+        plugin.sessionManager.leaveSession(event.player)
+        plugin.scoreboardManager.removePlayer(event.player)
+    }
+
     private fun resetPlayerStatus(player: Player) {
         player.gameMode = GameMode.SURVIVAL
         player.health = 20.0
@@ -98,6 +120,8 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
         player.walkSpeed = 0.2f
         player.flySpeed = 0.1f
 
+        if (player.gameMode == GameMode.SPECTATOR) player.spectatorTarget = null
+
         player.inventory.clear()
         player.inventory.armorContents = arrayOfNulls(4)
 
@@ -105,9 +129,8 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
             player.removePotionEffect(effect.type)
         }
 
-        // Reset de Atributos Críticos
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
         player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
-        player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0 // 1.9+ Attack Speed normal
+        player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
     }
 }

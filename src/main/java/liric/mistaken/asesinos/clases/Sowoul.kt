@@ -165,7 +165,7 @@ class Sowoul : Asesino(
 
             player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
                 if (esObjetivoValido(player, victim) && hitted.add(victim.uniqueId)) {
-                    plugin.gameManager.combatManager.takeDamage(victim)
+                    plugin.combatManager.takeDamage(victim)
                     victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
                     victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 2))
                     victim.playSound(victim.location, Sound.ENTITY_ILLUSIONER_MIRROR_MOVE, 1f, 1f)
@@ -204,7 +204,7 @@ class Sowoul : Asesino(
 
             if (hit != null || carta.location.block.type.isSolid) {
                 hit?.let {
-                    plugin.gameManager.combatManager.takeDamage(it)
+                    plugin.combatManager.takeDamage(it)
                     it.addPotionEffect(PotionEffect(PotionEffectType.POISON, 60, 0))
                     it.playSound(it.location, Sound.ENTITY_PLAYER_HURT_SWEET_BERRY_BUSH, 1f, 1.2f)
                 }
@@ -293,7 +293,7 @@ class Sowoul : Asesino(
             manoDisplay.world.spawnParticle(org.bukkit.Particle.PORTAL, manoDisplay.location, 20, 1.0, 1.0, 1.0, 0.5)
 
             if (target.location.distanceSquared(player.location) < 4.0) {
-                plugin.gameManager.combatManager.takeDamage(target)
+                plugin.combatManager.takeDamage(target)
                 target.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
                 target.playSound(target.location, Sound.ENTITY_IRON_GOLEM_HURT, 1f, 0.5f)
 
@@ -314,10 +314,16 @@ class Sowoul : Asesino(
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
-            // 🔥 FIX: Revisamos si el plugin lo acaba de convertir en Espectador real del minijuego
+        // 🔥 MULTIARENA FIX: Obtenemos la sesión del atacante
+        val session = plugin.sessionManager.getSession(attacker) ?: return
+
+        // Usamos "session" en lugar de "plugin.gameSession"
+        if (session.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
+
+            // Verificamos si la víctima ya es espectador en esta arena
             if (plugin.spectatorManager.isSpectator(victim)) {
                 val now = System.currentTimeMillis()
+
                 if (now - lastKillEffect.getOrDefault(victim.uniqueId, 0L) > 2000L) {
                     lastKillEffect[victim.uniqueId] = now
                     triggerFinisherAleatorio(victim.location)

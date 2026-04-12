@@ -5,7 +5,6 @@ import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
@@ -32,15 +31,13 @@ import java.util.function.Consumer
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * GameListener: El árbitro supremo.
- * FIX: Salvado de ubicación al morir (Evita ir al lobby) y sonidos de stun para Slasher sin repetición.
+ * GameListener: Adaptado para MULTIARENA / VELOCITY.
+ * Gestiona la lógica de juego basándose en la sesión individual de cada jugador.
  */
 class GameListener(private val plugin: Mistaken) : Listener {
 
     private val mm = plugin.mm
     private val plain = PlainTextComponentSerializer.plainText()
-
-    // 🔥 Sistema de sonidos de stun sin repetición
     private val stunSoundsQueue = ConcurrentHashMap<UUID, MutableList<Int>>()
 
     /**
@@ -48,21 +45,23 @@ class GameListener(private val plugin: Mistaken) : Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onRescue(event: PlayerInteractEntityEvent) {
-        if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
-        if (plugin.gameManager.currentMode != MistakenMode.FREEZE_TAG) return
+        val player = event.player
+        val session = plugin.sessionManager.getSession(player) ?: return // 🔥 MULTIARENA
+
+        if (!plugin.isReady || session.currentState != GameState.INGAME) return
+        if (session.currentMode != MistakenMode.FREEZE_TAG) return
 
         val victim = event.rightClicked as? Player ?: return
-        val rescuer = event.player
 
         if (plugin.combatManager.isFrozen(victim)) {
-            if (!plugin.gameManager.esAsesino(rescuer.uniqueId)) {
-                if (plugin.combatManager.getHealth(rescuer) <= 1) {
-                    rescuer.sendActionBar(mm.deserialize("<red>¡Estás muy herido para rescatar a nadie!"))
+            if (!session.esAsesino(player.uniqueId)) {
+                if (plugin.combatManager.getHealth(player) <= 1) {
+                    player.sendActionBar(mm.deserialize("<red>¡Estás muy herido para rescatar a nadie!"))
                     return
                 }
 
                 event.isCancelled = true
-                plugin.combatManager.unfreeze(victim, rescuer)
+                plugin.combatManager.unfreeze(victim, player)
                 victim.world.spawnParticle(Particle.SNOWFLAKE, victim.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
                 victim.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 1.5f)
             }
@@ -70,31 +69,29 @@ class GameListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * 🔥 EFECTOS VISUALES DEL COMBATE
+     * 🔥 EFECTOS VISUALES Y STUN
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onDamageEffects(event: EntityDamageByEntityEvent) {
-        if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
-
         val victim = event.entity as? Player ?: return
+        val session = plugin.sessionManager.getSession(victim) ?: return // 🔥 MULTIARENA
+
+        if (!plugin.isReady || session.currentState != GameState.INGAME) return
+
         val damager = when (val attacker = event.damager) {
             is Player -> attacker
             is Projectile -> attacker.shooter as? Player
             else -> null
         } ?: return
 
-        val isDamagerKiller = plugin.gameManager.esAsesino(damager.uniqueId)
-        val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
+        val isDamagerKiller = session.esAsesino(damager.uniqueId)
+        val isVictimKiller = session.esAsesino(victim.uniqueId)
 
-        // --- CASO B: EL SOBREVIVIENTE SE DEFIENDE ---
         if (!isDamagerKiller && isVictimKiller) {
-
-            // Feedback visual de la vida restante del Boss
             val killerHealth = plugin.combatManager.getHealth(victim)
             damager.sendActionBar(plugin.messageConfig.getMessage(damager, "game.killer-hit-actionbar",
                 Placeholder.parsed("health", killerHealth.toString())))
 
-            // Probabilidad de Stun (15%)
             if (ThreadLocalRandom.current().nextInt(100) < 15) {
                 aplicarStunAlAsesino(victim, damager)
             }
@@ -102,29 +99,29 @@ class GameListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * 🔥 INSTA-RESPAWN & TP-BACK
+     * 🔥 MUERTE LÓGICA POR ARENA
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
-        if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
-
         val victim = event.entity
-        val deathLoc = victim.location
+        val session = plugin.sessionManager.getSession(victim) ?: return // 🔥 MULTIARENA
 
+        if (!plugin.isReady || session.currentState != GameState.INGAME) return
+
+        val deathLoc = victim.location
         event.drops.clear()
         event.droppedExp = 0
         event.deathMessage(null)
 
-        if (victim.gameMode != org.bukkit.GameMode.ADVENTURE || !victim.isInvisible) {
-            plugin.gameManager.playerController.handlePlayerDeath(victim)
-        }
+        // Procesar muerte en su controlador de sesión
+        session.playerController.handlePlayerDeath(victim)
 
         victim.scheduler.runDelayed(plugin, Consumer { _ ->
             if (victim.isOnline && victim.isDead) {
                 victim.spigot().respawn()
-
                 victim.teleportAsync(deathLoc).thenAccept { success ->
-                    if (success && plugin.gameManager.currentState == GameState.INGAME) {
+                    // Verificamos que la sesión siga activa al respawnear
+                    if (success && session.currentState == GameState.INGAME) {
                         plugin.spectatorManager.setCustomSpectator(victim)
                     }
                 }
@@ -143,32 +140,26 @@ class GameListener(private val plugin: Mistaken) : Listener {
         killer.sendMessage(plugin.messageConfig.getMessage(killer, "game.killer-stunned-victim"))
         damager.sendMessage(plugin.messageConfig.getMessage(damager, "game.killer-stunned-damager"))
 
-        // 🔥 Lógica especial para Slasher: Sonidos custom aleatorios de stun sin repetición
         val claseAsesino = plugin.playerDataManager.getSelectedKiller(killer.uniqueId)
         if (claseAsesino == "slasher") {
             val uuid = killer.uniqueId
             val queue = stunSoundsQueue.getOrPut(uuid) { mutableListOf(1, 2).apply { shuffle() } }
-
-            if (queue.isEmpty()) {
-                queue.addAll(listOf(1, 2))
-                queue.shuffle()
-            }
+            if (queue.isEmpty()) { queue.addAll(listOf(1, 2)); queue.shuffle() }
 
             val soundIndex = queue.removeAt(0)
-            val soundName = "mistaken:whitepumpkin_stun_$soundIndex"
-
-            killer.world.playSound(killer.location, soundName, SoundCategory.PLAYERS, 3.0f, 1.0f)
+            killer.world.playSound(killer.location, "mistaken:whitepumpkin_stun_$soundIndex", SoundCategory.PLAYERS, 3.0f, 1.0f)
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onEnvironmentalDamage(event: EntityDamageEvent) {
-        if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
         val player = event.entity as? Player ?: return
+        val session = plugin.sessionManager.getSession(player) ?: return
+
+        if (!plugin.isReady || session.currentState != GameState.INGAME) return
+
         if (plugin.combatManager.isFrozen(player)) {
-            if (event.cause == EntityDamageEvent.DamageCause.FREEZE ||
-                event.cause == EntityDamageEvent.DamageCause.SUFFOCATION ||
-                event.cause == EntityDamageEvent.DamageCause.DROWNING) {
+            if (event.cause in listOf(EntityDamageEvent.DamageCause.FREEZE, EntityDamageEvent.DamageCause.SUFFOCATION, EntityDamageEvent.DamageCause.DROWNING)) {
                 event.isCancelled = true
             }
         }
@@ -176,11 +167,15 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     fun onInventoryOpen(event: InventoryOpenEvent) {
-        if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return
+        val player = event.player as? Player ?: return
+        val session = plugin.sessionManager.getSession(player) ?: return
+
+        if (!plugin.isReady || session.currentState != GameState.INGAME) return
+
         val type = event.inventory.type
         if (type == InventoryType.PLAYER || type == InventoryType.CRAFTING) return
-        val title = plain.serialize(event.view.title())
 
+        val title = plain.serialize(event.view.title())
         val allowed = listOf("Reparando", "Skill Check", "ENTES", "Tienda", "Selecciona", "Espectear")
         if (allowed.any { title.contains(it, ignoreCase = true) }) return
 
@@ -189,16 +184,35 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler
     fun onHungerChange(event: FoodLevelChangeEvent) {
-        if (plugin.isReady && plugin.gameManager.currentState == GameState.INGAME) {
+        val player = event.entity as? Player ?: return
+        val session = plugin.sessionManager.getSession(player) ?: return
+
+        if (plugin.isReady && session.currentState == GameState.INGAME) {
             event.isCancelled = true
-            (event.entity as? Player)?.let { if (it.foodLevel < 20) it.foodLevel = 20 }
+            if (player.foodLevel < 20) player.foodLevel = 20
         }
     }
 
-    @EventHandler fun onDrop(e: PlayerDropItemEvent) { if (plugin.gameManager.currentState == GameState.INGAME) e.isCancelled = true }
-    @EventHandler fun onCraft(e: CraftItemEvent) { if (plugin.gameManager.currentState == GameState.INGAME) e.isCancelled = true }
-    @EventHandler fun onBreak(e: BlockBreakEvent) { if (plugin.gameManager.currentState == GameState.INGAME && !e.player.hasPermission("mistaken.admin")) e.isCancelled = true }
-    @EventHandler fun onPlace(e: BlockPlaceEvent) { if (plugin.gameManager.currentState == GameState.INGAME && !e.player.hasPermission("mistaken.admin")) e.isCancelled = true }
+    // --- PROTECCIONES AISLADAS POR SESIÓN ---
+    @EventHandler fun onDrop(e: PlayerDropItemEvent) {
+        val session = plugin.sessionManager.getSession(e.player)
+        if (session?.currentState == GameState.INGAME) e.isCancelled = true
+    }
+
+    @EventHandler fun onCraft(e: CraftItemEvent) {
+        val session = plugin.sessionManager.getSession(e.whoClicked as Player)
+        if (session?.currentState == GameState.INGAME) e.isCancelled = true
+    }
+
+    @EventHandler fun onBreak(e: BlockBreakEvent) {
+        val session = plugin.sessionManager.getSession(e.player)
+        if (session?.currentState == GameState.INGAME && !e.player.hasPermission("mistaken.admin")) e.isCancelled = true
+    }
+
+    @EventHandler fun onPlace(e: BlockPlaceEvent) {
+        val session = plugin.sessionManager.getSession(e.player)
+        if (session?.currentState == GameState.INGAME && !e.player.hasPermission("mistaken.admin")) e.isCancelled = true
+    }
 
     @EventHandler
     fun onPlayerDismount(event: PlayerToggleSneakEvent) {
@@ -210,7 +224,10 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler
     fun onRegen(event: EntityRegainHealthEvent) {
-        if (plugin.gameManager.currentState == GameState.INGAME) {
+        val player = event.entity as? Player ?: return
+        val session = plugin.sessionManager.getSession(player)
+
+        if (session?.currentState == GameState.INGAME) {
             val r = event.regainReason
             if (r == EntityRegainHealthEvent.RegainReason.SATIATED || r == EntityRegainHealthEvent.RegainReason.REGEN) {
                 event.isCancelled = true

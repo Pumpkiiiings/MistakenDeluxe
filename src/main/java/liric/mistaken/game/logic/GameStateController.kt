@@ -1,6 +1,6 @@
 package liric.mistaken.game.logic
 
-import liric.mistaken.game.GameManager
+import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import liric.mistaken.game.entities.GeoffreyEXE
@@ -13,7 +13,7 @@ import org.bukkit.potion.PotionEffectType
 import java.time.Duration
 import java.util.concurrent.ThreadLocalRandom
 
-class GameStateController(private val game: GameManager) {
+class GameStateController(private val game: GameSession) {
 
     // Cache local para el resultado de la partida
     private var lastKillerWon = false
@@ -90,7 +90,7 @@ class GameStateController(private val game: GameManager) {
 
     // 🔥 NUEVA FUNCIÓN: Invocación Programada de Geoffrey
     fun checkGeoffreySpawn() {
-        // Solo ocurre en el modo GEOFFREY_APOCALYPSE y exactamente a los 290 segundos (10s del inicio)
+        // Solo ocurre en el modo INITIALIZES y exactamente a los 290 segundos (10s después del inicio)
         if (game.currentMode == MistakenMode.INITIALIZES && game.timer == 290) {
 
             // 1. Títulos de Terror a todos los jugadores (Incluyendo el Asesino)
@@ -104,16 +104,21 @@ class GameStateController(private val game: GameManager) {
                 p.playSound(p.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.5f)
 
                 // Efecto de Estática (Ceguera + Nausea fugaz)
-                p.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
-                p.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1))
+                p.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0, false, false, false))
+                p.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1, false, false, false))
             }
 
             // 2. Invocar la entidad en el centro (Spawn de Supervivientes o del Asesino)
             val spawnLoc = game.getCurrentAsesino()?.location ?: game.plugin.server.onlinePlayers.firstOrNull()?.location
 
             if (spawnLoc != null) {
-                // Hacemos que spawnee a cierta altura y empiece a cazar
-                val geoffreyLoc = spawnLoc.clone().add(0.0, 10.0, 0.0)
+                // Hacemos que spawnee en el aire para que baje volando/cazando
+                val geoffreyLoc = spawnLoc.clone().add(0.0, 15.0, 0.0)
+
+                // Efecto de aparición en el cielo
+                geoffreyLoc.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, geoffreyLoc, 2)
+                geoffreyLoc.world.playSound(geoffreyLoc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 2f, 0.5f)
+
                 geoffreyEntity = GeoffreyEXE(game.plugin)
                 geoffreyEntity?.spawn(geoffreyLoc)
             }
@@ -163,7 +168,7 @@ class GameStateController(private val game: GameManager) {
                 chance <= 65 -> MistakenMode.ONE_BOUNCE
                 chance <= 80 -> MistakenMode.DOUBLE_KILLER
                 chance <= 90 -> MistakenMode.ASSASSIN_PVP
-                else -> MistakenMode.INITIALIZES // 🔥 Añadido con 10% de probabilidad
+                else -> MistakenMode.INITIALIZES // 🔥 10% de probabilidad
             }
             if (selected == MistakenMode.DOUBLE_KILLER && onlineCount < 4) selected = MistakenMode.CLASSIC
             game.currentMode = selected
@@ -226,7 +231,7 @@ class GameStateController(private val game: GameManager) {
             game.plugin.server.onlinePlayers.forEach { it.playSound(it.location, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f) }
         }
 
-        game.combatManager.giveWinRewards(killerWon)
+        game.plugin.combatManager.giveWinRewards(killerWon, game)
         game.modeForced = false
     }
 

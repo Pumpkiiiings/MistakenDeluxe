@@ -97,7 +97,8 @@ class NullAsesino : Asesino(
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
+        val session = plugin.sessionManager.getSession(attacker) ?: return
+        if (session.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
             if (victim.gameMode == GameMode.SPECTATOR) {
                 val now = System.currentTimeMillis()
                 if (now - lastKillEffect.getOrDefault(victim.uniqueId, 0L) > 2000L) {
@@ -275,7 +276,7 @@ class NullAsesino : Asesino(
             val victim = loc.world.getNearbyPlayers(loc, 3.5).firstOrNull { esObjetivoValido(player, it) }
 
             if (victim != null) {
-                plugin.gameManager.combatManager.takeDamage(victim)
+                plugin.combatManager.takeDamage(victim)
                 victim.playSound(victim.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.1f)
                 cleanupTrap(bait)
                 task.cancel()
@@ -308,7 +309,7 @@ class NullAsesino : Asesino(
                     locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
                         // 🔥 Uso de la función centralizada
                         if (esObjetivoValido(player, victim)) {
-                            plugin.gameManager.combatManager.takeDamage(victim)
+                            plugin.combatManager.takeDamage(victim)
                             victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
                         }
                     }

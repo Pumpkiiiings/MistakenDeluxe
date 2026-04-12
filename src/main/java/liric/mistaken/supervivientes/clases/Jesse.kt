@@ -127,10 +127,11 @@ class Jesse : Superviviente(
 
             // Chocar contra el asesino
             player.getNearbyEntities(1.5, 1.5, 1.5).filterIsInstance<Player>().forEach { victim ->
-                if (plugin.gameManager.esAsesino(victim.uniqueId) && !hitted.contains(victim.uniqueId)) {
+                val session = plugin.sessionManager.getSession(victim)
+                if (session?.esAsesino(victim.uniqueId) == true && !hitted.contains(victim.uniqueId)) {
                     hitted.add(victim.uniqueId)
 
-                    plugin.gameManager.combatManager.takeDamage(victim)
+                    plugin.combatManager.takeDamage(victim)
 
                     val knockback = player.location.direction.multiply(1.5).setY(0.4)
                     victim.velocity = knockback
@@ -179,7 +180,8 @@ class Jesse : Superviviente(
                 // Impacto
                 if (!hitTarget) {
                     currentLoc.world.getNearbyPlayers(currentLoc, 1.5).forEach { victim ->
-                        if (plugin.gameManager.esAsesino(victim.uniqueId)) {
+                        val session = plugin.sessionManager.getSession(victim)
+                        if (session?.esAsesino(victim.uniqueId) == true) {
                             val kb = direction.clone().multiply(2.5).setY(0.5)
                             victim.velocity = kb
 

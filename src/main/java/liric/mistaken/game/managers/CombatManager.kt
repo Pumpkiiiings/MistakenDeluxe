@@ -2,6 +2,7 @@ package liric.mistaken.game.managers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.HealthAPI
+import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
@@ -29,7 +30,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     private val killerCooldowns = ConcurrentHashMap<UUID, Long>()
     private val survivorCooldowns = ConcurrentHashMap<UUID, Long>()
 
-    // 🔥 TIEMPOS DE COOLDOWN (Bajados a 1 segundo para combates ágiles)
+    // 🔥 TIEMPOS DE COOLDOWN
     private val KILLER_COOLDOWN = 1000L
     private val SURVIVOR_COOLDOWN = 1000L
 
@@ -41,36 +42,87 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
     private fun startRadarTask() {
         plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
-            if (!plugin.isReady || plugin.gameManager.currentState != GameState.INGAME) return@runAtFixedRate
+            if (!plugin.isReady) return@runAtFixedRate
 
-            // 🔥 Obtenemos a TODOS los asesinos
-            val killersOnline = plugin.gameManager.asesinosUUIDs.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
-            if (killersOnline.isEmpty()) return@runAtFixedRate
+            // 🔥 MULTIARENA: Recorremos todas las sesiones activas
+            val sessions = plugin.sessionManager.activeSessions.values
 
-            // Iteramos sobre cada asesino para darle su propio radar individual
-            for (killer in killersOnline) {
-                val killerLoc = killer.location
-                var minDistanceSq = Double.MAX_VALUE
-                var foundSomeone = false
-                var ghostName = ""
+            for (session in sessions) {
+                if (session.currentState != GameState.INGAME) continue
 
-                for (target in plugin.server.onlinePlayers) {
-                    if (target == killer || target.world != killerLoc.world) continue
+                val killersOnline = session.asesinosUUIDs.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
+                if (killersOnline.isEmpty()) continue
 
-                    // 🔥 NUEVO: Lógica de visión entre Asesinos
-                    if (plugin.gameManager.esAsesino(target.uniqueId)) {
-                        val mode = plugin.gameManager.currentMode
-                        // Si están en modo cooperativo, se ven en AMARILLO permanentemente
-                        if (mode == MistakenMode.DOUBLE_KILLER || mode == MistakenMode.ONE_BOUNCE) {
-                            target.scheduler.run(plugin, Consumer { _ ->
-                                if (target.isOnline && killer.isOnline) {
-                                    if (plugin.gameManager.currentState == GameState.INGAME) {
-                                        try { plugin.glowingAPI.setGlowing(target, killer, ChatColor.YELLOW) } catch (_: Exception) {}
-                                    } else {
+                for (killer in killersOnline) {
+                    val killerLoc = killer.location
+                    var minDistanceSq = Double.MAX_VALUE
+                    var foundSomeone = false
+                    var ghostName = ""
+
+                    // Obtenemos los jugadores de ESTA sesión para no escanear a todo el servidor
+                    for (target in session.getPlayers()) {
+                        if (target == killer || target.world != killerLoc.world) continue
+
+                        if (session.esAsesino(target.uniqueId)) {
+                            val mode = session.currentMode
+                            if (mode == MistakenMode.DOUBLE_KILLER || mode == MistakenMode.ONE_BOUNCE) {
+                                target.scheduler.run(plugin, Consumer { _ ->
+                                    if (target.isOnline && killer.isOnline) {
+                                        if (session.currentState == GameState.INGAME) {
+                                            try { plugin.glowingAPI.setGlowing(target, killer, ChatColor.YELLOW) } catch (_: Exception) {}
+                                        } else {
+                                            try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                                        }
+                                    }
+                                }, null)
+                            } else {
+                                target.scheduler.run(plugin, Consumer { _ ->
+                                    if (target.isOnline && killer.isOnline) {
                                         try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
                                     }
+                                }, null)
+                            }
+                            continue
+                        }
+
+                        val tabName = PlainTextComponentSerializer.plainText().serialize(target.playerListName())
+                        val isNPC = target.hasMetadata("NPC") || target.name.isEmpty() || tabName.isBlank()
+
+                        val isValidSurvivor = target.gameMode == GameMode.SURVIVAL &&
+                                !isNPC &&
+                                !target.isInvisible &&
+                                killer.canSee(target) &&
+                                !plugin.isIgnored(target) &&
+                                !plugin.spectatorManager.isSpectator(target)
+
+                        if (isValidSurvivor) {
+                            val distSq = killerLoc.distanceSquared(target.location)
+
+                            if (distSq <= 225.0) {
+                                target.scheduler.run(plugin, Consumer { _ ->
+                                    if (target.isOnline && killer.isOnline) {
+                                        if (session.currentState == GameState.INGAME) {
+                                            try { plugin.glowingAPI.setGlowing(target, killer, ChatColor.RED) } catch (_: Exception) {}
+                                        } else {
+                                            try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                                        }
+                                    }
+                                }, null)
+                            } else {
+                                target.scheduler.run(plugin, Consumer { _ ->
+                                    if (target.isOnline && killer.isOnline) {
+                                        try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                                    }
+                                }, null)
+                            }
+
+                            if (distSq <= 900.0) {
+                                if (distSq < minDistanceSq) {
+                                    minDistanceSq = distSq
+                                    foundSomeone = true
+                                    ghostName = target.name
                                 }
-                            }, null)
+                            }
                         } else {
                             target.scheduler.run(plugin, Consumer { _ ->
                                 if (target.isOnline && killer.isOnline) {
@@ -78,74 +130,23 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                                 }
                             }, null)
                         }
-                        continue // Terminamos con este target (ya que es otro asesino)
                     }
 
-                    // --- Lógica del Radar para Supervivientes ---
-                    val tabName = PlainTextComponentSerializer.plainText().serialize(target.playerListName())
-                    val isNPC = target.hasMetadata("NPC") || target.name.isEmpty() || tabName.isBlank()
+                    if (foundSomeone) {
+                        val realDist = Math.sqrt(minDistanceSq)
+                        killer.sendActionBar(mm.deserialize("<yellow>Escuchas el latido de alguien.."))
 
-                    val isValidSurvivor = target.gameMode == GameMode.SURVIVAL &&
-                            !isNPC &&
-                            !target.isInvisible &&
-                            killer.canSee(target) &&
-                            !plugin.isIgnored(target) &&
-                            !plugin.spectatorManager.isSpectator(target)
-
-                    if (isValidSurvivor) {
-                        val distSq = killerLoc.distanceSquared(target.location)
-
-                        // 15 Bloques al cuadrado = 225.0
-                        if (distSq <= 225.0) {
-                            target.scheduler.run(plugin, Consumer { _ ->
-                                if (target.isOnline && killer.isOnline) {
-                                    if (plugin.gameManager.currentState == GameState.INGAME) {
-                                        try { plugin.glowingAPI.setGlowing(target, killer, ChatColor.RED) } catch (_: Exception) {}
-                                    } else {
-                                        try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
-                                    }
-                                }
-                            }, null)
-                        } else {
-                            // Si está a más de 15 bloques, apagar
-                            target.scheduler.run(plugin, Consumer { _ ->
-                                if (target.isOnline && killer.isOnline) {
-                                    try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
-                                }
-                            }, null)
+                        if (realDist < 5.0) {
+                            plugin.componentLogger.warn("Detectado a '$ghostName' a menos de 5 bloques en el radar.")
                         }
 
-                        // 30 Bloques para latidos = 900.0
-                        if (distSq <= 900.0) {
-                            if (distSq < minDistanceSq) {
-                                minDistanceSq = distSq
-                                foundSomeone = true
-                                ghostName = target.name
-                            }
+                        val (vol, pitch) = when {
+                            realDist < 5.0 -> 1.2f to 1.5f
+                            realDist < 15.0 -> 0.8f to 1.0f
+                            else -> 0.4f to 0.6f
                         }
-                    } else {
-                        target.scheduler.run(plugin, Consumer { _ ->
-                            if (target.isOnline && killer.isOnline) {
-                                try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
-                            }
-                        }, null)
+                        killer.playSound(killer.location, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, vol, pitch)
                     }
-                }
-
-                if (foundSomeone) {
-                    val realDist = Math.sqrt(minDistanceSq)
-                    killer.sendActionBar(mm.deserialize("<yellow>Escuchas el latido de alguien.."))
-
-                    if (realDist < 5.0) {
-                        plugin.componentLogger.warn("Detectado a '$ghostName' a menos de 5 bloques en el radar.")
-                    }
-
-                    val (vol, pitch) = when {
-                        realDist < 5.0 -> 1.2f to 1.5f
-                        realDist < 15.0 -> 0.8f to 1.0f
-                        else -> 0.4f to 0.6f
-                    }
-                    killer.playSound(killer.location, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, vol, pitch)
                 }
             }
         }, 0L, 500L, TimeUnit.MILLISECONDS)
@@ -156,7 +157,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         else plugin.server.globalRegionScheduler.run(plugin) { _ -> block() }
     }
 
-    // --- API Methods ---
     override fun getHealth(player: Player): Int = player.health.toInt()
 
     override fun setHealth(player: Player, health: Int) = runOnMain {
@@ -173,13 +173,13 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     }
 
     fun resetHealth(player: Player) = runOnMain {
-        val isKiller = plugin.gameManager.esAsesino(player.uniqueId)
+        val session = plugin.sessionManager.getSession(player)
+        val isKiller = session?.esAsesino(player.uniqueId) ?: false
         val maxHP = if (isKiller) 160.0 else 20.0
 
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
         player.health = maxHP
         player.removePotionEffect(PotionEffectType.DARKNESS)
-
         player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 1.0
 
         if (plugin.isReady) plugin.scoreboardManager.updatePlayer(player)
@@ -192,17 +192,18 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         val victim = event.entity as? Player ?: return
         val attacker = event.damager as? Player ?: return
 
-        // 🔥 Doble seguro: Si alguno es un espectador fantasma, bloqueamos el daño
         if (victim.isInvisible || attacker.isInvisible || victim.gameMode == GameMode.ADVENTURE) {
             event.isCancelled = true
             return
         }
 
-        if (plugin.gameManager.currentState != GameState.INGAME) return
+        // 🔥 MULTIARENA: Obtenemos la sesión donde ocurre la pelea
+        val session = plugin.sessionManager.getSession(victim) ?: return
+        if (session.currentState != GameState.INGAME) return
 
-        val isAttackerKiller = plugin.gameManager.esAsesino(attacker.uniqueId)
-        val isVictimKiller = plugin.gameManager.esAsesino(victim.uniqueId)
-        val isAssassinPvpMode = plugin.gameManager.currentMode == MistakenMode.DOUBLE_KILLER
+        val isAttackerKiller = session.esAsesino(attacker.uniqueId)
+        val isVictimKiller = session.esAsesino(victim.uniqueId)
+        val isAssassinPvpMode = session.currentMode == MistakenMode.DOUBLE_KILLER
 
         if (isAttackerKiller == isVictimKiller && !isAssassinPvpMode) {
             event.isCancelled = true
@@ -230,7 +231,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             event.damage = 0.1
 
             val dmg = if (isAssassinPvpMode) 4.0 else 3.0
-            processTrueDamage(victim, attacker, dmg)
+            processTrueDamage(victim, attacker, dmg, session)
             return
         }
 
@@ -246,14 +247,15 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             survivorCooldowns[attacker.uniqueId] = now
             event.damage = 0.0
-            processTrueDamage(victim, attacker, 4.0)
+            processTrueDamage(victim, attacker, 4.0, session)
             victim.world.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1f, 1f)
             return
         }
     }
 
-    private fun processTrueDamage(victim: Player, attacker: Player?, amount: Double) {
+    private fun processTrueDamage(victim: Player, attacker: Player?, amount: Double, session: GameSession? = null) {
         if (isFrozen(victim)) return
+        val currentSession = session ?: plugin.sessionManager.getSession(victim) ?: return
 
         runOnMain {
             if (victim.gameMode == GameMode.SPECTATOR || victim.isInvisible || victim.gameMode == GameMode.ADVENTURE) return@runOnMain
@@ -261,7 +263,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             val nextHP = (victim.health - amount).coerceAtLeast(0.0)
             victim.health = nextHP
 
-            val isSurvivor = !plugin.gameManager.esAsesino(victim.uniqueId)
+            val isSurvivor = !currentSession.esAsesino(victim.uniqueId)
 
             if (isSurvivor && nextHP <= 4.0 && nextHP > 0.0) {
                 if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {
@@ -276,21 +278,95 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             if (plugin.isReady) plugin.scoreboardManager.updatePlayer(victim)
 
             if (nextHP <= 0.0) {
-                // 🔥 EVITAMOS EL RESPAWN: Mantenemos al jugador vivo lógicamente para el servidor
-                // Esto previene que Minecraft intente enviarlo al punto de regeneración (Lobby).
                 victim.health = 20.0
                 victim.removePotionEffect(PotionEffectType.DARKNESS)
                 victim.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
                 frozenPlayers.remove(victim.uniqueId)
 
-                plugin.gameManager.getCurrentAsesino()?.let { killer ->
+                currentSession.getCurrentAsesino()?.let { killer ->
                     try { plugin.glowingAPI.unsetGlowing(victim, killer) } catch (_: Exception) {}
                 }
 
-                // Disparamos nuestra lógica custom de muerte
-                plugin.gameManager.playerController.handlePlayerDeath(victim)
+                currentSession.playerController.handlePlayerDeath(victim)
             }
         }
+    }
+
+    override fun takeDamage(victim: Player) {
+        processTrueDamage(victim, null, 3.0)
+    }
+
+    override fun unfreeze(victim: Player, rescuer: Player) {
+        if (!frozenPlayers.remove(victim.uniqueId)) return
+        runOnMain {
+            victim.removePotionEffect(PotionEffectType.DARKNESS)
+
+            victim.clearTitle()
+            victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
+            victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
+            victim.inventory.helmet = null
+
+            victim.health = 10.0
+            victim.world.playSound(victim.location, Sound.BLOCK_FIRE_EXTINGUISH, 1f, 1.5f)
+        }
+    }
+
+    // 🔥 FIX: Adaptado a Multiarena
+    fun giveWinRewards(killerWon: Boolean, session: GameSession) {
+        val killers = session.asesinosUUIDs
+        val winners = if (killerWon) {
+            session.getPlayers().filter { killers.contains(it.uniqueId) }
+        } else {
+            session.getPlayers().filter { !killers.contains(it.uniqueId) && it.gameMode != GameMode.SPECTATOR }
+        }
+
+        plugin.server.asyncScheduler.runNow(plugin) { _ ->
+            winners.forEach { Mistaken.economy?.depositPlayer(it, if (killerWon) 500.0 else 200.0) }
+        }
+    }
+
+    fun soltarPasajero(vehicle: Player) {
+        vehicle.passengers.forEach {
+            vehicle.removePassenger(it)
+        }
+    }
+
+    fun freezePlayer(victim: Player, session: GameSession) {
+        if (!frozenPlayers.add(victim.uniqueId)) return
+        runOnMain {
+            victim.inventory.helmet = ItemStack(Material.BLUE_ICE)
+            victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.0
+            victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.0
+            victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, false))
+            victim.world.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
+
+            startFreezeTimer(victim, session)
+
+            session.broadcastLocalized("game.player-frozen", Placeholder.parsed("player", victim.name))
+            session.playerController.checkWinCondition()
+        }
+    }
+
+    private fun startFreezeTimer(victim: Player, session: GameSession) {
+        var timeLeft = 120
+        victim.scheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (!isFrozen(victim) || !victim.isOnline) {
+                task.cancel()
+                return@Consumer
+            }
+            val timeFormatted = String.format(Locale.US, "%d:%02d", timeLeft / 60, timeLeft % 60)
+            victim.showTitle(Title.title(
+                plugin.messageConfig.getMessage(victim, "game.freeze-title"),
+                plugin.messageConfig.getMessage(victim, "game.freeze-subtitle", Placeholder.parsed("time", timeFormatted))
+            ))
+            timeLeft--
+            if (timeLeft <= 0) {
+                task.cancel()
+                runOnMain {
+                    session.playerController.handlePlayerDeath(victim)
+                }
+            }
+        }, null, 0L, 20L)
     }
 
     fun removePlayerData(uuid: UUID) {
@@ -337,88 +413,16 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         }
     }
 
-    override fun unfreeze(victim: Player, rescuer: Player) {
-        if (!frozenPlayers.remove(victim.uniqueId)) return
-        runOnMain {
-            victim.removePotionEffect(PotionEffectType.DARKNESS)
-
-            victim.clearTitle()
-            victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
-            victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
-            victim.inventory.helmet = null
-
-            victim.health = 10.0
-            victim.world.playSound(victim.location, Sound.BLOCK_FIRE_EXTINGUISH, 1f, 1.5f)
-        }
-    }
-
-    fun giveWinRewards(killerWon: Boolean) {
-        val killers = plugin.gameManager.asesinosUUIDs
-        val winners = if (killerWon) Bukkit.getOnlinePlayers().filter { killers.contains(it.uniqueId) }
-        else Bukkit.getOnlinePlayers().filter { !killers.contains(it.uniqueId) && it.gameMode != GameMode.SPECTATOR }
-
-        plugin.server.asyncScheduler.runNow(plugin) { _ ->
-            winners.forEach { Mistaken.economy?.depositPlayer(it, if (killerWon) 500.0 else 200.0) }
-        }
-    }
-
-    fun soltarPasajero(vehicle: Player) {
-        vehicle.passengers.forEach {
-            vehicle.removePassenger(it)
-        }
-    }
-
-    fun freezePlayer(victim: Player) {
-        if (!frozenPlayers.add(victim.uniqueId)) return
-        runOnMain {
-            victim.inventory.helmet = ItemStack(Material.BLUE_ICE)
-            victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.0
-            victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.0
-            victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, false))
-            victim.world.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
-
-            startFreezeTimer(victim)
-
-            plugin.gameManager.broadcastLocalized("game.player-frozen", Placeholder.parsed("player", victim.name))
-            plugin.gameManager.playerController.checkWinCondition()
-        }
-    }
-
-    private fun startFreezeTimer(victim: Player) {
-        var timeLeft = 120
-        victim.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!isFrozen(victim) || !victim.isOnline) {
-                task.cancel()
-                return@Consumer
-            }
-            val timeFormatted = String.format(Locale.US, "%d:%02d", timeLeft / 60, timeLeft % 60)
-            victim.showTitle(Title.title(
-                plugin.messageConfig.getMessage(victim, "game.freeze-title"),
-                plugin.messageConfig.getMessage(victim, "game.freeze-subtitle", Placeholder.parsed("time", timeFormatted))
-            ))
-            timeLeft--
-            if (timeLeft <= 0) {
-                task.cancel()
-                runOnMain {
-                    plugin.gameManager.playerController.handlePlayerDeath(victim)
-                }
-            }
-        }, null, 0L, 20L)
-    }
-
-    override fun takeDamage(victim: Player) { processTrueDamage(victim, null, 3.0) }
-
-    // 🔥 EL ESCUDO ABSOLUTO: Pase lo que pase, el asesino NUNCA recibe Oscuridad.
+    // 🔥 EL ESCUDO ABSOLUTO MULTIARENA
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onKillerDarkness(event: EntityPotionEffectEvent) {
         val player = event.entity as? Player ?: return
-
-        // Evitar que el asesino reciba DARKNESS o BLINDNESS, a menos que sea el modo especial
         val effect = event.newEffect ?: return
-        if (effect.type == PotionEffectType.DARKNESS || effect.type == PotionEffectType.BLINDNESS) {
 
-            // Si el jugador es asesino (y no es el modo doble/PVP donde podrían atacarse), lo bloqueamos de raíz
-            if (plugin.gameManager.esAsesino(player.uniqueId) && plugin.gameManager.currentMode != MistakenMode.ASSASSIN_PVP) {
+        if (effect.type == PotionEffectType.DARKNESS || effect.type == PotionEffectType.BLINDNESS) {
+            val session = plugin.sessionManager.getSession(player) ?: return
+
+            if (session.esAsesino(player.uniqueId) && session.currentMode != MistakenMode.ASSASSIN_PVP) {
                 event.isCancelled = true
             }
         }

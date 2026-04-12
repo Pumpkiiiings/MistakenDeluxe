@@ -43,6 +43,9 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             return
         }
 
+        // 🔥 MULTIARENA: Obtenemos la sesión del jugador (si es que está en una)
+        val gm = player?.let { plugin.sessionManager.getSession(it) }
+
         when (sub) {
             "langs", "language" -> {
                 if (player == null) {
@@ -91,8 +94,9 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     plugin.afkPlayers.add(uuid)
                     player.sendMessage(plugin.messageConfig.getMessage(player, "game.afk-enable"))
                     player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 0.5f)
-                    // 🔥 ARREGLADO: Ahora se llama desde playerController
-                    plugin.gameManager.playerController.checkWinCondition()
+
+                    // 🔥 ARREGLADO: Solo checa victoria en la sesión donde está el AFK
+                    gm?.playerController?.checkWinCondition()
                 }
             }
 
@@ -132,43 +136,51 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
             "setmode" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
+                if (player == null || gm == null) {
+                    sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesión para forzar un modo."))
+                    return
+                }
                 if (args.size < 2) {
                     sender.sendMessage(mm.deserialize("<red>Uso: /mistaken setmode <MODO>"))
                     return
                 }
                 try {
                     val mode = MistakenMode.valueOf(args[1].uppercase())
-                    // 🔥 ARREGLADO: Acceso directo a propiedades en lugar de setCurrentMode()
-                    plugin.gameManager.currentMode = mode
-                    plugin.gameManager.modeForced = true
-                    sender.sendMessage(mm.deserialize("<green>Modo forzado a: <aqua>${mode.name}"))
-                    player?.playSound(player.location, Sound.BLOCK_ANVIL_USE, 1f, 1f)
+                    // 🔥 ARREGLADO: Aplicado a la sesión actual
+                    gm.currentMode = mode
+                    gm.modeForced = true
+                    sender.sendMessage(mm.deserialize("<green>Modo forzado a: <aqua>${mode.name} <gray>(Sesión: ${gm.sessionId})"))
+                    player.playSound(player.location, Sound.BLOCK_ANVIL_USE, 1f, 1f)
                 } catch (e: Exception) {
-                    sender.sendMessage(mm.deserialize("<red>Modo inválido. Usa: CLASSIC, DOUBLE_KILLER, ONE_BOUNCE o FREEZE_TAG."))
+                    sender.sendMessage(mm.deserialize("<red>Modo inválido."))
                 }
             }
 
             "start" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
-                if (plugin.gameManager.currentState == GameState.INGAME) {
+                if (gm == null) {
+                    sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesión para iniciarla."))
+                    return
+                }
+                if (gm.currentState == GameState.INGAME) {
                     sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.start-already-ingame"))
                 } else {
                     sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.start-forcing"))
-                    // 🔥 ARREGLADO: Lógica manual de inicio en lugar de forceStart()
-                    if (plugin.gameManager.currentState == GameState.LOBBY || plugin.gameManager.currentState == GameState.VOTING) {
-                        plugin.gameManager.stateController.startVotingProcess()
-                        plugin.gameManager.timer = 5
+                    // 🔥 ARREGLADO: Solo inicia la sesión actual
+                    if (gm.currentState == GameState.LOBBY || gm.currentState == GameState.VOTING || gm.currentState == GameState.BREAK) {
+                        gm.stateController.startVotingProcess()
+                        gm.timer = 5
                     }
                 }
             }
 
             "stop" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
-                if (plugin.gameManager.currentState == GameState.LOBBY) {
-                    sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.stop-no-active"))
+                if (gm == null || gm.currentState == GameState.LOBBY) {
+                    sender.sendMessage(mm.deserialize("<red>No hay ninguna partida activa en tu ubicación."))
                 } else {
-                    // 🔥 ARREGLADO: Ahora se llama desde stateController
-                    plugin.gameManager.stateController.endGame("admin.stop-broadcast", false)
+                    // 🔥 ARREGLADO: Finaliza solo la sesión actual
+                    gm.stateController.endGame("admin.stop-broadcast", false)
                     sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.stop-success"))
                 }
             }

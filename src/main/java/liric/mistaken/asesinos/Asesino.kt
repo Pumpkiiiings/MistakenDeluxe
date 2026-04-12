@@ -1,23 +1,17 @@
 package liric.mistaken.asesinos
 
-import kotlinx.coroutines.Job
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
-import org.bukkit.scheduler.BukkitTask
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- *[LIRIC-MISTAKEN 2.0]
+ * [LIRIC-MISTAKEN 2.0]
  * Asesino: Clase base polimórfica ultra-optimizada.
- *
- * MEJORAS:
- * - Sincronizado con el motor de subcarpetas de idiomas.
- * - Soporte para Atributos avanzados de la 1.21.4 (Scale, Step Height, Gravity).
- * - Cooldowns dinámicos (Lógica centralizada + Nombres localizados).
- * - 🔥 Lógica centralizada de validación de daño (Soporte Assassin PvP y Fuego Amigo).
+ * FIX: Adaptada a MULTIARENA y Schedulers Nativos de Paper (Folia-Ready).
  */
 abstract class Asesino(val id: String, val nombre: String) {
 
@@ -27,9 +21,8 @@ abstract class Asesino(val id: String, val nombre: String) {
     // Cooldowns: UUID_Slot -> Timestamp (ms)
     private val cooldowns = ConcurrentHashMap<String, Long>()
 
-    // Rastreros de tareas para limpieza automática
-    protected val activeJobs = ConcurrentHashMap.newKeySet<Job>()
-    protected val activeTasks = ConcurrentHashMap.newKeySet<BukkitTask>()
+    // Rastreros de tareas nativas de Paper para limpieza automática
+    protected val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
 
     /**
      * Verifica el cooldown buscando el tiempo en la raíz y el nombre en el idioma del jugador.
@@ -69,17 +62,9 @@ abstract class Asesino(val id: String, val nombre: String) {
     }
 
     /**
-     * Registra un Job de corrutina para limpieza.
+     * Registra una tarea de Paper para limpieza.
      */
-    protected fun trackJob(job: Job) {
-        activeJobs.add(job)
-        job.invokeOnCompletion { activeJobs.remove(job) }
-    }
-
-    /**
-     * Registra una tarea de Bukkit para limpieza.
-     */
-    protected fun trackTask(task: BukkitTask) {
+    protected fun trackTask(task: ScheduledTask) {
         activeTasks.add(task)
     }
 
@@ -101,15 +86,13 @@ abstract class Asesino(val id: String, val nombre: String) {
     /**
      * Limpieza profunda del asesino (Mantenido el fix de espectador).
      */
-    open fun limpiarDatosGlobales() {
-    }
-
+    open fun limpiarDatosGlobales() {}
 
     open fun cleanup(player: Player?) {
-        activeJobs.forEach { if (it.isActive) it.cancel() }
-        activeJobs.clear()
-
-        activeTasks.forEach { it.cancel() }
+        // Cancelamos las tareas programadas de Paper
+        activeTasks.forEach {
+            if (!it.isCancelled) it.cancel()
+        }
         activeTasks.clear()
 
         player?.let { p ->
@@ -124,6 +107,8 @@ abstract class Asesino(val id: String, val nombre: String) {
                 p.isSwimming = false
                 p.isGliding = false
                 p.isGlowing = false
+
+                // Aseguramos que vuelva al slot principal
                 p.inventory.heldItemSlot = 0
 
                 // 💡 FIX ESPECTADOR: Solo apagar vuelo si no es espectador
@@ -168,22 +153,28 @@ abstract class Asesino(val id: String, val nombre: String) {
 
     /**
      * 🔥 Verifica de forma segura y central si una habilidad le debe hacer daño a este jugador.
-     * Toma en cuenta el Fuego Amigo, Modo Asesino PvP y si está en supervivencia.
+     * MULTIARENA FIX: Toma en cuenta el Fuego Amigo leyendo la sesión específica de la víctima.
      */
     protected fun esObjetivoValido(atacante: Player, victima: Player): Boolean {
         // 1. Inmortales o Espectadores ignorados
         if (victima.gameMode != org.bukkit.GameMode.SURVIVAL) return false
         if (plugin.isIgnored(victima)) return false
+        if (victima.isInvisible) return false
 
         // 2. No se puede pegar a sí mismo con un área
         if (atacante.uniqueId == victima.uniqueId) return false
 
-        // 3. Revisión de Fuego Amigo
-        val atacanteEsAsesino = plugin.gameManager.esAsesino(atacante.uniqueId)
-        val victimaEsAsesino = plugin.gameManager.esAsesino(victima.uniqueId)
+        // 3. Revisión de Fuego Amigo basada en la sesión del jugador atacado
+        val session = plugin.sessionManager.getSession(victima) ?: return false
+
+        // Si el atacante no está en la misma sesión, se deniega (Cruces entre arenas)
+        if (plugin.sessionManager.getSession(atacante) != session) return false
+
+        val atacanteEsAsesino = session.esAsesino(atacante.uniqueId)
+        val victimaEsAsesino = session.esAsesino(victima.uniqueId)
 
         // Si el modo es Assassin PvP, todos se pueden pegar
-        if (plugin.gameManager.currentMode == liric.mistaken.game.enums.MistakenMode.ASSASSIN_PVP) {
+        if (session.currentMode == liric.mistaken.game.enums.MistakenMode.ASSASSIN_PVP) {
             return true
         }
 

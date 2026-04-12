@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget // 🔥 IMPORTANTE: Necesario para el nuevo compilerOptions
 
 buildscript {
     repositories {
@@ -12,13 +13,13 @@ buildscript {
 
 plugins {
     java
-    kotlin("jvm") version "2.1.0"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    kotlin("jvm") version "2.3.0"
+    id("com.gradleup.shadow") version "9.3.0"
     id("maven-publish")
 }
 
 group = "liric.mistaken" // Actualizado a tu nuevo package
-version = "1.14.2"
+version = "PROXY-BETA"
 
 java {
     toolchain {
@@ -47,7 +48,7 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation(kotlin("stdlib"))
-
+    implementation("com.mojang:brigadier:1.2.9")
     // Librerías que se incluirán en el JAR (Shadow)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("com.github.retrooper:packetevents-spigot:2.11.2")
@@ -87,11 +88,9 @@ tasks {
         relocate("io.github.retrooper.packetevents", "liric.mistaken.libs.packetevents")
         relocate("com.zaxxer.hikari", "liric.mistaken.libs.hikari")
         relocate("dev.triumphteam.gui", "liric.mistaken.libs.gui")
-        relocate("kotlin", "liric.mistaken.libs.kotlin")
         relocate("fr.skytasul.glowingentities", "liric.mistaken.libs.glowing")
 
-        // AQUÍ ESTÁ LO QUE FALTABA PARA QUITAR LO ROJO:
-        relocate("kotlinx", "liric.mistaken.libs.kotlinx")
+        // ❌ Eliminadas las reubicaciones (relocate) de 'kotlin' y 'kotlinx'
     }
 
     withType<JavaCompile> {
@@ -101,7 +100,10 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "21"
+        // 🔥 CORRECCIÓN: Migración de kotlinOptions a compilerOptions
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
     }
 
     processResources {

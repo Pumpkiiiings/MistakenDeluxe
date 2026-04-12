@@ -18,8 +18,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * AmbientManager: Motor de atmósfera de terror.
- * FIX: Escudo Anti-Asesinos (Evita que el asesino se asuste a sí mismo con distancia 0).
+ * AmbientManager: Motor de atmósfera de terror adaptado a Multiarena.
  */
 class AmbientManager(private val plugin: Mistaken) {
 
@@ -32,21 +31,26 @@ class AmbientManager(private val plugin: Mistaken) {
     }
 
     private fun startGlobalTask() {
-        // Usamos AsyncScheduler: Ejecuta cada 100ms (10 veces/segundo) con precisión de reloj
         plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             if (!plugin.isReady) return@runAtFixedRate
 
-            if (plugin.gameManager.currentState == GameState.INGAME) {
-                val killer = plugin.gameManager.getCurrentAsesino() ?: return@runAtFixedRate
-                if (!killer.isOnline) return@runAtFixedRate
+            // 🔥 MULTIARENA: Evaluamos cada sesión independiente
+            for (session in plugin.sessionManager.activeSessions.values) {
+                if (session.currentState != GameState.INGAME) continue
 
+                val killer = session.getCurrentAsesino() ?: continue
+                if (!killer.isOnline) continue
+
+                // Iteramos sobre todos los supervivientes trackeados globalmente
                 trackedSurvivors.forEach { uuid ->
                     val survivor = Bukkit.getPlayer(uuid)
-                    if (survivor != null && survivor.isOnline) {
+
+                    // Si el superviviente está online y pertenece a ESTA sesión
+                    if (survivor != null && survivor.isOnline && plugin.sessionManager.getSession(survivor) == session) {
                         survivor.scheduler.execute(plugin, {
-                            processSurvivorLogic(survivor, killer)
+                            processSurvivorLogic(survivor, killer, session)
                         }, null, 0L)
-                    } else {
+                    } else if (survivor == null) {
                         trackedSurvivors.remove(uuid)
                     }
                 }
@@ -57,23 +61,19 @@ class AmbientManager(private val plugin: Mistaken) {
     /**
      * Lógica individual por superviviente (Ejecutada en el hilo seguro del jugador)
      */
-    private fun processSurvivorLogic(survivor: Player, killer: Player) {
+    private fun processSurvivorLogic(survivor: Player, killer: Player, session: liric.mistaken.game.GameSession) {
 
-        // 🔥 EL FIX SUPREMO AL PUTO BUG:
-        // Si este "superviviente" en realidad fue elegido como el Asesino en esta ronda,
-        // lo sacamos de la lista de víctimas, le quitamos la ceguera residual y abortamos.
-        if (plugin.gameManager.esAsesino(survivor.uniqueId)) {
+        // Si este "superviviente" en realidad fue elegido como el Asesino en esta ronda
+        if (session.esAsesino(survivor.uniqueId)) {
             trackedSurvivors.remove(survivor.uniqueId)
             survivor.removePotionEffect(PotionEffectType.DARKNESS)
             return
         }
 
-        // Filtro de seguridad: Si está muerto, en modo espectador fantasma o en vanish, no lo asustamos
         if (survivor.gameMode != GameMode.SURVIVAL || survivor.isInvisible || plugin.isIgnored(survivor)) {
             return
         }
 
-        // Verificación rápida de mundo
         if (survivor.world != killer.world) return
 
         val killerLoc = killer.location
@@ -83,11 +83,10 @@ class AmbientManager(private val plugin: Mistaken) {
         // 1. Heartbeat & Oscuridad
         // 24 bloques = 576.0
         if (distSq < 576.0) {
-            val currentTick = Bukkit.getCurrentTick() // Tick actual del servidor
+            val currentTick = Bukkit.getCurrentTick()
 
-            // Ritmo cardiaco basado en distancia
             val rate = when {
-                distSq < 49.0 -> 4   // Muy cerca (cada 4 ticks = 5 latidos/seg)
+                distSq < 49.0 -> 4   // Muy cerca
                 distSq < 144.0 -> 10 // Cerca
                 else -> 20           // Lejos
             }
@@ -108,15 +107,13 @@ class AmbientManager(private val plugin: Mistaken) {
         // 2. Paranoia y Sonidos (Probabilidad aleatoria)
         val dice = ThreadLocalRandom.current().nextFloat()
 
-        // ~1% de probabilidad por tick (10 ticks/seg = ~10% por segundo)
         if (dice < 0.005f) { // 0.5%
             val dist = Math.sqrt(distSq)
-            if (dist in 15.0..35.0) { // Solo si el asesino no está pegado
+            if (dist in 15.0..35.0) {
                 triggerParanoia(survivor)
             }
         }
 
-        // Sonidos ambientales raros
         if (dice > 0.998f) { // 0.2%
             playDistortedSound(survivor)
         }
@@ -126,12 +123,10 @@ class AmbientManager(private val plugin: Mistaken) {
         val dice = ThreadLocalRandom.current().nextFloat()
 
         if (dice < 0.4f) {
-            // Sombra periférica
             val shadowLoc = getPeripheryLocation(survivor)
             packetFactory.spawnShadowEntity(survivor, shadowLoc, 15) // 15 ticks
             survivor.playSound(survivor.location, Sound.ENTITY_ENDERMAN_STARE, 0.4f, 0.1f)
         } else {
-            // Piso falso
             packetFactory.sendFakeAir(survivor, survivor.location.subtract(0.0, 1.0, 0.0), 12)
             survivor.playSound(survivor.location, Sound.BLOCK_GLASS_BREAK, 0.3f, 0.5f)
         }
@@ -140,12 +135,10 @@ class AmbientManager(private val plugin: Mistaken) {
     private fun getPeripheryLocation(p: Player): Location {
         val loc = p.location
         val dir = loc.direction
-        // Vector perpendicular para obtener "el rabillo del ojo"
         val side = Vector(-dir.z, 0.0, dir.x).normalize()
 
         if (ThreadLocalRandom.current().nextBoolean()) side.multiply(-1.0)
 
-        // 7 bloques adelante, 4 a un lado
         return loc.add(dir.multiply(7.0)).add(side.multiply(4.0))
     }
 
@@ -157,7 +150,6 @@ class AmbientManager(private val plugin: Mistaken) {
             Sound.AMBIENT_CAVE
         )
         val random = ThreadLocalRandom.current()
-        // Sonido en una ubicación aleatoria cercana
         val loc = p.location.add(
             random.nextDouble(-5.0, 5.0),
             0.0,

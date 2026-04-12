@@ -2,7 +2,6 @@ package liric.mistaken.supervivientes.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
-import com.github.retrooper.packetevents.protocol.particle.data.ParticleDustData
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
@@ -11,7 +10,6 @@ import liric.mistaken.Mistaken
 import liric.mistaken.supervivientes.Superviviente
 import liric.mistaken.utils.CraftEngineUtils
 import org.bukkit.FluidCollisionMode
-import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
@@ -19,7 +17,6 @@ import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Player
 import org.bukkit.entity.Snowball
 import org.bukkit.inventory.ItemStack
-import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Transformation
@@ -139,7 +136,9 @@ class KasaneTeto : Superviviente(
         }
 
         val hitEntity = result?.hitEntity as? Player
-        if (hitEntity != null && plugin.gameManager.esAsesino(hitEntity.uniqueId)) {
+        if (hitEntity != null) {
+            val session = plugin.sessionManager.getSession(hitEntity)
+            if (session?.esAsesino(hitEntity.uniqueId) == true)
             player.world.spawnParticle(org.bukkit.Particle.EXPLOSION, hitEntity.eyeLocation, 1)
             player.world.playSound(hitEntity.location, Sound.ENTITY_IRON_GOLEM_HURT, 1.0f, 0.5f)
 
@@ -164,7 +163,8 @@ class KasaneTeto : Superviviente(
                 loc.world.spawnParticle(org.bukkit.Particle.CAMPFIRE_COSY_SMOKE, loc, 100, 3.0, 2.0, 3.0, 0.01)
 
                 loc.world.getNearbyPlayers(loc, 4.0).forEach { victim ->
-                    if (plugin.gameManager.esAsesino(victim.uniqueId)) {
+                    val session = plugin.sessionManager.getSession(victim)
+                    if (session?.esAsesino(victim.uniqueId) == true) {
                         victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
                         victim.playSound(victim.location, Sound.ENTITY_ENDERMAN_SCREAM, 0.5f, 0.1f)
                     }

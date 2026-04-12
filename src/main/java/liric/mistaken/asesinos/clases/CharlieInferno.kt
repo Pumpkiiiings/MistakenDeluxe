@@ -162,7 +162,7 @@ class CharlieInferno : Asesino(
         player.world.getNearbyPlayers(player.location, 7.5).forEach { target ->
             if (esObjetivoValido(player, target)) {
                 target.fireTicks = 100
-                plugin.gameManager.combatManager.takeDamage(target)
+                plugin.combatManager.takeDamage(target)
                 target.playSound(target.location, Sound.ITEM_FIRECHARGE_USE, 1f, 1f)
             }
         }
@@ -252,7 +252,7 @@ class CharlieInferno : Asesino(
                 locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
                     if (esObjetivoValido(player, victim)) {
                         victim.fireTicks = 100
-                        plugin.gameManager.combatManager.takeDamage(victim)
+                        plugin.combatManager.takeDamage(victim)
                     }
                 }
             }, (i * 2 + 1).toLong())

@@ -1,11 +1,13 @@
 package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
+import liric.mistaken.game.GameSession
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Axolotl
@@ -13,22 +15,25 @@ import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import java.time.Duration
 import java.util.*
 import java.util.function.Consumer
 
 /**
  * [LIRIC-MISTAKEN 2.0] - MODO TROLL
  * AXOLOTL.EXE: El Ajolote Colosal (Mob Real Escalado).
- * FIX: State Machine segura y limpia, 0 corrutinas.
+ * ADAPTADO: Multiarena/Velocity con aislamiento de sesión.
  */
 class Axolotl(private val plugin: Mistaken) {
 
     private var entity: Axolotl? = null
     private var isRunning = false
     private var currentTarget: Player? = null
-
     private var lastVictimUUID: UUID? = null
     private var consecutiveMisses = 0
+
+    // 🔥 Referencia a la sesión a la que pertenece esta entidad
+    private var assignedSession: GameSession? = null
 
     private val teamWhite = "AxoGlowWhite"
     private val teamRed = "AxoGlowRed"
@@ -38,11 +43,16 @@ class Axolotl(private val plugin: Mistaken) {
     private var pasos = 0
 
     fun spawn(startLoc: Location) {
+        // 🔥 Detectamos la sesión en la ubicación de spawn
+        assignedSession = plugin.sessionManager.activeSessions.values.find {
+            it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
+        }
+
         plugin.server.globalRegionScheduler.run(plugin) { _ ->
             try {
                 val sb = Bukkit.getScoreboardManager().mainScoreboard
-                sb.getTeam(teamWhite) ?: sb.registerNewTeam(teamWhite).apply { color(NamedTextColor.WHITE) }
-                sb.getTeam(teamRed) ?: sb.registerNewTeam(teamRed).apply { color(NamedTextColor.RED) }
+                if (sb.getTeam(teamWhite) == null) sb.registerNewTeam(teamWhite).apply { color(NamedTextColor.WHITE) }
+                if (sb.getTeam(teamRed) == null) sb.registerNewTeam(teamRed).apply { color(NamedTextColor.RED) }
 
                 entity = startLoc.world.spawnEntity(startLoc, EntityType.AXOLOTL) as Axolotl
                 entity?.apply {
@@ -55,7 +65,10 @@ class Axolotl(private val plugin: Mistaken) {
                     sb.getTeam(teamWhite)?.addEntry(uniqueId.toString())
                 }
 
-                Bukkit.broadcast(plugin.mm.deserialize("<newline><aqua><b>[!]</b> <white>Algo enorme ha salido del agua... <pink><b>AXOLOTL.EXE</b>"))
+                // 🔥 Broadcast solo para la sesión
+                val spawnMsg = plugin.mm.deserialize("<newline><aqua><b>[!]</b> <white>Algo enorme ha salido del agua... <pink><b>AXOLOTL.EXE</b>")
+                assignedSession?.getPlayers()?.forEach { it.sendMessage(spawnMsg) }
+
                 isRunning = true
                 iniciarIA()
             } catch (e: Exception) {
@@ -72,12 +85,18 @@ class Axolotl(private val plugin: Mistaken) {
             }
 
             val loc = entity!!.location
-            val target = currentTarget
+            val session = assignedSession
 
+            // BUSCAR PRESA (Filtrada por Sesión)
             if (fase == 0) {
-                val players = loc.world.getNearbyPlayers(loc, 100.0).filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
-                val pot = players.filter { it.uniqueId != lastVictimUUID }.minByOrNull { it.location.distanceSquared(loc) }
-                currentTarget = pot ?: players.minByOrNull { it.location.distanceSquared(loc) }
+                val potentialTargets = if (session != null) {
+                    session.getPlayers().filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
+                } else {
+                    loc.world.getNearbyPlayers(loc, 100.0).filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
+                }
+
+                val pot = potentialTargets.filter { it.uniqueId != lastVictimUUID }.minByOrNull { it.location.distanceSquared(loc) }
+                currentTarget = pot ?: potentialTargets.minByOrNull { it.location.distanceSquared(loc) }
 
                 if (currentTarget == null) return@Consumer
 
@@ -92,13 +111,15 @@ class Axolotl(private val plugin: Mistaken) {
                 return@Consumer
             }
 
-            if (target == null || !target.isOnline) {
+            val target = currentTarget
+            if (target == null || !target.isOnline || (session != null && plugin.sessionManager.getSession(target) != session)) {
                 fase = 0
+                currentTarget = null
                 return@Consumer
             }
 
             when (fase) {
-                1 -> { // 5 Saltos tétricos (Cada 16 ticks = 800ms)
+                1 -> { // 5 Saltos tétricos
                     if (ticks % 16 == 0) {
                         val dir = target.location.toVector().subtract(loc.toVector()).normalize()
                         val nextLoc = loc.add(dir.multiply(2.5))
@@ -125,7 +146,7 @@ class Axolotl(private val plugin: Mistaken) {
                         pasos = 0
                     }
                 }
-                3 -> { // Ataque misil (Cada 2 ticks)
+                3 -> { // Ataque misil
                     if (ticks % 2 == 0) {
                         val dir = target.location.add(0.0, 0.5, 0.0).toVector().subtract(loc.toVector()).normalize()
                         val next = loc.add(dir.multiply(4.0))
@@ -133,7 +154,12 @@ class Axolotl(private val plugin: Mistaken) {
                         target.playSound(next, Sound.BLOCK_ANVIL_LAND, 1.5f, 0.2f)
                         next.world.spawnParticle(org.bukkit.Particle.BUBBLE_POP, next, 20, 1.0, 1.0, 1.0, 0.1)
 
-                        val hit = next.world.getNearbyPlayers(next, 4.0).filter { !plugin.gameManager.esAsesino(it.uniqueId) }
+                        // Solo golpea si es de la sesión y no es el asesino
+                        val hit = next.world.getNearbyPlayers(next, 4.0).filter { p ->
+                            val pSession = plugin.sessionManager.getSession(p)
+                            pSession == session && pSession?.esAsesino(p.uniqueId) != true
+                        }
+
                         if (hit.isNotEmpty()) {
                             hit.forEach { ejecutarMuerte(it) }
                             consecutiveMisses = 0
@@ -162,7 +188,7 @@ class Axolotl(private val plugin: Mistaken) {
                         entity!!.teleport(next)
                         target.playSound(next, Sound.BLOCK_ANVIL_LAND, 0.8f, 1.2f)
 
-                        if (next.distanceSquared(target.location) < 3.5) {
+                        if (next.distanceSquared(target.location) < 12.25) { // 3.5 bloques reales
                             ejecutarMuerte(target, true)
                             consecutiveMisses = 0
                             setGlowColor(NamedTextColor.WHITE)
@@ -187,18 +213,22 @@ class Axolotl(private val plugin: Mistaken) {
         victim.world.spawnParticle(org.bukkit.Particle.SPLASH, victim.location, 50, 1.0, 1.0, 1.0, 0.2)
         victim.world.playSound(victim.location, Sound.ENTITY_FISH_SWIM, 2f, 0.1f)
 
+        // Daño procesado por manager global
         repeat(5) { plugin.combatManager.takeDamage(victim) }
 
         victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 80, 0, false, false, true))
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 4, false, false, true))
 
         val prefix = if (enrage) "<dark_red><b>[DEPREDADOR]</b>" else "<pink><b>[!]</b>"
-        Bukkit.broadcast(plugin.mm.deserialize("$prefix <white>${victim.name} fue devorado por <pink>AXOLOTL.EXE"))
+        val deathMsg = plugin.mm.deserialize("$prefix <white>${victim.name} fue devorado por <pink>AXOLOTL.EXE")
+
+        assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
     }
 
     private fun aplicarAuraMiedo(loc: Location, duration: Int) {
         loc.world.getNearbyPlayers(loc, 15.0).forEach { p ->
-            if (!plugin.gameManager.esAsesino(p.uniqueId)) {
+            val pSession = plugin.sessionManager.getSession(p)
+            if (pSession == assignedSession && pSession?.esAsesino(p.uniqueId) != true) {
                 p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, duration, 0, false, false, false))
                 p.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, duration, 2, false, false, false))
             }

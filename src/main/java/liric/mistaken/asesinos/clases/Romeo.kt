@@ -97,7 +97,8 @@ class Romeo : Asesino(
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
+        val session = plugin.sessionManager.getSession(attacker) ?: return
+        if (session.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
             // Verificamos que la víctima haya muerto (GameMode cambiado por CombatManager)
             if (victim.gameMode == GameMode.SPECTATOR) {
                 val now = System.currentTimeMillis()
@@ -199,14 +200,14 @@ class Romeo : Asesino(
 
             val checkLoc = player.location.clone().add(dir.clone().multiply(0.8))
             if (checkLoc.block.type.isSolid) {
-                plugin.gameManager.combatManager.takeDamage(player)
+                plugin.combatManager.takeDamage(player)
                 player.playSound(player.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
                 task.cancel()
                 return@Consumer
             }
 
             player.world.getNearbyPlayers(player.location, 2.0).firstOrNull { esObjetivoValido(player, it) }?.let { victim ->
-                plugin.gameManager.combatManager.takeDamage(victim)
+                plugin.combatManager.takeDamage(victim)
                 victim.velocity = player.location.direction.normalize().multiply(1.5).setY(0.4)
                 player.playSound(player.location, Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.2f, 0.8f)
                 duration = 0
@@ -256,7 +257,7 @@ class Romeo : Asesino(
                         locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
                         locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
                             if (esObjetivoValido(player, victim)) {
-                                plugin.gameManager.combatManager.takeDamage(victim)
+                                plugin.combatManager.takeDamage(victim)
                                 victim.velocity = Vector(0.0, 0.5, 0.0)
                                 victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
                             }
@@ -288,7 +289,7 @@ class Romeo : Asesino(
 
             if (hit != null || star.location.block.type.isSolid) {
                 star.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, star.location, 1)
-                hit?.let { plugin.gameManager.combatManager.takeDamage(it) }
+                hit?.let { plugin.combatManager.takeDamage(it) }
                 star.remove()
                 task.cancel()
             }

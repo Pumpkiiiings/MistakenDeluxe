@@ -130,7 +130,8 @@ class Slasher : Asesino(
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        if (plugin.gameManager.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
+        val session = plugin.sessionManager.getSession(attacker) ?: return
+        if (session.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
             if (esObjetivoValido(attacker, victim)) {
                 val uuid = attacker.uniqueId
                 val queue = attackSoundsQueue.getOrPut(uuid) { mutableListOf(1, 2, 3, 4).apply { shuffle() } }
@@ -190,7 +191,7 @@ class Slasher : Asesino(
 
             if (hit != null || machete.location.block.type.isSolid) {
                 hit?.let {
-                    plugin.gameManager.combatManager.takeDamage(it)
+                    plugin.combatManager.takeDamage(it)
                     it.playSound(it.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.8f)
                     hitbox?.block = Material.RED_STAINED_GLASS.createBlockData() // Feedback visual
                 }

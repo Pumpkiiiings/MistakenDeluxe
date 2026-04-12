@@ -125,7 +125,7 @@ class Mariachi : Asesino(
         player.world.getNearbyPlayers(player.location, 6.0).forEach { victim ->
             // 🔥 Uso de la función centralizada
             if (esObjetivoValido(player, victim)) {
-                plugin.gameManager.combatManager.takeDamage(victim)
+                plugin.combatManager.takeDamage(victim)
                 victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
                 victim.playSound(victim.location, Sound.BLOCK_ANVIL_LAND, 0.8f, 0.5f)
             }

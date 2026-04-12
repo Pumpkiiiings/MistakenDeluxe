@@ -12,11 +12,12 @@ import org.bukkit.event.Listener
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
 
 /**
- *[LIRIC-MISTAKEN 2.0]
- * StaminaListener: Sistema de resistencia en la Barra de Experiencia.
- * FIX: Reparado el bucle infinito de agotamiento para que la estamina sí se regenere.
+ * [LIRIC-MISTAKEN 2.0]
+ * StaminaListener: Sistema de resistencia adaptado a MULTIARENA.
+ * FIX: Recuperación sincronizada con el estado de cada sesión individual.
  */
 class StaminaListener(private val plugin: Mistaken) : Listener {
 
@@ -42,7 +43,6 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
         recoveryRate = config.getDouble("stamina.recovery-rate", 1.5)
 
         val slownessLevel = (config.getInt("stamina.exhaustion-slowness-level", 2).coerceAtLeast(1) - 1)
-        // La poción dura 80 ticks (4 segundos)
         exhaustionEffect = PotionEffect(PotionEffectType.SLOWNESS, 80, slownessLevel, false, false, true)
 
         val rawExhausted = plugin.messageConfig.getRawString(null, "stamina.exhausted", "<red><bold>¡AGOTADO!</bold></red>")
@@ -53,22 +53,23 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
         staminaTask = plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             if (!plugin.isReady) return@runAtFixedRate
 
-            if (plugin.gameManager.currentState != GameState.INGAME) {
-                plugin.server.globalRegionScheduler.execute(plugin, Runnable {
-                    plugin.server.onlinePlayers.forEach { p ->
-                        if (p.foodLevel < 20) p.foodLevel = 20
-                        if (p.level != 100 || p.exp != 1.0f) {
-                            p.level = 100
-                            p.exp = 1.0f
-                        }
-                    }
-                })
-                return@runAtFixedRate
-            }
-
-            val killers = plugin.gameManager.asesinosUUIDs
-
             for (player in plugin.server.onlinePlayers) {
+                // 🔥 MULTIARENA: Buscamos la sesión del jugador
+                val session = plugin.sessionManager.getSession(player)
+
+                // Si no tiene sesión o no están en juego, resetear barra de exp
+                if (session == null || session.currentState != GameState.INGAME) {
+                    player.scheduler.execute(plugin, {
+                        if (player.level != 100 || player.exp != 1.0f) {
+                            player.level = 100
+                            player.exp = 1.0f
+                            if (player.foodLevel < 20) player.foodLevel = 20
+                        }
+                    }, null, 0L)
+                    continue
+                }
+
+                // LÓGICA IN-GAME
                 if (player.gameMode != GameMode.SURVIVAL || plugin.isIgnored(player)) continue
 
                 val uuid = player.uniqueId
@@ -77,12 +78,13 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                 var currentStamina = user.stamina
                 val isSprinting = player.isSprinting
 
-                // --- Lógica matemática ---
+                // --- Cálculo de pérdida/recuperación ---
                 if (isSprinting && currentStamina > 0.0) {
-                    val loss = if (killers.contains(uuid)) lossKiller else lossSurvivor
+                    // 🔥 MULTIARENA: Verificamos si es asesino en SU sesión
+                    val loss = if (session.esAsesino(uuid)) lossKiller else lossSurvivor
                     currentStamina = (currentStamina - loss).coerceAtLeast(0.0)
                 } else {
-                    // Solo recupera si NO tiene lentitud
+                    // Solo recupera si NO tiene lentitud (castigo de agotamiento)
                     if (!player.hasPotionEffect(PotionEffectType.SLOWNESS)) {
                         currentStamina = (currentStamina + recoveryRate).coerceAtMost(100.0)
                     }
@@ -90,22 +92,17 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
 
                 user.stamina = currentStamina
 
-                // 🔥 EL FIX MAESTRO:
-                // Solo disparamos el agotamiento si la estamina es 0 Y el jugador AÚN NO tiene la poción.
-                // Si ya tiene la poción, no hacemos nada y dejamos que el tiempo de la poción corra.
                 val justExhausted = currentStamina <= 0.0 && !player.hasPotionEffect(PotionEffectType.SLOWNESS)
-
                 val newLevel = currentStamina.toInt()
                 val newExpProgress = (currentStamina / 100.0).toFloat().coerceIn(0.0f, 1.0f)
 
-                player.scheduler.execute(plugin, Runnable {
+                player.scheduler.execute(plugin, {
                     if (player.isOnline) {
                         if (player.foodLevel < 20) player.foodLevel = 20
 
                         if (player.level != newLevel) player.level = newLevel
                         player.exp = newExpProgress
 
-                        // Aplicar castigo solo 1 vez
                         if (justExhausted) {
                             aplicarAgotamiento(player)
                         }

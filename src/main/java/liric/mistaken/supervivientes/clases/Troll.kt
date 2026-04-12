@@ -232,7 +232,9 @@ class Troll : Superviviente(
                 return@Consumer
             }
 
-            val killer = platano.world.getNearbyPlayers(platano.location, 1.0).firstOrNull { plugin.gameManager.esAsesino(it.uniqueId) }
+            val killer = platano.world.getNearbyPlayers(platano.location, 1.0).firstOrNull {
+                plugin.sessionManager.getSession(it)?.esAsesino(it.uniqueId) == true
+            }
             if (killer != null) {
                 // ¡Se resbaló!
                 killer.playSound(killer.location, Sound.ENTITY_SLIME_SQUISH, 1f, 0.5f)
@@ -270,7 +272,9 @@ class Troll : Superviviente(
                 return@Consumer
             }
 
-            val killer = caja.world.getNearbyPlayers(caja.location, 2.0).firstOrNull { plugin.gameManager.esAsesino(it.uniqueId) }
+            val killer = caja.world.getNearbyPlayers(caja.location, 2.0).firstOrNull {
+                plugin.sessionManager.getSession(it)?.esAsesino(it.uniqueId) == true
+            }
             if (killer != null) {
                 // ¡Sorpresa!
                 caja.world.playSound(caja.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f)

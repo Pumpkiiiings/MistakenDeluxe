@@ -176,11 +176,13 @@ class CinematicManager(private val plugin: Mistaken) {
 
             val camLoc = center.clone()
 
+            // 🔥 FIX SET DIRECTION
             when (id) {
                 "slasher" -> {
                     val dist = 3.0
                     camLoc.add(0.0, 0.2, dist)
                     camLoc.setDirection(center.clone().add(0.0, 1.8, 0.0).toVector().subtract(camLoc.toVector()))
+                    // 🔥 FIX SET ROTATION
                     if (!isIntro) dummy.setRotation((ticks * 0.5f) % 360, dummy.location.pitch)
                 }
                 "charlie" -> {
@@ -444,6 +446,8 @@ class CinematicManager(private val plugin: Mistaken) {
                 } else {
                     world.playSound(loc, Sound.BLOCK_GLASS_BREAK, 1f, 0.1f)
                     spawnGlitchBlock(loc, Material.BLACK_CONCRETE)
+
+                    // 🔥 FIX: runDelayed con el 3er parámetro Long
                     plugin.server.globalRegionScheduler.runDelayed(plugin, Consumer { _ ->
                         world.playSound(loc, Sound.BLOCK_BEACON_DEACTIVATE, 2f, 0.5f)
                     }, 100L)
@@ -634,6 +638,7 @@ class CinematicManager(private val plugin: Mistaken) {
             if (!display.isValid) { task.cancel(); return@Consumer }
             angle += speed
             val offsetLoc = center.clone().add(radius * cos(angle), 2.0 + yOffset + sin(angle * 2) * 0.5, radius * sin(angle))
+            // 🔥 FIX SET DIRECTION
             offsetLoc.setDirection(center.clone().add(0.0, 2.0, 0.0).toVector().subtract(offsetLoc.toVector()))
             display.teleport(offsetLoc)
         }, 1L, 1L)

@@ -1,11 +1,11 @@
 package liric.mistaken.game.logic
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
-import liric.mistaken.game.GameManager
+import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 
-class GameLoopTask(private val game: GameManager) {
+class GameLoopTask(private val game: GameSession) {
     private var gameTask: ScheduledTask? = null
     private var tickCounter = 0
 
@@ -16,7 +16,7 @@ class GameLoopTask(private val game: GameManager) {
         gameTask = game.plugin.server.globalRegionScheduler.runAtFixedRate(game.plugin, { _ ->
             if (!game.plugin.isReady) return@runAtFixedRate
 
-            val onlinePlayers = game.plugin.server.onlinePlayers
+            val onlinePlayers = game.getPlayers()
             tickCounter++
             val isSecondTick = tickCounter % 20 == 0
 

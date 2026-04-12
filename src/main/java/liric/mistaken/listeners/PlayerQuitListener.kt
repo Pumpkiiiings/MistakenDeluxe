@@ -8,9 +8,9 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerQuitEvent
 
 /**
- *[LIRIC-MISTAKEN 2.0]
- * PlayerQuitListener: Limpieza profunda y persistencia.
- * FIX: Llamadas actualizadas a la nueva lógica modular de GameManager.
+ * [LIRIC-MISTAKEN 2.0]
+ * PlayerQuitListener: Limpieza profunda adaptada a MULTIARENA.
+ * FIX: Ahora detecta la sesión específica del jugador para procesar su salida.
  */
 class PlayerQuitListener(private val plugin: Mistaken) : Listener {
 
@@ -19,46 +19,49 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val uuid = player.uniqueId
 
-        // 1. LÓGICA DE JUEGO (Hilo Principal)
-        if (plugin.gameManager.currentState == GameState.INGAME) {
+        // 1. BUSCAR LA SESIÓN DEL JUGADOR
+        val session = plugin.sessionManager.getSession(player)
 
-            // Si el jugador es un asesino, realizamos limpieza física
-            if (plugin.gameManager.esAsesino(uuid)) {
+        // 2. LÓGICA DE JUEGO (Si estaba en una partida)
+        if (session != null) {
+            if (session.currentState == GameState.INGAME) {
 
-                // Limpiar partículas y efectos visuales del asesino
-                plugin.asesinoManager.removerAsesino(player)
+                // Si el jugador es un asesino en SU sesión
+                if (session.esAsesino(uuid)) {
+                    // Limpiar visuales
+                    plugin.asesinoManager.removerAsesino(player)
+                    // Quitar de la lista de la sesión
+                    session.asesinosUUIDs.remove(uuid)
 
-                // Lo sacamos de la lista activa de la partida
-                plugin.gameManager.asesinosUUIDs.remove(uuid)
-
-                // Si era el último asesino, la partida termina y ganan los supervivientes
-                if (plugin.gameManager.asesinosUUIDs.isEmpty()) {
-                    plugin.gameManager.stateController.endGame("game.killer-disconnected", false)
+                    // Si ya no quedan asesinos en esa partida, termina
+                    if (session.asesinosUUIDs.isEmpty()) {
+                        session.stateController.endGame("game.killer-disconnected", false)
+                    }
+                } else {
+                    // Si era superviviente, procesamos su "muerte" por desconexión en esa partida
+                    session.playerController.handlePlayerDeath(player)
                 }
-            } else {
-                // Si era superviviente, lo forzamos a morir/desconectarse para checar victoria
-                plugin.gameManager.playerController.handlePlayerDeath(player)
             }
+
+            // Limpieza interna de la sesión
+            session.asesinosUUIDs.remove(uuid)
+            if (session.currentAsesinoUUID == uuid) {
+                session.currentAsesinoUUID = null
+            }
+
+            // 🔥 IMPORTANTE: Notificar al SessionManager que el jugador abandonó la instancia
+            plugin.sessionManager.leaveSession(player)
         }
 
-        // 2. LIMPIEZA DE MEMORIA (Hilo Principal)
-        // Quitamos al jugador de todos los mapas y sets para evitar Memory Leaks
-        plugin.gameManager.asesinosUUIDs.remove(uuid)
-
-        // Si justo era el asesino trakeado, lo limpiamos
-        if (plugin.gameManager.currentAsesinoUUID == uuid) {
-            plugin.gameManager.currentAsesinoUUID = null
-        }
-
+        // 3. LIMPIEZA GLOBAL DE MEMORIA
         plugin.combatManager.removePlayerData(uuid)
         plugin.scoreboardManager.removePlayer(player)
-        plugin.ambientManager.stopAmbience(player) // Importante detener sonidos
-
-        // 3. PERSISTENCIA DE DATOS (Delegada a Managers)
+        plugin.ambientManager.stopAmbience(player)
         plugin.statsManager.unloadPlayer(uuid)
 
-        // Limpieza de LuckPerms (Asíncrona)
+        // 4. PERSISTENCIA DE DATOS (LuckPerms y Archivos)
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
+            // Limpiar Prefijos de LuckPerms
             try {
                 if (plugin.server.pluginManager.isPluginEnabled("LuckPerms")) {
                     val lp = net.luckperms.api.LuckPermsProvider.get()
@@ -66,13 +69,11 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
                         user.data().clear { node -> node is net.luckperms.api.node.types.PrefixNode }
                     }
                 }
-            } catch (e: Exception) {
-                // Ignorar errores de LP si falla la conexión
-            }
-        }
+            } catch (ignored: Exception) {}
 
-        // Guardar datos del perfil (Estamina, lenguaje, etc)
-        plugin.playerDataManager.saveConfigSync()
-        plugin.playerDataManager.removeData(uuid)
+            // Guardar y descargar datos
+            plugin.playerDataManager.saveConfigSync()
+            plugin.playerDataManager.removeData(uuid)
+        }
     }
 }

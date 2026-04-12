@@ -4,7 +4,6 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
 import liric.mistaken.supervivientes.Superviviente
 import liric.mistaken.utils.CraftEngineUtils
-import org.bukkit.Color
 import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.Sound
@@ -159,7 +158,7 @@ class Notch : Superviviente(
 
         // Lógica de empuje
         player.getNearbyEntities(6.0, 6.0, 6.0).forEach { entity ->
-            if (entity is Player && plugin.gameManager.esAsesino(entity.uniqueId)) {
+            if (entity is Player && plugin.sessionManager.getSession(entity)?.esAsesino(entity.uniqueId) == true) {
                 // Vector de rechazo fuerte
                 val push = entity.location.toVector().subtract(player.location.toVector()).normalize().multiply(2.5).setY(0.4)
                 entity.velocity = push

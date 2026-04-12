@@ -1,6 +1,6 @@
 package liric.mistaken.game.logic
 
-import liric.mistaken.game.GameManager
+import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
@@ -14,7 +14,7 @@ import java.time.Duration
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-class GameUIController(private val game: GameManager) {
+class GameUIController(private val game: GameSession) {
 
     private val personalBars = ConcurrentHashMap<UUID, BossBar>()
     private val lastProcessedText = ConcurrentHashMap<UUID, String>()

@@ -10,91 +10,76 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * AntiBlockListener: Protección perimetral y de combate.
- * FIX: Optimización O(1) en chequeo de mundos y lógica PvP corregida.
+ * AntiBlockListener: Protección perimetral y de combate adaptada a MULTIARENA.
+ * FIX: Las reglas de daño ahora se aplican por sesión individual.
  */
 class AntiBlockListener(private val plugin: Mistaken) : Listener {
 
-    // Cache de mundos ACTIVOS (Nombres exactos de mundos cargados)
-    // Usamos ConcurrentSet para thread-safety en lecturas masivas
     private val activeGameWorlds = ConcurrentHashMap.newKeySet<String>()
 
     init {
-        // Tarea periódica para limpiar mundos descargados (Garbage Collection de nombres)
+        // Tarea periódica para limpiar la caché de mundos
         plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             updateWorldCache()
-        }, 20L * 60, 20L * 60, java.util.concurrent.TimeUnit.SECONDS) // Cada 1 min
+        }, 1, 1, TimeUnit.MINUTES)
     }
 
-    /**
-     * Sincroniza los mundos cargados con el caché.
-     * Llamado automáticamente al iniciar partida y periódicamente.
-     */
     fun updateWorldCache() {
-        // Añadimos el mundo del lobby si existe
+        // 1. Proteger el mundo del lobby
         plugin.lobbyLocation?.world?.name?.let { activeGameWorlds.add(it) }
 
-        // Añadimos los mundos de las arenas activas (Si usas ASP, el mundo se llama "template_timestamp")
-        // Aquí asumimos que MapManager tiene una forma de saber qué mundos están vivos.
-        // Si no, simplemente añadimos todos los mundos cargados que empiecen con nombres de arenas.
-
+        // 2. Proteger mundos de sesiones activas
         val loadedWorlds = plugin.server.worlds.map { it.name }
         val arenaTemplates = plugin.arenaManager.getArenas().keys
 
         for (worldName in loadedWorlds) {
-            // Si el mundo cargado coincide con una plantilla de arena (ej: "arena1_123456")
+            // Si el mundo es una arena dinámica (ASP), lo protegemos
             if (arenaTemplates.any { worldName.startsWith(it) }) {
                 activeGameWorlds.add(worldName)
             }
         }
     }
 
-    // Helper para añadir un mundo manualmente al cargar la partida
-    fun registerGameWorld(worldName: String) {
-        activeGameWorlds.add(worldName)
-    }
+    fun registerGameWorld(worldName: String) { activeGameWorlds.add(worldName) }
+    fun unregisterGameWorld(worldName: String) { activeGameWorlds.remove(worldName) }
 
-    fun unregisterGameWorld(worldName: String) {
-        activeGameWorlds.remove(worldName)
-    }
-
-    /**
-     * Verifica si un mundo está protegido.
-     * Búsqueda O(1) instantánea en el Hash Set.
-     */
-    private fun isProtectedWorld(world: World): Boolean {
-        return activeGameWorlds.contains(world.name)
-    }
+    private fun isProtectedWorld(world: World): Boolean = activeGameWorlds.contains(world.name)
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onCombatBypass(event: EntityDamageByEntityEvent) {
         val victim = event.entity as? Player ?: return
 
-        // Si no estamos en un mundo protegido, dejamos que Vanilla decida
+        // Si el mundo no es de Mistaken, no intervenimos
         if (!isProtectedWorld(victim.world)) return
 
         val damager = event.damager as? Player ?: return
 
-        // Lógica PvP de Mistaken:
-        // Solo Asesino puede dañar.
-        // Solo Superviviente puede ser dañado (por el asesino).
-        // Asesino vs Asesino = Cancelado.
-        // Superviviente vs Superviviente = Cancelado.
+        // 🔥 MULTIARENA: Buscamos la sesión de los involucrados
+        val session = plugin.sessionManager.getSession(victim) ?: return
 
-        val damagerIsKiller = plugin.gameManager.esAsesino(damager.uniqueId)
-        val victimIsKiller = plugin.gameManager.esAsesino(victim.uniqueId)
+        // Seguridad: Si están en el mismo mundo pero en sesiones distintas (error raro de TP)
+        // o si uno está en el lobby y el otro no, cancelamos daño.
+        if (plugin.sessionManager.getSession(damager) != session) {
+            event.isCancelled = true
+            return
+        }
+
+        // Aplicamos reglas de equipo basadas en SU sesión
+        val damagerIsKiller = session.esAsesino(damager.uniqueId)
+        val victimIsKiller = session.esAsesino(victim.uniqueId)
 
         if (damagerIsKiller && !victimIsKiller) {
             // Asesino pegando a Humano -> PERMITIDO
             event.isCancelled = false
         } else if (!damagerIsKiller && victimIsKiller) {
-            // Humano pegando a Asesino -> PERMITIDO (Empuje, Stun, etc)
+            // Humano pegando a Asesino -> PERMITIDO (Empuje/Stun)
             event.isCancelled = false
         } else {
-            // Humano vs Humano o Asesino vs Asesino -> DENEGADO
+            // Fuego amigo (Humano vs Humano o Asesino vs Asesino) -> DENEGADO
             event.isCancelled = true
         }
     }

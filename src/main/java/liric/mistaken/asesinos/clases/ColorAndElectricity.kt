@@ -11,7 +11,6 @@ import liric.mistaken.Mistaken
 import liric.mistaken.asesinos.Asesino
 import liric.mistaken.utils.CraftEngineUtils
 import liric.mistaken.utils.HitboxVisualizer
-import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -149,7 +148,7 @@ class ColorAndElectricity : Asesino(
 
             player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
                 if (esObjetivoValido(player, victim) && hitted.add(victim.uniqueId)) {
-                    plugin.gameManager.combatManager.takeDamage(victim)
+                    plugin.combatManager.takeDamage(victim)
                     victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
                     victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 1.5f)
                     hitbox?.block = Material.RED_STAINED_GLASS.createBlockData() // Feedback visual de hit
@@ -191,7 +190,7 @@ class ColorAndElectricity : Asesino(
 
             player.getNearbyEntities(6.0, 6.0, 6.0).filterIsInstance<Player>().forEach { victim ->
                 if (esObjetivoValido(player, victim)) {
-                    plugin.gameManager.combatManager.takeDamage(victim)
+                    plugin.combatManager.takeDamage(victim)
                     victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(0.8).setY(0.3)
                 }
             }
