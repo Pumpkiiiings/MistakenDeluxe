@@ -10,11 +10,11 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
-import java.util.function.Consumer
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * PlayerListener: Gestión de ciclo de vida adaptada a Sesiones (Multiarena/Velocity).
+ * PlayerListener: Gestión de ciclo de vida adaptada a Sesiones (Multiarena / Pre-Lobbys).
+ * FIX: Chat silencioso para inmersión total en Network/Multiarena.
  */
 class PlayerListener(private val plugin: Mistaken) : Listener {
 
@@ -22,6 +22,9 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
     fun onPlayerJoin(event: PlayerJoinEvent) {
         val player = event.player
         val uuid = player.uniqueId
+
+        // 🔥 Ocultamos el mensaje por defecto de Minecraft para no romper la inmersión del lobby aislado
+        event.joinMessage(null)
 
         // 1. SINCRONIZACIÓN INICIAL
         plugin.musicManager.syncPlayer(player)
@@ -38,71 +41,65 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
             }
         }
 
-        // 3. DETERMINAR ENTRADA SEGÚN EL MODO DE RED
-        val serverMode = plugin.serverMode // "MULTIARENA" o "VELOCITY"
+        // 3. LÓGICA DE RED (Network Lobby vs Game Server vs Multiarena)
+        val serverMode = plugin.serverMode
 
-        if (serverMode == "VELOCITY") {
-            // 🔥 MODO NETWORK: El jugador entra directo a la sesión
-            val session = plugin.sessionManager.activeSessions.values.firstOrNull()
-                ?: plugin.sessionManager.createSession("Cargando...")
-
-            plugin.sessionManager.joinSession(player, session.sessionId)
-            handleGameEntry(player, session)
-
-        } else {
-            // 🔥 MODO MULTIARENA: El jugador entra al LOBBY primero
+        if (serverMode == "NETWORK_LOBBY") {
+            // 🔥 LOBBY PRINCIPAL: Nadie juega, solo compran en la tienda.
             resetPlayerStatus(player)
-
-            // Lo hacemos invisible para los que están jugando en arenas
-            plugin.isolationManager.updateVisibility(player)
-
-            plugin.lobbyLocation?.let { loc ->
-                player.teleportAsync(loc).thenAccept { success ->
-                    if (success) {
-                        val welcome = plugin.messageConfig.getMessage(player, "lobby.welcome")
-                        if (!welcome.toString().isEmpty()) player.sendMessage(welcome)
-                    }
-                }
-            }
+            plugin.lobbyLocation?.let { player.teleportAsync(it) }
+            return
         }
-    }
 
-    /**
-     * Lógica para cuando un jugador entra a una sesión específica (sea en Velocity o Multiarena).
-     */
-    private fun handleGameEntry(player: Player, session: liric.mistaken.game.GameSession) {
-        val uuid = player.uniqueId
-        val state = session.currentState
+        if (serverMode == "GAME_SERVER") {
+            // 🔥 PRE-LOBBY DE CRISTAL: Buscamos una sesión esperando o creamos una nueva
+            val maxPlayers = plugin.config.getInt("settings.max-players-per-arena", 10)
 
-        if (state != GameState.LOBBY && state != GameState.VOTING && state != GameState.BREAK) {
-            // La partida ya empezó o está terminando
-            if (!session.esAsesino(uuid)) {
-                // Es un espectador nuevo
-                player.gameMode = GameMode.SPECTATOR
-                player.sendMessage(plugin.messageConfig.getMessage(player, "game.join-as-spectator"))
-
-                val killer = session.getCurrentAsesino()
-                if (killer != null) {
-                    player.teleportAsync(killer.location)
-                }
-            } else {
-                // El asesino se reconectó
-                player.sendMessage(plugin.messageConfig.getMessage(player, "killer.rejoin-msg"))
-                plugin.asesinoManager.getAsesinoDelJugador(player)?.equipar(player)
+            var targetSession = plugin.sessionManager.activeSessions.values.firstOrNull {
+                (it.currentState == GameState.LOBBY || it.currentState == GameState.VOTING || it.currentState == GameState.BREAK) && it.getPlayers().size < maxPlayers
             }
-        } else {
-            // Aún están en Lobby/Votación de la arena
-            resetPlayerStatus(player)
 
-            // Teleport al spawn de la arena si existe, si no al centro
-            val spawn = session.plugin.arenaManager.getArena(session.currentMapName)?.survivorSpawns?.firstOrNull()
-            if (spawn != null) player.teleportAsync(spawn)
+            if (targetSession == null) {
+                targetSession = plugin.sessionManager.createSession("Votando...")
+            }
+
+            plugin.sessionManager.joinSession(player, targetSession.sessionId)
+
+            // Los mandamos físicamente al Pre-Lobby de cristal (lobbyLocation)
+            plugin.lobbyLocation?.let { preLobby ->
+                player.teleportAsync(preLobby).thenAccept {
+                    // 🔥 LA MAGIA: Oculta a los de otras sesiones que estén en la misma caja de cristal
+                    plugin.isolationManager.updateVisibility(player)
+                }
+            }
+
+            // Checamos si la sesión ya puede empezar el contador (Ej: Llegaron a 4 jugadores)
+            val minPlayers = plugin.config.getInt("settings.min-players", 4)
+            if (targetSession.getPlayers().size >= minPlayers && targetSession.currentState == GameState.LOBBY) {
+                targetSession.stateController.startBreakProcess()
+            }
+            return
+        }
+
+        // MULTIARENA (Todos entran al lobby general hasta que entren por comandos a una sesión)
+        resetPlayerStatus(player)
+        plugin.isolationManager.updateVisibility(player)
+
+        plugin.lobbyLocation?.let { loc ->
+            player.teleportAsync(loc).thenAccept { success ->
+                if (success) {
+                    val welcome = plugin.messageConfig.getMessage(player, "lobby.welcome")
+                    if (welcome.toString().isNotEmpty()) player.sendMessage(welcome)
+                }
+            }
         }
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     fun onPlayerQuit(event: PlayerQuitEvent) {
-        // Limpiamos su rastro de las sesiones
+        // 🔥 Ocultamos el mensaje por defecto de Minecraft al salir
+        event.quitMessage(null)
+
         plugin.sessionManager.leaveSession(event.player)
         plugin.scoreboardManager.removePlayer(event.player)
     }

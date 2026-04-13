@@ -7,9 +7,6 @@ import java.io.DataOutputStream
 
 object BungeeUtils {
 
-    // Registra el canal en el onEnable() de tu Mistaken.kt:
-    // server.messenger.registerOutgoingPluginChannel(this, "BungeeCord")
-
     fun sendToServer(plugin: Mistaken, player: Player, serverName: String) {
         try {
             val b = ByteArrayOutputStream()
@@ -20,7 +17,7 @@ object BungeeUtils {
 
             player.sendPluginMessage(plugin, "BungeeCord", b.toByteArray())
         } catch (e: Exception) {
-            plugin.componentLogger.error(plugin.mm.deserialize("<red>Error al enviar al jugador al proxy: ${e.message}"))
+            plugin.componentLogger.error(plugin.mm.deserialize("<red>Error al enviar a ${player.name} al proxy: ${e.message}</red>"))
         }
     }
 }

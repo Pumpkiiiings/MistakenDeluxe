@@ -11,9 +11,9 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * ScoreboardManager: Motor Multiarena / Velocity.
- * FIX: Soporta múltiples partidas simultáneas y renderizado dinámico según la sesión del jugador.
+ * FIX: Soporta múltiples partidas simultáneas y renderizado dinámico con %id%.
  */
 class ScoreboardManager(private val plugin: Mistaken) {
 
@@ -41,7 +41,6 @@ class ScoreboardManager(private val plugin: Mistaken) {
         if (!player.isOnline || !plugin.isReady) return
 
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
-            // 🔥 Buscamos la sesión del jugador específico
             val gm = plugin.sessionManager.getSession(player)
             processAndRender(player, board, gm)
         }
@@ -51,7 +50,6 @@ class ScoreboardManager(private val plugin: Mistaken) {
         boards.forEach { (uuid, board) ->
             val player = plugin.server.getPlayer(uuid)
             if (player != null && player.isOnline) {
-                // 🔥 Cada jugador pide su propia sesión
                 val gm = plugin.sessionManager.getSession(player)
                 processAndRender(player, board, gm)
             } else {
@@ -61,24 +59,19 @@ class ScoreboardManager(private val plugin: Mistaken) {
         }
     }
 
-    /**
-     * Prepara los datos según si el jugador está en una partida o en el lobby.
-     */
     private fun processAndRender(player: Player, board: FastBoard, gm: GameSession?) {
         val onlineCount = plugin.server.onlinePlayers.size.toString()
 
-        // 1. SI NO TIENE SESIÓN (Está en el Lobby)
         if (gm == null) {
             val path = "scoreboard.lobby"
             renderBoard(player, board, null, path, onlineCount, "00:00", "Lobby", "0", "0", emptyList())
             return
         }
 
-        // 2. SI TIENE SESIÓN (Está en partida o votando)
         val timeStr = formatTime(gm.timer)
         val mapName = gm.currentMapName
-        val completed = plugin.generatorManager.getCompletedCount().toString()
-        val total = plugin.generatorManager.getTotalGenerators().toString()
+        val completed = plugin.generatorManager.getCompletedCountInWorld(player.world).toString()
+        val total = plugin.generatorManager.getTotalGeneratorsInWorld(player.world).toString()
 
         val stateKey = if (gm.currentState == GameState.INGAME)
             "ingame_${gm.currentMode.name.lowercase()}"
@@ -110,13 +103,15 @@ class ScoreboardManager(private val plugin: Mistaken) {
         val processedLines = mutableListOf<String>()
         val lives = plugin.combatManager.getHealth(player).toString()
 
+        // 🔥 FIX: Aquí declaramos la variable para el ID de la partida (Si es null, es LOBBY)
+        val sessionID = gm?.sessionId ?: "LOBBY"
+
         for (line in rawLines) {
             if (line.contains("%killers%")) {
                 processedLines.addAll(killerLines)
                 continue
             }
 
-            // Reemplazo de variables
             var formatted = line
                 .replace("%player%", player.name)
                 .replace("%timer%", timeStr)
@@ -125,6 +120,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 .replace("%completed%", completed)
                 .replace("%total%", total)
                 .replace("%lives%", lives)
+                .replace("%id%", sessionID) // Reemplazo insertado
                 .replace("{", "<").replace("}", ">")
 
             processedLines.add(legacy.serialize(mm.deserialize(formatted)))

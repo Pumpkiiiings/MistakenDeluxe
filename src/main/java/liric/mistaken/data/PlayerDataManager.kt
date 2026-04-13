@@ -1,155 +1,141 @@
 package liric.mistaken.data
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import liric.mistaken.Mistaken
 import org.bukkit.Bukkit
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
-import java.io.File
-import java.io.IOException
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * [LIRIC-MISTAKEN 2.0]
- * PlayerDataManager: Gestión de perfiles con persistencia asíncrona.
- * Optimizado para minimizar el impacto en el Main Thread.
+ *[LIRIC-MISTAKEN 2.0]
+ * PlayerDataManager: Gestión de perfiles con persistencia en MySQL (Network Ready).
+ * Cero Disk I/O local, optimizado con AsyncScheduler de Paper.
  */
 class PlayerDataManager(private val plugin: Mistaken) {
 
-    private val mm = plugin.mm
-    private val userData = ConcurrentHashMap<UUID, MistakenUser>()
+    // Caché en RAM para acceso instantáneo (Cero Lag en juego)
+    private val userDataCache = ConcurrentHashMap<UUID, MistakenUser>()
 
-    private lateinit var file: File
-    private lateinit var config: YamlConfiguration
-
-    // Mutex para evitar corrupción de archivos en guardados concurrentes
-    private val saveMutex = Mutex()
-    private val managerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    init {
-        setupFile()
-    }
-
-    /**
-     * Modelo de datos del jugador.
-     */
     data class MistakenUser(
-        var stamina: Double = 100.0,
+        var language: String = "es",
+        val unlockedKillers: MutableSet<String> = mutableSetOf("slasher"),
         var selectedKiller: String = "slasher",
+        val unlockedSurvivors: MutableSet<String> = mutableSetOf("civil"),
         var selectedSurvivor: String = "civil",
-        var language: String = "en",
-        val unlockedKillers: MutableList<String> = mutableListOf("slasher"),
-        val unlockedSurvivors: MutableList<String> = mutableListOf("civil"),
-        var nickname: String? = null,
-        var skinName: String? = null
+        var nickname: String = "",
+        var skinName: String = "",
+        var stamina: Double = 100.0 // Estamina temporal, no va a la DB
     )
 
-    private fun setupFile() {
-        if (!plugin.dataFolder.exists()) plugin.dataFolder.mkdir()
-        file = File(plugin.dataFolder, "players.yml")
-        if (!file.exists()) {
-            try {
-                file.createNewFile()
-            } catch (e: IOException) {
-                plugin.logger.severe("No se pudo crear players.yml")
-            }
-        }
-        config = YamlConfiguration.loadConfiguration(file)
-    }
-
     /**
-     * Carga los datos desde el YAML a la memoria RAM.
+     * Carga los datos desde MySQL a la memoria RAM.
+     * DEBE llamarse desde un hilo asíncrono (Como en PlayerListener).
      */
     fun loadPlayerData(player: Player) {
         val uuid = player.uniqueId
         val user = MistakenUser()
 
-        val path = uuid.toString()
+        // Leemos desde MySQL a través del DatabaseManager
+        val data = plugin.databaseManager.loadPlayerData(uuid.toString())
 
-        // Cargar Asesinos
-        config.getStringList("$path.comprados").forEach { k ->
-            if (k.lowercase() !in user.unlockedKillers) user.unlockedKillers.add(k.lowercase())
+        if (data != null) {
+            user.language = data["lang"] ?: "es"
+            user.selectedKiller = data["killer_selected"] ?: "slasher"
+            user.selectedSurvivor = data["survivor_selected"] ?: "civil"
+            user.nickname = data["nick"] ?: ""
+            user.skinName = data["skin_source"] ?: ""
+
+            // Rellenar colecciones (separadas por comas en la DB)
+            data["killers_owned"]?.split(",")?.filter { it.isNotBlank() }?.forEach { user.unlockedKillers.add(it.lowercase()) }
+            data["survivors_owned"]?.split(",")?.filter { it.isNotBlank() }?.forEach { user.unlockedSurvivors.add(it.lowercase()) }
+
+            // Garantizar que siempre tengan los básicos
+            user.unlockedKillers.add("slasher")
+            user.unlockedSurvivors.add("civil")
+
+        } else {
+            // Si es nuevo, lo registramos en la DB
+            saveDataAsync(uuid, user)
         }
-        user.selectedKiller = config.getString("$path.seleccionado", "slasher") ?: "slasher"
 
-        // Cargar Supervivientes
-        config.getStringList("$path.supervivientes_comprados").forEach { s ->
-            if (s.lowercase() !in user.unlockedSurvivors) user.unlockedSurvivors.add(s.lowercase())
-        }
-        user.selectedSurvivor = config.getString("$path.superviviente_seleccionado", "civil") ?: "civil"
-
-        // Lenguaje y Nick
-        user.language = config.getString("$path.lang", player.locale().language) ?: "en"
-        user.nickname = config.getString("$path.nick")
-        user.skinName = config.getString("$path.skin_source")
-
-        userData[uuid] = user
-
-        // Actualizar stats (Si el manager de stats ya está en Kotlin)
+        userDataCache[uuid] = user
         plugin.playerStatsManager.updateSelectedKiller(uuid, player.name, user.selectedKiller)
     }
 
-    // --- LÓGICA DE TIENDA ---
+    /**
+     * Guarda el estado actual del jugador en MySQL asíncronamente.
+     */
+    private fun saveDataAsync(uuid: UUID, user: MistakenUser? = null) {
+        val u = user ?: userDataCache[uuid] ?: return
 
-    fun tieneAsesino(uuid: UUID, killerId: String): Boolean {
-        val user = userData[uuid] ?: return false
-        return killerId.equals("slasher", true) || user.unlockedKillers.contains(killerId.lowercase())
+        plugin.server.asyncScheduler.runNow(plugin) { _ ->
+            plugin.databaseManager.savePlayerDataRaw(
+                uuid.toString(),
+                u.language,
+                u.unlockedKillers.joinToString(","),
+                u.selectedKiller,
+                u.unlockedSurvivors.joinToString(","),
+                u.selectedSurvivor,
+                u.nickname,
+                u.skinName
+            )
+        }
     }
 
-    fun tieneSuperviviente(uuid: UUID, survivorId: String): Boolean {
-        val user = userData[uuid] ?: return false
-        return survivorId.equals("civil", true) || user.unlockedSurvivors.contains(survivorId.lowercase())
+    // Guardado forzoso al apagar el server
+    fun saveConfigSync() {
+        userDataCache.forEach { (uuid, user) ->
+            plugin.databaseManager.savePlayerDataRaw(
+                uuid.toString(), user.language, user.unlockedKillers.joinToString(","), user.selectedKiller,
+                user.unlockedSurvivors.joinToString(","), user.selectedSurvivor, user.nickname, user.skinName
+            )
+        }
     }
 
-    // --- ACCIONES ---
+    fun removeData(uuid: UUID) {
+        saveDataAsync(uuid)
+        userDataCache.remove(uuid)
+    }
+
+    // --- ACCIONES DE ESTADO ---
 
     fun consumeStamina(uuid: UUID, amount: Double) {
-        userData[uuid]?.let { user ->
+        userDataCache[uuid]?.let { user ->
             user.stamina = (user.stamina - amount).coerceIn(0.0, 100.0)
         }
     }
 
     fun setLanguage(uuid: UUID, lang: String) {
-        userData[uuid]?.let { user ->
-            val l = lang.lowercase()
-            user.language = l
-            config.set("$uuid.lang", l)
-            saveConfigAsync()
+        userDataCache[uuid]?.let { user ->
+            user.language = lang.lowercase()
+            saveDataAsync(uuid)
         }
+    }
+
+    // --- ASESINOS ---
+
+    fun tieneAsesino(uuid: UUID, killerId: String): Boolean {
+        val user = userDataCache[uuid] ?: return false
+        return killerId.equals("slasher", true) || user.unlockedKillers.contains(killerId.lowercase())
     }
 
     fun comprarAsesino(uuid: UUID, killerId: String) {
-        userData[uuid]?.let { user ->
+        userDataCache[uuid]?.let { user ->
             val id = killerId.lowercase()
-            if (id !in user.unlockedKillers) {
-                user.unlockedKillers.add(id)
-                config.set("$uuid.comprados", user.unlockedKillers)
-                saveConfigAsync()
+            if (user.unlockedKillers.add(id)) {
+                saveDataAsync(uuid)
             }
         }
     }
 
-    fun comprarSuperviviente(uuid: UUID, survivorId: String) {
-        userData[uuid]?.let { user ->
-            val id = survivorId.lowercase()
-            if (id !in user.unlockedSurvivors) {
-                user.unlockedSurvivors.add(id)
-                config.set("$uuid.supervivientes_comprados", user.unlockedSurvivors)
-                saveConfigAsync()
-            }
-        }
-    }
+    fun getSelectedKiller(uuid: UUID): String = userDataCache[uuid]?.selectedKiller ?: "slasher"
 
     fun setSelectedKiller(uuid: UUID, killerId: String) {
-        val user = userData[uuid] ?: return
+        val user = userDataCache[uuid] ?: return
         if (tieneAsesino(uuid, killerId)) {
             val killer = killerId.lowercase()
             user.selectedKiller = killer
-            config.set("$uuid.seleccionado", killer)
-            saveConfigAsync()
+            saveDataAsync(uuid)
 
             Bukkit.getPlayer(uuid)?.let {
                 plugin.playerStatsManager.updateSelectedKiller(uuid, it.name, killer)
@@ -157,48 +143,34 @@ class PlayerDataManager(private val plugin: Mistaken) {
         }
     }
 
+    // --- SUPERVIVIENTES ---
+
+    fun tieneSuperviviente(uuid: UUID, survivorId: String): Boolean {
+        val user = userDataCache[uuid] ?: return false
+        return survivorId.equals("civil", true) || user.unlockedSurvivors.contains(survivorId.lowercase())
+    }
+
+    fun comprarSuperviviente(uuid: UUID, survivorId: String) {
+        userDataCache[uuid]?.let { user ->
+            val id = survivorId.lowercase()
+            if (user.unlockedSurvivors.add(id)) {
+                saveDataAsync(uuid)
+            }
+        }
+    }
+
+    fun getSelectedSurvivor(uuid: UUID): String = userDataCache[uuid]?.selectedSurvivor ?: "civil"
+
     fun setSelectedSurvivor(uuid: UUID, survivorId: String) {
-        val user = userData[uuid] ?: return
+        val user = userDataCache[uuid] ?: return
         if (tieneSuperviviente(uuid, survivorId)) {
-            val survivor = survivorId.lowercase()
-            user.selectedSurvivor = survivor
-            config.set("$uuid.superviviente_seleccionado", survivor)
-            saveConfigAsync()
+            user.selectedSurvivor = survivorId.lowercase()
+            saveDataAsync(uuid)
         }
     }
 
-    // --- GETTERS ---
-
-    fun getStamina(uuid: UUID) = userData[uuid]?.stamina ?: 100.0
-    fun getLanguage(uuid: UUID) = userData[uuid]?.language ?: "en"
-    fun getSelectedKiller(uuid: UUID) = userData[uuid]?.selectedKiller ?: "slasher"
-    fun getSelectedSurvivor(uuid: UUID) = userData[uuid]?.selectedSurvivor ?: "civil"
-    fun getUserData(uuid: UUID) = userData[uuid]
-
-    // --- PERSISTENCIA ASÍNCRONA ---
-
-    private fun saveConfigAsync() {
-        managerScope.launch {
-            saveMutex.withLock {
-                try {
-                    config.save(file)
-                } catch (e: IOException) {
-                    plugin.logger.severe("Error al guardar players.yml: ${e.message}")
-                }
-            }
-        }
-    }
-
-    /**
-     * Guardado síncrono para el onDisable
-     */
-    fun saveConfigSync() {
-        runBlocking {
-            saveMutex.withLock {
-                try { config.save(file) } catch (ignored: Exception) {}
-            }
-        }
-    }
-
-    fun removeData(uuid: UUID) { userData.remove(uuid) }
+    // --- GETTERS EXTRA ---
+    fun getStamina(uuid: UUID) = userDataCache[uuid]?.stamina ?: 100.0
+    fun getLanguage(uuid: UUID) = userDataCache[uuid]?.language ?: "es"
+    fun getUserData(uuid: UUID) = userDataCache[uuid]
 }

@@ -40,10 +40,14 @@ class SessionManager(private val plugin: Mistaken) {
         val session = activeSessions[sessionId]
         session?.removePlayer(player)
 
-        if (plugin.config.getString("server-mode") == "VELOCITY") {
+        val serverMode = plugin.serverMode
+
+        if (serverMode == "GAME_SERVER") {
+            // Si están en un servidor de juegos y se salen, los mandamos al lobby de la network
             val lobbyName = plugin.config.getString("proxy-lobby-server", "lobby") ?: "lobby"
             liric.mistaken.utils.BungeeUtils.sendToServer(plugin, player, lobbyName)
         } else {
+            // Si es Multiarena local, los regresamos a la coordenada del lobby de este mismo server
             plugin.lobbyLocation?.let { player.teleportAsync(it) }
             plugin.isolationManager.updateVisibility(player)
         }

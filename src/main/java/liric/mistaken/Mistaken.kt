@@ -12,7 +12,7 @@ import liric.mistaken.commands.CommandRegistry
 import liric.mistaken.config.ConfigManager
 import liric.mistaken.config.MessageConfig
 import liric.mistaken.data.PlayerDataManager
-import liric.mistaken.asesinos.Asesino // 🔥 IMPORT AÑADIDO
+import liric.mistaken.asesinos.Asesino
 import liric.mistaken.database.DatabaseManager
 import liric.mistaken.database.PlayerStatsManager
 import liric.mistaken.discord.DiscordManager
@@ -59,7 +59,7 @@ class Mistaken : JavaPlugin() {
     lateinit var assassinKey: NamespacedKey
     var craftEngineEnabled: Boolean = false
         private set
-    var serverMode: String = "VELOCITY"
+    var serverMode: String = "GAME_SERVER"
         private set
 
     val staffEditMode = mutableSetOf<UUID>()
@@ -118,20 +118,29 @@ class Mistaken : JavaPlugin() {
 
         configManager = ConfigManager(this).apply { loadAllConfigs() }
         messageConfig = MessageConfig(this)
-        serverMode = config.getString("server-mode", "VELOCITY")?.uppercase() ?: "VELOCITY"
+
+        // 🔥 FIX 1: Registramos los comandos PRIMERO.
+        // Si la base de datos o el lobby fallan, al menos tendrás comandos para arreglarlo.
+        CommandRegistry(this).registerAll()
+
+        serverMode = config.getString("server-mode", "GAME_SERVER")?.uppercase() ?: "GAME_SERVER"
         componentLogger.info(mm.deserialize("<yellow>[Red] Modo del servidor configurado como: <bold>$serverMode</bold></yellow>"))
 
-        if (serverMode == "MULTIARENA") {
-            loadLobbyLocation()
+        loadLobbyLocation()
+        if (serverMode == "MULTIARENA" || serverMode == "NETWORK_LOBBY") {
             if (lobbyLocation != null) {
                 lobbyLocation?.world?.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
             } else {
-                componentLogger.warn(mm.deserialize("<red>[!] Modo MULTIARENA requiere establecer el lobby (/setlobby).</red>"))
+                componentLogger.warn(mm.deserialize("<red>[!] Falta establecer el lobby (/setlobby).</red>"))
             }
+        } else if (serverMode == "GAME_SERVER" && lobbyLocation == null) {
+            componentLogger.warn(mm.deserialize("<red>[!] GAME_SERVER requiere /setlobby para crear el Pre-Lobby de cristal.</red>"))
         }
 
-        if (!setupIntegrations()) return
-        if (!setupDatabase()) return
+        // 🔥 FIX 2: Si falla la conexión de DB o Vault, no apagamos el plugin entero.
+        // Solo lanzamos el warning, para que puedas usar comandos de admin.
+        setupIntegrations()
+        setupDatabase()
 
         playerStatsManager = PlayerStatsManager(this)
         statsManager = StatsManager(this)
@@ -155,6 +164,7 @@ class Mistaken : JavaPlugin() {
         musicManager = MusicManager(this)
         spectatorManager = SpectatorManager(this)
         cinematicManager = CinematicManager(this)
+
         server.pluginManager.registerEvents(spectatorManager, this)
         liric.mistaken.api.MistakenAPI.init(this)
 
@@ -164,27 +174,23 @@ class Mistaken : JavaPlugin() {
         scoreboardManager = ScoreboardManager(this)
 
         server.servicesManager.register(HealthAPI::class.java, combatManager, this, ServicePriority.Normal)
+
         if (server.pluginManager.isPluginEnabled("PlaceholderAPI")) {
             MistakenExpansion(this).register()
         }
 
         registerEvents()
-        CommandRegistry(this).registerAll()
 
         isReady = true
 
-        server.onlinePlayers.forEach { player ->
-            combatManager.resetHealth(player)
-            musicManager.syncPlayer(player)
-
-            if (serverMode == "VELOCITY") {
-                val autoSession = sessionManager.activeSessions.values.firstOrNull()
-                    ?: sessionManager.createSession("Esperando...")
-                sessionManager.joinSession(player, autoSession.sessionId)
+        if (serverMode != "NETWORK_LOBBY") {
+            server.onlinePlayers.forEach { player ->
+                combatManager.resetHealth(player)
+                musicManager.syncPlayer(player)
             }
+            iniciarMotorDeParticulas()
         }
 
-        iniciarMotorDeParticulas()
         sendLogo()
 
         val time = System.currentTimeMillis() - start
@@ -194,8 +200,7 @@ class Mistaken : JavaPlugin() {
     override fun onDisable() {
         isReady = false
 
-        sessionManager.activeSessions.values.forEach { it.shutdown() }
-
+        if (::sessionManager.isInitialized) sessionManager.activeSessions.values.forEach { it.shutdown() }
         if (::ambientManager.isInitialized) runCatching { ambientManager.stopAll() }
         if (::musicManager.isInitialized) musicManager.shutdown()
         if (::generatorManager.isInitialized) runCatching { generatorManager.clearGenerators() }
@@ -217,14 +222,11 @@ class Mistaken : JavaPlugin() {
             val dbConfig = YamlConfiguration.loadConfiguration(dbFile)
 
             databaseManager = DatabaseManager(this, dbConfig)
-            playerStatsManager = PlayerStatsManager(this)
 
             componentLogger.info(mm.deserialize("<green>[DB] Conexión HikariCP establecida.</green>"))
             true
         } catch (e: Exception) {
-            componentLogger.error(mm.deserialize("<red>FATAL: Error al conectar Base de Datos.</red>"))
-            e.printStackTrace()
-            server.pluginManager.disablePlugin(this)
+            componentLogger.error(mm.deserialize("<red>FATAL: Error al conectar Base de Datos. Los datos no se guardarán.</red>"))
             false
         }
     }
@@ -234,7 +236,6 @@ class Mistaken : JavaPlugin() {
 
         if (rsp == null) {
             componentLogger.error(mm.deserialize("<red><b>[!]</b> Vault no encontró ningún plugin de economía compatible.</red>"))
-            server.pluginManager.disablePlugin(this)
             return false
         }
         economy = rsp.provider
@@ -257,9 +258,10 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(SupervivienteHabilidadListener(this), this)
     }
 
-    // 🔥 FIX: Motor de partículas para MULTIARENA
     private fun iniciarMotorDeParticulas() {
         server.asyncScheduler.runAtFixedRate(this, { _ ->
+            if (!isReady) return@runAtFixedRate
+
             sessionManager.activeSessions.values.forEach { session ->
                 if (session.currentState != GameState.INGAME) return@forEach
 

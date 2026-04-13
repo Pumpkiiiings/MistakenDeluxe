@@ -14,6 +14,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
     private val mm = plugin.mm
     private val publicSubs = setOf("shop", "tienda", "langs", "language", "stats", "estadisticas", "afk")
+    private val lobbyOnlySubs = setOf("shop", "tienda", "stats", "estadisticas")
 
     override fun execute(stack: CommandSourceStack, args: Array<String>) {
         val sender = stack.sender
@@ -43,7 +44,13 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             return
         }
 
-        // 🔥 MULTIARENA: Obtenemos la sesión del jugador (si es que está en una)
+        // Bloquear tienda y stats si estamos en un servidor de juegos
+        if (sub in lobbyOnlySubs && plugin.serverMode == "GAME_SERVER") {
+            sender.sendMessage(mm.deserialize("<red><b>[!]</b> <gray>Para usar este comando, debes volver al <b>Lobby Principal</b>.</gray>"))
+            return
+        }
+
+        // Obtenemos la sesión del jugador
         val gm = player?.let { plugin.sessionManager.getSession(it) }
 
         when (sub) {
@@ -95,7 +102,6 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     player.sendMessage(plugin.messageConfig.getMessage(player, "game.afk-enable"))
                     player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 0.5f)
 
-                    // 🔥 ARREGLADO: Solo checa victoria en la sesión donde está el AFK
                     gm?.playerController?.checkWinCondition()
                 }
             }
@@ -146,7 +152,6 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 }
                 try {
                     val mode = MistakenMode.valueOf(args[1].uppercase())
-                    // 🔥 ARREGLADO: Aplicado a la sesión actual
                     gm.currentMode = mode
                     gm.modeForced = true
                     sender.sendMessage(mm.deserialize("<green>Modo forzado a: <aqua>${mode.name} <gray>(Sesión: ${gm.sessionId})"))
@@ -166,7 +171,6 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.start-already-ingame"))
                 } else {
                     sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.start-forcing"))
-                    // 🔥 ARREGLADO: Solo inicia la sesión actual
                     if (gm.currentState == GameState.LOBBY || gm.currentState == GameState.VOTING || gm.currentState == GameState.BREAK) {
                         gm.stateController.startVotingProcess()
                         gm.timer = 5
@@ -179,7 +183,6 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 if (gm == null || gm.currentState == GameState.LOBBY) {
                     sender.sendMessage(mm.deserialize("<red>No hay ninguna partida activa en tu ubicación."))
                 } else {
-                    // 🔥 ARREGLADO: Finaliza solo la sesión actual
                     gm.stateController.endGame("admin.stop-broadcast", false)
                     sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.stop-success"))
                 }

@@ -25,12 +25,17 @@ discord:
 # ==========================================
 # MODO DE SERVIDOR (Arquitectura de Red)
 # ==========================================
-# MULTIARENA: Un solo servidor aloja el lobby y múltiples partidas.
-# VELOCITY: Cada servidor es una arena aislada. Al terminar, los jugadores vuelven al servidor 'lobby'.
+
+# NETWORK_LOBBY: Solo para comprar cosas y ver stats (No inicia juegos).
+# GAME_SERVER: Servidor "esclavo" que solo sirve para jugar y devolver gente al proxy.
+# MULTIARENA: Servidor "todo en uno" (Lobby + Juegos mezclados pero aislados visualmente).
+
 server-mode: "MULTIARENA"
 
 # Solo se usa si server-mode es "VELOCITY"
 proxy-lobby-server: "lobby"
+# Nombre del servidor de arenas en tu Proxy (Velocity/BungeeCord)
+proxy-arena-server: "arenas"
 
 # ==========================================
 #         SISTEMA DE ESTAMINA (EXP)

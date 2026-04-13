@@ -20,7 +20,10 @@ class CommandRegistry(private val plugin: Mistaken) {
             // asegúrate de que el método `.get(plugin)` de tus comandos devuelva un LiteralCommandNode.
             // Si devuelven un LiteralArgumentBuilder, debes agregar .build() al final de tu método get() en cada clase.
 
+            registrar.register(JoinCommand.get(plugin), "Unirse a una partida", listOf("join", "play"))
             registrar.register(VoteCommand.get(plugin), "Votar por el mapa", listOf("votar"))
+            registrar.register(DataCommand.get(plugin), "Migrar datos de YML a MySQL", emptyList())
+            registrar.register(LeaveCommand.get(plugin), "Salir de la partida actual", listOf("leave", "quit"))
             registrar.register(UnlinkCommand.get(plugin), "Desvincular Discord", emptyList())
             registrar.register(SetLobbyCommand.get(plugin), "Establecer el spawn del lobby", emptyList())
             registrar.register(LinkCommand.get(plugin), "Vincular Discord", emptyList())

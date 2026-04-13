@@ -342,17 +342,17 @@ class GamePlayerController(private val game: GameSession) {
     }
 
     fun teleportAllToLobby() {
-        val serverMode = game.plugin.config.getString("server-mode", "VELOCITY")?.uppercase()
+        val serverMode = game.plugin.serverMode
 
         game.getPlayers().forEach { p ->
             p.gameMode = org.bukkit.GameMode.SURVIVAL
 
-            if (serverMode == "VELOCITY") {
-                // Modo Network: Los pateamos al proxy (Servidor Lobby)
+            if (serverMode == "GAME_SERVER") {
+                // 🔥 Modo Network: Los pateamos al proxy (Servidor Lobby Principal)
                 val lobbyName = game.plugin.config.getString("proxy-lobby-server", "lobby") ?: "lobby"
                 liric.mistaken.utils.BungeeUtils.sendToServer(game.plugin, p, lobbyName)
             } else {
-                // Modo Multiarena: Los mandamos al punto de spawn local
+                // 🔥 Modo Multiarena local: Los mandamos al punto de spawn local
                 game.plugin.lobbyLocation?.let { loc ->
                     p.teleportAsync(loc)
                 }

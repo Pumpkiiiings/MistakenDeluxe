@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "liric.mistaken" // Actualizado a tu nuevo package
-version = "PROXY-BETA"
+version = "PROXY-BETA-2.0"
 
 java {
     toolchain {
