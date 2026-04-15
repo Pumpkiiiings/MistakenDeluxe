@@ -56,7 +56,7 @@ dependencies {
     implementation("fr.skytasul:glowingentities:1.4.10")
     implementation("com.mysql:mysql-connector-j:8.3.0")
     implementation("dev.triumphteam:triumph-gui:3.1.13")
-    implementation("org.slf4j:slf4j-simple:2.0.9")
+    implementation("org.slf4j:slf4j-simple:2.0.17")
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
 
     // APIs Externas (Solo para compilar)
