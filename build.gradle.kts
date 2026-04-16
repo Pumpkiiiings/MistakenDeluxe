@@ -54,7 +54,7 @@ dependencies {
     implementation("com.github.retrooper:packetevents-spigot:2.12.0")
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("fr.skytasul:glowingentities:1.4.10")
-    implementation("com.mysql:mysql-connector-j:8.3.0")
+    implementation("com.mysql:mysql-connector-j:8.4.0")
     implementation("dev.triumphteam:triumph-gui:3.1.13")
     implementation("org.slf4j:slf4j-simple:2.0.9")
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
