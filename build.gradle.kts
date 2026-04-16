@@ -60,7 +60,7 @@ dependencies {
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
 
     // APIs Externas (Solo para compilar)
-    compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.0.0")
+    compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.2.0")
     compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
         exclude(group = "org.bukkit", module = "bukkit")
