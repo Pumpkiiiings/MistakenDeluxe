@@ -13,55 +13,44 @@ import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 
 /**
- *[LIRIC-MISTAKEN 2.0]
- * AsesinoGeneralListener: Restricciones físicas y blindaje de inventario.
- * FIX: Prevención de glitches de inventario (Swap Offhand) y optimización de chequeos.
+ * [LIRIC-MISTAKEN 2.0]
+ * AsesinoGeneralListener: Restricciones físicas y blindaje.
  */
 class AsesinoGeneralListener(private val plugin: Mistaken) : Listener {
 
-    /**
-     * Ventaja: Inmunidad al daño por caída para los Asesinos.
-     */
     @EventHandler(priority = EventPriority.LOWEST)
     fun onFallDamage(event: EntityDamageEvent) {
-        // 🔥 FIX CPU: Revisar el Enum es 100 veces más rápido que castear la entidad
-        // Si no es daño por caída, abortamos de inmediato.
+        // Chequeo extremadamente rápido para ahorrar CPU
         if (event.cause != EntityDamageEvent.DamageCause.FALL) return
 
         val player = event.entity as? Player ?: return
 
-        if (plugin.asesinoManager.esElAsesino(player)) {
+        // Validación segura
+        if (plugin.asesinoManager?.esElAsesino(player) == true) {
             event.isCancelled = true
 
-            // Efecto sutil solo si la caída fue considerable
             if (event.damage > 4.0) {
                 player.playSound(player.location, Sound.ENTITY_ZOMBIE_STEP, 0.5f, 0.5f)
             }
         }
     }
 
-    /**
-     * Blindaje: Evita que el asesino tire o mueva su equipo.
-     */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onInventoryClick(event: InventoryClickEvent) {
         val player = event.whoClicked as? Player ?: return
 
-        if (!plugin.asesinoManager.esElAsesino(player)) return
+        if (plugin.asesinoManager?.esElAsesino(player) != true) return
 
-        // 1. Bloquear teclas rápidas (presionar 'F' o un número sobre un ítem)
         if (event.click == ClickType.SWAP_OFFHAND || event.click == ClickType.NUMBER_KEY) {
             event.isCancelled = true
             return
         }
 
-        // 2. Bloquear Armor Slots y Offhand (slot 45)
         if (event.slotType == InventoryType.SlotType.ARMOR || event.rawSlot == 45) {
             event.isCancelled = true
             return
         }
 
-        // 3. Bloquear Hotbar de habilidades (Slots 0 al 4)
         val clickedInv = event.clickedInventory
         if (clickedInv != null && clickedInv.type == InventoryType.PLAYER) {
             if (event.slot in 0..4) {
@@ -70,18 +59,14 @@ class AsesinoGeneralListener(private val plugin: Mistaken) : Listener {
             }
         }
 
-        // 4. Bloquear Shift+Click hacia contenedores
         if (event.click.isShiftClick) {
             event.isCancelled = true
         }
     }
 
-    /**
-     * Bloquea la tecla F fuera del inventario (Swap hand)
-     */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onHandSwap(event: PlayerSwapHandItemsEvent) {
-        if (plugin.asesinoManager.esElAsesino(event.player)) {
+        if (plugin.asesinoManager?.esElAsesino(event.player) == true) {
             event.isCancelled = true
         }
     }

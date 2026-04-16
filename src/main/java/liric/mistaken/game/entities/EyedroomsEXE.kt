@@ -19,24 +19,14 @@ import org.joml.Quaternionf
 import org.joml.Vector3f
 import java.time.Duration
 import java.util.*
-import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
-import kotlin.math.cos
-import kotlin.math.sin
 
-/**
- * [LIRIC-MISTAKEN 2.0] - MODO PESADILLA
- * EYEDROOMS.EXE: El Ojo de los Backrooms.
- * ADAPTADO: Multiarena/Velocity con tracking dinámico y aislamiento de sesión.
- */
 class EyedroomsEXE(private val plugin: Mistaken) {
 
     private val parts = mutableListOf<BlockDisplay>()
     private var isRunning = false
     private var lastVictimUUID: UUID? = null
     private val teamName = "EyedroomsGlow"
-
-    // 🔥 Referencia a la sesión a la que pertenece esta entidad
     private var assignedSession: GameSession? = null
 
     private var fase = 0
@@ -44,12 +34,14 @@ class EyedroomsEXE(private val plugin: Mistaken) {
     private var pasos = 0
 
     fun spawn(startLoc: Location) {
-        // 🔥 Detectamos la sesión basada en el mundo del spawn
-        assignedSession = plugin.sessionManager.activeSessions.values.find {
-            it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
+        val sm = plugin.sessionManager
+        if (sm != null) {
+            assignedSession = sm.activeSessions.values.find {
+                it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
+            }
         }
 
-        plugin.server.globalRegionScheduler.run(plugin) { _ ->
+        plugin.server.regionScheduler.run(plugin, startLoc, { _ ->
             try {
                 val scoreboard = Bukkit.getScoreboardManager().mainScoreboard
                 if (scoreboard.getTeam(teamName) == null) {
@@ -64,7 +56,6 @@ class EyedroomsEXE(private val plugin: Mistaken) {
                 parts.addAll(listOf(whiteEye, pupil, glitch1, glitch2))
                 parts.forEach { scoreboard.getTeam(teamName)?.addEntry(it.uniqueId.toString()) }
 
-                // 🔥 Broadcast solo para la sesión infectada
                 val infectMsg = plugin.mm.deserialize("<newline><dark_purple><b>[!]</b> <white>EL SISTEMA HA SIDO INFECTADO POR <dark_red><b>EYEDROOMS.EXE</b>")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(infectMsg) }
 
@@ -73,7 +64,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
             } catch (e: Exception) {
                 plugin.componentLogger.error("Fallo al invocar al Eyedrooms: ${e.message}")
             }
-        }
+        })
     }
 
     private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): BlockDisplay {
@@ -88,13 +79,12 @@ class EyedroomsEXE(private val plugin: Mistaken) {
         }
     }
 
-    // 🔥 Obtener el objetivo más cercano dentro de la sesión asignada
     private fun getClosestTarget(): Player? {
         val bodyLoc = if (parts.isNotEmpty()) parts[0].location else return null
         val potentialTargets = if (assignedSession != null) {
             assignedSession!!.getPlayers().filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
         } else {
-            bodyLoc.world.getNearbyPlayers(bodyLoc, 100.0).filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
+            plugin.server.onlinePlayers.filter { it.world == bodyLoc.world && it.location.distanceSquared(bodyLoc) < 10000.0 && it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
         }
 
         return potentialTargets.filter { it.uniqueId != lastVictimUUID }
@@ -112,76 +102,67 @@ class EyedroomsEXE(private val plugin: Mistaken) {
             val bodyLoc = parts[0].location
             val target = getClosestTarget()
 
-            // BUSCAR PRESA
             if (fase == 0) {
-                if (target != null) {
-                    fase = 1
-                    ticksEnFase = 0
-                    pasos = 0
-                }
+                if (target != null) { fase = 1; ticksEnFase = 0; pasos = 0 }
                 return@Consumer
             }
 
-            // PERDIÓ AL TARGET O CAMBIÓ DE SESIÓN
             if (target == null || !target.isOnline) {
                 fase = 0
                 return@Consumer
             }
 
             when (fase) {
-                1 -> { // Acecho (3 saltos largos)
+                1 -> {
                     if (ticksEnFase % 14 == 0) {
                         val dir = target.location.toVector().subtract(bodyLoc.toVector()).normalize()
                         val next = bodyLoc.add(dir.multiply(3.5))
                         moverTodo(next, target.location)
-                        target.playSound(next, Sound.BLOCK_ANVIL_LAND, 1f, 0.1f)
-                        target.playSound(next, Sound.ENTITY_WARDEN_HEARTBEAT, 1.5f, 0.5f)
+
+                        target.scheduler.run(plugin, { _ ->
+                            target.playSound(next, Sound.BLOCK_ANVIL_LAND, 1f, 0.1f)
+                            target.playSound(next, Sound.ENTITY_WARDEN_HEARTBEAT, 1.5f, 0.5f)
+                        }, null)
+
                         aplicarEfectosAgresivos(next, 30)
 
                         pasos++
-                        if (pasos >= 3) {
-                            fase = 2
-                            ticksEnFase = 0
-                        }
+                        if (pasos >= 3) { fase = 2; ticksEnFase = 0 }
                     }
                 }
-                2 -> { // El Regalo Envenenado
+                2 -> {
                     if (ticksEnFase == 30) {
-                        target.playSound(target.location, Sound.BLOCK_CONDUIT_ACTIVATE, 2f, 0.1f)
-                        target.showTitle(Title.title(
-                            plugin.mm.deserialize("<dark_purple><obfuscated>ERR_VOICE"),
-                            plugin.mm.deserialize("<gray>Has recibido una <green>bendición <red>corrupta"),
-                            Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(2), Duration.ofMillis(500))
-                        ))
-                        target.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 2, false, false))
-                        target.addPotionEffect(PotionEffect(PotionEffectType.WITHER, 100, 1, false, false))
-                        target.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0, false, false))
+                        target.scheduler.run(plugin, { _ ->
+                            target.playSound(target.location, Sound.BLOCK_CONDUIT_ACTIVATE, 2f, 0.1f)
+                            target.showTitle(Title.title(
+                                plugin.mm.deserialize("<dark_purple><obfuscated>ERR_VOICE"),
+                                plugin.mm.deserialize("<gray>Has recibido una <green>bendición <red>corrupta"),
+                                Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(2), Duration.ofMillis(500))
+                            ))
+                            target.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 2, false, false))
+                            target.addPotionEffect(PotionEffect(PotionEffectType.WITHER, 100, 1, false, false))
+                            target.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0, false, false))
+                        }, null)
                     }
-                    if (ticksEnFase >= 60) {
-                        fase = 3
-                        ticksEnFase = 0
-                        pasos = 0
-                    }
+                    if (ticksEnFase >= 60) { fase = 3; ticksEnFase = 0; pasos = 0 }
                 }
-                3 -> { // Modo Misil Cuántico (Tracking Dinámico cada 2 ticks)
+                3 -> {
                     if (ticksEnFase % 2 == 0) {
                         val dir = target.location.add(0.0, 1.0, 0.0).toVector().subtract(bodyLoc.toVector()).normalize()
                         val next = bodyLoc.add(dir.multiply(5.0))
                         moverTodo(next, target.location)
 
-                        target.playSound(next, Sound.ENTITY_GHAST_SCREAM, 0.8f, 2.0f)
+                        target.scheduler.run(plugin, { _ -> target.playSound(next, Sound.ENTITY_GHAST_SCREAM, 0.8f, 2.0f) }, null)
                         next.world.spawnParticle(org.bukkit.Particle.DRAGON_BREATH, next, 15, 0.8, 0.8, 0.8, 0.1)
 
-                        if (next.distanceSquared(target.location) < 12.25) { // 3.5 bloques reales
+                        if (next.distanceSquared(target.location) < 12.25) {
                             ejecutarMuerte(target)
                             fase = 0
                             return@Consumer
                         }
 
                         pasos++
-                        if (pasos >= 15) {
-                            fase = 0
-                        }
+                        if (pasos >= 15) { fase = 0 }
                     }
                 }
             }
@@ -190,13 +171,14 @@ class EyedroomsEXE(private val plugin: Mistaken) {
     }
 
     private fun aplicarEfectosAgresivos(loc: Location, duration: Int) {
-        loc.world.getNearbyPlayers(loc, 15.0).forEach { p ->
-            val pSession = plugin.sessionManager.getSession(p)
-            // Solo afecta si es de la misma sesión y no es el asesino "jugador"
-            if (pSession == assignedSession && pSession?.esAsesino(p.uniqueId) != true) {
-                p.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, duration, 0, false, false, false))
-                p.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, duration, 2, false, false, false))
-                p.playSound(p.location, Sound.BLOCK_BEEHIVE_WORK, 0.5f, 0.1f)
+        plugin.server.onlinePlayers.filter { it.world == loc.world && it.location.distanceSquared(loc) <= 225.0 }.forEach { p ->
+            val sm = plugin.sessionManager
+            if (sm?.getSession(p) == assignedSession && sm?.getSession(p)?.esAsesino(p.uniqueId) != true) {
+                p.scheduler.run(plugin, { _ ->
+                    p.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, duration, 0, false, false, false))
+                    p.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, duration, 2, false, false, false))
+                    p.playSound(p.location, Sound.BLOCK_BEEHIVE_WORK, 0.5f, 0.1f)
+                }, null)
             }
         }
     }
@@ -212,17 +194,19 @@ class EyedroomsEXE(private val plugin: Mistaken) {
 
     private fun ejecutarMuerte(victim: Player) {
         lastVictimUUID = victim.uniqueId
-        victim.world.spawnParticle(org.bukkit.Particle.SONIC_BOOM, victim.location, 1)
-        victim.world.playSound(victim.location, Sound.ENTITY_WARDEN_SONIC_BOOM, 2f, 0.5f)
 
-        // Daño directo (bypass al combatManager global para asegurar ejecución)
-        victim.health = 0.0
+        victim.scheduler.run(plugin, { _ ->
+            victim.world.spawnParticle(org.bukkit.Particle.SONIC_BOOM, victim.location, 1)
+            victim.world.playSound(victim.location, Sound.ENTITY_WARDEN_SONIC_BOOM, 2f, 0.5f)
 
-        victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 200, 0))
-        victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 200, 0))
+            victim.health = 0.0 // Daño letal seguro
 
-        val deathMsg = plugin.mm.deserialize("<dark_purple><b>[!]</b> <white>${victim.name} fue borrado por la mirada de <dark_red>EYEDROOMS")
-        assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
+            victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 200, 0))
+            victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 200, 0))
+
+            val deathMsg = plugin.mm.deserialize("<dark_purple><b>[!]</b> <white>${victim.name} fue borrado por la mirada de <dark_red>EYEDROOMS")
+            assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
+        }, null)
     }
 
     fun remove() {

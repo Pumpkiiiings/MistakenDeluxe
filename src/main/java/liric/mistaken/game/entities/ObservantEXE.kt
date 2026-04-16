@@ -21,13 +21,11 @@ import java.time.Duration
 import java.util.UUID
 import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
-import kotlin.math.cos
-import kotlin.math.sin
 
 /**
- * [LIRIC-MISTAKEN 2.0] - MODO TROLL SUPREMO
+ *[LIRIC-MISTAKEN 2.0] - MODO TROLL SUPREMO
  * OBSERVANT 4.0: EL HERMANO MAYOR.
- * ADAPTADO: Multiarena/Velocity con tracking dinámico y aislamiento de sesión.
+ * ADAPTADO: Multiarena/Velocity con tracking dinámico, Folia Ready y Safe Calls.
  */
 class ObservantEXE(private val plugin: Mistaken) {
 
@@ -46,12 +44,14 @@ class ObservantEXE(private val plugin: Mistaken) {
     private var currentState = State.BUSCANDO
 
     fun spawn(startLoc: Location) {
-        // 🔥 Detectamos la sesión basada en el mundo del spawn
-        assignedSession = plugin.sessionManager.activeSessions.values.find {
-            it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
+        val sm = plugin.sessionManager
+        if (sm != null) {
+            assignedSession = sm.activeSessions.values.find {
+                it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
+            }
         }
 
-        plugin.server.globalRegionScheduler.run(plugin) { _ ->
+        plugin.server.regionScheduler.run(plugin, startLoc, { _ ->
             try {
                 val scoreboard = Bukkit.getScoreboardManager().mainScoreboard
                 if (scoreboard.getTeam(teamWhite) == null) scoreboard.registerNewTeam(teamWhite).apply { color(NamedTextColor.WHITE) }
@@ -62,7 +62,7 @@ class ObservantEXE(private val plugin: Mistaken) {
                 parts.add(createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(3.8f, 3.0f, 3.0f), Vector3f(-1.9f, 0.25f, -1.5f)))
                 parts.add(createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(3.0f, 3.8f, 3.0f), Vector3f(-1.5f, -0.15f, -1.5f)))
 
-                // Rostro y Manos (Se mantienen iguales pero en escala masiva)
+                // Rostro y Manos
                 parts.add(createPart(startLoc, Material.WHITE_CONCRETE, Vector3f(0.8f, 0.5f, 0.1f), Vector3f(-1.3f, 2.2f, 1.76f)))
                 parts.add(createPart(startLoc, Material.RED_CONCRETE, Vector3f(0.3f, 0.3f, 0.1f), Vector3f(-1.05f, 2.3f, 1.77f)))
                 parts.add(createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(0.1f, 0.1f, 0.1f), Vector3f(-0.95f, 2.4f, 1.78f)))
@@ -80,7 +80,6 @@ class ObservantEXE(private val plugin: Mistaken) {
 
                 setGlowColor(NamedTextColor.WHITE)
 
-                // 🔥 Broadcast solo para la sesión
                 val spawnMsg = plugin.mm.deserialize("<dark_purple><b>[!]</b> <dark_gray>EL HERMANO MAYOR HA DESPERTADO. <b>OBSERVANT</b> ESTÁ AQUÍ.</dark_gray>")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(spawnMsg) }
 
@@ -88,7 +87,7 @@ class ObservantEXE(private val plugin: Mistaken) {
             } catch (e: Exception) {
                 plugin.componentLogger.error("Fallo al invocar a Observant: ${e.message}")
             }
-        }
+        })
     }
 
     private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): BlockDisplay {
@@ -116,13 +115,12 @@ class ObservantEXE(private val plugin: Mistaken) {
         }
     }
 
-    // 🔥 Obtener el objetivo más cercano dentro de la sesión asignada
     private fun getClosestTarget(): Player? {
         val bodyLoc = if (parts.isNotEmpty()) parts[0].location else return null
         val potentialTargets = if (assignedSession != null) {
             assignedSession!!.getPlayers().filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
         } else {
-            bodyLoc.world.getNearbyPlayers(bodyLoc, 150.0).filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
+            plugin.server.onlinePlayers.filter { it.world == bodyLoc.world && it.location.distanceSquared(bodyLoc) < 22500.0 && it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
         }
 
         return potentialTargets.filter { it.uniqueId != lastVictimUUID }
@@ -171,10 +169,13 @@ class ObservantEXE(private val plugin: Mistaken) {
     private fun ejecutarAcechoYEmbestida() {
         var ticks = 0
         val initialTarget = getClosestTarget() ?: return
-        initialTarget.showTitle(Title.title(
-            plugin.mm.deserialize("<dark_gray>Te estoy observando...</dark_gray>"),
-            plugin.mm.deserialize("<red>No te muevas.")
-        ))
+
+        initialTarget.scheduler.run(plugin, { _ ->
+            initialTarget.showTitle(Title.title(
+                plugin.mm.deserialize("<dark_gray>Te estoy observando...</dark_gray>"),
+                plugin.mm.deserialize("<red>No te muevas.")
+            ))
+        }, null)
 
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
             val target = getClosestTarget()
@@ -189,17 +190,20 @@ class ObservantEXE(private val plugin: Mistaken) {
                 val nextLoc = current.add(dir.multiply(0.3))
                 moverTodo(nextLoc, target.location)
                 aplicarAuraMiedo(nextLoc, 40)
-                if (ticks % 15 == 0) target.playSound(nextLoc, Sound.ENTITY_WARDEN_HEARTBEAT, 2f, 0.5f)
+                if (ticks % 15 == 0) {
+                    target.scheduler.run(plugin, { _ -> target.playSound(nextLoc, Sound.ENTITY_WARDEN_HEARTBEAT, 2f, 0.5f) }, null)
+                }
             } else if (ticks == 60) {
-                target.playSound(target.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1.5f, 1.5f)
+                target.scheduler.run(plugin, { _ -> target.playSound(target.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1.5f, 1.5f) }, null)
             } else if (ticks in 61..75) {
                 val nextLoc = current.add(dir.multiply(3.5))
                 moverTodo(nextLoc, target.location)
-                target.playSound(nextLoc, Sound.ENTITY_WARDEN_ATTACK_IMPACT, 1f, 0.5f)
 
-                if (nextLoc.distanceSquared(target.location) < 12.25) { // Radio 3.5 bloques reales
+                target.scheduler.run(plugin, { _ -> target.playSound(nextLoc, Sound.ENTITY_WARDEN_ATTACK_IMPACT, 1f, 0.5f) }, null)
+
+                if (nextLoc.distanceSquared(target.location) < 12.25) {
                     ejecutarDaño(target, 3)
-                    target.velocity = dir.multiply(2.0).setY(0.5)
+                    target.scheduler.run(plugin, { _ -> target.velocity = dir.multiply(2.0).setY(0.5) }, null)
                     consecutiveMisses = 0
                     task.cancel()
                     currentState = State.BUSCANDO
@@ -216,7 +220,11 @@ class ObservantEXE(private val plugin: Mistaken) {
 
     private fun ejecutarDobleAereo() {
         val initialTarget = getClosestTarget() ?: return
-        initialTarget.showTitle(Title.title(plugin.mm.deserialize("<dark_red>MIRA ARRIBA</dark_red>"), plugin.mm.deserialize("")))
+
+        initialTarget.scheduler.run(plugin, { _ ->
+            initialTarget.showTitle(Title.title(plugin.mm.deserialize("<dark_red>MIRA ARRIBA</dark_red>"), plugin.mm.deserialize("")))
+        }, null)
+
         var step = 0
         var diveCount = 0
 
@@ -232,7 +240,9 @@ class ObservantEXE(private val plugin: Mistaken) {
             val current = parts[0].location
             if (step < 15) {
                 moverTodo(current.add(0.0, 1.5, 0.0), target.location)
-                if (step == 0) target.playSound(current, Sound.ENTITY_WITHER_SHOOT, 1f, 0.5f)
+                if (step == 0) {
+                    target.scheduler.run(plugin, { _ -> target.playSound(current, Sound.ENTITY_WITHER_SHOOT, 1f, 0.5f) }, null)
+                }
             } else if (step < 30) {
                 val dir = target.location.add(0.0, 1.0, 0.0).toVector().subtract(current.toVector()).normalize()
                 val nextLoc = current.add(dir.multiply(2.5))
@@ -241,7 +251,7 @@ class ObservantEXE(private val plugin: Mistaken) {
 
                 if (nextLoc.distanceSquared(target.location) < 12.25) {
                     ejecutarDaño(target, 4)
-                    target.playSound(target.location, Sound.BLOCK_ANVIL_DESTROY, 1f, 0.5f)
+                    target.scheduler.run(plugin, { _ -> target.playSound(target.location, Sound.BLOCK_ANVIL_DESTROY, 1f, 0.5f) }, null)
                     consecutiveMisses = 0
                     parts.forEach { it.transformation = it.transformation.apply { leftRotation.set(0f,0f,0f,1f) } }
                     task.cancel()
@@ -259,11 +269,14 @@ class ObservantEXE(private val plugin: Mistaken) {
 
     private fun ejecutarAgarre() {
         val initialTarget = getClosestTarget() ?: return
-        initialTarget.showTitle(Title.title(
-            plugin.mm.deserialize("<dark_purple>NO ESCAPARÁS</dark_purple>"),
-            plugin.mm.deserialize("<gray>Observant te ha atrapado...</gray>")
-        ))
-        initialTarget.playSound(initialTarget.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.1f)
+
+        initialTarget.scheduler.run(plugin, { _ ->
+            initialTarget.showTitle(Title.title(
+                plugin.mm.deserialize("<dark_purple>NO ESCAPARÁS</dark_purple>"),
+                plugin.mm.deserialize("<gray>Observant te ha atrapado...</gray>")
+            ))
+            initialTarget.playSound(initialTarget.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.1f)
+        }, null)
 
         var ticks = 0
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
@@ -279,12 +292,15 @@ class ObservantEXE(private val plugin: Mistaken) {
             moverTodo(obsLoc, playerLoc)
 
             val pullDir = obsLoc.toVector().subtract(playerLoc.toVector()).normalize()
-            target.velocity = pullDir.multiply(0.6)
+
+            target.scheduler.run(plugin, { _ -> target.velocity = pullDir.multiply(0.6) }, null)
 
             val dist = obsLoc.distance(playerLoc)
             for (i in 0..dist.toInt()) {
                 val point = playerLoc.clone().add(pullDir.clone().multiply(i))
-                point.world.spawnParticle(org.bukkit.Particle.WITCH, point.add(0.0, 1.0, 0.0), 2, 0.1, 0.1, 0.1, 0.0)
+                plugin.server.regionScheduler.run(plugin, point, { _ ->
+                    point.world.spawnParticle(org.bukkit.Particle.WITCH, point.add(0.0, 1.0, 0.0), 2, 0.1, 0.1, 0.1, 0.0)
+                })
             }
 
             if (obsLoc.distanceSquared(playerLoc) < 12.25) {
@@ -299,15 +315,23 @@ class ObservantEXE(private val plugin: Mistaken) {
 
     private fun ejecutarModoFuria() {
         setGlowColor(NamedTextColor.RED)
-        if (parts.size > 4) {
-            parts[3].block = Material.RED_CONCRETE.createBlockData()
-            parts[6].block = Material.RED_CONCRETE.createBlockData()
+
+        val loc = parts.firstOrNull()?.location
+        if (loc != null) {
+            plugin.server.regionScheduler.run(plugin, loc, { _ ->
+                if (parts.size > 4) {
+                    parts[3].block = Material.RED_CONCRETE.createBlockData()
+                    parts[6].block = Material.RED_CONCRETE.createBlockData()
+                }
+            })
         }
 
         val rageMsg = plugin.mm.deserialize("<dark_red><b>[!] EL ABISMO SE HA DESBORDADO.</b>")
         assignedSession?.getPlayers()?.forEach {
-            it.sendMessage(rageMsg)
-            it.playSound(it.location, Sound.ENTITY_WARDEN_ROAR, 1.5f, 0.5f)
+            it.scheduler.run(plugin, { _ ->
+                it.sendMessage(rageMsg)
+                it.playSound(it.location, Sound.ENTITY_WARDEN_ROAR, 1.5f, 0.5f)
+            }, null)
         }
 
         var ticks = 0
@@ -319,9 +343,15 @@ class ObservantEXE(private val plugin: Mistaken) {
                 if (!isRunning || hasHit || ticks >= 140 || target == null) {
                     task.cancel()
                     setGlowColor(NamedTextColor.WHITE)
-                    if (parts.size > 4) {
-                        parts[3].block = Material.WHITE_CONCRETE.createBlockData()
-                        parts[6].block = Material.WHITE_CONCRETE.createBlockData()
+
+                    val safeLoc = parts.firstOrNull()?.location
+                    if (safeLoc != null) {
+                        plugin.server.regionScheduler.run(plugin, safeLoc, { _ ->
+                            if (parts.size > 4) {
+                                parts[3].block = Material.WHITE_CONCRETE.createBlockData()
+                                parts[6].block = Material.WHITE_CONCRETE.createBlockData()
+                            }
+                        })
                     }
                     plugin.server.globalRegionScheduler.runDelayed(plugin, { currentState = State.BUSCANDO }, 60L)
                     return@Consumer
@@ -333,7 +363,10 @@ class ObservantEXE(private val plugin: Mistaken) {
 
                 moverTodo(nextLoc, target.location)
                 aplicarAuraMiedo(nextLoc, 40)
-                if (ticks % 3 == 0) target.playSound(nextLoc, Sound.BLOCK_DEEPSLATE_BREAK, 1.0f, 0.5f)
+
+                if (ticks % 3 == 0) {
+                    target.scheduler.run(plugin, { _ -> target.playSound(nextLoc, Sound.BLOCK_DEEPSLATE_BREAK, 1.0f, 0.5f) }, null)
+                }
 
                 if (nextLoc.distanceSquared(target.location) < 12.25) {
                     ejecutarMuerte(target, enrage = true)
@@ -345,31 +378,38 @@ class ObservantEXE(private val plugin: Mistaken) {
     }
 
     private fun ejecutarDaño(victim: Player, amount: Int) {
-        victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1f, 1f)
-        repeat(amount) { plugin.combatManager.takeDamage(victim) }
+        victim.scheduler.run(plugin, { _ ->
+            victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1f, 1f)
+            repeat(amount) { plugin.combatManager?.takeDamage(victim) }
+        }, null)
     }
 
     private fun ejecutarMuerte(victim: Player, enrage: Boolean = false) {
         lastVictimUUID = victim.uniqueId
-        victim.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, victim.location, 5)
-        victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2f, 0.1f)
 
-        victim.health = 0.0 // Muerte nativa directa
+        victim.scheduler.run(plugin, { _ ->
+            victim.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, victim.location, 5)
+            victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2f, 0.1f)
 
-        victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, true))
-        victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3, false, false, true))
+            victim.health = 0.0 // Muerte nativa directa en su hilo
 
-        val prefix = if (enrage) "<dark_red><b>[FURIA DESATADA]</b>" else "<dark_purple><b>[!]</b>"
-        val deathMsg = plugin.mm.deserialize("$prefix <white>${victim.name} fue atrapado por las garras de <dark_purple>OBSERVANT 4.0</dark_purple>.")
+            victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, true))
+            victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3, false, false, true))
 
-        assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
+            val prefix = if (enrage) "<dark_red><b>[FURIA DESATADA]</b>" else "<dark_purple><b>[!]</b>"
+            val deathMsg = plugin.mm.deserialize("$prefix <white>${victim.name} fue atrapado por las garras de <dark_purple>OBSERVANT 4.0</dark_purple>.")
+
+            assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
+        }, null)
     }
 
     private fun aplicarAuraMiedo(loc: Location, duration: Int) {
-        loc.world.getNearbyPlayers(loc, 15.0).forEach { p ->
-            val pSession = plugin.sessionManager.getSession(p)
-            if (pSession == assignedSession && !plugin.asesinoManager.esElAsesino(p)) {
-                p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, duration, 0, false, false, false))
+        plugin.server.onlinePlayers.filter { it.world == loc.world && it.location.distanceSquared(loc) <= 225.0 }.forEach { p ->
+            val sm = plugin.sessionManager
+            if (sm?.getSession(p) == assignedSession && sm?.getSession(p)?.esAsesino(p.uniqueId) != true) {
+                p.scheduler.run(plugin, { _ ->
+                    p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, duration, 0, false, false, false))
+                }, null)
             }
         }
     }
@@ -384,17 +424,22 @@ class ObservantEXE(private val plugin: Mistaken) {
     }
 
     private fun explodeAndRemove() {
-        if (parts.isNotEmpty() && parts[0].isValid) {
-            val loc = parts[0].location
-            loc.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, loc, 8)
+        val loc = parts.firstOrNull()?.location ?: return
+        plugin.server.regionScheduler.run(plugin, loc, { _ ->
+            loc.world.createExplosion(loc, 4F, false, false)
             loc.world.playSound(loc, Sound.ENTITY_WITHER_DEATH, 1.0f, 0.5f)
-        }
-        remove()
+            remove()
+        })
     }
 
     fun remove() {
         isRunning = false
-        parts.forEach { if (it.isValid) it.remove() }
-        parts.clear()
+        val loc = parts.firstOrNull()?.location
+        if (loc != null) {
+            plugin.server.regionScheduler.run(plugin, loc, { _ ->
+                parts.forEach { if (it.isValid) it.remove() }
+                parts.clear()
+            })
+        }
     }
 }

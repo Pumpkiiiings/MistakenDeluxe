@@ -13,33 +13,45 @@ class GameWorldController(private val game: GameSession) {
     fun addProgress(block: Block, amount: Int, player: Player?) {
         if (player != null && game.esAsesino(player.uniqueId)) return
         val loc = block.location
-        if (game.plugin.generatorManager.isCompleted(loc)) return
+        val generatorManager = game.plugin.generatorManager ?: return
 
-        game.plugin.generatorManager.addProgress(loc, amount)
+        if (generatorManager.isCompleted(loc)) return
+        generatorManager.addProgress(loc, amount)
 
-        if (game.plugin.generatorManager.isCompleted(loc)) {
-            if (!game.changedBlocks.containsKey(loc)) game.changedBlocks[loc] = block.type
-            block.type = Material.SEA_LANTERN
-            block.world.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 2f, 1f)
+        if (generatorManager.isCompleted(loc)) {
+            // Folia Ready: Modificar bloques siempre en el hilo de la región
+            game.plugin.server.regionScheduler.run(game.plugin, loc, { _ ->
+                if (!game.changedBlocks.containsKey(loc)) game.changedBlocks[loc] = block.type
+                block.type = Material.SEA_LANTERN
+                block.world.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 2f, 1f)
+            })
 
             game.broadcastLocalized("game.generator-repaired",
-                Placeholder.parsed("current", game.plugin.generatorManager.getCompletedCount().toString()),
-                Placeholder.parsed("total", game.plugin.generatorManager.getTotalGenerators().toString())
+                Placeholder.parsed("current", generatorManager.getCompletedCountInWorld(loc.world).toString()),
+                Placeholder.parsed("total", generatorManager.getTotalGeneratorsInWorld(loc.world).toString())
             )
             game.playerController.checkWinCondition()
         }
     }
 
     fun limpiarMapa() {
-        game.plugin.generatorManager.resetGenerators()
-        game.changedBlocks.forEach { (loc, material) -> loc.block.type = material }
+        game.plugin.generatorManager?.resetGenerators()
+
+        // Iteramos las ubicaciones y delegamos al RegionScheduler para la seguridad en Folia
+        game.changedBlocks.forEach { (loc, material) ->
+            game.plugin.server.regionScheduler.run(game.plugin, loc, { _ ->
+                loc.block.type = material
+            })
+        }
         game.changedBlocks.clear()
 
-        for (p in game.plugin.server.onlinePlayers) {
-            game.uiController.setLuckPermsPrefix(p, "")
-            p.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
-            p.health = 20.0
-            p.isSwimming = false
+        for (p in game.getPlayers()) {
+            p.scheduler.run(game.plugin, { _ ->
+                game.uiController.setLuckPermsPrefix(p, "")
+                p.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
+                p.health = 20.0
+                p.isSwimming = false
+            }, null)
         }
         game.voteManager.resetVotes()
     }

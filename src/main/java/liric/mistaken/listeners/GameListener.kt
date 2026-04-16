@@ -27,12 +27,10 @@ import org.bukkit.potion.PotionEffectType
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
-import java.util.function.Consumer
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * GameListener: Adaptado para MULTIARENA / VELOCITY.
- * Gestiona la lógica de juego basándose en la sesión individual de cada jugador.
+ * GameListener: Adaptado para MULTIARENA / FOLIA.
  */
 class GameListener(private val plugin: Mistaken) : Listener {
 
@@ -46,22 +44,23 @@ class GameListener(private val plugin: Mistaken) : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onRescue(event: PlayerInteractEntityEvent) {
         val player = event.player
-        val session = plugin.sessionManager.getSession(player) ?: return // 🔥 MULTIARENA
+        val session = plugin.sessionManager?.getSession(player) ?: return // Safe call
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
         if (session.currentMode != MistakenMode.FREEZE_TAG) return
 
         val victim = event.rightClicked as? Player ?: return
+        val combatManager = plugin.combatManager ?: return
 
-        if (plugin.combatManager.isFrozen(victim)) {
+        if (combatManager.isFrozen(victim)) {
             if (!session.esAsesino(player.uniqueId)) {
-                if (plugin.combatManager.getHealth(player) <= 1) {
+                if (combatManager.getHealth(player) <= 1) {
                     player.sendActionBar(mm.deserialize("<red>¡Estás muy herido para rescatar a nadie!"))
                     return
                 }
 
                 event.isCancelled = true
-                plugin.combatManager.unfreeze(victim, player)
+                combatManager.unfreeze(victim, player)
                 victim.world.spawnParticle(Particle.SNOWFLAKE, victim.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
                 victim.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 1.5f)
             }
@@ -74,7 +73,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onDamageEffects(event: EntityDamageByEntityEvent) {
         val victim = event.entity as? Player ?: return
-        val session = plugin.sessionManager.getSession(victim) ?: return // 🔥 MULTIARENA
+        val session = plugin.sessionManager?.getSession(victim) ?: return
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
 
@@ -88,7 +87,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val isVictimKiller = session.esAsesino(victim.uniqueId)
 
         if (!isDamagerKiller && isVictimKiller) {
-            val killerHealth = plugin.combatManager.getHealth(victim)
+            val killerHealth = plugin.combatManager?.getHealth(victim) ?: 0
             damager.sendActionBar(plugin.messageConfig.getMessage(damager, "game.killer-hit-actionbar",
                 Placeholder.parsed("health", killerHealth.toString())))
 
@@ -104,7 +103,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
         val victim = event.entity
-        val session = plugin.sessionManager.getSession(victim) ?: return // 🔥 MULTIARENA
+        val session = plugin.sessionManager?.getSession(victim) ?: return
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
 
@@ -113,16 +112,15 @@ class GameListener(private val plugin: Mistaken) : Listener {
         event.droppedExp = 0
         event.deathMessage(null)
 
-        // Procesar muerte en su controlador de sesión
         session.playerController.handlePlayerDeath(victim)
 
-        victim.scheduler.runDelayed(plugin, Consumer { _ ->
-            if (victim.isOnline && victim.isDead) {
-                victim.spigot().respawn()
+        // Folia Ready: Usar el scheduler de la entidad para el respawn seguro
+        victim.scheduler.runDelayed(plugin, { _ ->
+            if (victim.isOnline) {
+                victim.spigot().respawn() // Usar método directo de Paper
                 victim.teleportAsync(deathLoc).thenAccept { success ->
-                    // Verificamos que la sesión siga activa al respawnear
                     if (success && session.currentState == GameState.INGAME) {
-                        plugin.spectatorManager.setCustomSpectator(victim)
+                        plugin.spectatorManager?.setCustomSpectator(victim)
                     }
                 }
             }
@@ -154,11 +152,11 @@ class GameListener(private val plugin: Mistaken) : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onEnvironmentalDamage(event: EntityDamageEvent) {
         val player = event.entity as? Player ?: return
-        val session = plugin.sessionManager.getSession(player) ?: return
+        val session = plugin.sessionManager?.getSession(player) ?: return
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
 
-        if (plugin.combatManager.isFrozen(player)) {
+        if (plugin.combatManager?.isFrozen(player) == true) {
             if (event.cause in listOf(EntityDamageEvent.DamageCause.FREEZE, EntityDamageEvent.DamageCause.SUFFOCATION, EntityDamageEvent.DamageCause.DROWNING)) {
                 event.isCancelled = true
             }
@@ -168,7 +166,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     fun onInventoryOpen(event: InventoryOpenEvent) {
         val player = event.player as? Player ?: return
-        val session = plugin.sessionManager.getSession(player) ?: return
+        val session = plugin.sessionManager?.getSession(player) ?: return
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
 
@@ -185,7 +183,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     @EventHandler
     fun onHungerChange(event: FoodLevelChangeEvent) {
         val player = event.entity as? Player ?: return
-        val session = plugin.sessionManager.getSession(player) ?: return
+        val session = plugin.sessionManager?.getSession(player) ?: return
 
         if (plugin.isReady && session.currentState == GameState.INGAME) {
             event.isCancelled = true
@@ -193,24 +191,23 @@ class GameListener(private val plugin: Mistaken) : Listener {
         }
     }
 
-    // --- PROTECCIONES AISLADAS POR SESIÓN ---
     @EventHandler fun onDrop(e: PlayerDropItemEvent) {
-        val session = plugin.sessionManager.getSession(e.player)
+        val session = plugin.sessionManager?.getSession(e.player)
         if (session?.currentState == GameState.INGAME) e.isCancelled = true
     }
 
     @EventHandler fun onCraft(e: CraftItemEvent) {
-        val session = plugin.sessionManager.getSession(e.whoClicked as Player)
+        val session = plugin.sessionManager?.getSession(e.whoClicked as Player)
         if (session?.currentState == GameState.INGAME) e.isCancelled = true
     }
 
     @EventHandler fun onBreak(e: BlockBreakEvent) {
-        val session = plugin.sessionManager.getSession(e.player)
+        val session = plugin.sessionManager?.getSession(e.player)
         if (session?.currentState == GameState.INGAME && !e.player.hasPermission("mistaken.admin")) e.isCancelled = true
     }
 
     @EventHandler fun onPlace(e: BlockPlaceEvent) {
-        val session = plugin.sessionManager.getSession(e.player)
+        val session = plugin.sessionManager?.getSession(e.player)
         if (session?.currentState == GameState.INGAME && !e.player.hasPermission("mistaken.admin")) e.isCancelled = true
     }
 
@@ -218,14 +215,14 @@ class GameListener(private val plugin: Mistaken) : Listener {
     fun onPlayerDismount(event: PlayerToggleSneakEvent) {
         val player = event.player
         if (event.isSneaking && player.passengers.isNotEmpty()) {
-            plugin.combatManager.soltarPasajero(player)
+            plugin.combatManager?.soltarPasajero(player)
         }
     }
 
     @EventHandler
     fun onRegen(event: EntityRegainHealthEvent) {
         val player = event.entity as? Player ?: return
-        val session = plugin.sessionManager.getSession(player)
+        val session = plugin.sessionManager?.getSession(player)
 
         if (session?.currentState == GameState.INGAME) {
             val r = event.regainReason

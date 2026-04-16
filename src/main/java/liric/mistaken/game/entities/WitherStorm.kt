@@ -18,21 +18,19 @@ import org.joml.Vector3f
 import java.time.Duration
 import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
-import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * [LIRIC-MISTAKEN 2.0] - BOSS ENTITY
+ *[LIRIC-MISTAKEN 2.0] - BOSS ENTITY
  * WITHER STORM: El Devorador de Mundos.
- * ADAPTADO: Multiarena/Velocity con aislamiento de sesión y tracking dinámico.
+ * ADAPTADO: Multiarena/Velocity con aislamiento de sesión y soporte Folia.
  */
 class WitherStorm(private val plugin: Mistaken) {
 
     private val parts = mutableListOf<BlockDisplay>()
-    private var isRunning = true
+    private var isRunning = false
     private var currentTarget: Player? = null
 
-    // 🔥 Referencia a la sesión a la que pertenece este Boss
     private var assignedSession: GameSession? = null
 
     private val teamPurple = "StormGlow"
@@ -50,12 +48,14 @@ class WitherStorm(private val plugin: Mistaken) {
     private var currentLocation: Location? = null
 
     fun spawn(startLoc: Location) {
-        // 🔥 Detectamos la sesión basada en el mundo del spawn
-        assignedSession = plugin.sessionManager.activeSessions.values.find {
-            it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
+        val sm = plugin.sessionManager
+        if (sm != null) {
+            assignedSession = sm.activeSessions.values.find {
+                it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
+            }
         }
 
-        plugin.server.globalRegionScheduler.run(plugin) { _ ->
+        plugin.server.regionScheduler.run(plugin, startLoc, { _ ->
             try {
                 currentLocation = startLoc.clone().add(0.0, 10.0, 0.0)
 
@@ -84,7 +84,6 @@ class WitherStorm(private val plugin: Mistaken) {
 
                 parts.forEach { scoreboard.getTeam(teamPurple)?.addEntry(it.uniqueId.toString()) }
 
-                // 🔥 Broadcast solo para la sesión
                 val msg = plugin.mm.deserialize("<gradient:#aa00aa:#000000><bold>WITHER STORM</bold></gradient> <red>ha sido invocado.")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(msg) }
 
@@ -95,7 +94,7 @@ class WitherStorm(private val plugin: Mistaken) {
             } catch (e: Exception) {
                 plugin.componentLogger.error("Error spawneando Wither Storm: ${e.message}")
             }
-        }
+        })
     }
 
     private fun createPart(base: Location, mat: Material, scale: Vector3f, offset: Vector): BlockDisplay {
@@ -122,12 +121,12 @@ class WitherStorm(private val plugin: Mistaken) {
             val pivot = currentLocation ?: return@Consumer
             val session = assignedSession
 
-            // BUSCAR PRESA (Aislado por sesión)
+            // BUSCAR PRESA
             if (stateTicks % 20 == 0) {
                 val potentialTargets = if (session != null) {
                     session.getPlayers().filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
                 } else {
-                    pivot.world.getNearbyPlayers(pivot, 100.0).filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
+                    plugin.server.onlinePlayers.filter { it.world == pivot.world && it.location.distanceSquared(pivot) < 10000.0 && it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
                 }
                 currentTarget = potentialTargets.minByOrNull { it.location.distanceSquared(pivot) }
             }
@@ -139,8 +138,10 @@ class WitherStorm(private val plugin: Mistaken) {
                 }
                 State.PERSECUCION -> {
                     val target = currentTarget
-                    if (target == null || !target.isOnline) {
+                    val sm = plugin.sessionManager
+                    if (target == null || !target.isOnline || (session != null && sm?.getSession(target) != session)) {
                         changeState(State.IDLE)
+                        currentTarget = null
                     } else {
                         moveTowards(target.location.add(0.0, 8.0, 0.0), 0.35)
 
@@ -184,30 +185,34 @@ class WitherStorm(private val plugin: Mistaken) {
         val beamDir = Vector(0.0, -1.0, 0.0)
 
         // Visual del Rayo
-        for (i in 0..20) {
-            val pLoc = beamStart.clone().add(beamDir.clone().multiply(i.toDouble()))
-            pLoc.world.spawnParticle(Particle.DUST, pLoc, 3, 2.0, 0.5, 2.0, 0.0, Particle.DustOptions(Color.PURPLE, 3f))
-            pLoc.world.spawnParticle(Particle.REVERSE_PORTAL, pLoc, 2, 1.0, 0.5, 1.0, 0.0)
-        }
+        plugin.server.regionScheduler.run(plugin, beamStart, { _ ->
+            for (i in 0..20) {
+                val pLoc = beamStart.clone().add(beamDir.clone().multiply(i.toDouble()))
+                pLoc.world.spawnParticle(Particle.DUST, pLoc, 3, 2.0, 0.5, 2.0, 0.0, Particle.DustOptions(Color.PURPLE, 3f))
+                pLoc.world.spawnParticle(Particle.REVERSE_PORTAL, pLoc, 2, 1.0, 0.5, 1.0, 0.0)
+            }
 
-        if (stateTicks % 10 == 0) pivot.world.playSound(pivot, Sound.BLOCK_BEACON_AMBIENT, 5f, 0.5f)
+            if (stateTicks % 10 == 0) pivot.world.playSound(pivot, Sound.BLOCK_BEACON_AMBIENT, 5f, 0.5f)
+        })
 
         // Succión de jugadores
         val session = assignedSession
-        val victims = (session?.getPlayers() ?: pivot.world.players).filter {
-            it.gameMode == GameMode.SURVIVAL && it.location.distanceSquared(beamStart) < 100.0 // Radio de 10 bloques
+        val victims = (session?.getPlayers() ?: plugin.server.onlinePlayers).filter {
+            it.world == beamStart.world && it.gameMode == GameMode.SURVIVAL && it.location.distanceSquared(beamStart) < 100.0
         }
 
         victims.forEach { p ->
-            val pull = beamStart.toVector().subtract(p.location.toVector()).normalize().multiply(0.5)
-            p.velocity = pull.setY(0.4)
-            p.addPotionEffect(PotionEffect(PotionEffectType.LEVITATION, 10, 2, false, false, false))
+            p.scheduler.run(plugin, { _ ->
+                val pull = beamStart.toVector().subtract(p.location.toVector()).normalize().multiply(0.5)
+                p.velocity = pull.setY(0.4)
+                p.addPotionEffect(PotionEffect(PotionEffectType.LEVITATION, 10, 2, false, false, false))
 
-            if (p.location.distanceSquared(beamStart) < 12.25) { // 3.5 bloques reales
-                plugin.combatManager.takeDamage(p)
-                p.playSound(p.location, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 0.5f)
-                p.sendMessage(plugin.mm.deserialize("<dark_purple><i>EL RAYO TRACTOR TE ESTÁ CONSUMIENDO...</i></dark_purple>"))
-            }
+                if (p.location.distanceSquared(beamStart) < 12.25) {
+                    plugin.combatManager?.takeDamage(p)
+                    p.playSound(p.location, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 0.5f)
+                    p.sendMessage(plugin.mm.deserialize("<dark_purple><i>EL RAYO TRACTOR TE ESTÁ CONSUMIENDO...</i></dark_purple>"))
+                }
+            }, null)
         }
     }
 
@@ -218,31 +223,38 @@ class WitherStorm(private val plugin: Mistaken) {
         }
 
         if (stateTicks % 4 == 0 && currentTarget != null) {
+            val target = currentTarget!!
             val side = if (ThreadLocalRandom.current().nextBoolean()) -5.0 else 5.0
             val spawnLoc = pivot.clone().add(pivot.direction.clone().crossProduct(Vector(0,1,0)).multiply(side)).add(0.0, 2.0, 0.0)
 
-            val skull = spawnLoc.world.spawn(spawnLoc, WitherSkull::class.java)
-            val targetDir = currentTarget!!.eyeLocation.toVector().subtract(spawnLoc.toVector()).normalize()
-            skull.setDirection(targetDir)
-            skull.velocity = targetDir.multiply(1.8)
-            skull.isCharged = true
+            plugin.server.regionScheduler.run(plugin, spawnLoc, { _ ->
+                val skull = spawnLoc.world.spawn(spawnLoc, WitherSkull::class.java)
+                val targetDir = target.eyeLocation.toVector().subtract(spawnLoc.toVector()).normalize()
+                skull.setDirection(targetDir)
+                skull.velocity = targetDir.multiply(1.8)
+                skull.isCharged = true
 
-            spawnLoc.world.playSound(spawnLoc, Sound.ENTITY_WITHER_SHOOT, 2f, 0.7f)
+                spawnLoc.world.playSound(spawnLoc, Sound.ENTITY_WITHER_SHOOT, 2f, 0.7f)
+            })
         }
     }
 
     private fun processRoar(pivot: Location) {
         if (stateTicks == 1) {
-            pivot.world.playSound(pivot, Sound.ENTITY_WARDEN_ROAR, 10f, 0.5f)
-            pivot.world.spawnParticle(Particle.SONIC_BOOM, pivot.clone().add(0.0, 2.0, 2.0), 3)
+            plugin.server.regionScheduler.run(plugin, pivot, { _ ->
+                pivot.world.playSound(pivot, Sound.ENTITY_WARDEN_ROAR, 10f, 0.5f)
+                pivot.world.spawnParticle(Particle.SONIC_BOOM, pivot.clone().add(0.0, 2.0, 2.0), 3)
+            })
 
             val session = assignedSession
-            (session?.getPlayers() ?: pivot.world.players).forEach { p ->
-                if (p.location.distanceSquared(pivot) < 1600.0) { // Radio 40 bloques
-                    val push = p.location.toVector().subtract(pivot.toVector()).normalize().multiply(2.5).setY(0.6)
-                    p.velocity = push
-                    p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
-                    p.showTitle(Title.title(plugin.mm.deserialize("<dark_purple><bold>¡RUUUUAAARRR!"), plugin.mm.deserialize("<gray>La tormenta brama...")))
+            (session?.getPlayers() ?: plugin.server.onlinePlayers.filter { it.world == pivot.world }).forEach { p ->
+                if (p.location.distanceSquared(pivot) < 1600.0) {
+                    p.scheduler.run(plugin, { _ ->
+                        val push = p.location.toVector().subtract(pivot.toVector()).normalize().multiply(2.5).setY(0.6)
+                        p.velocity = push
+                        p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
+                        p.showTitle(Title.title(plugin.mm.deserialize("<dark_purple><bold>¡RUUUUAAARRR!"), plugin.mm.deserialize("<gray>La tormenta brama...")))
+                    }, null)
                 }
             }
         }
@@ -269,17 +281,20 @@ class WitherStorm(private val plugin: Mistaken) {
 
     private fun explodeAndDie() {
         val loc = parts.firstOrNull()?.location ?: return
-        loc.world.createExplosion(loc, 4F, false, false)
-        loc.world.playSound(loc, Sound.ENTITY_WITHER_DEATH, 10f, 0.5f)
 
-        parts.forEach {
-            it.world.spawnParticle(Particle.BLOCK, it.location, 40, 1.0, 1.0, 1.0, it.block)
-            it.remove()
-        }
-        parts.clear()
+        plugin.server.regionScheduler.run(plugin, loc, { _ ->
+            loc.world.createExplosion(loc, 4F, false, false)
+            loc.world.playSound(loc, Sound.ENTITY_WITHER_DEATH, 10f, 0.5f)
 
-        val deathMsg = plugin.mm.deserialize("<green>¡La <dark_purple>Wither Storm<green> ha sido derrotada!")
-        assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
+            parts.forEach {
+                it.world.spawnParticle(Particle.BLOCK, it.location, 40, 1.0, 1.0, 1.0, it.block)
+                it.remove()
+            }
+            parts.clear()
+
+            val deathMsg = plugin.mm.deserialize("<green>¡La <dark_purple>Wither Storm<green> ha sido derrotada!")
+            assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
+        })
     }
 
     private fun moveAngle(from: Float, to: Float, step: Float): Float {
@@ -291,7 +306,12 @@ class WitherStorm(private val plugin: Mistaken) {
 
     fun remove() {
         isRunning = false
-        parts.forEach { it.remove() }
-        parts.clear()
+        val loc = parts.firstOrNull()?.location
+        if (loc != null) {
+            plugin.server.regionScheduler.run(plugin, loc, { _ ->
+                parts.forEach { it.remove() }
+                parts.clear()
+            })
+        }
     }
 }

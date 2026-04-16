@@ -11,9 +11,9 @@ import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 
 /**
- * [LIRIC-MISTAKEN 2.0]
- * SupervivienteGeneralListener: Protección de inventario y equipo.
- * FIX: Se agregaron bloqueos contra teclas numéricas rápidas.
+ *[LIRIC-MISTAKEN 2.0]
+ * SupervivienteGeneralListener: Protección de inventario optimizada.
+ * FIX: Llamadas seguras (?.) garantizan 0 coste de CPU en el LOBBY.
  */
 class SupervivienteGeneralListener(private val plugin: Mistaken) : Listener {
 
@@ -21,8 +21,8 @@ class SupervivienteGeneralListener(private val plugin: Mistaken) : Listener {
     fun onInventoryClick(event: InventoryClickEvent) {
         val player = event.whoClicked as? Player ?: return
 
-        // 1. Filtro O(1) rápido
-        if (!plugin.supervivienteManager.esSupervivienteActivo(player)) return
+        // 1. Filtro O(1) rápido y seguro
+        if (plugin.supervivienteManager?.esSupervivienteActivo(player) != true) return
 
         // 2. Bloqueo de Atajos Tácticos (Teclas 1-9 sobre un ítem o Swap)
         if (event.click == ClickType.NUMBER_KEY || event.click == ClickType.SWAP_OFFHAND) {
@@ -53,7 +53,7 @@ class SupervivienteGeneralListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onPlayerSwapHand(event: PlayerSwapHandItemsEvent) {
-        if (plugin.supervivienteManager.esSupervivienteActivo(event.player)) {
+        if (plugin.supervivienteManager?.esSupervivienteActivo(event.player) == true) {
             event.isCancelled = true
         }
     }

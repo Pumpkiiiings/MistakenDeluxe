@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "liric.mistaken" // Actualizado a tu nuevo package
-version = "PROXY-BETA-2.0"
+version = "1.16.0.1"
 
 java {
     toolchain {
@@ -49,23 +49,21 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation(kotlin("stdlib"))
     implementation("com.mojang:brigadier:1.2.9")
-    // Librerías que se incluirán en el JAR (Shadow)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("com.github.retrooper:packetevents-spigot:2.12.0")
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("fr.skytasul:glowingentities:1.4.10")
-    implementation("com.mysql:mysql-connector-j:8.3.0")
+    implementation("com.mysql:mysql-connector-j:8.4.0")
     implementation("dev.triumphteam:triumph-gui:3.1.13")
-    implementation("org.slf4j:slf4j-simple:2.0.9")
+    implementation("org.slf4j:slf4j-simple:2.0.17")
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
 
-    // APIs Externas (Solo para compilar)
-    compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.2.0")
+    compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.0.0")
     compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
         exclude(group = "org.bukkit", module = "bukkit")
     }
-    compileOnly("net.momirealms:craft-engine-core:0.0.60")
+    compileOnly("net.momirealms:craft-engine-core:0.0.67")
     compileOnly("net.momirealms:craft-engine-bukkit:0.0.60")
     compileOnly(files("libs/CraftEngine.jar"))
     compileOnly("net.luckperms:api:5.4")

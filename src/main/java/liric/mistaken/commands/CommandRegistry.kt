@@ -4,6 +4,18 @@ import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent
 import liric.mistaken.Mistaken
+import liric.mistaken.commands.admin.ArenaCommand
+import liric.mistaken.commands.misc.CinematicaCommand
+import liric.mistaken.commands.admin.DataCommand
+import liric.mistaken.commands.misc.MistakenTestCommand
+import liric.mistaken.commands.admin.SetLobbyCommand
+import liric.mistaken.commands.admin.UnlinkCommand
+import liric.mistaken.commands.game.EspectearCommand
+import liric.mistaken.commands.game.JoinCommand
+import liric.mistaken.commands.game.LeaveCommand
+import liric.mistaken.commands.game.LinkCommand
+import liric.mistaken.commands.game.VoteCommand
+import liric.mistaken.commands.misc.HitboxCommand
 
 class CommandRegistry(private val plugin: Mistaken) {
 
