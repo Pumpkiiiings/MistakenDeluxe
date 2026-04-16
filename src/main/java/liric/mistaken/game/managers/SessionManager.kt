@@ -1,11 +1,16 @@
 package liric.mistaken.game.managers
 
 import liric.mistaken.Mistaken
-import liric.mistaken.game.GameSession // 🔥 IMPORT FALTANTE AÑADIDO
+import liric.mistaken.game.GameSession
+import liric.mistaken.utils.misc.BungeeUtils
 import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+ *[LIRIC-MISTAKEN 2.0]
+ * SessionManager: Gestor principal de colas.
+ */
 class SessionManager(private val plugin: Mistaken) {
 
     val activeSessions = ConcurrentHashMap<String, GameSession>()
@@ -32,7 +37,7 @@ class SessionManager(private val plugin: Mistaken) {
         leaveSession(player)
         playerSessions[player.uniqueId] = sessionId
         session.addPlayer(player)
-        plugin.isolationManager.updateVisibility(player)
+        plugin.isolationManager?.updateVisibility(player)
     }
 
     fun leaveSession(player: Player) {
@@ -40,16 +45,12 @@ class SessionManager(private val plugin: Mistaken) {
         val session = activeSessions[sessionId]
         session?.removePlayer(player)
 
-        val serverMode = plugin.serverMode
-
-        if (serverMode == "GAME_SERVER") {
-            // Si están en un servidor de juegos y se salen, los mandamos al lobby de la network
+        if (plugin.serverMode == "GAME_SERVER") {
             val lobbyName = plugin.config.getString("proxy-lobby-server", "lobby") ?: "lobby"
-            liric.mistaken.utils.BungeeUtils.sendToServer(plugin, player, lobbyName)
+            BungeeUtils.sendToServer(plugin, player, lobbyName)
         } else {
-            // Si es Multiarena local, los regresamos a la coordenada del lobby de este mismo server
             plugin.lobbyLocation?.let { player.teleportAsync(it) }
-            plugin.isolationManager.updateVisibility(player)
+            plugin.isolationManager?.updateVisibility(player)
         }
     }
 

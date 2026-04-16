@@ -1,7 +1,7 @@
 package liric.mistaken.game.managers
 
 import liric.mistaken.Mistaken
-import liric.mistaken.asesinos.Asesino
+import liric.mistaken.roles.asesinos.Asesino
 import net.kyori.adventure.title.Title
 import org.bukkit.*
 import org.bukkit.entity.*

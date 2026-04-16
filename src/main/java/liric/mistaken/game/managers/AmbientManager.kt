@@ -3,7 +3,6 @@ package liric.mistaken.game.managers
 import liric.mistaken.Mistaken
 import liric.mistaken.game.TerrorPacketFactory
 import liric.mistaken.game.enums.GameState
-import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.Sound
@@ -18,7 +17,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * AmbientManager: Motor de atmósfera de terror adaptado a Multiarena.
+ * AmbientManager: Atmósfera optimizada para Folia (Reloj asíncrono interno).
  */
 class AmbientManager(private val plugin: Mistaken) {
 
@@ -26,30 +25,34 @@ class AmbientManager(private val plugin: Mistaken) {
     private val trackedSurvivors = ConcurrentHashMap.newKeySet<UUID>()
     private val darknessEffect = PotionEffect(PotionEffectType.DARKNESS, 40, 0, false, false, false)
 
+    // Reloj interno para sincronizar la música/latidos de forma segura sin Bukkit.getCurrentTick()
+    private var internalTick = 0
+
     init {
         startGlobalTask()
     }
 
     private fun startGlobalTask() {
+        // La tarea se ejecuta cada 100ms (lo que equivale a 2 ticks en Minecraft)
         plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             if (!plugin.isReady) return@runAtFixedRate
+            internalTick += 2
 
-            // 🔥 MULTIARENA: Evaluamos cada sesión independiente
-            for (session in plugin.sessionManager.activeSessions.values) {
+            val sessionManager = plugin.sessionManager ?: return@runAtFixedRate
+
+            for (session in sessionManager.activeSessions.values) {
                 if (session.currentState != GameState.INGAME) continue
 
                 val killer = session.getCurrentAsesino() ?: continue
                 if (!killer.isOnline) continue
 
-                // Iteramos sobre todos los supervivientes trackeados globalmente
                 trackedSurvivors.forEach { uuid ->
-                    val survivor = Bukkit.getPlayer(uuid)
+                    val survivor = plugin.server.getPlayer(uuid)
 
-                    // Si el superviviente está online y pertenece a ESTA sesión
-                    if (survivor != null && survivor.isOnline && plugin.sessionManager.getSession(survivor) == session) {
-                        survivor.scheduler.execute(plugin, {
+                    if (survivor != null && survivor.isOnline && sessionManager.getSession(survivor) == session) {
+                        survivor.scheduler.run(plugin, { _ ->
                             processSurvivorLogic(survivor, killer, session)
-                        }, null, 0L)
+                        }, null)
                     } else if (survivor == null) {
                         trackedSurvivors.remove(uuid)
                     }
@@ -58,12 +61,7 @@ class AmbientManager(private val plugin: Mistaken) {
         }, 1L, 100L, TimeUnit.MILLISECONDS)
     }
 
-    /**
-     * Lógica individual por superviviente (Ejecutada en el hilo seguro del jugador)
-     */
     private fun processSurvivorLogic(survivor: Player, killer: Player, session: liric.mistaken.game.GameSession) {
-
-        // Si este "superviviente" en realidad fue elegido como el Asesino en esta ronda
         if (session.esAsesino(survivor.uniqueId)) {
             trackedSurvivors.remove(survivor.uniqueId)
             survivor.removePotionEffect(PotionEffectType.DARKNESS)
@@ -80,31 +78,25 @@ class AmbientManager(private val plugin: Mistaken) {
         val survivorLoc = survivor.location
         val distSq = survivorLoc.distanceSquared(killerLoc)
 
-        // 1. Heartbeat & Oscuridad
-        // 24 bloques = 576.0
-        if (distSq < 576.0) {
-            val currentTick = Bukkit.getCurrentTick()
-
+        if (distSq < 576.0) { // 24 bloques
             val rate = when {
-                distSq < 49.0 -> 4   // Muy cerca
-                distSq < 144.0 -> 10 // Cerca
-                else -> 20           // Lejos
+                distSq < 49.0 -> 4
+                distSq < 144.0 -> 10
+                else -> 20
             }
 
-            if (currentTick % rate == 0) {
+            if (internalTick % rate == 0) {
                 val isVeryClose = distSq < 64.0
                 val volume = if (isVeryClose) 1.2f else 0.6f
                 val pitch = if (isVeryClose) 1.1f else 0.7f
                 survivor.playSound(survivorLoc, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, volume, pitch)
             }
 
-            // Aplicar oscuridad si está muy cerca (< 10 bloques)
-            if (distSq < 100.0) {
+            if (distSq < 100.0) { // 10 bloques
                 survivor.addPotionEffect(darknessEffect)
             }
         }
 
-        // 2. Paranoia y Sonidos (Probabilidad aleatoria)
         val dice = ThreadLocalRandom.current().nextFloat()
 
         if (dice < 0.005f) { // 0.5%
@@ -124,7 +116,7 @@ class AmbientManager(private val plugin: Mistaken) {
 
         if (dice < 0.4f) {
             val shadowLoc = getPeripheryLocation(survivor)
-            packetFactory.spawnShadowEntity(survivor, shadowLoc, 15) // 15 ticks
+            packetFactory.spawnShadowEntity(survivor, shadowLoc, 15)
             survivor.playSound(survivor.location, Sound.ENTITY_ENDERMAN_STARE, 0.4f, 0.1f)
         } else {
             packetFactory.sendFakeAir(survivor, survivor.location.subtract(0.0, 1.0, 0.0), 12)
@@ -138,7 +130,6 @@ class AmbientManager(private val plugin: Mistaken) {
         val side = Vector(-dir.z, 0.0, dir.x).normalize()
 
         if (ThreadLocalRandom.current().nextBoolean()) side.multiply(-1.0)
-
         return loc.add(dir.multiply(7.0)).add(side.multiply(4.0))
     }
 
@@ -158,15 +149,7 @@ class AmbientManager(private val plugin: Mistaken) {
         p.playSound(loc, sounds[random.nextInt(sounds.size)], 0.4f, 0.5f)
     }
 
-    fun playSurvivorAmbience(survivor: Player) {
-        trackedSurvivors.add(survivor.uniqueId)
-    }
-
-    fun stopAmbience(p: Player) {
-        trackedSurvivors.remove(p.uniqueId)
-    }
-
-    fun stopAll() {
-        trackedSurvivors.clear()
-    }
+    fun playSurvivorAmbience(survivor: Player) { trackedSurvivors.add(survivor.uniqueId) }
+    fun stopAmbience(p: Player) { trackedSurvivors.remove(p.uniqueId) }
+    fun stopAll() { trackedSurvivors.clear() }
 }

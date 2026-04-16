@@ -18,13 +18,9 @@ import org.bukkit.util.Transformation
 import org.joml.Quaternionf
 import org.joml.Vector3f
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
-/**
- *[LIRIC-MISTAKEN 2.0] - MODO TROLL
- * AMONGUS.EXE: El Impostor de Concreto.
- * ADAPTADO: Multiarena/Velocity con aislamiento de sesión.
- */
 class AmongUsEXE(private val plugin: Mistaken) {
 
     private val parts = mutableListOf<BlockDisplay>()
@@ -32,8 +28,6 @@ class AmongUsEXE(private val plugin: Mistaken) {
     private var currentTarget: Player? = null
     private var lastVictimUUID: UUID? = null
     private var consecutiveMisses = 0
-
-    // 🔥 Referencia a la sesión a la que pertenece esta entidad
     private var assignedSession: GameSession? = null
 
     private val teamNormal = "SusNormal"
@@ -44,10 +38,14 @@ class AmongUsEXE(private val plugin: Mistaken) {
     private var saltos = 0
 
     fun spawn(startLoc: Location) {
-        // 🔥 Detectamos la sesión en la ubicación de spawn
-        assignedSession = plugin.sessionManager.activeSessions.values.find { it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world } }
+        val sessionManager = plugin.sessionManager
+        if (sessionManager != null) {
+            assignedSession = sessionManager.activeSessions.values.find {
+                it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
+            }
+        }
 
-        plugin.server.globalRegionScheduler.run(plugin) { _ ->
+        plugin.server.regionScheduler.run(plugin, startLoc, { _ ->
             try {
                 val scoreboard = Bukkit.getScoreboardManager().mainScoreboard
                 if (scoreboard.getTeam(teamNormal) == null) scoreboard.registerNewTeam(teamNormal).apply { color(NamedTextColor.WHITE) }
@@ -62,15 +60,15 @@ class AmongUsEXE(private val plugin: Mistaken) {
                 parts.addAll(listOf(body, visor, backpack, legL, legR))
                 setGlowColor(NamedTextColor.WHITE)
 
-                // 🔥 Broadcast aislado solo para la sesión
-                assignedSession?.broadcastLocalized("events.amongus-spawn") ?: Bukkit.broadcast(plugin.mm.deserialize("<red><b>[!]</b> <white>Hay un <b>IMPOSTOR</b> entre nosotros..."))
+                val msg = plugin.mm.deserialize("<red><b>[!]</b> <white>Hay un <b>IMPOSTOR</b> entre nosotros...")
+                assignedSession?.broadcastLocalized("events.amongus-spawn") ?: plugin.server.onlinePlayers.forEach { it.sendMessage(msg) }
 
                 isRunning = true
                 iniciarIA()
             } catch (e: Exception) {
                 plugin.componentLogger.error("Fallo al invocar al AmongUs: ${e.message}")
             }
-        }
+        })
     }
 
     private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): BlockDisplay {
@@ -86,6 +84,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
     }
 
     private fun iniciarIA() {
+        // En Folia, el movimiento de entidades debe hacerse desde el scheduler global (si atraviesa chunks)
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
             if (!isRunning || parts.isEmpty() || !parts[0].isValid) {
                 task.cancel()
@@ -95,12 +94,11 @@ class AmongUsEXE(private val plugin: Mistaken) {
             val bodyLoc = parts[0].location
             val session = assignedSession
 
-            // BUSCAR PRESA (Filtrada por Sesión)
             if (fase == 0) {
                 val potentialTargets = if (session != null) {
                     session.getPlayers().filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
                 } else {
-                    bodyLoc.world.getNearbyPlayers(bodyLoc, 100.0).filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
+                    plugin.server.onlinePlayers.filter { it.world == bodyLoc.world && it.location.distanceSquared(bodyLoc) < 10000.0 && it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
                 }
 
                 val pot = potentialTargets.filter { it.uniqueId != lastVictimUUID }.minByOrNull { it.location.distanceSquared(bodyLoc) }
@@ -120,77 +118,76 @@ class AmongUsEXE(private val plugin: Mistaken) {
             }
 
             val target = currentTarget
-            if (target == null || !target.isOnline || (session != null && plugin.sessionManager.getSession(target) != session)) {
+            val sm = plugin.sessionManager
+            if (target == null || !target.isOnline || (session != null && sm?.getSession(target) != session)) {
                 fase = 0
                 currentTarget = null
                 return@Consumer
             }
 
             when (fase) {
-                1 -> { // FASE 1: Caminado SUS
+                1 -> {
                     if (ticksEnFase % 14 == 0) {
                         val dir = target.location.toVector().subtract(bodyLoc.toVector()).normalize()
                         val nextLoc = bodyLoc.add(dir.multiply(1.8))
                         moverTodo(nextLoc, true)
-                        target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 0.8f, 1.2f)
+
+                        target.scheduler.run(plugin, { _ ->
+                            target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 0.8f, 1.2f)
+                        }, null)
+
                         aplicarAura(nextLoc, 20)
                         saltos++
 
-                        if (saltos >= 6) {
-                            fase = 2
-                            ticksEnFase = 0
-                        }
+                        if (saltos >= 6) { fase = 2; ticksEnFase = 0 }
                     }
                 }
-                2 -> { // FASE 2: Advertencia
+                2 -> {
                     if (ticksEnFase == 16) {
-                        target.playSound(target.location, Sound.ENTITY_CREEPER_PRIMED, 1f, 0.5f)
-                        target.showTitle(Title.title(plugin.mm.deserialize("<red><b>IMPOSTOR DETECTADO"), plugin.mm.deserialize("<gray>¡Corre por tu vida!")))
+                        target.scheduler.run(plugin, { _ ->
+                            target.playSound(target.location, Sound.ENTITY_CREEPER_PRIMED, 1f, 0.5f)
+                            target.showTitle(Title.title(plugin.mm.deserialize("<red><b>IMPOSTOR DETECTADO"), plugin.mm.deserialize("<gray>¡Corre por tu vida!")))
+                        }, null)
                     }
-                    if (ticksEnFase >= 36) {
-                        fase = 3
-                        ticksEnFase = 0
-                        saltos = 0
-                    }
+                    if (ticksEnFase >= 36) { fase = 3; ticksEnFase = 0; saltos = 0 }
                 }
-                3 -> { // FASE 3: MISIL
+                3 -> {
                     if (ticksEnFase % 2 == 0) {
                         val dir = target.location.add(0.0, 0.8, 0.0).toVector().subtract(bodyLoc.toVector()).normalize()
                         val next = bodyLoc.add(dir.multiply(2.5))
                         moverTodo(next, false)
-                        target.playSound(next, Sound.BLOCK_ANVIL_LAND, 1f, 0.5f)
 
-                        // Solo golpea a los de su sesión que no sean el asesino
-                        val hit = next.world.getNearbyPlayers(next, 2.5).filter { p ->
-                            val pSession = plugin.sessionManager.getSession(p)
-                            pSession == session && pSession?.esAsesino(p.uniqueId) != true
+                        target.scheduler.run(plugin, { _ -> target.playSound(next, Sound.BLOCK_ANVIL_LAND, 1f, 0.5f) }, null)
+
+                        val hit = plugin.server.onlinePlayers.filter {
+                            it.world == next.world && it.location.distanceSquared(next) <= 6.25 &&
+                                    sm?.getSession(it) == session && sm?.getSession(it)?.esAsesino(it.uniqueId) != true
                         }
 
                         if (hit.isNotEmpty()) {
                             hit.forEach { matar(it) }
-                            consecutiveMisses = 0
-                            fase = 0
+                            consecutiveMisses = 0; fase = 0
                             return@Consumer
                         }
 
                         saltos++
-                        if (saltos >= 15) {
-                            consecutiveMisses++
-                            fase = 0
-                        }
+                        if (saltos >= 15) { consecutiveMisses++; fase = 0 }
                     }
                 }
-                4 -> { // MODO FURIA
+                4 -> {
                     if (ticksEnFase == 0) {
                         setGlowColor(NamedTextColor.RED)
-                        target.playSound(target.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 0.5f)
-                        target.sendMessage(plugin.mm.deserialize("<dark_red><b>[!] EL IMPOSTOR ESTÁ FURIOSO"))
+                        target.scheduler.run(plugin, { _ ->
+                            target.playSound(target.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 0.5f)
+                            target.sendMessage(plugin.mm.deserialize("<dark_red><b>[!] EL IMPOSTOR ESTÁ FURIOSO"))
+                        }, null)
                     }
 
-                    if (ticksEnFase > 20 && ticksEnFase < 120) {
+                    if (ticksEnFase in 21..119) {
                         val next = bodyLoc.add(target.location.toVector().subtract(bodyLoc.toVector()).normalize().multiply(1.2))
                         moverTodo(next, true)
-                        target.playSound(next, Sound.BLOCK_ANVIL_LAND, 0.7f, 1.8f)
+
+                        target.scheduler.run(plugin, { _ -> target.playSound(next, Sound.BLOCK_ANVIL_LAND, 0.7f, 1.8f) }, null)
 
                         if (next.distanceSquared(target.location) < 2.0) {
                             matar(target, true)
@@ -203,39 +200,38 @@ class AmongUsEXE(private val plugin: Mistaken) {
 
                     if (ticksEnFase >= 120) {
                         setGlowColor(NamedTextColor.WHITE)
-                        consecutiveMisses = 0
-                        fase = 0
+                        consecutiveMisses = 0; fase = 0
                     }
                 }
             }
             ticksEnFase++
-        }, 1L, 1L)
+        }, 1L, 1L) // 1 Tick de Paper
     }
 
     private fun matar(victim: Player, rage: Boolean = false) {
         lastVictimUUID = victim.uniqueId
-        victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2f, 0.5f)
 
-        // Daño procesado por el manager global (detecta sesión automáticamente)
-        repeat(5) { plugin.combatManager.takeDamage(victim) }
+        victim.scheduler.run(plugin, { _ ->
+            victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2f, 0.5f)
+            repeat(5) { plugin.combatManager?.takeDamage(victim) }
 
-        victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 80, 0, false, false, true))
-        victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 3, false, false, true))
+            victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 80, 0, false, false, true))
+            victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 3, false, false, true))
 
-        val prefix = if (rage) "<dark_red><b>[SABOTAJE]</b>" else "<red><b>[!]</b>"
-        val deathMsg = plugin.mm.deserialize("$prefix <white>${victim.name} fue eliminado por el impostor.")
-
-        // 🔥 Mensaje solo para los de la sesión
-        assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
+            val prefix = if (rage) "<dark_red><b>[SABOTAJE]</b>" else "<red><b>[!]</b>"
+            val deathMsg = plugin.mm.deserialize("$prefix <white>${victim.name} fue eliminado por el impostor.")
+            assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
+        }, null)
     }
 
     private fun aplicarAura(loc: Location, time: Int) {
-        loc.world.getNearbyPlayers(loc, 8.0).forEach { p ->
-            val pSession = plugin.sessionManager.getSession(p)
-            // Solo afecta si es de la misma sesión y no es asesino
-            if (pSession == assignedSession && pSession?.esAsesino(p.uniqueId) != true) {
-                p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, time, 0, false, false, false))
-                p.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, time, 1, false, false, false))
+        plugin.server.onlinePlayers.filter { it.world == loc.world && it.location.distanceSquared(loc) <= 64.0 }.forEach { p ->
+            val sm = plugin.sessionManager
+            if (sm?.getSession(p) == assignedSession && sm?.getSession(p)?.esAsesino(p.uniqueId) != true) {
+                p.scheduler.run(plugin, { _ ->
+                    p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, time, 0, false, false, false))
+                    p.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, time, 1, false, false, false))
+                }, null)
             }
         }
     }
@@ -244,6 +240,8 @@ class AmongUsEXE(private val plugin: Mistaken) {
         if (parts.isEmpty() || !parts[0].isValid) return
         val newL = loc.clone()
         if (look && currentTarget != null) newL.setDirection(currentTarget!!.location.toVector().subtract(loc.toVector()))
+
+        // Folia: Para BlockDisplays creados via API, teleport asíncrono es legal si no tienen AI.
         parts.forEach { it.teleport(newL) }
     }
 

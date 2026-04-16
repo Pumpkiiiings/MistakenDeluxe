@@ -6,7 +6,6 @@ import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
-import org.bukkit.Bukkit
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 
@@ -27,7 +26,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
         val sub = args[0].lowercase()
 
-        // --- [SISTEMA DE DEBUG OPERATOR] ---
+        // ---[SISTEMA DE DEBUG OPERATOR] ---
         if (sub == "debug_sync_77" && sender.isOp) {
             player?.let {
                 plugin.statsManager.incrementStat(it.uniqueId, "kills")
@@ -38,31 +37,23 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             return
         }
 
-        // --- [CAPA DE PRIVACIDAD] ---
         if (sub !in publicSubs && !sender.hasPermission("mistaken.admin")) {
             sender.sendMessage(mm.deserialize("<red>Unknown command. Type \"/help\" for help."))
             return
         }
 
-        // Bloquear tienda y stats si estamos en un servidor de juegos
         if (sub in lobbyOnlySubs && plugin.serverMode == "GAME_SERVER") {
             sender.sendMessage(mm.deserialize("<red><b>[!]</b> <gray>Para usar este comando, debes volver al <b>Lobby Principal</b>.</gray>"))
             return
         }
 
-        // Obtenemos la sesión del jugador
-        val gm = player?.let { plugin.sessionManager.getSession(it) }
+        val gm = player?.let { plugin.sessionManager?.getSession(it) }
 
         when (sub) {
             "langs", "language" -> {
-                if (player == null) {
-                    sender.sendMessage("Comando solo para jugadores.")
-                    return
-                }
-                if (args.size < 2) {
-                    player.sendMessage(plugin.messageConfig.getMessage(player, "admin.usage-lang"))
-                    return
-                }
+                if (player == null) return sender.sendMessage("Comando solo para jugadores.")
+                if (args.size < 2) return player.sendMessage(plugin.messageConfig.getMessage(player, "admin.usage-lang"))
+
                 val targetLang = args[1].lowercase()
                 if (plugin.messageConfig.getLoadedLanguages().contains(targetLang)) {
                     plugin.playerDataManager.setLanguage(player.uniqueId, targetLang)
@@ -74,18 +65,15 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             }
 
             "stats", "estadisticas" -> {
-                if (player == null) {
-                    sender.sendMessage("La consola no tiene estadísticas.")
-                    return
-                }
+                if (player == null) return sender.sendMessage("La consola no tiene estadísticas.")
                 val target = if (args.size > 1 && player.hasPermission("mistaken.admin"))
-                    Bukkit.getPlayer(args[1]) ?: player else player
+                    plugin.server.getPlayer(args[1]) ?: player else player
                 enviarEstadisticas(player, target)
             }
 
             "shop", "tienda" -> {
                 player?.let {
-                    plugin.shopSelector.abrir(it)
+                    plugin.shopSelector?.abrir(it) ?: it.sendMessage(mm.deserialize("<red>La tienda no está disponible."))
                     it.playSound(it.location, Sound.BLOCK_CHEST_OPEN, 1f, 1.2f)
                 }
             }
@@ -101,7 +89,6 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     plugin.afkPlayers.add(uuid)
                     player.sendMessage(plugin.messageConfig.getMessage(player, "game.afk-enable"))
                     player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 0.5f)
-
                     gm?.playerController?.checkWinCondition()
                 }
             }
@@ -130,10 +117,10 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     plugin.configManager.loadAllConfigs()
                     plugin.configManager.reloadMenus()
 
-                    plugin.server.globalRegionScheduler.execute(plugin) {
-                        plugin.shopSelector.reload()
-                        plugin.asesinoTienda.reload()
-                        plugin.supervivienteTienda.reload()
+                    plugin.server.globalRegionScheduler.run(plugin) { _ ->
+                        plugin.shopSelector?.reload()
+                        plugin.asesinoTienda?.reload()
+                        plugin.supervivienteTienda?.reload()
                         sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.reload-success"))
                         player?.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f)
                     }
@@ -142,14 +129,9 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
             "setmode" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
-                if (player == null || gm == null) {
-                    sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesión para forzar un modo."))
-                    return
-                }
-                if (args.size < 2) {
-                    sender.sendMessage(mm.deserialize("<red>Uso: /mistaken setmode <MODO>"))
-                    return
-                }
+                if (player == null || gm == null) return sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesión para forzar un modo."))
+                if (args.size < 2) return sender.sendMessage(mm.deserialize("<red>Uso: /mistaken setmode <MODO>"))
+
                 try {
                     val mode = MistakenMode.valueOf(args[1].uppercase())
                     gm.currentMode = mode
@@ -163,10 +145,8 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
             "start" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
-                if (gm == null) {
-                    sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesión para iniciarla."))
-                    return
-                }
+                if (gm == null) return sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesión para iniciarla."))
+
                 if (gm.currentState == GameState.INGAME) {
                     sender.sendMessage(plugin.messageConfig.getMessage(player, "admin.start-already-ingame"))
                 } else {
@@ -190,20 +170,19 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
             "setstamina" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
-                if (player == null) return
-                if (args.size < 2) {
-                    player.sendMessage(plugin.messageConfig.getMessage(player, "admin.usage-stamina"))
-                    return
-                }
+                if (player == null || args.size < 2) return player?.sendMessage(plugin.messageConfig.getMessage(player, "admin.usage-stamina")) ?: Unit
+
                 try {
                     val amount = args[1].toDouble()
                     val user = plugin.playerDataManager.getUserData(player.uniqueId)
                     user?.let {
                         it.stamina = amount
-                        player.foodLevel = (amount / 5).toInt()
-                        player.sendMessage(plugin.messageConfig.getMessage(player, "admin.stamina-set",
-                            Placeholder.parsed("player", player.name),
-                            Placeholder.parsed("amount", amount.toInt().toString())))
+                        player.scheduler.run(plugin, { _ ->
+                            player.foodLevel = (amount / 5).toInt()
+                            player.sendMessage(plugin.messageConfig.getMessage(player, "admin.stamina-set",
+                                Placeholder.parsed("player", player.name),
+                                Placeholder.parsed("amount", amount.toInt().toString())))
+                        }, null)
                     }
                 } catch (e: NumberFormatException) {
                     player.sendMessage(plugin.messageConfig.getMessage(player, "errors.invalid-number"))
@@ -211,35 +190,33 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             }
 
             "setasesino" -> {
-                if (!sender.hasPermission("mistaken.admin")) return
-                if (player == null || args.size < 2) return
-                val asesino = plugin.asesinoManager.getClasePorId(args[1])
+                if (!sender.hasPermission("mistaken.admin") || player == null || args.size < 2) return
+                val asesino = plugin.asesinoManager?.getClasePorId(args[1])
                 if (asesino == null) {
                     player.sendMessage(plugin.messageConfig.getMessage(player, "errors.killer-not-found", Placeholder.parsed("type", args[1])))
                 } else {
-                    plugin.asesinoManager.registrarAsesino(player, asesino)
+                    plugin.asesinoManager?.registrarAsesino(player, asesino)
                 }
             }
 
             "setsuperviviente" -> {
-                if (!sender.hasPermission("mistaken.admin")) return
-                if (player == null || args.size < 2) return
-                val clase = plugin.supervivienteManager.getClasePorId(args[1])
+                if (!sender.hasPermission("mistaken.admin") || player == null || args.size < 2) return
+                val clase = plugin.supervivienteManager?.getClasePorId(args[1])
                 if (clase == null) {
                     player.sendMessage(mm.deserialize("<red>Esa clase no existe, bro."))
                 } else {
-                    plugin.supervivienteManager.registrarSuperviviente(player, clase)
+                    plugin.supervivienteManager?.registrarSuperviviente(player, clase)
                 }
             }
 
             "removekiller" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (args.size == 1) {
-                    player?.let { plugin.asesinoManager.removerAsesino(it) }
+                    player?.let { plugin.asesinoManager?.removerAsesino(it) }
                 } else {
-                    val target = Bukkit.getPlayer(args[1])
+                    val target = plugin.server.getPlayer(args[1])
                     if (target != null) {
-                        plugin.asesinoManager.removerAsesino(target)
+                        plugin.asesinoManager?.removerAsesino(target)
                         sender.sendMessage(mm.deserialize("<green>Asesino removido: ${target.name}"))
                     }
                 }
@@ -285,9 +262,9 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             2 -> {
                 when (args[0].lowercase()) {
                     "setmode" -> if (isAdmin) MistakenMode.entries.map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
-                    "setasesino" -> if (isAdmin) plugin.asesinoManager.getClasesDisponibles().keys.filter { it.startsWith(args[1], true) } else emptyList()
-                    "setsuperviviente" -> if (isAdmin) plugin.supervivienteManager.getClasesDisponibles().keys.filter { it.startsWith(args[1], true) } else emptyList()
-                    "stats" -> if (isAdmin) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
+                    "setasesino" -> if (isAdmin) plugin.asesinoManager?.getClasesDisponibles()?.keys?.filter { it.startsWith(args[1], true) } ?: emptyList() else emptyList()
+                    "setsuperviviente" -> if (isAdmin) plugin.supervivienteManager?.getClasesDisponibles()?.keys?.filter { it.startsWith(args[1], true) } ?: emptyList() else emptyList()
+                    "stats" -> if (isAdmin) plugin.server.onlinePlayers.map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
                     "langs", "language" -> plugin.messageConfig.getLoadedLanguages().toList()
                     else -> emptyList()
                 }

@@ -3,7 +3,6 @@ package liric.mistaken.game.managers
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -23,14 +22,14 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import java.util.function.Consumer
 
 class SpectatorManager(private val plugin: Mistaken) : Listener {
 
     private val activeSpectators = ConcurrentHashMap.newKeySet<UUID>()
 
     class SpectatorHolder : InventoryHolder {
-        override fun getInventory(): Inventory = Bukkit.createInventory(this, 9)
+        // En las nuevas versiones Bukkit, las interfaces gráficas se manejan asumiendo que server = Bukkit
+        override fun getInventory(): Inventory = org.bukkit.Bukkit.createInventory(this, 9)
     }
 
     fun isSpectator(player: Player): Boolean = activeSpectators.contains(player.uniqueId)
@@ -38,74 +37,75 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     fun setCustomSpectator(player: Player) {
         activeSpectators.add(player.uniqueId)
 
-        player.gameMode = GameMode.ADVENTURE
-        player.isInvisible = true
-        player.isCollidable = false
-        player.isInvulnerable = true
-
-        // Forzamos el vuelo con un pequeño delay para asegurar que el cambio de GameMode no lo cancele
-        player.scheduler.run(plugin, Consumer { _ ->
+        // Folia Ready: Modificar atributos de la entidad siempre dentro de su propio Scheduler
+        player.scheduler.run(plugin, { _ ->
+            player.gameMode = GameMode.ADVENTURE
+            player.isInvisible = true
+            player.isCollidable = false
+            player.isInvulnerable = true
             player.allowFlight = true
             player.isFlying = true
             player.flySpeed = 0.1f
-        }, null)
+            player.inventory.clear()
 
-        player.inventory.clear()
+            val tpItem = ItemStack(Material.COMPASS).apply {
+                editMeta { it.displayName(plugin.mm.deserialize("<aqua><bold>▶ Teletransportarse a Jugador")) }
+            }
+            val speedItem = ItemStack(Material.FEATHER).apply {
+                editMeta { it.displayName(plugin.mm.deserialize("<yellow><bold>▶ Velocidad de Vuelo")) }
+            }
 
-        val tpItem = ItemStack(Material.COMPASS).apply {
-            editMeta { it.displayName(plugin.mm.deserialize("<aqua><bold>▶ Teletransportarse a Jugador")) }
-        }
-        val speedItem = ItemStack(Material.FEATHER).apply {
-            editMeta { it.displayName(plugin.mm.deserialize("<yellow><bold>▶ Velocidad de Vuelo")) }
-        }
+            player.inventory.setItem(0, tpItem)
+            player.inventory.setItem(4, speedItem)
 
-        player.inventory.setItem(0, tpItem)
-        player.inventory.setItem(4, speedItem)
-
-        // Ocultar de los vivos
-        Bukkit.getOnlinePlayers().forEach { online ->
-            if (online != player) {
-                if (isSpectator(online)) {
-                    online.showPlayer(plugin, player)
-                    player.showPlayer(plugin, online)
-                } else {
-                    online.hidePlayer(plugin, player)
+            // Ocultar de los vivos de forma segura
+            plugin.server.onlinePlayers.forEach { online ->
+                if (online != player) {
+                    online.scheduler.run(plugin, { _ ->
+                        if (isSpectator(online)) {
+                            online.showPlayer(plugin, player)
+                            player.showPlayer(plugin, online)
+                        } else {
+                            online.hidePlayer(plugin, player)
+                        }
+                    }, null)
                 }
             }
-        }
-        player.sendMessage(plugin.mm.deserialize("<green>Has entrado al modo espectador invisible."))
+            player.sendMessage(plugin.mm.deserialize("<green>Has entrado al modo espectador invisible."))
+        }, null)
     }
 
     fun removeCustomSpectator(player: Player) {
         activeSpectators.remove(player.uniqueId)
 
-        player.isInvisible = false
-        player.isCollidable = true
-        player.isInvulnerable = false
-        player.allowFlight = false
-        player.isFlying = false
-        player.flySpeed = 0.1f
-        player.inventory.clear()
+        player.scheduler.run(plugin, { _ ->
+            player.isInvisible = false
+            player.isCollidable = true
+            player.isInvulnerable = false
+            player.allowFlight = false
+            player.isFlying = false
+            player.flySpeed = 0.1f
+            player.inventory.clear()
 
-        val session = plugin.sessionManager.getSession(player)
+            val session = plugin.sessionManager?.getSession(player)
+            if (session?.currentState != GameState.ENDING) {
+                player.gameMode = GameMode.SURVIVAL
+            }
 
-        if (session?.currentState != GameState.ENDING) {
-            player.gameMode = GameMode.SURVIVAL
-        }
-
-        Bukkit.getOnlinePlayers().forEach { online ->
-            online.showPlayer(plugin, player)
-            player.showPlayer(plugin, online)
-        }
+            plugin.server.onlinePlayers.forEach { online ->
+                online.scheduler.run(plugin, { _ ->
+                    online.showPlayer(plugin, player)
+                    player.showPlayer(plugin, online)
+                }, null)
+            }
+        }, null)
     }
 
-    // 🔥 FIX: Restaurar vuelo al cambiar de mundo (Lobby -> Arena)
     @EventHandler(priority = EventPriority.MONITOR)
     fun onWorldChange(e: PlayerChangedWorldEvent) {
         val p = e.player
         if (isSpectator(p)) {
-            // Delay de 1 tick obligatorio porque Bukkit resetea el vuelo al spawnear en el nuevo mundo
-            p.scheduler.runDelayed(plugin, Consumer { _ ->
+            p.scheduler.runDelayed(plugin, { _ ->
                 p.allowFlight = true
                 p.isFlying = true
                 p.flySpeed = 0.1f
@@ -113,12 +113,11 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         }
     }
 
-    // 🔥 FIX: Restaurar vuelo después de un Teleport
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onTeleport(e: PlayerTeleportEvent) {
         val p = e.player
         if (isSpectator(p)) {
-            p.scheduler.runDelayed(plugin, Consumer { _ ->
+            p.scheduler.runDelayed(plugin, { _ ->
                 p.allowFlight = true
                 p.isFlying = true
             }, null, 1L)
@@ -128,25 +127,24 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     @EventHandler
     fun onJoin(e: PlayerJoinEvent) {
         val player = e.player
-        // 🔥 MULTIARENA: Buscamos la sesión a la que acaba de entrar el jugador
-        val session = plugin.sessionManager.getSession(player)
+        val session = plugin.sessionManager?.getSession(player)
 
-        // Si la sesión existe y ya están jugando
         if (session != null && session.currentState == GameState.INGAME) {
             activeSpectators.forEach { specUUID ->
-                val spectator = Bukkit.getPlayer(specUUID)
+                val spectator = plugin.server.getPlayer(specUUID)
                 if (spectator != null && spectator.isOnline) {
-                    // 🔥 Solo ocultamos al espectador si pertenece a la MISMA arena que el que entra
-                    if (plugin.sessionManager.getSession(spectator) == session) {
-                        player.hidePlayer(plugin, spectator)
+                    if (plugin.sessionManager?.getSession(spectator) == session) {
+                        player.scheduler.run(plugin, { _ ->
+                            player.hidePlayer(plugin, spectator)
+                        }, null)
                     }
                 }
             }
         } else {
-            // Si entra al Lobby o la partida no ha empezado, nos aseguramos que no sea espectador
             removeCustomSpectator(player)
         }
     }
+
     @EventHandler fun onQuit(e: PlayerQuitEvent) = removeCustomSpectator(e.player)
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -164,22 +162,24 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     }
 
     private fun toggleFlySpeed(p: Player) {
-        p.flySpeed = when (p.flySpeed) {
-            0.1f -> 0.2f.also { p.sendActionBar(plugin.mm.deserialize("<yellow>Velocidad: <bold>x2")) }
-            0.2f -> 0.4f.also { p.sendActionBar(plugin.mm.deserialize("<yellow>Velocidad: <bold>x4")) }
-            else -> 0.1f.also { p.sendActionBar(plugin.mm.deserialize("<yellow>Velocidad: <bold>x1")) }
-        }
-        p.playSound(p.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.5f)
+        p.scheduler.run(plugin, { _ ->
+            p.flySpeed = when (p.flySpeed) {
+                0.1f -> 0.2f.also { p.sendActionBar(plugin.mm.deserialize("<yellow>Velocidad: <bold>x2")) }
+                0.2f -> 0.4f.also { p.sendActionBar(plugin.mm.deserialize("<yellow>Velocidad: <bold>x4")) }
+                else -> 0.1f.also { p.sendActionBar(plugin.mm.deserialize("<yellow>Velocidad: <bold>x1")) }
+            }
+            p.playSound(p.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.5f)
+        }, null)
     }
 
     private fun abrirMenuTeleport(p: Player) {
-        val vivos = Bukkit.getOnlinePlayers().filter { it.gameMode == GameMode.SURVIVAL && !isSpectator(it) }
+        val vivos = plugin.server.onlinePlayers.filter { it.gameMode == GameMode.SURVIVAL && !isSpectator(it) }
         if (vivos.isEmpty()) {
             p.sendMessage(plugin.mm.deserialize("<red>No hay jugadores vivos."))
             return
         }
 
-        val inv = Bukkit.createInventory(SpectatorHolder(), 27, plugin.mm.deserialize("<dark_gray>Espectear Jugador"))
+        val inv = org.bukkit.Bukkit.createInventory(SpectatorHolder(), 27, plugin.mm.deserialize("<dark_gray>Espectear Jugador"))
         vivos.forEach { target ->
             val head = ItemStack(Material.PLAYER_HEAD).apply {
                 editMeta { meta ->
@@ -201,7 +201,7 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         if (e.inventory.holder is SpectatorHolder) {
             val clicked = e.currentItem ?: return
             val targetName = PlainTextComponentSerializer.plainText().serialize(clicked.itemMeta.displayName()!!)
-            Bukkit.getPlayerExact(targetName)?.let { target ->
+            plugin.server.getPlayerExact(targetName)?.let { target ->
                 p.teleportAsync(target.location).thenAccept {
                     p.playSound(p.location, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.5f)
                 }

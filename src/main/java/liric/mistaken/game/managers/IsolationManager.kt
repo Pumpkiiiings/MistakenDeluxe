@@ -2,7 +2,6 @@ package liric.mistaken.game.managers
 
 import io.papermc.paper.event.player.AsyncChatEvent
 import liric.mistaken.Mistaken
-import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -15,46 +14,50 @@ class IsolationManager(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * 🔥 AISLAMIENTO DE TAB Y VISIBILIDAD
-     * Oculta a los jugadores que no están en tu misma partida/lobby.
-     * Al usar hidePlayer, Paper automáticamente los borra del TAB.
+     * 🔥 AISLAMIENTO DE TAB Y VISIBILIDAD (Folia Ready)
      */
     fun updateVisibility(target: Player) {
-        val targetSessionId = plugin.sessionManager.playerSessions[target.uniqueId]
+        val sessionManager = plugin.sessionManager ?: return
+        val targetSessionId = sessionManager.playerSessions[target.uniqueId]
 
-        for (online in Bukkit.getOnlinePlayers()) {
+        for (online in plugin.server.onlinePlayers) {
             if (online == target) continue
 
-            val onlineSessionId = plugin.sessionManager.playerSessions[online.uniqueId]
+            val onlineSessionId = sessionManager.playerSessions[online.uniqueId]
+            val shareSession = targetSessionId == onlineSessionId
 
-            // Si están en la misma partida (o ambos están en el Lobby) se ven
-            if (targetSessionId == onlineSessionId) {
-                target.showPlayer(plugin, online)
-                online.showPlayer(plugin, target)
-            } else {
-                // Si están en partidas distintas, se vuelven inexistentes el uno para el otro
-                target.hidePlayer(plugin, online)
-                online.hidePlayer(plugin, target)
-            }
+            // Actualizar la vista del Target en SU hilo
+            target.scheduler.run(plugin, { _ ->
+                if (target.isOnline && online.isOnline) {
+                    if (shareSession) target.showPlayer(plugin, online)
+                    else target.hidePlayer(plugin, online)
+                }
+            }, null)
+
+            // Actualizar la vista del otro jugador en SU hilo
+            online.scheduler.run(plugin, { _ ->
+                if (online.isOnline && target.isOnline) {
+                    if (shareSession) online.showPlayer(plugin, target)
+                    else online.hidePlayer(plugin, target)
+                }
+            }, null)
         }
     }
 
     /**
      * 🔥 AISLAMIENTO DE CHAT
-     * Si mandas un mensaje, solo los de tu partida lo leen.
      */
     @EventHandler(priority = EventPriority.LOWEST)
     fun onIsolatedChat(event: AsyncChatEvent) {
-        val senderSessionId = plugin.sessionManager.playerSessions[event.player.uniqueId]
+        val sessionManager = plugin.sessionManager ?: return
+        val senderSessionId = sessionManager.playerSessions[event.player.uniqueId]
 
-        // Filtramos a quién le llega el mensaje
         event.viewers().removeIf { viewer ->
             if (viewer is Player) {
-                val viewerSessionId = plugin.sessionManager.playerSessions[viewer.uniqueId]
-                // Si el ID de sesión es distinto, eliminamos al receptor de la lista
+                val viewerSessionId = sessionManager.playerSessions[viewer.uniqueId]
                 viewerSessionId != senderSessionId
             } else {
-                false // Consola siempre lee todo
+                false // La consola lee todo
             }
         }
     }

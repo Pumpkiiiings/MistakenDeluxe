@@ -4,18 +4,15 @@ import com.github.retrooper.packetevents.PacketEvents
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import fr.skytasul.glowingentities.GlowingEntities
 import liric.mistaken.api.HealthAPI
-import liric.mistaken.database.StatsManager
-import liric.mistaken.game.managers.MusicManager
-import liric.mistaken.asesinos.AsesinoManager
-import liric.mistaken.asesinos.AsesinoTienda
-import liric.mistaken.commands.CommandRegistry
+import liric.mistaken.roles.asesinos.AsesinoManager
+import liric.mistaken.menu.menus.AsesinoTienda
 import liric.mistaken.config.ConfigManager
 import liric.mistaken.config.MessageConfig
 import liric.mistaken.data.PlayerDataManager
-import liric.mistaken.asesinos.Asesino
-import liric.mistaken.database.DatabaseManager
-import liric.mistaken.database.PlayerStatsManager
-import liric.mistaken.discord.DiscordManager
+import liric.mistaken.data.DatabaseManager
+import liric.mistaken.data.stats.PlayerStatsManager
+import liric.mistaken.data.stats.StatsManager
+import liric.mistaken.utils.hooks.DiscordHook
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.managers.*
 import liric.mistaken.listeners.*
@@ -23,15 +20,14 @@ import liric.mistaken.listeners.asesinos.AsesinoGeneralListener
 import liric.mistaken.listeners.asesinos.AsesinoHabilidadListener
 import liric.mistaken.listeners.supervivientes.SupervivienteHabilidadListener
 import liric.mistaken.menu.menus.ShopSelector
-import liric.mistaken.supervivientes.SupervivienteManager
-import liric.mistaken.supervivientes.SupervivienteTienda
-import liric.mistaken.utils.MistakenExpansion
+import liric.mistaken.roles.supervivientes.SupervivienteManager
+import liric.mistaken.menu.menus.SupervivienteTienda
+import liric.mistaken.utils.hooks.MistakenExpansion
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.milkbowl.vault.economy.Economy
 import org.bukkit.GameRule
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
-import org.bukkit.plugin.RegisteredServiceProvider
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.plugin.ServicePriority
@@ -40,6 +36,10 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
+/**
+ * [LIRIC-MISTAKEN 2.0]
+ * Optimizado para Paper 1.21.4+ y Folia.
+ */
 class Mistaken : JavaPlugin() {
 
     companion object {
@@ -56,47 +56,54 @@ class Mistaken : JavaPlugin() {
     }
 
     val mm = MiniMessage.miniMessage()
-    lateinit var assassinKey: NamespacedKey
+    val assassinKey by lazy { NamespacedKey(this, "selected_assassin") }
+
     var craftEngineEnabled: Boolean = false
         private set
     var serverMode: String = "GAME_SERVER"
         private set
+    val isGameServer: Boolean get() = serverMode != "NETWORK_LOBBY"
 
+    // Estados de memoria ligera
     val staffEditMode = mutableSetOf<UUID>()
     val afkPlayers = mutableSetOf<UUID>()
+    val ignoredTestPlayers = mutableSetOf<UUID>()
     var lobbyLocation: Location? = null
     var isReady = false
-    val ignoredTestPlayers = mutableSetOf<UUID>()
 
+    // ==========================================
+    // MANAGERS GLOBALES (Siempre cargan)
+    // ==========================================
     lateinit var configManager: ConfigManager
     lateinit var messageConfig: MessageConfig
-    lateinit var statsManager: StatsManager
-    lateinit var playerDataManager: PlayerDataManager
     lateinit var databaseManager: DatabaseManager
+    lateinit var statsManager: StatsManager
     lateinit var playerStatsManager: PlayerStatsManager
-
-    lateinit var sessionManager: SessionManager
-    lateinit var isolationManager: IsolationManager
-
-    lateinit var antiBlockListener: AntiBlockListener
-    lateinit var voteManager: VoteManager
-    lateinit var arenaManager: ArenaManager
-    lateinit var musicManager: MusicManager
-    lateinit var generatorManager: GeneratorManager
-    lateinit var mapManager: MapManager
+    lateinit var playerDataManager: PlayerDataManager
     lateinit var scoreboardManager: ScoreboardManager
-    lateinit var ambientManager: AmbientManager
-    lateinit var combatManager: CombatManager
-    lateinit var discordManager: DiscordManager
-    lateinit var cinematicManager: CinematicManager
+    lateinit var discordHook: DiscordHook
+    lateinit var musicManager: MusicManager
 
-    lateinit var spectatorManager: SpectatorManager
-    lateinit var asesinoManager: AsesinoManager
-    lateinit var supervivienteManager: SupervivienteManager
-    lateinit var asesinoTienda: AsesinoTienda
-    lateinit var supervivienteTienda: SupervivienteTienda
-    lateinit var shopSelector: ShopSelector
-    lateinit var glowingAPI: GlowingEntities
+    // ==========================================
+    // MANAGERS DE JUEGO (Cargan SÓLO si es Game/Arena) -> NULABLES
+    // ==========================================
+    var sessionManager: SessionManager? = null
+    var isolationManager: IsolationManager? = null
+    var voteManager: VoteManager? = null
+    var arenaManager: ArenaManager? = null
+    var generatorManager: GeneratorManager? = null
+    var mapManager: MapManager? = null
+    var ambientManager: AmbientManager? = null
+    var combatManager: CombatManager? = null
+    var cinematicManager: CinematicManager? = null
+    var spectatorManager: SpectatorManager? = null
+    var asesinoManager: AsesinoManager? = null
+    var supervivienteManager: SupervivienteManager? = null
+    var asesinoTienda: AsesinoTienda? = null
+    var supervivienteTienda: SupervivienteTienda? = null
+    var shopSelector: ShopSelector? = null
+    var glowingAPI: GlowingEntities? = null
+    var antiBlockListener: AntiBlockListener? = null
 
     override fun onLoad() {
         instance = this
@@ -107,112 +114,107 @@ class Mistaken : JavaPlugin() {
 
     override fun onEnable() {
         val start = System.currentTimeMillis()
-        instance = this
-
         PacketEvents.getAPI().init()
-        assassinKey = NamespacedKey(this, "selected_assassin")
         server.messenger.registerOutgoingPluginChannel(this, "BungeeCord")
 
         saveDefaultConfig()
         createRequiredFolders()
 
+        // 1. Carga Core
         configManager = ConfigManager(this).apply { loadAllConfigs() }
         messageConfig = MessageConfig(this)
-
-        // 🔥 FIX 1: Registramos los comandos PRIMERO.
-        // Si la base de datos o el lobby fallan, al menos tendrás comandos para arreglarlo.
-        CommandRegistry(this).registerAll()
-
         serverMode = config.getString("server-mode", "GAME_SERVER")?.uppercase() ?: "GAME_SERVER"
-        componentLogger.info(mm.deserialize("<yellow>[Red] Modo del servidor configurado como: <bold>$serverMode</bold></yellow>"))
 
+        componentLogger.info(mm.deserialize("<yellow>[Red] Modo del servidor: <bold>$serverMode</bold></yellow>"))
         loadLobbyLocation()
-        if (serverMode == "MULTIARENA" || serverMode == "NETWORK_LOBBY") {
-            if (lobbyLocation != null) {
-                lobbyLocation?.world?.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
-            } else {
-                componentLogger.warn(mm.deserialize("<red>[!] Falta establecer el lobby (/setlobby).</red>"))
-            }
-        } else if (serverMode == "GAME_SERVER" && lobbyLocation == null) {
-            componentLogger.warn(mm.deserialize("<red>[!] GAME_SERVER requiere /setlobby para crear el Pre-Lobby de cristal.</red>"))
+
+        setupIntegrations()
+        if (!setupDatabase()) {
+            server.pluginManager.disablePlugin(this)
+            return // Si no hay BD, apagamos para evitar corrupción
         }
 
-        // 🔥 FIX 2: Si falla la conexión de DB o Vault, no apagamos el plugin entero.
-        // Solo lanzamos el warning, para que puedas usar comandos de admin.
-        setupIntegrations()
-        setupDatabase()
-
+        // Managers Core (DB, Stats, Scoreboard, Discord)
         playerStatsManager = PlayerStatsManager(this)
         statsManager = StatsManager(this)
         playerDataManager = PlayerDataManager(this)
-
-        glowingAPI = GlowingEntities(this)
-        combatManager = CombatManager(this)
-        antiBlockListener = AntiBlockListener(this)
-        voteManager = VoteManager()
-        ambientManager = AmbientManager(this)
-        generatorManager = GeneratorManager(this)
-
-        sessionManager = SessionManager(this)
-        isolationManager = IsolationManager(this)
-
-        mapManager = MapManager(this)
-        arenaManager = ArenaManager(this)
-        asesinoManager = AsesinoManager(this)
-        supervivienteManager = SupervivienteManager(this)
-        discordManager = DiscordManager(this)
-        musicManager = MusicManager(this)
-        spectatorManager = SpectatorManager(this)
-        cinematicManager = CinematicManager(this)
-
-        server.pluginManager.registerEvents(spectatorManager, this)
-        liric.mistaken.api.MistakenAPI.init(this)
-
-        asesinoTienda = AsesinoTienda()
-        supervivienteTienda = SupervivienteTienda()
-        shopSelector = ShopSelector()
         scoreboardManager = ScoreboardManager(this)
+        discordHook = DiscordHook(this)
+        musicManager = MusicManager(this)
 
-        server.servicesManager.register(HealthAPI::class.java, combatManager, this, ServicePriority.Normal)
+        // Eventos Globales (Conexión, Desconexión)
+        server.pluginManager.registerEvents(PlayerListener(this), this)
+        server.pluginManager.registerEvents(PlayerQuitListener(this), this)
 
+        // 2. Carga Selectiva (Solo si no es LOBBY)
+        if (isGameServer) {
+            iniciarMotorDeJuego()
+        } else {
+            componentLogger.info(mm.deserialize("<gray>Modo LOBBY detectado: Sistemas de partida desactivados para ahorrar memoria.</gray>"))
+        }
+
+        liric.mistaken.api.MistakenAPI.init(this)
         if (server.pluginManager.isPluginEnabled("PlaceholderAPI")) {
             MistakenExpansion(this).register()
         }
 
-        registerEvents()
-
         isReady = true
+        handleHotReload()
+        sendLogo(System.currentTimeMillis() - start)
+    }
 
-        if (serverMode != "NETWORK_LOBBY") {
-            server.onlinePlayers.forEach { player ->
-                combatManager.resetHealth(player)
-                musicManager.syncPlayer(player)
-            }
-            iniciarMotorDeParticulas()
-        }
+    private fun iniciarMotorDeJuego() {
+        // Iniciar Managers Pesados
+        glowingAPI = GlowingEntities(this)
+        sessionManager = SessionManager(this)
+        isolationManager = IsolationManager(this)
+        voteManager = VoteManager()
+        arenaManager = ArenaManager(this)
+        mapManager = MapManager(this)
+        ambientManager = AmbientManager(this)
+        generatorManager = GeneratorManager(this)
+        combatManager = CombatManager(this)
+        spectatorManager = SpectatorManager(this)
+        asesinoManager = AsesinoManager(this)
+        supervivienteManager = SupervivienteManager(this)
+        cinematicManager = CinematicManager(this)
 
-        sendLogo()
+        asesinoTienda = AsesinoTienda()
+        supervivienteTienda = SupervivienteTienda()
+        shopSelector = ShopSelector()
+        antiBlockListener = AntiBlockListener(this)
 
-        val time = System.currentTimeMillis() - start
-        componentLogger.info(mm.deserialize("<gradient:green:aqua>Mistaken v${pluginMeta.version} habilitado en ${time}ms ($serverMode)</gradient>"))
+        server.servicesManager.register(HealthAPI::class.java, combatManager!!, this, ServicePriority.Normal)
+
+        // Registrar Eventos de Partida
+        val pm = server.pluginManager
+        pm.registerEvents(spectatorManager!!, this)
+        pm.registerEvents(GameListener(this), this)
+        pm.registerEvents(StaminaListener(this), this)
+        pm.registerEvents(AsesinoHabilidadListener(this), this)
+        pm.registerEvents(AsesinoGeneralListener(this), this)
+        pm.registerEvents(antiBlockListener!!, this)
+        pm.registerEvents(SupervivienteHabilidadListener(this), this)
+
+        iniciarMotorDeParticulas()
     }
 
     override fun onDisable() {
         isReady = false
 
-        if (::sessionManager.isInitialized) sessionManager.activeSessions.values.forEach { it.shutdown() }
-        if (::ambientManager.isInitialized) runCatching { ambientManager.stopAll() }
-        if (::musicManager.isInitialized) musicManager.shutdown()
-        if (::generatorManager.isInitialized) runCatching { generatorManager.clearGenerators() }
-        if (::scoreboardManager.isInitialized) runCatching { scoreboardManager.removeAll() }
-        if (::asesinoManager.isInitialized) runCatching { asesinoManager.shutdown() }
-        if (::supervivienteManager.isInitialized) runCatching { supervivienteManager.shutdown() }
-        if (::glowingAPI.isInitialized) runCatching { glowingAPI.disable() }
-        if (::databaseManager.isInitialized) runCatching { databaseManager.close() }
+        // Apagado Seguro usando Safe Calls `?.`
+        sessionManager?.activeSessions?.values?.forEach { it.shutdown() }
+        runCatching { ambientManager?.stopAll() }
+        musicManager.shutdown()
+        runCatching { generatorManager?.clearGenerators() }
+        runCatching { scoreboardManager.removeAll() }
+        runCatching { asesinoManager?.shutdown() }
+        runCatching { supervivienteManager?.shutdown() }
+        runCatching { glowingAPI?.disable() }
+        runCatching { databaseManager.close() }
 
         PacketEvents.getAPI().terminate()
-
-        componentLogger.info(mm.deserialize("<newline><red>║ <bold>MISTAKEN</bold> ha sido desactivado con éxito.</red><newline>"))
+        componentLogger.info(mm.deserialize("<newline><red>║ <bold>MISTAKEN</bold> desactivado.</red><newline>"))
     }
 
     private fun setupDatabase(): Boolean {
@@ -222,70 +224,72 @@ class Mistaken : JavaPlugin() {
             val dbConfig = YamlConfiguration.loadConfiguration(dbFile)
 
             databaseManager = DatabaseManager(this, dbConfig)
-
             componentLogger.info(mm.deserialize("<green>[DB] Conexión HikariCP establecida.</green>"))
             true
         } catch (e: Exception) {
-            componentLogger.error(mm.deserialize("<red>FATAL: Error al conectar Base de Datos. Los datos no se guardarán.</red>"))
+            componentLogger.error(mm.deserialize("<red>FATAL: Error BD.</red>"))
             false
         }
     }
 
     private fun setupIntegrations(): Boolean {
-        val rsp: RegisteredServiceProvider<Economy>? = server.servicesManager.getRegistration(Economy::class.java)
-
-        if (rsp == null) {
-            componentLogger.error(mm.deserialize("<red><b>[!]</b> Vault no encontró ningún plugin de economía compatible.</red>"))
-            return false
-        }
-        economy = rsp.provider
+        val rsp = server.servicesManager.getRegistration(Economy::class.java)
+        economy = rsp?.provider
+        if (economy == null) componentLogger.error(mm.deserialize("<red>[!] Vault / Economía no detectados.</red>"))
 
         craftEngineEnabled = server.pluginManager.isPluginEnabled("CraftEngine")
-        if (craftEngineEnabled) componentLogger.info(mm.deserialize("<aqua>✔ CraftEngine detectado y vinculado.</aqua>"))
-
+        if (craftEngineEnabled) componentLogger.info(mm.deserialize("<aqua>✔ CraftEngine vinculado.</aqua>"))
         return true
     }
 
-    private fun registerEvents() {
-        val pm = server.pluginManager
-        pm.registerEvents(PlayerListener(this), this)
-        pm.registerEvents(PlayerQuitListener(this), this)
-        pm.registerEvents(GameListener(this), this)
-        pm.registerEvents(StaminaListener(this), this)
-        pm.registerEvents(AsesinoHabilidadListener(this), this)
-        pm.registerEvents(AsesinoGeneralListener(this), this)
-        pm.registerEvents(antiBlockListener, this)
-        pm.registerEvents(SupervivienteHabilidadListener(this), this)
-    }
-
+    /**
+     * Optimizado para Folia/Paper AsyncSchedulers.
+     * Se delega el chequeo físico al EntityScheduler del jugador.
+     */
     private fun iniciarMotorDeParticulas() {
         server.asyncScheduler.runAtFixedRate(this, { _ ->
-            if (!isReady) return@runAtFixedRate
+            if (!isReady || sessionManager == null) return@runAtFixedRate
 
-            sessionManager.activeSessions.values.forEach { session ->
+            sessionManager?.activeSessions?.values?.forEach { session ->
                 if (session.currentState != GameState.INGAME) return@forEach
-
-                val targetsForPhysicalTrail = mutableListOf<Pair<Player, Asesino>>()
 
                 session.asesinosUUIDs.forEach { uuid ->
                     val p = server.getPlayer(uuid) ?: return@forEach
-                    val asesino = asesinoManager.getAsesinoDelJugador(p) ?: return@forEach
 
-                    if (p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
-                        asesino.mostrarTrail(p)
-                        targetsForPhysicalTrail.add(p to asesino)
-                    }
-                }
-
-                if (targetsForPhysicalTrail.isNotEmpty()) {
-                    server.globalRegionScheduler.run(this) { _ ->
-                        for (pair in targetsForPhysicalTrail) {
-                            if (pair.first.isOnline) pair.second.mostrarTrailFisico(pair.first)
+                    // Folia Support: Acceder al jugador dentro de su propio Scheduler Tick
+                    p.scheduler.run(this, { _ ->
+                        if (p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
+                            val asesino = asesinoManager?.getAsesinoDelJugador(p) ?: return@run
+                            asesino.mostrarTrail(p)
+                            asesino.mostrarTrailFisico(p)
                         }
-                    }
+                    }, null)
                 }
             }
         }, 0L, 100L, TimeUnit.MILLISECONDS)
+    }
+
+    private fun handleHotReload() {
+        server.onlinePlayers.forEach { player ->
+            musicManager.syncPlayer(player)
+            if (isGameServer) {
+                combatManager?.resetHealth(player)
+                val autoSession = sessionManager?.activeSessions?.values?.firstOrNull()
+                    ?: sessionManager?.createSession("Esperando...")
+
+                if (autoSession != null) {
+                    sessionManager?.joinSession(player, autoSession.sessionId)
+                }
+            }
+        }
+    }
+
+    // Funciones auxiliares simplificadas...
+    fun isInEditMode(player: Player) = staffEditMode.contains(player.uniqueId)
+    fun isAFK(player: Player) = afkPlayers.contains(player.uniqueId)
+    fun isIgnored(player: Player): Boolean {
+        val uuid = player.uniqueId
+        return uuid in staffEditMode || uuid in afkPlayers || uuid in ignoredTestPlayers
     }
 
     private fun loadLobbyLocation() {
@@ -298,66 +302,43 @@ class Mistaken : JavaPlugin() {
             section.getDouble("x"), section.getDouble("y"), section.getDouble("z"),
             section.getDouble("yaw").toFloat(), section.getDouble("pitch").toFloat()
         )
+        if (!isGameServer && lobbyLocation != null) {
+            lobbyLocation?.world?.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
+        } else if (!isGameServer) {
+            componentLogger.warn(mm.deserialize("<red>[!] Falta establecer el lobby (/setlobby).</red>"))
+        }
     }
 
     fun setLobbyLocationConfig(loc: Location) {
         this.lobbyLocation = loc
-        val section = config.createSection("settings.lobby")
-        section.set("world", loc.world.name)
-        section.set("x", loc.x)
-        section.set("y", loc.y)
-        section.set("z", loc.z)
-        section.set("yaw", loc.yaw)
-        section.set("pitch", loc.pitch)
+        config.createSection("settings.lobby").apply {
+            set("world", loc.world.name)
+            set("x", loc.x); set("y", loc.y); set("z", loc.z)
+            set("yaw", loc.yaw); set("pitch", loc.pitch)
+        }
         saveConfig()
     }
 
     private fun createRequiredFolders() {
         if (!dataFolder.exists()) dataFolder.mkdirs()
-
-        val langFolder = File(dataFolder, "langs")
-        if (!langFolder.exists()) langFolder.mkdirs()
-
-        val baseFiles = listOf("database.yml", "music.yml")
-        baseFiles.forEach { fileName ->
-            val file = File(dataFolder, fileName)
-            if (!file.exists()) {
-                runCatching { saveResource(fileName, false) }
-            }
+        File(dataFolder, "langs").mkdirs()
+        listOf("database.yml", "music.yml").forEach {
+            if (!File(dataFolder, it).exists()) runCatching { saveResource(it, false) }
         }
     }
 
-    fun isInEditMode(player: Player) = staffEditMode.contains(player.uniqueId)
-    fun isAFK(player: Player) = afkPlayers.contains(player.uniqueId)
-    fun isIgnored(player: Player): Boolean {
-        val uuid = player.uniqueId
-        return uuid in staffEditMode || uuid in afkPlayers || uuid in ignoredTestPlayers
-    }
-
-    private fun sendLogo() {
-        val b1 = "<#005f73>"
-        val b2 = "<#004488>"
-        val b3 = "<#003366>"
-        val b4 = "<#005f73>"
-        val b5 = "<#004488>"
-        val info = "<#00d4ff>"
-
-        componentLogger.info(mm.deserialize("""
+    private fun sendLogo(timeMs: Long) {
+        val msg = """
             <newline>
-             $b1<bold> </bold>$b1
-             $b1<bold> ███▄ ▄███▓ ██▓  ██████ ▄▄▄█████▓ ▄▄▄       ██ ▄█▀▓█████  ███▄    █ </bold>$b1
-             $b1<bold>▓██▒▀█▀ ██▒▓██▒▒██    ▒ ▓  ██▒ ▓▒▒████▄     ██▄█▒ ▓█   ▀  ██ ▀█   █ </bold>$b1
-             $b2<bold>▓██    ▓██░▒██▒░ ▓██▄   ▒ ▓██░ ▒░▒██  ▀█▄  ▓███▄░ ▒███   ▓██  ▀█ ██▒</bold>$b2
-             $b3<bold>▒██    ▒██ ░██░  ▒   ██▒░ ▓██▓ ░ ░██▄▄▄▄██ ▓██ █▄ ▒▓█  ▄ ▓██▒  ▐▌██▒</bold>$b3
-             $b4<bold>▒██▒   ░██▒░██░▒██████▒▒  ▒██▒ ░  ▓█   ▓██▒▒██▒ █▄░▒████▒▒██░   ▓██░</bold>$b4
-             $b5<bold>░ ▒░   ░  ░░▓  ▒ ▒▓▒ ▒ ░  ▒ ░░    ▒▒   ▓▒█░▒ ▒▒ ▓▒░░ ▒░ ░░ ▒░   ▒ ▒ </bold>$b5
-             $b4<bold>░  ░      ░ ▒ ░░ ░▒  ░ ░    ░      ▒   ▒▒ ░░ ░▒ ▒░ ░ ░  ░░ ░░   ░ ▒░</bold>$b4
-             $b5<bold>░      ░    ▒ ░░  ░  ░    ░        ░   ▒   ░ ░░ ░    ░      ░   ░ ░  </bold>$b5
-             $b5<bold>       ░    ░        ░                 ░  ░░  ░      ░  ░         ░ </bold>$b5
+             <#005f73><bold> ███▄ ▄███▓ ██▓  ██████ ▄▄▄█████▓ ▄▄▄       ██ ▄█▀▓█████  ███▄    █ </bold>
+             <#004488><bold>▓██▒▀█▀ ██▒▓██▒▒██    ▒ ▓  ██▒ ▓▒▒████▄     ██▄█▒ ▓█   ▀  ██ ▀█   █ </bold>
+             <#003366><bold>▓██    ▓██░▒██▒░ ▓██▄   ▒ ▓██░ ▒░▒██  ▀█▄  ▓███▄░ ▒███   ▓██  ▀█ ██▒</bold>
+             <#005f73><bold>▒██▒   ░██▒░██░▒██████▒▒  ▒██▒ ░  ▓█   ▓██▒▒██▒ █▄░▒████▒▒██░   ▓██░</bold>
+             <#004488><bold>░ ▒░   ░  ░░▓  ▒ ▒▓▒ ▒ ░  ▒ ░░    ▒▒   ▓▒█░▒ ▒▒ ▓▒░░ ▒░ ░░ ▒░   ▒ ▒ </bold>
             <newline>
-               <white>Autor:</white> $info Pumpkingz$info
-               <white>Modo Red:</white> <green>● $serverMode</green>
+               <white>Autor:</white> <#00d4ff>Pumpkingz</#00d4ff> | <white>Modo Red:</white> <green>● $serverMode</green> | <white>Carga:</white> <yellow>${timeMs}ms</yellow>
             <newline>
-        """.trimIndent()))
+        """.trimIndent()
+        componentLogger.info(mm.deserialize(msg))
     }
 }

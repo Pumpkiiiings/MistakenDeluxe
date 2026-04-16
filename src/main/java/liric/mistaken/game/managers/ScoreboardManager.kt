@@ -3,18 +3,13 @@ package liric.mistaken.game.managers
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.utils.FastBoard
+import liric.mistaken.utils.fastboard.FastBoard
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.entity.Player
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * ScoreboardManager: Motor Multiarena / Velocity.
- * FIX: Soporta múltiples partidas simultáneas y renderizado dinámico con %id%.
- */
 class ScoreboardManager(private val plugin: Mistaken) {
 
     private val boards = ConcurrentHashMap<UUID, FastBoard>()
@@ -41,7 +36,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
         if (!player.isOnline || !plugin.isReady) return
 
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
-            val gm = plugin.sessionManager.getSession(player)
+            val gm = plugin.sessionManager?.getSession(player)
             processAndRender(player, board, gm)
         }
     }
@@ -50,7 +45,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
         boards.forEach { (uuid, board) ->
             val player = plugin.server.getPlayer(uuid)
             if (player != null && player.isOnline) {
-                val gm = plugin.sessionManager.getSession(player)
+                val gm = plugin.sessionManager?.getSession(player)
                 processAndRender(player, board, gm)
             } else {
                 boards.remove(uuid)
@@ -70,8 +65,10 @@ class ScoreboardManager(private val plugin: Mistaken) {
 
         val timeStr = formatTime(gm.timer)
         val mapName = gm.currentMapName
-        val completed = plugin.generatorManager.getCompletedCountInWorld(player.world).toString()
-        val total = plugin.generatorManager.getTotalGeneratorsInWorld(player.world).toString()
+
+        // Llamadas seguras porque generatorManager puede ser null
+        val completed = plugin.generatorManager?.getCompletedCountInWorld(player.world)?.toString() ?: "0"
+        val total = plugin.generatorManager?.getTotalGeneratorsInWorld(player.world)?.toString() ?: "0"
 
         val stateKey = if (gm.currentState == GameState.INGAME)
             "ingame_${gm.currentMode.name.lowercase()}"
@@ -101,9 +98,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
         }
 
         val processedLines = mutableListOf<String>()
-        val lives = plugin.combatManager.getHealth(player).toString()
-
-        // 🔥 FIX: Aquí declaramos la variable para el ID de la partida (Si es null, es LOBBY)
+        val lives = plugin.combatManager?.getHealth(player)?.toString() ?: "20"
         val sessionID = gm?.sessionId ?: "LOBBY"
 
         for (line in rawLines) {
@@ -112,7 +107,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 continue
             }
 
-            var formatted = line
+            val formatted = line
                 .replace("%player%", player.name)
                 .replace("%timer%", timeStr)
                 .replace("%map%", mapName)
@@ -120,7 +115,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 .replace("%completed%", completed)
                 .replace("%total%", total)
                 .replace("%lives%", lives)
-                .replace("%id%", sessionID) // Reemplazo insertado
+                .replace("%id%", sessionID)
                 .replace("{", "<").replace("}", ">")
 
             processedLines.add(legacy.serialize(mm.deserialize(formatted)))

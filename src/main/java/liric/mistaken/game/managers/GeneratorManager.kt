@@ -19,14 +19,11 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * GeneratorManager: Gestión de generadores adaptada a MULTIARENA.
- * FIX: Métodos de conteo por mundo añadidos para evitar mezcla de datos entre arenas.
+ * GeneratorManager: Gestión optimizada de generadores y hologramas.
  */
 class GeneratorManager(private val plugin: Mistaken) : Listener {
 
     private val mm = MiniMessage.miniMessage()
-
-    // Cache en RAM pura para acceso instantáneo
     private val generators = ConcurrentHashMap<Location, GeneratorState>()
     private val nameCache = ConcurrentHashMap<Material, String>()
 
@@ -54,11 +51,9 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         idleLines = langConfig.getStringList("generators.hologram.lines-idle").ifEmpty {
             listOf("<gold><bold>{name}", "<white>Progreso: <gray>{progress}%", "<yellow>¡Click para reparar!")
         }
-
         completedLines = langConfig.getStringList("generators.hologram.lines-completed").ifEmpty {
             listOf("<green><bold>✔ ENERGÍA RESTAURADA ✔", "<gray>¡Buen trabajo!")
         }
-
         nameCache.clear()
     }
 
@@ -72,8 +67,6 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     }
 
     fun prepareArenaGenerators(locations: List<Location>) {
-        // 🔥 MULTIARENA FIX: Ya no usamos clearGenerators() global.
-        // Solo limpiamos los que pertenezcan al mundo que estamos cargando ahora.
         val targetWorld = locations.firstOrNull()?.world
         if (targetWorld != null) {
             clearGeneratorsInWorld(targetWorld)
@@ -86,9 +79,9 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
             locations.forEach { loc ->
                 val blockLoc = loc.block.location
-                plugin.server.regionScheduler.execute(plugin, blockLoc, Runnable {
+                // Folia: Modificación del mundo siempre en el RegionScheduler
+                plugin.server.regionScheduler.run(plugin, blockLoc, { _ ->
                     val coordKey = "${blockLoc.world.name}_${blockLoc.blockX}_${blockLoc.blockY}_${blockLoc.blockZ}"
-
                     var savedProgress = 0
                     var isDone = false
                     var original = Material.RAW_IRON_BLOCK
@@ -114,11 +107,13 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val state = generators[blockLoc] ?: return
         if (state.completed) return
 
-        val oldProgress = state.progress
-        state.progress = (state.progress + amount).coerceIn(0, 100)
+        plugin.server.regionScheduler.run(plugin, blockLoc, { _ ->
+            val oldProgress = state.progress
+            state.progress = (state.progress + amount).coerceIn(0, 100)
 
-        if (state.progress != oldProgress) updateHologramVisual(state)
-        if (state.progress >= 100) completeGenerator(blockLoc, state)
+            if (state.progress != oldProgress) updateHologramVisual(state)
+            if (state.progress >= 100) completeGenerator(blockLoc, state)
+        })
     }
 
     private fun completeGenerator(loc: Location, state: GeneratorState) {
@@ -129,8 +124,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         saveStateToConfigAsync(loc, state)
         updateHologramVisual(state)
 
-        // Buscamos la sesión del mundo actual para el check de victoria
-        val session = plugin.sessionManager.activeSessions.values.find { s ->
+        val session = plugin.sessionManager?.activeSessions?.values?.find { s ->
             s.getPlayers().any { p -> p.world == loc.world }
         }
         session?.playerController?.checkWinCondition()
@@ -138,17 +132,16 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
     private fun spawnHologram(loc: Location, state: GeneratorState) {
         val holoLoc = loc.clone().add(0.5, 1.3, 0.5)
-        plugin.server.regionScheduler.execute(plugin, holoLoc, Runnable {
-            state.displayEntity?.remove()
-            state.displayEntity = holoLoc.world.spawn(holoLoc, TextDisplay::class.java) { display ->
-                display.billboard = Display.Billboard.CENTER
-                display.brightness = Display.Brightness(15, 15)
-                display.backgroundColor = Color.fromARGB(0, 0, 0, 0)
-                display.isPersistent = false
-                display.transformation = Transformation(Vector3f(), Quaternionf(), Vector3f(1.1f, 1.1f, 1.1f), Quaternionf())
-                updateHologramVisual(state, display)
-            }
-        })
+        state.displayEntity?.remove()
+
+        state.displayEntity = holoLoc.world.spawn(holoLoc, TextDisplay::class.java) { display ->
+            display.billboard = Display.Billboard.CENTER
+            display.brightness = Display.Brightness(15, 15)
+            display.backgroundColor = Color.fromARGB(0, 0, 0, 0)
+            display.isPersistent = false
+            display.transformation = Transformation(Vector3f(), Quaternionf(), Vector3f(1.1f, 1.1f, 1.1f), Quaternionf())
+            updateHologramVisual(state, display)
+        }
     }
 
     private fun updateHologramVisual(state: GeneratorState, directEntity: TextDisplay? = null) {
@@ -161,7 +154,10 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val text = lines.joinToString("<newline><reset>") { line ->
             line.replace("{name}", typeName).replace("{progress}", state.progress.toString())
         }
-        entity.text(mm.deserialize("<reset>$text"))
+
+        entity.scheduler.run(plugin, { _ ->
+            entity.text(mm.deserialize("<reset>$text"))
+        }, null)
     }
 
     private fun saveStateToConfigAsync(loc: Location, state: GeneratorState) {
@@ -181,7 +177,6 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         generators.clear()
     }
 
-    // 🔥 NUEVO: Limpieza selectiva para Multiarena
     fun clearGeneratorsInWorld(world: World) {
         generators.entries.removeIf { (loc, state) ->
             if (loc.world == world) {
@@ -197,7 +192,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         generators.forEach { (loc, state) ->
             state.progress = 0
             state.completed = false
-            plugin.server.regionScheduler.execute(plugin, loc, Runnable {
+            plugin.server.regionScheduler.run(plugin, loc, { _ ->
                 loc.block.setType(state.originalMaterial, false)
                 updateHologramVisual(state)
             })
@@ -210,27 +205,6 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         }
     }
 
-    // =========================================================================
-    // 🔥 MÉTODOS CONTEXTUALES PARA MULTIARENA
-    // =========================================================================
-
-    /**
-     * Cuenta cuántos generadores han sido completados en un mundo específico.
-     */
-    fun getCompletedCountInWorld(world: World): Int {
-        return generators.entries.count { (loc, state) ->
-            loc.world == world && state.completed
-        }
-    }
-
-    /**
-     * Devuelve el total de generadores registrados en un mundo específico.
-     */
-    fun getTotalGeneratorsInWorld(world: World): Int {
-        return generators.keys.count { it.world == world }
-    }
-
-    fun getCompletedCount(): Int = generators.values.count { it.completed }
-    fun getTotalGenerators(): Int = generators.size
-    fun getGeneratorLocations(): List<Location> = generators.keys.toList()
+    fun getCompletedCountInWorld(world: World): Int = generators.entries.count { it.key.world == world && it.value.completed }
+    fun getTotalGeneratorsInWorld(world: World): Int = generators.keys.count { it.world == world }
 }

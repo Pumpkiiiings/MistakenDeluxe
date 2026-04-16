@@ -12,12 +12,10 @@ import org.bukkit.event.Listener
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * StaminaListener: Sistema de resistencia adaptado a MULTIARENA.
- * FIX: Recuperación sincronizada con el estado de cada sesión individual.
+ * StaminaListener: Sistema de resistencia adaptado a MULTIARENA y Folia.
  */
 class StaminaListener(private val plugin: Mistaken) : Listener {
 
@@ -54,18 +52,20 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
             if (!plugin.isReady) return@runAtFixedRate
 
             for (player in plugin.server.onlinePlayers) {
-                // 🔥 MULTIARENA: Buscamos la sesión del jugador
-                val session = plugin.sessionManager.getSession(player)
+                // Si no hay sessionManager (estamos en lobby), ignoramos para no consumir CPU
+                val sessionManager = plugin.sessionManager ?: continue
+                val session = sessionManager.getSession(player)
 
                 // Si no tiene sesión o no están en juego, resetear barra de exp
                 if (session == null || session.currentState != GameState.INGAME) {
-                    player.scheduler.execute(plugin, {
+                    // Folia Ready: Modificar entidades siempre en su propio scheduler
+                    player.scheduler.run(plugin, { _ ->
                         if (player.level != 100 || player.exp != 1.0f) {
                             player.level = 100
                             player.exp = 1.0f
                             if (player.foodLevel < 20) player.foodLevel = 20
                         }
-                    }, null, 0L)
+                    }, null)
                     continue
                 }
 
@@ -80,11 +80,9 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
 
                 // --- Cálculo de pérdida/recuperación ---
                 if (isSprinting && currentStamina > 0.0) {
-                    // 🔥 MULTIARENA: Verificamos si es asesino en SU sesión
                     val loss = if (session.esAsesino(uuid)) lossKiller else lossSurvivor
                     currentStamina = (currentStamina - loss).coerceAtLeast(0.0)
                 } else {
-                    // Solo recupera si NO tiene lentitud (castigo de agotamiento)
                     if (!player.hasPotionEffect(PotionEffectType.SLOWNESS)) {
                         currentStamina = (currentStamina + recoveryRate).coerceAtMost(100.0)
                     }
@@ -96,7 +94,8 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                 val newLevel = currentStamina.toInt()
                 val newExpProgress = (currentStamina / 100.0).toFloat().coerceIn(0.0f, 1.0f)
 
-                player.scheduler.execute(plugin, {
+                // Folia Ready: Aplicar cambios de estamina en el hilo de la entidad
+                player.scheduler.run(plugin, { _ ->
                     if (player.isOnline) {
                         if (player.foodLevel < 20) player.foodLevel = 20
 
@@ -111,7 +110,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                             player.sendActionBar(mm.deserialize("<red>ESTAMINA BAJA: $newLevel%</red>"))
                         }
                     }
-                }, null, 0L)
+                }, null)
             }
         }, 1L, 250L, TimeUnit.MILLISECONDS)
     }
