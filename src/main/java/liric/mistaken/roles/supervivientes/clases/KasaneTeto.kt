@@ -1,11 +1,5 @@
 package liric.mistaken.roles.supervivientes.clases
 
-import com.github.retrooper.packetevents.PacketEvents
-import com.github.retrooper.packetevents.protocol.particle.Particle
-import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
-import com.github.retrooper.packetevents.util.Vector3d
-import com.github.retrooper.packetevents.util.Vector3f
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.supervivientes.Superviviente
 import liric.mistaken.utils.hooks.CraftEngineHook
@@ -29,9 +23,9 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 
 /**
- *[LIRIC-MISTAKEN 2.0]
+ * [LIRIC-MISTAKEN 2.0]
  * Kasane Teto: La Comandante.
- * FIX: Rotación Trigonométrica Absoluta. Sombrero y Drills giran 100% pegados a la cabeza sin desarmarse.
+ * FIX: Matemática corregida y adaptada al Folia RegionScheduler para los BlockDisplays.
  */
 class KasaneTeto : Superviviente(
     "teto",
@@ -39,9 +33,6 @@ class KasaneTeto : Superviviente(
 ) {
 
     private val pathBase = "supervivientes.teto"
-    private val itemCache = ConcurrentHashMap<String, ItemStack>()
-
-    // Guardamos las piezas individuales para aplicarles la matemática de rotación
     private val tetoAccesorios = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
 
     override fun usarHabilidad(player: Player, slot: Int) {
@@ -65,129 +56,139 @@ class KasaneTeto : Superviviente(
     }
 
     private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
-        val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(mm.deserialize(msg))
+        player.scheduler.run(plugin, { _ ->
+            val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
+            if (!msg.isNullOrEmpty()) player.sendMessage(mm.deserialize(msg))
+        }, null)
     }
 
     override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        inv.armorContents = arrayOfNulls(4)
+        player.scheduler.run(plugin, { _ ->
+            val inv = player.inventory
+            inv.clear()
+            inv.armorContents = arrayOfNulls(4)
 
-        player.getAttribute(Attribute.SCALE)?.baseValue = 0.8861
+            player.getAttribute(Attribute.SCALE)?.baseValue = 0.8861
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
-        val configMecanica = plugin.configManager.getSupervivientes()
+            val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+            val configMecanica = plugin.configManager.getSupervivientes()
 
-        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val id = if (isArmor) configMecanica.getString("$pathBase.armadura.$key")
-            else configMecanica.getString("$pathBase.items.$key")
+            fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
+                val id = if (isArmor) configMecanica.getString("$pathBase.armadura.$key")
+                else configMecanica.getString("$pathBase.items.$key")
 
-            if (id == null || id == "none") return
+                if (id == null || id == "none") return
 
-            val item = CraftEngineHook.getCustomItem(id) ?: run {
-                val matName = id.replace(".*:".toRegex(), "").uppercase()
-                val mat = Material.matchMaterial(matName)
-                if (mat != null) ItemStack(mat) else if (key == "habilidad1") ItemStack(Material.IRON_HOE) else null
-            } ?: return
+                val item = CraftEngineHook.getCustomItem(id) ?: run {
+                    val matName = id.replace(".*:".toRegex(), "").uppercase()
+                    val mat = Material.matchMaterial(matName)
+                    if (mat != null) ItemStack(mat) else if (key == "habilidad1") ItemStack(Material.IRON_HOE) else null
+                } ?: return
 
-            val meta = item.itemMeta
-            langInfo.getString("$pathBase.habilidades_nombres.$key")?.let {
-                meta.displayName(mm.deserialize(it))
-            }
-            item.itemMeta = meta
-
-            if (isArmor) {
-                when(key) {
-                    "casco" -> inv.helmet = item
-                    "pechera" -> inv.chestplate = item
-                    "pantalones" -> inv.leggings = item
-                    "botas" -> inv.boots = item
+                val meta = item.itemMeta
+                langInfo.getString("$pathBase.habilidades_nombres.$key")?.let {
+                    meta.displayName(mm.deserialize(it))
                 }
-            } else {
-                inv.setItem(slot, item)
+                item.itemMeta = meta
+
+                if (isArmor) {
+                    when(key) {
+                        "casco" -> inv.helmet = item
+                        "pechera" -> inv.chestplate = item
+                        "pantalones" -> inv.leggings = item
+                        "botas" -> inv.boots = item
+                    }
+                } else {
+                    inv.setItem(slot, item)
+                }
             }
-        }
 
-        deliver("casco", 0, true); deliver("pechera", 0, true)
-        deliver("pantalones", 0, true); deliver("botas", 0, true)
+            deliver("casco", 0, true); deliver("pechera", 0, true)
+            deliver("pantalones", 0, true); deliver("botas", 0, true)
+            deliver("habilidad1", 0); deliver("habilidad2", 1); deliver("habilidad3", 2)
 
-        deliver("habilidad1", 0); deliver("habilidad2", 1); deliver("habilidad3", 2)
-
-        player.updateInventory()
-        crearCosmeticosTeto(player)
+            player.updateInventory()
+            crearCosmeticosTeto(player)
+        }, null)
     }
 
-    // =========================================================================================
-    // =                             SISTEMA DE ARMAS (REVÓLVER)                               =
-    // =========================================================================================
-
     private fun disparoParalizador(player: Player) {
-        val startLoc = player.eyeLocation
-        val direction = startLoc.direction.normalize()
+        player.scheduler.run(plugin, { _ ->
+            val startLoc = player.eyeLocation
+            val direction = startLoc.direction.normalize()
 
-        player.world.playSound(startLoc, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1.5f, 0.5f)
-        player.world.playSound(startLoc, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1.0f, 2.0f)
+            player.world.playSound(startLoc, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1.5f, 0.5f)
+            player.world.playSound(startLoc, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1.0f, 2.0f)
 
-        val result = player.world.rayTrace(startLoc, direction, 25.0, FluidCollisionMode.NEVER, true, 0.5) { it is Player && it != player }
+            val result = player.world.rayTrace(startLoc, direction, 25.0, FluidCollisionMode.NEVER, true, 0.5) { it is Player && it != player }
 
-        val distance = result?.hitPosition?.distance(startLoc.toVector()) ?: 25.0
-        for (i in 0..(distance * 2).toInt()) {
-            val pLoc = startLoc.clone().add(direction.clone().multiply(i * 0.5))
-            player.world.spawnParticle(org.bukkit.Particle.CRIT, pLoc, 1, 0.0, 0.0, 0.0, 0.0)
-        }
+            val distance = result?.hitPosition?.distance(startLoc.toVector()) ?: 25.0
+            for (i in 0..(distance * 2).toInt()) {
+                val pLoc = startLoc.clone().add(direction.clone().multiply(i * 0.5))
+                player.world.spawnParticle(org.bukkit.Particle.CRIT, pLoc, 1, 0.0, 0.0, 0.0, 0.0)
+            }
 
-        val hitEntity = result?.hitEntity as? Player
-        if (hitEntity != null) {
-            val session = plugin.sessionManager.getSession(hitEntity)
-            if (session?.esAsesino(hitEntity.uniqueId) == true)
-            player.world.spawnParticle(org.bukkit.Particle.EXPLOSION, hitEntity.eyeLocation, 1)
-            player.world.playSound(hitEntity.location, Sound.ENTITY_IRON_GOLEM_HURT, 1.0f, 0.5f)
+            val hitEntity = result?.hitEntity as? Player
+            if (hitEntity != null) {
+                val session = plugin.sessionManager?.getSession(hitEntity)
+                if (session?.esAsesino(hitEntity.uniqueId) == true) {
+                    hitEntity.scheduler.run(plugin, { _ ->
+                        hitEntity.world.spawnParticle(org.bukkit.Particle.EXPLOSION, hitEntity.eyeLocation, 1)
+                        hitEntity.world.playSound(hitEntity.location, Sound.ENTITY_IRON_GOLEM_HURT, 1.0f, 0.5f)
 
-            hitEntity.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 4))
-            hitEntity.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3))
+                        hitEntity.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 4))
+                        hitEntity.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3))
 
-            player.sendMessage(mm.deserialize("<green>¡Impacto directo! El asesino ha sido paralizado."))
-        }
+                        player.sendMessage(mm.deserialize("<green>¡Impacto directo! El asesino ha sido paralizado."))
+                    }, null)
+                }
+            }
+        }, null)
     }
 
     private fun municionCegadora(player: Player) {
-        player.world.playSound(player.location, Sound.ENTITY_SNOWBALL_THROW, 1.0f, 0.5f)
-        val snowball = player.launchProjectile(Snowball::class.java)
-        snowball.item = ItemStack(Material.CLAY_BALL)
-        snowball.velocity = player.location.direction.multiply(2.5)
+        player.scheduler.run(plugin, { _ ->
+            player.world.playSound(player.location, Sound.ENTITY_SNOWBALL_THROW, 1.0f, 0.5f)
+            val snowball = player.launchProjectile(Snowball::class.java)
+            snowball.item = ItemStack(Material.CLAY_BALL)
+            snowball.velocity = player.location.direction.multiply(2.5)
 
-        var ticks = 0
-        snowball.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (ticks > 60 || !snowball.isValid) {
-                val loc = snowball.location
-                loc.world.playSound(loc, Sound.BLOCK_FIRE_EXTINGUISH, 1f, 0.1f)
-                loc.world.spawnParticle(org.bukkit.Particle.CAMPFIRE_COSY_SMOKE, loc, 100, 3.0, 2.0, 3.0, 0.01)
+            var ticks = 0
+            plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
+                if (ticks > 60 || !snowball.isValid) {
+                    val loc = snowball.location
 
-                loc.world.getNearbyPlayers(loc, 4.0).forEach { victim ->
-                    val session = plugin.sessionManager.getSession(victim)
-                    if (session?.esAsesino(victim.uniqueId) == true) {
-                        victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
-                        victim.playSound(victim.location, Sound.ENTITY_ENDERMAN_SCREAM, 0.5f, 0.1f)
-                    }
+                    plugin.server.regionScheduler.run(plugin, loc, { _ ->
+                        loc.world.playSound(loc, Sound.BLOCK_FIRE_EXTINGUISH, 1f, 0.1f)
+                        loc.world.spawnParticle(org.bukkit.Particle.CAMPFIRE_COSY_SMOKE, loc, 100, 3.0, 2.0, 3.0, 0.01)
+
+                        loc.world.getNearbyPlayers(loc, 4.0).forEach { victim ->
+                            val session = plugin.sessionManager?.getSession(victim)
+                            if (session?.esAsesino(victim.uniqueId) == true) {
+                                victim.scheduler.run(plugin, { _ ->
+                                    victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
+                                    victim.playSound(victim.location, Sound.ENTITY_ENDERMAN_SCREAM, 0.5f, 0.1f)
+                                }, null)
+                            }
+                        }
+                    })
+                    task.cancel()
+                    return@Consumer
                 }
-                task.cancel()
-                return@Consumer
-            }
-            snowball.world.spawnParticle(org.bukkit.Particle.SMOKE, snowball.location, 1, 0.0, 0.0, 0.0, 0.0)
-            ticks++
-        }, null, 1L, 1L)
+                snowball.world.spawnParticle(org.bukkit.Particle.SMOKE, snowball.location, 1, 0.0, 0.0, 0.0, 0.0)
+                ticks++
+            }, 1L, 1L)
+        }, null)
     }
 
     private fun disparoDeImpulso(player: Player) {
-        player.world.playSound(player.location, Sound.ENTITY_GENERIC_EXPLODE, 0.5f, 2.0f)
-        player.world.spawnParticle(org.bukkit.Particle.EXPLOSION, player.location.add(0.0, 0.5, 0.0), 3)
+        player.scheduler.run(plugin, { _ ->
+            player.world.playSound(player.location, Sound.ENTITY_GENERIC_EXPLODE, 0.5f, 2.0f)
+            player.world.spawnParticle(org.bukkit.Particle.EXPLOSION, player.location.add(0.0, 0.5, 0.0), 3)
 
-        val dir = player.location.direction.multiply(-1.5).setY(0.6)
-        player.velocity = dir
-
-        val packet = WrapperPlayServerParticle(Particle(ParticleTypes.CLOUD), false, Vector3d(player.location.x, player.location.y, player.location.z), Vector3f(0.2f, 0.2f, 0.2f), 0.1f, 10)
-        PacketEvents.getAPI().playerManager.sendPacket(player, packet)
+            val dir = player.location.direction.multiply(-1.5).setY(0.6)
+            player.velocity = dir
+        }, null)
     }
 
     // =========================================================================================
@@ -201,44 +202,45 @@ class KasaneTeto : Superviviente(
         val startLoc = player.location
         val displays = mutableListOf<BlockDisplay>()
 
-        // Helper para crear un bloque con la escala centrada en -50% (Para que rote desde el medio de sí mismo)
-        fun spawnBlock(mat: Material, scale: JomlVector3f): BlockDisplay {
-            return startLoc.world.spawn(startLoc, BlockDisplay::class.java) { bd ->
-                bd.block = mat.createBlockData()
-                bd.transformation = Transformation(JomlVector3f(-scale.x/2, -scale.y/2, -scale.z/2), Quaternionf(), scale, Quaternionf())
-                bd.teleportDuration = 1
-                bd.interpolationDuration = 1
-                bd.isGlowing = false
-            }.also { displays.add(it) }
-        }
-
-        // --- 1. SOMBRERO COMANDANTE (Índices 0, 1, 2, 3) ---
-        spawnBlock(Material.BLACK_CONCRETE, JomlVector3f(0.7f, 0.05f, 0.7f)) // Visera
-        spawnBlock(Material.ORANGE_TERRACOTTA, JomlVector3f(0.42f, 0.1f, 0.42f)) // Banda
-        spawnBlock(Material.BLACK_CONCRETE, JomlVector3f(0.4f, 0.35f, 0.4f)) // Copa
-        spawnBlock(Material.GOLD_BLOCK, JomlVector3f(0.1f, 0.1f, 0.02f)) // Logo
-
-        // --- 2. DRILL IZQUIERDO (Índices 4, 5, 6) ---
-        spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.25f, 0.25f, 0.25f))
-        spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.2f, 0.2f, 0.2f))
-        spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.15f, 0.15f, 0.15f))
-
-        // --- 3. DRILL DERECHO (Índices 7, 8, 9) ---
-        spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.25f, 0.25f, 0.25f))
-        spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.2f, 0.2f, 0.2f))
-        spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.15f, 0.15f, 0.15f))
-
-        tetoAccesorios[uuid] = displays
-
-        // BUCLE ACTUALIZADOR
-        player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!player.isOnline || player.isDead || !plugin.supervivienteManager.esSupervivienteActivo(player)) {
-                borrarCosmeticos(uuid)
-                task.cancel()
-                return@Consumer
+        plugin.server.regionScheduler.run(plugin, startLoc, { _ ->
+            fun spawnBlock(mat: Material, scale: JomlVector3f) {
+                displays.add(startLoc.world.spawn(startLoc, BlockDisplay::class.java) { bd ->
+                    bd.block = mat.createBlockData()
+                    bd.transformation = Transformation(JomlVector3f(-scale.x/2, -scale.y/2, -scale.z/2), Quaternionf(), scale, Quaternionf())
+                    bd.teleportDuration = 1
+                    bd.interpolationDuration = 1
+                    bd.isGlowing = false
+                })
             }
-            actualizarMatematicas3D(player, displays)
-        }, null, 1L, 1L)
+
+            spawnBlock(Material.BLACK_CONCRETE, JomlVector3f(0.7f, 0.05f, 0.7f))
+            spawnBlock(Material.ORANGE_TERRACOTTA, JomlVector3f(0.42f, 0.1f, 0.42f))
+            spawnBlock(Material.BLACK_CONCRETE, JomlVector3f(0.4f, 0.35f, 0.4f))
+            spawnBlock(Material.GOLD_BLOCK, JomlVector3f(0.1f, 0.1f, 0.02f))
+
+            spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.25f, 0.25f, 0.25f))
+            spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.2f, 0.2f, 0.2f))
+            spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.15f, 0.15f, 0.15f))
+
+            spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.25f, 0.25f, 0.25f))
+            spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.2f, 0.2f, 0.2f))
+            spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.15f, 0.15f, 0.15f))
+
+            tetoAccesorios[uuid] = displays
+
+            plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
+                if (!player.isOnline || player.isDead || plugin.supervivienteManager?.esSupervivienteActivo(player) != true) {
+                    borrarCosmeticos(uuid)
+                    task.cancel()
+                    return@Consumer
+                }
+
+                val pLoc = player.location
+                plugin.server.regionScheduler.run(plugin, pLoc, { _ ->
+                    actualizarMatematicas3D(player, displays)
+                })
+            }, 1L, 1L)
+        })
     }
 
     private fun actualizarMatematicas3D(player: Player, displays: List<BlockDisplay>) {
@@ -246,7 +248,7 @@ class KasaneTeto : Superviviente(
 
         val eyeLoc = player.eyeLocation
         val yawRad = -Math.toRadians(eyeLoc.yaw.toDouble()).toFloat()
-        val pitchRad = Math.toRadians(eyeLoc.pitch.coerceIn(-30f, 45f).toDouble()).toFloat() // Límite de inclinación
+        val pitchRad = Math.toRadians(eyeLoc.pitch.coerceIn(-30f, 45f).toDouble()).toFloat()
 
         val forward = eyeLoc.direction.clone().setY(0).normalize()
         val right = forward.clone().crossProduct(Vector(0, 1, 0)).normalize()
@@ -257,51 +259,54 @@ class KasaneTeto : Superviviente(
 
         val headRot = Quaternionf().rotateY(yawRad).rotateX(-pitchRad)
 
-        // Función para aplicar offset a un bloque basado en la rotación de la cabeza
         fun applyOffset(index: Int, rightOff: Double, upOff: Double, fwdOff: Double, rotExtra: Quaternionf? = null) {
+            val display = displays[index]
+            if (!display.isValid) return
+
             val pLoc = baseHead.clone()
                 .add(right.clone().multiply(rightOff))
                 .add(up.clone().multiply(upOff))
                 .add(forward.clone().multiply(fwdOff))
 
-            displays[index].teleport(pLoc)
+            display.teleport(pLoc)
 
-            // Mantiene su centro, y rota con la cabeza (más una rotación extra si se requiere)
-            val currentTrans = displays[index].transformation
+            val currentTrans = display.transformation
             val finalRot = if (rotExtra != null) Quaternionf(headRot).mul(rotExtra) else headRot
-            displays[index].transformation = Transformation(currentTrans.translation, finalRot, currentTrans.scale, Quaternionf())
+            display.transformation = Transformation(currentTrans.translation, finalRot, currentTrans.scale, Quaternionf())
         }
 
-        // ===================================
-        // SOMBRERO (Siempre pegado arriba)
-        // ===================================
-        applyOffset(0, 0.0, 0.15, 0.0) // Visera
-        applyOffset(1, 0.0, 0.25, 0.0) // Banda
-        applyOffset(2, 0.0, 0.40, 0.0) // Copa
-        applyOffset(3, 0.0, 0.25, 0.22) // Logo (Hacia adelante en el sombrero)
+        applyOffset(0, 0.0, 0.15, 0.0)
+        applyOffset(1, 0.0, 0.25, 0.0)
+        applyOffset(2, 0.0, 0.40, 0.0)
+        applyOffset(3, 0.0, 0.25, 0.22)
 
-        // ===================================
-        // COLETAS (Rotadas hacia los lados)
-        // ===================================
-        val rotLeft = Quaternionf().rotateZ(0.2f) // Cae un poco hacia la izquierda
+        val rotLeft = Quaternionf().rotateZ(0.2f)
         applyOffset(4, -0.3, 0.0, -0.1, rotLeft)
         applyOffset(5, -0.32, -0.2, -0.1, rotLeft)
         applyOffset(6, -0.34, -0.4, -0.1, rotLeft)
 
-        val rotRight = Quaternionf().rotateZ(-0.2f) // Cae un poco hacia la derecha
+        val rotRight = Quaternionf().rotateZ(-0.2f)
         applyOffset(7, 0.3, 0.0, -0.1, rotRight)
         applyOffset(8, 0.32, -0.2, -0.1, rotRight)
         applyOffset(9, 0.34, -0.4, -0.1, rotRight)
     }
 
     private fun borrarCosmeticos(uuid: UUID) {
-        tetoAccesorios.remove(uuid)?.forEach { if (it.isValid) it.remove() }
+        val list = tetoAccesorios.remove(uuid) ?: return
+        if (list.isNotEmpty()) {
+            val loc = list[0].location
+            plugin.server.regionScheduler.run(plugin, loc, { _ ->
+                list.forEach { if (it.isValid) it.remove() }
+            })
+        }
     }
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
         player?.let {
-            it.getAttribute(Attribute.SCALE)?.baseValue = 1.0
+            it.scheduler.run(plugin, { _ ->
+                it.getAttribute(Attribute.SCALE)?.baseValue = 1.0
+            }, null)
             borrarCosmeticos(it.uniqueId)
         }
     }

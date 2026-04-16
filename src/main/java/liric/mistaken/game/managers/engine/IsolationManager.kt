@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers
+package liric.mistaken.game.managers.engine
 
 import io.papermc.paper.event.player.AsyncChatEvent
 import liric.mistaken.Mistaken

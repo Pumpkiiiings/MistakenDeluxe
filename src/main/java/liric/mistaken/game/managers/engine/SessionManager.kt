@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers
+package liric.mistaken.game.managers.engine
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession

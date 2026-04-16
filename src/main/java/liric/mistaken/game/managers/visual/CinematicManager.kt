@@ -1,10 +1,20 @@
-package liric.mistaken.game.managers
+package liric.mistaken.game.managers.visual
 
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.asesinos.Asesino
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.title.Title
-import org.bukkit.*
-import org.bukkit.entity.*
+import org.bukkit.Color
+import org.bukkit.GameMode
+import org.bukkit.Location
+import org.bukkit.Material
+import org.bukkit.Particle
+import org.bukkit.Sound
+import org.bukkit.entity.ArmorStand
+import org.bukkit.entity.BlockDisplay
+import org.bukkit.entity.Entity
+import org.bukkit.entity.ItemDisplay
+import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
@@ -185,30 +195,46 @@ class CinematicManager(private val plugin: Mistaken) {
                     // 🔥 FIX SET ROTATION
                     if (!isIntro) dummy.setRotation((ticks * 0.5f) % 360, dummy.location.pitch)
                 }
+
                 "charlie" -> {
                     if (isIntro) {
                         val dropY = Math.max(0.0, 15.0 - (ticks * 0.5))
                         dummy.teleport(center.clone().add(0.0, dropY, 0.0))
                         camLoc.add(4.0, dropY + 1.0, 4.0)
-                        camLoc.setDirection(dummy.location.clone().add(0.0, 1.0, 0.0).toVector().subtract(camLoc.toVector()))
+                        camLoc.setDirection(
+                            dummy.location.clone().add(0.0, 1.0, 0.0).toVector().subtract(camLoc.toVector())
+                        )
                     } else {
                         val dist = 3.0 + (ticks * 0.05)
                         camLoc.add(0.0, 1.5 + (ticks * 0.01), dist)
                         camLoc.setDirection(center.clone().add(0.0, 1.0, 0.0).toVector().subtract(camLoc.toVector()))
                     }
                 }
+
                 "error_estatico" -> {
                     if (!isIntro && ticks > 100) {
                         val dist = Math.max(0.5, 4.0 - ((ticks - 100) * 0.3))
                         camLoc.add(0.0, 1.5, dist)
                         camLoc.setDirection(center.clone().add(0.0, 1.5, 0.0).toVector().subtract(camLoc.toVector()))
 
-                        if (ticks == 115) plugin.server.onlinePlayers.forEach { it.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0, false, false, false)) }
+                        if (ticks == 115) plugin.server.onlinePlayers.forEach {
+                            it.addPotionEffect(
+                                PotionEffect(
+                                    PotionEffectType.BLINDNESS,
+                                    100,
+                                    0,
+                                    false,
+                                    false,
+                                    false
+                                )
+                            )
+                        }
                     } else {
                         camLoc.add(0.0, 1.5, 4.0)
                         camLoc.setDirection(center.clone().add(0.0, 1.5, 0.0).toVector().subtract(camLoc.toVector()))
                     }
                 }
+
                 "colorandelectricity", "colorsito" -> {
                     if (!isIntro) {
                         val angulo = ticks * 0.08
@@ -216,7 +242,18 @@ class CinematicManager(private val plugin: Mistaken) {
                         camLoc.add(radio * cos(angulo), 2.0 + sin(ticks * 0.2), radio * sin(angulo))
                         camLoc.setDirection(center.clone().add(0.0, 1.0, 0.0).toVector().subtract(camLoc.toVector()))
 
-                        if (ticks == 10) plugin.server.onlinePlayers.forEach { it.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 200, 2, false, false, false)) }
+                        if (ticks == 10) plugin.server.onlinePlayers.forEach {
+                            it.addPotionEffect(
+                                PotionEffect(
+                                    PotionEffectType.NAUSEA,
+                                    200,
+                                    2,
+                                    false,
+                                    false,
+                                    false
+                                )
+                            )
+                        }
                     } else {
                         val angulo = ticks * 0.04
                         val radio = 4.0
@@ -224,6 +261,7 @@ class CinematicManager(private val plugin: Mistaken) {
                         camLoc.setDirection(center.clone().add(0.0, 1.0, 0.0).toVector().subtract(camLoc.toVector()))
                     }
                 }
+
                 "devesto" -> {
                     if (isIntro) {
                         camLoc.add(0.0, 1.0 + (ticks * 0.02), 5.0)
@@ -234,18 +272,29 @@ class CinematicManager(private val plugin: Mistaken) {
                         camLoc.setDirection(center.clone().add(0.0, 2.5, 0.0).toVector().subtract(camLoc.toVector()))
                     }
                 }
+
                 "miku", "teto" -> {
                     val angulo = Math.PI / 2 + sin(ticks * 0.02) * 2.0
                     val radio = 6.0
                     camLoc.add(radio * cos(angulo), 2.5, radio * sin(angulo))
                     camLoc.setDirection(center.clone().add(0.0, 2.5, 0.0).toVector().subtract(camLoc.toVector()))
                 }
+
                 "null", "nullasesino" -> {
                     val dist = 5.0 - (ticks * 0.02)
                     camLoc.add(0.0, 1.0, dist)
                     camLoc.setDirection(center.clone().add(0.0, 1.0, 0.0).toVector().subtract(camLoc.toVector()))
-                    if (!isIntro && ticks > 120) plugin.server.onlinePlayers.forEach { it.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0)) }
+                    if (!isIntro && ticks > 120) plugin.server.onlinePlayers.forEach {
+                        it.addPotionEffect(
+                            PotionEffect(
+                                PotionEffectType.BLINDNESS,
+                                100,
+                                0
+                            )
+                        )
+                    }
                 }
+
                 else -> {
                     val angulo = ticks * 0.04
                     val radio = 6.5
@@ -379,7 +428,9 @@ class CinematicManager(private val plugin: Mistaken) {
 
         var tickDial = 0
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!dummy.isValid) { task.cancel(); return@Consumer }
+            if (!dummy.isValid) {
+                task.cancel(); return@Consumer
+            }
             val index = (tickDial / 40) % dialogos.size
             if (tickDial < dialogos.size * 40) {
                 plugin.server.onlinePlayers.forEach { it.sendActionBar(plugin.mm.deserialize(dialogos[index])) }
@@ -392,14 +443,18 @@ class CinematicManager(private val plugin: Mistaken) {
                 if (isIntro) {
                     world.playSound(loc, Sound.ENTITY_GHAST_SCREAM, 2f, 0.5f)
                     plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-                        if (!dummy.isValid) { task.cancel(); return@Consumer }
+                        if (!dummy.isValid) {
+                            task.cancel(); return@Consumer
+                        }
                         world.spawnParticle(Particle.FLAME, dummy.location.add(0.0, 1.0, 0.0), 20, 0.5, 1.0, 0.5, 0.0)
                     }, 1L, 2L)
                 } else {
                     world.playSound(loc, Sound.BLOCK_FIRE_AMBIENT, 2f, 1f)
                     world.playSound(loc, Sound.MUSIC_DISC_11, 1f, 0.5f)
                     plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-                        if (!dummy.isValid) { task.cancel(); return@Consumer }
+                        if (!dummy.isValid) {
+                            task.cancel(); return@Consumer
+                        }
                         val angle = Math.random() * Math.PI * 2
                         val radius = Math.random() * 5 + 2
                         val pLoc = loc.clone().add(radius * cos(angle), 0.0, radius * sin(angle))
@@ -413,16 +468,36 @@ class CinematicManager(private val plugin: Mistaken) {
                     world.playSound(loc, Sound.ENTITY_PLAYER_BURP, 2f, 1f)
                     val colors = listOf(Color.RED, Color.YELLOW, Color.AQUA, Color.LIME)
                     plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-                        if (!dummy.isValid) { task.cancel(); return@Consumer }
-                        world.spawnParticle(Particle.DUST, dummy.location.clone().add(0.0, 1.5, 0.0), 10, 0.2, 0.2, 0.2, Particle.DustOptions(colors.random(), 1.5f))
+                        if (!dummy.isValid) {
+                            task.cancel(); return@Consumer
+                        }
+                        world.spawnParticle(
+                            Particle.DUST,
+                            dummy.location.clone().add(0.0, 1.5, 0.0),
+                            10,
+                            0.2,
+                            0.2,
+                            0.2,
+                            Particle.DustOptions(colors.random(), 1.5f)
+                        )
                     }, 1L, 5L)
                 } else {
                     world.playSound(loc, Sound.ENTITY_GHAST_WARN, 1f, 0.5f)
                     world.playSound(loc, Sound.ENTITY_WITCH_DRINK, 1f, 0.8f)
                     plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-                        if (!dummy.isValid) { task.cancel(); return@Consumer }
+                        if (!dummy.isValid) {
+                            task.cancel(); return@Consumer
+                        }
                         world.spawnParticle(Particle.SPLASH, dummy.location.add(0.0, 1.6, 0.0), 10, 0.1, 0.0, 0.1, 0.1)
-                        world.spawnParticle(Particle.DUST, dummy.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, Particle.DustOptions(Color.RED, 2f))
+                        world.spawnParticle(
+                            Particle.DUST,
+                            dummy.location.add(0.0, 1.0, 0.0),
+                            20,
+                            0.5,
+                            0.5,
+                            0.5,
+                            Particle.DustOptions(Color.RED, 2f)
+                        )
                     }, 1L, 2L)
                 }
             }
@@ -440,8 +515,18 @@ class CinematicManager(private val plugin: Mistaken) {
                     world.playSound(loc, Sound.BLOCK_NOTE_BLOCK_BIT, 1f, 0.1f)
                     spawnStaticBlock(loc.clone().add(0.0, 1.0, 0.0), Material.SEA_LANTERN, 1.5f)
                     plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-                        if (!dummy.isValid) { task.cancel(); return@Consumer }
-                        world.spawnParticle(Particle.DUST, loc.clone().add(0.0, 1.5, 0.0), 10, 0.5, 0.5, 0.5, Particle.DustOptions(Color.FUCHSIA, 1f))
+                        if (!dummy.isValid) {
+                            task.cancel(); return@Consumer
+                        }
+                        world.spawnParticle(
+                            Particle.DUST,
+                            loc.clone().add(0.0, 1.5, 0.0),
+                            10,
+                            0.5,
+                            0.5,
+                            0.5,
+                            Particle.DustOptions(Color.FUCHSIA, 1f)
+                        )
                     }, 1L, 2L)
                 } else {
                     world.playSound(loc, Sound.BLOCK_GLASS_BREAK, 1f, 0.1f)
@@ -457,8 +542,15 @@ class CinematicManager(private val plugin: Mistaken) {
                 world.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 1f, 2f)
                 if (!isIntro) {
                     plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-                        if (!dummy.isValid) { task.cancel(); return@Consumer }
-                        world.spawnParticle(Particle.BLOCK_MARKER, loc.clone().add(Math.random()*10-5, Math.random()*5, Math.random()*10-5), 1, Material.BARRIER.createBlockData())
+                        if (!dummy.isValid) {
+                            task.cancel(); return@Consumer
+                        }
+                        world.spawnParticle(
+                            Particle.BLOCK_MARKER,
+                            loc.clone().add(Math.random() * 10 - 5, Math.random() * 5, Math.random() * 10 - 5),
+                            1,
+                            Material.BARRIER.createBlockData()
+                        )
                         world.playSound(loc, Sound.BLOCK_GLASS_BREAK, 0.5f, 0.5f)
                     }, 1L, 5L)
                 }
@@ -466,8 +558,18 @@ class CinematicManager(private val plugin: Mistaken) {
             "miku" -> {
                 world.playSound(loc, Sound.MUSIC_DISC_5, 1f, 1.5f)
                 plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-                    if (!dummy.isValid) { task.cancel(); return@Consumer }
-                    world.spawnParticle(Particle.END_ROD, dummy.location.clone().add(0.0, 1.5, 0.0), 10, 5.0, 0.1, 5.0, 0.0)
+                    if (!dummy.isValid) {
+                        task.cancel(); return@Consumer
+                    }
+                    world.spawnParticle(
+                        Particle.END_ROD,
+                        dummy.location.clone().add(0.0, 1.5, 0.0),
+                        10,
+                        5.0,
+                        0.1,
+                        5.0,
+                        0.0
+                    )
                     world.spawnParticle(Particle.DUST, loc, 20, 3.0, 3.0, 3.0, Particle.DustOptions(Color.AQUA, 1.5f))
                 }, 1L, 2L)
             }
@@ -484,17 +586,29 @@ class CinematicManager(private val plugin: Mistaken) {
             "coolkid" -> {
                 world.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 1f, 1f)
                 plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-                    if (!dummy.isValid) { task.cancel(); return@Consumer }
-                    val codeLoc = loc.clone().add(Math.random()*6-3, Math.random()*5, Math.random()*6-3)
+                    if (!dummy.isValid) {
+                        task.cancel(); return@Consumer
+                    }
+                    val codeLoc = loc.clone().add(Math.random() * 6 - 3, Math.random() * 5, Math.random() * 6 - 3)
                     world.spawnParticle(Particle.DUST, codeLoc, 1, Particle.DustOptions(Color.LIME, 1.5f))
                 }, 1L, 1L)
             }
             "bendy" -> {
                 world.playSound(loc, Sound.ENTITY_SQUID_SQUIRT, 2f, 0.5f)
                 plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-                    if (!dummy.isValid) { task.cancel(); return@Consumer }
+                    if (!dummy.isValid) {
+                        task.cancel(); return@Consumer
+                    }
                     world.spawnParticle(Particle.SQUID_INK, loc.clone().add(0.0, 0.5, 0.0), 10, 2.0, 0.2, 2.0, 0.0)
-                    world.spawnParticle(Particle.FALLING_OBSIDIAN_TEAR, loc.clone().add(0.0, 3.0, 0.0), 5, 0.5, 0.5, 0.5, 0.0)
+                    world.spawnParticle(
+                        Particle.FALLING_OBSIDIAN_TEAR,
+                        loc.clone().add(0.0, 3.0, 0.0),
+                        5,
+                        0.5,
+                        0.5,
+                        0.5,
+                        0.0
+                    )
                 }, 1L, 2L)
             }
             "romeo", "romeodebuff" -> {
@@ -515,9 +629,12 @@ class CinematicManager(private val plugin: Mistaken) {
             "entity303" -> {
                 world.playSound(loc, Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 1f, 2f)
                 plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-                    if (!dummy.isValid) { task.cancel(); return@Consumer }
+                    if (!dummy.isValid) {
+                        task.cancel(); return@Consumer
+                    }
                     if (Math.random() > 0.85) {
-                        val tntLoc = loc.clone().add(Math.random() * 10 - 5, Math.random() * 6 + 2, Math.random() * 10 - 5)
+                        val tntLoc =
+                            loc.clone().add(Math.random() * 10 - 5, Math.random() * 6 + 2, Math.random() * 10 - 5)
                         spawnGlitchBlock(tntLoc, Material.TNT)
                         world.playSound(tntLoc, Sound.ENTITY_GENERIC_EXPLODE, 0.5f, 1.5f)
                         world.spawnParticle(Particle.EXPLOSION_EMITTER, tntLoc, 1)
@@ -532,7 +649,9 @@ class CinematicManager(private val plugin: Mistaken) {
                     world.playSound(loc, Sound.ENTITY_VILLAGER_CELEBRATE, 2f, 1f)
                     world.playSound(loc, Sound.ENTITY_FIREWORK_ROCKET_TWINKLE, 2f, 1f)
                     plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-                        if (!dummy.isValid) { task.cancel(); return@Consumer }
+                        if (!dummy.isValid) {
+                            task.cancel(); return@Consumer
+                        }
                         val roseLoc = loc.clone().add(Math.random() * 8 - 4, 6.0, Math.random() * 8 - 4)
                         spawnFallingItem(roseLoc, Material.POPPY)
                     }, 1L, 5L)
@@ -542,8 +661,18 @@ class CinematicManager(private val plugin: Mistaken) {
                 world.playSound(loc, Sound.AMBIENT_CAVE, 2f, 0.5f)
                 var dTicks = 0
                 plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-                    if (!dummy.isValid) { task.cancel(); return@Consumer }
-                    world.spawnParticle(Particle.SQUID_INK, loc.clone().add(0.0, dTicks * 0.02, 0.0), 20, 1.5, 0.5, 1.5, 0.0)
+                    if (!dummy.isValid) {
+                        task.cancel(); return@Consumer
+                    }
+                    world.spawnParticle(
+                        Particle.SQUID_INK,
+                        loc.clone().add(0.0, dTicks * 0.02, 0.0),
+                        20,
+                        1.5,
+                        0.5,
+                        1.5,
+                        0.0
+                    )
                     world.spawnParticle(Particle.SMOKE, loc, 30, 2.0, 2.0, 2.0, 0.05)
                     if (!isIntro && dTicks == 100) dummy.isInvisible = true
                     dTicks++
@@ -562,7 +691,7 @@ class CinematicManager(private val plugin: Mistaken) {
     // =                                       TEXTOS                                          =
     // =========================================================================================
 
-    private fun obtenerTextosIntro(id: String, nombreReal: String): Pair<net.kyori.adventure.text.Component, net.kyori.adventure.text.Component> {
+    private fun obtenerTextosIntro(id: String, nombreReal: String): Pair<Component, Component> {
         return when (id) {
             "sowoul" -> Pair(plugin.mm.deserialize("<dark_purple>EL MAGO HA LLEGADO"), plugin.mm.deserialize("<light_purple>Que comience el espectáculo..."))
             "charlie", "charlieinferno" -> Pair(plugin.mm.deserialize("<gold>CAÍDO DEL CIELO"), plugin.mm.deserialize("<red>Bienvenido a mi infierno."))
@@ -581,7 +710,7 @@ class CinematicManager(private val plugin: Mistaken) {
         }
     }
 
-    private fun obtenerTextosOutro(id: String, nombreReal: String): Pair<net.kyori.adventure.text.Component, net.kyori.adventure.text.Component> {
+    private fun obtenerTextosOutro(id: String, nombreReal: String): Pair<Component, Component> {
         return when (id) {
             "slasher" -> Pair(plugin.mm.deserialize("<dark_red><bold>¡LO TENGO!</bold>"), plugin.mm.deserialize("<red>Por fin... mi pedernal y acero."))
             "colorandelectricity", "colorsito" -> Pair(plugin.mm.deserialize("<dark_red><bold>¡QUÉ HE HECHO!</bold>"), plugin.mm.deserialize("<red>M-Mi color... todo se deforma..."))
@@ -621,7 +750,12 @@ class CinematicManager(private val plugin: Mistaken) {
     private fun spawnStaticBlock(loc: Location, mat: Material, scale: Float): BlockDisplay {
         val display = loc.world.spawn(loc, BlockDisplay::class.java) { bd ->
             bd.block = mat.createBlockData()
-            bd.transformation = Transformation(Vector3f(-scale/2, 0f, -scale/2), Quaternionf(), Vector3f(scale, scale, scale), Quaternionf())
+            bd.transformation = Transformation(
+                Vector3f(-scale / 2, 0f, -scale / 2),
+                Quaternionf(),
+                Vector3f(scale, scale, scale),
+                Quaternionf()
+            )
         }
         activeDisplays.add(display)
         return display
@@ -630,14 +764,22 @@ class CinematicManager(private val plugin: Mistaken) {
     private fun spawnOrbitingBlock(center: Location, mat: Material, scale: Float, radius: Double, speed: Double, yOffset: Double) {
         val display = center.world.spawn(center, BlockDisplay::class.java) { bd ->
             bd.block = mat.createBlockData()
-            bd.transformation = Transformation(Vector3f(-scale/2, 0f, -scale/2), Quaternionf(), Vector3f(scale, scale, scale), Quaternionf())
+            bd.transformation = Transformation(
+                Vector3f(-scale / 2, 0f, -scale / 2),
+                Quaternionf(),
+                Vector3f(scale, scale, scale),
+                Quaternionf()
+            )
         }
         activeDisplays.add(display)
         var angle = Math.random() * Math.PI * 2
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!display.isValid) { task.cancel(); return@Consumer }
+            if (!display.isValid) {
+                task.cancel(); return@Consumer
+            }
             angle += speed
-            val offsetLoc = center.clone().add(radius * cos(angle), 2.0 + yOffset + sin(angle * 2) * 0.5, radius * sin(angle))
+            val offsetLoc =
+                center.clone().add(radius * cos(angle), 2.0 + yOffset + sin(angle * 2) * 0.5, radius * sin(angle))
             // 🔥 FIX SET DIRECTION
             offsetLoc.setDirection(center.clone().add(0.0, 2.0, 0.0).toVector().subtract(offsetLoc.toVector()))
             display.teleport(offsetLoc)
@@ -651,7 +793,9 @@ class CinematicManager(private val plugin: Mistaken) {
         }
         activeDisplays.add(display)
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!display.isValid) { task.cancel(); return@Consumer }
+            if (!display.isValid) {
+                task.cancel(); return@Consumer
+            }
             val t = display.transformation; t.leftRotation.rotateY(0.1f); display.transformation = t
         }, 1L, 1L)
     }
@@ -664,7 +808,9 @@ class CinematicManager(private val plugin: Mistaken) {
         activeDisplays.add(display)
         var yOffset = 0.0
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!display.isValid || yOffset < -6.0) { display.remove(); task.cancel(); return@Consumer }
+            if (!display.isValid || yOffset < -6.0) {
+                display.remove(); task.cancel(); return@Consumer
+            }
             yOffset -= 0.15
             val t = display.transformation; t.leftRotation.rotateX(0.2f).rotateY(0.1f)
             display.transformation = t; display.teleport(loc.clone().add(0.0, yOffset, 0.0))
@@ -674,15 +820,19 @@ class CinematicManager(private val plugin: Mistaken) {
     private fun spawnGlitchBlock(loc: Location, mat: Material) {
         val display = loc.world.spawn(loc.clone().add(0.0, 1.2, 0.0), BlockDisplay::class.java) { bd ->
             bd.block = mat.createBlockData()
-            bd.transformation = Transformation(Vector3f(-0.5f, 0f, -0.5f), Quaternionf(), Vector3f(1.0f, 1.0f, 1.0f), Quaternionf())
+            bd.transformation =
+                Transformation(Vector3f(-0.5f, 0f, -0.5f), Quaternionf(), Vector3f(1.0f, 1.0f, 1.0f), Quaternionf())
         }
         activeDisplays.add(display)
         var ticks = 0
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!display.isValid) { task.cancel(); return@Consumer }
+            if (!display.isValid) {
+                task.cancel(); return@Consumer
+            }
             ticks++
             val s = if (ticks % 3 == 0) 1.5f else 0.8f
-            display.transformation = Transformation(Vector3f(-s/2, 0f, -s/2), Quaternionf(), Vector3f(s, s, s), Quaternionf())
+            display.transformation =
+                Transformation(Vector3f(-s / 2, 0f, -s / 2), Quaternionf(), Vector3f(s, s, s), Quaternionf())
         }, 1L, 2L)
     }
 }

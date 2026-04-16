@@ -1,6 +1,7 @@
-package liric.mistaken.game.managers
+package liric.mistaken.game.managers.audio
 
 import liric.mistaken.Mistaken
+import liric.mistaken.game.GameSession
 import liric.mistaken.game.TerrorPacketFactory
 import liric.mistaken.game.enums.GameState
 import org.bukkit.GameMode
@@ -10,7 +11,7 @@ import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Vector
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
@@ -61,7 +62,7 @@ class AmbientManager(private val plugin: Mistaken) {
         }, 1L, 100L, TimeUnit.MILLISECONDS)
     }
 
-    private fun processSurvivorLogic(survivor: Player, killer: Player, session: liric.mistaken.game.GameSession) {
+    private fun processSurvivorLogic(survivor: Player, killer: Player, session: GameSession) {
         if (session.esAsesino(survivor.uniqueId)) {
             trackedSurvivors.remove(survivor.uniqueId)
             survivor.removePotionEffect(PotionEffectType.DARKNESS)

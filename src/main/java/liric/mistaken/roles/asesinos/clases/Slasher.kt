@@ -43,7 +43,6 @@ class Slasher : Asesino(
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val temporaryEntities = ConcurrentHashMap.newKeySet<Entity>()
 
-    // 🔥 Sistema de sonidos sin repetición
     private val attackSoundsQueue = ConcurrentHashMap<UUID, MutableList<Int>>()
 
     init {
@@ -83,46 +82,50 @@ class Slasher : Asesino(
     }
 
     override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        inv.armorContents = arrayOfNulls(4)
+        player.scheduler.run(plugin, { _ ->
+            val inv = player.inventory
+            inv.clear()
+            inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
-        val configMecanica = plugin.configManager.getAsesinos()
+            val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+            val configMecanica = plugin.configManager.getAsesinos()
 
-        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val id = configMecanica.getString("$pathBase.armadura.$key") ?:
-            configMecanica.getString("$pathBase.items.$key")
+            fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
+                val id = configMecanica.getString("$pathBase.armadura.$key") ?:
+                configMecanica.getString("$pathBase.items.$key")
 
-            if (id == null || id == "none") return
+                if (id == null || id == "none") return
 
-            val item = CraftEngineHook.getCustomItem(id) ?: run {
-                val mat = Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase())
-                if (mat != null) ItemStack(mat) else null
-            } ?: return
+                val item = CraftEngineHook.getCustomItem(id) ?: run {
+                    val mat = Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase())
+                    if (mat != null) ItemStack(mat) else null
+                } ?: return
 
-            val namePath = if (key == "arma") "asesinos.${this.id}.habilidades_nombres.arma"
-            else "asesinos.${this.id}.habilidades_nombres.$key"
+                val namePath = if (key == "arma") "asesinos.${this.id}.habilidades_nombres.arma"
+                else "asesinos.${this.id}.habilidades_nombres.$key"
 
-            langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+                langInfo.getString(namePath)?.let {
+                    item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+                }
+
+                if (isArmor) {
+                    when(key) {
+                        "casco" -> inv.helmet = item
+                        "pechera" -> inv.chestplate = item
+                        "pantalones" -> inv.leggings = item
+                        "botas" -> inv.boots = item
+                    }
+                } else inv.setItem(slot, item)
             }
 
-            if (isArmor) {
-                when(key) {
-                    "casco" -> inv.helmet = item
-                    "pechera" -> inv.chestplate = item
-                    "pantalones" -> inv.leggings = item
-                    "botas" -> inv.boots = item
-                }
-            } else inv.setItem(slot, item)
-        }
+            deliver("casco", 0, true); deliver("pechera", 0, true)
+            deliver("pantalones", 0, true); deliver("botas", 0, true)
+            deliver("habilidad1", 1); deliver("habilidad2", 2)
+            deliver("habilidad3", 3); deliver("habilidad4", 4)
+            deliver("arma", 8)
 
-        deliver("casco", 0, true); deliver("pechera", 0, true)
-        deliver("pantalones", 0, true); deliver("botas", 0, true)
-        deliver("habilidad1", 1); deliver("habilidad2", 2)
-        deliver("habilidad3", 3); deliver("habilidad4", 4)
-        deliver("arma", 8)
+            player.updateInventory()
+        }, null)
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -130,7 +133,9 @@ class Slasher : Asesino(
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        val session = plugin.sessionManager.getSession(attacker) ?: return
+        val sessionManager = plugin.sessionManager ?: return
+        val session = sessionManager.getSession(attacker) ?: return
+
         if (session.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
             if (esObjetivoValido(attacker, victim)) {
                 val uuid = attacker.uniqueId
@@ -142,92 +147,106 @@ class Slasher : Asesino(
                 }
                 val soundIndex = queue.removeAt(0)
                 val soundName = "mistaken:whitepumpkin_ataque_$soundIndex"
-                attacker.world.playSound(attacker.location, soundName, SoundCategory.PLAYERS, 3.0f, 1.0f)
+
+                attacker.scheduler.run(plugin, { _ ->
+                    attacker.world.playSound(attacker.location, soundName, SoundCategory.PLAYERS, 3.0f, 1.0f)
+                }, null)
             }
         }
     }
 
     private fun habilidadSedDeSangre(player: Player) {
-        player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 160, 2))
-        player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 160, 1))
-        dibujarEstrella(player, Color.RED, 1.5, 5)
+        player.scheduler.run(plugin, { _ ->
+            player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 160, 2))
+            player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 160, 1))
+            dibujarEstrella(player, Color.RED, 1.5, 5)
 
-        player.scheduler.runDelayed(plugin, Consumer { _ ->
-            if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
-                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 1))
-            }
-        }, null, 160L)
+            player.scheduler.runDelayed(plugin, { _ ->
+                if (player.isOnline && plugin.asesinoManager?.esElAsesino(player) == true) {
+                    player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 1))
+                }
+            }, null, 160L)
+        }, null)
     }
 
     private fun habilidadMacheteLanzable(player: Player) {
         val macheteItem = itemKitCache["arma"]?.clone() ?: ItemStack(Material.IRON_SWORD)
         val spawnLoc = player.eyeLocation.clone()
 
-        val machete = player.world.spawn(spawnLoc, ItemDisplay::class.java) { id ->
-            id.setItemStack(macheteItem)
-            id.transformation = Transformation(JomlVector3f(), Quaternionf().rotateX(Math.toRadians(90.0).toFloat()), JomlVector3f(0.7f, 0.7f, 0.7f), Quaternionf())
-            id.interpolationDuration = 1; id.teleportDuration = 1
-        }
-
-        temporaryEntities.add(machete)
-        val direction = player.location.direction.multiply(1.4)
-
-        // 🔥 HITBOX: Proyectil
-        val hitbox = HitboxVisualizer.createHitbox(spawnLoc, 1.2, 1.2, 1.2, Material.ORANGE_STAINED_GLASS)
-
-        var ticks = 0
-        machete.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (ticks >= 30 || !machete.isValid) {
-                if (machete.isValid) machete.remove()
-                hitbox?.remove()
-                task.cancel()
-                return@Consumer
+        plugin.server.regionScheduler.run(plugin, spawnLoc, { _ ->
+            val machete = spawnLoc.world.spawn(spawnLoc, ItemDisplay::class.java) { id ->
+                id.setItemStack(macheteItem)
+                id.transformation = Transformation(JomlVector3f(), Quaternionf().rotateX(Math.toRadians(90.0).toFloat()), JomlVector3f(0.7f, 0.7f, 0.7f), Quaternionf())
+                id.interpolationDuration = 1; id.teleportDuration = 1
             }
 
-            machete.teleport(machete.location.add(direction))
-            hitbox?.teleport(machete.location) // Sigue al machete
+            temporaryEntities.add(machete)
+            val direction = player.location.direction.multiply(1.4)
 
-            val hit = machete.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { esObjetivoValido(player, it) }
+            val hitbox = HitboxVisualizer.createHitbox(spawnLoc, 1.2, 1.2, 1.2, Material.ORANGE_STAINED_GLASS)
 
-            if (hit != null || machete.location.block.type.isSolid) {
-                hit?.let {
-                    plugin.combatManager.takeDamage(it)
-                    it.playSound(it.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.8f)
-                    hitbox?.block = Material.RED_STAINED_GLASS.createBlockData() // Feedback visual
+            var ticks = 0
+            val task = plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
+                if (ticks >= 30 || !machete.isValid) {
+                    if (machete.isValid) machete.remove()
+                    hitbox?.remove()
+                    task.cancel()
+                    return@Consumer
                 }
-                machete.remove()
 
-                player.scheduler.runDelayed(plugin, Consumer { _ -> hitbox?.remove() }, null, 2L)
-                task.cancel()
-            }
-            ticks++
-        }, null, 1L, 1L)
+                val nextLoc = machete.location.add(direction)
+                machete.teleport(nextLoc)
+                hitbox?.teleport(nextLoc)
+
+                val hit = nextLoc.world.getNearbyPlayers(nextLoc, 1.2).firstOrNull { esObjetivoValido(player, it) }
+
+                if (hit != null || nextLoc.block.type.isSolid) {
+                    hit?.scheduler?.run(plugin, { _ ->
+                        plugin.combatManager?.takeDamage(hit)
+                        hit.playSound(hit.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.8f)
+                    }, null)
+
+                    hitbox?.block = Material.RED_STAINED_GLASS.createBlockData()
+                    machete.remove()
+
+                    plugin.server.globalRegionScheduler.runDelayed(plugin, { _ -> hitbox?.remove() }, 2L)
+                    task.cancel()
+                }
+                ticks++
+            }, 1L, 1L)
+            trackTask(task)
+        })
     }
 
     private fun habilidadPresencia(player: Player) {
-        player.playSound(player.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1.5f, 0.8f)
+        player.scheduler.run(plugin, { _ ->
+            player.playSound(player.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1.5f, 0.8f)
 
-        // 🔥 HITBOX: Grito en área
-        HitboxVisualizer.drawInstantHitbox(plugin, player.location, 8.0, 8.0, 8.0, 20L, Material.PURPLE_STAINED_GLASS)
+            HitboxVisualizer.drawInstantHitbox(plugin, player.location, 8.0, 8.0, 8.0, 20L, Material.PURPLE_STAINED_GLASS)
 
-        player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
-            if (esObjetivoValido(player, victim)) {
-                victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
-                victim.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, 100, 1))
+            player.world.getNearbyPlayers(player.location, 8.0).forEach { victim ->
+                if (esObjetivoValido(player, victim)) {
+                    victim.scheduler.run(plugin, { _ ->
+                        victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
+                        victim.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, 100, 1))
+                    }, null)
+                }
             }
-        }
+        }, null)
     }
 
     private fun habilidadEjecucion(player: Player) {
-        player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 300, 3))
-        player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 300, 2))
-        dibujarEstrella(player, Color.MAROON, 2.5, 5)
+        player.scheduler.run(plugin, { _ ->
+            player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 300, 3))
+            player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 300, 2))
+            dibujarEstrella(player, Color.MAROON, 2.5, 5)
 
-        player.scheduler.runDelayed(plugin, Consumer { _ ->
-            if (player.isOnline && plugin.asesinoManager.esElAsesino(player)) {
-                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
-            }
-        }, null, 300L)
+            player.scheduler.runDelayed(plugin, { _ ->
+                if (player.isOnline && plugin.asesinoManager?.esElAsesino(player) == true) {
+                    player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
+                }
+            }, null, 300L)
+        }, null)
     }
 
     override fun mostrarTrail(player: Player) {
@@ -251,9 +270,9 @@ class Slasher : Asesino(
             val len = dir.length(); dir.normalize()
             var d = 0.0
 
-            plugin.server.regionScheduler.run(plugin, loc, Consumer { _ ->
+            plugin.server.regionScheduler.run(plugin, loc, { _ ->
                 while (d < len) {
-                    player.world.spawnParticle(org.bukkit.Particle.DUST, p1.clone().add(dir.clone().multiply(d)), 1, dust)
+                    loc.world.spawnParticle(org.bukkit.Particle.DUST, p1.clone().add(dir.clone().multiply(d)), 1, dust)
                     d += 0.3
                 }
             })
@@ -263,7 +282,9 @@ class Slasher : Asesino(
     override fun cleanup(player: Player?) {
         super.cleanup(player)
         player?.let { attackSoundsQueue.remove(it.uniqueId) }
-        temporaryEntities.forEach { it.remove() }
+        temporaryEntities.forEach { ent ->
+            if (ent.isValid) plugin.server.regionScheduler.run(plugin, ent.location, { _ -> ent.remove() })
+        }
         temporaryEntities.clear()
     }
 }

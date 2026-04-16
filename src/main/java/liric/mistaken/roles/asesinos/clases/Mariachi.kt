@@ -37,9 +37,7 @@ class Mariachi : Asesino(
     private val skullsOrbit = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
 
-    init {
-        preLoadKit()
-    }
+    init { preLoadKit() }
 
     private fun preLoadKit() {
         val config = plugin.configManager.getAsesinos()
@@ -73,101 +71,119 @@ class Mariachi : Asesino(
     }
 
     override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        inv.armorContents = arrayOfNulls(4)
+        player.scheduler.run(plugin, { _ ->
+            val inv = player.inventory
+            inv.clear()
+            inv.armorContents = arrayOfNulls(4)
 
-        if (itemKitCache.isEmpty()) preLoadKit()
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+            if (itemKitCache.isEmpty()) preLoadKit()
+            val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
 
-        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val item = itemKitCache[key]?.clone() ?: return
-            val namePath = if (key == "arma") "asesinos.mariachi.habilidades_nombres.arma" else "asesinos.mariachi.habilidades_nombres.$key"
+            fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
+                val item = itemKitCache[key]?.clone() ?: return
+                val namePath = if (key == "arma") "asesinos.mariachi.habilidades_nombres.arma" else "asesinos.mariachi.habilidades_nombres.$key"
 
-            langInfo.getString(namePath)?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
+                langInfo.getString(namePath)?.let { item.editMeta { m -> m.displayName(mm.deserialize(it)) } }
 
-            if (isArmor) {
-                when(key) {
-                    "casco" -> inv.helmet = item
-                    "pechera" -> inv.chestplate = item
-                    "pantalones" -> inv.leggings = item
-                    "botas" -> inv.boots = item
-                }
-            } else inv.setItem(slot, item)
-        }
+                if (isArmor) {
+                    when(key) {
+                        "casco" -> inv.helmet = item
+                        "pechera" -> inv.chestplate = item
+                        "pantalones" -> inv.leggings = item
+                        "botas" -> inv.boots = item
+                    }
+                } else inv.setItem(slot, item)
+            }
 
-        listOf("casco", "pechera", "pantalones", "botas").forEach { deliver(it, 0, true) }
-        deliver("habilidad1", 1); deliver("habilidad2", 2); deliver("habilidad3", 3); deliver("habilidad4", 4); deliver("arma", 8)
+            listOf("casco", "pechera", "pantalones", "botas").forEach { deliver(it, 0, true) }
+            deliver("habilidad1", 1); deliver("habilidad2", 2); deliver("habilidad3", 3); deliver("habilidad4", 4); deliver("arma", 8)
 
-        player.inventory.heldItemSlot = 8
-        player.updateInventory()
-        iniciarMusica(player)
+            player.inventory.heldItemSlot = 8
+            player.updateInventory()
+            iniciarMusica(player)
+        }, null)
     }
 
     private fun habilidadGrito(player: Player) {
         player.world.getNearbyPlayers(player.location, 8.0).forEach { victim ->
-            // 🔥 Uso de la función centralizada
             if (esObjetivoValido(player, victim)) {
-                victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
-                victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
-                victim.sendMessage(mm.deserialize("<red>¡El grito del Mariachi ha corrompido tus oídos!</red>"))
-                victim.playSound(victim.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.8f)
+                victim.scheduler.run(plugin, { _ ->
+                    victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
+                    victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
+                    victim.sendMessage(mm.deserialize("<red>¡El grito del Mariachi ha corrompido tus oídos!</red>"))
+                    victim.playSound(victim.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.8f)
+                }, null)
             }
         }
     }
 
     private fun habilidadJarabe(player: Player) {
-        player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 120, 3))
-        player.sendMessage(mm.deserialize("<gold>¡A zapatear! Velocidad aumentada.</gold>"))
+        player.scheduler.run(plugin, { _ ->
+            player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 120, 3))
+            player.sendMessage(mm.deserialize("<gold>¡A zapatear! Velocidad aumentada.</gold>"))
+        }, null)
     }
 
     private fun habilidadGuitarrazo(player: Player) {
         player.world.getNearbyPlayers(player.location, 6.0).forEach { victim ->
-            // 🔥 Uso de la función centralizada
             if (esObjetivoValido(player, victim)) {
-                plugin.combatManager.takeDamage(victim)
-                victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
-                victim.playSound(victim.location, Sound.BLOCK_ANVIL_LAND, 0.8f, 0.5f)
+                victim.scheduler.run(plugin, { _ ->
+                    plugin.combatManager?.takeDamage(victim)
+                    victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
+                    victim.playSound(victim.location, Sound.BLOCK_ANVIL_LAND, 0.8f, 0.5f)
+                }, null)
             }
         }
     }
 
     private fun habilidadTequila(player: Player) {
-        player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 120, 4))
-        player.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 160, 0))
-        player.sendMessage(mm.deserialize("<green>¡Salud! Eres inmune al dolor por 6 segundos.</green>"))
+        player.scheduler.run(plugin, { _ ->
+            player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 120, 4))
+            player.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 160, 0))
+            player.sendMessage(mm.deserialize("<green>¡Salud! Eres inmune al dolor por 6 segundos.</green>"))
+        }, null)
     }
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
-        if (!plugin.asesinoManager.esElAsesino(player)) { limpiarVisuales(uuid); return }
-        if (skullsOrbit[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
+        if (plugin.asesinoManager?.esElAsesino(player) != true) { limpiarVisuales(uuid); return }
+        val playerLoc = player.location
+        if (skullsOrbit[uuid]?.firstOrNull()?.world != playerLoc.world) limpiarVisuales(uuid)
 
         val skulls = skullsOrbit.getOrPut(uuid) {
             mutableListOf<ItemDisplay>().apply {
-                repeat(3) {
-                    add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
-                        id.setItemStack(ItemStack(Material.PLAYER_HEAD))
-                        id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf(), JomlVector3f(0.6f, 0.6f, 0.6f), Quaternionf())
-                        id.teleportDuration = 2; id.interpolationDuration = 2
-                    })
-                }
+                plugin.server.regionScheduler.run(plugin, playerLoc, { _ ->
+                    repeat(3) {
+                        add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
+                            id.setItemStack(ItemStack(Material.PLAYER_HEAD))
+                            id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf(), JomlVector3f(0.6f, 0.6f, 0.6f), Quaternionf())
+                            id.teleportDuration = 2; id.interpolationDuration = 2
+                        })
+                    }
+                })
             }
         }
+
+        if (skulls.isEmpty()) return
 
         val anguloActual = (angulos.getOrDefault(uuid, 0.0) + 0.12) % (Math.PI * 2)
         val radio = 1.3
 
-        for (i in skulls.indices) {
-            val offset = (2 * Math.PI / skulls.size) * i
-            val x = radio * cos(anguloActual + offset)
-            val z = radio * sin(anguloActual + offset)
-            val y = 1.2 + (0.15 * sin((anguloActual + offset) * 2))
+        plugin.server.regionScheduler.run(plugin, playerLoc, { _ ->
+            for (i in skulls.indices) {
+                val display = skulls[i]
+                if (display.isValid) {
+                    val offset = (2 * Math.PI / skulls.size) * i
+                    val x = radio * cos(anguloActual + offset)
+                    val z = radio * sin(anguloActual + offset)
+                    val y = 1.2 + (0.15 * sin((anguloActual + offset) * 2))
 
-            val loc = player.location.clone().add(x, y, z)
-            loc.yaw = ((anguloActual + offset) * 180 / Math.PI).toFloat()
-            skulls[i].teleport(loc)
-        }
+                    val loc = playerLoc.clone().add(x, y, z)
+                    loc.yaw = ((anguloActual + offset) * 180 / Math.PI).toFloat()
+                    display.teleport(loc)
+                }
+            }
+        })
         angulos[uuid] = anguloActual
     }
 
@@ -191,37 +207,46 @@ class Mariachi : Asesino(
 
     private fun iniciarMusica(player: Player) {
         val uuid = player.uniqueId
-        detenerMusica(uuid)
+        detenerMusica()
 
-        player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!player.isOnline || !plugin.asesinoManager.esElAsesino(player)) {
-                detenerMusica(uuid)
+        val task = plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (!player.isOnline || plugin.asesinoManager?.esElAsesino(player) != true) {
+                detenerMusica()
                 task.cancel()
                 return@Consumer
             }
             player.world.players.forEach { p ->
                 if (p.location.distanceSquared(player.location) < 1600) {
-                    p.stopSound(sonidoMúsicaId, SoundCategory.RECORDS)
-                    p.playSound(player.location, sonidoMúsicaId, SoundCategory.RECORDS, 1.5f, 1.0f)
+                    p.scheduler.run(plugin, { _ ->
+                        p.stopSound(sonidoMúsicaId, SoundCategory.RECORDS)
+                        p.playSound(player.location, sonidoMúsicaId, SoundCategory.RECORDS, 1.5f, 1.0f)
+                    }, null)
                 }
             }
-        }, null, 1L, 1480L)
+        }, 1L, 1480L)
+        trackTask(task)
     }
 
     private fun limpiarVisuales(uuid: UUID) {
-        skullsOrbit.remove(uuid)?.forEach { it.remove() }
+        val list = skullsOrbit.remove(uuid) ?: return
+        if (list.isNotEmpty()) {
+            val loc = list[0].location
+            plugin.server.regionScheduler.run(plugin, loc, { _ ->
+                list.forEach { it.remove() }
+            })
+        }
         angulos.remove(uuid)
     }
 
-    private fun detenerMusica(uuid: UUID) {
-        Bukkit.getOnlinePlayers().forEach { it.stopSound(sonidoMúsicaId, SoundCategory.RECORDS) }
+    private fun detenerMusica() {
+        plugin.server.onlinePlayers.forEach { it.scheduler.run(plugin, { _ -> it.stopSound(sonidoMúsicaId, SoundCategory.RECORDS) }, null) }
     }
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
         player?.let {
             limpiarVisuales(it.uniqueId)
-            detenerMusica(it.uniqueId)
+            detenerMusica()
         }
     }
 }

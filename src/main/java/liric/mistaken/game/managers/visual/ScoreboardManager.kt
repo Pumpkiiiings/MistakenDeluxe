@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers
+package liric.mistaken.game.managers.visual
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -6,7 +6,7 @@ import liric.mistaken.game.enums.GameState
 import liric.mistaken.utils.fastboard.FastBoard
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.entity.Player
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 

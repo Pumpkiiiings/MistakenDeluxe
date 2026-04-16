@@ -14,12 +14,13 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Vector
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * Minty: El Superviviente Licántropo.
  * Rol: Control de Masas (CC) y Huida.
- * FIX: Null-Safety en activeTasks.add()
+ * FIX: Adaptado a Folia y Null-Safety.
  */
 class Minty : Superviviente(
     "minty",
@@ -67,94 +68,107 @@ class Minty : Superviviente(
     }
 
     private fun usarSarpazo(player: Player) {
-        val range = 4.0
-        val ray = player.world.rayTraceEntities(player.eyeLocation, player.location.direction, range) {
-            it is Player && plugin.asesinoManager.esElAsesino(it)
-        }
+        player.scheduler.run(plugin, { _ ->
+            val range = 4.0
+            val ray = player.world.rayTraceEntities(player.eyeLocation, player.location.direction, range) {
+                it is Player && plugin.asesinoManager?.esElAsesino(it) == true
+            }
 
-        player.world.spawnParticle(Particle.SWEEP_ATTACK, player.location.add(player.location.direction.multiply(1.5)).add(0.0, 1.2, 0.0), 1)
+            player.world.spawnParticle(Particle.SWEEP_ATTACK, player.location.add(player.location.direction.multiply(1.5)).add(0.0, 1.2, 0.0), 1)
 
-        if (ray != null && ray.hitEntity is Player) {
-            val killer = ray.hitEntity as Player
-            killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
-            killer.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
-            player.playSound(player.location, Sound.ENTITY_WOLF_GROWL, 1f, 0.8f)
-            killer.playSound(killer.location, Sound.ENTITY_PLAYER_ATTACK_CRIT, 1f, 0.5f)
-        } else {
-            player.playSound(player.location, Sound.ENTITY_PLAYER_ATTACK_SWEEP, 1f, 1.5f)
-        }
+            if (ray != null && ray.hitEntity is Player) {
+                val killer = ray.hitEntity as Player
+                killer.scheduler.run(plugin, { _ ->
+                    killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
+                    killer.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
+                    killer.playSound(killer.location, Sound.ENTITY_PLAYER_ATTACK_CRIT, 1f, 0.5f)
+                }, null)
+                player.playSound(player.location, Sound.ENTITY_WOLF_GROWL, 1f, 0.8f)
+            } else {
+                player.playSound(player.location, Sound.ENTITY_PLAYER_ATTACK_SWEEP, 1f, 1.5f)
+            }
+        }, null)
     }
 
     private fun usarEmbestida(player: Player) {
-        player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 1))
-        player.velocity = player.location.direction.multiply(1.3).setY(0.3)
+        player.scheduler.run(plugin, { _ ->
+            player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 1))
+            player.velocity = player.location.direction.multiply(1.3).setY(0.3)
 
-        val task = player.scheduler.runAtFixedRate(plugin, { t ->
-            if (!player.isOnline) {
-                t.cancel()
-                return@runAtFixedRate
-            }
-            player.world.spawnParticle(Particle.CLOUD, player.location, 2, 0.2, 0.1, 0.2, 0.05)
-        }, null, 1L, 5L)
+            val task = player.scheduler.runAtFixedRate(plugin, Consumer { t ->
+                if (!player.isOnline) {
+                    t.cancel()
+                    return@Consumer
+                }
+                player.world.spawnParticle(Particle.CLOUD, player.location, 2, 0.2, 0.1, 0.2, 0.05)
+            }, null, 1L, 5L)
 
-        // SOLUCIÓN AL ERROR: Guardar solo si la tarea no es nula
-        task?.let { activeTasks.add(it) }
+            task?.let { activeTasks.add(it) }
 
-        // Cancelar a los 5 segundos
-        player.scheduler.runDelayed(plugin, { task?.cancel() }, null, 100L)
+            player.scheduler.runDelayed(plugin, { _ -> task?.cancel() }, null, 100L)
+        }, null)
     }
 
     private fun usarAullidoFeroz(player: Player) {
-        player.world.spawnParticle(Particle.SONIC_BOOM, player.location.add(0.0, 1.5, 0.0), 1)
+        player.scheduler.run(plugin, { _ ->
+            player.world.spawnParticle(Particle.SONIC_BOOM, player.location.add(0.0, 1.5, 0.0), 1)
 
-        val targets = player.getNearbyEntities(8.0, 8.0, 8.0)
-            .filterIsInstance<Player>()
-            .filter { plugin.asesinoManager.esElAsesino(it) }
+            val session = plugin.sessionManager?.getSession(player)
 
-        targets.forEach { killer ->
-            killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
-            killer.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
-            killer.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
-            killer.velocity = killer.velocity.add(Vector(0.0, 0.4, 0.0))
-            killer.damage(0.0)
-        }
+            player.world.getNearbyPlayers(player.location, 8.0).forEach { killer ->
+                if (session != null && session.esAsesino(killer.uniqueId)) {
+                    killer.scheduler.run(plugin, { _ ->
+                        killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
+                        killer.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
+                        killer.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
+                        killer.velocity = killer.velocity.add(Vector(0.0, 0.4, 0.0))
+                    }, null)
+                }
+            }
+        }, null)
     }
 
     private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
-        var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) {
-            msg = msg.replace("<prefix>", "", true).replace("%prefix%", "", true).trim()
-            player.sendMessage(mm.deserialize(msg))
-        }
-        val soundName = mech.getString("$pathBase.items.${key}_sonido", "UI_BUTTON_CLICK")
-        runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
+        player.scheduler.run(plugin, { _ ->
+            var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
+            if (!msg.isNullOrEmpty()) {
+                msg = msg.replace("<prefix>", "", true).replace("%prefix%", "", true).trim()
+                player.sendMessage(mm.deserialize(msg))
+            }
+            val soundName = mech.getString("$pathBase.items.${key}_sonido", "UI_BUTTON_CLICK")
+            runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
+        }, null)
     }
 
     override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        if (itemCache.isEmpty()) preLoadKit()
+        player.scheduler.run(plugin, { _ ->
+            val inv = player.inventory
+            inv.clear()
+            if (itemCache.isEmpty()) preLoadKit()
 
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+            val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
 
-        fun giveLocalizedSkill(slot: Int, key: String) {
-            val item = itemCache[key]?.clone() ?: return
-            langConfig.getString("$pathBase.habilidades_nombres.$key")?.let {
-                item.editMeta { m -> m.displayName(mm.deserialize(it)) }
+            fun giveLocalizedSkill(slot: Int, key: String) {
+                val item = itemCache[key]?.clone() ?: return
+                langConfig.getString("$pathBase.habilidades_nombres.$key")?.let {
+                    item.editMeta { m -> m.displayName(mm.deserialize(it)) }
+                }
+                inv.setItem(slot, item)
             }
-            inv.setItem(slot, item)
-        }
 
-        giveLocalizedSkill(0, "habilidad1")
-        giveLocalizedSkill(1, "habilidad2")
-        giveLocalizedSkill(2, "habilidad3")
+            giveLocalizedSkill(0, "habilidad1")
+            giveLocalizedSkill(1, "habilidad2")
+            giveLocalizedSkill(2, "habilidad3")
 
-        player.updateInventory()
+            player.updateInventory()
+        }, null)
     }
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        player?.removePotionEffect(PotionEffectType.SPEED)
+        player?.scheduler?.run(plugin, { _ ->
+            player.removePotionEffect(PotionEffectType.SPEED)
+        }, null)
         activeTasks.forEach { it.cancel() }
         activeTasks.clear()
     }

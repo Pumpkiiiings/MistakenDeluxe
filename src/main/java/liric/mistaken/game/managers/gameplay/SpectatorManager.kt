@@ -1,8 +1,9 @@
-package liric.mistaken.game.managers
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -15,7 +16,12 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.inventory.InventoryClickEvent
-import org.bukkit.event.player.*
+import org.bukkit.event.player.PlayerChangedWorldEvent
+import org.bukkit.event.player.PlayerDropItemEvent
+import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.PlayerTeleportEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
@@ -29,7 +35,7 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
 
     class SpectatorHolder : InventoryHolder {
         // En las nuevas versiones Bukkit, las interfaces gráficas se manejan asumiendo que server = Bukkit
-        override fun getInventory(): Inventory = org.bukkit.Bukkit.createInventory(this, 9)
+        override fun getInventory(): Inventory = Bukkit.createInventory(this, 9)
     }
 
     fun isSpectator(player: Player): Boolean = activeSpectators.contains(player.uniqueId)
@@ -145,7 +151,8 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         }
     }
 
-    @EventHandler fun onQuit(e: PlayerQuitEvent) = removeCustomSpectator(e.player)
+    @EventHandler
+    fun onQuit(e: PlayerQuitEvent) = removeCustomSpectator(e.player)
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onInteract(e: PlayerInteractEvent) {
@@ -179,7 +186,7 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
             return
         }
 
-        val inv = org.bukkit.Bukkit.createInventory(SpectatorHolder(), 27, plugin.mm.deserialize("<dark_gray>Espectear Jugador"))
+        val inv = Bukkit.createInventory(SpectatorHolder(), 27, plugin.mm.deserialize("<dark_gray>Espectear Jugador"))
         vivos.forEach { target ->
             val head = ItemStack(Material.PLAYER_HEAD).apply {
                 editMeta { meta ->
@@ -210,8 +217,12 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         }
     }
 
-    @EventHandler fun onDrop(e: PlayerDropItemEvent) { if (isSpectator(e.player)) e.isCancelled = true }
-    @EventHandler fun onPickup(e: EntityPickupItemEvent) { val p = e.entity as? Player ?: return; if (isSpectator(p)) e.isCancelled = true }
-    @EventHandler fun onDamageHit(e: EntityDamageByEntityEvent) { val p = e.damager as? Player ?: return; if (isSpectator(p)) e.isCancelled = true }
-    @EventHandler fun onTakeDamage(e: EntityDamageEvent) { val p = e.entity as? Player ?: return; if (isSpectator(p)) e.isCancelled = true }
+    @EventHandler
+    fun onDrop(e: PlayerDropItemEvent) { if (isSpectator(e.player)) e.isCancelled = true }
+    @EventHandler
+    fun onPickup(e: EntityPickupItemEvent) { val p = e.entity as? Player ?: return; if (isSpectator(p)) e.isCancelled = true }
+    @EventHandler
+    fun onDamageHit(e: EntityDamageByEntityEvent) { val p = e.damager as? Player ?: return; if (isSpectator(p)) e.isCancelled = true }
+    @EventHandler
+    fun onTakeDamage(e: EntityDamageEvent) { val p = e.entity as? Player ?: return; if (isSpectator(p)) e.isCancelled = true }
 }

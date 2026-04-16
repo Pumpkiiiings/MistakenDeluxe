@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.HealthAPI
@@ -8,7 +8,11 @@ import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.kyori.adventure.title.Title
-import org.bukkit.*
+import org.bukkit.ChatColor
+import org.bukkit.GameMode
+import org.bukkit.Material
+import org.bukkit.Particle
+import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -19,7 +23,8 @@ import org.bukkit.event.entity.EntityPotionEffectEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import java.util.*
+import java.util.Locale
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
@@ -203,7 +208,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             val lastHit = killerCooldowns.getOrDefault(attacker.uniqueId, 0L)
             if (now - lastHit < KILLER_COOLDOWN) {
                 val remaining = (KILLER_COOLDOWN - (now - lastHit)) / 1000.0
-                attacker.sendActionBar(plugin.messageConfig.getMessage(attacker, "combat.cooldown", Placeholder.parsed("time", String.format(Locale.US, "%.1f", remaining))))
+                attacker.sendActionBar(plugin.messageConfig.getMessage(attacker, "combat.cooldown", Placeholder.parsed("time", String.Companion.format(
+                    Locale.US, "%.1f", remaining))))
                 event.isCancelled = true
                 return
             }
@@ -217,7 +223,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             val lastHit = survivorCooldowns.getOrDefault(attacker.uniqueId, 0L)
             if (now - lastHit < SURVIVOR_COOLDOWN) {
                 val remaining = (SURVIVOR_COOLDOWN - (now - lastHit)) / 1000.0
-                attacker.sendActionBar(plugin.messageConfig.getMessage(attacker, "combat.cooldown", Placeholder.parsed("time", String.format(Locale.US, "%.1f", remaining))))
+                attacker.sendActionBar(plugin.messageConfig.getMessage(attacker, "combat.cooldown", Placeholder.parsed("time", String.Companion.format(
+                    Locale.US, "%.1f", remaining))))
                 event.isCancelled = true
                 return
             }
@@ -243,7 +250,16 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {
                     val msg = plugin.messageConfig.getRawString(victim, "combat.critical-wound", "<red><bold>¡HERIDA CRÍTICA!</bold>")
                     victim.sendMessage(mm.deserialize(msg))
-                    victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, Int.MAX_VALUE, 0, false, false, true))
+                    victim.addPotionEffect(
+                        PotionEffect(
+                            PotionEffectType.DARKNESS,
+                            Int.MAX_VALUE,
+                            0,
+                            false,
+                            false,
+                            true
+                        )
+                    )
                 }
             }
 
@@ -287,7 +303,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             session.getPlayers().filter { !killers.contains(it.uniqueId) && it.gameMode != GameMode.SPECTATOR }
         }
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
-            winners.forEach { Mistaken.economy?.depositPlayer(it, if (killerWon) 500.0 else 200.0) }
+            winners.forEach { Mistaken.Companion.economy?.depositPlayer(it, if (killerWon) 500.0 else 200.0) }
         }
     }
 
@@ -325,8 +341,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                     task.cancel()
                     return@run
                 }
-                val timeFormatted = String.format(Locale.US, "%d:%02d", timeLeft / 60, timeLeft % 60)
-                victim.showTitle(Title.title(
+                val timeFormatted = String.Companion.format(Locale.US, "%d:%02d", timeLeft / 60, timeLeft % 60)
+                victim.showTitle(
+                    Title.title(
                     plugin.messageConfig.getMessage(victim, "game.freeze-title"),
                     plugin.messageConfig.getMessage(victim, "game.freeze-subtitle", Placeholder.parsed("time", timeFormatted))
                 ))

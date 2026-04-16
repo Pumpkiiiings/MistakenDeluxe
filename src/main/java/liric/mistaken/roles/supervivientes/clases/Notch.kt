@@ -16,12 +16,9 @@ import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * [LIRIC-MISTAKEN 2.0]
+ *[LIRIC-MISTAKEN 2.0]
  * Notch: El Creador.
- * MECÁNICAS:
- * - Movilidad vertical (Vuelo falso).
- * - Control de área (Empuje de Bedrock).
- * - Supervivencia (Manzana de Notch).
+ * FIX: Funciones nativas separadas por Entidad. (Folia Ready)
  */
 class Notch : Superviviente(
     "notch",
@@ -32,14 +29,11 @@ class Notch : Superviviente(
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
     private val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
 
-    init {
-        preLoadKit()
-    }
+    init { preLoadKit() }
 
     private fun preLoadKit() {
         val config = plugin.configManager.getSupervivientes()
 
-        // 1. Habilidades
         listOf("habilidad1", "habilidad2", "habilidad3").forEach { key ->
             config.getString("$pathBase.items.$key")?.let { id ->
                 if (id != "none" && id.isNotEmpty()) {
@@ -49,7 +43,6 @@ class Notch : Superviviente(
             }
         }
 
-        // 2. Armadura (Por defecto Oro/Diamante si no hay config)
         val armorParts = mapOf(
             "casco" to Material.GOLDEN_HELMET,
             "pechera" to Material.GOLDEN_CHESTPLATE,
@@ -93,103 +86,97 @@ class Notch : Superviviente(
     }
 
     private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
-        val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(mm.deserialize(msg))
+        player.scheduler.run(plugin, { _ ->
+            val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
+            if (!msg.isNullOrEmpty()) player.sendMessage(mm.deserialize(msg))
+        }, null)
     }
 
     override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        if (itemCache.isEmpty()) preLoadKit()
+        player.scheduler.run(plugin, { _ ->
+            val inv = player.inventory
+            inv.clear()
+            if (itemCache.isEmpty()) preLoadKit()
 
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+            val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
 
-        fun giveLocalizedSkill(slot: Int, key: String) {
-            val item = itemCache[key]?.clone() ?: return
-            langConfig.getString("$pathBase.habilidades_nombres.$key")?.let {
-                item.editMeta { m -> m.displayName(mm.deserialize(it)) }
+            fun giveLocalizedSkill(slot: Int, key: String) {
+                val item = itemCache[key]?.clone() ?: return
+                langConfig.getString("$pathBase.habilidades_nombres.$key")?.let {
+                    item.editMeta { m -> m.displayName(mm.deserialize(it)) }
+                }
+                inv.setItem(slot, item)
             }
-            inv.setItem(slot, item)
-        }
 
-        giveLocalizedSkill(0, "habilidad1")
-        giveLocalizedSkill(1, "habilidad2")
-        giveLocalizedSkill(2, "habilidad3")
+            giveLocalizedSkill(0, "habilidad1")
+            giveLocalizedSkill(1, "habilidad2")
+            giveLocalizedSkill(2, "habilidad3")
 
-        itemCache["casco"]?.let { inv.helmet = it }
-        itemCache["pechera"]?.let { inv.chestplate = it }
-        itemCache["pantalones"]?.let { inv.leggings = it }
-        itemCache["botas"]?.let { inv.boots = it }
+            itemCache["casco"]?.let { inv.helmet = it }
+            itemCache["pechera"]?.let { inv.chestplate = it }
+            itemCache["pantalones"]?.let { inv.leggings = it }
+            itemCache["botas"]?.let { inv.boots = it }
 
-        player.updateInventory()
+            player.updateInventory()
+        }, null)
     }
 
-    // --- H1: SALTO CREATIVO (Vuelo temporal) ---
     private fun usarSaltoCreativo(player: Player) {
-        // Impulso físico
-        val velocity = player.location.direction.multiply(1.2).setY(1.1) // Salto alto y hacia adelante
-        player.velocity = velocity
+        player.scheduler.run(plugin, { _ ->
+            val velocity = player.location.direction.multiply(1.2).setY(1.1)
+            player.velocity = velocity
 
-        // SFX Combinado: Cohete + Experiencia (Sonido "Mágico")
-        player.world.playSound(player.location, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.5f, 0.8f)
-        player.world.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 0.5f)
+            player.world.playSound(player.location, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.5f, 0.8f)
+            player.world.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 0.5f)
 
-        // Partículas: Nubes debajo de los pies
-        player.world.spawnParticle(Particle.CLOUD, player.location, 15, 0.3, 0.1, 0.3, 0.05)
-        player.world.spawnParticle(Particle.WAX_OFF, player.location, 10, 0.5, 0.5, 0.5) // Destellos blancos
+            player.world.spawnParticle(Particle.CLOUD, player.location, 15, 0.3, 0.1, 0.3, 0.05)
+            player.world.spawnParticle(Particle.WAX_OFF, player.location, 10, 0.5, 0.5, 0.5)
 
-        // Caída lenta para simular "Creative Mode" al bajar
-        val task = player.scheduler.runDelayed(plugin, {
-            if (player.isOnline) {
-                player.addPotionEffect(PotionEffect(PotionEffectType.SLOW_FALLING, 60, 0))
-            }
-        }, null, 15L)
+            val task = player.scheduler.runDelayed(plugin, { _ ->
+                if (player.isOnline) player.addPotionEffect(PotionEffect(PotionEffectType.SLOW_FALLING, 60, 0))
+            }, null, 15L)
 
-        task?.let { activeTasks.add(it) }
+            task?.let { activeTasks.add(it) }
+        }, null)
     }
 
-    // --- H2: MURO DEL ADMIN (Empuje de Bedrock) ---
     private fun usarMuroAdmin(player: Player) {
-        // SFX Combinado: Yunque + Pistón (Sonido "Pesado/Denegado")
-        player.world.playSound(player.location, Sound.BLOCK_ANVIL_LAND, 0.8f, 0.5f)
-        player.world.playSound(player.location, Sound.BLOCK_PISTON_EXTEND, 1.0f, 0.5f)
+        player.scheduler.run(plugin, { _ ->
+            player.world.playSound(player.location, Sound.BLOCK_ANVIL_LAND, 0.8f, 0.5f)
+            player.world.playSound(player.location, Sound.BLOCK_PISTON_EXTEND, 1.0f, 0.5f)
 
-        // VFX: Círculo de Bedrock y Runas
-        player.world.spawnParticle(Particle.BLOCK, player.location.add(0.0, 1.0, 0.0), 40, 3.0, 0.5, 3.0, Material.BEDROCK.createBlockData())
-        player.world.spawnParticle(Particle.ENCHANT, player.location.add(0.0, 1.0, 0.0), 30, 2.0, 2.0, 2.0, 1.0)
+            player.world.spawnParticle(Particle.BLOCK, player.location.add(0.0, 1.0, 0.0), 40, 3.0, 0.5, 3.0, Material.BEDROCK.createBlockData())
+            player.world.spawnParticle(Particle.ENCHANT, player.location.add(0.0, 1.0, 0.0), 30, 2.0, 2.0, 2.0, 1.0)
 
-        // Lógica de empuje
-        player.getNearbyEntities(6.0, 6.0, 6.0).forEach { entity ->
-            if (entity is Player && plugin.sessionManager.getSession(entity)?.esAsesino(entity.uniqueId) == true) {
-                // Vector de rechazo fuerte
-                val push = entity.location.toVector().subtract(player.location.toVector()).normalize().multiply(2.5).setY(0.4)
-                entity.velocity = push
-
-                // Efectos al asesino
-                entity.sendMessage(mm.deserialize("<red><bold>DENIED!</bold> <gray>Acceso denegado por el administrador.</gray>"))
-                entity.playSound(entity.location, Sound.ENTITY_VILLAGER_NO, 1f, 0.8f)
+            player.world.getNearbyPlayers(player.location, 6.0).forEach { entity ->
+                val session = plugin.sessionManager?.getSession(entity)
+                if (session?.esAsesino(entity.uniqueId) == true) {
+                    entity.scheduler.run(plugin, { _ ->
+                        val push = entity.location.toVector().subtract(player.location.toVector()).normalize().multiply(2.5).setY(0.4)
+                        entity.velocity = push
+                        entity.sendMessage(mm.deserialize("<red><bold>DENIED!</bold> <gray>Acceso denegado por el administrador.</gray>"))
+                        entity.playSound(entity.location, Sound.ENTITY_VILLAGER_NO, 1f, 0.8f)
+                    }, null)
+                }
             }
-        }
+        }, null)
     }
 
-    // --- H3: MANZANA DEL CREADOR (Buffs Epicos) ---
     private fun usarManzanaCreador(player: Player) {
-        // SFX Combinado: Tótem + Comer
-        player.world.playSound(player.location, Sound.ITEM_TOTEM_USE, 1.0f, 1.2f)
-        player.world.playSound(player.location, Sound.ENTITY_GENERIC_EAT, 1.0f, 1.0f)
+        player.scheduler.run(plugin, { _ ->
+            player.world.playSound(player.location, Sound.ITEM_TOTEM_USE, 1.0f, 1.2f)
+            player.world.playSound(player.location, Sound.ENTITY_GENERIC_EAT, 1.0f, 1.0f)
 
-        // VFX: Explosión de Tótem + Flash
-        player.world.spawnParticle(Particle.TOTEM_OF_UNDYING, player.location.add(0.0, 1.0, 0.0), 40, 0.5, 0.5, 0.5, 0.3)
-        player.world.spawnParticle(Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 1)
+            player.world.spawnParticle(Particle.TOTEM_OF_UNDYING, player.location.add(0.0, 1.0, 0.0), 40, 0.5, 0.5, 0.5, 0.3)
+            player.world.spawnParticle(Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 1)
 
-        // Buffs Poderosos
-        player.addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, 100, 2)) // Regen III por 5s
-        player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 100, 1))   // Resistencia II por 5s
-        player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 1))        // Velocidad II por 5s
+            player.addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, 100, 2))
+            player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 100, 1))
+            player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 1))
 
-        // Curación instantánea visual
-        val maxHealth = player.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
-        player.health = (player.health + 6.0).coerceAtMost(maxHealth) // Cura 3 corazones
+            val maxHealth = player.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
+            player.health = (player.health + 6.0).coerceAtMost(maxHealth)
+        }, null)
     }
 
     override fun cleanup(player: Player?) {

@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "liric.mistaken" // Actualizado a tu nuevo package
-version = "PROXY-BETA-2.0"
+version = "1.16.0.1"
 
 java {
     toolchain {
@@ -49,7 +49,6 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation(kotlin("stdlib"))
     implementation("com.mojang:brigadier:1.2.9")
-    // Librerías que se incluirán en el JAR (Shadow)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("com.github.retrooper:packetevents-spigot:2.11.2")
     implementation("com.zaxxer:HikariCP:5.1.0")
@@ -59,7 +58,6 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:2.0.9")
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
 
-    // APIs Externas (Solo para compilar)
     compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.0.0")
     compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {

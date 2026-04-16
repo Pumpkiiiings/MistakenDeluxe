@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -62,7 +62,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
             val langConfig = plugin.messageConfig.getSpecificFile(null, "messages")
             langConfig.getString("generators.names.${material.name}")
                 ?: material.name.lowercase().replace("_", " ").split(" ")
-                    .joinToString(" ") { it.replaceFirstChar { char -> char.uppercase() } }
+                    .joinToString(" ") { word -> word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() } }
         }
     }
 
@@ -79,7 +79,6 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
             locations.forEach { loc ->
                 val blockLoc = loc.block.location
-                // Folia: Modificación del mundo siempre en el RegionScheduler
                 plugin.server.regionScheduler.run(plugin, blockLoc, { _ ->
                     val coordKey = "${blockLoc.world.name}_${blockLoc.blockX}_${blockLoc.blockY}_${blockLoc.blockZ}"
                     var savedProgress = 0
@@ -132,16 +131,21 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
     private fun spawnHologram(loc: Location, state: GeneratorState) {
         val holoLoc = loc.clone().add(0.5, 1.3, 0.5)
-        state.displayEntity?.remove()
 
-        state.displayEntity = holoLoc.world.spawn(holoLoc, TextDisplay::class.java) { display ->
-            display.billboard = Display.Billboard.CENTER
-            display.brightness = Display.Brightness(15, 15)
-            display.backgroundColor = Color.fromARGB(0, 0, 0, 0)
-            display.isPersistent = false
-            display.transformation = Transformation(Vector3f(), Quaternionf(), Vector3f(1.1f, 1.1f, 1.1f), Quaternionf())
-            updateHologramVisual(state, display)
+        state.displayEntity?.let {
+            plugin.server.regionScheduler.run(plugin, it.location, { _ -> it.remove() })
         }
+
+        plugin.server.regionScheduler.run(plugin, holoLoc, { _ ->
+            state.displayEntity = holoLoc.world.spawn(holoLoc, TextDisplay::class.java) { display ->
+                display.billboard = Display.Billboard.CENTER
+                display.brightness = Display.Brightness(15, 15)
+                display.backgroundColor = Color.fromARGB(0, 0, 0, 0)
+                display.isPersistent = false
+                display.transformation = Transformation(Vector3f(), Quaternionf(), Vector3f(1.1f, 1.1f, 1.1f), Quaternionf())
+                updateHologramVisual(state, display)
+            }
+        })
     }
 
     private fun updateHologramVisual(state: GeneratorState, directEntity: TextDisplay? = null) {
@@ -173,14 +177,20 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     }
 
     fun clearGenerators() {
-        generators.forEach { (_, state) -> state.displayEntity?.remove() }
+        generators.forEach { (_, state) ->
+            state.displayEntity?.let {
+                plugin.server.regionScheduler.run(plugin, it.location, { _ -> it.remove() })
+            }
+        }
         generators.clear()
     }
 
     fun clearGeneratorsInWorld(world: World) {
         generators.entries.removeIf { (loc, state) ->
             if (loc.world == world) {
-                state.displayEntity?.remove()
+                state.displayEntity?.let {
+                    plugin.server.regionScheduler.run(plugin, it.location, { _ -> it.remove() })
+                }
                 true
             } else false
         }
@@ -203,6 +213,11 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
                 try { dataConfig.save(dataFile) } catch (e: Exception) { }
             }
         }
+    }
+
+    // 🔥 FIX 8: Método faltante para el Salto Dimensional de Herobrine
+    fun getGeneratorLocations(): List<Location> {
+        return generators.keys.toList()
     }
 
     fun getCompletedCountInWorld(world: World): Int = generators.entries.count { it.key.world == world && it.value.completed }

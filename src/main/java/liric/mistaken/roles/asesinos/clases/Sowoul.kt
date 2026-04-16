@@ -35,7 +35,7 @@ import kotlin.math.sin
 /**
  *[LIRIC-MISTAKEN 2.0]
  * Sowoul: El Mago de las Ilusiones.
- * FIX: Los efectos de muerte (Finishers) ahora detectan correctamente el modo espectador del plugin.
+ * FIX: Schedulers nativos aplicados a manipulación de BlockDisplays y Partículas.
  */
 class Sowoul : Asesino(
     "sowoul",
@@ -49,7 +49,6 @@ class Sowoul : Asesino(
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val fakeEntities = ConcurrentHashMap.newKeySet<Entity>()
 
-    // Anti-spam de los efectos de muerte
     private val lastKillEffect = ConcurrentHashMap<UUID, Long>()
 
     init {
@@ -93,7 +92,7 @@ class Sowoul : Asesino(
 
     private fun dibujarCirculoMagico(player: Player, particula: org.bukkit.Particle, radio: Double) {
         val loc = player.location.clone().add(0.0, 0.1, 0.0)
-        plugin.server.regionScheduler.run(plugin, loc, Consumer { _ ->
+        plugin.server.regionScheduler.run(plugin, loc, { _ ->
             for (i in 0 until 360 step 10) {
                 val angulo = Math.toRadians(i.toDouble())
                 val x = radio * cos(angulo)
@@ -105,7 +104,7 @@ class Sowoul : Asesino(
 
     private fun dibujarEspiral(player: Player, particula: org.bukkit.Particle, radioMax: Double) {
         val loc = player.location.clone().add(0.0, 0.1, 0.0)
-        plugin.server.regionScheduler.run(plugin, loc, Consumer { _ ->
+        plugin.server.regionScheduler.run(plugin, loc, { _ ->
             var radioActual = 0.0
             var yOffset = 0.0
             for (i in 0 until 360 * 3 step 20) {
@@ -122,7 +121,7 @@ class Sowoul : Asesino(
     private fun dibujarPentagrama(player: Player, particula: org.bukkit.Particle, radio: Double) {
         val loc = player.location.clone().add(0.0, 0.2, 0.0)
         val puntas = 5
-        plugin.server.regionScheduler.run(plugin, loc, Consumer { _ ->
+        plugin.server.regionScheduler.run(plugin, loc, { _ ->
             for (i in 0 until puntas) {
                 val a1 = Math.toRadians((i * 360.0 / puntas) - 90)
                 val a2 = Math.toRadians(((i + 2) * 360.0 / puntas) - 90)
@@ -146,182 +145,199 @@ class Sowoul : Asesino(
     }
 
     private fun habilidadDashMagico(player: Player) {
-        val dir = player.location.direction.normalize().multiply(3.0).setY(0.4)
-        player.velocity = dir
-        player.playSound(player.location, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.2f)
-        player.playSound(player.location, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1f, 0.5f)
+        player.scheduler.run(plugin, { _ ->
+            val dir = player.location.direction.normalize().multiply(3.0).setY(0.4)
+            player.velocity = dir
+            player.playSound(player.location, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.2f)
+            player.playSound(player.location, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1f, 0.5f)
 
-        var ticks = 0
-        val hitted = mutableSetOf<UUID>()
+            var ticks = 0
+            val hitted = mutableSetOf<UUID>()
 
-        player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (ticks >= 15 || !player.isOnline) {
-                task.cancel()
-                return@Consumer
-            }
-
-            if (ticks < 5) player.velocity = dir.clone().multiply(1.0 - (ticks * 0.1))
-            player.world.spawnParticle(org.bukkit.Particle.REVERSE_PORTAL, player.location, 25, 0.5, 0.5, 0.5, 0.2)
-
-            player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
-                if (esObjetivoValido(player, victim) && hitted.add(victim.uniqueId)) {
-                    plugin.combatManager.takeDamage(victim)
-                    victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
-                    victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 2))
-                    victim.playSound(victim.location, Sound.ENTITY_ILLUSIONER_MIRROR_MOVE, 1f, 1f)
+            val task = plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
+                if (ticks >= 15 || !player.isOnline) {
+                    task.cancel()
+                    return@Consumer
                 }
-            }
-            ticks++
-        }, null, 1L, 1L)
+
+                player.scheduler.run(plugin, { _ ->
+                    if (ticks < 5) player.velocity = dir.clone().multiply(1.0 - (ticks * 0.1))
+                    player.world.spawnParticle(org.bukkit.Particle.REVERSE_PORTAL, player.location, 25, 0.5, 0.5, 0.5, 0.2)
+                }, null)
+
+                player.world.getNearbyPlayers(player.location, 2.5).forEach { victim ->
+                    if (esObjetivoValido(player, victim) && hitted.add(victim.uniqueId)) {
+                        victim.scheduler.run(plugin, { _ ->
+                            plugin.combatManager?.takeDamage(victim)
+                            victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
+                            victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 2))
+                            victim.playSound(victim.location, Sound.ENTITY_ILLUSIONER_MIRROR_MOVE, 1f, 1f)
+                        }, null)
+                    }
+                }
+                ticks++
+            }, 1L, 1L)
+            trackTask(task)
+        }, null)
     }
 
     private fun habilidadLanzarCartas(player: Player) {
-        val carta = player.world.spawn(player.eyeLocation, ItemDisplay::class.java) { id ->
-            id.setItemStack(ItemStack(Material.PAPER))
-            id.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
-            id.teleportDuration = 1; id.interpolationDuration = 1
-        }
-
-        fakeEntities.add(carta)
+        val startLoc = player.eyeLocation
         val dir = player.location.direction.normalize().multiply(1.5)
 
-        var ticks = 0
-        carta.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (ticks >= 40 || !carta.isValid) {
-                if (carta.isValid) carta.remove()
-                task.cancel()
-                return@Consumer
+        plugin.server.regionScheduler.run(plugin, startLoc, { _ ->
+            val carta = startLoc.world.spawn(startLoc, ItemDisplay::class.java) { id ->
+                id.setItemStack(ItemStack(Material.PAPER))
+                id.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
+                id.teleportDuration = 1; id.interpolationDuration = 1
             }
 
-            carta.teleport(carta.location.add(dir))
-            val t = carta.transformation
-            t.leftRotation.rotateY(0.8f).rotateZ(0.8f)
-            carta.transformation = t
+            fakeEntities.add(carta)
 
-            carta.world.spawnParticle(org.bukkit.Particle.ENCHANT, carta.location, 3, 0.1, 0.1, 0.1, 0.0)
-
-            val hit = carta.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { esObjetivoValido(player, it) }
-
-            if (hit != null || carta.location.block.type.isSolid) {
-                hit?.let {
-                    plugin.combatManager.takeDamage(it)
-                    it.addPotionEffect(PotionEffect(PotionEffectType.POISON, 60, 0))
-                    it.playSound(it.location, Sound.ENTITY_PLAYER_HURT_SWEET_BERRY_BUSH, 1f, 1.2f)
+            var ticks = 0
+            val task = plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
+                if (ticks >= 40 || !carta.isValid) {
+                    if (carta.isValid) carta.remove()
+                    task.cancel()
+                    return@Consumer
                 }
-                carta.world.spawnParticle(org.bukkit.Particle.FIREWORK, carta.location, 15, 0.3, 0.3, 0.3, 0.1)
-                carta.remove()
-                fakeEntities.remove(carta)
-                task.cancel()
-            }
-            ticks++
-        }, null, 1L, 1L)
+
+                val nextLoc = carta.location.add(dir)
+                carta.teleport(nextLoc)
+                val t = carta.transformation
+                t.leftRotation.rotateY(0.8f).rotateZ(0.8f)
+                carta.transformation = t
+
+                carta.world.spawnParticle(org.bukkit.Particle.ENCHANT, carta.location, 3, 0.1, 0.1, 0.1, 0.0)
+
+                val hit = carta.world.getNearbyPlayers(nextLoc, 1.2).firstOrNull { esObjetivoValido(player, it) }
+
+                if (hit != null || nextLoc.block.type.isSolid) {
+                    hit?.scheduler?.run(plugin, { _ ->
+                        plugin.combatManager?.takeDamage(hit)
+                        hit.addPotionEffect(PotionEffect(PotionEffectType.POISON, 60, 0))
+                        hit.playSound(hit.location, Sound.ENTITY_PLAYER_HURT_SWEET_BERRY_BUSH, 1f, 1.2f)
+                    }, null)
+
+                    carta.world.spawnParticle(org.bukkit.Particle.FIREWORK, carta.location, 15, 0.3, 0.3, 0.3, 0.1)
+                    carta.remove()
+                    fakeEntities.remove(carta)
+                    task.cancel()
+                }
+                ticks++
+            }, 1L, 1L)
+            trackTask(task)
+        })
     }
 
     private fun habilidadFaucesTriples(player: Player) {
-        player.playSound(player.location, Sound.ENTITY_EVOKER_PREPARE_ATTACK, 1f, 1f)
-        val startLoc = player.location
-        val angles = listOf(-25.0, 0.0, 25.0)
+        player.scheduler.run(plugin, { _ ->
+            player.playSound(player.location, Sound.ENTITY_EVOKER_PREPARE_ATTACK, 1f, 1f)
+            val startLoc = player.location
+            val angles = listOf(-25.0, 0.0, 25.0)
 
-        angles.forEach { offset ->
-            val direction = startLoc.direction.clone().rotateAroundY(Math.toRadians(offset)).setY(0.0).normalize()
-            val currentLoc = startLoc.clone()
+            angles.forEach { offset ->
+                val direction = startLoc.direction.clone().rotateAroundY(Math.toRadians(offset)).setY(0.0).normalize()
+                val currentLoc = startLoc.clone()
 
-            for (i in 1..12) {
-                currentLoc.add(direction.clone().multiply(1.2))
-                val locToSpawn = currentLoc.clone()
+                for (i in 1..12) {
+                    currentLoc.add(direction.clone().multiply(1.2))
+                    val locToSpawn = currentLoc.clone()
 
-                plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
-                    if (!player.isOnline) return@Consumer
+                    plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, { _ ->
+                        if (!player.isOnline) return@runDelayed
 
-                    var targetY = locToSpawn.blockY
-                    val world = locToSpawn.world
+                        var targetY = locToSpawn.blockY
+                        val world = locToSpawn.world
 
-                    while (world.getBlockAt(locToSpawn.blockX, targetY, locToSpawn.blockZ).isPassable && targetY > startLoc.blockY - 3) {
-                        targetY--
-                    }
-                    while (!world.getBlockAt(locToSpawn.blockX, targetY, locToSpawn.blockZ).isPassable && targetY < startLoc.blockY + 3) {
-                        targetY++
-                    }
-
-                    locToSpawn.y = targetY.toDouble()
-
-                    if (!locToSpawn.block.type.isSolid) {
-                        world.spawn(locToSpawn, EvokerFangs::class.java) { fangs ->
-                            fangs.owner = player
+                        while (world.getBlockAt(locToSpawn.blockX, targetY, locToSpawn.blockZ).isPassable && targetY > startLoc.blockY - 3) {
+                            targetY--
                         }
-                    }
-                }, (i * 2).toLong())
+                        while (!world.getBlockAt(locToSpawn.blockX, targetY, locToSpawn.blockZ).isPassable && targetY < startLoc.blockY + 3) {
+                            targetY++
+                        }
+
+                        locToSpawn.y = targetY.toDouble()
+
+                        if (!locToSpawn.block.type.isSolid) {
+                            world.spawn(locToSpawn, EvokerFangs::class.java) { fangs ->
+                                fangs.owner = player
+                            }
+                        }
+                    }, (i * 2).toLong())
+                }
             }
-        }
+        }, null)
     }
 
     private fun habilidadManoAtraccion(player: Player) {
         val target = player.world.getNearbyPlayers(player.location, 25.0).firstOrNull { esObjetivoValido(player, it) }
 
         if (target == null) {
-            player.sendActionBar(mm.deserialize("<red>Nadie en tu rango de visión. Se gastó la habilidad."))
+            player.scheduler.run(plugin, { _ ->
+                player.sendActionBar(mm.deserialize("<red>Nadie en tu rango de visión. Se gastó la habilidad."))
+            }, null)
             return
         }
 
-        player.playSound(player.location, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1.5f, 0.5f)
-        target.playSound(target.location, Sound.ENTITY_ENDERMAN_STARE, 1.5f, 0.1f)
-        target.sendActionBar(mm.deserialize("<dark_purple><b>¡UNA MANO MÁGICA TE HA ATRAPADO!</b>"))
+        player.scheduler.run(plugin, { _ -> player.playSound(player.location, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1.5f, 0.5f) }, null)
 
-        val manoDisplay = target.world.spawn(target.location.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) { bd ->
-            bd.block = Material.PURPUR_PILLAR.createBlockData()
-            bd.transformation = Transformation(
-                JomlVector3f(-1.0f, -1.0f, -1.0f),
-                Quaternionf(),
-                JomlVector3f(2f, 2f, 2f),
-                Quaternionf()
-            )
-            bd.teleportDuration = 2
-        }
+        target.scheduler.run(plugin, { _ ->
+            target.playSound(target.location, Sound.ENTITY_ENDERMAN_STARE, 1.5f, 0.1f)
+            target.sendActionBar(mm.deserialize("<dark_purple><b>¡UNA MANO MÁGICA TE HA ATRAPADO!</b>"))
+        }, null)
 
-        var ticks = 0
-        player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (ticks >= 40 || !target.isOnline || !player.isOnline || plugin.spectatorManager.isSpectator(target)) {
-                manoDisplay.remove()
-                task.cancel()
-                return@Consumer
+        val spawnLoc = target.location.clone().add(0.0, 1.0, 0.0)
+        plugin.server.regionScheduler.run(plugin, spawnLoc, { _ ->
+            val manoDisplay = spawnLoc.world.spawn(spawnLoc, BlockDisplay::class.java) { bd ->
+                bd.block = Material.PURPUR_PILLAR.createBlockData()
+                bd.transformation = Transformation(JomlVector3f(-1.0f, -1.0f, -1.0f), Quaternionf(), JomlVector3f(2f, 2f, 2f), Quaternionf())
+                bd.teleportDuration = 2
             }
 
-            val pullDir = player.location.toVector().subtract(target.location.toVector()).normalize().multiply(0.8)
-            target.velocity = pullDir.setY(0.2)
+            var ticks = 0
+            val task = plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
+                if (ticks >= 40 || !target.isOnline || !player.isOnline || plugin.spectatorManager?.isSpectator(target) == true) {
+                    manoDisplay.remove()
+                    task.cancel()
+                    return@Consumer
+                }
 
-            manoDisplay.teleport(target.location.clone().add(0.0, 1.0, 0.0))
-            manoDisplay.world.spawnParticle(org.bukkit.Particle.PORTAL, manoDisplay.location, 20, 1.0, 1.0, 1.0, 0.5)
+                val pullDir = player.location.toVector().subtract(target.location.toVector()).normalize().multiply(0.8)
+                target.scheduler.run(plugin, { _ -> target.velocity = pullDir.setY(0.2) }, null)
 
-            if (target.location.distanceSquared(player.location) < 4.0) {
-                plugin.combatManager.takeDamage(target)
-                target.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
-                target.playSound(target.location, Sound.ENTITY_IRON_GOLEM_HURT, 1f, 0.5f)
+                manoDisplay.teleport(target.location.clone().add(0.0, 1.0, 0.0))
+                manoDisplay.world.spawnParticle(org.bukkit.Particle.PORTAL, manoDisplay.location, 20, 1.0, 1.0, 1.0, 0.5)
 
-                manoDisplay.world.spawnParticle(org.bukkit.Particle.EXPLOSION, manoDisplay.location, 2)
-                manoDisplay.world.playSound(manoDisplay.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1.5f)
+                if (target.location.distanceSquared(player.location) < 4.0) {
+                    target.scheduler.run(plugin, { _ ->
+                        plugin.combatManager?.takeDamage(target)
+                        target.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
+                        target.playSound(target.location, Sound.ENTITY_IRON_GOLEM_HURT, 1f, 0.5f)
+                    }, null)
 
-                manoDisplay.remove()
-                task.cancel()
-            }
-            ticks++
-        }, null, 1L, 1L)
+                    manoDisplay.world.spawnParticle(org.bukkit.Particle.EXPLOSION, manoDisplay.location, 2)
+                    manoDisplay.world.playSound(manoDisplay.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1.5f)
+
+                    manoDisplay.remove()
+                    task.cancel()
+                }
+                ticks++
+            }, 1L, 1L)
+            trackTask(task)
+        })
     }
-
-    // --- 💀 FINISHERS: EFECTOS DE ASESINATO ALEATORIOS ---
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onSowoulKill(event: EntityDamageByEntityEvent) {
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        // 🔥 MULTIARENA FIX: Obtenemos la sesión del atacante
-        val session = plugin.sessionManager.getSession(attacker) ?: return
+        val sessionManager = plugin.sessionManager ?: return
+        val session = sessionManager.getSession(attacker) ?: return
 
-        // Usamos "session" en lugar de "plugin.gameSession"
         if (session.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
-
-            // Verificamos si la víctima ya es espectador en esta arena
-            if (plugin.spectatorManager.isSpectator(victim)) {
+            if (plugin.spectatorManager?.isSpectator(victim) == true) {
                 val now = System.currentTimeMillis()
 
                 if (now - lastKillEffect.getOrDefault(victim.uniqueId, 0L) > 2000L) {
@@ -338,158 +354,173 @@ class Sowoul : Asesino(
 
         when (effectType) {
             0 -> {
-                val hand1 = world.spawn(loc.clone().add(2.0, 1.0, 0.0), BlockDisplay::class.java) {
-                    it.block = Material.BONE_BLOCK.createBlockData()
-                    it.transformation = Transformation(JomlVector3f(-0.5f, -1.5f, -0.5f), Quaternionf(), JomlVector3f(1f, 3f, 1f), Quaternionf())
-                    it.teleportDuration = 5
-                }
-                val hand2 = world.spawn(loc.clone().add(-2.0, 1.0, 0.0), BlockDisplay::class.java) {
-                    it.block = Material.BONE_BLOCK.createBlockData()
-                    it.transformation = Transformation(JomlVector3f(-0.5f, -1.5f, -0.5f), Quaternionf(), JomlVector3f(1f, 3f, 1f), Quaternionf())
-                    it.teleportDuration = 5
-                }
+                plugin.server.regionScheduler.run(plugin, loc, { _ ->
+                    val hand1 = world.spawn(loc.clone().add(2.0, 1.0, 0.0), BlockDisplay::class.java) {
+                        it.block = Material.BONE_BLOCK.createBlockData()
+                        it.transformation = Transformation(JomlVector3f(-0.5f, -1.5f, -0.5f), Quaternionf(), JomlVector3f(1f, 3f, 1f), Quaternionf())
+                        it.teleportDuration = 5
+                    }
+                    val hand2 = world.spawn(loc.clone().add(-2.0, 1.0, 0.0), BlockDisplay::class.java) {
+                        it.block = Material.BONE_BLOCK.createBlockData()
+                        it.transformation = Transformation(JomlVector3f(-0.5f, -1.5f, -0.5f), Quaternionf(), JomlVector3f(1f, 3f, 1f), Quaternionf())
+                        it.teleportDuration = 5
+                    }
 
-                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
-                    hand1.teleport(loc.clone().add(0.2, 1.0, 0.0))
-                    hand2.teleport(loc.clone().add(-0.2, 1.0, 0.0))
-                    world.playSound(loc, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 0.5f)
-                }, 5L)
+                    plugin.server.regionScheduler.runDelayed(plugin, loc, { _ ->
+                        hand1.teleport(loc.clone().add(0.2, 1.0, 0.0))
+                        hand2.teleport(loc.clone().add(-0.2, 1.0, 0.0))
+                        world.playSound(loc, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 0.5f)
+                    }, 5L)
 
-                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
-                    world.spawnParticle(org.bukkit.Particle.BLOCK, loc.clone().add(0.0, 1.0, 0.0), 100, 0.5, 1.0, 0.5, Material.REDSTONE_BLOCK.createBlockData())
-                    world.playSound(loc, Sound.ENTITY_IRON_GOLEM_DEATH, 1f, 0.5f)
-                    hand1.remove()
-                    hand2.remove()
-                }, 12L)
+                    plugin.server.regionScheduler.runDelayed(plugin, loc, { _ ->
+                        world.spawnParticle(org.bukkit.Particle.BLOCK, loc.clone().add(0.0, 1.0, 0.0), 100, 0.5, 1.0, 0.5, Material.REDSTONE_BLOCK.createBlockData())
+                        world.playSound(loc, Sound.ENTITY_IRON_GOLEM_DEATH, 1f, 0.5f)
+                        hand1.remove()
+                        hand2.remove()
+                    }, 12L)
+                })
             }
             1 -> {
-                world.playSound(loc, Sound.ENTITY_EVOKER_FANGS_ATTACK, 1f, 0.1f)
-                val spike = world.spawn(loc.clone().subtract(0.0, 3.0, 0.0), BlockDisplay::class.java) {
-                    it.block = Material.POINTED_DRIPSTONE.createBlockData()
-                    it.transformation = Transformation(JomlVector3f(-0.5f, 0f, -0.5f), Quaternionf(), JomlVector3f(1f, 5f, 1f), Quaternionf())
-                    it.teleportDuration = 3
-                }
-                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
-                    spike.teleport(loc.clone().add(0.0, 0.5, 0.0))
-                    world.spawnParticle(org.bukkit.Particle.BLOCK, loc, 50, 0.5, 0.5, 0.5, Material.REDSTONE_BLOCK.createBlockData())
-                }, 1L)
+                plugin.server.regionScheduler.run(plugin, loc, { _ ->
+                    world.playSound(loc, Sound.ENTITY_EVOKER_FANGS_ATTACK, 1f, 0.1f)
+                    val spike = world.spawn(loc.clone().subtract(0.0, 3.0, 0.0), BlockDisplay::class.java) {
+                        it.block = Material.POINTED_DRIPSTONE.createBlockData()
+                        it.transformation = Transformation(JomlVector3f(-0.5f, 0f, -0.5f), Quaternionf(), JomlVector3f(1f, 5f, 1f), Quaternionf())
+                        it.teleportDuration = 3
+                    }
 
-                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ -> spike.remove() }, 25L)
+                    plugin.server.regionScheduler.runDelayed(plugin, loc, { _ ->
+                        spike.teleport(loc.clone().add(0.0, 0.5, 0.0))
+                        world.spawnParticle(org.bukkit.Particle.BLOCK, loc, 50, 0.5, 0.5, 0.5, Material.REDSTONE_BLOCK.createBlockData())
+                    }, 1L)
+
+                    plugin.server.regionScheduler.runDelayed(plugin, loc, { _ -> spike.remove() }, 25L)
+                })
             }
             2 -> {
-                world.playSound(loc, Sound.BLOCK_BEACON_DEACTIVATE, 1f, 0.5f)
-                val hole = world.spawn(loc.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) {
-                    it.block = Material.BLACK_CONCRETE.createBlockData()
-                    it.transformation = Transformation(JomlVector3f(-1.5f, -1.5f, -1.5f), Quaternionf(), JomlVector3f(3f, 3f, 3f), Quaternionf())
-                    it.interpolationDuration = 10
-                }
+                plugin.server.regionScheduler.run(plugin, loc, { _ ->
+                    world.playSound(loc, Sound.BLOCK_BEACON_DEACTIVATE, 1f, 0.5f)
+                    val hole = world.spawn(loc.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) {
+                        it.block = Material.BLACK_CONCRETE.createBlockData()
+                        it.transformation = Transformation(JomlVector3f(-1.5f, -1.5f, -1.5f), Quaternionf(), JomlVector3f(3f, 3f, 3f), Quaternionf())
+                        it.interpolationDuration = 10
+                    }
 
-                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
-                    val t = hole.transformation
-                    t.scale.set(0f, 0f, 0f)
-                    hole.transformation = t
+                    plugin.server.regionScheduler.runDelayed(plugin, loc, { _ ->
+                        val t = hole.transformation
+                        t.scale.set(0f, 0f, 0f)
+                        hole.transformation = t
 
-                    world.spawnParticle(org.bukkit.Particle.SQUID_INK, loc.clone().add(0.0, 1.0, 0.0), 50, 1.0, 1.0, 1.0, 0.1)
-                    world.playSound(loc, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 0.5f)
-                }, 3L)
+                        world.spawnParticle(org.bukkit.Particle.SQUID_INK, loc.clone().add(0.0, 1.0, 0.0), 50, 1.0, 1.0, 1.0, 0.1)
+                        world.playSound(loc, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 0.5f)
+                    }, 3L)
 
-                plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ -> hole.remove() }, 15L)
+                    plugin.server.regionScheduler.runDelayed(plugin, loc, { _ -> hole.remove() }, 15L)
+                })
             }
         }
     }
 
     override fun equipar(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        inv.armorContents = arrayOfNulls(4)
+        player.scheduler.run(plugin, { _ ->
+            val inv = player.inventory
+            inv.clear()
+            inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
-        val configMecanica = plugin.configManager.getAsesinos()
+            val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+            val configMecanica = plugin.configManager.getAsesinos()
 
-        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val id = configMecanica.getString("$pathBase.armadura.$key") ?:
-            configMecanica.getString("$pathBase.items.$key")
+            fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
+                val id = configMecanica.getString("$pathBase.armadura.$key") ?:
+                configMecanica.getString("$pathBase.items.$key")
 
-            if (id == null || id == "none") return
+                if (id == null || id == "none") return
 
-            val item = CraftEngineHook.getCustomItem(id) ?: run {
-                val mat = Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase())
-                if (mat != null) ItemStack(mat) else null
-            } ?: return
+                val item = CraftEngineHook.getCustomItem(id) ?: run {
+                    val mat = Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase())
+                    if (mat != null) ItemStack(mat) else null
+                } ?: return
 
-            val namePath = if (key == "arma") "asesinos.sowoul.habilidades_nombres.arma"
-            else "asesinos.sowoul.habilidades_nombres.$key"
+                val namePath = if (key == "arma") "asesinos.sowoul.habilidades_nombres.arma"
+                else "asesinos.sowoul.habilidades_nombres.$key"
 
-            langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
-            }
-
-            if (isArmor) {
-                when(key) {
-                    "casco" -> inv.helmet = item
-                    "pechera" -> inv.chestplate = item
-                    "pantalones" -> inv.leggings = item
-                    "botas" -> inv.boots = item
+                langInfo.getString(namePath)?.let {
+                    item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
                 }
-            } else {
-                inv.setItem(slot, item)
-            }
-        }
 
-        deliver("casco", 0, true)
-        deliver("pechera", 0, true)
-        deliver("pantalones", 0, true)
-        deliver("botas", 0, true)
-        deliver("habilidad1", 1)
-        deliver("habilidad2", 2)
-        deliver("habilidad3", 3)
-        deliver("habilidad4", 4)
-        deliver("arma", 8)
+                if (isArmor) {
+                    when(key) {
+                        "casco" -> inv.helmet = item
+                        "pechera" -> inv.chestplate = item
+                        "pantalones" -> inv.leggings = item
+                        "botas" -> inv.boots = item
+                    }
+                } else {
+                    inv.setItem(slot, item)
+                }
+            }
+
+            deliver("casco", 0, true)
+            deliver("pechera", 0, true)
+            deliver("pantalones", 0, true)
+            deliver("botas", 0, true)
+            deliver("habilidad1", 1)
+            deliver("habilidad2", 2)
+            deliver("habilidad3", 3)
+            deliver("habilidad4", 4)
+            deliver("arma", 8)
+        }, null)
     }
 
     override fun mostrarTrailFisico(player: Player) {
         val uuid = player.uniqueId
-        if (!plugin.asesinoManager.esElAsesino(player)) { limpiarVisuales(uuid); return }
+        if (plugin.asesinoManager?.esElAsesino(player) != true) { limpiarVisuales(uuid); return }
 
-        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
+        val playerLoc = player.location
+        if (orbitadores[uuid]?.firstOrNull()?.world != playerLoc.world) limpiarVisuales(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
             mutableListOf<ItemDisplay>().apply {
-                repeat(4) {
-                    add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
-                        id.setItemStack(ItemStack(Material.PAPER))
-                        id.transformation = Transformation(
-                            JomlVector3f(0f, 0f, 0f),
-                            Quaternionf(),
-                            JomlVector3f(0.5f, 0.5f, 0.5f),
-                            Quaternionf()
-                        )
-                        id.teleportDuration = 3
-                        id.interpolationDuration = 3
-                    })
-                }
+                plugin.server.regionScheduler.run(plugin, playerLoc, { _ ->
+                    repeat(4) {
+                        add(player.world.spawn(player.location, ItemDisplay::class.java) { id ->
+                            id.setItemStack(ItemStack(Material.PAPER))
+                            id.transformation = Transformation(
+                                JomlVector3f(0f, 0f, 0f),
+                                Quaternionf(),
+                                JomlVector3f(0.5f, 0.5f, 0.5f),
+                                Quaternionf()
+                            )
+                            id.teleportDuration = 3
+                            id.interpolationDuration = 3
+                        })
+                    }
+                })
             }
         }
+
+        if (entidades.isEmpty()) return
 
         val anguloActual = (angulos.getOrDefault(uuid, 0.0) + 0.15) % (Math.PI * 2)
         val radio = 1.4
-        val playerLoc = player.location
 
-        for (i in entidades.indices) {
-            val display = entidades[i]
-            if (display.isValid) {
-                val offset = (2 * Math.PI / entidades.size) * i
-                val x = radio * cos(anguloActual + offset)
-                val z = radio * sin(anguloActual + offset)
-                val y = 1.0 + (0.3 * sin((anguloActual + offset) * 2))
+        plugin.server.regionScheduler.run(plugin, playerLoc, { _ ->
+            for (i in entidades.indices) {
+                val display = entidades[i]
+                if (display.isValid) {
+                    val offset = (2 * Math.PI / entidades.size) * i
+                    val x = radio * cos(anguloActual + offset)
+                    val z = radio * sin(anguloActual + offset)
+                    val y = 1.0 + (0.3 * sin((anguloActual + offset) * 2))
 
-                val targetLoc = playerLoc.clone().add(x, y, z)
-                targetLoc.yaw = ((anguloActual * 200) % 360).toFloat()
-                targetLoc.pitch = ((anguloActual * 100) % 360).toFloat()
+                    val targetLoc = playerLoc.clone().add(x, y, z)
+                    targetLoc.yaw = ((anguloActual * 200) % 360).toFloat()
+                    targetLoc.pitch = ((anguloActual * 100) % 360).toFloat()
 
-                display.teleport(targetLoc)
+                    display.teleport(targetLoc)
+                }
             }
-        }
+        })
         angulos[uuid] = anguloActual
     }
 
@@ -506,7 +537,13 @@ class Sowoul : Asesino(
     }
 
     private fun limpiarVisuales(uuid: UUID) {
-        orbitadores.remove(uuid)?.forEach { it.remove() }
+        val list = orbitadores.remove(uuid) ?: return
+        if (list.isNotEmpty()) {
+            val loc = list[0].location
+            plugin.server.regionScheduler.run(plugin, loc, { _ ->
+                list.forEach { it.remove() }
+            })
+        }
         angulos.remove(uuid)
     }
 
@@ -514,8 +551,11 @@ class Sowoul : Asesino(
         super.cleanup(player)
         player?.let {
             limpiarVisuales(it.uniqueId)
+            lastKillEffect.remove(it.uniqueId)
         }
-        fakeEntities.forEach { it.remove() }
+        fakeEntities.forEach { ent ->
+            if (ent.isValid) plugin.server.regionScheduler.run(plugin, ent.location, { _ -> ent.remove() })
+        }
         fakeEntities.clear()
     }
 }

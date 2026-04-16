@@ -1,7 +1,7 @@
-package liric.mistaken.game.managers
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.game.Arena
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 /**
