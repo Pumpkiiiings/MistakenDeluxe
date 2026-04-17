@@ -1,0 +1,38 @@
+# Configuración de la Tienda Principal
+titulo: "<#001a33>» Tienda Principal"
+filas: 3
+
+ajustes:
+  sonido-click: "BLOCK_NOTE_BLOCK_XYLOPHONE"
+
+# Decoraciones (Se cargan solas en el MenuBase)
+decoraciones:
+  vidrios_bordes:
+    material: "GRAY_STAINED_GLASS_PANE"
+    nombre: " "
+    slots: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]
+
+# Items con funcionalidad
+items:
+  asesinos:
+    slot: 11
+    material: "NETHERITE_SWORD"
+    nombre: "<gradient:red:dark_red><b>TIENDA DE ASESINOS</b></gradient>"
+    lore:
+      - ""
+      - "<gray>Libera tu instinto asesino."
+      - "<gray>Compra personajes y habilidades"
+      - "<gray>especiales para la cacería."
+      - ""
+      - "<red>» Click para entrar"
+  supervivientes:
+    slot: 15
+    material: "IRON_CHESTPLATE"
+    nombre: "<gradient:#00d4ff:#004d99><b>TIENDA DE SUPERVIVIENTES</b></gradient>"
+    lore:
+      - ""
+      - "<gray>Mejora tus probabilidades de éxito."
+      - "<gray>Adquiere clases con perks únicos"
+      - "<gray>para burlar a la muerte."
+      - ""
+      - "<#00d4ff>» Click para entrar"

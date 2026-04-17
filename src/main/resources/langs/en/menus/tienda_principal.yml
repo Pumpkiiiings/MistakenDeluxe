@@ -1,0 +1,39 @@
+# ===============================================
+# Mistaken - Main Shop Configuration
+# ===============================================
+
+titulo: "<#001a33>» Main Shop"
+filas: 3
+
+ajustes:
+  sonido-click: "BLOCK_NOTE_BLOCK_XYLOPHONE"
+
+decoraciones:
+  vidrios_bordes:
+    material: "GRAY_STAINED_GLASS_PANE"
+    nombre: " "
+    slots: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]
+
+items:
+  asesinos:
+    slot: 11
+    material: "NETHERITE_SWORD"
+    nombre: "<gradient:red:dark_red><b>ASSASSIN SHOP</b></gradient>"
+    lore:
+      - ""
+      - "<gray>Unleash your killer instinct."
+      - "<gray>Purchase characters and unique"
+      - "<gray>abilities for the hunt."
+      - ""
+      - "<red>» Click to enter"
+  supervivientes:
+    slot: 15
+    material: "IRON_CHESTPLATE"
+    nombre: "<gradient:#00d4ff:#004d99><b>SURVIVOR SHOP</b></gradient>"
+    lore:
+      - ""
+      - "<gray>Improve your odds of success."
+      - "<gray>Acquire classes with unique perks"
+      - "<gray>to outsmart death."
+      - ""
+      - "<#00d4ff>» Click to enter"

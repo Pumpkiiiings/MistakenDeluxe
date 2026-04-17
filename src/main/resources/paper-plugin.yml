@@ -1,0 +1,24 @@
+name: Mistaken
+version: PROXY-BETA-2.0
+main: liric.mistaken.Mistaken # <-- ¡Ojo! Asegúrate que coincida con tu package
+api-version: '1.21'
+author: Pumpkingz
+
+# Esto es lo que arregla el error de Vault y LuckPerms, pariente
+dependencies:
+  server:
+    Meowtils:
+      load: BEFORE
+      required: true
+    Vault:
+      load: BEFORE
+      required: true
+    LuckPerms:
+      load: BEFORE
+      required: true
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+    CraftEngine:
+      load: BEFORE
+      required: false

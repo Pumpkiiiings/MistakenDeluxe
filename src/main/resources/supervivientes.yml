@@ -1,0 +1,317 @@
+# ======================================================
+#       MISTAKEN - SUPERVIVIENTES (MECÁNICAS)
+# ======================================================
+namespace: "mistaken"
+
+supervivientes:
+  civil:
+    precio: 0
+    icono_material: "LEATHER_CHESTPLATE"
+    armadura:
+      casco: "none"
+      pechera: "none"
+      pantalones: "none"
+      botas: "none"
+    items:
+      habilidad1: "SUGAR"
+      habilidad1_cooldown: 30
+      habilidad1_sonido: "ENTITY_PLAYER_BREATH"
+
+      habilidad2: "FERMENTED_SPIDER_EYE"
+      habilidad2_cooldown: 50
+      habilidad2_sonido: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+
+      habilidad3: "COBBLESTONE"
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "ENTITY_SNOWBALL_THROW"
+
+  repartidor:
+    precio: 750
+    icono_material: "IRON_CHESTPLATE"
+    armadura:
+      casco: "none"
+      pechera: "none"
+      pantalones: "none"
+      botas: "none"
+    items:
+      habilidad1: "SUGAR"
+      habilidad1_cooldown: 35
+      habilidad1_sonido: "ENTITY_GENERIC_DRINK"
+
+      habilidad2: "COOKIE"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_SNOWBALL_THROW"
+
+      habilidad3: "CHEST"
+      habilidad3_cooldown: 50
+      habilidad3_sonido: "BLOCK_SLIME_BLOCK_PLACE"
+
+  petra:
+    precio: 6000
+    icono_material: "IRON_SWORD"
+    ajustes:
+      danio_dash: 2
+      duracion_sigilo: 5
+    items:
+      habilidad1: "IRON_SWORD"
+      habilidad1_cooldown: 10
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_SWEEP"
+
+      habilidad2: "FEATHER"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+
+      habilidad3: "GRAY_DYE"
+      habilidad3_cooldown: 35
+      habilidad3_sonido: "ENTITY_GENERIC_EXTINGUISH_FIRE"
+
+  axel:
+    precio: 4800
+    icono_material: "TNT"
+    ajustes:
+      fuerza_tnt: 1.5
+      radio_tnt: 5.0
+    items:
+      habilidad1: "TNT"
+      habilidad1_cooldown: 25
+      habilidad1_sonido: "ENTITY_TNT_PRIMED"
+
+      habilidad2: "IRON_AXE"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_ZOMBIE_ATTACK_IRON_DOOR"
+
+      habilidad3: "SHIELD"
+      habilidad3_cooldown: 40
+      habilidad3_sonido: "ITEM_SHIELD_BLOCK"
+
+  steve:
+    precio: 0
+    icono_material: "PLAYER_HEAD"
+    ajustes:
+      duracion_muro: 5
+      fuerza_empuje: 1.4
+    items:
+      habilidad1: "NETHERITE_AXE"
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_CRIT"
+
+      habilidad2: "COBBLESTONE"
+      habilidad2_cooldown: 18
+      habilidad2_sonido: "BLOCK_STONE_PLACE"
+
+      habilidad3: "WATER_BUCKET"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ITEM_BUCKET_EMPTY"
+
+  gumi:
+    precio: 5200
+    icono_material: "LIME_DYE"
+    ajustes:
+      distancia_swap: 10.0
+      duracion_estatica: 4
+    items:
+      habilidad1: "ECHO_SHARD"
+      habilidad1_cooldown: 25
+      habilidad1_sonido: "BLOCK_AMETHYST_BLOCK_BREAK"
+
+      habilidad2: "ARMOR_STAND"
+      habilidad2_cooldown: 35
+      habilidad2_sonido: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+
+      habilidad3: "DECORATED_POT"
+      habilidad3_cooldown: 45
+      habilidad3_sonido: "ENTITY_GENERIC_EXPLODE"
+
+  neru:
+    precio: 4900
+    icono_material: "GOLD_INGOT"
+    ajustes:
+      duracion_stun: 3
+      radio_spam: 7.0
+    items:
+      habilidad1: "GOLDEN_CARROT"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "BLOCK_NOTE_BLOCK_BELL"
+
+      habilidad2: "BARRIER"
+      habilidad2_cooldown: 35
+      habilidad2_sonido: "BLOCK_IRON_DOOR_CLOSE"
+
+      habilidad3: "YELLOW_DYE"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ENTITY_FIREWORK_ROCKET_TWINKLE"
+
+  mariachi:
+    precio: 5000
+    icono_material: "GOLDEN_AXE"
+    items:
+      habilidad1: "WOODEN_HOE"
+      habilidad1_cooldown: 15
+
+      habilidad2: "HONEY_BOTTLE"
+      habilidad2_cooldown: 25
+
+      habilidad3: "GOLDEN_CHESTPLATE"
+      habilidad3_cooldown: 40
+
+  minty:
+    precio: 2000000
+    icono_material: "LIME_DYE"
+    armadura:
+      casco: "none"
+      pechera: "none"
+      pantalones: "none"
+      botas: "none"
+    items:
+      habilidad1: "FLINT"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_SWEEP"
+
+      habilidad2: "FEATHER"
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "ENTITY_HORSE_GALLOP"
+
+      habilidad3: "GOAT_HORN"
+      habilidad3_cooldown: 30
+      habilidad3_sonido: "ENTITY_WOLF_HOWL"
+
+  raincoatkid:
+    precio: 3500
+    icono_material: "YELLOW_DYE" # O GOLD_NUGGET
+    armadura:
+      casco: "mistaken:raincoat_helmet"
+      pechera: "mistaken:raincoat_chestplate"
+      pantalones: "none"
+      botas: "none"
+    items:
+      # Habilidad 1: Correr
+      habilidad1: "SUGAR"
+      habilidad1_cooldown: 25
+      habilidad1_sonido: "ENTITY_PLAYER_ATTACK_SWEEP"
+
+      # Habilidad 2: Dash
+      habilidad2: "FEATHER"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_BAT_TAKEOFF"
+
+      # Habilidad 3: Palo Aturdidor (Arma)
+      habilidad3: "STICK"
+      habilidad3_cooldown: 40 # Cooldown alto porque es muy fuerte
+      habilidad3_sonido: "ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR"
+
+  teto:
+    precio: 4500
+    icono_material: "BREAD"
+    armadura:
+      casco: "mistaken:kasane_teto_helmet"
+      pechera: "mistaken:kasane_teto_chestplate"
+      pantalones: "mistaken:kasane_teto_leggings"
+      botas: "mistaken:kasane_teto_boots"
+    items:
+      # H1: Dash
+      habilidad1: "FEATHER"
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_BAT_TAKEOFF"
+
+      # H2: Baguette Melee (Arma de empuje)
+      habilidad2: "BREAD"
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "ENTITY_PLAYER_ATTACK_STRONG"
+
+      # H3: Baguette Lanzable
+      habilidad3: "BREAD"
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ENTITY_EGG_THROW"
+
+
+  jesse:
+    precio: 5000
+    icono_material: "IRON_SWORD"
+    armadura:
+      casco: "mistaken:jesse_helmet"
+      pechera: "mistaken:jesse_chestplate"
+      pantalones: "mistaken:jesse_leggings"
+      botas: "mistaken:jesse_boots"
+    items:
+      habilidad1: "FEATHER" # Hero Dash
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "ENTITY_ENDER_DRAGON_FLAP"
+
+      habilidad2: "IRON_NUGGET" # Puñetazo
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_PLAYER_ATTACK_CRIT"
+
+      habilidad3: "SHIELD" # Sonic Boom
+      habilidad3_cooldown: 35
+      habilidad3_sonido: "ENTITY_WARDEN_SONIC_CHARGE"
+
+  aldeano:
+    precio: 3000
+    icono_material: "EMERALD"
+    armadura:
+      # Puedes poner armadura de cuero café si quieres que parezca aldeano
+      casco: "LEATHER_HELMET"
+      pechera: "LEATHER_CHESTPLATE"
+      pantalones: "LEATHER_LEGGINGS"
+      botas: "LEATHER_BOOTS"
+    items:
+      # H1: Pánico (Velocidad)
+      habilidad1: "SUGAR"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "ENTITY_VILLAGER_NO"
+
+      # H2: Soborno (Lanzar)
+      habilidad2: "EMERALD"
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_SNOWBALL_THROW"
+
+      # H3: Golem (Empuje Área)
+      habilidad3: "IRON_INGOT"
+      habilidad3_cooldown: 40
+      habilidad3_sonido: "ENTITY_IRON_GOLEM_ATTACK"
+
+
+  notch:
+    precio: 8000
+    icono_material: "ENCHANTED_GOLDEN_APPLE"
+    armadura:
+      casco: "GOLDEN_HELMET"
+      pechera: "GOLDEN_CHESTPLATE"
+      pantalones: "GOLDEN_LEGGINGS"
+      botas: "GOLDEN_BOOTS"
+    items:
+      # H1: Salto Creativo
+      habilidad1: "FEATHER"
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+
+      # H2: Muro de Bedrock
+      habilidad2: "BEDROCK"
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "BLOCK_ANVIL_LAND"
+
+      # H3: Manzana de Dios
+      habilidad3: "ENCHANTED_GOLDEN_APPLE"
+      habilidad3_cooldown: 60
+      habilidad3_sonido: "ITEM_TOTEM_USE"
+
+  troll:
+    precio: 300
+    icono_material: "YELLOW_DYE"
+    armadura:
+      casco: "none"
+      pechera: "LEATHER_CHESTPLATE"
+      pantalones: "LEATHER_LEGGINGS"
+      botas: "LEATHER_BOOTS"
+    items:
+      habilidad1: "ARMOR_STAND"
+      habilidad1_cooldown: 30
+      habilidad1_sonido: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+
+      habilidad2: "YELLOW_DYE"
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "ENTITY_EGG_THROW"
+
+      habilidad3: "CHEST"
+      habilidad3_cooldown: 30
+      habilidad3_sonido: "BLOCK_WOOD_PLACE"

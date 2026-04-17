@@ -1,0 +1,76 @@
+# ======================================================
+#          MISTAKEN v3.1 - CONFIGURACIÓN GLOBAL
+# ======================================================
+
+# --- NÚCLEO DEL SISTEMA ---
+core:
+  language: "es"
+  min-players: 2
+  persistence-key: "selected_assassin"
+  debug: false
+
+# --- FLUJO DE TIEMPOS (Segundos) ---
+timers:
+  voting: 30
+  starting: 15
+  ingame: 300
+  ending: 15
+
+# --- INTEGRACIONES (WEBHOOKS) ---
+discord:
+  webhooks:
+    game-tracker: "URL_AQUI"
+    alerts: "URL_AQUI"
+
+# ==========================================
+# MODO DE SERVIDOR (Arquitectura de Red)
+# ==========================================
+
+# NETWORK_LOBBY: Solo para comprar cosas y ver stats (No inicia juegos).
+# GAME_SERVER: Servidor "esclavo" que solo sirve para jugar y devolver gente al proxy.
+# MULTIARENA: Servidor "todo en uno" (Lobby + Juegos mezclados pero aislados visualmente).
+
+server-mode: "MULTIARENA"
+
+# Solo se usa si server-mode es "VELOCITY"
+proxy-lobby-server: "lobby"
+# Nombre del servidor de arenas en tu Proxy (Velocity/BungeeCord)
+proxy-arena-server: "arenas"
+
+# ==========================================
+#         SISTEMA DE ESTAMINA (EXP)
+# ==========================================
+stamina:
+  # Cuánta estamina (en %) pierde un superviviente por cada 0.25s corriendo. (Por defecto 2.0 = 12.5 segs de sprint)
+  loss-survivor: 1.0
+  # Cuánta estamina pierde el asesino. (Por defecto 1.0 = 25 segs de sprint)
+  loss-killer: 2.0
+  # Cuánta estamina se recupera por cada 0.25s caminando/quieto. (Por defecto 1.5)
+  recovery-rate: 1.5
+  # Nivel del efecto de lentitud (Slowness) al cansarse al 0%. (1 = Lentitud I, 2 = Lentitud II)
+  exhaustion-slowness-level: 1
+
+# --- BALANCE DE COMBATE & JUEGO ---
+gameplay:
+  killer:
+    damage: 2.9           # Muere al 7mo golpe (Perfect balance)
+    health: 200.0         # 100 Corazones
+  rewards:
+    kill: 50.0
+    win-killer: 500.0
+    win-survivor: 200.0
+
+# --- ESTÉTICA & MUNDO ---
+visuals:
+  bossbar-style: "SOLID" # SOLID, SEGMENTED_6, 10, 12, 20
+
+# --- PERSISTENCIA (Auto-generado) ---
+# Usa /setlobby para actualizar estas coordenadas
+settings:
+  lobby:
+    world: "world"
+    x: 0.0
+    y: 64.0
+    z: 0.0
+    yaw: 0.0
+    pitch: 0.0

@@ -1,0 +1,24 @@
+# ======================================================
+#          MISTAKEN - MOTOR MUSICAL DINÁMICO
+# ======================================================
+
+music:
+  enabled: true
+  volume: 0.3
+  pitch: 1.0
+  # Playlist compartida para Lobby y Votación
+  # id: Nombre del sonido (Minecraft o Custom)
+  # duration: Duración en SEGUNDOS
+  playlist:
+    - id: "mistaken:charliehere"
+      duration: 149
+    - id: "mistaken:1"
+      duration: 125
+    - id: "mistaken:2"
+      duration: 123
+    - id: "mistaken:apple"
+      duration: 155
+    - id: "mistaken:you"
+      duration: 182
+    - id: "mistaken:candy"
+      duration: 150
