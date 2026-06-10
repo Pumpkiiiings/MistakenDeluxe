@@ -56,7 +56,7 @@ dependencies {
     // APIs Externas (Solo para compilar)
     compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.0.0")
     compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude(group = "org.bukkit", module = "bukkit")
     }
     compileOnly("net.momirealms:craft-engine-core:0.0.67")
