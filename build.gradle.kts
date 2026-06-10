@@ -53,7 +53,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("com.github.retrooper:packetevents-spigot:2.12.2")
     implementation("com.zaxxer:HikariCP:5.1.0")
-    implementation("fr.skytasul:glowingentities:1.4.10")
+    implementation("fr.skytasul:glowingentities:1.4.11")
     implementation("com.mysql:mysql-connector-j:8.4.0")
     implementation("org.postgresql:postgresql:42.7.2")
     implementation("org.xerial:sqlite-jdbc:3.45.2.0")
