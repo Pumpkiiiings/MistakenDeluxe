@@ -1,24 +1,13 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget // 🔥 IMPORTANTE: Necesario para el nuevo compilerOptions
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.ow2.asm:asm:9.6")
-        classpath("org.ow2.asm:asm-commons:9.6")
-    }
-}
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     java
     kotlin("jvm") version "2.3.0"
     id("com.gradleup.shadow") version "9.3.0"
-    id("maven-publish")
 }
 
-group = "liric.mistaken" // Actualizado a tu nuevo package
+group = "liric.mistaken"
 version = "2.1.5-fix"
 
 java {
@@ -41,11 +30,14 @@ repositories {
     maven("https://maven.nucleoid.xyz/")
 
     flatDir {
-        dirs("libs")
+        dirs("../libs")
     }
 }
 
 dependencies {
+    // Dependencia al modulo API
+    implementation(project(":MistakenDeluxe-API"))
+
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation(kotlin("stdlib"))
     implementation("com.mojang:brigadier:1.2.9")
@@ -69,7 +61,7 @@ dependencies {
     }
     compileOnly("net.momirealms:craft-engine-core:0.0.67")
     compileOnly("net.momirealms:craft-engine-bukkit:0.0.67")
-    compileOnly(files("libs/CraftEngine.jar"))
+    compileOnly(files("../libs/CraftEngine.jar"))
     compileOnly("net.luckperms:api:5.4")
     compileOnly("me.clip:placeholderapi:2.11.7")
 
@@ -85,7 +77,7 @@ tasks {
         isZip64 = true
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-        // RELOCACIONES: Para que no haya conflicto con otros plugins
+        // RELOCACIONES
         relocate("com.github.retrooper.packetevents", "liric.mistaken.libs.packetevents")
         relocate("io.github.retrooper.packetevents", "liric.mistaken.libs.packetevents")
         relocate("dev.triumphteam.gui", "liric.mistaken.libs.gui")
@@ -104,7 +96,6 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        // 🔥 CORRECCIÓN: Migración de kotlinOptions a compilerOptions
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
         }

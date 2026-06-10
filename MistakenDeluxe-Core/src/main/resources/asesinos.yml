@@ -1,0 +1,490 @@
+namespace: "mistaken"
+
+asesinos:
+  slasher:
+    precio: 0
+    icono_material: "NETHERITE_SWORD"
+    armadura:
+      casco: "mistaken:pumpkinwhite_helmet"
+      pechera: "mistaken:pumpkinwhite_chestplate"
+      pantalones: "mistaken:pumpkinwhite_leggings"
+      botas: "mistaken:pumpkinwhite_boots"
+    items:
+      arma: "DIAMOND_AXE"
+      arma_slot: 8
+      habilidad1: "BLAZE_POWDER"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "ENTITY_ENDER_DRAGON_GROWL"
+      habilidad2: "SNOWBALL"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 12
+      habilidad2_sonido: "ENTITY_ARROW_SHOOT"
+      habilidad3: "GHAST_TEAR"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad4: "NETHER_STAR"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_WITHER_SPAWN"
+
+  herobrine:
+    precio: 2500
+    icono_material: "NETHER_STAR"
+    armadura:
+      casco: "mistaken:herobrine_helmet"
+      pechera: "mistaken:herobrine_chestplate"
+      pantalones: "mistaken:herobrine_leggings"
+      botas: "mistaken:herobrine_boots"
+    items:
+      arma: "DIAMOND_AXE"
+      arma_slot: 8
+      habilidad1: "WIND_CHARGE"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_WARDEN_SONIC_BOOM"
+      habilidad2: "COMPASS"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 35
+      habilidad2_sonido: "BLOCK_PORTAL_TRAVEL"
+      habilidad3: "NETHER_STAR"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "ENTITY_WITHER_SHOOT"
+      habilidad4: "BEACON"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 80
+      habilidad4_sonido: "ENTITY_ELDER_GUARDIAN_CURSE"
+
+  entity303:
+    precio: 3000
+    icono_material: "NETHERITE_UPGRADE_SMITHING_TEMPLATE"
+    armadura:
+      casco: "mistaken:entity303_helmet"
+      pechera: "mistaken:entity303_chestplate"
+      pantalones: "mistaken:entity303_leggings"
+      botas: "mistaken:entity303_boots"
+    items:
+      arma: "IRON_SWORD"
+      arma_slot: 8
+      habilidad1: "FIRE_CHARGE"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_DRAGON_FIREBALL_EXPLODE"
+      habilidad2: "REDSTONE"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad3: "FEATHER"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 30
+      habilidad3_sonido: "ENTITY_BAT_LOOP"
+      habilidad4: "OBSERVER"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 90
+      habilidad4_sonido: "BLOCK_NOTE_BLOCK_BASEDRUM"
+
+  null:
+    precio: 5000
+    icono_material: "COAL_BLOCK"
+    armadura:
+      casco: "mistaken:null_helmet"
+      pechera: "mistaken:null_chestplate"
+      pantalones: "mistaken:null_leggings"
+      botas: "mistaken:null_boots"
+    items:
+      arma: "NETHERITE_SWORD"
+      arma_slot: 8
+      habilidad1: "RECOVERY_COMPASS"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "BLOCK_GLASS_BREAK"
+      habilidad2: "BEACON"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "ENTITY_EXPERIENCE_ORB_PICKUP"
+      habilidad3: "CHAIN"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "BLOCK_CHAIN_PLACE"
+      habilidad4: "ECHO_SHARD"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 45
+      habilidad4_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
+
+  charlie:
+    precio: 7500
+    icono_material: "MAGMA_BLOCK"
+    armadura:
+      casco: "mistaken:charlie_helmet"
+      pechera: "mistaken:charlie_chestplate"
+      pantalones: "mistaken:charlie_leggings"
+      botas: "mistaken:charlie_boots"
+    items:
+      arma: "GOLDEN_SWORD"
+      arma_slot: 8
+      habilidad1: "FIRE_CHARGE"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 30
+      habilidad1_sonido: "ITEM_FIRECHARGE_USE"
+      habilidad2: "RECOVERY_COMPASS"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 45
+      habilidad2_sonido: "ENTITY_WARDEN_HEARTBEAT"
+      habilidad3: "PACKED_ICE"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "BLOCK_GLASS_BREAK"
+      habilidad4: "ECHO_SHARD"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
+
+  devesto:
+    precio: 10000
+    icono_material: "NETHERITE_AXE"
+    armadura:
+      casco: "mistaken:devesto_helmet"
+      pechera: "mistaken:devesto_chestplate"
+      pantalones: "mistaken:devesto_leggings"
+      botas: "mistaken:devesto_boots"
+    items:
+      arma: "NETHERITE_AXE"
+      arma_slot: 8
+      habilidad1: "PISTON"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "BLOCK_PISTON_EXTEND"
+      habilidad2: "CYAN_DYE"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "ITEM_DYE_USE"
+      habilidad3: "STICK"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 30
+      habilidad3_sonido: "ENTITY_ITEM_FRAME_ROTATE_ITEM"
+      habilidad4: "BARRIER"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 120
+      habilidad4_sonido: "ENTITY_GENERIC_EXPLODE"
+
+  mariachi:
+    precio: 12000
+    icono_material: "GOLDEN_SWORD"
+    armadura:
+      casco: "mistaken:charro_helmet"
+      pechera: "mistaken:charro_chestplate"
+      pantalones: "mistaken:charro_leggings"
+      botas: "mistaken:charro_boots"
+    items:
+      arma: "GOLDEN_AXE"
+      arma_slot: 8
+      habilidad1: "ECHO_SHARD"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 20
+      habilidad1_sonido: "ENTITY_ENDER_DRAGON_GROWL"
+      habilidad2: "LEATHER_BOOTS"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 25
+      habilidad2_sonido: "ENTITY_HORSE_GALLOP"
+      habilidad3: "WOODEN_SWORD"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 15
+      habilidad3_sonido: "BLOCK_WOOD_BREAK"
+      habilidad4: "POTION"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 45
+      habilidad4_sonido: "ENTITY_GENERIC_DRINK"
+
+  teto:
+    precio: 15000
+    icono_material: "MUSIC_DISC_PIGSTEP"
+    armadura:
+      casco: "mistaken:teto_helmet"
+      pechera: "mistaken:teto_chestplate"
+      pantalones: "mistaken:teto_leggings"
+      botas: "mistaken:teto_boots"
+    items:
+      arma: "IRON_SWORD"
+      arma_slot: 8
+      habilidad1: "HOPPER"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_ZOMBIE_ATTACK_IRON_DOOR"
+      habilidad2: "BREAD"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 10
+      habilidad2_sonido: "ENTITY_ITEM_BREAK"
+      habilidad3: "TNT"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "ENTITY_CREEPER_PRIMED"
+      habilidad4: "NETHER_STAR"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 80
+      habilidad4_sonido: "BLOCK_BEACON_ACTIVATE"
+
+  miku:
+    precio: 20000
+    icono_material: "CYAN_DYE"
+    armadura:
+      casco: "mistaken:miku_helmet"
+      pechera: "mistaken:miku_chestplate"
+      pantalones: "mistaken:miku_leggings"
+      botas: "mistaken:miku_boots"
+    items:
+      arma: "DIAMOND_SWORD"
+      arma_slot: 8
+      habilidad1: "END_ROD"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad2: "BEACON"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "BLOCK_BEACON_POWER_SELECT"
+      habilidad3: "SEA_LANTERN"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 45
+      habilidad3_sonido: "ENTITY_WARDEN_SONIC_BOOM"
+      habilidad4: "NETHER_STAR"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 100
+      habilidad4_sonido: "UI_TOAST_CHALLENGE_COMPLETE"
+
+  romeodebuff:
+    precio: 30000
+    icono_material: "COMMAND_BLOCK"
+
+  romeo:
+    precio: 30000
+    icono_material: "COMMAND_BLOCK"
+    armadura:
+      casco: "mistaken:romeo_helmet"
+      pechera: "mistaken:romeo_chestplate"
+      pantalones: "mistaken:romeo_leggings"
+      botas: "mistaken:romeo_boots"
+    items:
+      arma: "DIAMOND_PICKAXE"
+      arma_slot: 8
+      habilidad1: "FEATHER"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+      habilidad2: "ENDER_EYE"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 30
+      habilidad2_sonido: "ENTITY_ENDER_EYE_DEATH"
+      habilidad3: "ECHO_SHARD"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 20
+      habilidad3_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
+      habilidad4: "NETHER_STAR"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_WITHER_DEATH"
+
+  colorsito:
+    precio: 50000
+    icono_material: "YELLOW_DYE"
+
+  colorandelectricity:
+    precio: 10500
+    icono_material: "LIGHTNING_ROD"
+    armadura:
+      casco: "mistaken:muship_helmet"
+      pechera: "mistaken:muship_chestplate"
+      pantalones: "mistaken:muship_leggings"
+      botas: "mistaken:muship_boots"
+    items:
+      arma: "GOLDEN_SWORD"
+      arma_slot: 8
+      habilidad1: "FEATHER"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 8
+      habilidad1_sonido: "BLOCK_AMETHYST_BLOCK_CHIME"
+      habilidad2: "CYAN_DYE"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "BLOCK_CONDUIT_ATTACK_TARGET"
+      habilidad3: "COPPER_INGOT"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 15
+      habilidad3_sonido: "BLOCK_NOTE_BLOCK_BIT"
+      habilidad4: "NETHER_STAR"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 50
+      habilidad4_sonido: "ENTITY_FIREWORK_ROCKET_TWINKLE"
+
+  coolkid:
+    precio: 0
+    icono_material: "COMMAND_BLOCK"
+    armadura:
+      casco: "mistaken:coolkid_helmet"
+      pechera: "mistaken:coolkid_chestplate"
+      pantalones: "mistaken:coolkid_leggings"
+      botas: "mistaken:coolkid_boots"
+    items:
+      arma: "mistaken:coolkid_weapon"
+      arma_slot: 8
+      habilidad1: "mistaken:coolkid_h1"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 10
+      habilidad1_sonido: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+      habilidad2: "mistaken:coolkid_h2"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 25
+      habilidad2_sonido: "BLOCK_NOTE_BLOCK_BIT"
+      habilidad3: "mistaken:coolkid_h3"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 30
+      habilidad3_sonido: "BLOCK_BEACON_DEACTIVATE"
+      habilidad4: "mistaken:coolkid_h4"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 60
+      habilidad4_sonido: "ENTITY_ENDERMAN_TELEPORT"
+
+  bendy:
+    precio: 25000
+    icono_material: "COAL"
+    armadura:
+      casco: "mistaken:bendy_helmet"
+      pechera: "mistaken:bendy_chestplate"
+      pantalones: "mistaken:bendy_leggings"
+      botas: "mistaken:bendy_boots"
+    items:
+      arma: "NETHERITE_AXE"
+      arma_slot: 8
+      habilidad1: "SQUID_INK"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 18
+      habilidad1_sonido: "ENTITY_SQUID_SQUIRT"
+      habilidad2: "BLACK_DYE"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 25
+      habilidad2_sonido: "ENTITY_GENERIC_SPLASH"
+      habilidad3: "COAL_BLOCK"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 15
+      habilidad3_sonido: "BLOCK_SLIME_BLOCK_PLACE"
+      habilidad4: "WITHER_SKELETON_SKULL"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 120
+      habilidad4_sonido: "ENTITY_WITHER_SPAWN"
+
+  sowoul:
+    precio: 850000
+    icono_material: "ENCHANTED_BOOK"
+    armadura:
+      casco: "mistaken:sowoul_helmet"
+      pechera: "mistaken:sowoul_chestplate"
+      pantalones: "mistaken:sowoul_leggings"
+      botas: "mistaken:sowoul_boots"
+    items:
+      arma: "BOOK"
+      arma_slot: 8
+      habilidad1: "ENDER_PEARL"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 15
+      habilidad1_sonido: "ENTITY_ENDERMAN_TELEPORT"
+      habilidad2: "PAPER"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 8
+      habilidad2_sonido: "ENTITY_SNOWBALL_THROW"
+      habilidad3: "FERMENTED_SPIDER_EYE"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 15
+      habilidad3_sonido: "ENTITY_EVOKER_PREPARE_ATTACK"
+      habilidad4: "WITHER_SKELETON_SKULL"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 45
+      habilidad4_sonido: "ENTITY_WITHER_SPAWN"
+
+  pizzano:
+    precio: 950000
+    icono_material: "SUGAR"
+    armadura:
+      casco: "mistaken:pizzano_helmet"
+      pechera: "mistaken:pizzano_chestplate"
+      pantalones: "mistaken:pizzano_leggings"
+      botas: "mistaken:pizzano_boots"
+    items:
+      arma: "GOLDEN_SWORD"
+      arma_slot: 8
+      habilidad1: "BLUE_DYE"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 8
+      habilidad1_sonido: "ENTITY_BAT_TAKEOFF"
+      habilidad2: "STRING"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 15
+      habilidad2_sonido: "ENTITY_PHANTOM_FLAP"
+      habilidad3: "SUGAR"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 45
+      habilidad3_sonido: "ENTITY_WITHER_SPAWN"
+      habilidad4: "none"
+      habilidad4_slot: 4 # Es pasiva, no requiere ítem
+
+  error_estatico:
+    precio: 1000000
+    icono_material: "MUSIC_DISC_5"
+    armadura:
+      casco: "LEATHER_HELMET"
+      pechera: "LEATHER_CHESTPLATE"
+      pantalones: "LEATHER_LEGGINGS"
+      botas: "LEATHER_BOOTS"
+    items:
+      arma: "IRON_SWORD"
+      arma_slot: 8
+      habilidad1: "ENDER_PEARL"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 12
+      habilidad1_sonido: "ENTITY_ENDERMAN_TELEPORT"
+      habilidad2: "NOTE_BLOCK"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 20
+      habilidad2_sonido: "BLOCK_NOTE_BLOCK_BIT"
+      habilidad3: "REDSTONE_BLOCK"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 65
+      habilidad3_sonido: "ENTITY_WITHER_SPAWN"
+      habilidad4: "none"
+      habilidad4_slot: 4 # Es pasiva
+
+  caine:
+    precio: 67000000
+    icono_material: "RED_CONCRETE"
+    armadura:
+      casco: "mistaken:caine_helmet"
+      pechera: "mistaken:caine_chestplate" # Se recomienda color Rojo en el código de equipar
+      pantalones: "mistaken:caine_leggings"
+      botas: "mistaken:caine_boots"
+    items:
+      arma: "STICK"
+      arma_slot: 8
+
+      # Mazo Chillón (Te aplasta desde el cielo)
+      habilidad1: "RED_CONCRETE"
+      habilidad1_slot: 1
+      habilidad1_cooldown: 18
+      habilidad1_sonido: "ENTITY_ILLUSIONER_CAST_SPELL"
+
+      # Dash Potente (Te manda a volar)
+      habilidad2: "FEATHER"
+      habilidad2_slot: 2
+      habilidad2_cooldown: 10
+      habilidad2_sonido: "ENTITY_ENDER_DRAGON_FLAP"
+
+      # Danza Obligatoria (Control de masas)
+      habilidad3: "MUSIC_DISC_CAT"
+      habilidad3_slot: 3
+      habilidad3_cooldown: 25
+      habilidad3_sonido: "BLOCK_NOTE_BLOCK_BELL"
+
+      # Proyectil Ojo (Te ciega y daña)
+      habilidad4: "SNOWBALL"
+      habilidad4_slot: 4
+      habilidad4_cooldown: 8
+      habilidad4_sonido: "ENTITY_EGG_THROW"

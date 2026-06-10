@@ -9,6 +9,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/MistakenDeluxe-API" />
+            <option value="$PROJECT_DIR$/MistakenDeluxe-Core" />
           </set>
         </option>
       </GradleProjectSettings>

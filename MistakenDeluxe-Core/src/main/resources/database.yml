@@ -1,0 +1,24 @@
+# Mistaken - Multi-Database Configuration
+database:
+  # Opciones: mysql, postgresql, sqlite
+  type: "mysql"
+
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "mistaken"
+    username: "root"
+    password: ""
+    
+  postgresql:
+    host: "localhost"
+    port: 5432
+    database: "mistaken"
+    username: "postgres"
+    password: ""
+    
+  pool:
+    maximum-pool-size: 10
+    minimum-idle: 2
+    max-lifetime: 1800000 # 30 mins
+    connection-timeout: 30000

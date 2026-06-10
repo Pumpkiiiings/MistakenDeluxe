@@ -1,0 +1,411 @@
+# ======================================================
+#          MISTAKEN - SPANISH LANGUAGE (MEXICO)
+# ======================================================
+
+prefix: "<b><color:#88C6F2>MISTAKEN</color></b> <color:#ADADAD>|</color> "
+
+lobby:
+  welcome: ""
+
+# --- VOTACIÓN ---
+voting:
+  started: "<green>¡Empezó la votación! Usa <yellow>/vote <map></yellow>"
+  not-active: "<prefix><red>No hay ninguna votación activa ahorita, bro."
+  already-voted: "<prefix><red>Ya soltaste tu voto en esta partida."
+  usage: "<prefix><red>Usa: /vote <map>"
+  not-found: "<prefix><red>El mapa <white>{map}</white> no existe, te la bañaste."
+  success: "<prefix><green>Votaste por: <aqua>{map}</aqua>"
+  map-option: "<dark_gray>» <aqua>{map}</aqua>"
+  not-enough-players: "<prefix><red>¡Faltan almas! No hay suficientes jugadores para empezar."
+
+# --- BOSSBAR ---
+bossbar:
+  lobby: "<gradient:#ffcc00:#ffaa00><bold>ESPERANDO JUGADORES...</bold></gradient> <gray>({online})"
+  break: "<yellow>Descaso <gray>| <white><time>s"
+  voting: "<b><color:#8AFF73>VOTACIÓN EN CURSO</color></b> <gray>| <white>Termina en: <yellow>{time}s"
+  starting: "<red><bold>¡PREPÁRATE!</bold> <white>Empezamos en <yellow>{time}s"
+  ingame: "<white>Mapa: <yellow>{map}</yellow> <dark_gray>|</dark_gray> Modo: <aqua>{mode}</aqua> <dark_gray>|</dark_gray> Tiempo: <green>{time}</green>"
+  ending: "<b><color:#FF001D>¡PARTIDA TERMINADA!</color></b>"
+  assassin_pvp: "<red>⚔ <white>ASESINOS RESTANTES: <red><online> <white>| <red><time>"
+  colors:
+    lobby: "YELLOW"
+    break: "YELLOW"
+    voting: "WHITE"
+    starting: "PURPLE"
+    ingame: "RED"
+    ending: "PINK"
+    assassin_pvp: "RED"
+
+words:
+  lobby: "Lobby Principal"
+  assassin: "El Asesino"
+  survivors: "Supervivientes"
+
+discord:
+  reason_killer_won: "¡El asesino masacró a todos!"
+  reason_survivors_won: "¡Los supervivientes lograron escapar!"
+
+# --- LMS ---
+
+lms:
+  title: "<red><bold>LAST MAN STANDING"
+  subtitle:
+    survivor: "<gray>¡Estás solo! <red>SOBREVIVE."
+    killer: "<dark_red>Solo queda uno... ¡CÁZALO!"
+    other: "<gold><player> <gray>es la última esperanza."
+  chat:
+    survivor: "<newline><red><b>[!]</b> <white>Tus compañeros han caído. Eres el <b>ÚLTIMO HOMBRE EN PIE</b>.<newline>"
+    other: "<newline><red><b>[!]</b> <white><player> es el <b>ÚLTIMO HOMBRE EN PIE</b>.<newline>"
+
+# --- HABILIDADES ---
+habilidades:
+  pedido-impacto-asesino: "&a¡Bien hecho! &fEl pedido le ha llegado al asesino"
+
+# --- COMBATE ---
+combat:
+  heart-icon-on: "❤"
+  heart-icon-off: "🖤"
+  hunters-mark: "<red>"
+  health-bar: "<red>{hearts_on}<gray>{hearts_off}"
+  cooldown: "<red>Espérate <white>{time}s</white> para volver a atacar!"
+  critical-wound: "<red><bold>¡TUS PIERNAS FALLAN!</bold> <gray>Busca ayuda o arrástrate."
+  kill-reward-actionbar: "<red><bold>+40 VIDA</bold></red> <gray>|</gray> <gold><bold>+${reward} CRÉDITOS</bold></gold>"
+  kill-reward-chat: "<prefix><gray>Recibiste <green>${reward}</green> por cobrarte una víctima."
+  rescue-start-carrier: "<prefix><green>¡Cargaste a <white>{target}</white>! Llévalo a un lugar seguro."
+  rescue-start-victim: "<prefix><green><white>{carrier}</white> te lleva cargando."
+  rescue-dropped-carrier: "<prefix><yellow>Dejaste a tu compañero en el suelo."
+  rescue-dropped-victim: "<prefix><yellow>Te han dejado caer."
+  rescue-interrupted: "<prefix><red>¡Soltaste a tu compañero por el impacto!"
+  win-reward-killer: "<prefix><gold>¡Masacre completa! <white>Recibiste <green>${amount}</green> por tu victoria."
+  win-reward-survivor: "<green>¡Sobreviviste al asesino! <white>Recibiste <green>${amount}</green> por escapar."
+
+# --- SCOREBOARD ---
+scoreboard:
+  title: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN</bold></gradient>"
+  lobby:
+    - ""
+    - "<white>Estado: <yellow>Lobby"
+    - "<white>Jugadores: <green>%online%"
+    - ""
+    - "<white>Perfil: <aqua>%player%"
+    - ""
+  voting:
+    - ""
+    - "<white>Fase: <aqua>VOTACIÓN"
+    - "<white>Tiempo: <yellow>%timer%s"
+    - ""
+    - "<gray>Usa /vote"
+    - ""
+  break:
+    - ""
+    - "<white>Estado: <yellow>Descanso"
+    - "<white>Jugadores: <green>%online%"
+    - ""
+    - "<white>Perfil: <aqua>%player%"
+    - ""
+  starting:
+    - ""
+    - "<white>Mapa: <green>%map%"
+    - "<white>Empieza en: <yellow>%timer%s"
+    - ""
+    - "<red><bold>¡LISTO!</bold>"
+    - ""
+  ingame_classic:
+    - ""
+    - "<white>Mapa: <green>%map%"
+    - "<white>Tiempo: <yellow>%timer%"
+    - ""
+    - "<white>Gens: <green>%completed%/%total%"
+    - "<white>Asesino:"
+    - "%killers%"
+    - ""
+    - "<white>Vidas: <red>%lives% ❤"
+    - ""
+  ingame_double_killer:
+    - ""
+    - "<white>Mapa: <green>%map%"
+    - "<white>Tiempo: <yellow>%timer%"
+    - ""
+    - "<white>Gens: <green>%completed%/%total%"
+    - "<white>Asesinos:"
+    - "%killers%"
+    - ""
+    - "<white>Vidas: <red>%lives% ❤"
+    - ""
+  ingame_one_bounce:
+    - ""
+    - "<white>Mapa: <green>%map%"
+    - "<white>Tiempo: <yellow>%timer%"
+    - ""
+    - "<white>Gens: <green>%completed%/%total%"
+    - "%killers%"
+    - ""
+    - "<white>Vidas: <red>%lives% ❤"
+    - ""
+  ingame_freeze_tag:
+    - ""
+    - "<white>Mapa: <green>%map%"
+    - "<white>Tiempo: <yellow>%timer%"
+    - ""
+    - "<white>Gens: <green>%completed%/%total%"
+    - "<white>Asesino:"
+    - "%killers%"
+    - ""
+  ingame_assassin_pvp:
+    - ""
+    - "<white>Mapa: <green>%map%"
+    - "<white>Tiempo: <yellow>%timer%"
+    - ""
+    - "<yellow>Todos son asesinos,"
+    - "<yellow>El mejor asesino gana."
+    - ""
+  ingame_initializes:
+    - ""
+    - "<white>Mapa: <green>%map%"
+    - "<white>Tiempo: <yellow>%timer%"
+    - ""
+    - "<white>Gens: <green>%completed%/%total%"
+    - "<white>Asesino:"
+    - "%killers%"
+    - ""
+  ending:
+    - ""
+    - "<white>Estado: <red>TERMINADO"
+    - "<white>Ganador(es): %killers%"
+    - ""
+
+# --- GENERADORES ---
+generators:
+  names:
+    RAW_IRON_BLOCK: "<gold>GENERADOR DE CHATARRA"
+    IRON_BLOCK: "<white>SISTEMA ELÉCTRICO"
+    AMETHYST_BLOCK: "<purple>NÚCLEO DE MEMORIA"
+  hologram:
+    lines-idle:
+      - "<gold><bold>{name}"
+      - "<white>Progreso: <gray>{progress}%"
+      - "<yellow>¡Click para reparar!"
+    lines-completed:
+      - "<green><bold>✔ ENERGÍA RESTAURADA ✔"
+      - "<gray>¡Buen trabajo!"
+
+# --- ROLES ---
+roles:
+  survivor:
+    title: "<green><bold>SUPERVIVIENTE"
+    subtitle: "<white>Repara los generadores y escapa."
+    chat:
+      - "<green>Busca bloques de <gold>Hierro Crudo</gold>."
+      - "<red>¡No falles las pruebas de habilidad!"
+  killer:
+    title: "<red><bold>ASESINO"
+    subtitle: "<white>Elimina a todos antes de que acabe el tiempo."
+    transform: "<prefix><gray>Tu humanidad se desvanece... Despertaste como: </gray>{name}"
+    chat:
+      - "<green>Mata a todos los jugadores uno por uno."
+      - "<red>Sin piedad..."
+
+# --- MENSAJES DEL ASESINO ---
+killer:
+  transform: "<white>Has despertado como: </white>{name}"
+  killer-no-regen: "<prefix><red>⚠ Sin regeneración natural. ¡Mata para curarte!"
+
+# --- TIENDA ---
+tienda:
+  clase-especial: "<dark_gray>Entidad de Clase Especial"
+  clase-humana: "<gray>Clase: <white>Superviviente Humano"
+  habilidades-titulo: "<gray>▶ <white>Habilidades:"
+  estado-seleccionado: "<green>✔ <bold>SELECCIONADO"
+  estado-poseido: "<yellow>» Click para seleccionar"
+  estado-precio: "<white>Costo: <yellow>● {amount} monedas"
+  estado-comprar: "<green>Click para adquirir asesino"
+  estado-comprar-superviviente: "<#00d4ff>Click para adquirir superviviente"
+  seleccionado: "<prefix><green>Seleccionado: <white>{name}"
+  comprado: "<prefix><gold>¡Chido! Desbloqueaste a: <white>{name}"
+  ya-seleccionado: "<yellow><bold>[!] <reset><yellow>Esta clase ya está seleccionada."
+
+# --- COMANDOS Y AYUDA ---
+help:
+  header: "   <b><color:#88C6F2>MISTAKEN</color></b> <color:#ADADAD>|</color> <yellow>Ayuda"
+  shop: "<gray>» <yellow>/mistaken shop <dark_gray>- <white>Tienda de Asesinos."
+  stats: "<gray>» <yellow>/mistaken stats <dark_gray>- <white>Tus estadísticas globales."
+  langs: "<gray>» <yellow>/mistaken langs <id> <dark_gray>- <white>Cambia tu idioma."
+  afk: "<gray>» <yellow>/mistaken afk <dark_gray>- <white>Activa/Desactiva modo AFK."
+  edit: "<gray>» <yellow>/mistaken edit <dark_gray>- <white>Modo construcción de staff."
+  start: "<gray>» <yellow>/mistaken start <dark_gray>- <white>Forzar inicio."
+  stop: "<gray>» <yellow>/mistaken stop <dark_gray>- <white>Parar partida."
+  reload: "<gray>» <yellow>/mistaken reload <dark_gray>- <white>Recargar config."
+  setstamina: "<gray>» <yellow>/mistaken setstamina <val> <dark_gray>- <white>Ajustar estamina."
+  setasesino: "<gray>» <yellow>/mistaken setasesino <id> <dark_gray>- <white>Test de asesino."
+  setsuperviviente: "<gray>» <yellow>/mistaken setsuperviviente <id> <dark_gray>- <white>Test de supervivientes."
+  removekiller: "<gray>» <yellow>/mistaken removekiller <p> <dark_gray>- <white>Quitar rol de test."
+  setmode: "<gray>» <yellow>/mistaken setmode <id> <dark_gray>- <white>Forzar un modo."
+  footer: " "
+
+admin:
+  reload-success: "<prefix><green>Configuración e idiomas recargados."
+  start-forcing: "<prefix><green>Iniciando secuencia de caza..."
+  start-already-ingame: "<prefix><red>Error: Ya hay una partida en curso."
+  stop-broadcast: "<red><bold>PARTIDA CANCELADA</bold> <gray>por el staff."
+  stop-success: "<green>Partida finalizada a la fuerza."
+  lobby-set: "<prefix><green>Punto del lobby guardado con éxito."
+  lang-set: "<prefix><green>Idioma cambiado a: <aqua>{langs}"
+  usage-lang: "<prefix><red>Uso: /mistaken langs <es/en/fr/jp/zh>"
+  stamina-set: "<prefix><green>Energía de <white>{player}</white> ajustada al <yellow>{amount}%"
+  removekiller-success: "<prefix><green>Se le quitó el rol a <white>{player}</white>."
+  removekiller-target: "<prefix><red>Tu rol ha sido removido."
+  mode-forced: "<prefix><yellow>Un admin forzó el modo: <aqua>{mode}"
+  afk-enabled: "<prefix><yellow>Modo AFK activado. Ahora el motor del juego te va a ignorar."
+  afk-disabled: "<prefix><green>Modo AFK desactivado. ¡Bienvenido de vuelta a la caza!"
+  edit-enabled: "<prefix><aqua>Modo edición activado. Eres invisible para la lógica del juego."
+  edit-disabled: "<prefix><red>Modo edición desactivado. La lógica del juego vuelve a afectarte."
+
+stats:
+  header: "<dark_gray> <st>            </st> <gold>ESTADÍSTICAS: <white><player></gold> <st>            </st> "
+  wins-survivor: "<gray>Victorias Superviviente: <green><value>"
+  wins-assassin: "<gray>Victorias Asesino: <red><value>"
+  kills: "<gray>Kills Totales: <dark_red><value>"
+  deaths: "<gray>Muertes Totales: <dark_gray><value>"
+  footer: "<dark_gray><st>"
+
+# --- MODOS ---
+modes:
+  classic:
+    title: "<red><bold>MODO CLÁSICO"
+    subtitle: "<white>Un asesino acecha en las sombras..."
+  double_killer:
+    title: "<red><bold>DOBLE ASESINO"
+    subtitle: "<white>¡DOS ENTIDADES DESPERTARON! La muerte es inevitable."
+  one_bounce:
+    title: "<dark_red><bold>ONE BOUNCE"
+    subtitle: "<white>¡ERES EL ÚNICO SUPERVIVIENTE! Todos son asesinos."
+  freeze_tag:
+    title: "<aqua><bold>FREEZE TAG"
+    subtitle: "<white>Las entidades te congelarán. ¡Rescata a tus compas!"
+  assassin_pvp:
+    title: "<dark_red><bold>ASESINO VS ASESINO"
+    subtitle: "<gray>¡No confíes en nadie! Último en pie gana."
+  initializes:
+    title: "<dark_red><bold>INITIALIZES"
+    subtitle: "<gray>´P+'¿OP-,.´+LÑK"
+
+# --- JUEGO ---
+game:
+  break-start: "<green>Descanso de <yellow>10s</yellow>. Despues del descanso empezara la votacion."
+  map-loaded: "<green>Mapa <yellow>{map}</yellow> seleccionado."
+  player-died: "<red><white>{player}</white> ha sido eliminado."
+  player-frozen-death: "<red><white>{player}</white> murió congelado."
+  killer-disconnected: "<prefix><red>¡El Asesino se dio a la fuga!"
+  killer-died-victory: "<red>¡El Asesino ha muerto!"
+  victory-killer: "<red><bold>EL MAL HA TRIUNFADO."
+  victory-survivors: "<green><bold>¡SOBREVIVISTE!"
+  killer-hit-actionbar: "<red>❤ <white>Vida del Asesino: <yellow>{health}</yellow>"
+  killer-stunned-damager: "<red>¡Aturdiste al asesino!"
+  killer-stunned-victim: "<yellow>¡Has sido aturdido!"
+  killer-title: "<red><bold>¡VICTORIA!"
+  killer-subtitle: "<white>Nadie quedó vivo."
+  survivor-title: "<green><bold>¡VICTORIA!"
+  survivor-subtitle: "<white>Lograste escapar con vida."
+  join-as-spectator: "<prefix><gray>La partida ya empezó. Estás de espectador."
+  rejoin-msg: "<prefix><red>Bienvenido de nuevo, asesino. Continúa la masacre."
+  infection-hit: "<prefix><red>¡SISTEMA CORRUPTO! Te infectó la Error Star."
+  hunt-start: "<red><bold>¡EL ASESINO HA APARECIDO!</bold> <white>Que no te encuentre...</white>"
+  class-selected: "<red>"
+  time-extended: "<green>¡Bien hecho! Por la kill, se sumaron <yellow>{seconds}s</yellow> al reloj."
+  mode-reveal-start: "<yellow>Analizando anomalías en la zona... <obfuscated>aa</obfuscated>"
+  mode-selected: "<white>Modo detectado: <aqua>{mode}"
+  player-frozen: "<aqua>{player} <white>fue congelado por el asesino."
+  unfrozen-victim: "<green>{player} te libró del hielo."
+  unfrozen-rescuer: "<green>Libraste a {player} del hielo."
+  freeze-title: "<aqua><bold>¡CONGELADO!"
+  freeze-subtitle: "<white>Tienes {color}0{time} <white>segundos para que te rescaten."
+  edit-enable: "<prefix><aqua>Modo Edición activado. Eres invisible para la lógica del juego."
+  edit-disable: "<prefix><red>Modo Edición desactivado. La lógica del juego vuelve a aplicar."
+  afk-enable: "<prefix><yellow>Modo AFK activado. El motor del juego ahora te ignorará."
+  afk-disable: "<prefix><green>Modo AFK desactivado. ¡Bienvenido de vuelta!"
+
+# --- ARENA ---
+arena:
+  created: "<prefix><white>Arena <yellow>{name}</yellow> creada."
+  deleted: "<prefix><red>Arena <yellow>{name}</yellow> borrada."
+  setpaste: "<prefix><white>Punto de schematic guardado."
+  setspawn: "<prefix><white>Spawn de <yellow>{type}</yellow> guardado para <yellow>{name}</yellow>."
+  setgenerator: "<prefix><white>Generador añadido."
+  delgenerator: "<prefix><red>Generador removido."
+  delgenerators: "<prefix><red>Generadores limpiados."
+  usage-setspawn: "<prefix><red>Uso: /arena setspawn {name} <asesino/survivor>"
+  status-ready: "<green>LISTO"
+  status-incomplete: "<red>INCOMPLETO"
+  check-header: "<dark_gray>» <gray>Estado de <yellow>{name}</yellow>: {status}"
+  check-survivors: "<gray> - Spawns Supervivientes: <white>{count}"
+  check-generators: "<gray> - Generadores: <white>{count}"
+  check-killer: "<gray> - Spawn Asesino: {icon}"
+  help-header: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN</bold></gradient> <dark_gray>| <gray>Arenas"
+  help-line-create: " <yellow>/arena create <name>"
+  help-line-delete: " <yellow>/arena delete <name>"
+  help-line-check: " <yellow>/arena check <name>"
+  help-line-setpaste: " <yellow>/arena setpaste <name>"
+  help-line-setspawn: " <yellow>/arena setspawn <name> <type>"
+  help-line-setgenerator: " <yellow>/arena setgenerator <name>"
+  help-line-delgenerator: " <yellow>/arena delgenerator <name>"
+  help-line-delgenerators: " <yellow>/arena delgenerators <name>"
+
+# --- ERRORES ---
+errors:
+  no-permission: "<prefix><red>No tienes permiso para esto."
+  only-players: "<red>Solo para jugadores."
+  ability-cooldown: "<red>La habilidad</red> <gold><skill></gold> <red>no está lista. Tiempo de recarga restante:</red> <yellow><time>s</yellow>"
+  lang-not-found: "<prefix><red>Ese idioma no existe."
+  no-money: "<prefix><red>No tienes lana suficiente."
+  arena-not-found: "<prefix><red>La arena <white>{name}</white> no existe."
+  voting-not-active: "<prefix><red>La votación no está activa."
+  already-voted: "<prefix><red>Ya votaste."
+  player-not-found: "<prefix><red>Jugador desconectado."
+  player-not-killer: "<prefix><red>No es un asesino."
+  unknown-command: "<prefix><red>Comando desconocido."
+  invalid-number: "<prefix><red>Usa un número válido."
+  invalid-spawn-type: "<prefix><red>Usa 'asesino' o 'survivor'."
+  invalid-gen-block: "<prefix><red>Mira un bloque de hierro o amatista."
+  not-a-generator: "<prefix><red>Eso no es un generador."
+  killer-not-found: "<prefix><red>Esa clase no existe."
+
+# --- MOTOR DE PARANOIA ---
+paranoia:
+  - "<dark_gray><obfuscated>||</obfuscated> ¿Escuchaste eso? <obfuscated>||</obfuscated>"
+  - "<dark_gray>ALGUIEN TE ESTÁ MIRANDO...</dark_gray>"
+  - "<red>ÉL ESTÁ CERCA.</red>"
+  - "<dark_gray>NO TE VOLTEES.</dark_gray>"
+
+# --- ESTAMINA ---
+stamina:
+  exhausted: "<red><bold>¡ESTÁS AGOTADO!</bold> <gray>Recupera el aliento..."
+
+# ==========================================
+# --- TÍTULOS DE MENÚS (resueltos por %menu_title%) ---
+# ==========================================
+menus:
+  asesinos_tienda:
+    titulo: "<gradient:red:dark_red><b>» Tienda de Asesinos</b></gradient>"
+  supervivientes_tienda:
+    titulo: "<gradient:#00d4ff:#004d99><b>» Tienda de Supervivientes</b></gradient>"
+  tienda_principal:
+    titulo: "<#001a33>» Tienda Principal"
+    items:
+      asesinos:
+        nombre: "<gradient:red:dark_red><b>TIENDA DE ASESINOS</b></gradient>"
+        lore:
+          - ""
+          - "<gray>Libera tu instinto asesino."
+          - "<gray>Compra personajes y habilidades"
+          - "<gray>especiales para la cacería."
+          - ""
+          - "<red>» Click para entrar"
+      supervivientes:
+        nombre: "<gradient:#00d4ff:#004d99><b>TIENDA DE SUPERVIVIENTES</b></gradient>"
+        lore:
+          - ""
+          - "<gray>Mejora tus probabilidades de éxito."
+          - "<gray>Adquiere clases con perks únicos"
+          - "<gray>para burlar a la muerte."
+          - ""
+          - "<#00d4ff>» Click para entrar"
