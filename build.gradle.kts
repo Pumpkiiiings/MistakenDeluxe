@@ -58,7 +58,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.2")
     implementation("org.xerial:sqlite-jdbc:3.45.2.0")
     implementation("dev.triumphteam:triumph-gui:3.1.13")
-    implementation("org.slf4j:slf4j-simple:2.0.9")
+    implementation("org.slf4j:slf4j-simple:2.0.18")
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
 
     // APIs Externas (Solo para compilar)
