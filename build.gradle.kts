@@ -54,7 +54,7 @@ dependencies {
     implementation("com.github.retrooper:packetevents-spigot:2.11.2")
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("fr.skytasul:glowingentities:1.4.10")
-    implementation("com.mysql:mysql-connector-j:8.3.0")
+    implementation("com.mysql:mysql-connector-j:8.4.0")
     implementation("org.postgresql:postgresql:42.7.2")
     implementation("org.xerial:sqlite-jdbc:3.45.2.0")
     implementation("dev.triumphteam:triumph-gui:3.1.13")
