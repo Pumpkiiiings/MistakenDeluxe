@@ -43,7 +43,7 @@ dependencies {
     implementation("com.mojang:brigadier:1.2.9")
     // Librerías que se incluirán en el JAR (Shadow)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    implementation("com.github.retrooper:packetevents-spigot:2.11.2")
+    implementation("com.github.retrooper:packetevents-spigot:2.12.2")
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("fr.skytasul:glowingentities:1.4.10")
     implementation("com.mysql:mysql-connector-j:8.3.0")
