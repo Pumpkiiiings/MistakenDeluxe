@@ -1,4 +1,4 @@
-![Mistaken](https://i.ibb.co/FLB7Rdrp/mistakentitle.png)
+![Mistaken](https://i.ibb.co/6RKZcwQD/mistakendeluxe.png)
 
 ![Version](https://img.shields.io/badge/Version-2.0.0-79addc?style=for-the-badge&logo=semver&logoColor=white)
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
