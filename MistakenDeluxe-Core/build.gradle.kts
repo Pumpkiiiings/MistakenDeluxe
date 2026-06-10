@@ -59,7 +59,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
         exclude(group = "org.bukkit", module = "bukkit")
     }
-    compileOnly("net.momirealms:craft-engine-core:0.0.67")
+    compileOnly("net.momirealms:craft-engine-core:0.0.67.11")
     compileOnly("net.momirealms:craft-engine-bukkit:0.0.67.11")
     compileOnly(files("../libs/CraftEngine.jar"))
     compileOnly("net.luckperms:api:5.5")
