@@ -69,7 +69,7 @@ dependencies {
     zap(kotlin("stdlib"))
     zap("com.mojang:brigadier:1.2.9")
     // Librerías que se incluirán en el JAR (Shadow)
-    zap("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    zap("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     compileOnly("com.github.retrooper:packetevents-spigot:2.12.2")
     zap("com.zaxxer:HikariCP:5.1.0")
     zap("fr.skytasul:glowingentities:1.4.11")
