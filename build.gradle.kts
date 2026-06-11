@@ -6,7 +6,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("org.ow2.asm:asm:9.6")
+        classpath("org.ow2.asm:asm:9.10.1")
         classpath("org.ow2.asm:asm-commons:9.6")
     }
 }
