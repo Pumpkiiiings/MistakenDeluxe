@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     java
-    kotlin("jvm") version "2.3.0"
+    kotlin("jvm") version "2.4.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("io.github.revxrsal.zapper") version "1.0.3"
 }
