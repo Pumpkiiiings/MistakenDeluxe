@@ -4,6 +4,11 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 .kotlin
+Scrips Python
+FixYaml.class
+FixYaml.java
+DOCS_EN
+DOCS_ES
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

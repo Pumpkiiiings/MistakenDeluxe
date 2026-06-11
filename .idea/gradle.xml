@@ -11,6 +11,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/MistakenDeluxe-API" />
             <option value="$PROJECT_DIR$/MistakenDeluxe-Core" />
+            <option value="$PROJECT_DIR$/MistakenDeluxe-Level-Addon" />
           </set>
         </option>
       </GradleProjectSettings>
