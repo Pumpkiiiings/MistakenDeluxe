@@ -1,4 +1,4 @@
-package liric.mistaken.menu.menus
+﻿package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -39,10 +39,10 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
         val uuid = player.uniqueId
         val selected = data.getSelectedKiller(uuid)
 
-        val labelSeleccionado = plugin.messageConfig.getMessage(player, "tienda.estado-seleccionado")
-        val labelPoseido = plugin.messageConfig.getMessage(player, "tienda.estado-poseido")
-        val labelComprar = plugin.messageConfig.getMessage(player, "tienda.estado-comprar")
-        val labelHabilidades = plugin.messageConfig.getMessage(player, "tienda.habilidades-titulo")
+        val labelSeleccionado = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.estado-seleccionado")
+        val labelPoseido = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.estado-poseido")
+        val labelComprar = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.estado-comprar")
+        val labelHabilidades = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.habilidades-titulo")
 
         val asesinosCatalogo = plugin.asesinoManager.getClasesDisponibles().keys
 
@@ -73,7 +73,7 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
             descripcion.forEach { fullLore.add(mm.deserialize(it)) }
             fullLore.add(Component.empty())
 
-            loreTienda.forEach { fullLore.add(mm.deserialize("<i><gray>$it</gray></i>")) }
+            loreTienda.forEach { fullLore.add(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda_errores.lore_tienda_format", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("line", it))) }
             fullLore.add(Component.empty())
 
             fullLore.add(labelHabilidades)
@@ -92,7 +92,7 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
                 esSeleccionado -> fullLore.add(labelSeleccionado)
                 tiene -> fullLore.add(labelPoseido)
                 else -> {
-                    fullLore.add(plugin.messageConfig.getMessage(player, "tienda.estado-precio", Placeholder.parsed("amount", precio.toString())))
+                    fullLore.add(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.estado-precio", Placeholder.parsed("amount", precio.toString())))
                     fullLore.add(labelComprar)
                 }
             }
@@ -115,7 +115,7 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
         val actual = data.getSelectedKiller(uuid)
 
         if (killerId.equals(actual, ignoreCase = true)) {
-            player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.ya-seleccionado"))
+            player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.ya-seleccionado"))
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
             return
         }
@@ -123,7 +123,7 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
         if (tiene) {
             data.setSelectedKiller(uuid, killerId)
             player.persistentDataContainer.set(plugin.assassinKey, PersistentDataType.STRING, killerId)
-            player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.seleccionado", Placeholder.parsed("name", killerId)))
+            player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.seleccionado", Placeholder.parsed("name", killerId)))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
             abrir(player)
             return
@@ -144,16 +144,16 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
 
             if (response.transactionSuccess()) {
                 data.comprarAsesino(uuid, killerId)
-                player.sendMessage(plugin.messageConfig.getMessage(player, "tienda.comprado", Placeholder.parsed("name", killerId)))
+                player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.comprado", Placeholder.parsed("name", killerId)))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.5f)
                 abrir(player)
             } else {
-                player.sendMessage(mm.deserialize("<red>Hubo un problema con tu banco al cobrarte: ${response.errorMessage}</red>"))
+                player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda_errores.error_bancario", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("error", response.errorMessage ?: "Unknown error")))
                 player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
             }
 
         } else {
-            player.sendMessage(plugin.messageConfig.getMessage(player, "errors.no-money"))
+            player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "errors.no-money"))
             player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
         }
     }
@@ -166,3 +166,5 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
         }
     }
 }
+
+

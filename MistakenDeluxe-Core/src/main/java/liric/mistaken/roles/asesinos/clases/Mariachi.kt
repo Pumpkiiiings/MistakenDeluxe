@@ -1,4 +1,4 @@
-package liric.mistaken.roles.asesinos.clases
+﻿package liric.mistaken.roles.asesinos.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -28,11 +28,11 @@ import kotlin.math.sin
 
 class Mariachi : CoreAsesino(
     "mariachi",
-    Mistaken.instance.messageConfig.getRawString(null, "asesinos.mariachi.nombre", "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>", "asesinos_info")
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.mariachi.nombre", "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>", "asesinos_info")
 ) {
 
     private val pathBase = "asesinos.mariachi"
-    private val sonidoMúsicaId = "mistaken:jarabetapatio"
+    private val sonidoMÃºsicaId = "mistaken:jarabetapatio"
 
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val skullsOrbit = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
@@ -107,11 +107,11 @@ class Mariachi : CoreAsesino(
 
     private fun habilidadGrito(player: Player) {
         player.world.getNearbyPlayers(player.location, 8.0).forEach { victim ->
-            // 🔥 Uso de la función centralizada
+            // ðŸ”¥ Uso de la funciÃ³n centralizada
             if (esObjetivoValido(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
-                victim.sendMessage(mm.deserialize("<red>¡El grito del Mariachi ha corrompido tus oídos!</red>"))
+                victim.sendMessage(mm.deserialize("<red>Â¡El grito del Mariachi ha corrompido tus oÃ­dos!</red>"))
                 victim.playSound(victim.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.8f)
             }
         }
@@ -119,12 +119,12 @@ class Mariachi : CoreAsesino(
 
     private fun habilidadJarabe(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 120, 3))
-        player.sendMessage(mm.deserialize("<gold>¡A zapatear! Velocidad aumentada.</gold>"))
+        player.sendMessage(mm.deserialize("<gold>Â¡A zapatear! Velocidad aumentada.</gold>"))
     }
 
     private fun habilidadGuitarrazo(player: Player) {
         player.world.getNearbyPlayers(player.location, 6.0).forEach { victim ->
-            // 🔥 Uso de la función centralizada
+            // ðŸ”¥ Uso de la funciÃ³n centralizada
             if (esObjetivoValido(player, victim)) {
                 plugin.combatManager.takeDamage(victim)
                 victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
@@ -136,7 +136,7 @@ class Mariachi : CoreAsesino(
     private fun habilidadTequila(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 120, 4))
         player.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 160, 0))
-        player.sendMessage(mm.deserialize("<green>¡Salud! Eres inmune al dolor por 6 segundos.</green>"))
+        player.sendMessage(mm.deserialize("<green>Â¡Salud! Eres inmune al dolor por 6 segundos.</green>"))
     }
 
     override fun mostrarTrailFisico(player: Player) {
@@ -202,8 +202,8 @@ class Mariachi : CoreAsesino(
             }
             player.world.players.forEach { p ->
                 if (p.location.distanceSquared(player.location) < 1600) {
-                    p.stopSound(sonidoMúsicaId, SoundCategory.RECORDS)
-                    p.playSound(player.location, sonidoMúsicaId, SoundCategory.RECORDS, 1.5f, 1.0f)
+                    p.stopSound(sonidoMÃºsicaId, SoundCategory.RECORDS)
+                    p.playSound(player.location, sonidoMÃºsicaId, SoundCategory.RECORDS, 1.5f, 1.0f)
                 }
             }
         }, null, 1L, 1480L)
@@ -215,7 +215,7 @@ class Mariachi : CoreAsesino(
     }
 
     private fun detenerMusica(uuid: UUID) {
-        Bukkit.getOnlinePlayers().forEach { it.stopSound(sonidoMúsicaId, SoundCategory.RECORDS) }
+        Bukkit.getOnlinePlayers().forEach { it.stopSound(sonidoMÃºsicaId, SoundCategory.RECORDS) }
     }
 
     override fun cleanup(player: Player?) {
@@ -226,3 +226,4 @@ class Mariachi : CoreAsesino(
         }
     }
 }
+

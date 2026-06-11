@@ -24,8 +24,8 @@ import kotlin.collections.forEach
 class ArenaManager(private val plugin: Mistaken) {
 
     private val arenas = ConcurrentHashMap<String, Arena>()
-    private val file = File(plugin.dataFolder, "arenas.yml")
-    private var config = YamlConfiguration()
+    private var configProvider = pumpking.lib.config.ConfigManager.get("arenas.yml")
+    private var config = configProvider.getRaw()
     private val mm = MiniMessage.miniMessage()
 
     // Candado para evitar que el archivo se corrompa si 2 personas configuran a la vez
@@ -35,14 +35,14 @@ class ArenaManager(private val plugin: Mistaken) {
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
-        if (!file.exists()) plugin.saveResource("arenas.yml", false)
         loadArenasAsync()
     }
 
     private fun loadArenasAsync() {
         ioScope.launch {
             synchronized(fileLock) {
-                config = YamlConfiguration.loadConfiguration(file)
+                configProvider.load()
+                config = configProvider.getRaw()
             }
 
             val section = config.getConfigurationSection("arenas") ?: return@launch
@@ -173,16 +173,13 @@ class ArenaManager(private val plugin: Mistaken) {
         saveAsync()
     }
 
-    /**
-     * Guarda la configuración en disco de forma ASÍNCRONA.
-     */
     private fun saveAsync() {
         ioScope.launch {
             try {
                 synchronized(fileLock) {
-                    config.save(file)
+                    configProvider.save()
                 }
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 plugin.componentLogger.error(mm.deserialize("<red>No se pudo guardar arenas.yml: ${e.message}</red>"))
             }
         }

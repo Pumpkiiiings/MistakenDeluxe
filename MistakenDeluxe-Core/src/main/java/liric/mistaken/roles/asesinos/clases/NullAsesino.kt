@@ -1,4 +1,4 @@
-package liric.mistaken.roles.asesinos.clases
+﻿package liric.mistaken.roles.asesinos.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -37,7 +37,7 @@ import kotlin.math.sin
  */
 class NullAsesino : CoreAsesino(
     "null",
-    Mistaken.instance.messageConfig.getRawString(null, "asesinos.null.nombre", "<dark_gray><b>NULL</b>", "asesinos_info")
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.null.nombre", "<dark_gray><b>NULL</b>", "asesinos_info")
 ), Listener { // 🔥 Agregado Listener para Finishers
 
     private val pathBase = "asesinos.null"
@@ -244,7 +244,7 @@ class NullAsesino : CoreAsesino(
                 victim.apply {
                     addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 200, 0))
                     addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 200, 0))
-                    sendMessage(mm.deserialize("<dark_gray><obfuscated>ERR</obfuscated> <white><b>SISTEMA CORRUPTO</b> <dark_gray><obfuscated>ERR</obfuscated>"))
+                    sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "roles.killer.abilities.null_asesino.sistema_corrupto"))
                 }
             }
         }
@@ -394,3 +394,5 @@ class NullAsesino : CoreAsesino(
         activeTraps.clear()
     }
 }
+
+

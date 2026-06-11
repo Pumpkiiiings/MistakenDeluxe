@@ -1,4 +1,4 @@
-package liric.mistaken.roles.asesinos.clases
+﻿package liric.mistaken.roles.asesinos.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -32,7 +32,7 @@ import kotlin.math.sin
 
 class ColorAndElectricity : CoreAsesino(
     "colorandelectricity",
-    Mistaken.instance.messageConfig.getRawString(null, "asesinos.colorandelectricity.nombre", "<gradient:#ff0080:#00ffff:#ffff00><b>色彩電気</b></gradient>", "asesinos_info")
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.colorandelectricity.nombre", "<gradient:#ff0080:#00ffff:#ffff00><b>色彩電気</b></gradient>", "asesinos_info")
 ) {
 
     private val path = "asesinos.colorandelectricity"
@@ -169,7 +169,7 @@ class ColorAndElectricity : CoreAsesino(
             if (esObjetivoValido(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
-                victim.sendMessage(mm.deserialize("<gradient:#ff0080:#00ffff><i>\"Dame tus colores...\"</i></gradient>"))
+                victim.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(victim, "roles.killer.abilities.color_and_electricity.dame_tus_colores"))
             }
         }
     }
@@ -274,3 +274,5 @@ class ColorAndElectricity : CoreAsesino(
         player?.let { limpiarEntidades(it.uniqueId) }
     }
 }
+
+

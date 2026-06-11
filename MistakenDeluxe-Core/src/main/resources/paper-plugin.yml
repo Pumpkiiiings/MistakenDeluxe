@@ -1,6 +1,7 @@
-name: Mistaken
-version: PROXY-BETA-2.0
-main: liric.mistaken.Mistaken # <-- ¡Ojo! Asegúrate que coincida con tu package
+﻿name: Mistaken
+version: Deluxe-2.0
+main: liric.mistaken.Mistaken # <-- Â¡Ojo! AsegÃºrate que coincida con tu package
+loader: liric.mistaken.MistakenPluginLoader
 api-version: '1.21'
 author: Pumpkingz
 
@@ -22,3 +23,10 @@ dependencies:
     CraftEngine:
       load: BEFORE
       required: false
+    packetevents:
+      load: BEFORE
+      required: true
+commands:
+  pumpking:
+    description: Pumpking Framework Commands
+    permission: pumpking.admin

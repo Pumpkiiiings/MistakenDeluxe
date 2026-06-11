@@ -1,4 +1,4 @@
-package liric.mistaken.roles.supervivientes.clases
+﻿package liric.mistaken.roles.supervivientes.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -17,12 +17,12 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Civil: La clase balanceada y versátil.
- * OPTIMIZADO: Separación Mecánica/Info + Schedulers.
+ * Civil: La clase balanceada y versÃ¡til.
+ * OPTIMIZADO: SeparaciÃ³n MecÃ¡nica/Info + Schedulers.
  */
 class Civil : Superviviente(
     "civil",
-    Mistaken.instance.messageConfig.getRawString(null, "supervivientes.civil.nombre", "Civil", "supervivientes_info")
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.civil.nombre", "Civil", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.civil"
@@ -147,3 +147,4 @@ class Civil : Superviviente(
         activeTasks.clear()
     }
 }
+

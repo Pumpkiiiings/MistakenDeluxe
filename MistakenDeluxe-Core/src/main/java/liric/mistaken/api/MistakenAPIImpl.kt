@@ -1,9 +1,8 @@
-package liric.mistaken.api
+﻿package liric.mistaken.api
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.managers.IAsesinoManager
 import liric.mistaken.api.managers.IConfigManager
-import liric.mistaken.api.managers.IMessageConfig
 import liric.mistaken.api.managers.ISessionManager
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.plugin.Plugin
@@ -18,7 +17,6 @@ class MistakenAPIImpl(private val _plugin: Mistaken) : MistakenAPI {
         get() = _plugin.sessionManager
     override val configManager: IConfigManager
         get() = _plugin.configManager
-    override val messageConfig: IMessageConfig
         get() = _plugin.messageConfig
     override val mm: MiniMessage
         get() = _plugin.mm
@@ -29,3 +27,4 @@ class MistakenAPIImpl(private val _plugin: Mistaken) : MistakenAPI {
         return _plugin.isIgnored(player)
     }
 }
+

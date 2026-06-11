@@ -1,4 +1,4 @@
-package liric.mistaken.roles.supervivientes.clases
+﻿package liric.mistaken.roles.supervivientes.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -29,17 +29,17 @@ import java.util.function.Consumer
 /**
  *[LIRIC-MISTAKEN 2.0]
  * Kasane Teto: La Comandante.
- * FIX: Rotación Trigonométrica Absoluta. Sombrero y Drills giran 100% pegados a la cabeza sin desarmarse.
+ * FIX: RotaciÃ³n TrigonomÃ©trica Absoluta. Sombrero y Drills giran 100% pegados a la cabeza sin desarmarse.
  */
 class KasaneTeto : Superviviente(
     "teto",
-    Mistaken.instance.messageConfig.getRawString(null, "supervivientes.teto.nombre", "<gradient:#ff66cc:#ff0000><b>COMANDANTE TETO</b></gradient>", "supervivientes_info")
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.teto.nombre", "<gradient:#ff66cc:#ff0000><b>COMANDANTE TETO</b></gradient>", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.teto"
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
 
-    // Guardamos las piezas individuales para aplicarles la matemática de rotación
+    // Guardamos las piezas individuales para aplicarles la matemÃ¡tica de rotaciÃ³n
     private val tetoAccesorios = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
 
     override fun usarHabilidad(player: Player, slot: Int) {
@@ -117,7 +117,7 @@ class KasaneTeto : Superviviente(
     }
 
     // =========================================================================================
-    // =                             SISTEMA DE ARMAS (REVÓLVER)                               =
+    // =                             SISTEMA DE ARMAS (REVÃ“LVER)                               =
     // =========================================================================================
 
     private fun disparoParalizador(player: Player) {
@@ -145,7 +145,7 @@ class KasaneTeto : Superviviente(
             hitEntity.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 4))
             hitEntity.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3))
 
-            player.sendMessage(mm.deserialize("<green>¡Impacto directo! El asesino ha sido paralizado."))
+            player.sendMessage(mm.deserialize("<green>Â¡Impacto directo! El asesino ha sido paralizado."))
         }
     }
 
@@ -189,7 +189,7 @@ class KasaneTeto : Superviviente(
     }
 
     // =========================================================================================
-    // =                     SISTEMA DE GEOMETRÍA ABSOLUTA (SIN DEFORMACIONES)                 =
+    // =                     SISTEMA DE GEOMETRÃA ABSOLUTA (SIN DEFORMACIONES)                 =
     // =========================================================================================
 
     private fun crearCosmeticosTeto(player: Player) {
@@ -199,7 +199,7 @@ class KasaneTeto : Superviviente(
         val startLoc = player.location
         val displays = mutableListOf<BlockDisplay>()
 
-        // Helper para crear un bloque con la escala centrada en -50% (Para que rote desde el medio de sí mismo)
+        // Helper para crear un bloque con la escala centrada en -50% (Para que rote desde el medio de sÃ­ mismo)
         fun spawnBlock(mat: Material, scale: JomlVector3f): BlockDisplay {
             return startLoc.world.spawn(startLoc, BlockDisplay::class.java) { bd ->
                 bd.block = mat.createBlockData()
@@ -210,18 +210,18 @@ class KasaneTeto : Superviviente(
             }.also { displays.add(it) }
         }
 
-        // --- 1. SOMBRERO COMANDANTE (Índices 0, 1, 2, 3) ---
+        // --- 1. SOMBRERO COMANDANTE (Ãndices 0, 1, 2, 3) ---
         spawnBlock(Material.BLACK_CONCRETE, JomlVector3f(0.7f, 0.05f, 0.7f)) // Visera
         spawnBlock(Material.ORANGE_TERRACOTTA, JomlVector3f(0.42f, 0.1f, 0.42f)) // Banda
         spawnBlock(Material.BLACK_CONCRETE, JomlVector3f(0.4f, 0.35f, 0.4f)) // Copa
         spawnBlock(Material.GOLD_BLOCK, JomlVector3f(0.1f, 0.1f, 0.02f)) // Logo
 
-        // --- 2. DRILL IZQUIERDO (Índices 4, 5, 6) ---
+        // --- 2. DRILL IZQUIERDO (Ãndices 4, 5, 6) ---
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.25f, 0.25f, 0.25f))
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.2f, 0.2f, 0.2f))
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.15f, 0.15f, 0.15f))
 
-        // --- 3. DRILL DERECHO (Índices 7, 8, 9) ---
+        // --- 3. DRILL DERECHO (Ãndices 7, 8, 9) ---
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.25f, 0.25f, 0.25f))
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.2f, 0.2f, 0.2f))
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.15f, 0.15f, 0.15f))
@@ -244,7 +244,7 @@ class KasaneTeto : Superviviente(
 
         val eyeLoc = player.eyeLocation
         val yawRad = -Math.toRadians(eyeLoc.yaw.toDouble()).toFloat()
-        val pitchRad = Math.toRadians(eyeLoc.pitch.coerceIn(-30f, 45f).toDouble()).toFloat() // Límite de inclinación
+        val pitchRad = Math.toRadians(eyeLoc.pitch.coerceIn(-30f, 45f).toDouble()).toFloat() // LÃ­mite de inclinaciÃ³n
 
         val forward = eyeLoc.direction.clone().setY(0).normalize()
         val right = forward.clone().crossProduct(org.bukkit.util.Vector(0, 1, 0)).normalize()
@@ -255,7 +255,7 @@ class KasaneTeto : Superviviente(
 
         val headRot = Quaternionf().rotateY(yawRad).rotateX(-pitchRad)
 
-        // Función para aplicar offset a un bloque basado en la rotación de la cabeza
+        // FunciÃ³n para aplicar offset a un bloque basado en la rotaciÃ³n de la cabeza
         fun applyOffset(index: Int, rightOff: Double, upOff: Double, fwdOff: Double, rotExtra: Quaternionf? = null) {
             val pLoc = baseHead.clone()
                 .add(right.clone().multiply(rightOff))
@@ -264,7 +264,7 @@ class KasaneTeto : Superviviente(
 
             displays[index].teleport(pLoc)
 
-            // Mantiene su centro, y rota con la cabeza (más una rotación extra si se requiere)
+            // Mantiene su centro, y rota con la cabeza (mÃ¡s una rotaciÃ³n extra si se requiere)
             val currentTrans = displays[index].transformation
             val finalRot = if (rotExtra != null) Quaternionf(headRot).mul(rotExtra) else headRot
             displays[index].transformation = Transformation(currentTrans.translation, finalRot, currentTrans.scale, Quaternionf())
@@ -304,3 +304,4 @@ class KasaneTeto : Superviviente(
         }
     }
 }
+

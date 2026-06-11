@@ -1,4 +1,4 @@
-package liric.mistaken.roles.asesinos.clases
+﻿package liric.mistaken.roles.asesinos.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -35,12 +35,12 @@ import kotlin.math.sin
 /**
  *[LIRIC-MISTAKEN 2.0]
  * Entity 303: El Hacker de la Realidad.
- * FIX: Animación Ultra-Fluida, Escala 1.1 y Finishers (Efectos de muerte) añadidos.
+ * FIX: AnimaciÃ³n Ultra-Fluida, Escala 1.1 y Finishers (Efectos de muerte) aÃ±adidos.
  */
 class Entity303 : CoreAsesino(
     "entity303",
-    Mistaken.instance.messageConfig.getRawString(null, "asesinos.entity303.nombre", "<red><b>ENTITY 303</b>", "asesinos_info")
-), Listener { // 🔥 Agregado Listener para Finishers
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.entity303.nombre", "<red><b>ENTITY 303</b>", "asesinos_info")
+), Listener { // ðŸ”¥ Agregado Listener para Finishers
 
     private val path = "asesinos.entity303"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
@@ -94,7 +94,7 @@ class Entity303 : CoreAsesino(
         }
     }
 
-    // --- 💀 FINISHERS: EFECTOS DE ASESINATO ALEATORIOS DE 303 ---
+    // --- ðŸ’€ FINISHERS: EFECTOS DE ASESINATO ALEATORIOS DE 303 ---
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onEntity303Kill(event: EntityDamageByEntityEvent) {
@@ -196,7 +196,7 @@ class Entity303 : CoreAsesino(
                 return@Consumer
             }
             player.world.getNearbyPlayers(player.location, 2.0).forEach { victim ->
-                // 🔥 Uso de la función centralizada
+                // ðŸ”¥ Uso de la funciÃ³n centralizada
                 if (esObjetivoValido(player, victim) && victim.uniqueId !in hitted) {
                     hitted.add(victim.uniqueId)
                     plugin.combatManager.takeDamage(victim)
@@ -226,7 +226,7 @@ class Entity303 : CoreAsesino(
             star.teleport(star.location.add(direction))
             star.world.spawnParticle(org.bukkit.Particle.ENCHANT, star.location, 5, 0.1, 0.1, 0.1, 0.05)
 
-            // 🔥 Uso de la función centralizada
+            // ðŸ”¥ Uso de la funciÃ³n centralizada
             val hit = star.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { esObjetivoValido(player, it) }
 
             if (hit != null || star.location.block.type.isSolid) {
@@ -260,7 +260,7 @@ class Entity303 : CoreAsesino(
 
     private fun habilidadCrashPantalla(player: Player) {
         plugin.server.onlinePlayers.forEach { online ->
-            // 🔥 Uso de la función centralizada
+            // ðŸ”¥ Uso de la funciÃ³n centralizada
             if (esObjetivoValido(player, online) && online.location.distanceSquared(player.location) < 1600) {
                 online.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
                 online.playSound(online.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.1f)
@@ -409,3 +409,4 @@ class Entity303 : CoreAsesino(
         }
     }
 }
+

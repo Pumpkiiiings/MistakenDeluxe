@@ -1,4 +1,4 @@
-package liric.mistaken.roles.supervivientes.clases
+﻿package liric.mistaken.roles.supervivientes.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -18,12 +18,12 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Repartidor: Soporte táctico y control de área.
- * OPTIMIZADO: Separación Mecánica/Info + Schedulers.
+ * Repartidor: Soporte tÃ¡ctico y control de Ã¡rea.
+ * OPTIMIZADO: SeparaciÃ³n MecÃ¡nica/Info + Schedulers.
  */
 class Repartidor : Superviviente(
     "repartidor",
-    Mistaken.instance.messageConfig.getRawString(null, "supervivientes.repartidor.nombre", "Repartidor", "supervivientes_info")
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.repartidor.nombre", "Repartidor", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.repartidor"
@@ -145,3 +145,4 @@ class Repartidor : Superviviente(
         activeTasks.clear()
     }
 }
+

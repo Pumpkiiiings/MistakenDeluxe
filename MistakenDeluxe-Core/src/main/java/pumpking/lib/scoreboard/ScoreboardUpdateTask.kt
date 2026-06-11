@@ -13,26 +13,11 @@ class ScoreboardUpdateTask : BukkitRunnable() {
             val context = ScoreboardManager.getContext(uuid) ?: continue
 
             try {
-                // Prefer dynamic template (live game data) over static template
-                val dynamicId = context.dynamicTemplateId
                 val staticId = context.templateId
 
-                when {
-                    dynamicId != null -> {
-                        val dynTemplate = ScoreboardManager.getDynamicTemplate(dynamicId) ?: continue
-                        // Resolve live data into a static snapshot, then render normally
-                        val snapshot = ScoreboardTemplate(
-                            id = dynTemplate.id,
-                            title = dynTemplate.titleSupplier(player),
-                            lines = dynTemplate.linesSupplier(player),
-                            animatedTitle = dynTemplate.animatedTitle
-                        )
-                        renderer.render(player, context, snapshot)
-                    }
-                    staticId != null -> {
-                        val template = ScoreboardManager.getTemplate(staticId) ?: continue
-                        renderer.render(player, context, template)
-                    }
+                if (staticId != null) {
+                    val template = ScoreboardManager.getTemplate(staticId) ?: continue
+                    renderer.render(player, context, template)
                 }
             } catch (e: Exception) {
                 PumpkingLib.logError(

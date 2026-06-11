@@ -14,7 +14,8 @@ buildscript {
 plugins {
     java
     kotlin("jvm") version "2.3.0"
-    id("com.gradleup.shadow") version "9.3.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("io.github.revxrsal.zapper") version "1.0.3"
     id("maven-publish")
 }
 
@@ -45,56 +46,62 @@ repositories {
     }
 }
 
+zapper {
+    libsFolder = "libraries-v2"
+    relocationPrefix = "liric.mistaken.libs"
+
+    repositories {
+        includeProjectRepositories()
+    }
+
+    relocate("dev.triumphteam.gui", "gui")
+    relocate("fr.skytasul.glowingentities", "glowing")
+    relocate("com.zaxxer.hikari", "hikari")
+    relocate("org.slf4j", "slf4j")
+    relocate("kotlin", "kotlin")
+    relocate("kotlinx", "kotlinx")
+}
+
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    implementation(kotlin("stdlib"))
-    implementation("com.mojang:brigadier:1.2.9")
+    compileOnly("io.github.revxrsal:zapper.api:1.0.3")
+    
+    zap(kotlin("stdlib"))
+    zap("com.mojang:brigadier:1.2.9")
     // Librerías que se incluirán en el JAR (Shadow)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    implementation("com.github.retrooper:packetevents-spigot:2.11.2")
-    implementation("com.zaxxer:HikariCP:5.1.0")
-    implementation("fr.skytasul:glowingentities:1.4.10")
-    implementation("com.mysql:mysql-connector-j:8.3.0")
-    implementation("org.postgresql:postgresql:42.7.2")
-    implementation("org.xerial:sqlite-jdbc:3.45.2.0")
-    implementation("dev.triumphteam:triumph-gui:3.1.13")
-    implementation("org.slf4j:slf4j-simple:2.0.9")
+    zap("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.12.2")
+    zap("com.zaxxer:HikariCP:5.1.0")
+    zap("fr.skytasul:glowingentities:1.4.11")
+    zap("com.mysql:mysql-connector-j:8.4.0")
+    zap("org.postgresql:postgresql:42.7.11")
+    zap("org.xerial:sqlite-jdbc:3.45.2.0")
+    zap("dev.triumphteam:triumph-gui:3.1.13")
+    zap("org.slf4j:slf4j-simple:2.0.18")
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
 
     // APIs Externas (Solo para compilar)
     compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.0.0")
     compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude(group = "org.bukkit", module = "bukkit")
     }
-    compileOnly("net.momirealms:craft-engine-core:0.0.67")
-    compileOnly("net.momirealms:craft-engine-bukkit:0.0.67")
+    compileOnly("net.momirealms:craft-engine-core:0.0.67.11")
+    compileOnly("net.momirealms:craft-engine-bukkit:0.0.67.11")
     compileOnly(files("libs/CraftEngine.jar"))
-    compileOnly("net.luckperms:api:5.4")
-    compileOnly("me.clip:placeholderapi:2.11.7")
+    compileOnly("net.luckperms:api:5.5")
+    compileOnly("me.clip:placeholderapi:2.12.2")
 
     // Paper ya incluye Adventure y MiniMessage nativamente
-    compileOnly("net.kyori:adventure-text-minimessage:4.17.0")
+    compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
     compileOnly("org.jetbrains:annotations:24.0.1")
 }
 
 tasks {
     shadowJar {
         archiveClassifier.set("")
-        mergeServiceFiles()
         isZip64 = true
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-        // RELOCACIONES: Para que no haya conflicto con otros plugins
-        relocate("com.github.retrooper.packetevents", "liric.mistaken.libs.packetevents")
-        relocate("io.github.retrooper.packetevents", "liric.mistaken.libs.packetevents")
-        relocate("dev.triumphteam.gui", "liric.mistaken.libs.gui")
-        relocate("fr.skytasul.glowingentities", "liric.mistaken.libs.glowing")
-
-        relocate("com.zaxxer.hikari", "liric.mistaken.libs.hikari")
-        relocate("org.slf4j", "liric.mistaken.libs.slf4j")
-        relocate("kotlin", "liric.mistaken.libs.kotlin")
-        relocate("kotlinx.coroutines", "liric.mistaken.libs.coroutines")
     }
 
     withType<JavaCompile> {

@@ -1,6 +1,7 @@
 # ======================================================
 #       MISTAKEN - SUPERVIVIENTES (MECÁNICAS)
 # ======================================================
+config-version: 1
 namespace: "mistaken"
 
 supervivientes:

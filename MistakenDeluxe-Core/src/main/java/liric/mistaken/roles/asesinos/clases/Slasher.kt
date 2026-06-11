@@ -1,4 +1,4 @@
-package liric.mistaken.roles.asesinos.clases
+﻿package liric.mistaken.roles.asesinos.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -37,14 +37,14 @@ import kotlin.math.sin
 
 class Slasher : CoreAsesino(
     "slasher",
-    Mistaken.instance.messageConfig.getRawString(null, "asesinos.slasher.nombre", "<white><b>PUMPKIN WHITE</b>", "asesinos_info")
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.slasher.nombre", "<white><b>PUMPKIN WHITE</b>", "asesinos_info")
 ), Listener {
 
     private val pathBase = "asesinos.slasher"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val temporaryEntities = ConcurrentHashMap.newKeySet<Entity>()
 
-    // 🔥 Sistema de sonidos sin repetición
+    // ðŸ”¥ Sistema de sonidos sin repeticiÃ³n
     private val attackSoundsQueue = ConcurrentHashMap<UUID, MutableList<Int>>()
 
     init {
@@ -173,7 +173,7 @@ class Slasher : CoreAsesino(
         temporaryEntities.add(machete)
         val direction = player.location.direction.multiply(1.4)
 
-        // 🔥 HITBOX: Proyectil
+        // ðŸ”¥ HITBOX: Proyectil
         val hitbox = HitboxVisualizer.createHitbox(spawnLoc, 1.2, 1.2, 1.2, Material.ORANGE_STAINED_GLASS)
 
         var ticks = 0
@@ -208,7 +208,7 @@ class Slasher : CoreAsesino(
     private fun habilidadPresencia(player: Player) {
         player.playSound(player.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1.5f, 0.8f)
 
-        // 🔥 HITBOX: Grito en área
+        // ðŸ”¥ HITBOX: Grito en Ã¡rea
         HitboxVisualizer.drawInstantHitbox(plugin, player.location, 8.0, 8.0, 8.0, 20L, Material.PURPLE_STAINED_GLASS)
 
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
@@ -268,3 +268,4 @@ class Slasher : CoreAsesino(
         temporaryEntities.clear()
     }
 }
+

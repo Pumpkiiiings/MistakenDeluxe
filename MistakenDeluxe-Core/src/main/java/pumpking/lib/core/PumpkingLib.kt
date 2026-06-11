@@ -61,6 +61,13 @@ object PumpkingLib {
             logError(LogCategory.SCOREBOARD, "FAIL SAFE ERROR - ${e.message}")
         }
         
+        try {
+            pumpking.lib.service.PumpkingServiceManager.init(plugin)
+            log(LogCategory.CORE, "SERVICES INIT OK")
+        } catch (e: Exception) {
+            logError(LogCategory.CORE, "FAIL SAFE ERROR - ${e.message}")
+        }
+
         log(LogCategory.CORE, "All core modules successfully initialized.")
     }
 
@@ -80,6 +87,9 @@ object PumpkingLib {
         ScoreboardManager.shutdown()
         log(LogCategory.SCOREBOARD, "CLEANUP EVENT OK")
         
+        pumpking.lib.service.PumpkingServiceManager.shutdown()
+        log(LogCategory.CORE, "SERVICES OK")
+
         log(LogCategory.CORE, "Shutdown complete.")
     }
 }

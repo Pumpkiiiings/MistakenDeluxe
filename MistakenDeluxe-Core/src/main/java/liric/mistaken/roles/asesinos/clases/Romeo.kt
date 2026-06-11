@@ -1,4 +1,4 @@
-package liric.mistaken.roles.asesinos.clases
+﻿package liric.mistaken.roles.asesinos.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
@@ -39,8 +39,8 @@ import kotlin.math.sin
  */
 class Romeo : CoreAsesino(
     "romeo",
-    Mistaken.instance.messageConfig.getRawString(null, "asesinos.romeo.nombre", "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient>", "asesinos_info")
-), Listener { // 🔥 Agregado Listener para los Finishers
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.romeo.nombre", "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient>", "asesinos_info")
+), Listener { // ðŸ”¥ Agregado Listener para los Finishers
 
     private val pathBase = "asesinos.romeo"
     private val orbitadores = ConcurrentHashMap<UUID, BlockDisplay>()
@@ -91,7 +91,7 @@ class Romeo : CoreAsesino(
         }
     }
 
-    // --- 💀 FINISHERS: EFECTOS DE ASESINATO ALEATORIOS DE ADMIN ---
+    // --- ðŸ’€ FINISHERS: EFECTOS DE ASESINATO ALEATORIOS DE ADMIN ---
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onRomeoKill(event: EntityDamageByEntityEvent) {
@@ -100,7 +100,7 @@ class Romeo : CoreAsesino(
 
         val session = plugin.sessionManager.getSession(attacker) ?: return
         if (session.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
-            // Verificamos que la víctima haya muerto (GameMode cambiado por CombatManager)
+            // Verificamos que la vÃ­ctima haya muerto (GameMode cambiado por CombatManager)
             if (victim.gameMode == GameMode.SPECTATOR) {
                 val now = System.currentTimeMillis()
                 if (now - lastKillEffect.getOrDefault(victim.uniqueId, 0L) > 2000L) {
@@ -117,10 +117,10 @@ class Romeo : CoreAsesino(
 
         when (effectType) {
             0 -> {
-                // EFECTO 1: //SET 0 (BORRADO DE CÓDIGO)
+                // EFECTO 1: //SET 0 (BORRADO DE CÃ“DIGO)
                 world.playSound(loc, Sound.BLOCK_BEACON_DEACTIVATE, 1.5f, 0.5f)
 
-                // Cárcel de cristal rojo glitch
+                // CÃ¡rcel de cristal rojo glitch
                 val jail = world.spawn(loc.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) {
                     it.block = Material.RED_STAINED_GLASS.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-1f, -1f, -1f), Quaternionf(), JomlVector3f(2f, 2f, 2f), Quaternionf())
@@ -140,7 +140,7 @@ class Romeo : CoreAsesino(
                 val block = world.spawn(dropLoc, BlockDisplay::class.java) {
                     it.block = Material.COMMAND_BLOCK.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-1.5f, -1.5f, -1.5f), Quaternionf(), JomlVector3f(3f, 3f, 3f), Quaternionf())
-                    it.teleportDuration = 10 // Cae súper rápido
+                    it.teleportDuration = 10 // Cae sÃºper rÃ¡pido
                 }
 
                 // Lo hacemos caer al suelo
@@ -159,7 +159,7 @@ class Romeo : CoreAsesino(
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ -> block.remove() }, 30L)
             }
             2 -> {
-                // EFECTO 3: ASCENSIÓN A LA TERMINAL
+                // EFECTO 3: ASCENSIÃ“N A LA TERMINAL
                 world.playSound(loc, Sound.BLOCK_PORTAL_TRIGGER, 0.5f, 2f)
                 val star = world.spawn(loc.clone().add(0.0, 0.5, 0.0), ItemDisplay::class.java) {
                     it.setItemStack(ItemStack(Material.NETHER_STAR))
@@ -397,3 +397,4 @@ class Romeo : CoreAsesino(
         }
     }
 }
+

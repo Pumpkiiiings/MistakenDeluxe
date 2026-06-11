@@ -1,4 +1,4 @@
-package liric.mistaken.game.logic
+﻿package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -27,9 +27,9 @@ class GameStateController(private val game: GameSession) {
         if (venimosDePartida && game.plugin.serverMode == "GAME_SERVER") {
             game.playerController.cleanupAllPlayers(lastKillerWon)
             game.worldController.limpiarMapa()
-            // TeleportAllToLobby los envía de regreso al proxy
+            // TeleportAllToLobby los envÃ­a de regreso al proxy
             game.playerController.teleportAllToLobby()
-            // Programar la destrucción de la sesión (4 segundos después) para dar tiempo al proxy de moverlos
+            // Programar la destrucciÃ³n de la sesiÃ³n (4 segundos despuÃ©s) para dar tiempo al proxy de moverlos
             game.plugin.server.globalRegionScheduler.runDelayed(game.plugin, { _ ->
                 game.plugin.sessionManager.destroySession(game.id)
             }, 80L)
@@ -41,7 +41,7 @@ class GameStateController(private val game: GameSession) {
 
         game.timer = game.plugin.config.getInt("settings.break-duration", 10)
 
-        // --- LIMPIEZA POST-CINEMÁTICA ---
+        // --- LIMPIEZA POST-CINEMÃTICA ---
         if (venimosDePartida) {
             game.playerController.cleanupAllPlayers(lastKillerWon)
             game.worldController.limpiarMapa()
@@ -75,7 +75,7 @@ class GameStateController(private val game: GameSession) {
                 game.broadcastLocalized("game.mode-selected", Placeholder.parsed("mode", game.currentMode.name))
                 game.uiController.playModeTitle(online)
 
-                // 🔥 REPRODUCIR INTRO DEL ASESINO 🔥
+                // ðŸ”¥ REPRODUCIR INTRO DEL ASESINO ðŸ”¥
                 val killer = game.getCurrentAsesino()
                 if (killer != null && killer.isOnline) {
                     val claseAsesino = game.plugin.asesinoManager.getAsesinoDelJugador(killer)
@@ -89,7 +89,7 @@ class GameStateController(private val game: GameSession) {
                 game.timer = game.plugin.config.getInt("settings.game-duration", 300)
                 game.broadcastLocalized("game.hunt-start")
 
-                // 🔥 RESTAURAR VISTAS
+                // ðŸ”¥ RESTAURAR VISTAS
                 online.forEach { p ->
                     if (p.gameMode == GameMode.SPECTATOR && !game.plugin.spectatorManager.isSpectator(p)) {
                         p.spectatorTarget = null // Limpiamos primero en modo SPECTATOR
@@ -100,14 +100,14 @@ class GameStateController(private val game: GameSession) {
         }
     }
 
-    // 🔥 NUEVA FUNCIÓN: Invocación Programada de Geoffrey
+    // ðŸ”¥ NUEVA FUNCIÃ“N: InvocaciÃ³n Programada de Geoffrey
     fun checkGeoffreySpawn() {
-        // Solo ocurre en el modo INITIALIZES y exactamente a los 290 segundos (10s después del inicio)
+        // Solo ocurre en el modo INITIALIZES y exactamente a los 290 segundos (10s despuÃ©s del inicio)
         if (game.currentMode == MistakenMode.INITIALIZES && game.timer == 290) {
 
-            // 1. Títulos de Terror a todos los jugadores (Incluyendo el Asesino)
-            val title = game.plugin.mm.deserialize("<dark_red><bold><obfuscated>||</obfuscated> ¡GEOFFREY ESTÁ AQUÍ! <obfuscated>||</obfuscated>")
-            val subtitle = game.plugin.mm.deserialize("<dark_gray>Nadie sobrevivirá...")
+            // 1. TÃ­tulos de Terror a todos los jugadores (Incluyendo el Asesino)
+            val title = game.plugin.mm.deserialize("<dark_red><bold><obfuscated>||</obfuscated> Â¡GEOFFREY ESTÃ AQUÃ! <obfuscated>||</obfuscated>")
+            val subtitle = game.plugin.mm.deserialize("<dark_gray>Nadie sobrevivirÃ¡...")
             val times = Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(4), Duration.ofMillis(500))
 
             game.plugin.server.onlinePlayers.forEach { p ->
@@ -115,7 +115,7 @@ class GameStateController(private val game: GameSession) {
                 p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1.5f, 0.5f)
                 p.playSound(p.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.5f)
 
-                // Efecto de Estática (Ceguera + Nausea fugaz)
+                // Efecto de EstÃ¡tica (Ceguera + Nausea fugaz)
                 p.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0, false, false, false))
                 p.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1, false, false, false))
             }
@@ -127,7 +127,7 @@ class GameStateController(private val game: GameSession) {
                 // Hacemos que spawnee en el aire para que baje volando/cazando
                 val geoffreyLoc = spawnLoc.clone().add(0.0, 15.0, 0.0)
 
-                // Efecto de aparición en el cielo
+                // Efecto de apariciÃ³n en el cielo
                 geoffreyLoc.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, geoffreyLoc, 2)
                 geoffreyLoc.world.playSound(geoffreyLoc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 2f, 0.5f)
 
@@ -180,7 +180,7 @@ class GameStateController(private val game: GameSession) {
                 chance <= 65 -> MistakenMode.ONE_BOUNCE
                 chance <= 80 -> MistakenMode.DOUBLE_KILLER
                 chance <= 90 -> MistakenMode.INFECTION
-                else -> MistakenMode.INITIALIZES // 🔥 10% de probabilidad
+                else -> MistakenMode.INITIALIZES // ðŸ”¥ 10% de probabilidad
             }
             if (selected == MistakenMode.DOUBLE_KILLER && onlineCount < 4) selected = MistakenMode.CLASSIC
             game.currentMode = selected
@@ -191,7 +191,7 @@ class GameStateController(private val game: GameSession) {
         if (game.currentState == GameState.ENDING) return
         game.currentState = GameState.ENDING
 
-        // 🔥 Limpieza de Anomalía
+        // ðŸ”¥ Limpieza de AnomalÃ­a
         geoffreyEntity?.remove()
         geoffreyEntity = null
 
@@ -203,14 +203,14 @@ class GameStateController(private val game: GameSession) {
         val mapName = game.currentMapName
         val killer = game.getCurrentAsesino()
 
-        val defaultAssassinWord = game.plugin.messageConfig.getRawString(null, "words.assassin", "El Asesino", "messages")
-        val defaultSurvivorsWord = game.plugin.messageConfig.getRawString(null, "words.survivors", "Supervivientes", "messages")
+        val defaultAssassinWord = game.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "words.assassin", "El Asesino", "messages")
+        val defaultSurvivorsWord = game.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "words.survivors", "Supervivientes", "messages")
 
         val ganadorNombre = if (killerWon) (killer?.name ?: defaultAssassinWord) else defaultSurvivorsWord
         val razon = if (killerWon) {
-            game.plugin.messageConfig.getRawString(null, "discord.reason_killer_won", "¡El asesino ganó!", "messages")
+            game.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "discord.reason_killer_won", "Â¡El asesino ganÃ³!", "messages")
         } else {
-            game.plugin.messageConfig.getRawString(null, "discord.reason_survivors_won", "¡Los supervivientes escaparon!", "messages")
+            game.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "discord.reason_survivors_won", "Â¡Los supervivientes escaparon!", "messages")
         }
 
         val escapados = game.plugin.server.onlinePlayers.filter {
@@ -251,7 +251,7 @@ class GameStateController(private val game: GameSession) {
     fun resetToLobby(path: String?) {
         path?.let { game.broadcastLocalized(it) }
 
-        // 🔥 Limpieza de Anomalía por Abandono
+        // ðŸ”¥ Limpieza de AnomalÃ­a por Abandono
         geoffreyEntity?.remove()
         geoffreyEntity = null
 
@@ -272,3 +272,4 @@ class GameStateController(private val game: GameSession) {
         game.uiController.clearBossBars()
     }
 }
+

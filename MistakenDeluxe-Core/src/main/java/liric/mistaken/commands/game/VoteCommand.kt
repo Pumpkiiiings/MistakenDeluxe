@@ -1,4 +1,4 @@
-package liric.mistaken.commands.game
+﻿package liric.mistaken.commands.game
 
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.StringArgumentType
@@ -19,7 +19,7 @@ object VoteCommand {
             .executes { ctx ->
                 val sender = ctx.source.sender
                 val player = sender as? Player
-                sender.sendMessage(plugin.messageConfig.getMessage(player, "voting.usage"))
+                sender.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "voting.usage"))
                 1
             }
             .then(
@@ -38,18 +38,18 @@ object VoteCommand {
 
                         val session = plugin.sessionManager.getSession(player)
                         if (session == null) {
-                            player.sendMessage(plugin.mm.deserialize("<red>No estás en ninguna partida activa para votar."))
+                            player.sendMessage(plugin.mm.deserialize("<red>No estÃ¡s en ninguna partida activa para votar."))
                             return@executes 0
                         }
 
                         if (session.currentState != GameState.VOTING) {
-                            player.sendMessage(plugin.messageConfig.getMessage(player, "voting.not-active"))
+                            player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "voting.not-active"))
                             return@executes 0
                         }
 
                         val voteManager = session.voteManager
                         if (voteManager.hasVoted(player.uniqueId)) {
-                            player.sendMessage(plugin.messageConfig.getMessage(player, "voting.already-voted"))
+                            player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "voting.already-voted"))
                             return@executes 0
                         }
 
@@ -59,7 +59,7 @@ object VoteCommand {
 
                         if (actualMapName == null) {
                             player.sendMessage(
-                                plugin.messageConfig.getMessage(
+                                pumpking.lib.service.PumpkingServiceManager.messages.getComponent(
                                     player,
                                     "voting.not-found",
                                     Placeholder.parsed("map", inputName)
@@ -71,7 +71,7 @@ object VoteCommand {
                         voteManager.addVote(player.uniqueId, actualMapName)
 
                         player.sendMessage(
-                            plugin.messageConfig.getMessage(
+                            pumpking.lib.service.PumpkingServiceManager.messages.getComponent(
                                 player,
                                 "voting.success",
                                 Placeholder.parsed("map", actualMapName)

@@ -57,5 +57,5 @@ class YamlConfigProvider(override val file: File) : ConfigProvider {
     }
 
     // Expose the raw configuration just in case
-    fun getRaw(): FileConfiguration = config
+    override fun getRaw(): FileConfiguration = config
 }

@@ -1,4 +1,4 @@
-package liric.mistaken.listeners
+﻿package liric.mistaken.listeners
 
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.Component
@@ -32,7 +32,7 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
     private val activeMenus = ConcurrentHashMap<Location, Inventory>()
     private val colaboradores = ConcurrentHashMap<Location, MutableSet<UUID>>()
 
-    private val menuTitle = mm.deserialize("<dark_gray>Reparando Generador...")
+    private val menuTitle by lazy { Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.gui_title") }
     private val killerError = mm.deserialize("<red>¡Eres el asesino! No puedes reparar generadores.")
 
     class GeneratorHolder(val loc: Location) : InventoryHolder {
@@ -63,7 +63,7 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         val loc = block.location
 
         if (plugin.generatorManager.isCompleted(loc)) {
-            val msg = plugin.messageConfig.getRawString(player, "messages.already-completed", "<red>Ya completado")
+            val msg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "messages.already-completed", "<red>Ya completado")
             player.sendMessage(mm.deserialize(msg))
             return
         }
@@ -131,7 +131,7 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
     private fun finalizarGenerador(loc: Location, inv: Inventory) {
         val listaColaboradores = colaboradores.remove(loc)
         val commands = plugin.config.getStringList("settings.rewards.commands")
-        val successMsg = mm.deserialize(plugin.messageConfig.getRawString(null, "messages.success", "<green>¡Reparado!"))
+        val successMsg = mm.deserialize(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "messages.success", "<green>¡Reparado!"))
 
         listaColaboradores?.forEach { uuid ->
             val p = Bukkit.getPlayer(uuid)
@@ -167,7 +167,7 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
             val color = if (progress < 40) "<red>" else if (progress < 80) "<yellow>" else "<green>"
             meta.lore(listOf(
                 Component.empty(),
-                mm.deserialize("<white>Progreso: $color$progress%"),
+                Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.progress_lore", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("color", color), net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("progress", progress.toString())),
                 mm.deserialize("<gray>Ayuda a tus compañeros!"),
                 Component.empty()
             ))
@@ -183,14 +183,19 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
                 meta.displayName(mm.deserialize("$color<bold>¡CLIC RÁPIDO!"))
                 meta.lore(listOf(
                     Component.empty(),
-                    mm.deserialize("<white>Progreso: <red>-10%"),
+                    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.progress_loss_lore"),
                     mm.deserialize("<gray>¿De verdad quieres ayudar?"),
                     Component.empty()
                 ))
             } else {
-                meta.displayName(mm.deserialize("<red><bold>ESTE NO ES"))
+                meta.displayName(Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.not_this_one"))
             }
         }
         return item
     }
 }
+
+
+
+
+

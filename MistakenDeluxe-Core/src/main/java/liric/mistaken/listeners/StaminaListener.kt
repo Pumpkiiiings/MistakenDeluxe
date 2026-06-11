@@ -1,4 +1,4 @@
-package liric.mistaken.listeners
+﻿package liric.mistaken.listeners
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -45,7 +45,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
         val slownessLevel = (config.getInt("stamina.exhaustion-slowness-level", 2).coerceAtLeast(1) - 1)
         exhaustionEffect = PotionEffect(PotionEffectType.SLOWNESS, 80, slownessLevel, false, false, true)
 
-        val rawExhausted = plugin.messageConfig.getRawString(null, "stamina.exhausted", "<red><bold>¡AGOTADO!</bold></red>")
+        val rawExhausted = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "stamina.exhausted", "<red><bold>¡AGOTADO!</bold></red>")
         exhaustedMsg = mm.deserialize(rawExhausted)
     }
 
@@ -114,7 +114,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                         }
 
                         if (currentStamina in 1.0..25.0 && isSprinting) {
-                            player.sendActionBar(mm.deserialize("<red>ESTAMINA BAJA: $newLevel%</red>"))
+                            player.sendActionBar(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "listeners.stamina.low_warning", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("level", newLevel.toString())))
                         }
                     }
                 }, null, 0L)
@@ -133,3 +133,5 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
         staminaTask?.cancel()
     }
 }
+
+

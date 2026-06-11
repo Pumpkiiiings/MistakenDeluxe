@@ -1,5 +1,6 @@
 package pumpking.lib.config
 
+import org.bukkit.configuration.file.FileConfiguration
 import java.io.File
 
 interface ConfigProvider {
@@ -14,4 +15,5 @@ interface ConfigProvider {
     fun set(path: String, value: Any?)
     fun get(path: String): Any?
     fun getKeys(deep: Boolean): Set<String>
+    fun getRaw(): FileConfiguration
 }

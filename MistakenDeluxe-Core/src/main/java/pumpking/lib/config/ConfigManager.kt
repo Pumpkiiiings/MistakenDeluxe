@@ -1,4 +1,4 @@
-package pumpking.lib.config
+﻿package pumpking.lib.config
 
 import kotlinx.coroutines.*
 import liric.mistaken.api.managers.IConfigManager
@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [PUMPKING LIB]
- * ConfigManager: El patrón de las configuraciones mecánicas migrado a pumpking.lib.
+ * ConfigManager: El patrÃ³n de las configuraciones mecÃ¡nicas migrado a pumpking.lib.
  */
 object ConfigManager : IConfigManager {
 
@@ -20,6 +20,15 @@ object ConfigManager : IConfigManager {
     @Volatile private lateinit var supervivientesConfig: ConfigProvider
 
     private val menusCache = ConcurrentHashMap<String, ConfigProvider>()
+    private val genericCache = ConcurrentHashMap<String, ConfigProvider>()
+
+    fun get(fileName: String): ConfigProvider {
+        return genericCache.getOrPut(fileName) {
+            val file = File(plugin.dataFolder, fileName)
+            pumpking.lib.config.sync.ConfigSynchronizer.sync(plugin, fileName, file)
+            YamlConfigProvider(file)
+        }
+    }
 
     fun init(plugin: JavaPlugin) {
         this.plugin = plugin
@@ -66,7 +75,7 @@ object ConfigManager : IConfigManager {
         // Fallback for getting name since messageConfig isn't explicitly defined here anymore
         // Actually, since we need messageConfig, we might need to cast plugin to Mistaken
         val mistaken = plugin as liric.mistaken.Mistaken
-        return mistaken.messageConfig.getRawString(
+        return mistaken.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(
             player = player,
             fileName = "asesinos_info",
             path = "asesinos.$assassinId.nombre",
@@ -97,4 +106,5 @@ object ConfigManager : IConfigManager {
         else "${asesinosConfig.getString("namespace", "mistaken")}:$value"
     }
 }
+
 

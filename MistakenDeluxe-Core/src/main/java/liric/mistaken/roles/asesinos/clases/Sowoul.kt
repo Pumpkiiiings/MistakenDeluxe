@@ -1,4 +1,4 @@
-package liric.mistaken.roles.asesinos.clases
+﻿package liric.mistaken.roles.asesinos.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -40,7 +40,7 @@ import kotlin.math.sin
  */
 class Sowoul : CoreAsesino(
     "sowoul",
-    Mistaken.instance.messageConfig.getRawString(null, "asesinos.sowoul.nombre", "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>", "asesinos_info")
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.sowoul.nombre", "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>", "asesinos_info")
 ), Listener {
 
     private val pathBase = "asesinos.sowoul"
@@ -260,13 +260,13 @@ class Sowoul : CoreAsesino(
         val target = player.world.getNearbyPlayers(player.location, 25.0).firstOrNull { esObjetivoValido(player, it) }
 
         if (target == null) {
-            player.sendActionBar(mm.deserialize("<red>Nadie en tu rango de visión. Se gastó la habilidad."))
+            player.sendActionBar(mm.deserialize("<red>Nadie en tu rango de visiÃ³n. Se gastÃ³ la habilidad."))
             return
         }
 
         player.playSound(player.location, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1.5f, 0.5f)
         target.playSound(target.location, Sound.ENTITY_ENDERMAN_STARE, 1.5f, 0.1f)
-        target.sendActionBar(mm.deserialize("<dark_purple><b>¡UNA MANO MÁGICA TE HA ATRAPADO!</b>"))
+        target.sendActionBar(mm.deserialize("<dark_purple><b>Â¡UNA MANO MÃGICA TE HA ATRAPADO!</b>"))
 
         val manoDisplay = target.world.spawn(target.location.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) { bd ->
             bd.block = Material.PURPUR_PILLAR.createBlockData()
@@ -308,20 +308,20 @@ class Sowoul : CoreAsesino(
         }, null, 1L, 1L)
     }
 
-    // --- 💀 FINISHERS: EFECTOS DE ASESINATO ALEATORIOS ---
+    // --- ðŸ’€ FINISHERS: EFECTOS DE ASESINATO ALEATORIOS ---
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onSowoulKill(event: EntityDamageByEntityEvent) {
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        // 🔥 MULTIARENA FIX: Obtenemos la sesión del atacante
+        // ðŸ”¥ MULTIARENA FIX: Obtenemos la sesiÃ³n del atacante
         val session = plugin.sessionManager.getSession(attacker) ?: return
 
         // Usamos "session" en lugar de "plugin.gameSession"
         if (session.esAsesino(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
 
-            // Verificamos si la víctima ya es espectador en esta arena
+            // Verificamos si la vÃ­ctima ya es espectador en esta arena
             if (plugin.spectatorManager.isSpectator(victim)) {
                 val now = System.currentTimeMillis()
 
@@ -520,3 +520,4 @@ class Sowoul : CoreAsesino(
         fakeEntities.clear()
     }
 }
+

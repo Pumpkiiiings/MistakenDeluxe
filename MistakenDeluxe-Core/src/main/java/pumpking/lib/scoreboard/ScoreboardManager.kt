@@ -16,8 +16,6 @@ object ScoreboardManager {
     // Static templates (fixed strings, resolved by renderer)
     private val templates = ConcurrentHashMap<String, ScoreboardTemplate>()
 
-    // Dynamic templates (live-data lambdas resolved per-player per-tick)
-    private val dynamicTemplates = ConcurrentHashMap<String, DynamicScoreboardTemplate>()
 
     private var updateTask: ScoreboardUpdateTask? = null
 
@@ -45,7 +43,6 @@ object ScoreboardManager {
         updateTask?.cancel()
         contexts.clear()
         templates.clear()
-        dynamicTemplates.clear()
     }
 
     // --- Renderer Detection ---
@@ -75,13 +72,6 @@ object ScoreboardManager {
 
     fun getTemplate(id: String): ScoreboardTemplate? = templates[id]
 
-    // --- Dynamic Template Management ---
-
-    fun registerDynamicTemplate(template: DynamicScoreboardTemplate) {
-        dynamicTemplates[template.id] = template
-    }
-
-    fun getDynamicTemplate(id: String): DynamicScoreboardTemplate? = dynamicTemplates[id]
 
     // --- Scoreboard Assignment ---
 
@@ -89,15 +79,6 @@ object ScoreboardManager {
         val uuid = player.uniqueId
         val context = ensureContext(player)
         context.templateId = templateId
-        context.dynamicTemplateId = null
-        renderer.clearCache(uuid)
-    }
-
-    fun assignDynamicScoreboard(player: Player, templateId: String) {
-        val uuid = player.uniqueId
-        val context = ensureContext(player)
-        context.dynamicTemplateId = templateId
-        context.templateId = null
         renderer.clearCache(uuid)
     }
 
@@ -118,6 +99,10 @@ object ScoreboardManager {
                 net.kyori.adventure.text.Component.empty()
             )
             objective.displaySlot = DisplaySlot.SIDEBAR
+            try {
+                objective.numberFormat(io.papermc.paper.scoreboard.numbers.NumberFormat.blank())
+            } catch (ignored: Throwable) {}
+            
             val ctx = ScoreboardContext(scoreboard, objective)
             player.scoreboard = scoreboard
             ctx

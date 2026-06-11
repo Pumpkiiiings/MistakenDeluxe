@@ -46,10 +46,8 @@ class MusicManager(private val plugin: Mistaken) {
     }
 
     fun loadMusicConfig() {
-        val musicFile = File(plugin.dataFolder, "music.yml")
-        if (!musicFile.exists()) plugin.saveResource("music.yml", false)
-
-        val config = YamlConfiguration.loadConfiguration(musicFile)
+        val configProvider = pumpking.lib.config.ConfigManager.get("music.yml")
+        val config = configProvider.getRaw()
         playlist.clear()
 
         cachedVolume = config.getDouble("music.volume", 0.6).toFloat()

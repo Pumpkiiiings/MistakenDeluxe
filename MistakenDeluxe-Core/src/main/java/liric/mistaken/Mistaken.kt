@@ -1,4 +1,4 @@
-package liric.mistaken
+﻿package liric.mistaken
 
 import com.github.retrooper.packetevents.PacketEvents
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
@@ -9,7 +9,6 @@ import liric.mistaken.game.managers.audio.MusicManager
 import liric.mistaken.roles.asesinos.AsesinoManager
 import liric.mistaken.menu.menus.AsesinoTienda
 import liric.mistaken.commands.CommandRegistry
-import liric.mistaken.config.MessageConfig
 import liric.mistaken.data.PlayerDataManager
 import liric.mistaken.roles.asesinos.Asesino
 import liric.mistaken.data.DatabaseManager
@@ -43,11 +42,12 @@ import org.bukkit.NamespacedKey
 import org.bukkit.plugin.RegisteredServiceProvider
 import org.bukkit.entity.Player
 import org.bukkit.plugin.ServicePriority
-import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import org.bukkit.plugin.java.JavaPlugin
 
+@Suppress("UnstableApiUsage")
 class Mistaken : JavaPlugin() {
 
     companion object {
@@ -77,7 +77,6 @@ class Mistaken : JavaPlugin() {
     val ignoredTestPlayers = mutableSetOf<UUID>()
 
     val configManager get() = pumpking.lib.config.ConfigManager
-    lateinit var messageConfig: MessageConfig
     lateinit var statsManager: StatsManager
     lateinit var playerDataManager: PlayerDataManager
     lateinit var databaseManager: DatabaseManager
@@ -125,10 +124,9 @@ class Mistaken : JavaPlugin() {
 
         // Initialize PumpkingLib internal framework
         pumpking.lib.core.PumpkingLib.init(this)
-        messageConfig = MessageConfig(this)
 
-        // 🔥 FIX 1: Registramos los comandos PRIMERO.
-        // Si la base de datos o el lobby fallan, al menos tendrás comandos para arreglarlo.
+        // ðŸ”¥ FIX 1: Registramos los comandos PRIMERO.
+        // Si la base de datos o el lobby fallan, al menos tendrÃ¡s comandos para arreglarlo.
         CommandRegistry(this).registerAll()
 
         serverMode = config.getString("server-mode", "GAME_SERVER")?.uppercase() ?: "GAME_SERVER"
@@ -145,13 +143,17 @@ class Mistaken : JavaPlugin() {
             componentLogger.warn(mm.deserialize("<red>[!] GAME_SERVER requiere /setlobby para crear el Pre-Lobby de cristal.</red>"))
         }
 
-        // 🔥 FIX 2: Si falla la conexión de DB o Vault, no apagamos el plugin entero.
+        // ðŸ”¥ FIX 2: Si falla la conexiÃ³n de DB o Vault, no apagamos el plugin entero.
         // Solo lanzamos el warning, para que puedas usar comandos de admin.
         setupIntegrations()
         setupDatabase()
 
         statsManager = StatsManager(this)
         playerDataManager = PlayerDataManager(this)
+
+        // ðŸ”¥ FIX 3: Inicializamos la API ANTES de cargar los managers y asesinos
+        val apiImpl = liric.mistaken.api.MistakenAPIImpl(this)
+        liric.mistaken.api.MistakenProvider.register(apiImpl)
 
         glowingAPI = GlowingEntities(this)
         combatManager = CombatManager(this)
@@ -173,8 +175,6 @@ class Mistaken : JavaPlugin() {
         cinematicManager = CinematicManager(this)
 
         server.pluginManager.registerEvents(spectatorManager, this)
-        val apiImpl = liric.mistaken.api.MistakenAPIImpl(this)
-        liric.mistaken.api.MistakenProvider.register(apiImpl)
 
         asesinoTienda = AsesinoTienda()
         supervivienteTienda = SupervivienteTienda()
@@ -221,7 +221,7 @@ class Mistaken : JavaPlugin() {
 
         PacketEvents.getAPI().terminate()
 
-        componentLogger.info(mm.deserialize("<newline><red>║ <bold>MISTAKEN</bold> ha sido desactivado con éxito.</red><newline>"))
+        componentLogger.info(mm.deserialize("<newline><red>â•‘ <bold>MISTAKEN</bold> ha sido desactivado con Ã©xito.</red><newline>"))
     }
 
     private fun setupDatabase(): Boolean {
@@ -233,7 +233,7 @@ class Mistaken : JavaPlugin() {
             databaseManager.setup()
             true
         } catch (e: Exception) {
-            componentLogger.error(mm.deserialize("<red>No se pudo conectar a la base de datos. Los datos no se guardarán.</red>"))
+            componentLogger.error(mm.deserialize("<red>No se pudo conectar a la base de datos. Los datos no se guardarÃ¡n.</red>"))
             false
         }
     }
@@ -242,13 +242,13 @@ class Mistaken : JavaPlugin() {
         val rsp: RegisteredServiceProvider<Economy>? = server.servicesManager.getRegistration(Economy::class.java)
 
         if (rsp == null) {
-            componentLogger.error(mm.deserialize("<red><b>[!]</b> Vault no encontró ningún plugin de economía compatible.</red>"))
+            componentLogger.error(mm.deserialize("<red><b>[!]</b> Vault no encontrÃ³ ningÃºn plugin de economÃ­a compatible.</red>"))
             return false
         }
         economy = rsp.provider
 
         craftEngineEnabled = server.pluginManager.isPluginEnabled("CraftEngine")
-        if (craftEngineEnabled) componentLogger.info(mm.deserialize("<aqua>✔ CraftEngine detectado y vinculado.</aqua>"))
+        if (craftEngineEnabled) componentLogger.info(mm.deserialize("<aqua>âœ” CraftEngine detectado y vinculado.</aqua>"))
 
         return true
     }
@@ -326,7 +326,7 @@ class Mistaken : JavaPlugin() {
         val langFolder = File(dataFolder, "langs")
         if (!langFolder.exists()) langFolder.mkdirs()
 
-        // Carpeta global de layouts de menús (un YAML por menú, sin duplicar por idioma)
+        // Carpeta global de layouts de menÃºs (un YAML por menÃº, sin duplicar por idioma)
         val menusFolder = File(dataFolder, "menus")
         if (!menusFolder.exists()) menusFolder.mkdirs()
 
@@ -358,19 +358,20 @@ class Mistaken : JavaPlugin() {
         componentLogger.info(mm.deserialize("""
             <newline>
              $b1<bold> </bold>$b1
-             $b1<bold>███╗   ███╗██╗███████╗████████╗ █████╗ ██╗  ██╗███████╗███╗   ██╗</bold>$b1
-             $b1<bold>████╗ ████║██║██╔════╝╚══██╔══╝██╔══██╗██║ ██╔╝██╔════╝████╗  ██║</bold>$b1
-             $b2<bold>██╔████╔██║██║███████╗   ██║   ███████║█████╔╝ █████╗  ██╔██╗ ██║</bold>$b2
-             $b3<bold>██║╚██╔╝██║██║╚════██║   ██║   ██╔══██║██╔═██╗ ██╔══╝  ██║╚██╗██║</bold>$b3
-             $b4<bold>██║ ╚═╝ ██║██║███████║   ██║   ██║  ██║██║  ██╗███████╗██║ ╚████║</bold>$b4
-             $b5<bold>╚═╝     ╚═╝╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝</bold>$b5
+             $b1<bold>â–ˆâ–ˆâ–ˆâ•—   â–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ•—  â–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ•—   â–ˆâ–ˆâ•—</bold>$b1
+             $b1<bold>â–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•”â•â•â•â•â•â•šâ•â•â–ˆâ–ˆâ•”â•â•â•â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘ â–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•”â•â•â•â•â•â–ˆâ–ˆâ–ˆâ–ˆâ•—  â–ˆâ–ˆâ•‘</bold>$b1
+             $b2<bold>â–ˆâ–ˆâ•”â–ˆâ–ˆâ–ˆâ–ˆâ•”â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—   â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•”â• â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—  â–ˆâ–ˆâ•”â–ˆâ–ˆâ•— â–ˆâ–ˆâ•‘</bold>$b2
+             $b3<bold>â–ˆâ–ˆâ•‘â•šâ–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â•šâ•â•â•â•â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•— â–ˆâ–ˆâ•”â•â•â•  â–ˆâ–ˆâ•‘â•šâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘</bold>$b3
+             $b4<bold>â–ˆâ–ˆâ•‘ â•šâ•â• â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘  â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘  â–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘ â•šâ–ˆâ–ˆâ–ˆâ–ˆâ•‘</bold>$b4
+             $b5<bold>â•šâ•â•     â•šâ•â•â•šâ•â•â•šâ•â•â•â•â•â•â•   â•šâ•â•   â•šâ•â•  â•šâ•â•â•šâ•â•  â•šâ•â•â•šâ•â•â•â•â•â•â•â•šâ•â•  â•šâ•â•â•â•</bold>$b5
              $b4<bold>               ___  ____ _    _  _ _  _ ____ </bold>$b4
              $b5<bold>               |  \ |___ |    |  |  \/  |___ </bold>$b5
              $b5<bold>               |__/ |___ |___ |__| _/\_ |___ </bold>$b5
             <newline>
                <white>Autor:</white> $info Pumpkingz$info
-               <white>Modo Red:</white> <green>● $serverMode</green>
+               <white>Modo Red:</white> <green>â— $serverMode</green>
             <newline>
         """.trimIndent()))
     }
 }
+

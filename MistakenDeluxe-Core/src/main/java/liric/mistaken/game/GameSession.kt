@@ -1,4 +1,4 @@
-package liric.mistaken.game
+﻿package liric.mistaken.game
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -19,7 +19,7 @@ class GameSession(
     val mapName: String = "Esperando..."
 ) : liric.mistaken.api.managers.ISession {
 
-    // --- JUGADORES AISLADOS DE ESTA SESIÓN ---
+    // --- JUGADORES AISLADOS DE ESTA SESIÃ“N ---
     val players = ConcurrentHashMap.newKeySet<UUID>()
 
     // --- ESTADO DEL JUEGO ---
@@ -42,7 +42,7 @@ class GameSession(
     val ambientManager = plugin.ambientManager
     val combatManager = plugin.combatManager
 
-    // --- CONTROLADORES DE LÓGICA (Instanciados POR SESIÓN) ---
+    // --- CONTROLADORES DE LÃ“GICA (Instanciados POR SESIÃ“N) ---
     val stateController = GameStateController(this)
     val playerController = GamePlayerController(this)
     val uiController = GameUIController(this)
@@ -51,10 +51,10 @@ class GameSession(
 
     init {
         loopTask.start()
-        plugin.componentLogger.info(plugin.mm.deserialize("<green>Sesión <yellow>$id</yellow> iniciada.</green>"))
+        plugin.componentLogger.info(plugin.mm.deserialize("<green>SesiÃ³n <yellow>$id</yellow> iniciada.</green>"))
     }
 
-    // --- MÉTODOS DE JUGADORES ---
+    // --- MÃ‰TODOS DE JUGADORES ---
     fun addPlayer(player: Player) {
         players.add(player.uniqueId)
     }
@@ -69,13 +69,13 @@ class GameSession(
         return players.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
     }
 
-    // --- GETTERS ÚTILES ---
+    // --- GETTERS ÃšTILES ---
     fun getCurrentAsesino(): Player? = currentAsesinoUUID?.let { plugin.server.getPlayer(it) }
     override fun esAsesino(uuid: UUID): Boolean = asesinosUUIDs.contains(uuid)
 
-    // Solo envía mensajes a los jugadores DE ESTA SESIÓN
+    // Solo envÃ­a mensajes a los jugadores DE ESTA SESIÃ“N
     fun broadcastLocalized(path: String, vararg tags: net.kyori.adventure.text.minimessage.tag.resolver.TagResolver) {
-        val message = plugin.messageConfig.getMessage(null, path, *tags)
+        val message = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, path, *tags)
         getPlayers().forEach { p -> p.sendMessage(message) }
     }
 
@@ -84,6 +84,7 @@ class GameSession(
         getPlayers().forEach { plugin.sessionManager.leaveSession(it) }
         players.clear()
         changedBlocks.clear()
-        plugin.componentLogger.info(plugin.mm.deserialize("<red>Sesión <yellow>$id</yellow> destruida.</red>"))
+        plugin.componentLogger.info(plugin.mm.deserialize("<red>SesiÃ³n <yellow>$id</yellow> destruida.</red>"))
     }
 }
+

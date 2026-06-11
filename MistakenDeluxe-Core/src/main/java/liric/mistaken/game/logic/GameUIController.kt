@@ -1,4 +1,4 @@
-package liric.mistaken.game.logic
+﻿package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -39,7 +39,7 @@ class GameUIController(private val game: GameSession) {
             game.timer.toString()
         }
 
-        val lobbyWord = game.plugin.messageConfig.getRawString(p, "words.lobby", "Lobby", "messages")
+        val lobbyWord = game.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(p, "words.lobby", "Lobby", "messages")
 
         val mapDisplay = if (game.currentState == GameState.LOBBY || game.currentState == GameState.VOTING || game.currentState == GameState.BREAK) {
             lobbyWord
@@ -61,7 +61,7 @@ class GameUIController(private val game: GameSession) {
         )
 
         val bar = personalBars.getOrPut(uuid) {
-            val colorStr = game.plugin.messageConfig.getRawString(p, "bossbar.colors.$stateName", "WHITE", "messages")
+            val colorStr = game.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(p, "bossbar.colors.$stateName", "WHITE", "messages")
             val color = try { BossBar.Color.valueOf(colorStr.uppercase()) } catch (e: Exception) { BossBar.Color.WHITE }
 
             val newBar = BossBar.bossBar(barComponent, 1.0f, color, BossBar.Overlay.PROGRESS)
@@ -70,15 +70,15 @@ class GameUIController(private val game: GameSession) {
         }
 
         bar.name(barComponent)
-        val colorStr = game.plugin.messageConfig.getRawString(p, "bossbar.colors.$stateName", "WHITE", "messages")
+        val colorStr = game.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(p, "bossbar.colors.$stateName", "WHITE", "messages")
         try { bar.color(BossBar.Color.valueOf(colorStr.uppercase())) } catch (_: Exception) {}
     }
 
     fun playRoleTitle(p: Player, isKiller: Boolean) {
         val rp = if (isKiller) "killer" else "survivor"
         p.showTitle(Title.title(
-            game.plugin.messageConfig.getMessage(p, "roles.$rp.title"),
-            game.plugin.messageConfig.getMessage(p, "roles.$rp.subtitle")
+            game.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "roles.$rp.title"),
+            game.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "roles.$rp.subtitle")
         ))
     }
 
@@ -86,8 +86,8 @@ class GameUIController(private val game: GameSession) {
         players.forEach { p ->
             p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f)
             p.showTitle(Title.title(
-                game.plugin.messageConfig.getMessage(p, "modes.${game.currentMode.name.lowercase()}.title"),
-                game.plugin.messageConfig.getMessage(p, "modes.${game.currentMode.name.lowercase()}.subtitle"),
+                game.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "modes.${game.currentMode.name.lowercase()}.title"),
+                game.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "modes.${game.currentMode.name.lowercase()}.subtitle"),
                 Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(3), Duration.ofMillis(500))
             ))
         }
@@ -100,18 +100,18 @@ class GameUIController(private val game: GameSession) {
             val isKiller = game.esAsesino(p.uniqueId)
             val isTheSurvivor = p.uniqueId == lastSurvivor.uniqueId
 
-            val titleMain = game.plugin.messageConfig.getMessage(p, "lms.title")
+            val titleMain = game.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "lms.title")
 
             val subtitle = when {
-                isTheSurvivor -> game.plugin.messageConfig.getMessage(p, "lms.subtitle.survivor")
-                isKiller -> game.plugin.messageConfig.getMessage(p, "lms.subtitle.killer")
-                else -> game.plugin.messageConfig.getMessage(p, "lms.subtitle.other", parsedSurvivorName)
+                isTheSurvivor -> game.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "lms.subtitle.survivor")
+                isKiller -> game.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "lms.subtitle.killer")
+                else -> game.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "lms.subtitle.other", parsedSurvivorName)
             }
 
             val chatMsg = if (isTheSurvivor) {
-                game.plugin.messageConfig.getMessage(p, "lms.chat.survivor")
+                game.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "lms.chat.survivor")
             } else {
-                game.plugin.messageConfig.getMessage(p, "lms.chat.other", parsedSurvivorName)
+                game.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "lms.chat.other", parsedSurvivorName)
             }
 
             p.sendMessage(chatMsg)
@@ -161,3 +161,4 @@ class GameUIController(private val game: GameSession) {
         }
     }
 }
+

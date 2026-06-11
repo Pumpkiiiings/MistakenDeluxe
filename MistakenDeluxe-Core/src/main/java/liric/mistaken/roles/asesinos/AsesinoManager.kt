@@ -1,4 +1,4 @@
-package liric.mistaken.roles.asesinos
+﻿package liric.mistaken.roles.asesinos
 
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.asesinos.clases.*
@@ -43,7 +43,7 @@ class AsesinoManager(private val plugin: Mistaken) : liric.mistaken.api.managers
         }
         val clase = getClasePorId(claseId) ?: return
 
-        // 🔥 FIX: Ejecutamos el cleanup de forma segura en el hilo del jugador (Entity Scheduler)
+        // ðŸ”¥ FIX: Ejecutamos el cleanup de forma segura en el hilo del jugador (Entity Scheduler)
         player.scheduler.run(plugin, Consumer { _ ->
             clase.cleanup(player)
             plugin.componentLogger.info(mm.deserialize("<gray>${player.name} sincronizado con ${clase.nombre}</gray>"))
@@ -59,11 +59,11 @@ class AsesinoManager(private val plugin: Mistaken) : liric.mistaken.api.managers
         asesinosActivos[uuid] = asesino
 
         // Feedback
-        player.sendMessage(plugin.messageConfig.getMessage(player, "killer.transform",
+        player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "killer.transform",
             Placeholder.component("name", mm.deserialize(asesino.nombre))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
-        // 2. 🔥 FIX: EntityScheduler de Paper con runDelayed y Consumer explícito
+        // 2. ðŸ”¥ FIX: EntityScheduler de Paper con runDelayed y Consumer explÃ­cito
         player.scheduler.runDelayed(
             plugin,
             Consumer { _ ->
@@ -71,7 +71,7 @@ class AsesinoManager(private val plugin: Mistaken) : liric.mistaken.api.managers
 
                 asesino.equipar(player)
                 
-                // 🔥 Reorganización dinámica de slots basada en config
+                // ðŸ”¥ ReorganizaciÃ³n dinÃ¡mica de slots basada en config
                 val config = plugin.configManager.getAsesinos()
                 val pathBase = "asesinos.${asesino.id}"
                 val currentItems = (1..4).associateWith { player.inventory.getItem(it) }
@@ -116,7 +116,7 @@ class AsesinoManager(private val plugin: Mistaken) : liric.mistaken.api.managers
         // Limpiamos los datos del Asesino
         asesino?.cleanup(player) ?: clasesDisponibles.values.forEach { it.cleanup(player) }
 
-        // Reset total de los fierros del jugador (Directo y rápido)
+        // Reset total de los fierros del jugador (Directo y rÃ¡pido)
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
         player.health = 20.0
         player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
@@ -143,7 +143,7 @@ class AsesinoManager(private val plugin: Mistaken) : liric.mistaken.api.managers
 
         asesinosActivos.clear()
 
-        // Le decimos a todos los asesinos que vacíen su memoria RAM interna
+        // Le decimos a todos los asesinos que vacÃ­en su memoria RAM interna
         clasesDisponibles.values.forEach { asesino ->
             asesino.limpiarDatosGlobales()
         }
@@ -160,3 +160,4 @@ class AsesinoManager(private val plugin: Mistaken) : liric.mistaken.api.managers
         removerTodosLosAsesinos()
     }
 }
+

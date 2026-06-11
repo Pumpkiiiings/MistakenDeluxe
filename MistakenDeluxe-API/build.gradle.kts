@@ -20,9 +20,9 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    implementation(kotlin("stdlib"))
-    
-    compileOnly("net.kyori:adventure-text-minimessage:4.17.0")
+    compileOnly(kotlin("stdlib"))
+
+    compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
     compileOnly("org.jetbrains:annotations:24.0.1")
 }
 

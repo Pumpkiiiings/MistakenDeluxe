@@ -1,4 +1,4 @@
-package liric.mistaken.game.logic
+﻿package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -22,7 +22,7 @@ class GamePlayerController(private val game: GameSession) {
     private var lmsActivado = false
 
     fun setupPlayers(arena: liric.mistaken.game.Arena) {
-        // 🔥 FIX: Solo tomamos los jugadores de ESTA sesión
+        // ðŸ”¥ FIX: Solo tomamos los jugadores de ESTA sesiÃ³n
         val sessionPlayers = game.getPlayers().filter { !game.plugin.isIgnored(it) }.toMutableList()
         if (sessionPlayers.isEmpty()) return
 
@@ -30,7 +30,7 @@ class GamePlayerController(private val game: GameSession) {
 
 
 
-        // --- 2. MODOS CLÁSICOS ---
+        // --- 2. MODOS CLÃSICOS ---
         val candidatos = sessionPlayers.filter { !game.yaJugaronAsesino.contains(it.uniqueId) }.toMutableList()
         if (candidatos.isEmpty()) {
             game.yaJugaronAsesino.clear()
@@ -123,7 +123,7 @@ class GamePlayerController(private val game: GameSession) {
             return
         }
 
-        // Solo evalúa a los asesinos de esta sesión
+        // Solo evalÃºa a los asesinos de esta sesiÃ³n
         val killersOnline = game.asesinosUUIDs.mapNotNull { game.plugin.server.getPlayer(it) }.filter { it.isOnline }
 
         for (p in players) {
@@ -167,7 +167,7 @@ class GamePlayerController(private val game: GameSession) {
     fun checkWinCondition() {
         if (game.currentState != GameState.INGAME) return
 
-        // 🔥 FIX: Obtenemos solo los jugadores de esta sesión
+        // ðŸ”¥ FIX: Obtenemos solo los jugadores de esta sesiÃ³n
         val sessionPlayers = game.getPlayers()
 
 
@@ -192,7 +192,7 @@ class GamePlayerController(private val game: GameSession) {
     private fun checkLastManStanding() {
         if (game.currentState != GameState.INGAME || lmsActivado) return
 
-        // 🔥 FIX: Solo evaluamos en esta sesión
+        // ðŸ”¥ FIX: Solo evaluamos en esta sesiÃ³n
         val supervivientesVivos = game.getPlayers().filter {
             !game.esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible
         }
@@ -247,7 +247,7 @@ class GamePlayerController(private val game: GameSession) {
                 5L
             )
 
-            game.getPlayers().forEach { it.sendMessage(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize("<dark_red>Infección</dark_red> <dark_gray>»</dark_gray> <red>¡${player.name} ha sido infectado y ahora es un asesino!</red>")) }
+            game.getPlayers().forEach { it.sendMessage(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize("<dark_red>InfecciÃ³n</dark_red> <dark_gray>Â»</dark_gray> <red>Â¡${player.name} ha sido infectado y ahora es un asesino!</red>")) }
             player.world.playSound(player.location, Sound.ENTITY_ZOMBIE_VILLAGER_CONVERTED, 1f, 1f)
 
             game.getCurrentAsesino()?.let { killer ->
@@ -297,7 +297,7 @@ class GamePlayerController(private val game: GameSession) {
         val winSound = if (killerWon) Sound.ENTITY_WITHER_SPAWN else Sound.UI_TOAST_CHALLENGE_COMPLETE
         val type = if (killerWon) "killer" else "survivor"
 
-        // 🔥 FIX: Solo limpiamos a los jugadores de ESTA sesión
+        // ðŸ”¥ FIX: Solo limpiamos a los jugadores de ESTA sesiÃ³n
         game.getPlayers().forEach { p ->
             p.stopSound("mistaken:lms", SoundCategory.RECORDS)
 
@@ -323,13 +323,13 @@ class GamePlayerController(private val game: GameSession) {
                 p.allowFlight = false
                 p.isFlying = false
 
-                // Mostrar jugador nuevamente solo a los de esta sesión
+                // Mostrar jugador nuevamente solo a los de esta sesiÃ³n
                 game.getPlayers().forEach { online -> online.showPlayer(game.plugin, p) }
             }
 
             p.showTitle(Title.title(
-                game.plugin.messageConfig.getMessage(p, "game.$type-title"),
-                game.plugin.messageConfig.getMessage(p, "game.$type-subtitle")
+                game.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "game.$type-title"),
+                game.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "game.$type-subtitle")
             ))
 
             p.playSound(p.location, winSound, 1f, 1f)
@@ -350,11 +350,11 @@ class GamePlayerController(private val game: GameSession) {
             p.gameMode = org.bukkit.GameMode.SURVIVAL
 
             if (serverMode == "GAME_SERVER") {
-                // 🔥 Modo Network: Los pateamos al proxy (Servidor Lobby Principal)
+                // ðŸ”¥ Modo Network: Los pateamos al proxy (Servidor Lobby Principal)
                 val lobbyName = game.plugin.config.getString("proxy-lobby-server", "lobby") ?: "lobby"
                 BungeeUtils.sendToServer(game.plugin, p, lobbyName)
             } else {
-                // 🔥 Modo Multiarena local: Los mandamos al punto de spawn local
+                // ðŸ”¥ Modo Multiarena local: Los mandamos al punto de spawn local
                 game.plugin.lobbyLocation?.let { loc ->
                     p.teleportAsync(loc)
                 }
@@ -362,3 +362,4 @@ class GamePlayerController(private val game: GameSession) {
         }
     }
 }
+

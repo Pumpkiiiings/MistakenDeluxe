@@ -1,4 +1,4 @@
-package liric.mistaken.roles.supervivientes.clases
+﻿package liric.mistaken.roles.supervivientes.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -18,15 +18,15 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Aldeano: Clase de evasión y distracción.
- * MECÁNICAS:
- * - Pánico (Velocidad).
+ * Aldeano: Clase de evasiÃ³n y distracciÃ³n.
+ * MECÃNICAS:
+ * - PÃ¡nico (Velocidad).
  * - Soborno (Proyectil aturdidor).
- * - Golem (Empuje en área).
+ * - Golem (Empuje en Ã¡rea).
  */
 class Aldeano : Superviviente(
     "aldeano",
-    Mistaken.instance.messageConfig.getRawString(null, "supervivientes.aldeano.nombre", "Aldeano", "supervivientes_info")
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.aldeano.nombre", "Aldeano", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.aldeano"
@@ -134,7 +134,7 @@ class Aldeano : Superviviente(
         player.updateInventory()
     }
 
-    // --- H1: PÁNICO (Velocidad Explosiva) ---
+    // --- H1: PÃNICO (Velocidad Explosiva) ---
     private fun usarPanico(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 60, 2)) // Speed III por 3s
         player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
@@ -157,16 +157,16 @@ class Aldeano : Superviviente(
         player.world.playSound(player.location, Sound.ENTITY_IRON_GOLEM_ATTACK, 1f, 0.5f)
         player.world.spawnParticle(Particle.BLOCK_CRUMBLE, player.location, 30, 2.0, 0.5, 2.0, Material.IRON_BLOCK.createBlockData())
 
-        // Empujar al asesino si está cerca (5 bloques)
+        // Empujar al asesino si estÃ¡ cerca (5 bloques)
         player.world.getNearbyPlayers(player.location, 5.0).forEach { victim ->
             val session = plugin.sessionManager.getSession(victim)
             if (session?.esAsesino(victim.uniqueId) == true) {
-                // Vector de empuje fuerte hacia atrás
+                // Vector de empuje fuerte hacia atrÃ¡s
                 val knockback = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(2.5).setY(0.5)
                 victim.velocity = knockback
 
                 victim.playSound(victim.location, Sound.ENTITY_IRON_GOLEM_HURT, 1f, 1f)
-                victim.sendMessage(mm.deserialize("<red><b>[!]</b> ¡El Golem te ha rechazado!"))
+                victim.sendMessage(mm.deserialize("<red><b>[!]</b> Â¡El Golem te ha rechazado!"))
             }
         }
     }
@@ -178,3 +178,4 @@ class Aldeano : Superviviente(
         activeTasks.clear()
     }
 }
+

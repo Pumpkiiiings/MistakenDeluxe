@@ -1,4 +1,4 @@
-package liric.mistaken.roles.supervivientes.clases
+﻿package liric.mistaken.roles.supervivientes.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
@@ -34,12 +34,12 @@ import java.util.function.Consumer
 
 /**
  *[LIRIC-MISTAKEN 2.0]
- * Troll: El maestro del engaño.
+ * Troll: El maestro del engaÃ±o.
  * FIX: Actualizado al constructor moderno de PlayerInfo de PacketEvents.
  */
 class Troll : Superviviente(
     "troll",
-    Mistaken.instance.messageConfig.getRawString(null, "supervivientes.troll.nombre", "<green><b>EL TROLL</b></green>", "supervivientes_info")
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.troll.nombre", "<green><b>EL TROLL</b></green>", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.troll"
@@ -110,7 +110,7 @@ class Troll : Superviviente(
         player.updateInventory()
     }
 
-    // --- 🏃‍♂️ HABILIDAD 1: CLON INTELIGENTE (PAQUETES FALSOS) ---
+    // --- ðŸƒâ€â™‚ï¸ HABILIDAD 1: CLON INTELIGENTE (PAQUETES FALSOS) ---
 
     private fun invocarClonInteligente(player: Player) {
         val loc = player.location.clone()
@@ -125,7 +125,7 @@ class Troll : Superviviente(
         }
 
         // 2. Crear Paquetes Base (Spawn & Metadata)
-        // 🔥 FIX: WrapperPlayServerPlayerInfoUpdate requiere ahora el enum GameMode y el display name.
+        // ðŸ”¥ FIX: WrapperPlayServerPlayerInfoUpdate requiere ahora el enum GameMode y el display name.
         val infoData = WrapperPlayServerPlayerInfoUpdate.PlayerInfo(
             profile,
             true,
@@ -176,7 +176,7 @@ class Troll : Superviviente(
                 return@Consumer
             }
 
-            // Física de IA simple
+            // FÃ­sica de IA simple
             val lookAhead = currentLoc.clone().add(direction.clone().multiply(1.0))
             if (lookAhead.block.type.isSolid) {
                 // Si hay pared, salta o gira
@@ -209,7 +209,7 @@ class Troll : Superviviente(
         }, null, 1L, 1L)
     }
 
-    // --- 🍌 HABILIDAD 2: CÁSCARA DE PLÁTANO ---
+    // --- ðŸŒ HABILIDAD 2: CÃSCARA DE PLÃTANO ---
 
     private fun colocarCascaraPlatano(player: Player) {
         val loc = player.location.clone()
@@ -236,16 +236,16 @@ class Troll : Superviviente(
                 plugin.sessionManager.getSession(it)?.esAsesino(it.uniqueId) == true
             }
             if (killer != null) {
-                // ¡Se resbaló!
+                // Â¡Se resbalÃ³!
                 killer.playSound(killer.location, Sound.ENTITY_SLIME_SQUISH, 1f, 0.5f)
                 killer.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 4))
                 killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 40, 0))
 
-                // Sacudida de cámara fuerte y salto involuntario
+                // Sacudida de cÃ¡mara fuerte y salto involuntario
                 killer.velocity = Vector(0.0, 0.6, 0.0)
                 killer.setRotation(killer.yaw + 180f, -45f)
 
-                killer.sendMessage(plugin.mm.deserialize("<yellow>¡Te resbalaste con una cáscara de plátano!"))
+                killer.sendMessage(plugin.mm.deserialize("<yellow>Â¡Te resbalaste con una cÃ¡scara de plÃ¡tano!"))
 
                 platano.world.spawnParticle(Particle.DUST, platano.location, 10, 0.2, 0.2, 0.2, Particle.DustOptions(Color.YELLOW, 1f))
                 platano.remove()
@@ -255,7 +255,7 @@ class Troll : Superviviente(
         }, null, 1L, 1L)
     }
 
-    // --- 🎁 HABILIDAD 3: CAJA SORPRESA ---
+    // --- ðŸŽ HABILIDAD 3: CAJA SORPRESA ---
 
     private fun colocarCajaSorpresa(player: Player) {
         val loc = player.location.block.location.add(0.5, 0.0, 0.5)
@@ -276,14 +276,14 @@ class Troll : Superviviente(
                 plugin.sessionManager.getSession(it)?.esAsesino(it.uniqueId) == true
             }
             if (killer != null) {
-                // ¡Sorpresa!
+                // Â¡Sorpresa!
                 caja.world.playSound(caja.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f)
                 caja.world.playSound(caja.location, Sound.ENTITY_WITCH_CELEBRATE, 1f, 1f)
                 caja.world.spawnParticle(Particle.EXPLOSION_EMITTER, caja.location, 1)
 
                 killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 80, 0))
                 killer.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
-                killer.sendMessage(plugin.mm.deserialize("<red><b>¡BOOM!</b> <gray>¡Era una trampa!"))
+                killer.sendMessage(plugin.mm.deserialize("<red><b>Â¡BOOM!</b> <gray>Â¡Era una trampa!"))
 
                 caja.remove()
                 task.cancel()
@@ -292,3 +292,4 @@ class Troll : Superviviente(
         }, null, 1L, 1L)
     }
 }
+

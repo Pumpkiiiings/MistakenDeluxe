@@ -33,8 +33,8 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     private var idleLines: List<String> = emptyList()
     private var completedLines: List<String> = emptyList()
 
-    private val dataFile = File(plugin.dataFolder, "generator_data.yml")
-    private var dataConfig = YamlConfiguration()
+    private val configProvider = pumpking.lib.config.ConfigManager.get("generator_data.yml")
+    private var dataConfig = configProvider.getRaw()
     private val fileLock = Any()
 
     data class GeneratorState(
@@ -81,7 +81,8 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
             synchronized(fileLock) {
-                if (dataFile.exists()) dataConfig = YamlConfiguration.loadConfiguration(dataFile)
+                configProvider.load()
+                dataConfig = configProvider.getRaw()
             }
 
             locations.forEach { loc ->
@@ -172,7 +173,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
                 dataConfig.set("$key.progress", state.progress)
                 dataConfig.set("$key.completed", state.completed)
                 dataConfig.set("$key.original_material", state.originalMaterial.name)
-                try { dataConfig.save(dataFile) } catch (e: Exception) { }
+                try { configProvider.save() } catch (e: Exception) { }
             }
         }
     }
@@ -207,7 +208,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
             synchronized(fileLock) {
                 dataConfig.set("session", null)
-                try { dataConfig.save(dataFile) } catch (e: Exception) { }
+                try { configProvider.save() } catch (e: Exception) { }
             }
         }
     }

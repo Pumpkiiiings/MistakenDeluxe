@@ -1,4 +1,4 @@
-package liric.mistaken.roles.supervivientes.clases
+﻿package liric.mistaken.roles.supervivientes.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -15,13 +15,13 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Minty: El Superviviente Licántropo.
+ * Minty: El Superviviente LicÃ¡ntropo.
  * Rol: Control de Masas (CC) y Huida.
  * FIX: Null-Safety en activeTasks.add()
  */
 class Minty : Superviviente(
     "minty",
-    Mistaken.instance.messageConfig.getRawString(null, "supervivientes.minty.nombre", "<gradient:#55ffaa:#00aa55><b>MINTY</b></gradient>", "supervivientes_info")
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.minty.nombre", "<gradient:#55ffaa:#00aa55><b>MINTY</b></gradient>", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.minty"
@@ -95,7 +95,7 @@ class Minty : Superviviente(
             player.world.spawnParticle(Particle.CLOUD, player.location, 2, 0.2, 0.1, 0.2, 0.05)
         }, null, 1L, 5L)
 
-        // SOLUCIÓN AL ERROR: Guardar solo si la tarea no es nula
+        // SOLUCIÃ“N AL ERROR: Guardar solo si la tarea no es nula
         task?.let { activeTasks.add(it) }
 
         // Cancelar a los 5 segundos
@@ -157,3 +157,4 @@ class Minty : Superviviente(
         activeTasks.clear()
     }
 }
+

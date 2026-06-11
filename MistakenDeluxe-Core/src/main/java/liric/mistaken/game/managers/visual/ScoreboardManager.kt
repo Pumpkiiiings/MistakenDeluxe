@@ -4,7 +4,7 @@ import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.entity.Player
-import pumpking.lib.scoreboard.DynamicScoreboardTemplate
+import pumpking.lib.scoreboard.ScoreboardTemplate
 import pumpking.lib.scoreboard.ScoreboardManager as PumpkingScoreboardManager
 
 /**
@@ -18,27 +18,30 @@ class ScoreboardManager(private val plugin: Mistaken) {
     private val mm = plugin.mm
     private val legacy = LegacyComponentSerializer.legacySection()
 
-    // Dynamic template ID registered in PumpkingLib
-    private val TEMPLATE_ID = "mistaken_main"
+    private var updateTask: org.bukkit.scheduler.BukkitTask? = null
 
     init {
-        registerDynamicTemplate()
-        // PumpkingLib's own update task already runs, no need for a secondary async scheduler
+        startUpdateTask()
     }
 
-    private fun registerDynamicTemplate() {
-        val template = DynamicScoreboardTemplate(
-            id = TEMPLATE_ID,
-            titleSupplier = { player ->
+    private fun startUpdateTask() {
+        val interval = if (PumpkingScoreboardManager.supportsAnimations()) 2L else 10L
+        updateTask = plugin.server.scheduler.runTaskTimerAsynchronously(plugin, Runnable {
+            for (player in plugin.server.onlinePlayers) {
                 val config = plugin.messageConfig.getSpecificFile(player, "messages")
-                config.getString("scoreboard.title") ?: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN"
-            },
-            linesSupplier = { player ->
-                buildLines(player)
-            },
-            animatedTitle = true
-        )
-        PumpkingScoreboardManager.registerDynamicTemplate(template)
+                val title = config.getString("scoreboard.title") ?: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN"
+                val lines = buildLines(player)
+                
+                val template = ScoreboardTemplate(
+                    id = player.name,
+                    title = title,
+                    lines = lines,
+                    animatedTitle = false
+                )
+                
+                PumpkingScoreboardManager.registerTemplate(template)
+            }
+        }, 20L, interval)
     }
 
     private fun buildLines(player: Player): List<String> {
@@ -121,7 +124,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
     // --- Public API (same contract as before) ---
 
     fun addPlayer(player: Player) {
-        PumpkingScoreboardManager.assignDynamicScoreboard(player, TEMPLATE_ID)
+        PumpkingScoreboardManager.assignScoreboard(player, player.name)
     }
 
     fun removePlayer(player: Player) {

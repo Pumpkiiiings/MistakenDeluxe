@@ -1,4 +1,4 @@
-package liric.mistaken.roles.supervivientes.clases
+﻿package liric.mistaken.roles.supervivientes.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -17,12 +17,12 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Raincoat Kid: El niño del impermeable.
+ * Raincoat Kid: El niÃ±o del impermeable.
  * FIX: Sistema de Equipamiento igual al del Asesino Slasher (100% CraftEngine).
  */
 class RaincoatKid : Superviviente(
     "raincoatkid",
-    Mistaken.instance.messageConfig.getRawString(null, "supervivientes.raincoatkid.nombre", "Raincoat Kid", "supervivientes_info")
+    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.raincoatkid.nombre", "Raincoat Kid", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.raincoatkid"
@@ -54,7 +54,7 @@ class RaincoatKid : Superviviente(
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
     }
 
-    // --- 🛠️ EQUIPAMIENTO (ESTILO SLASHER) ---
+    // --- ðŸ› ï¸ EQUIPAMIENTO (ESTILO SLASHER) ---
     override fun equipar(player: Player) {
         val inv = player.inventory
         inv.clear()
@@ -71,7 +71,7 @@ class RaincoatKid : Superviviente(
 
             if (id == null || id == "none") return
 
-            // Intentamos sacar el ítem de CraftEngine
+            // Intentamos sacar el Ã­tem de CraftEngine
             val item = CraftEngine.getCustomItem(id) ?: run {
                 val matName = id.replace(".*:".toRegex(), "").uppercase()
                 val mat = Material.matchMaterial(matName)
@@ -156,3 +156,4 @@ class RaincoatKid : Superviviente(
         activeTasks.clear()
     }
 }
+

@@ -42,7 +42,9 @@ object DataCommand {
                                 // Ejecutar asíncronamente para no congelar el servidor
                                 plugin.server.asyncScheduler.runNow(plugin) { _ ->
                                     try {
-                                        val yaml = YamlConfiguration.loadConfiguration(file)
+                                        val configProvider = pumpking.lib.config.ConfigManager.get(fileName)
+                                        configProvider.load()
+                                        val yaml = configProvider.getRaw()
                                         val uuids = yaml.getKeys(false)
                                         var count = 0
 

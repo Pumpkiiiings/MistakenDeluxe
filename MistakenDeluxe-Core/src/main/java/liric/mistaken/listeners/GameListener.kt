@@ -1,4 +1,4 @@
-package liric.mistaken.listeners
+﻿package liric.mistaken.listeners
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -32,7 +32,7 @@ import java.util.function.Consumer
 /**
  * [LIRIC-MISTAKEN 2.0]
  * GameListener: Adaptado para MULTIARENA / VELOCITY.
- * Gestiona la lógica de juego basándose en la sesión individual de cada jugador.
+ * Gestiona la lÃ³gica de juego basÃ¡ndose en la sesiÃ³n individual de cada jugador.
  */
 class GameListener(private val plugin: Mistaken) : Listener {
 
@@ -42,12 +42,12 @@ class GameListener(private val plugin: Mistaken) : Listener {
     private val infectionDeathLocs = ConcurrentHashMap<UUID, org.bukkit.Location>()
 
     /**
-     * 🧊 SISTEMA DE RESCATE (Freeze Tag)
+     * ðŸ§Š SISTEMA DE RESCATE (Freeze Tag)
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onRescue(event: PlayerInteractEntityEvent) {
         val player = event.player
-        val session = plugin.sessionManager.getSession(player) ?: return // 🔥 MULTIARENA
+        val session = plugin.sessionManager.getSession(player) ?: return // ðŸ”¥ MULTIARENA
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
         if (session.currentMode != MistakenMode.FREEZE_TAG) return
@@ -57,7 +57,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         if (plugin.combatManager.isFrozen(victim)) {
             if (!session.esAsesino(player.uniqueId)) {
                 if (plugin.combatManager.getHealth(player) <= 1) {
-                    player.sendActionBar(mm.deserialize("<red>¡Estás muy herido para rescatar a nadie!"))
+                    player.sendActionBar(mm.deserialize("<red>Â¡EstÃ¡s muy herido para rescatar a nadie!"))
                     return
                 }
 
@@ -70,12 +70,12 @@ class GameListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * 🔥 EFECTOS VISUALES Y STUN
+     * ðŸ”¥ EFECTOS VISUALES Y STUN
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onDamageEffects(event: EntityDamageByEntityEvent) {
         val victim = event.entity as? Player ?: return
-        val session = plugin.sessionManager.getSession(victim) ?: return // 🔥 MULTIARENA
+        val session = plugin.sessionManager.getSession(victim) ?: return // ðŸ”¥ MULTIARENA
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
 
@@ -90,7 +90,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
         if (!isDamagerKiller && isVictimKiller) {
             val killerHealth = plugin.combatManager.getHealth(victim)
-            damager.sendActionBar(plugin.messageConfig.getMessage(damager, "game.killer-hit-actionbar",
+            damager.sendActionBar(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(damager, "game.killer-hit-actionbar",
                 Placeholder.parsed("health", killerHealth.toString())))
 
             if (ThreadLocalRandom.current().nextInt(100) < 15) {
@@ -100,12 +100,12 @@ class GameListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * 🔥 MUERTE LÓGICA POR ARENA
+     * ðŸ”¥ MUERTE LÃ“GICA POR ARENA
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
         val victim = event.entity
-        val session = plugin.sessionManager.getSession(victim) ?: return // 🔥 MULTIARENA
+        val session = plugin.sessionManager.getSession(victim) ?: return // ðŸ”¥ MULTIARENA
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
 
@@ -114,13 +114,13 @@ class GameListener(private val plugin: Mistaken) : Listener {
         event.droppedExp = 0
         event.deathMessage(null)
 
-        // 🔥 FIX INFECCIÓN: Guardamos la ubicación ANTES de handlePlayerDeath
+        // ðŸ”¥ FIX INFECCIÃ“N: Guardamos la ubicaciÃ³n ANTES de handlePlayerDeath
         // para que onRespawn siempre tenga la loc disponible
         if (session.currentMode == MistakenMode.INFECTION) {
             infectionDeathLocs[victim.uniqueId] = deathLoc
         }
 
-        // Procesar muerte en su controlador de sesión
+        // Procesar muerte en su controlador de sesiÃ³n
         session.playerController.handlePlayerDeath(victim)
 
         victim.scheduler.runDelayed(plugin, Consumer { _ ->
@@ -128,7 +128,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                 victim.spigot().respawn()
                 victim.scheduler.runDelayed(plugin, Consumer { _ ->
                     if (session.currentState == GameState.INGAME) {
-                        // 🔥 FIX: En infección el jugador se convierte en asesino, nunca espectador
+                        // ðŸ”¥ FIX: En infecciÃ³n el jugador se convierte en asesino, nunca espectador
                         if (!session.esAsesino(victim.uniqueId)) {
                             plugin.spectatorManager.setCustomSpectator(victim)
                         }
@@ -138,7 +138,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         }, null, 1L)
     }
 
-    // 🔥 FIX INFECCIÓN: HIGHEST para que nuestro respawnLocation no sea sobreescrito por otros plugins/sistemas
+    // ðŸ”¥ FIX INFECCIÃ“N: HIGHEST para que nuestro respawnLocation no sea sobreescrito por otros plugins/sistemas
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onRespawn(event: org.bukkit.event.player.PlayerRespawnEvent) {
         val player = event.player
@@ -160,8 +160,8 @@ class GameListener(private val plugin: Mistaken) : Listener {
         killer.playSound(killer.location, Sound.ENTITY_ZOMBIE_VILLAGER_CONVERTED, 1f, 0.5f)
         killer.world.spawnParticle(Particle.ENCHANTED_HIT, killer.location.add(0.0, 2.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
 
-        killer.sendMessage(plugin.messageConfig.getMessage(killer, "game.killer-stunned-victim"))
-        damager.sendMessage(plugin.messageConfig.getMessage(damager, "game.killer-stunned-damager"))
+        killer.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(killer, "game.killer-stunned-victim"))
+        damager.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(damager, "game.killer-stunned-damager"))
 
         val claseAsesino = plugin.playerDataManager.getSelectedKiller(killer.uniqueId)
         if (claseAsesino == "slasher") {
@@ -216,7 +216,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         }
     }
 
-    // --- PROTECCIONES AISLADAS POR SESIÓN ---
+    // --- PROTECCIONES AISLADAS POR SESIÃ“N ---
     @EventHandler fun onDrop(e: PlayerDropItemEvent) {
         val session = plugin.sessionManager.getSession(e.player)
         if (session?.currentState == GameState.INGAME) e.isCancelled = true
@@ -258,3 +258,4 @@ class GameListener(private val plugin: Mistaken) : Listener {
         }
     }
 }
+

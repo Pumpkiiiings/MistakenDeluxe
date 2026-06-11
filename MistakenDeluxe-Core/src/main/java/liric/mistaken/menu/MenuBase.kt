@@ -1,4 +1,4 @@
-package liric.mistaken.menu
+﻿package liric.mistaken.menu
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -13,32 +13,32 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.1]
- * MenuBase: Motor de menús globalizado.
+ * MenuBase: Motor de menÃºs globalizado.
  *
- * --- DISEÑO ---
- * Los YAMLs de menú son ahora GLOBALES (menus/<nombre>.yml), uno solo para
- * todos los idiomas. El título y los textos de items dinámicos se resuelven
+ * --- DISEÃ‘O ---
+ * Los YAMLs de menÃº son ahora GLOBALES (menus/<nombre>.yml), uno solo para
+ * todos los idiomas. El tÃ­tulo y los textos de items dinÃ¡micos se resuelven
  * desde el messages.yml del idioma del jugador usando la token %menu_title%:
  *
- *   menus/<nombre>.yml          → layout, slots, decoraciones (sin duplicar por idioma)
- *   langs/<lang>/messages.yml  → menus.<nombre>.titulo  (texto internacionalizado)
+ *   menus/<nombre>.yml          â†’ layout, slots, decoraciones (sin duplicar por idioma)
+ *   langs/<lang>/messages.yml  â†’ menus.<nombre>.titulo  (texto internacionalizado)
  *
  * Esto elimina por completo la carpeta langs/<lang>/menus/ y centraliza
- * toda la traducción en un único archivo messages.yml por idioma.
+ * toda la traducciÃ³n en un Ãºnico archivo messages.yml por idioma.
  *
- * --- CACHÉ ---
- * Las decoraciones se cachean por IDIOMA (no por jugador) porque el título
- * varía según el idioma pero el layout es idéntico para todos.
+ * --- CACHÃ‰ ---
+ * Las decoraciones se cachean por IDIOMA (no por jugador) porque el tÃ­tulo
+ * varÃ­a segÃºn el idioma pero el layout es idÃ©ntico para todos.
  */
 abstract class MenuBase(
-    /** Nombre del archivo YAML sin extensión, ej: "asesinos_tienda" */
+    /** Nombre del archivo YAML sin extensiÃ³n, ej: "asesinos_tienda" */
     private val menuName: String
 ) {
 
     protected val plugin = Mistaken.instance
     protected val mm = plugin.mm
 
-    // Clave en messages.yml donde se lee el título traducido.
+    // Clave en messages.yml donde se lee el tÃ­tulo traducido.
     // Por defecto: menus.<menuName>.titulo
     protected open val titleMessageKey: String get() = "menus.$menuName.titulo"
 
@@ -46,18 +46,18 @@ abstract class MenuBase(
     protected open val titleFallback: String get() = "<red>Menu: $menuName"
 
     // Cache de decoraciones procesadas, agrupadas por idioma del jugador.
-    // El título está incluido porque varía por idioma.
+    // El tÃ­tulo estÃ¡ incluido porque varÃ­a por idioma.
     private val langCache = ConcurrentHashMap<String, MenuBakedData>()
 
-    // Config global del menú (cargada una sola vez desde menus/<nombre>.yml)
+    // Config global del menÃº (cargada una sola vez desde menus/<nombre>.yml)
     private var globalConfig: FileConfiguration? = null
 
     // =========================================================================
-    // API PÚBLICA — para subclases y acceso externo
+    // API PÃšBLICA â€” para subclases y acceso externo
     // =========================================================================
 
     /**
-     * Obtiene la configuración global del menú (layout, slots, decoraciones).
+     * Obtiene la configuraciÃ³n global del menÃº (layout, slots, decoraciones).
      * Carga lazy desde disco: menus/<menuName>.yml dentro del dataFolder del plugin.
      */
     fun getGlobalConfig(): FileConfiguration {
@@ -65,7 +65,7 @@ abstract class MenuBase(
     }
 
     /**
-     * Abre el menú al jugador resolviendo su idioma automáticamente.
+     * Abre el menÃº al jugador resolviendo su idioma automÃ¡ticamente.
      */
     open fun abrir(player: Player) {
         val baked = getBakedData(player)
@@ -77,47 +77,47 @@ abstract class MenuBase(
             .disableAllInteractions()
             .create()
 
-        // Aplicar decoraciones desde caché
+        // Aplicar decoraciones desde cachÃ©
         baked.decorations.forEach { (slots, item) -> gui.setItem(slots, item) }
 
-        // Lógica de items dinámicos (implementada por cada subclase)
+        // LÃ³gica de items dinÃ¡micos (implementada por cada subclase)
         setupItems(player, gui, config)
 
         gui.open(player)
     }
 
     /**
-     * Método que las subclases implementan para añadir sus items dinámicos.
+     * MÃ©todo que las subclases implementan para aÃ±adir sus items dinÃ¡micos.
      *
-     * @param player El jugador que abre el menú.
+     * @param player El jugador que abre el menÃº.
      * @param gui    La instancia de GUI ya decorada.
-     * @param config El FileConfiguration global del menú (menus/<nombre>.yml).
+     * @param config El FileConfiguration global del menÃº (menus/<nombre>.yml).
      *               Use [getTranslatedString] para obtener textos localizados.
      */
     abstract fun setupItems(player: Player, gui: Gui, config: FileConfiguration)
 
     /**
      * Obtiene un texto traducido desde messages.yml del jugador.
-     * Reemplaza la antigua necesidad de tener un YAML de menú por idioma.
+     * Reemplaza la antigua necesidad de tener un YAML de menÃº por idioma.
      *
-     * @param player El jugador cuyo idioma se usará.
+     * @param player El jugador cuyo idioma se usarÃ¡.
      * @param path   La ruta en messages.yml, ej: "menus.tienda_principal.items.asesinos.nombre"
      * @param def    Valor por defecto si no se encuentra la clave.
      */
     fun getTranslatedString(player: Player, path: String, def: String = "<red>Missing: $path"): String {
-        return plugin.messageConfig.getRawString(player, path, def, "messages")
+        return pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, path, def, "messages")
     }
 
     /**
      * Obtiene una lista de strings traducidos desde messages.yml del jugador.
      */
     fun getTranslatedList(player: Player, path: String): List<String> {
-        return plugin.messageConfig.getRawStringList(player, path, "messages")
+        return pumpking.lib.service.PumpkingServiceManager.messages.getRawStringList(player, path, "messages")
     }
 
 
     /**
-     * Invalida el caché del menú para que los cambios en YAML y messages.yml
+     * Invalida el cachÃ© del menÃº para que los cambios en YAML y messages.yml
      * se reflejen sin reiniciar el servidor (utilizado en /mistaken reload).
      */
     fun reload() {
@@ -136,8 +136,8 @@ abstract class MenuBase(
     )
 
     /**
-     * Obtiene (o genera y cachea) los datos decorativos del menú para el idioma del jugador.
-     * El título se resuelve desde messages.yml usando [titleMessageKey].
+     * Obtiene (o genera y cachea) los datos decorativos del menÃº para el idioma del jugador.
+     * El tÃ­tulo se resuelve desde messages.yml usando [titleMessageKey].
      */
     private fun getBakedData(player: Player): MenuBakedData {
         val lang = plugin.playerDataManager.getLanguage(player.uniqueId)
@@ -145,8 +145,8 @@ abstract class MenuBase(
         return langCache.getOrPut(lang) {
             val config = getGlobalConfig()
 
-            // Resolver el título desde messages.yml (no desde el YAML del menú)
-            val rawTitle = plugin.messageConfig.getRawString(player, titleMessageKey, titleFallback, "messages")
+            // Resolver el tÃ­tulo desde messages.yml (no desde el YAML del menÃº)
+            val rawTitle = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, titleMessageKey, titleFallback, "messages")
 
             val filas = config.getInt("filas", 3)
             val decorList = mutableListOf<Pair<List<Int>, GuiItem>>()
@@ -169,32 +169,10 @@ abstract class MenuBase(
     }
 
     /**
-     * Carga el YAML global del menú desde:
-     *   1. dataFolder/menus/<menuName>.yml  (en disco, configuración del servidor)
-     *   2. resources/menus/<menuName>.yml   (en el JAR, como fallback)
-     *
-     * Si no existe en disco, lo extrae automáticamente del JAR.
+     * Carga el YAML global del menÃº usando PumpkingLib ConfigManager
      */
     private fun loadGlobalConfig(): FileConfiguration {
-        val menusFolder = File(plugin.dataFolder, "menus")
-        val menuFile = File(menusFolder, "$menuName.yml")
-
-        // Auto-extract del JAR si no existe en disco
-        if (!menuFile.exists()) {
-            menusFolder.mkdirs()
-            runCatching {
-                plugin.saveResource("menus/$menuName.yml", false)
-            }.onFailure {
-                plugin.componentLogger.warn(
-                    plugin.mm.deserialize("<yellow>[Menus] No se encontró menus/$menuName.yml en el JAR. Usando config vacía.</yellow>")
-                )
-            }
-        }
-
-        return if (menuFile.exists()) {
-            YamlConfiguration.loadConfiguration(menuFile)
-        } else {
-            YamlConfiguration()
-        }
+        return pumpking.lib.config.ConfigManager.getMenuConfig(menuName)
     }
 }
+
