@@ -86,7 +86,7 @@ dependencies {
 
     // Paper ya incluye Adventure y MiniMessage nativamente
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
-    compileOnly("org.jetbrains:annotations:24.0.1")
+    compileOnly("org.jetbrains:annotations:24.1.0")
 }
 
 tasks {
