@@ -43,7 +43,7 @@ Para que **NextMistaken** funcione correctamente, el servidor debe contar con:
 ## 📢 Comunidad y Soporte
 ¿Tienes dudas sobre la configuración o quieres estar al tanto de las actualizaciones de **NextMistaken**?
 
-[![Discord](https://invidget.switchblade.xyz/VVCnuympkD))](https://discord.gg/VVCnuympkD)
+[![Discord](https://invidget.switchblade.xyz/VVCnuympkD))](https://discord.gg/xqKqtgfsfy)
 
 ## 🤝 Créditos y Agradecimientos
 
