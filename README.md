@@ -49,8 +49,7 @@ Para que **NextMistaken** funcione correctamente, el servidor debe contar con:
 
 Este proyecto es liderado por **Pumpkingz**, pero no hubiera tomado esta forma sin el apoyo de:
 
-* **Gemini (Google):** Escribir el codigo base del plugin.
-* **Google IA Studio (Google):** Reforzar el codigo y optimizacion.
+* **Antigravity:** Mejorar y escribir el codigo.
 * **Pumpkingz** Traer a la vida el proyecto
 * **Minty** Crear la idea de Mistaken.
 
