@@ -1,4 +1,4 @@
-package pumpking.lib.color
+﻿package pumpking.lib.color
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 object ColorTranslator {
     private val mm = MiniMessage.miniMessage()
-    
+
     // LRU Cache for high performance (limits to 1000 entries)
     private val cache = object : LinkedHashMap<String, Component>(1000, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Component>): Boolean {
@@ -37,7 +37,7 @@ object ColorTranslator {
             return component
         }
     }
-    
+
     /**
      * Translates a list of strings with mixed color formats.
      */

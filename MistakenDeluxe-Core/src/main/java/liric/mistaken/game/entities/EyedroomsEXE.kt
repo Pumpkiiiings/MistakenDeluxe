@@ -71,7 +71,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
                 isRunning = true
                 iniciarIA()
             } catch (e: Exception) {
-                plugin.componentLogger.error("Fallo al invocar al Eyedrooms: ${e.message}")
+                plugin.componentLogger.error("[ERROR] [Entity] Failed to invoke Eyedrooms: ${e.message}")
             }
         }
     }

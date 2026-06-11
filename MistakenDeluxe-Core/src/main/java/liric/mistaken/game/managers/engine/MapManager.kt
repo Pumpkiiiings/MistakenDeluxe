@@ -42,7 +42,7 @@ class MapManager(private val plugin: Mistaken) {
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
             try {
                 if (!fileLoader.worldExists(templateName)) {
-                    plugin.componentLogger.error(plugin.mm.deserialize("<red>[MapManager] El archivo .slime '$templateName' no existe.</red>"))
+                    plugin.componentLogger.error(plugin.mm.deserialize("[ERROR] [MapManager] Slime file '$templateName' does not exist."))
                     future.complete(null)
                     return@runNow
                 }
@@ -63,7 +63,7 @@ class MapManager(private val plugin: Mistaken) {
                         val bukkitWorld = instance.bukkitWorld
 
                         if (bukkitWorld == null) {
-                            plugin.componentLogger.error(plugin.mm.deserialize("<red>[MapManager] Bukkit devolvió un mundo nulo.</red>"))
+                            plugin.componentLogger.error(plugin.mm.deserialize("[ERROR] [MapManager] Bukkit returned a null world."))
                             future.complete(null)
                             return@execute
                         }
@@ -87,17 +87,17 @@ class MapManager(private val plugin: Mistaken) {
                             isThundering = false
                         }
 
-                        plugin.componentLogger.info(plugin.mm.deserialize("<green>[MapManager] Mundo instanciado: ${bukkitWorld.name}</green>"))
+                        plugin.componentLogger.info(plugin.mm.deserialize("[SUCCESS] [MapManager] World instantiated: ${bukkitWorld.name}"))
                         future.complete(bukkitWorld)
 
                     } catch (e: Exception) {
-                        plugin.componentLogger.error(plugin.mm.deserialize("<red>[MapManager] Error al registrar mundo en Bukkit: ${e.message}</red>"))
+                        plugin.componentLogger.error(plugin.mm.deserialize("[ERROR] [MapManager] Failed to register world in Bukkit: ${e.message}"))
                         future.complete(null)
                     }
                 }
 
             } catch (e: Exception) {
-                plugin.componentLogger.error(plugin.mm.deserialize("<red>[MapManager] Fallo crítico cargando $templateName: ${e.message}</red>"))
+                plugin.componentLogger.error(plugin.mm.deserialize("[ERROR] [MapManager] Critical failure loading $templateName: ${e.message}"))
                 e.printStackTrace()
                 future.complete(null)
             }
@@ -115,7 +115,7 @@ class MapManager(private val plugin: Mistaken) {
         // La descarga SIEMPRE debe ocurrir en el hilo principal
         plugin.server.globalRegionScheduler.execute(plugin) {
             Bukkit.unloadWorld(world, false)
-            plugin.componentLogger.info(plugin.mm.deserialize("<gray>Mundo ${world.name} descargado.</gray>"))
+            plugin.componentLogger.info(plugin.mm.deserialize("[INFO] [MapManager] World ${world.name} unloaded."))
         }
     }
 

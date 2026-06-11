@@ -8,15 +8,15 @@ object CooldownManager {
 
     // Map<PlayerUUID, Map<CooldownKey, Cooldown>>
     internal val cooldowns = ConcurrentHashMap<UUID, ConcurrentHashMap<String, Cooldown>>()
-    private var cleanerTask: CooldownCleanerTask? = null
+    private var scheduledTask: java.util.concurrent.ScheduledFuture<*>? = null
 
     fun init(plugin: JavaPlugin) {
-        cleanerTask = CooldownCleanerTask()
-        cleanerTask!!.runTaskTimerAsynchronously(plugin, 40L, 40L) // Runs every 2 seconds
+        val cleanerTask = CooldownCleanerTask()
+        scheduledTask = pumpking.lib.task.PumpkingTask.cacheExecutor.scheduleAtFixedRate(cleanerTask, 2, 2, java.util.concurrent.TimeUnit.SECONDS)
     }
 
     fun shutdown() {
-        cleanerTask?.cancel()
+        scheduledTask?.cancel(false)
         cooldowns.clear()
     }
 

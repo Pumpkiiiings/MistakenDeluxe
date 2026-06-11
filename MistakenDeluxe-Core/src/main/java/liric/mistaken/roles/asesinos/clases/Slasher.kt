@@ -37,7 +37,7 @@ import kotlin.math.sin
 
 class Slasher : CoreAsesino(
     "slasher",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.slasher.nombre", "<white><b>PUMPKIN WHITE</b>", "asesinos_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.slasher.nombre", "asesinos_info")
 ), Listener {
 
     private val pathBase = "asesinos.slasher"
@@ -88,7 +88,7 @@ class Slasher : CoreAsesino(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "asesinos_info")
         val configMecanica = plugin.configManager.getAsesinos()
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -268,4 +268,7 @@ class Slasher : CoreAsesino(
         temporaryEntities.clear()
     }
 }
+
+
+
 

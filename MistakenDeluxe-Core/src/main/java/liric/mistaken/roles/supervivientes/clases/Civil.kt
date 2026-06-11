@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class Civil : Superviviente(
     "civil",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.civil.nombre", "Civil", "supervivientes_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.civil.nombre", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.civil"
@@ -48,7 +48,7 @@ class Civil : Superviviente(
 
     override fun usarHabilidad(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSupervivientes()
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("$pathBase.items.habilidad1_cooldown", 30))) {
@@ -87,7 +87,7 @@ class Civil : Superviviente(
         inv.clear()
         if (itemCache.isEmpty()) preLoadKit()
 
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
@@ -147,4 +147,7 @@ class Civil : Superviviente(
         activeTasks.clear()
     }
 }
+
+
+
 

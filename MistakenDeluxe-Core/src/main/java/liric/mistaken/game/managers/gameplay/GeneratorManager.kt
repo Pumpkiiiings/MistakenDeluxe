@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.gameplay
+﻿package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -49,14 +49,14 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     }
 
     fun loadTemplates() {
-        val langConfig = plugin.messageConfig.getSpecificFile(null, "messages")
+        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(null, "messages")
 
         idleLines = langConfig.getStringList("generators.hologram.lines-idle").ifEmpty {
             listOf("<gold><bold>{name}", "<white>Progreso: <gray>{progress}%", "<yellow>¡Click para reparar!")
         }
 
         completedLines = langConfig.getStringList("generators.hologram.lines-completed").ifEmpty {
-            listOf("<green><bold>✔ ENERGÍA RESTAURADA ✔", "<gray>¡Buen trabajo!")
+            listOf("<green><bold>✔ ENERGÃA RESTAURADA ✔", "<gray>¡Buen trabajo!")
         }
 
         nameCache.clear()
@@ -64,7 +64,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
     private fun getFriendlyName(material: Material): String {
         return nameCache.getOrPut(material) {
-            val langConfig = plugin.messageConfig.getSpecificFile(null, "messages")
+            val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(null, "messages")
             langConfig.getString("generators.names.${material.name}")
                 ?: material.name.lowercase().replace("_", " ").split(" ")
                     .joinToString(" ") { it.replaceFirstChar { char -> char.uppercase() } }

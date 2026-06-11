@@ -1,11 +1,11 @@
-package pumpking.lib.color
+﻿package pumpking.lib.color
 
 import java.util.regex.Pattern
 
 object ColorNormalizer {
     private val HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})")
     private val BUKKIT_HEX_PATTERN = Pattern.compile("§x(§[A-Fa-f0-9]){6}")
-    
+
     // Map of legacy color codes to MiniMessage tags
     private val LEGACY_MAP = mapOf(
         '0' to "<black>", '1' to "<dark_blue>", '2' to "<dark_green>", '3' to "<dark_aqua>",

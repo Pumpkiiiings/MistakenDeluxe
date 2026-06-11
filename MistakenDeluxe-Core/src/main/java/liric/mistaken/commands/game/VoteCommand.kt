@@ -38,7 +38,7 @@ object VoteCommand {
 
                         val session = plugin.sessionManager.getSession(player)
                         if (session == null) {
-                            player.sendMessage(plugin.mm.deserialize("<red>No estÃ¡s en ninguna partida activa para votar."))
+                            player.sendMessage(plugin.mm.deserialize("<red>No estás en ninguna partida activa para votar."))
                             return@executes 0
                         }
 

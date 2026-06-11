@@ -1,0 +1,27 @@
+# Level Configuration
+settings:
+  max_level: 100
+
+curves:
+  # Example: 500 means Level 50 requires 25000 XP (500 * 50)
+  default-multiplier: 500
+
+ranks:
+  novice:
+    range: "1-10"
+    prefix: "<gray>[Novice]</gray>"
+  explorer:
+    range: "11-25"
+    prefix: "<green>[Explorer]</green>"
+  veteran:
+    range: "26-50"
+    prefix: "<blue>[Veteran]</blue>"
+  elite:
+    range: "51-75"
+    prefix: "<light_purple>[Elite]</light_purple>"
+  legend:
+    range: "76-99"
+    prefix: "<gold>[Legend]</gold>"
+  mythic:
+    range: "100"
+    prefix: "<dark_red><bold>[Mythic]</bold></dark_red>"

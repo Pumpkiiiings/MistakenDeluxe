@@ -19,7 +19,7 @@ class GameSession(
     val mapName: String = "Esperando..."
 ) : liric.mistaken.api.managers.ISession {
 
-    // --- JUGADORES AISLADOS DE ESTA SESIÃ“N ---
+    // --- JUGADORES AISLADOS DE ESTA SESIÓN ---
     val players = ConcurrentHashMap.newKeySet<UUID>()
 
     // --- ESTADO DEL JUEGO ---
@@ -42,7 +42,7 @@ class GameSession(
     val ambientManager = plugin.ambientManager
     val combatManager = plugin.combatManager
 
-    // --- CONTROLADORES DE LÃ“GICA (Instanciados POR SESIÃ“N) ---
+    // --- CONTROLADORES DE LÓGICA (Instanciados POR SESIÓN) ---
     val stateController = GameStateController(this)
     val playerController = GamePlayerController(this)
     val uiController = GameUIController(this)
@@ -51,10 +51,10 @@ class GameSession(
 
     init {
         loopTask.start()
-        plugin.componentLogger.info(plugin.mm.deserialize("<green>SesiÃ³n <yellow>$id</yellow> iniciada.</green>"))
+        plugin.componentLogger.info(plugin.mm.deserialize("[INFO] [Session] Session $id started."))
     }
 
-    // --- MÃ‰TODOS DE JUGADORES ---
+    // --- MÉTODOS DE JUGADORES ---
     fun addPlayer(player: Player) {
         players.add(player.uniqueId)
     }
@@ -69,11 +69,11 @@ class GameSession(
         return players.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
     }
 
-    // --- GETTERS ÃšTILES ---
+    // --- GETTERS ÚTILES ---
     fun getCurrentAsesino(): Player? = currentAsesinoUUID?.let { plugin.server.getPlayer(it) }
     override fun esAsesino(uuid: UUID): Boolean = asesinosUUIDs.contains(uuid)
 
-    // Solo envÃ­a mensajes a los jugadores DE ESTA SESIÃ“N
+    // Solo envía mensajes a los jugadores DE ESTA SESIÓN
     fun broadcastLocalized(path: String, vararg tags: net.kyori.adventure.text.minimessage.tag.resolver.TagResolver) {
         val message = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, path, *tags)
         getPlayers().forEach { p -> p.sendMessage(message) }
@@ -84,7 +84,7 @@ class GameSession(
         getPlayers().forEach { plugin.sessionManager.leaveSession(it) }
         players.clear()
         changedBlocks.clear()
-        plugin.componentLogger.info(plugin.mm.deserialize("<red>SesiÃ³n <yellow>$id</yellow> destruida.</red>"))
+        plugin.componentLogger.info(plugin.mm.deserialize("[INFO] [Session] Session $id destroyed."))
     }
 }
 

@@ -13,8 +13,8 @@ import org.bukkit.event.player.PlayerQuitEvent
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * PlayerListener: GestiÃ³n de ciclo de vida adaptada a Sesiones (Multiarena / Pre-Lobbys).
- * FIX: Chat silencioso para inmersiÃ³n total en Network/Multiarena.
+ * PlayerListener: Gestión de ciclo de vida adaptada a Sesiones (Multiarena / Pre-Lobbys).
+ * FIX: Chat silencioso para inmersión total en Network/Multiarena.
  */
 class PlayerListener(private val plugin: Mistaken) : Listener {
 
@@ -23,10 +23,10 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val uuid = player.uniqueId
 
-        // ðŸ”¥ Ocultamos el mensaje por defecto de Minecraft para no romper la inmersiÃ³n del lobby aislado
+        // 🔥 Ocultamos el mensaje por defecto de Minecraft para no romper la inmersión del lobby aislado
         event.joinMessage(null)
 
-        // 1. SINCRONIZACIÃ“N INICIAL
+        // 1. SINCRONIZACIÓN INICIAL
         plugin.musicManager.syncPlayer(player)
 
         // 2. CARGA DE DATOS ASÃNCRONA
@@ -41,18 +41,18 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
             }
         }
 
-        // 3. LÃ“GICA DE RED (Network Lobby vs Game Server vs Multiarena)
+        // 3. LÓGICA DE RED (Network Lobby vs Game Server vs Multiarena)
         val serverMode = plugin.serverMode
 
         if (serverMode == "NETWORK_LOBBY") {
-            // ðŸ”¥ LOBBY PRINCIPAL: Nadie juega, solo compran en la tienda.
+            // 🔥 LOBBY PRINCIPAL: Nadie juega, solo compran en la tienda.
             resetPlayerStatus(player)
             plugin.lobbyLocation?.let { player.teleportAsync(it) }
             return
         }
 
         if (serverMode == "GAME_SERVER") {
-            // ðŸ”¥ PRE-LOBBY DE CRISTAL: Buscamos una sesiÃ³n esperando o creamos una nueva
+            // 🔥 PRE-LOBBY DE CRISTAL: Buscamos una sesión esperando o creamos una nueva
             val maxPlayers = plugin.config.getInt("settings.max-players-per-arena", 10)
 
             var targetSession = plugin.sessionManager.activeSessions.values.firstOrNull {
@@ -65,15 +65,15 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
 
             plugin.sessionManager.joinSession(player, targetSession.id)
 
-            // Los mandamos fÃ­sicamente al Pre-Lobby de cristal (lobbyLocation)
+            // Los mandamos físicamente al Pre-Lobby de cristal (lobbyLocation)
             plugin.lobbyLocation?.let { preLobby ->
                 player.teleportAsync(preLobby).thenAccept {
-                    // ðŸ”¥ LA MAGIA: Oculta a los de otras sesiones que estÃ©n en la misma caja de cristal
+                    // 🔥 LA MAGIA: Oculta a los de otras sesiones que estén en la misma caja de cristal
                     plugin.isolationManager.updateVisibility(player)
                 }
             }
 
-            // Checamos si la sesiÃ³n ya puede empezar el contador (Ej: Llegaron a 4 jugadores)
+            // Checamos si la sesión ya puede empezar el contador (Ej: Llegaron a 4 jugadores)
             val minPlayers = plugin.config.getInt("settings.min-players", 4)
             if (targetSession.getPlayers().size >= minPlayers && targetSession.currentState == GameState.LOBBY) {
                 targetSession.stateController.startBreakProcess()
@@ -81,7 +81,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // MULTIARENA (Todos entran al lobby general hasta que entren por comandos a una sesiÃ³n)
+        // MULTIARENA (Todos entran al lobby general hasta que entren por comandos a una sesión)
         resetPlayerStatus(player)
         plugin.isolationManager.updateVisibility(player)
 
@@ -97,7 +97,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     fun onPlayerQuit(event: PlayerQuitEvent) {
-        // ðŸ”¥ Ocultamos el mensaje por defecto de Minecraft al salir
+        // 🔥 Ocultamos el mensaje por defecto de Minecraft al salir
         event.quitMessage(null)
 
         plugin.sessionManager.leaveSession(event.player)

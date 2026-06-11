@@ -39,7 +39,7 @@ import java.util.function.Consumer
  */
 class Troll : Superviviente(
     "troll",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.troll.nombre", "<green><b>EL TROLL</b></green>", "supervivientes_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.troll.nombre", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.troll"
@@ -47,7 +47,7 @@ class Troll : Superviviente(
 
     override fun usarHabilidad(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSupervivientes()
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("$pathBase.items.habilidad1_cooldown", 30))) {
@@ -77,7 +77,7 @@ class Troll : Superviviente(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
         val configMecanica = plugin.configManager.getSupervivientes()
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -292,4 +292,7 @@ class Troll : Superviviente(
         }, null, 1L, 1L)
     }
 }
+
+
+
 

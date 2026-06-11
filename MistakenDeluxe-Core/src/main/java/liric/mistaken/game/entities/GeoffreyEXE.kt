@@ -88,7 +88,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
 
                 iniciarIANativa()
             } catch (e: Exception) {
-                plugin.componentLogger.error(plugin.mm.deserialize("<red>Fallo al invocar al ente oscuro: ${e.message}</red>"))
+                plugin.componentLogger.error(plugin.mm.deserialize("[ERROR] [Entity] Failed to invoke dark entity: ${e.message}"))
             }
         }
     }

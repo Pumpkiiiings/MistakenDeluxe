@@ -1,4 +1,4 @@
-﻿package pumpking.lib.service
+package pumpking.lib.service
 
 import org.bukkit.plugin.java.JavaPlugin
 import pumpking.lib.animation.AnimationEngine
@@ -20,11 +20,13 @@ object PumpkingServiceManager {
         animation.init()
 
         // Register Command
-        val cmd = plugin.getCommand("pumpking")
-        if (cmd != null) {
-            val executor = PumpkingCommand()
-            cmd.setExecutor(executor)
-            cmd.setTabCompleter(executor)
+        try {
+            val manager = plugin.lifecycleManager
+            manager.registerEventHandler(io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents.COMMANDS) { event: io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent<io.papermc.paper.command.brigadier.Commands> ->
+                event.registrar().register("pumpking", "Pumpking Framework Commands", listOf("pk"), PumpkingCommand())
+            }
+        } catch (e: Exception) {
+            pumpking.lib.core.PumpkingLib.logError(pumpking.lib.core.PumpkingLib.LogCategory.CORE, "Failed to register pumpking command via lifecycle")
         }
     }
 

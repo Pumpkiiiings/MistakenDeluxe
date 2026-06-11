@@ -32,7 +32,7 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
     private val activeMenus = ConcurrentHashMap<Location, Inventory>()
     private val colaboradores = ConcurrentHashMap<Location, MutableSet<UUID>>()
 
-    private val menuTitle by lazy { Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.gui_title") }
+    private val menuTitle by lazy { pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.gui_title") }
     private val killerError = mm.deserialize("<red>¡Eres el asesino! No puedes reparar generadores.")
 
     class GeneratorHolder(val loc: Location) : InventoryHolder {
@@ -167,7 +167,7 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
             val color = if (progress < 40) "<red>" else if (progress < 80) "<yellow>" else "<green>"
             meta.lore(listOf(
                 Component.empty(),
-                Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.progress_lore", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("color", color), net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("progress", progress.toString())),
+                pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.progress_lore", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("color", color), net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("progress", progress.toString())),
                 mm.deserialize("<gray>Ayuda a tus compañeros!"),
                 Component.empty()
             ))
@@ -183,19 +183,16 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
                 meta.displayName(mm.deserialize("$color<bold>¡CLIC RÁPIDO!"))
                 meta.lore(listOf(
                     Component.empty(),
-                    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.progress_loss_lore"),
+                    pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.progress_loss_lore"),
                     mm.deserialize("<gray>¿De verdad quieres ayudar?"),
                     Component.empty()
                 ))
             } else {
-                meta.displayName(Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.not_this_one"))
+                meta.displayName(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.not_this_one"))
             }
         }
         return item
     }
 }
-
-
-
 
 

@@ -1,4 +1,4 @@
-﻿package liric.mistaken
+package liric.mistaken
 
 import com.github.retrooper.packetevents.PacketEvents
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
@@ -114,6 +114,9 @@ class Mistaken : JavaPlugin() {
     override fun onEnable() {
         val start = System.currentTimeMillis()
         instance = this
+        
+        // Fix for Triumph-GUI classloader crash in Paper
+        dev.triumphteam.gui.TriumphGui.init(this)
 
         PacketEvents.getAPI().init()
         assassinKey = NamespacedKey(this, "selected_assassin")
@@ -125,25 +128,25 @@ class Mistaken : JavaPlugin() {
         // Initialize PumpkingLib internal framework
         pumpking.lib.core.PumpkingLib.init(this)
 
-        // ðŸ”¥ FIX 1: Registramos los comandos PRIMERO.
-        // Si la base de datos o el lobby fallan, al menos tendrÃ¡s comandos para arreglarlo.
+        // 🔥 FIX 1: Registramos los comandos PRIMERO.
+        // Si la base de datos o el lobby fallan, al menos tendrás comandos para arreglarlo.
         CommandRegistry(this).registerAll()
 
         serverMode = config.getString("server-mode", "GAME_SERVER")?.uppercase() ?: "GAME_SERVER"
-        componentLogger.info(mm.deserialize("<yellow>[Red] Modo del servidor configurado como: <bold>$serverMode</bold></yellow>"))
+        componentLogger.info(mm.deserialize("[INFO] Server mode set to: $serverMode"))
 
         loadLobbyLocation()
         if (serverMode == "MULTIARENA" || serverMode == "NETWORK_LOBBY") {
             if (lobbyLocation != null) {
                 lobbyLocation?.world?.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
             } else {
-                componentLogger.warn(mm.deserialize("<red>[!] Falta establecer el lobby (/setlobby).</red>"))
+                componentLogger.warn(mm.deserialize("[WARN] Lobby is not set (/setlobby)."))
             }
         } else if (serverMode == "GAME_SERVER" && lobbyLocation == null) {
-            componentLogger.warn(mm.deserialize("<red>[!] GAME_SERVER requiere /setlobby para crear el Pre-Lobby de cristal.</red>"))
+            componentLogger.warn(mm.deserialize("[WARN] GAME_SERVER requires /setlobby to create the glass Pre-Lobby."))
         }
 
-        // ðŸ”¥ FIX 2: Si falla la conexiÃ³n de DB o Vault, no apagamos el plugin entero.
+        // 🔥 FIX 2: Si falla la conexión de DB o Vault, no apagamos el plugin entero.
         // Solo lanzamos el warning, para que puedas usar comandos de admin.
         setupIntegrations()
         setupDatabase()
@@ -151,7 +154,7 @@ class Mistaken : JavaPlugin() {
         statsManager = StatsManager(this)
         playerDataManager = PlayerDataManager(this)
 
-        // ðŸ”¥ FIX 3: Inicializamos la API ANTES de cargar los managers y asesinos
+        // 🔥 FIX 3: Inicializamos la API ANTES de cargar los managers y asesinos
         val apiImpl = liric.mistaken.api.MistakenAPIImpl(this)
         liric.mistaken.api.MistakenProvider.register(apiImpl)
 
@@ -202,7 +205,7 @@ class Mistaken : JavaPlugin() {
         sendLogo()
 
         val time = System.currentTimeMillis() - start
-        componentLogger.info(mm.deserialize("<gradient:green:aqua>Mistaken v${pluginMeta.version} habilitado en ${time}ms ($serverMode)</gradient>"))
+        componentLogger.info(mm.deserialize("[SUCCESS] Mistaken v${pluginMeta.version} enabled in ${time}ms ($serverMode)"))
     }
 
     override fun onDisable() {
@@ -221,19 +224,19 @@ class Mistaken : JavaPlugin() {
 
         PacketEvents.getAPI().terminate()
 
-        componentLogger.info(mm.deserialize("<newline><red>â•‘ <bold>MISTAKEN</bold> ha sido desactivado con Ã©xito.</red><newline>"))
+        componentLogger.info(mm.deserialize("[INFO] MISTAKEN has been successfully disabled."))
     }
 
     private fun setupDatabase(): Boolean {
         return try {
             val dbFile = File(dataFolder, "database.yml")
             if (!dbFile.exists()) saveResource("database.yml", false)
-            
+
             databaseManager = liric.mistaken.data.db.DatabaseFactory.create(this)
             databaseManager.setup()
             true
         } catch (e: Exception) {
-            componentLogger.error(mm.deserialize("<red>No se pudo conectar a la base de datos. Los datos no se guardarÃ¡n.</red>"))
+            componentLogger.error(mm.deserialize("[ERROR] Could not connect to the database. Data will not be saved."))
             false
         }
     }
@@ -242,13 +245,13 @@ class Mistaken : JavaPlugin() {
         val rsp: RegisteredServiceProvider<Economy>? = server.servicesManager.getRegistration(Economy::class.java)
 
         if (rsp == null) {
-            componentLogger.error(mm.deserialize("<red><b>[!]</b> Vault no encontrÃ³ ningÃºn plugin de economÃ­a compatible.</red>"))
+            componentLogger.error(mm.deserialize("[ERROR] Vault found no compatible economy plugin."))
             return false
         }
         economy = rsp.provider
 
         craftEngineEnabled = server.pluginManager.isPluginEnabled("CraftEngine")
-        if (craftEngineEnabled) componentLogger.info(mm.deserialize("<aqua>âœ” CraftEngine detectado y vinculado.</aqua>"))
+        if (craftEngineEnabled) componentLogger.info(mm.deserialize("[SUCCESS] CraftEngine detected and hooked."))
 
         return true
     }
@@ -326,7 +329,7 @@ class Mistaken : JavaPlugin() {
         val langFolder = File(dataFolder, "langs")
         if (!langFolder.exists()) langFolder.mkdirs()
 
-        // Carpeta global de layouts de menÃºs (un YAML por menÃº, sin duplicar por idioma)
+        // Carpeta global de layouts de menús (un YAML por menú, sin duplicar por idioma)
         val menusFolder = File(dataFolder, "menus")
         if (!menusFolder.exists()) menusFolder.mkdirs()
 
@@ -357,19 +360,18 @@ class Mistaken : JavaPlugin() {
 
         componentLogger.info(mm.deserialize("""
             <newline>
-             $b1<bold> </bold>$b1
-             $b1<bold>â–ˆâ–ˆâ–ˆâ•—   â–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ•—  â–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ•—   â–ˆâ–ˆâ•—</bold>$b1
-             $b1<bold>â–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•”â•â•â•â•â•â•šâ•â•â–ˆâ–ˆâ•”â•â•â•â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘ â–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•”â•â•â•â•â•â–ˆâ–ˆâ–ˆâ–ˆâ•—  â–ˆâ–ˆâ•‘</bold>$b1
-             $b2<bold>â–ˆâ–ˆâ•”â–ˆâ–ˆâ–ˆâ–ˆâ•”â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—   â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•”â• â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—  â–ˆâ–ˆâ•”â–ˆâ–ˆâ•— â–ˆâ–ˆâ•‘</bold>$b2
-             $b3<bold>â–ˆâ–ˆâ•‘â•šâ–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â•šâ•â•â•â•â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•— â–ˆâ–ˆâ•”â•â•â•  â–ˆâ–ˆâ•‘â•šâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘</bold>$b3
-             $b4<bold>â–ˆâ–ˆâ•‘ â•šâ•â• â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘  â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘  â–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘ â•šâ–ˆâ–ˆâ–ˆâ–ˆâ•‘</bold>$b4
-             $b5<bold>â•šâ•â•     â•šâ•â•â•šâ•â•â•šâ•â•â•â•â•â•â•   â•šâ•â•   â•šâ•â•  â•šâ•â•â•šâ•â•  â•šâ•â•â•šâ•â•â•â•â•â•â•â•šâ•â•  â•šâ•â•â•â•</bold>$b5
+             $b1<bold>███╗   ███╗██╗███████╗████████╗ █████╗ ██╗  ██╗███████╗███╗   ██╗</bold>$b1
+             $b1<bold>████╗ ████║██║██╔════╝╚══██╔══╝██╔══██╗██║ ██╔╝██╔════╝████╗  ██║</bold>$b1
+             $b2<bold>██╔████╔██║██║███████╗   ██║   ███████║█████╔╝ █████╗  ██╔██╗ ██║</bold>$b2
+             $b3<bold>██║╚██╔╝██║██║╚════██║   ██║   ██╔══██║██╔═██╗ ██╔══╝  ██║╚██╗██║</bold>$b3
+             $b4<bold>██║ ╚═╝ ██║██║███████║   ██║   ██║  ██║██║  ██╗███████╗██║ ╚████║</bold>$b4
+             $b5<bold>╚═╝     ╚═╝╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝</bold>$b5
              $b4<bold>               ___  ____ _    _  _ _  _ ____ </bold>$b4
              $b5<bold>               |  \ |___ |    |  |  \/  |___ </bold>$b5
              $b5<bold>               |__/ |___ |___ |__| _/\_ |___ </bold>$b5
             <newline>
                <white>Autor:</white> $info Pumpkingz$info
-               <white>Modo Red:</white> <green>â— $serverMode</green>
+               <white>Modo Red:</white> <green>● $serverMode</green>
             <newline>
         """.trimIndent()))
     }

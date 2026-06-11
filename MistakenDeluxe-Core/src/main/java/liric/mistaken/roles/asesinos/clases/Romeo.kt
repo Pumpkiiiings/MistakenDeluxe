@@ -39,7 +39,7 @@ import kotlin.math.sin
  */
 class Romeo : CoreAsesino(
     "romeo",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.romeo.nombre", "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient>", "asesinos_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.romeo.nombre", "asesinos_info")
 ), Listener { // ðŸ”¥ Agregado Listener para los Finishers
 
     private val pathBase = "asesinos.romeo"
@@ -304,7 +304,7 @@ class Romeo : CoreAsesino(
         inv.armorContents = arrayOfNulls(4)
 
         val configMecanica = plugin.configManager.getAsesinos()
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "asesinos_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val id = if (isArmor) configMecanica.getString("$pathBase.armadura.$key")
@@ -397,4 +397,7 @@ class Romeo : CoreAsesino(
         }
     }
 }
+
+
+
 

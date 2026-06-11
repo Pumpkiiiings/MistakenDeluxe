@@ -1,4 +1,4 @@
-package pumpking.lib.config.sync
+﻿package pumpking.lib.config.sync
 
 import pumpking.lib.config.ConfigProvider
 import pumpking.lib.core.PumpkingLib
@@ -22,34 +22,34 @@ object ConfigVersionManager {
         if (currentVersion >= targetVersion) return false
 
         val fileMigrations = migrations[fileName] ?: return false
-        
+
         var version = currentVersion
         var wasMigrated = false
-        
+
         // Sort migrations by fromVersion just in case
         val sortedMigrations = fileMigrations.sortedBy { it.fromVersion }
 
         for (migration in sortedMigrations) {
             if (migration.fromVersion == version && migration.toVersion <= targetVersion) {
                 PumpkingLib.log(PumpkingLib.LogCategory.CONFIG, "Migrating config $fileName version ${migration.fromVersion} -> ${migration.toVersion}")
-                
+
                 val actionContext = ConfigMigrationAction(config)
                 migration.action.invoke(actionContext)
-                
+
                 config.set("config-version", migration.toVersion)
                 version = migration.toVersion
                 wasMigrated = true
-                
+
                 PumpkingLib.log(PumpkingLib.LogCategory.CONFIG, "Migration to version $version completed.")
             }
         }
-        
+
         return wasMigrated
     }
 }
 
 class ConfigMigrationAction(private val config: ConfigProvider) {
-    
+
     fun renamePath(oldPath: String, newPath: String) {
         if (config.contains(oldPath)) {
             val value = config.get(oldPath)

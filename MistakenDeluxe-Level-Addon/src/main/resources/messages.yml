@@ -1,0 +1,9 @@
+prefix: "<gradient:#8e2de2:#4a00e0>[Level]</gradient> "
+
+messages:
+  level-up: "<prefix><green>Congratulations! You reached Level <gold>%level%</gold>!"
+  xp-gain: "<prefix><green>+ %amount% XP"
+  no-permission: "<red>You do not have permission to do this."
+  player-not-found: "<red>Player not found."
+  admin-set-level: "<prefix><green>Set <yellow>%player%</yellow>'s level to <gold>%level%</gold>."
+  admin-add-xp: "<prefix><green>Added <gold>%amount% XP</gold> to <yellow>%player%</yellow>."

@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class RaincoatKid : Superviviente(
     "raincoatkid",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.raincoatkid.nombre", "Raincoat Kid", "supervivientes_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.raincoatkid.nombre", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.raincoatkid"
@@ -31,7 +31,7 @@ class RaincoatKid : Superviviente(
 
     override fun usarHabilidad(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSupervivientes()
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("$pathBase.items.habilidad1_cooldown", 25))) {
@@ -62,7 +62,7 @@ class RaincoatKid : Superviviente(
 
         player.getAttribute(Attribute.SCALE)?.baseValue = 0.8
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
         val configMecanica = plugin.configManager.getSupervivientes() // El global supervivientes.yml
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -156,4 +156,7 @@ class RaincoatKid : Superviviente(
         activeTasks.clear()
     }
 }
+
+
+
 

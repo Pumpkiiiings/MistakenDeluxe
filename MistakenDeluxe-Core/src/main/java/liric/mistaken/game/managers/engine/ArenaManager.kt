@@ -64,7 +64,7 @@ class ArenaManager(private val plugin: Mistaken) {
             // Reemplazo atómico para no causar tirones
             arenas.clear()
             arenas.putAll(tempArenas)
-            plugin.componentLogger.info(mm.deserialize("<green>[Arenas] ${arenas.size} plantillas cargadas en memoria segura.</green>"))
+            plugin.componentLogger.info(mm.deserialize("[SUCCESS] [Arenas] ${arenas.size} templates loaded into secure memory."))
         }
     }
 
@@ -180,7 +180,7 @@ class ArenaManager(private val plugin: Mistaken) {
                     configProvider.save()
                 }
             } catch (e: Exception) {
-                plugin.componentLogger.error(mm.deserialize("<red>No se pudo guardar arenas.yml: ${e.message}</red>"))
+                plugin.componentLogger.error(mm.deserialize("[ERROR] [Arenas] Failed to save arenas.yml: ${e.message}"))
             }
         }
     }

@@ -93,7 +93,7 @@ class WitherStorm(private val plugin: Mistaken) {
                 iniciarIA()
 
             } catch (e: Exception) {
-                plugin.componentLogger.error("Error spawneando Wither Storm: ${e.message}")
+                plugin.componentLogger.error("[ERROR] [Entity] Error spawning Wither Storm: ${e.message}")
             }
         }
     }

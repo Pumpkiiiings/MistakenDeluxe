@@ -1,9 +1,6 @@
 package pumpking.lib.cooldown
 
-import org.bukkit.scheduler.BukkitRunnable
-import pumpking.lib.core.PumpkingLib
-
-class CooldownCleanerTask : BukkitRunnable() {
+class CooldownCleanerTask : Runnable {
     override fun run() {
         val now = System.currentTimeMillis()
         var cleaned = 0

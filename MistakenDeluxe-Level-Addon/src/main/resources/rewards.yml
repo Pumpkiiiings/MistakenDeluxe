@@ -1,0 +1,28 @@
+# Define rewards for each level
+# You don't have to define every level, only those with rewards
+rewards:
+  10:
+    reward_name: "10,000 Coins"
+    commands:
+      - "eco give %player% 10000"
+    message: "<gold>You reached Level 10 and received 10,000 Coins!"
+  25:
+    reward_name: "Diamond Crate Key"
+    commands:
+      - "give %player% diamond 5"
+    message: "<aqua>You reached Level 25 and received Diamonds!"
+  50:
+    reward_name: "Elite Title & 10k Coins"
+    commands:
+      - "eco give %player% 10000"
+    message: "<light_purple>You reached Level 50 and unlocked the Elite Title!"
+  75:
+    reward_name: "Netherite Ingot"
+    commands:
+      - "give %player% netherite_ingot 1"
+    message: "<dark_gray>You reached Level 75 and received Netherite!"
+  100:
+    reward_name: "Mythic Rank & Ultimate Box"
+    commands:
+      - "give %player% nether_star 1"
+    message: "<dark_red><bold>CONGRATULATIONS! You reached Level 100!"

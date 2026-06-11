@@ -6,14 +6,33 @@ import java.io.File
 import java.io.IOException
 
 class YamlConfigProvider(override val file: File) : ConfigProvider {
-    private var config: FileConfiguration = YamlConfiguration.loadConfiguration(file)
+    private var config: FileConfiguration = YamlConfiguration()
+
+    private fun loadUtf8(file: File): FileConfiguration {
+        val yml = YamlConfiguration()
+        if (file.exists()) {
+            java.io.InputStreamReader(java.io.FileInputStream(file), Charsets.UTF_8).use { reader ->
+                yml.load(reader)
+            }
+        }
+        return yml
+    }
 
     override fun load() {
         if (!file.exists()) {
             file.parentFile.mkdirs()
             file.createNewFile()
         }
-        config = YamlConfiguration.loadConfiguration(file)
+        try {
+            config = loadUtf8(file)
+        } catch (e: Exception) {
+            pumpking.lib.core.PumpkingLib.logError(
+                pumpking.lib.core.PumpkingLib.LogCategory.CORE, 
+                "Failed to load YAML file: ${file.name}. The file is corrupted. Renaming to .broken so it can be regenerated next boot. Error: ${e.message}"
+            )
+            file.renameTo(java.io.File(file.parentFile, file.name + ".broken"))
+            config = YamlConfiguration() // fallback to empty
+        }
     }
 
     override fun save() {

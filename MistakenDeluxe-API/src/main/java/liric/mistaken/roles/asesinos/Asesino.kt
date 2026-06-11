@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Asesino: Clase base polimórfica ultra-optimizada.
+ * Asesino: Clase base polimÃƒ³rfica ultra-optimizada.
  * FIX: Adaptada a MULTIARENA y Schedulers Nativos de Paper (Folia-Ready).
  */
 abstract class Asesino(val id: String, val nombre: String) {
@@ -21,21 +21,21 @@ abstract class Asesino(val id: String, val nombre: String) {
     // Cooldowns: UUID_Slot -> Timestamp (ms)
     private val cooldowns = ConcurrentHashMap<String, Long>()
 
-    // Rastreros de tareas nativas de Paper para limpieza automática
+    // Rastreros de tareas nativas de Paper para limpieza automÃƒ¡tica
     protected val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
 
     /**
-     * Verifica el cooldown buscando el tiempo en la raíz y el nombre en el idioma del jugador.
+     * Verifica el cooldown buscando el tiempo en la raÃƒ­z y el nombre en el idioma del jugador.
      */
     fun checkCooldown(player: Player, slot: Int): Boolean {
-        // 1. Obtenemos el tiempo del archivo raíz (Lógica global)
+        // 1. Obtenemos el tiempo del archivo raÃƒ­z (LÃƒ³gica global)
         val globalConfig = api.configManager.getAsesinos()
         val cooldownSecs = globalConfig.getInt("asesinos.$id.items.habilidad${slot}_cooldown", 0)
 
         if (cooldownSecs <= 0) return false
 
         // 2. Obtenemos el nombre traducido para el feedback visual
-        val langConfig = api.messageConfig.getSpecificFile(player, "asesinos")
+        val langConfig = api.messages.getSpecificFile(player, "asesinos")
         val nombreHab = langConfig.getString("asesinos.$id.items.habilidad${slot}_nombre") ?: "Skill $slot"
 
         val key = "${player.uniqueId}_$slot"
@@ -46,7 +46,7 @@ abstract class Asesino(val id: String, val nombre: String) {
             val remaining = (expireTime - now) / 1000.0
 
             // Mensaje de error traducido desde es/messages.yml o en/messages.yml
-            val msg = api.messageConfig.getMessage(player, "errors.ability-cooldown",
+            val msg = api.messages.getComponent(player, "errors.ability-cooldown",
                 Placeholder.parsed("skill", nombreHab),
                 Placeholder.parsed("time", "%.1f".format(remaining))
             )
@@ -69,7 +69,7 @@ abstract class Asesino(val id: String, val nombre: String) {
     }
 
     /**
-     * Reproduce el sonido de la habilidad desde el archivo raíz.
+     * Reproduce el sonido de la habilidad desde el archivo raÃƒ­z.
      */
     fun reproducirEfectosHabilidad(player: Player, slot: Int) {
         val config = api.configManager.getAsesinos()
@@ -103,7 +103,7 @@ abstract class Asesino(val id: String, val nombre: String) {
                 // Limpieza de pociones segura
                 p.activePotionEffects.toList().forEach { p.removePotionEffect(it.type) }
 
-                // Reset de estados físicos
+                // Reset de estados fÃƒ­sicos
                 p.isSwimming = false
                 p.isGliding = false
                 p.isGlowing = false
@@ -111,7 +111,7 @@ abstract class Asesino(val id: String, val nombre: String) {
                 // Aseguramos que vuelva al slot principal
                 p.inventory.heldItemSlot = 0
 
-                // 💡 FIX ESPECTADOR: Solo apagar vuelo si no es espectador
+                // Ã°Å¸â€™¡ FIX ESPECTADOR: Solo apagar vuelo si no es espectador
                 if (p.gameMode != org.bukkit.GameMode.SPECTATOR) {
                     p.allowFlight = false
                     p.isFlying = false
@@ -121,12 +121,7 @@ abstract class Asesino(val id: String, val nombre: String) {
 
                 val prefix = p.uniqueId.toString()
                 cooldowns.keys.removeIf { it.startsWith(prefix) }
-                // Use a standard persistent data key, maybe we should add it to API as well.
-                // Assuming "mistaken:assassin" or something similar
-                // For now, let's keep the core plugin's namespace if possible or an API constant
-                // p.persistentDataContainer.remove(api.plugin.assassinKey) 
-                // We'll leave the key removal out or require it to be passed.
-                // Actually, the key is NamespacedKey(plugin, "assassin_id")
+
                 p.persistentDataContainer.remove(org.bukkit.NamespacedKey(api.plugin, "assassin_id"))
                 p.updateInventory()
             }
@@ -158,8 +153,8 @@ abstract class Asesino(val id: String, val nombre: String) {
     }
 
     /**
-     * 🔥 Verifica de forma segura y central si una habilidad le debe hacer daño a este jugador.
-     * MULTIARENA FIX: Toma en cuenta el Fuego Amigo leyendo la sesión específica de la víctima.
+     * Ã°Å¸â€¥ Verifica de forma segura y central si una habilidad le debe hacer daÃƒ±o a este jugador.
+     * MULTIARENA FIX: Toma en cuenta el Fuego Amigo leyendo la sesiÃƒ³n especÃƒ­fica de la vÃƒ­ctima.
      */
     protected fun esObjetivoValido(atacante: Player, victima: Player): Boolean {
         // 1. Inmortales o Espectadores ignorados
@@ -167,18 +162,17 @@ abstract class Asesino(val id: String, val nombre: String) {
         if (api.isIgnored(victima)) return false
         if (victima.isInvisible) return false
 
-        // 2. No se puede pegar a sí mismo con un área
+        // 2. No se puede pegar a sÃƒ­ mismo con un Ãƒ¡rea
         if (atacante.uniqueId == victima.uniqueId) return false
 
-        // 3. Revisión de Fuego Amigo basada en la sesión del jugador atacado
+        // 3. RevisiÃƒ³n de Fuego Amigo basada en la sesiÃƒ³n del jugador atacado
         val session = api.sessionManager.getSession(victima) ?: return false
 
-        // Si el atacante no está en la misma sesión, se deniega (Cruces entre arenas)
+        // Si el atacante no estÃƒ¡ en la misma sesiÃƒ³n, se deniega (Cruces entre arenas)
         if (api.sessionManager.getSession(atacante) != session) return false
 
         val atacanteEsAsesino = session.esAsesino(atacante.uniqueId)
         val victimaEsAsesino = session.esAsesino(victima.uniqueId)
-
 
 
         // Si es el modo normal y ambos son asesinos, no hay fuego amigo
@@ -186,13 +180,14 @@ abstract class Asesino(val id: String, val nombre: String) {
             return false
         }
 
-        // En cualquier otro caso (Asesino vs Superviviente) es válido
+        // En cualquier otro caso (Asesino vs Superviviente) es vÃƒ¡lido
         return true
     }
 
-    // --- MÉTODOS ABSTRACTOS ---
+    // --- MÃƒâ€°TODOS ABSTRACTOS ---
     abstract fun equipar(player: Player)
     abstract fun usarHabilidad(player: Player, slot: Int)
     abstract fun mostrarTrail(player: Player)
     open fun mostrarTrailFisico(player: Player) {}
 }
+

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.menu.menus
+package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -21,7 +21,6 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
     }
 
     override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
         val globalMecanicas = plugin.configManager.getAsesinos()
 
         val preferredSlots = config.getIntegerList("ajustes.slots-disponibles").toMutableList()
@@ -60,9 +59,9 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
 
             if (targetSlot == -1) continue // Si no hay espacio en el inventario, lo salta
 
-            val nombreVisual = langInfo.getString("asesinos.$killerId.nombre") ?: "<red>$killerId"
-            val descripcion = langInfo.getStringList("asesinos.$killerId.descripcion")
-            val loreTienda = langInfo.getStringList("asesinos.$killerId.lore_tienda")
+            val nombreVisual = pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.$killerId.nombre", "asesinos_info")
+            val descripcion = pumpking.lib.service.PumpkingServiceManager.messages.getStrictStringList(player, "asesinos.$killerId.descripcion", "asesinos_info")
+            val loreTienda = pumpking.lib.service.PumpkingServiceManager.messages.getStrictStringList(player, "asesinos.$killerId.lore_tienda", "asesinos_info")
 
             val precio = globalMecanicas.getInt("asesinos.$killerId.precio", 0)
             val matStr = globalMecanicas.getString("asesinos.$killerId.icono_material", "STONE")!!
@@ -70,17 +69,17 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
 
             val fullLore = mutableListOf<Component>()
 
-            descripcion.forEach { fullLore.add(mm.deserialize(it)) }
+            descripcion.forEach { fullLore.add(parseSafe(it)) }
             fullLore.add(Component.empty())
 
-            loreTienda.forEach { fullLore.add(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda_errores.lore_tienda_format", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("line", it))) }
+            loreTienda.forEach { fullLore.add(parseSafe(it)) }
             fullLore.add(Component.empty())
 
             fullLore.add(labelHabilidades)
             for (i in 1..4) {
-                val habName = langInfo.getString("asesinos.$killerId.habilidades_nombres.habilidad$i")
-                if (habName != null) {
-                    fullLore.add(mm.deserialize(" <dark_gray>•</dark_gray> <white>$habName</white>"))
+                val habName = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "asesinos.$killerId.habilidades_nombres.habilidad$i", "", "asesinos_info")
+                if (habName.isNotEmpty()) {
+                    fullLore.add(parseSafe(" <dark_gray>•</dark_gray> <white>$habName</white>"))
                 }
             }
             fullLore.add(Component.empty())
@@ -98,7 +97,7 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
             }
 
             gui.setItem(targetSlot, ItemBuilder.from(iconoMat)
-                .name(mm.deserialize(nombreVisual))
+                .name(parseSafe(nombreVisual))
                 .lore(fullLore.toList())
                 .flags(*ItemFlag.entries.toTypedArray())
                 .asGuiItem { event ->
@@ -107,6 +106,17 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
                 }
             )
         }
+        
+        val botonAtrasSlot = config.getInt("ajustes.boton-atras.slot", 49)
+        val botonAtrasMat = config.getString("ajustes.boton-atras.material", "ARROW")!!
+        val botonAtrasNombre = config.getString("ajustes.boton-atras.nombre", "<red>Volver")!!
+        val matAtras = Material.matchMaterial(botonAtrasMat.uppercase()) ?: Material.ARROW
+        gui.setItem(botonAtrasSlot, ItemBuilder.from(matAtras)
+            .name(parseSafe(botonAtrasNombre))
+            .asGuiItem { event ->
+                event.isCancelled = true
+                ShopSelector().abrir(player)
+            })
     }
 
     private fun handlePurchaseLogic(player: Player, killerId: String, precio: Int, tiene: Boolean) {
@@ -132,8 +142,8 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
         val econ = Mistaken.Companion.economy
 
         if (econ == null) {
-            player.sendMessage(mm.deserialize("<red><b>[!]</b> Error interno: El sistema de economía (Vault) no está conectado.</red>"))
-            plugin.componentLogger.error("Intento de compra fallido por Vault desconectado: Jugador ${player.name}, Asesino $killerId")
+            player.sendMessage(parseSafe("<red><b>[!]</b> Error interno: El sistema de economía (Vault) no está conectado.</red>"))
+            plugin.componentLogger.error("[ERROR] [Economy] Purchase failed due to disconnected Vault: Player ${player.name}, Assassin $killerId")
             return
         }
 

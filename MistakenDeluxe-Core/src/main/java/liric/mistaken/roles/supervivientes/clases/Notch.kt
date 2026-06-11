@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class Notch : Superviviente(
     "notch",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.notch.nombre", "Notch", "supervivientes_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.notch.nombre", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.notch"
@@ -72,7 +72,7 @@ class Notch : Superviviente(
 
     override fun usarHabilidad(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSupervivientes()
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("$pathBase.items.habilidad1_cooldown", 20))) {
@@ -100,7 +100,7 @@ class Notch : Superviviente(
         inv.clear()
         if (itemCache.isEmpty()) preLoadKit()
 
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
@@ -196,4 +196,7 @@ class Notch : Superviviente(
         activeTasks.clear()
     }
 }
+
+
+
 

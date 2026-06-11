@@ -1,4 +1,4 @@
-package pumpking.lib.config
+﻿package pumpking.lib.config
 
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
@@ -12,6 +12,6 @@ class ConfigReloadEvent(val fileName: String) : Event() {
         private val HANDLERS = HandlerList()
         @JvmStatic fun getHandlerList() = HANDLERS
     }
-    
+
     override fun getHandlers(): HandlerList = HANDLERS
 }

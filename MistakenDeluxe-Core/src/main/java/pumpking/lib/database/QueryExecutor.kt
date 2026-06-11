@@ -1,11 +1,11 @@
-﻿package pumpking.lib.database
+package pumpking.lib.database
 
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
 object QueryExecutor {
-    
+
     fun executeUpdate(provider: DatabaseProvider, query: String, vararg parameters: Any): Int {
         var connection: Connection? = null
         var ps: PreparedStatement? = null
@@ -22,7 +22,7 @@ object QueryExecutor {
         }
     }
 
-    fun <T> executeQuery(provider: DatabaseProvider, query: String, processor: (ResultSet) -> T, vararg parameters: Any): T? {
+    fun <T> executeQuery(provider: DatabaseProvider, query: String, processor: java.util.function.Function<ResultSet, T>, vararg parameters: Any): T? {
         var connection: Connection? = null
         var ps: PreparedStatement? = null
         var rs: ResultSet? = null
@@ -33,7 +33,7 @@ object QueryExecutor {
                 ps.setObject(i + 1, parameters[i])
             }
             rs = ps.executeQuery()
-            processor(rs)
+            processor.apply(rs)
         } finally {
             rs?.close()
             ps?.close()

@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.visual
+﻿package liric.mistaken.game.managers.visual
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -28,17 +28,17 @@ class ScoreboardManager(private val plugin: Mistaken) {
         val interval = if (PumpkingScoreboardManager.supportsAnimations()) 2L else 10L
         updateTask = plugin.server.scheduler.runTaskTimerAsynchronously(plugin, Runnable {
             for (player in plugin.server.onlinePlayers) {
-                val config = plugin.messageConfig.getSpecificFile(player, "messages")
+                val config = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "messages")
                 val title = config.getString("scoreboard.title") ?: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN"
                 val lines = buildLines(player)
-                
+
                 val template = ScoreboardTemplate(
                     id = player.name,
                     title = title,
                     lines = lines,
                     animatedTitle = false
                 )
-                
+
                 PumpkingScoreboardManager.registerTemplate(template)
             }
         }, 20L, interval)
@@ -46,7 +46,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
 
     private fun buildLines(player: Player): List<String> {
         val gm = plugin.sessionManager.getSession(player)
-        val config = plugin.messageConfig.getSpecificFile(player, "messages")
+        val config = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "messages")
         val onlineCount = plugin.server.onlinePlayers.size.toString()
 
         val path: String
@@ -143,3 +143,4 @@ class ScoreboardManager(private val plugin: Mistaken) {
         }
     }
 }
+

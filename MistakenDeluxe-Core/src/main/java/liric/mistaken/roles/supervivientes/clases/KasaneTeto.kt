@@ -33,7 +33,7 @@ import java.util.function.Consumer
  */
 class KasaneTeto : Superviviente(
     "teto",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.teto.nombre", "<gradient:#ff66cc:#ff0000><b>COMANDANTE TETO</b></gradient>", "supervivientes_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.teto.nombre", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.teto"
@@ -44,7 +44,7 @@ class KasaneTeto : Superviviente(
 
     override fun usarHabilidad(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSupervivientes()
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("$pathBase.items.habilidad1_cooldown", 15))) {
@@ -74,7 +74,7 @@ class KasaneTeto : Superviviente(
 
         player.getAttribute(Attribute.SCALE)?.baseValue = 0.8861
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
         val configMecanica = plugin.configManager.getSupervivientes()
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -304,4 +304,7 @@ class KasaneTeto : Superviviente(
         }
     }
 }
+
+
+
 

@@ -1,4 +1,4 @@
-package pumpking.lib.config.sync
+﻿package pumpking.lib.config.sync
 
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
@@ -52,14 +52,14 @@ object ConfigSynchronizer {
             // Ignore if it's just a section parent without actual value if Bukkit returns them
             // Bukkit YamlConfiguration returns section paths as keys.
             // We only want to set missing values, but a missing section will be implicitly created.
-            
+
             if (!localConfig.contains(key)) {
                 val defaultValue = defaultConfig.get(key)
-                // If it's a ConfigurationSection, we don't necessarily set it directly, 
-                // but setting a section in Bukkit copies its children, which is fine, 
+                // If it's a ConfigurationSection, we don't necessarily set it directly,
+                // but setting a section in Bukkit copies its children, which is fine,
                 // but Bukkit's getKeys(true) will also list the children.
                 // To avoid duplicate logs for parent and children, we can just set them all.
-                
+
                 if (defaultValue !is org.bukkit.configuration.ConfigurationSection) {
                     localConfig.set(key, defaultValue)
                     pathsAdded++

@@ -1,4 +1,4 @@
-package liric.mistaken.data.db
+﻿package liric.mistaken.data.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -18,9 +18,9 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
         try {
             dataSource = HikariDataSource(config)
             createTables()
-            plugin.componentLogger.info(plugin.mm.deserialize("<green>[Database] Conexión establecida con éxito (${this::class.simpleName}).</green>"))
+            plugin.componentLogger.info(plugin.mm.deserialize("[SUCCESS] [Database] Connection established (${this::class.simpleName})."))
         } catch (e: Exception) {
-            plugin.componentLogger.error(plugin.mm.deserialize("<red>[Database] Error al conectar a la base de datos: ${e.message}</red>"))
+            plugin.componentLogger.error(plugin.mm.deserialize("[ERROR] [Database] Connection failed: ${e.message}"))
         }
     }
 
@@ -38,7 +38,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
 
     protected abstract fun getHikariConfig(): HikariConfig
 
-    // === QUERIES ESPECÍFICAS DE MOTOR (Sobrescribir en PostgreSQL/SQLite si difieren) ===
+    // === QUERIES ESPECÃFICAS DE MOTOR (Sobrescribir en PostgreSQL/SQLite si difieren) ===
     protected open val createStatsTableQuery = """
         CREATE TABLE IF NOT EXISTS stats (
             uuid VARCHAR(36) PRIMARY KEY,
@@ -76,13 +76,13 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
     """.trimIndent()
 
     protected open val insertIgnoreStatsQuery = "INSERT IGNORE INTO stats (uuid, username) VALUES (?, ?)"
-    
+
     // Default: MySQL Syntax (ON DUPLICATE KEY UPDATE)
     protected open val upsertPlayerDataQuery = """
-        INSERT INTO mistaken_player_data 
-        (uuid, lang, killers_owned, killer_selected, survivors_owned, survivor_selected, nick, skin_source) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
-        ON DUPLICATE KEY UPDATE 
+        INSERT INTO mistaken_player_data
+        (uuid, lang, killers_owned, killer_selected, survivors_owned, survivor_selected, nick, skin_source)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
         lang = ?, killers_owned = ?, killer_selected = ?, survivors_owned = ?, survivor_selected = ?, nick = ?, skin_source = ?
     """.trimIndent()
 
@@ -96,7 +96,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
                 }
             }
         } catch (e: SQLException) {
-            plugin.componentLogger.error(plugin.mm.deserialize("<red>Error creando tablas: ${e.message}</red>"))
+            plugin.componentLogger.error(plugin.mm.deserialize("[ERROR] [Database] Failed to create tables: ${e.message}"))
         }
     }
 
@@ -137,10 +137,10 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
 
     override fun saveStats(uuid: String, stats: PlayerStats) {
         val query = """
-            UPDATE stats SET 
-                wins_survivor = ?, wins_assassin = ?, 
-                losses_survivor = ?, losses_assassin = ?, 
-                kills = ?, deaths = ? 
+            UPDATE stats SET
+                wins_survivor = ?, wins_assassin = ?,
+                losses_survivor = ?, losses_assassin = ?,
+                kills = ?, deaths = ?
             WHERE uuid = ?
         """.trimIndent()
 

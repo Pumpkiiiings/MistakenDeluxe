@@ -10,6 +10,12 @@ ajustes:
   sonido-click: "BLOCK_NOTE_BLOCK_CHIME"
   slots-disponibles: [19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34]
 
+  # Botón para volver al menú principal
+  boton-atras:
+    material: "ARROW"
+    slot: 49
+    nombre: "<#00d4ff><b>Volver</b>"
+
 decoraciones:
   bordes:
     material: "GRAY_STAINED_GLASS_PANE"

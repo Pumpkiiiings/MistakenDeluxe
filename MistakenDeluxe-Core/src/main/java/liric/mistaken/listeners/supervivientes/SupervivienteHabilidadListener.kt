@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * [LIRIC-MISTAKEN 2.0]
  * SupervivienteHabilidadListener: Adaptado para MULTIARENA / VELOCITY.
- * FIX: Ahora detecta la sesiÃ³n individual de cada jugador para procesar sus habilidades.
+ * FIX: Ahora detecta la sesión individual de cada jugador para procesar sus habilidades.
  */
 class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
 
@@ -59,7 +59,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
         if (event.hand != EquipmentSlot.HAND) return
         val player = event.player
 
-        // ðŸ”¥ MULTIARENA: Buscamos la sesiÃ³n del jugador
+        // 🔥 MULTIARENA: Buscamos la sesión del jugador
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
 
@@ -70,7 +70,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
         val slot = player.inventory.heldItemSlot
         if (slot > 2) return
 
-        // Verifica que NO sea el asesino de SU sesiÃ³n
+        // Verifica que NO sea el asesino de SU sesión
         if (session.esAsesino(player.uniqueId)) return
 
         val clase = plugin.supervivienteManager.getClase(player) ?: return
@@ -86,7 +86,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
                 clase.usarHabilidad(player, slot)
             }
             Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> {
-                // Comandante Teto dispara su RevÃ³lver con Click Izquierdo en el Slot 0
+                // Comandante Teto dispara su Revólver con Click Izquierdo en el Slot 0
                 if (clase is KasaneTeto && slot == 0) {
                     event.isCancelled = true
                     clase.usarHabilidad(player, slot)
@@ -105,11 +105,11 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        // ðŸ”¥ MULTIARENA: Buscamos la sesiÃ³n del atacante
+        // 🔥 MULTIARENA: Buscamos la sesión del atacante
         val session = plugin.sessionManager.getSession(attacker) ?: return
         if (session.currentState != GameState.INGAME) return
 
-        // Reglas de equipo: El atacante debe ser humano y la vÃ­ctima asesino en la MISMA sesiÃ³n
+        // Reglas de equipo: El atacante debe ser humano y la víctima asesino en la MISMA sesión
         if (session.esAsesino(attacker.uniqueId)) return
         if (!session.esAsesino(victim.uniqueId)) return
 
@@ -126,18 +126,18 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
             val cooldownTime = plugin.configManager.getSupervivientes().getInt("supervivientes.raincoatkid.items.habilidad3_cooldown", 40)
             if (!clase.checkCooldown(attacker, 2, cooldownTime)) {
                 clase.aplicarGolpePalo(victim)
-                attacker.sendMessage(plugin.mm.deserialize("<green><bold>Â¡BAM!</bold> <gray>Asesino aturdido."))
+                attacker.sendMessage(plugin.mm.deserialize("<green><bold>¡BAM!</bold> <gray>Asesino aturdido."))
                 attacker.playSound(attacker.location, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.5f, 1.2f)
             }
             return
         }
 
-        // 2. Jesse (PuÃ±etazo)
+        // 2. Jesse (Puñetazo)
         if (pdc.has(JESSE_PUNCH_KEY, PersistentDataType.BYTE) && clase is Jesse) {
             val cooldownTime = plugin.configManager.getSupervivientes().getInt("supervivientes.jesse.items.habilidad2_cooldown", 15)
             if (!clase.checkCooldown(attacker, 1, cooldownTime)) {
                 clase.aplicarGolpePuno(victim)
-                attacker.sendMessage(plugin.mm.deserialize("<gold><b>Â¡TOMA ESO!</b></gold>"))
+                attacker.sendMessage(plugin.mm.deserialize("<gold><b>¡TOMA ESO!</b></gold>"))
             }
             return
         }
@@ -149,7 +149,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
         val victim = event.hitEntity as? Player ?: return
         val pdc = snowball.persistentDataContainer
 
-        // ðŸ”¥ MULTIARENA: Buscamos la sesiÃ³n de la vÃ­ctima para validar el rol
+        // 🔥 MULTIARENA: Buscamos la sesión de la víctima para validar el rol
         val session = plugin.sessionManager.getSession(victim) ?: return
 
         if (victim.gameMode != GameMode.SURVIVAL || victim.isInvisible) return
@@ -188,7 +188,7 @@ class SupervivienteHabilidadListener(private val plugin: Mistaken) : Listener {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1))
                 victim.world.playSound(victim.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                victim.sendMessage(plugin.mm.deserialize("<green>Â¡Ooh! Â¡Una esmeralda! (Te has distraÃ­do)"))
+                victim.sendMessage(plugin.mm.deserialize("<green>¡Ooh! ¡Una esmeralda! (Te has distraído)"))
             }
             return
         }

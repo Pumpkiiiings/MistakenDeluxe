@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class Minty : Superviviente(
     "minty",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.minty.nombre", "<gradient:#55ffaa:#00aa55><b>MINTY</b></gradient>", "supervivientes_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.minty.nombre", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.minty"
@@ -46,7 +46,7 @@ class Minty : Superviviente(
 
     override fun usarHabilidad(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSupervivientes()
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("$pathBase.items.habilidad1_cooldown", 15))) {
@@ -133,7 +133,7 @@ class Minty : Superviviente(
         inv.clear()
         if (itemCache.isEmpty()) preLoadKit()
 
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
@@ -157,4 +157,7 @@ class Minty : Superviviente(
         activeTasks.clear()
     }
 }
+
+
+
 

@@ -17,12 +17,13 @@ class MistakenAPIImpl(private val _plugin: Mistaken) : MistakenAPI {
         get() = _plugin.sessionManager
     override val configManager: IConfigManager
         get() = _plugin.configManager
-        get() = _plugin.messageConfig
+    override val messages: pumpking.lib.messages.IMessageService
+        get() = pumpking.lib.service.PumpkingServiceManager.messages
     override val mm: MiniMessage
         get() = _plugin.mm
     override val logger: Logger
         get() = _plugin.logger
-        
+
     override fun isIgnored(player: org.bukkit.entity.Player): Boolean {
         return _plugin.isIgnored(player)
     }

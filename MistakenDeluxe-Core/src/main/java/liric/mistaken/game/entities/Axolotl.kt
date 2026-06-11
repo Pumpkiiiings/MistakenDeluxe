@@ -72,7 +72,7 @@ class Axolotl(private val plugin: Mistaken) {
                 isRunning = true
                 iniciarIA()
             } catch (e: Exception) {
-                plugin.componentLogger.error("Error al invocar al Ajolote Gigante: ${e.message}")
+                plugin.componentLogger.error("[ERROR] [Entity] Failed to invoke Giant Axolotl: ${e.message}")
             }
         }
     }

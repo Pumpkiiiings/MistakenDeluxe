@@ -1,4 +1,4 @@
-package liric.mistaken.data.db
+﻿package liric.mistaken.data.db
 
 import com.zaxxer.hikari.HikariConfig
 import liric.mistaken.Mistaken
@@ -9,7 +9,7 @@ class PostgreSQLDatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(p
     override fun getHikariConfig(): HikariConfig {
         val config = plugin.config
         val hikariConfig = HikariConfig()
-        
+
         val host = config.getString("database.postgresql.host", "localhost")
         val port = config.getInt("database.postgresql.port", 5432)
         val database = config.getString("database.postgresql.database", "minecraft")
@@ -31,16 +31,16 @@ class PostgreSQLDatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(p
     override val insertIgnoreStatsQuery = "INSERT INTO stats (uuid, username) VALUES (?, ?) ON CONFLICT (uuid) DO NOTHING"
 
     override val upsertPlayerDataQuery = """
-        INSERT INTO mistaken_player_data 
-        (uuid, lang, killers_owned, killer_selected, survivors_owned, survivor_selected, nick, skin_source) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
-        ON CONFLICT (uuid) DO UPDATE SET 
-        lang = EXCLUDED.lang, 
-        killers_owned = EXCLUDED.killers_owned, 
-        killer_selected = EXCLUDED.killer_selected, 
-        survivors_owned = EXCLUDED.survivors_owned, 
-        survivor_selected = EXCLUDED.survivor_selected, 
-        nick = EXCLUDED.nick, 
+        INSERT INTO mistaken_player_data
+        (uuid, lang, killers_owned, killer_selected, survivors_owned, survivor_selected, nick, skin_source)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (uuid) DO UPDATE SET
+        lang = EXCLUDED.lang,
+        killers_owned = EXCLUDED.killers_owned,
+        killer_selected = EXCLUDED.killer_selected,
+        survivors_owned = EXCLUDED.survivors_owned,
+        survivor_selected = EXCLUDED.survivor_selected,
+        nick = EXCLUDED.nick,
         skin_source = EXCLUDED.skin_source
     """.trimIndent()
 

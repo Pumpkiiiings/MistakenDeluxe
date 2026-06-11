@@ -1,4 +1,4 @@
-﻿package pumpking.lib.config
+package pumpking.lib.config
 
 import kotlinx.coroutines.*
 import liric.mistaken.api.managers.IConfigManager
@@ -9,11 +9,11 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [PUMPKING LIB]
- * ConfigManager: El patrÃ³n de las configuraciones mecÃ¡nicas migrado a pumpking.lib.
+ * ConfigManager: El patrón de las configuraciones mecánicas migrado a pumpking.lib.
  */
 object ConfigManager : IConfigManager {
 
-    private lateinit var scope: CoroutineScope
+
     private lateinit var plugin: JavaPlugin
 
     @Volatile private lateinit var asesinosConfig: ConfigProvider
@@ -26,33 +26,31 @@ object ConfigManager : IConfigManager {
         return genericCache.getOrPut(fileName) {
             val file = File(plugin.dataFolder, fileName)
             pumpking.lib.config.sync.ConfigSynchronizer.sync(plugin, fileName, file)
-            YamlConfigProvider(file)
+            YamlConfigProvider(file).apply { load() }
         }
     }
 
     fun init(plugin: JavaPlugin) {
         this.plugin = plugin
-        this.scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
         loadAllConfigs()
         ConfigWatcher.init(plugin)
     }
 
     fun shutdown() {
         ConfigWatcher.shutdown()
-        if (::scope.isInitialized) {
-            scope.cancel()
-        }
+
         menusCache.clear()
     }
 
     fun loadAllConfigs() {
         val asesinosFile = File(plugin.dataFolder, "asesinos.yml")
         pumpking.lib.config.sync.ConfigSynchronizer.sync(plugin, "asesinos.yml", asesinosFile)
-        asesinosConfig = YamlConfigProvider(asesinosFile)
+        asesinosConfig = YamlConfigProvider(asesinosFile).apply { load() }
 
         val supervivientesFile = File(plugin.dataFolder, "supervivientes.yml")
         pumpking.lib.config.sync.ConfigSynchronizer.sync(plugin, "supervivientes.yml", supervivientesFile)
-        supervivientesConfig = YamlConfigProvider(supervivientesFile)
+        supervivientesConfig = YamlConfigProvider(supervivientesFile).apply { load() }
     }
 
     override fun getAsesinos(): org.bukkit.configuration.file.FileConfiguration = (asesinosConfig as YamlConfigProvider).getRaw()
@@ -62,7 +60,7 @@ object ConfigManager : IConfigManager {
         val provider = menusCache.getOrPut(fileName) {
             val menuFile = File(plugin.dataFolder, "menus/$fileName.yml")
             pumpking.lib.config.sync.ConfigSynchronizer.sync(plugin, "menus/$fileName.yml", menuFile)
-            YamlConfigProvider(menuFile)
+            YamlConfigProvider(menuFile).apply { load() }
         }
         return (provider as YamlConfigProvider).getRaw()
     }
@@ -72,10 +70,9 @@ object ConfigManager : IConfigManager {
     }
 
     override fun getAssassinName(player: Player?, assassinId: String): String {
-        // Fallback for getting name since messageConfig isn't explicitly defined here anymore
-        // Actually, since we need messageConfig, we might need to cast plugin to Mistaken
+
         val mistaken = plugin as liric.mistaken.Mistaken
-        return mistaken.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(
+        return pumpking.lib.service.PumpkingServiceManager.messages.getRawString(
             player = player,
             fileName = "asesinos_info",
             path = "asesinos.$assassinId.nombre",
@@ -89,7 +86,7 @@ object ConfigManager : IConfigManager {
     }
 
     private fun saveConfigAsync(config: ConfigProvider, name: String) {
-        scope.launch {
+        pumpking.lib.task.PumpkingTask.ioScope.launch {
             try {
                 config.save()
             } catch (e: Exception) {

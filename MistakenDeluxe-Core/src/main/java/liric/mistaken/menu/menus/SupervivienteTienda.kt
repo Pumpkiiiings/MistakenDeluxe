@@ -1,4 +1,4 @@
-﻿package liric.mistaken.menu.menus
+package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -25,7 +25,6 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
 
     override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
         // 1. Cargamos las dos fuentes de datos
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info") // Texto
         val globalMecanicas = plugin.configManager.getSupervivientes() // Números e Ítems
 
         val slots = config.getIntegerList("ajustes.slots-disponibles")
@@ -49,9 +48,9 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
 
             // --- 🎨 DATOS VISUALES (Desde supervivientes_info.yml) ---
             // Ruta: supervivientes.<id>.nombre
-            val nombreVisual = langInfo.getString("supervivientes.$survivorId.nombre") ?: survivorId.uppercase()
+            val nombreVisual = pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "supervivientes.$survivorId.nombre", "supervivientes_info")
             // Ruta: supervivientes.<id>.lore_tienda
-            val loreTienda = langInfo.getStringList("supervivientes.$survivorId.lore_tienda")
+            val loreTienda = pumpking.lib.service.PumpkingServiceManager.messages.getStrictStringList(player, "supervivientes.$survivorId.lore_tienda", "supervivientes_info")
 
             // --- ⚙️ DATOS MECÁNICOS (Desde supervivientes.yml) ---
             // Ruta: supervivientes.<id>.precio
@@ -67,7 +66,7 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
 
                 // Descripción del personaje
                 loreTienda.forEach { line ->
-                    add(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda_errores.lore_tienda_format", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("line", line)))
+                    add(parseSafe(line))
                 }
 
                 add(Component.empty())
@@ -76,9 +75,9 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
                 // Listar habilidades (Nombres desde INFO)
                 // Ruta: supervivientes.<id>.habilidades_nombres.habilidadX
                 for (i in 1..3) {
-                    val habName = langInfo.getString("supervivientes.$survivorId.habilidades_nombres.habilidad$i")
-                    if (!habName.isNullOrEmpty()) {
-                        add(mm.deserialize(" <dark_gray>•</dark_gray> <white>$habName</white>"))
+                    val habName = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "supervivientes.$survivorId.habilidades_nombres.habilidad$i", "", "supervivientes_info")
+                    if (habName.isNotEmpty()) {
+                        add(parseSafe(" <dark_gray>•</dark_gray> <white>$habName</white>"))
                     }
                 }
                 add(Component.empty())
@@ -99,7 +98,7 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
 
             // --- RENDERIZADO ---
             gui.setItem(slots[slotIndex], ItemBuilder.from(iconoMat)
-                .name(mm.deserialize(nombreVisual))
+                .name(parseSafe(nombreVisual))
                 .lore(fullLore.toList())
                 .flags(*ItemFlag.entries.toTypedArray())
                 .asGuiItem { event ->
@@ -109,6 +108,17 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
             )
             slotIndex++
         }
+
+        val botonAtrasMat = config.getString("ajustes.atras.material", "ARROW")!!
+        val botonAtrasNombre = config.getString("ajustes.atras.nombre", "Atrás")!!
+        val botonAtrasSlot = config.getInt("ajustes.atras.slot", 40)
+        val matAtras = Material.matchMaterial(botonAtrasMat.uppercase()) ?: Material.ARROW
+        gui.setItem(botonAtrasSlot, ItemBuilder.from(matAtras)
+            .name(parseSafe(botonAtrasNombre))
+            .asGuiItem { event ->
+                event.isCancelled = true
+                ShopSelector().abrir(player)
+            })
     }
 
     private fun handleLogic(player: Player, id: String, precio: Int, tiene: Boolean) {
@@ -129,10 +139,9 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
             player.persistentDataContainer.set(survivorKey, PersistentDataType.STRING, id)
 
             // Obtenemos el nombre bonito para el mensaje de confirmación
-            val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
-            val nombreVisual = langInfo.getString("supervivientes.$id.nombre") ?: id
+            val nombreVisual = pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "supervivientes.$id.nombre", "supervivientes_info")
 
-            player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.seleccionado", Placeholder.component("name", mm.deserialize(nombreVisual))))
+            player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.seleccionado", Placeholder.component("name", parseSafe(nombreVisual))))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
             abrir(player)
             return
@@ -141,7 +150,7 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
         // 3. Comprar (Vault)
         val econ = Mistaken.Companion.economy
         if (econ == null) {
-            player.sendMessage(mm.deserialize("<red>Error: Vault no está conectado.</red>"))
+            player.sendMessage(parseSafe("<red>Error: Vault no está conectado.</red>"))
             return
         }
 
@@ -152,10 +161,9 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
             if (response.transactionSuccess()) {
                 data.comprarSuperviviente(uuid, id)
 
-                val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
-                val nombreVisual = langInfo.getString("supervivientes.$id.nombre") ?: id
+                val nombreVisual = pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "supervivientes.$id.nombre", "supervivientes_info")
 
-                player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.comprado", Placeholder.component("name", mm.deserialize(nombreVisual))))
+                player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.comprado", Placeholder.component("name", parseSafe(nombreVisual))))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
                 abrir(player)
             } else {

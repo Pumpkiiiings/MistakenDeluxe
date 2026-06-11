@@ -19,56 +19,52 @@ import java.util.jar.JarFile
 
 /**
  * PumpkingLib - Modular Message API
- * Replaces older implementations of MessageConfig.
  */
-class MessageService {
+class MessageService : IMessageService {
     private val mm = MiniMessage.miniMessage()
     private val langMap = ConcurrentHashMap<String, ConcurrentHashMap<String, FileConfiguration>>()
     var defaultLang: String = "es"
-    
+
     // Abstracted language provider to avoid coupling to Mistaken's PlayerDataManager
     var languageProvider: LanguageProvider = object : LanguageProvider {
         override fun getLanguage(uuid: UUID): String = defaultLang
     }
-    
-    // Scope for IO operations
-    private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+
 
     fun init() {
         loadAllLanguages()
     }
 
     private fun extractYamlResources() {
-        ioScope.launch {
-            runCatching {
-                val jarFile = File(PumpkingLib.plugin::class.java.protectionDomain.codeSource.location.toURI())
-                if (!jarFile.exists()) return@runCatching
+        runCatching {
+            val jarFile = File(PumpkingLib.plugin::class.java.protectionDomain.codeSource.location.toURI())
+            if (!jarFile.exists()) return@runCatching
 
-                JarFile(jarFile).use { jar ->
-                    val entries = jar.entries()
-                    while (entries.hasMoreElements()) {
-                        val entry = entries.nextElement()
-                        val path = entry.name
+            JarFile(jarFile).use { jar ->
+                val entries = jar.entries()
+                while (entries.hasMoreElements()) {
+                    val entry = entries.nextElement()
+                    val path = entry.name
 
-                        val isLangFile = path.startsWith("langs/") && path.endsWith(".yml") && !entry.isDirectory
-                        if (isLangFile) {
-                            val outFile = File(PumpkingLib.plugin.dataFolder, path)
-                            if (!outFile.exists()) {
-                                outFile.parentFile.mkdirs()
-                                PumpkingLib.plugin.saveResource(path, false)
-                            }
+                    val isLangFile = path.startsWith("langs/") && path.endsWith(".yml") && !entry.isDirectory
+                    if (isLangFile) {
+                        val outFile = File(PumpkingLib.plugin.dataFolder, path)
+                        if (!outFile.exists()) {
+                            outFile.parentFile.mkdirs()
+                            PumpkingLib.plugin.saveResource(path, false)
                         }
                     }
                 }
-            }.onFailure { e ->
-                PumpkingLib.logError(PumpkingLib.LogCategory.CORE, "[Messages] Error extracting resources: ${e.message}")
             }
+        }.onFailure { e ->
+            PumpkingLib.logError(PumpkingLib.LogCategory.CORE, "[Messages] Error extracting resources: ${e.message}")
         }
     }
 
-    fun loadAllLanguages() {
+    override fun loadAllLanguages() {
         extractYamlResources()
-        
+
         langMap.clear()
         val langFolder = File(PumpkingLib.plugin.dataFolder, "langs")
         if (!langFolder.exists()) langFolder.mkdirs()
@@ -88,11 +84,15 @@ class MessageService {
         PumpkingLib.log(PumpkingLib.LogCategory.CORE, "[Messages] Initialized (${langMap.size} languages).")
     }
 
+    override fun getLoadedLanguages(): Set<String> {
+        return langMap.keys
+    }
+
     private fun getPlayerLang(player: Player?): String {
         return player?.let { languageProvider.getLanguage(it.uniqueId) } ?: defaultLang
     }
 
-    fun getSpecificFile(player: Player?, fileName: String): FileConfiguration {
+    override fun getSpecificFile(player: Player?, fileName: String): FileConfiguration {
         val lang = getPlayerLang(player)
         val safeFileName = fileName.lowercase()
 
@@ -110,11 +110,11 @@ class MessageService {
         )
     }
 
-    fun getComponent(player: Player?, path: String, vararg extraTags: TagResolver): Component {
+    override fun getComponent(player: Player?, path: String, vararg extraTags: TagResolver): Component {
         return getComponentFromFile(player, "messages", path, *extraTags)
     }
 
-    fun getComponentFromFile(player: Player?, fileName: String, path: String, vararg extraTags: TagResolver): Component {
+    override fun getComponentFromFile(player: Player?, fileName: String, path: String, vararg extraTags: TagResolver): Component {
         val config = getSpecificFile(player, fileName)
         var raw = config.getString(path)
 
@@ -122,12 +122,17 @@ class MessageService {
             raw = langMap[defaultLang]?.get(fileName.lowercase())?.getString(path)
         }
 
-        val message = raw ?: "<red>Missing Path: $fileName -> $path"
+        if (raw == null) {
+            PumpkingLib.logError(PumpkingLib.LogCategory.CORE, "[WARN] Missing config path:\nFile: $fileName.yml\nPath: $path")
+            val allTags = TagResolver.resolver(getGlobalResolvers(player, config), *extraTags)
+            return mm.deserialize("<red>Missing Path: $fileName -> $path", allTags)
+        }
+
         val allTags = TagResolver.resolver(getGlobalResolvers(player, config), *extraTags)
-        return mm.deserialize(parseLegacy(message), allTags)
+        return mm.deserialize(parseLegacy(raw), allTags)
     }
 
-    fun getComponentList(player: Player?, path: String, fileName: String = "messages"): List<Component> {
+    override fun getComponentList(player: Player?, path: String, fileName: String): List<Component> {
         val config = getSpecificFile(player, fileName)
         var rawList = config.getStringList(path)
 
@@ -139,16 +144,39 @@ class MessageService {
         return rawList.map { mm.deserialize(parseLegacy(it), globalTags) }
     }
 
-    fun getRawString(player: Player?, path: String, def: String, fileName: String = "messages"): String {
+    override fun getRawString(player: Player?, path: String, def: String, fileName: String): String {
         val config = getSpecificFile(player, fileName)
         return config.getString(path) ?: langMap[defaultLang]?.get(fileName.lowercase())?.getString(path) ?: def
     }
 
-    fun getRawStringList(player: Player?, path: String, fileName: String = "messages"): List<String> {
+    override fun getRawStringList(player: Player?, path: String, fileName: String): List<String> {
         val config = getSpecificFile(player, fileName)
         var list = config.getStringList(path)
         if (list.isEmpty() && getPlayerLang(player) != defaultLang) {
             list = langMap[defaultLang]?.get(fileName.lowercase())?.getStringList(path) ?: emptyList()
+        }
+        return list
+    }
+
+    override fun getStrictString(player: Player?, path: String, fileName: String): String {
+        val config = getSpecificFile(player, fileName)
+        val raw = config.getString(path) ?: langMap[defaultLang]?.get(fileName.lowercase())?.getString(path)
+        if (raw == null) {
+            PumpkingLib.logError(PumpkingLib.LogCategory.CORE, "[WARN] Missing config path:\nFile: $fileName.yml\nPath: $path")
+            return "<red>Missing Path: $fileName -> $path"
+        }
+        return raw
+    }
+
+    override fun getStrictStringList(player: Player?, path: String, fileName: String): List<String> {
+        val config = getSpecificFile(player, fileName)
+        var list = config.getStringList(path)
+        if (list.isEmpty() && getPlayerLang(player) != defaultLang) {
+            list = langMap[defaultLang]?.get(fileName.lowercase())?.getStringList(path) ?: emptyList()
+        }
+        if (list.isEmpty()) {
+            PumpkingLib.logError(PumpkingLib.LogCategory.CORE, "[WARN] Missing config path:\nFile: $fileName.yml\nPath: $path")
+            return listOf("<red>Missing Path: $fileName -> $path")
         }
         return list
     }
@@ -163,18 +191,18 @@ class MessageService {
 
     // --- API Methods ---
 
-    fun send(player: Player, path: String, vararg extraTags: TagResolver) {
+    override fun send(player: Player, path: String, vararg extraTags: TagResolver) {
         player.sendMessage(getComponent(player, path, *extraTags))
     }
 
-    fun actionBar(player: Player, path: String, vararg extraTags: TagResolver) {
+    override fun actionBar(player: Player, path: String, vararg extraTags: TagResolver) {
         player.sendActionBar(getComponent(player, path, *extraTags))
     }
 
-    fun title(player: Player, titlePath: String, subtitlePath: String? = null, fadeIn: Int = 10, stay: Int = 70, fadeOut: Int = 20, vararg extraTags: TagResolver) {
+    override fun title(player: Player, titlePath: String, subtitlePath: String?, fadeIn: Int, stay: Int, fadeOut: Int, vararg extraTags: TagResolver) {
         val titleComp = getComponent(player, titlePath, *extraTags)
         val subtitleComp = if (subtitlePath != null) getComponent(player, subtitlePath, *extraTags) else Component.empty()
-        
+
         val times = Title.Times.times(
             Duration.ofMillis((fadeIn * 50).toLong()),
             Duration.ofMillis((stay * 50).toLong()),
@@ -185,15 +213,15 @@ class MessageService {
     }
 
     // Basic implementation for bossbars (could be extended)
-    fun bossBar(player: Player, path: String, color: net.kyori.adventure.bossbar.BossBar.Color = net.kyori.adventure.bossbar.BossBar.Color.WHITE, overlay: net.kyori.adventure.bossbar.BossBar.Overlay = net.kyori.adventure.bossbar.BossBar.Overlay.PROGRESS, vararg extraTags: TagResolver): net.kyori.adventure.bossbar.BossBar {
+    override fun bossBar(player: Player, path: String, color: net.kyori.adventure.bossbar.BossBar.Color, overlay: net.kyori.adventure.bossbar.BossBar.Overlay, vararg extraTags: TagResolver): net.kyori.adventure.bossbar.BossBar {
         val comp = getComponent(player, path, *extraTags)
         val bar = net.kyori.adventure.bossbar.BossBar.bossBar(comp, 1.0f, color, overlay)
         player.showBossBar(bar)
         return bar
     }
 
-    fun reload() {
-        ioScope.launch {
+    override fun reload() {
+        pumpking.lib.task.PumpkingTask.ioScope.launch {
             loadAllLanguages()
         }
     }
@@ -202,3 +230,5 @@ class MessageService {
 interface LanguageProvider {
     fun getLanguage(uuid: UUID): String
 }
+
+

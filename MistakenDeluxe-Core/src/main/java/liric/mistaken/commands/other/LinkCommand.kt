@@ -83,7 +83,7 @@ object LinkCommand {
                         }
                     } catch (e: SQLException) {
                         player.sendMessage(plugin.mm.deserialize("<red><bold>[!]</bold> Error de conexión con Clever Cloud."))
-                        plugin.componentLogger.error("Fallo en LinkCommand SQL: ${e.message}")
+                        plugin.componentLogger.error("[ERROR] [Command] LinkCommand SQL failure: ${e.message}")
                     }
                 }
                 1 // Éxito para Brigadier

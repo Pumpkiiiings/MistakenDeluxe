@@ -1,9 +1,10 @@
-﻿package pumpking.lib.cache
+package pumpking.lib.cache
 
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import pumpking.lib.core.PumpkingLib
+import pumpking.lib.task.PumpkingTask
 
 /**
  * Generic CacheManager with optional TTL expiration.
@@ -12,11 +13,11 @@ open class CacheManager<K : Any, V : Any>(
     private val expirationMillis: Long = -1 // -1 means no expiration
 ) {
     protected val cache = ConcurrentHashMap<K, CacheEntry<V>>()
-    private val scheduler = Executors.newSingleThreadScheduledExecutor()
+    private var cleanupTask: ScheduledFuture<*>? = null
 
     init {
         if (expirationMillis > 0) {
-            scheduler.scheduleAtFixedRate({ cleanup() }, 1, 1, TimeUnit.MINUTES)
+            cleanupTask = PumpkingTask.cacheExecutor.scheduleAtFixedRate({ cleanup() }, 1, 1, TimeUnit.MINUTES)
         }
     }
 
@@ -62,7 +63,7 @@ open class CacheManager<K : Any, V : Any>(
     }
 
     open fun shutdown() {
-        scheduler.shutdown()
+        cleanupTask?.cancel(false)
         cache.clear()
     }
 }

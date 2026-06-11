@@ -77,7 +77,7 @@ class PouEXE(private val plugin: Mistaken) {
                 isRunning = true
                 iniciarIA()
             } catch (e: Exception) {
-                plugin.componentLogger.error("Fallo al invocar al Pou: ${e.message}")
+                plugin.componentLogger.error("[ERROR] [Entity] Failed to invoke Pou: ${e.message}")
             }
         }
     }

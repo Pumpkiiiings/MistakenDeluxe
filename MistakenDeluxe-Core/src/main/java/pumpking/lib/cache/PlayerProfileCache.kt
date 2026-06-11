@@ -1,4 +1,4 @@
-﻿package pumpking.lib.cache
+package pumpking.lib.cache
 
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -9,13 +9,13 @@ import org.bukkit.plugin.java.JavaPlugin
 import pumpking.lib.core.PumpkingLib
 import java.util.UUID
 import kotlinx.coroutines.*
+import java.util.concurrent.TimeUnit
 
 abstract class PlayerProfileCache<V : Any>(
     val plugin: JavaPlugin,
     expirationMillis: Long = TimeUnit.HOURS.toMillis(1) // 1 hora de TTL por defecto si el jugador sale pero algo falla
 ) : CacheManager<UUID, V>(expirationMillis), Listener {
 
-    private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
         plugin.server.pluginManager.registerEvents(this, plugin)
@@ -35,7 +35,7 @@ abstract class PlayerProfileCache<V : Any>(
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onAsyncPreLogin(event: AsyncPlayerPreLoginEvent) {
         val uuid = event.uniqueId
-        
+
         // Auto-load on login
         try {
             val profile = loadProfile(uuid)
@@ -51,10 +51,10 @@ abstract class PlayerProfileCache<V : Any>(
     fun onPlayerQuit(event: PlayerQuitEvent) {
         val uuid = event.player.uniqueId
         val profile = remove(uuid)
-        
+
         if (profile != null) {
             // Save on quit asynchronously
-            ioScope.launch {
+            pumpking.lib.task.PumpkingTask.ioScope.launch {
                 try {
                     saveProfile(uuid, profile)
                 } catch (e: Exception) {
@@ -66,7 +66,7 @@ abstract class PlayerProfileCache<V : Any>(
 
     override fun onExpire(key: UUID, value: V?) {
         if (value != null) {
-            ioScope.launch {
+            pumpking.lib.task.PumpkingTask.ioScope.launch {
                 try {
                     saveProfile(key, value)
                 } catch (e: Exception) {

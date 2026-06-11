@@ -36,9 +36,9 @@ object PumpkingLib {
      */
     fun init(plugin: JavaPlugin) {
         this.plugin = plugin
-        
+
         log(LogCategory.CORE, "INIT OK - Starting modules...")
-        
+
         // Initialize internal systems
         try {
             ConfigManager.init(plugin)
@@ -60,7 +60,7 @@ object PumpkingLib {
         } catch (e: Exception) {
             logError(LogCategory.SCOREBOARD, "FAIL SAFE ERROR - ${e.message}")
         }
-        
+
         try {
             pumpking.lib.service.PumpkingServiceManager.init(plugin)
             log(LogCategory.CORE, "SERVICES INIT OK")
@@ -77,7 +77,7 @@ object PumpkingLib {
      */
     fun shutdown() {
         log(LogCategory.CORE, "SHUTDOWN OK - Stopping modules...")
-        
+
         ConfigManager.shutdown()
         log(LogCategory.CONFIG, "CLEANUP EVENT OK")
 
@@ -86,9 +86,12 @@ object PumpkingLib {
 
         ScoreboardManager.shutdown()
         log(LogCategory.SCOREBOARD, "CLEANUP EVENT OK")
-        
+
         pumpking.lib.service.PumpkingServiceManager.shutdown()
         log(LogCategory.CORE, "SERVICES OK")
+
+        pumpking.lib.task.PumpkingTask.shutdown()
+        log(LogCategory.CORE, "TASKS OK")
 
         log(LogCategory.CORE, "Shutdown complete.")
     }

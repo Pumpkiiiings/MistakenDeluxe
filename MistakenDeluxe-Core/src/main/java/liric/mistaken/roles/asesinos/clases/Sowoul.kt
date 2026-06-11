@@ -40,7 +40,7 @@ import kotlin.math.sin
  */
 class Sowoul : CoreAsesino(
     "sowoul",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.sowoul.nombre", "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>", "asesinos_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.sowoul.nombre", "asesinos_info")
 ), Listener {
 
     private val pathBase = "asesinos.sowoul"
@@ -404,7 +404,7 @@ class Sowoul : CoreAsesino(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "asesinos_info")
         val configMecanica = plugin.configManager.getAsesinos()
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -520,4 +520,7 @@ class Sowoul : CoreAsesino(
         fakeEntities.clear()
     }
 }
+
+
+
 

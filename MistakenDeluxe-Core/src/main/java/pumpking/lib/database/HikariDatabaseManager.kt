@@ -33,7 +33,7 @@ class HikariDatabaseManager(
             DatabaseType.SQLITE -> {
                 if (dbFile == null) throw IllegalArgumentException("SQLite requires a dbFile")
                 if (!dbFile.parentFile.exists()) dbFile.parentFile.mkdirs()
-                
+
                 config.jdbcUrl = "jdbc:sqlite:${dbFile.absolutePath}"
                 config.driverClassName = "org.sqlite.JDBC"
                 config.maximumPoolSize = 1 // SQLite does not handle concurrent writes well

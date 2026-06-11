@@ -1,4 +1,4 @@
-package pumpking.lib.scoreboard
+﻿package pumpking.lib.scoreboard
 
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -102,7 +102,7 @@ object ScoreboardManager {
             try {
                 objective.numberFormat(io.papermc.paper.scoreboard.numbers.NumberFormat.blank())
             } catch (ignored: Throwable) {}
-            
+
             val ctx = ScoreboardContext(scoreboard, objective)
             player.scoreboard = scoreboard
             ctx

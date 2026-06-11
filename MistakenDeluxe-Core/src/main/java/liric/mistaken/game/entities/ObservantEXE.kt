@@ -86,7 +86,7 @@ class ObservantEXE(private val plugin: Mistaken) {
 
                 iniciarIA()
             } catch (e: Exception) {
-                plugin.componentLogger.error("Fallo al invocar a Observant: ${e.message}")
+                plugin.componentLogger.error("[ERROR] [Entity] Failed to invoke Observant: ${e.message}")
             }
         }
     }

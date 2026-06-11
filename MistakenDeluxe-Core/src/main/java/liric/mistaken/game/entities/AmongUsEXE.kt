@@ -68,7 +68,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
                 isRunning = true
                 iniciarIA()
             } catch (e: Exception) {
-                plugin.componentLogger.error("Fallo al invocar al AmongUs: ${e.message}")
+                plugin.componentLogger.error("[ERROR] [Entity] Failed to invoke AmongUs: ${e.message}")
             }
         }
     }

@@ -1,4 +1,4 @@
-package liric.mistaken.listeners.asesinos
+﻿package liric.mistaken.listeners.asesinos
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -52,7 +52,7 @@ class AsesinoHabilidadListener(private val plugin: Mistaken) : Listener {
 
         val config = plugin.configManager.getAsesinos()
         val pathBase = "asesinos.${asesino.id}"
-        
+
         var habilidadEjecutada = -1
         for (i in 1..4) {
             val configSlot = config.getInt("$pathBase.items.habilidad${i}_slot", i)

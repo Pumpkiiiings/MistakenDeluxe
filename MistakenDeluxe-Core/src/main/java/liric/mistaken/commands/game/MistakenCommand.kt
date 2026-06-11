@@ -32,7 +32,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             player?.let {
                 plugin.statsManager.incrementStat(it.uniqueId, "kills")
                 plugin.statsManager.incrementStat(it.uniqueId, "wins_survivor")
-                it.sendMessage(mm.deserialize("<red>âš¡ <white>Debug: Stats inyectadas y sincronizando..."))
+                it.sendMessage(mm.deserialize("<red>⚡ <white>Debug: Stats inyectadas y sincronizando..."))
                 it.playSound(it.location, Sound.BLOCK_ANVIL_USE, 1f, 2f)
             }
             return
@@ -50,7 +50,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             return
         }
 
-        // Obtenemos la sesiÃ³n del jugador
+        // Obtenemos la sesión del jugador
         val gm = player?.let { plugin.sessionManager.getSession(it) }
 
         when (sub) {
@@ -64,7 +64,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     return
                 }
                 val targetLang = args[1].lowercase()
-                if (plugin.messageConfig.getLoadedLanguages().contains(targetLang)) {
+                if (pumpking.lib.service.PumpkingServiceManager.messages.getLoadedLanguages().contains(targetLang)) {
                     plugin.playerDataManager.setLanguage(player.uniqueId, targetLang)
                     player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "admin.lang-set", Placeholder.parsed("langs", targetLang)))
                     player.playSound(player.location, Sound.ENTITY_VILLAGER_YES, 1f, 1f)
@@ -75,7 +75,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
             "stats", "estadisticas" -> {
                 if (player == null) {
-                    sender.sendMessage("La consola no tiene estadÃ­sticas.")
+                    sender.sendMessage("La consola no tiene estadísticas.")
                     return
                 }
                 val target = if (args.size > 1 && player.hasPermission("mistaken.admin"))
@@ -126,7 +126,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 if (!sender.hasPermission("mistaken.admin")) return
                 plugin.server.asyncScheduler.runNow(plugin) { _ ->
                     plugin.reloadConfig()
-                    plugin.messageConfig.loadAllLanguages()
+                    pumpking.lib.service.PumpkingServiceManager.messages.loadAllLanguages()
                     plugin.configManager.loadAllConfigs()
                     plugin.configManager.reloadMenus()
 
@@ -143,7 +143,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "setmode" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (player == null || gm == null) {
-                    sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesiÃ³n para forzar un modo."))
+                    sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesión para forzar un modo."))
                     return
                 }
                 if (args.size < 2) {
@@ -154,17 +154,17 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     val mode = MistakenMode.valueOf(args[1].uppercase())
                     gm.currentMode = mode
                     gm.modeForced = true
-                    sender.sendMessage(mm.deserialize("<green>Modo forzado a: <aqua>${mode.name} <gray>(SesiÃ³n: ${gm.id})"))
+                    sender.sendMessage(mm.deserialize("<green>Modo forzado a: <aqua>${mode.name} <gray>(Sesión: ${gm.id})"))
                     player.playSound(player.location, Sound.BLOCK_ANVIL_USE, 1f, 1f)
                 } catch (e: Exception) {
-                    sender.sendMessage(mm.deserialize("<red>Modo invÃ¡lido."))
+                    sender.sendMessage(mm.deserialize("<red>Modo inválido."))
                 }
             }
 
             "start" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (gm == null) {
-                    sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesiÃ³n para iniciarla."))
+                    sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesión para iniciarla."))
                     return
                 }
                 if (gm.currentState == GameState.INGAME) {
@@ -181,7 +181,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "stop" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (gm == null || gm.currentState == GameState.LOBBY) {
-                    sender.sendMessage(mm.deserialize("<red>No hay ninguna partida activa en tu ubicaciÃ³n."))
+                    sender.sendMessage(mm.deserialize("<red>No hay ninguna partida activa en tu ubicación."))
                 } else {
                     gm.stateController.endGame("admin.stop-broadcast", false)
                     sender.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "admin.stop-success"))
@@ -288,7 +288,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     "setasesino" -> if (isAdmin) plugin.asesinoManager.getClasesDisponibles().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "setsuperviviente" -> if (isAdmin) plugin.supervivienteManager.getClasesDisponibles().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "stats" -> if (isAdmin) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
-                    "langs", "language" -> plugin.messageConfig.getLoadedLanguages().toList()
+                    "langs", "language" -> pumpking.lib.service.PumpkingServiceManager.messages.getLoadedLanguages().toList()
                     else -> emptyList()
                 }
             }
@@ -296,4 +296,5 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
         }
     }
 }
+
 

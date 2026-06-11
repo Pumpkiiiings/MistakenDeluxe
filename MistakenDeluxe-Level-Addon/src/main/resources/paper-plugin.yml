@@ -1,0 +1,9 @@
+name: MistakenDeluxe-Level-Addon
+version: '${version}'
+main: liric.mistaken.level.LevelAddonPlugin
+api-version: '1.21'
+dependencies:
+  server:
+    Mistaken:
+      load: BEFORE
+      required: true

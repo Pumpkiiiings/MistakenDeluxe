@@ -34,7 +34,7 @@ import kotlin.math.sin
 
 class CharlieInferno : CoreAsesino(
     "charlie",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.charlie.nombre", "<gradient:#ff4500:#ff8c00><b>CHARLIE INFERNO</b></gradient>", "asesinos_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.charlie.nombre", "asesinos_info")
 ) {
 
     private val pathBase = "asesinos.charlie"
@@ -86,7 +86,7 @@ class CharlieInferno : CoreAsesino(
         inv.armorContents = arrayOfNulls(4)
 
         val configMecanica = plugin.configManager.getAsesinos()
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "asesinos_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val id = if (isArmor) configMecanica.getString("$pathBase.armadura.$key")
@@ -311,4 +311,7 @@ class CharlieInferno : CoreAsesino(
         }
     }
 }
+
+
+
 

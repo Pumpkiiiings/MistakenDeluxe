@@ -32,10 +32,10 @@ class ShopSelector : MenuBase("tienda_principal") {
             "<gradient:red:dark_red><b>ASSASSIN SHOP</b></gradient>")
 
         val loreA = getTranslatedList(player, "menus.tienda_principal.items.asesinos.lore")
-            .map { mm.deserialize(it) }
+            .map { parseSafe(it) }
 
         val itemAsesinos = ItemBuilder.from(matA)
-            .name(mm.deserialize(nombreA))
+            .name(parseSafe(nombreA))
             .lore(loreA)
             .flags(*ItemFlag.entries.toTypedArray())
             .asGuiItem {
@@ -52,10 +52,10 @@ class ShopSelector : MenuBase("tienda_principal") {
             "<gradient:#00d4ff:#004d99><b>SURVIVOR SHOP</b></gradient>")
 
         val loreS = getTranslatedList(player, "menus.tienda_principal.items.supervivientes.lore")
-            .map { mm.deserialize(it) }
+            .map { parseSafe(it) }
 
         val itemSurvivors = ItemBuilder.from(matS)
-            .name(mm.deserialize(nombreS))
+            .name(parseSafe(nombreS))
             .lore(loreS)
             .flags(*ItemFlag.entries.toTypedArray())
             .asGuiItem {

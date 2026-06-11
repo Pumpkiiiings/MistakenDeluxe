@@ -28,7 +28,7 @@ import kotlin.math.sin
 
 class Mariachi : CoreAsesino(
     "mariachi",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.mariachi.nombre", "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>", "asesinos_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.mariachi.nombre", "asesinos_info")
 ) {
 
     private val pathBase = "asesinos.mariachi"
@@ -79,7 +79,7 @@ class Mariachi : CoreAsesino(
         inv.armorContents = arrayOfNulls(4)
 
         if (itemKitCache.isEmpty()) preLoadKit()
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "asesinos_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val item = itemKitCache[key]?.clone() ?: return
@@ -226,4 +226,7 @@ class Mariachi : CoreAsesino(
         }
     }
 }
+
+
+
 

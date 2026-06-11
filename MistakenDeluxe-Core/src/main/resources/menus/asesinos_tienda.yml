@@ -21,6 +21,12 @@ ajustes:
     pizzano: 38
     romeodebuff: 39
 
+  # Botón para volver al menú principal
+  boton-atras:
+    material: "ARROW"
+    slot: 49
+    nombre: "<red><b>Volver</b>"
+
 # Decoraciones de la GUI (compartidas para todos los idiomas)
 decoraciones:
   bordes_grises:

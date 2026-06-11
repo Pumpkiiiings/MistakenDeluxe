@@ -26,7 +26,7 @@ import java.util.function.Consumer
  */
 class Jesse : Superviviente(
     "jesse",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.jesse.nombre", "Jesse", "supervivientes_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.jesse.nombre", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.jesse"
@@ -34,7 +34,7 @@ class Jesse : Superviviente(
 
     override fun usarHabilidad(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSupervivientes()
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("$pathBase.items.habilidad1_cooldown", 20))) {
@@ -62,7 +62,7 @@ class Jesse : Superviviente(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
         val configMecanica = plugin.configManager.getSupervivientes()
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -200,4 +200,7 @@ class Jesse : Superviviente(
         super.cleanup(player)
     }
 }
+
+
+
 

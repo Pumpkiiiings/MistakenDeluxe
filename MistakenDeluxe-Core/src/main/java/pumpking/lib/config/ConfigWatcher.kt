@@ -24,7 +24,7 @@ object ConfigWatcher {
             menusPath.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
         }
 
-        job = CoroutineScope(Dispatchers.IO).launch {
+        job = pumpking.lib.task.PumpkingTask.ioScope.launch {
             while (isActive) {
                 val key = try {
                     watchService.poll(1, TimeUnit.SECONDS)
@@ -33,19 +33,19 @@ object ConfigWatcher {
                 } catch (e: ClosedWatchServiceException) {
                     break
                 }
-                
+
                 if (key == null) continue
 
                 for (event in key.pollEvents()) {
                     if (event.kind() == StandardWatchEventKinds.OVERFLOW) continue
-                    
+
                     val file = event.context() as Path
                     val fileName = file.toString()
-                    
+
                     if (fileName.endsWith(".yml") || fileName.endsWith(".json")) {
                         val now = System.currentTimeMillis()
                         val lastUpdate = debounceCache.getOrDefault(fileName, 0L)
-                        
+
                         // 500ms debounce
                         if (now - lastUpdate > 500) {
                             debounceCache[fileName] = now

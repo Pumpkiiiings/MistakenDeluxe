@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class Aldeano : Superviviente(
     "aldeano",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "supervivientes.aldeano.nombre", "Aldeano", "supervivientes_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.aldeano.nombre", "supervivientes_info")
 ) {
 
     private val pathBase = "supervivientes.aldeano"
@@ -78,7 +78,7 @@ class Aldeano : Superviviente(
 
     override fun usarHabilidad(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSupervivientes()
-        val langConfig = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("$pathBase.items.habilidad1_cooldown", 20))) {
@@ -112,7 +112,7 @@ class Aldeano : Superviviente(
         // Recarga segura
         preLoadKit()
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "supervivientes_info")
+        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "supervivientes_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
@@ -178,4 +178,7 @@ class Aldeano : Superviviente(
         activeTasks.clear()
     }
 }
+
+
+
 

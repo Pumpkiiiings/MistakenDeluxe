@@ -1,4 +1,4 @@
-package liric.mistaken.data.db
+﻿package liric.mistaken.data.db
 
 import com.zaxxer.hikari.HikariConfig
 import liric.mistaken.Mistaken
@@ -9,7 +9,7 @@ class SQLiteDatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(plugi
 
     override fun getHikariConfig(): HikariConfig {
         val hikariConfig = HikariConfig()
-        
+
         val dbFile = File(plugin.dataFolder, "database.db")
         if (!dbFile.exists()) {
             dbFile.parentFile.mkdirs()
@@ -29,16 +29,16 @@ class SQLiteDatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(plugi
     override val insertIgnoreStatsQuery = "INSERT OR IGNORE INTO stats (uuid, username) VALUES (?, ?)"
 
     override val upsertPlayerDataQuery = """
-        INSERT INTO mistaken_player_data 
-        (uuid, lang, killers_owned, killer_selected, survivors_owned, survivor_selected, nick, skin_source) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
-        ON CONFLICT (uuid) DO UPDATE SET 
-        lang = EXCLUDED.lang, 
-        killers_owned = EXCLUDED.killers_owned, 
-        killer_selected = EXCLUDED.killer_selected, 
-        survivors_owned = EXCLUDED.survivors_owned, 
-        survivor_selected = EXCLUDED.survivor_selected, 
-        nick = EXCLUDED.nick, 
+        INSERT INTO mistaken_player_data
+        (uuid, lang, killers_owned, killer_selected, survivors_owned, survivor_selected, nick, skin_source)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (uuid) DO UPDATE SET
+        lang = EXCLUDED.lang,
+        killers_owned = EXCLUDED.killers_owned,
+        killer_selected = EXCLUDED.killer_selected,
+        survivors_owned = EXCLUDED.survivors_owned,
+        survivor_selected = EXCLUDED.survivor_selected,
+        nick = EXCLUDED.nick,
         skin_source = EXCLUDED.skin_source
     """.trimIndent()
 

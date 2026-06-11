@@ -1,7 +1,7 @@
 ﻿package pumpking.lib.database
 
 abstract class Repository<K, V>(protected val provider: DatabaseProvider) {
-    
+
     /**
      * Initializes the repository (e.g., creating tables).
      */

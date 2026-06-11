@@ -37,7 +37,7 @@ import kotlin.math.sin
  */
 class NullAsesino : CoreAsesino(
     "null",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.null.nombre", "<dark_gray><b>NULL</b>", "asesinos_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.null.nombre", "asesinos_info")
 ), Listener { // 🔥 Agregado Listener para Finishers
 
     private val pathBase = "asesinos.null"
@@ -193,7 +193,7 @@ class NullAsesino : CoreAsesino(
         // 🔥 ESCALA AUMENTADA
         player.getAttribute(Attribute.SCALE)?.baseValue = 1.1
 
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "asesinos_info")
         val configMecanica = plugin.configManager.getAsesinos()
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -394,5 +394,8 @@ class NullAsesino : CoreAsesino(
         activeTraps.clear()
     }
 }
+
+
+
 
 

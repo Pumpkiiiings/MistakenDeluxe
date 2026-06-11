@@ -1,32 +1,32 @@
-asesinos:
+﻿asesinos:
   slasher:
     nombre: "<white><b>PUMPKIN WHITE</b>"
     descripcion:
-      - "<gray>Un asesino clásico y brutal."
-      - "<gray>Especialista en persecución física."
-      - "<red>Mecánica: <white>Causa hemorragias constantes."
+      - "<gray>Un asesino clÃ¡sico y brutal."
+      - "<gray>Especialista en persecuciÃ³n fÃ­sica."
+      - "<red>MecÃ¡nica: <white>Causa hemorragias constantes."
     lore_tienda:
       - "<gray>\"Su sed de sangre no tiene fin...\""
-      - "<white>Dificultad: <green>Fácil"
+      - "<white>Dificultad: <green>FÃ¡cil"
     habilidades_nombres:
       arma: "<red>Hacha"
       habilidad1: "<red>Sed de Sangre"
       habilidad2: "<gold>Machete Lanzable"
       habilidad3: "<dark_purple>Presencia Aterradora"
-      habilidad4: "<dark_red><bold>MODO EJECUCIÓN</bold>"
+      habilidad4: "<dark_red><bold>MODO EJECUCIÃ“N</bold>"
 
   herobrine:
     nombre: "<white><b>HEROBRINE</b>"
     descripcion:
       - "<gray>El mito que corrompe la realidad."
       - "<gray>Especialista en acecho y movilidad."
-      - "<white>Mecánica: <white>Teletransporte y revelación."
+      - "<white>MecÃ¡nica: <white>Teletransporte y revelaciÃ³n."
     lore_tienda:
-      - "<gray>\"Él no debería estar aquí...\""
+      - "<gray>\"Ã‰l no deberÃ­a estar aquÃ­...\""
       - "<white>Dificultad: <yellow>Media"
     habilidades_nombres:
       arma: "<white>Hoja del Olvido"
-      habilidad1: "<white>Dash del Vacío"
+      habilidad1: "<white>Dash del VacÃ­o"
       habilidad2: "<aqua>Salto Dimensional"
       habilidad3: "<dark_gray>Pulso de Terror"
       habilidad4: "<red><bold>ERROR DE MUNDO</bold>"
@@ -34,15 +34,15 @@ asesinos:
   entity303:
     nombre: "<red><b>ENTITY 303</b>"
     descripcion:
-      - "<gray>Un error crítico en el código."
+      - "<gray>Un error crÃ­tico en el cÃ³digo."
       - "<gray>Especialista en ataques glitch y fuego."
-      - "<red>Mecánica: <white>Infección de datos y vuelo."
+      - "<red>MecÃ¡nica: <white>InfecciÃ³n de datos y vuelo."
     lore_tienda:
       - "<gray>\"SYSTEM ERROR: 303 FOUND\""
       - "<white>Dificultad: <yellow>Media"
     habilidades_nombres:
       arma: "<red>Sable Corrupto"
-      habilidad1: "<red>Dash de Código"
+      habilidad1: "<red>Dash de CÃ³digo"
       habilidad2: "<red>Estrella del Error"
       habilidad3: "<red>Protocolo de Vuelo"
       habilidad4: "<dark_red><bold>CRASH DE SISTEMA</bold>"
@@ -52,15 +52,15 @@ asesinos:
     descripcion:
       - "<gray>La ausencia absoluta de existencia."
       - "<gray>Especialista en ceguera y trampas."
-      - "<dark_gray>Mecánica: <white>Oscuridad total y asfixia."
+      - "<dark_gray>MecÃ¡nica: <white>Oscuridad total y asfixia."
     lore_tienda:
-      - "<gray>\"Nada queda donde él camina...\""
-      - "<white>Dificultad: <red>Difícil"
+      - "<gray>\"Nada queda donde Ã©l camina...\""
+      - "<white>Dificultad: <red>DifÃ­cil"
     habilidades_nombres:
-      arma: "<dark_gray>Daga del Vacío"
+      arma: "<dark_gray>Daga del VacÃ­o"
       habilidad1: "<red>Error de Renderizado"
       habilidad2: "<aqua>Faro de Almas"
-      habilidad3: "<dark_gray>Prisión del Vacío"
+      habilidad3: "<dark_gray>PrisiÃ³n del VacÃ­o"
       habilidad4: "<gray><bold>COLMILLOS DEL ABISMO</bold>"
 
   charlie:
@@ -68,23 +68,23 @@ asesinos:
     descripcion:
       - "<gray>El heraldo del fuego y el hielo eterno."
       - "<gray>Domina el campo con ataques elementales masivos."
-      - "<gradient:#ff4500:#ff8c00>Mecánica:</gradient> <white>Poder devastador vs Agotamiento."
+      - "<gradient:#ff4500:#ff8c00>MecÃ¡nica:</gradient> <white>Poder devastador vs Agotamiento."
     lore_tienda:
       - "<gray>\"You can run from your demons until you are exhausted...\""
       - "<white>Dificultad: <red>Experto"
     habilidades_nombres:
       arma: "<gradient:#ff4500:#ff8c00>Filo del Infierno</gradient>"
-      habilidad1: "<red><b>¡INFIERNO!</b>"
+      habilidad1: "<red><b>Â¡INFIERNO!</b>"
       habilidad2: "<gradient:#ff4500:#000000><b>Demon's Run</b></gradient>"
-      habilidad3: "<aqua><b>Púas de Glaciar</b>"
+      habilidad3: "<aqua><b>PÃºas de Glaciar</b>"
       habilidad4: "<dark_red><b>Colmillos del Inframundo</b>"
 
   devesto:
     nombre: "<gradient:#4b0082:#000000><b>DEVESTO</b></gradient> <white>[F3X]</white>"
     descripcion:
-      - "<gray>El arquitecto corrupto del código."
+      - "<gray>El arquitecto corrupto del cÃ³digo."
       - "<gray>Manipula el mapa a su voluntad."
-      - "<dark_purple>Mecánica:</gradient> <white>//set 0 y restauración."
+      - "<dark_purple>MecÃ¡nica:</gradient> <white>//set 0 y restauraciÃ³n."
     lore_tienda:
       - "<gray>\"Control-Alt-Delete a tu existencia.\""
       - "<white>Dificultad: <red>Imposible"
@@ -100,14 +100,14 @@ asesinos:
     descripcion:
       - "<gray>El Charro Negro ha llegado por tu alma."
       - "<gray>Especialista en aturdimiento auditivo."
-      - "<red>Mecánica:</gradient> <white>Música global y mareo."
+      - "<red>MecÃ¡nica:</gradient> <white>MÃºsica global y mareo."
     lore_tienda:
-      - "<gray>\"¡Ay ay ay! Canta y no llores...\""
+      - "<gray>\"Â¡Ay ay ay! Canta y no llores...\""
       - "<white>Dificultad: <red>Experto"
     habilidades_nombres:
       arma: "<gradient:#ff0000:#000000>La Guitarra del Destino</gradient>"
       habilidad1: "<red>Grito Aterrador"
-      habilidad2: "<gold>Jarabe Tapatío (Zapateado)"
+      habilidad2: "<gold>Jarabe TapatÃ­o (Zapateado)"
       habilidad3: "<white>Guitarrazo Certero"
       habilidad4: "<green><bold>TRAGO DE TEQUILA</bold>"
 
@@ -115,14 +115,14 @@ asesinos:
     nombre: "<gradient:#ff66cc:#ff0000><b>KASANE TETO</b></gradient>"
     descripcion:
       - "<gray>La quimera UTAU ha llegado a Mistaken."
-      - "<gray>Especialista en distorsión y ataques tácticos."
-      - "<red>Mecánica: <white>Habilidades potentes con auto-debuffs."
+      - "<gray>Especialista en distorsiÃ³n y ataques tÃ¡cticos."
+      - "<red>MecÃ¡nica: <white>Habilidades potentes con auto-debuffs."
     lore_tienda:
-      - "<gray>\"¡Eres tan tonto! (Baka!)\""
-      - "<white>Dificultad: <red>Difícil"
+      - "<gray>\"Â¡Eres tan tonto! (Baka!)\""
+      - "<white>Dificultad: <red>DifÃ­cil"
     habilidades_nombres:
       arma: "<gradient:#ff66cc:#ff0000>Microfono de la Quimera</gradient>"
-      habilidad1: "<gradient:#7d7d7d:#ff0000>Taladro Quimérico</gradient>"
+      habilidad1: "<gradient:#7d7d7d:#ff0000>Taladro QuimÃ©rico</gradient>"
       habilidad2: "<gradient:#ffcc99:#e6ac00>Baguette de Hierro</gradient>"
       habilidad3: "<gradient:#ff0000:#ffffff>Broma del 1 de Abril</gradient>"
       habilidad4: "<dark_red><bold>TERRITORY (0401)</bold>"
@@ -130,16 +130,16 @@ asesinos:
   miku:
     nombre: "<gradient:#00ffcc:#0099ff><b>HATSUNE MIKU</b></gradient>"
     descripcion:
-      - "<gray>La ídolo virtual definitiva ha llegado."
-      - "<gray>Especialista en control de masas y láseres."
-      - "<aqua>Mecánica: <white>Proyecciones de luz y daño masivo."
+      - "<gray>La Ã­dolo virtual definitiva ha llegado."
+      - "<gray>Especialista en control de masas y lÃ¡seres."
+      - "<aqua>MecÃ¡nica: <white>Proyecciones de luz y daÃ±o masivo."
     lore_tienda:
-      - "<gray>\"¡El mundo es mío!\""
+      - "<gray>\"Â¡El mundo es mÃ­o!\""
       - "<white>Dificultad: <yellow>Media"
     habilidades_nombres:
       arma: "<gradient:#00ffcc:#0099ff>Negi-Saber</gradient>"
-      habilidad1: "<aqua>Proyección 39"
-      habilidad2: "<gradient:#00ffcc:#ffffff>DOMINACIÓN MUNDIAL</gradient>"
+      habilidad1: "<aqua>ProyecciÃ³n 39"
+      habilidad2: "<gradient:#00ffcc:#ffffff>DOMINACIÃ“N MUNDIAL</gradient>"
       habilidad3: "<gradient:#ff00cc:#00ffcc><b>MIKU MIKU BEAMMMM</b></gradient>"
       habilidad4: "<gradient:#00ffcc:#0099ff><bold>CONCIERTO FINAL</bold></gradient>"
 
@@ -147,27 +147,27 @@ asesinos:
     nombre: "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient> <white>[ADMIN]</white>"
     descripcion:
       - "<red>El Administrador del Mundo ha regresado."
-      - "<gray>Controla el campo de batalla con el poder del código."
-      - "<gold>Mecánica: <white>Dash destructivo y ataques del Vacío."
+      - "<gray>Controla el campo de batalla con el poder del cÃ³digo."
+      - "<gold>MecÃ¡nica: <white>Dash destructivo y ataques del VacÃ­o."
     lore_tienda:
-      - "<gray>\"¡Yo hago las reglas aquí!\""
+      - "<gray>\"Â¡Yo hago las reglas aquÃ­!\""
       - "<white>Dificultad: <dark_red>IMPARABLE"
     habilidades_nombres:
       arma: "<gradient:#ff0000:#ffff00>Pico del Administrador</gradient>"
       habilidad1: "<red><b>Admin Dash</b>"
-      habilidad2: "<white><b>Visión del Administrador</b>"
-      habilidad3: "<dark_purple><b>Colmillos del Vacío</b>"
+      habilidad2: "<white><b>VisiÃ³n del Administrador</b>"
+      habilidad3: "<dark_purple><b>Colmillos del VacÃ­o</b>"
       habilidad4: "<gold><b>Estrella del Fin</b>"
 
   colorandelectricity:
-    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>色彩電気</b></gradient>"
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>è‰²å½©é›»æ°—</b></gradient>"
     descripcion:
-      - "<gray>Un ser sin cuerpo hecho de pura estática."
-      - "<gray>Especialista en robo de visión y velocidad."
-      - "<gradient:#ff0080:#00ffff>Mecánica:</gradient> <white>Sobrecarga cromática."
+      - "<gray>Un ser sin cuerpo hecho de pura estÃ¡tica."
+      - "<gray>Especialista en robo de visiÃ³n y velocidad."
+      - "<gradient:#ff0080:#00ffff>MecÃ¡nica:</gradient> <white>Sobrecarga cromÃ¡tica."
     lore_tienda:
       - "<gray>\"Quiero colores... dame tus colores.\""
-      - "<white>Dificultad: <red>Difícil"
+      - "<white>Dificultad: <red>DifÃ­cil"
     habilidades_nombres:
       arma: "<gradient:#ff0080:#00ffff>Cuchilla de Alto Voltaje</gradient>"
       habilidad1: "<gradient:#ff0080:#ffffff>Vivid Trace (Dash)</gradient>"
@@ -180,7 +180,7 @@ asesinos:
     descripcion:
       - "<gray>Asesino de pruebas v4.1 (Rama DEV)."
       - "<gray>Especialista en ataques de red y glitches."
-      - "<green>Mecánica: <white>Packet loss y errores críticos."
+      - "<green>MecÃ¡nica: <white>Packet loss y errores crÃ­ticos."
     lore_tienda:
       - "<dark_gray>\"127.0.0.1: Connection Terminated.\""
       - "<white>Dificultad: <green>Prueba"
@@ -196,13 +196,13 @@ asesinos:
     descripcion:
       - "<gray>El demonio de tinta ha escapado del estudio."
       - "<gray>Especialista en movilidad y ceguera."
-      - "<black>Mecánica: <white>Túneles de tinta y forma de Bestia."
+      - "<black>MecÃ¡nica: <white>TÃºneles de tinta y forma de Bestia."
     lore_tienda:
       - "<gray>\"tintoso.\""
-      - "<white>Dificultad: <red>DIFÍCIL"
+      - "<white>Dificultad: <red>DIFÃCIL"
     habilidades_nombres:
       arma: "<black>Hacha Manchada de Tinta"
-      habilidad1: "<dark_gray><b>Túnel de Tinta</b>"
+      habilidad1: "<dark_gray><b>TÃºnel de Tinta</b>"
       habilidad2: "<black><b>Desbordamiento</b>"
       habilidad3: "<dark_gray><b>Charco Corrosivo</b>"
       habilidad4: "<black><bold>EL DEMONIO DE TINTA</bold>"
@@ -210,7 +210,7 @@ asesinos:
   colorsito:
     nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>COLORSITO</b></gradient>"
     descripcion:
-      - "<gray>Una version mas pequeña de Color And Electricity."
+      - "<gray>Una version mas pequeÃ±a de Color And Electricity."
       - "<yellow>Hecha por: MarAgridulce."
     lore_tienda:
       - "<gray>\"Es electrico y colorido.\""
@@ -226,44 +226,44 @@ asesinos:
     nombre: "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>"
     descripcion:
       - "<gray>Un misterioso ilusionista que domina"
-      - "<gray>el arte del engaño y la magia oscura."
+      - "<gray>el arte del engaÃ±o y la magia oscura."
     lore_tienda:
       - "<gray>\"Nada de lo que ves es real...\""
       - "<white>Dificultad: <red>Alta"
     habilidades_nombres:
       arma: "<dark_purple>Grimorio de las Ilusiones</dark_purple>"
-      habilidad1: "<light_purple>Dash Mágico</light_purple>"
+      habilidad1: "<light_purple>Dash MÃ¡gico</light_purple>"
       habilidad2: "<white>Lluvia de Cartas</white>"
       habilidad3: "<dark_aqua>Fauces de Evocador</dark_aqua>"
-      habilidad4: "<dark_red><bold>INVENCIÓN: GEOFFREY 3.0</bold></dark_red>"
+      habilidad4: "<dark_red><bold>INVENCIÃ“N: GEOFFREY 3.0</bold></dark_red>"
 
   pizzano:
     nombre: "<gradient:#ff4500:#ff8c00><b>PIZZANO</b></gradient>"
     descripcion:
       - "<gray>Un loco hiperactivo impulsado por"
-      - "<gray>una sobredosis de azúcar y caos."
+      - "<gray>una sobredosis de azÃºcar y caos."
     lore_tienda:
-      - "<gray>\"¡No puedo parar! ¡NO PUEDO PARAR!\""
-      - "<white>Dificultad: <green>Fácil"
+      - "<gray>\"Â¡No puedo parar! Â¡NO PUEDO PARAR!\""
+      - "<white>Dificultad: <green>FÃ¡cil"
     habilidades_nombres:
-      arma: "<red>Cortador Frenético</red>"
+      arma: "<red>Cortador FrenÃ©tico</red>"
       habilidad1: "<blue>Embestida de Regaliz</blue>"
       habilidad2: "<yellow>Tornado de Espiral</yellow>"
-      habilidad3: "<dark_red><bold>ESCAPE FRENÉTICO</bold></dark_red>"
-      habilidad4: "<gray>Subidón de Azúcar (Pasiva)</gray>"
+      habilidad3: "<dark_red><bold>ESCAPE FRENÃ‰TICO</bold></dark_red>"
+      habilidad4: "<gray>SubidÃ³n de AzÃºcar (Pasiva)</gray>"
 
   error_estatico:
-    nombre: "<gradient:#00ffff:#ff00ff><b>ERROR ESTÁTICO</b></gradient>"
+    nombre: "<gradient:#00ffff:#ff00ff><b>ERROR ESTÃTICO</b></gradient>"
     descripcion:
-      - "<gray>Un ente digital corrupto que tomó"
+      - "<gray>Un ente digital corrupto que tomÃ³"
       - "<gray>la forma de una idol virtual."
     lore_tienda:
       - "<gray>\"This is how it should be...\""
       - "<white>Dificultad: <dark_purple>Extrema"
     habilidades_nombres:
-      arma: "<aqua>Micrófono Corrupto</aqua>"
+      arma: "<aqua>MicrÃ³fono Corrupto</aqua>"
       habilidad1: "<light_purple>Salto de Cuadro</light_purple>"
-      habilidad2: "<blue>Sintonía Forzada</blue>"
+      habilidad2: "<blue>SintonÃ­a Forzada</blue>"
       habilidad3: "<dark_red><bold>PANTALLAZO AZUL</bold></dark_red>"
       habilidad4: "<gray>Frecuencia Distorsionada (Pasiva)</gray>"
 
@@ -271,15 +271,15 @@ asesinos:
     nombre: "<gradient:#ff5555:#ffff55><b>ROMEO (NERF)</b></gradient> <white>[ADMIN]</white>"
     descripcion:
       - "<red>El Administrador del Mundo ha regresado."
-      - "<gray>Controla el campo con el poder del código (Balanceado)."
-      - "<gold>Mecánica: <white>Dash destructor y visión limitada."
+      - "<gray>Controla el campo con el poder del cÃ³digo (Balanceado)."
+      - "<gold>MecÃ¡nica: <white>Dash destructor y visiÃ³n limitada."
     lore_tienda:
-      - "<gray>\"¡Yo hago las reglas aquí! (O eso creo)\""
-      - "<white>Dificultad: <dark_red>Difícil"
+      - "<gray>\"Â¡Yo hago las reglas aquÃ­! (O eso creo)\""
+      - "<white>Dificultad: <dark_red>DifÃ­cil"
     habilidades_nombres:
       arma: "<gradient:#ff5555:#ffff55>Pico del Administrador</gradient>"
       habilidad1: "<red><b>Admin Dash Corto</b>"
-      habilidad2: "<white><b>Visión Reducida</b>"
+      habilidad2: "<white><b>VisiÃ³n Reducida</b>"
       habilidad3: "<dark_purple><b>Colmillo Simple</b>"
       habilidad4: "<gold><b>Estrella Menor</b>"
 
@@ -288,20 +288,20 @@ asesinos:
     descripcion:
       - "<gray>El inestable maestro de ceremonias"
       - "<gray>del Asombroso Circo Digital."
-      - "<white>Mecánica: <red>Humillación cómica y"
-      - "<red>control de masas caótico."
+      - "<white>MecÃ¡nica: <red>HumillaciÃ³n cÃ³mica y"
+      - "<red>control de masas caÃ³tico."
     lore_tienda:
-      - "<gray>\"¡Soy Caine, vuestro humilde"
+      - "<gray>\"Â¡Soy Caine, vuestro humilde"
       - "<gray>maestro de ceremonias!\""
       - "<white>Dificultad: <dark_purple>EXTREMA"
     habilidades_nombres:
       arma: "<red>Batuta de Ceremonias</red>"
-      habilidad1: "<red><bold>¡MAZO CHILLÓN!</bold></red>"
+      habilidad1: "<red><bold>Â¡MAZO CHILLÃ“N!</bold></red>"
       habilidad2: "<aqua>Dash Estrepitoso</aqua>"
       habilidad3: "<light_purple>Danza Obligatoria</light_purple>"
       habilidad4: "<white>Ojo Explorador</white>"
     habilidades_mensajes:
-      habilidad1: "<red>¡ZAS! ¡Aplastado como un insecto!"
-      habilidad2: "<aqua>¡FWOOSH! ¡Abran paso al maestro!"
-      habilidad3: "<light_purple>¡Todos a bailar, es una orden!"
-      habilidad4: "<white>¡No me pierdo de ningún detalle!"
+      habilidad1: "<red>Â¡ZAS! Â¡Aplastado como un insecto!"
+      habilidad2: "<aqua>Â¡FWOOSH! Â¡Abran paso al maestro!"
+      habilidad3: "<light_purple>Â¡Todos a bailar, es una orden!"
+      habilidad4: "<white>Â¡No me pierdo de ningÃºn detalle!"

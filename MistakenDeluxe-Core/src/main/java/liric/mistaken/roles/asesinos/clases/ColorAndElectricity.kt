@@ -32,7 +32,7 @@ import kotlin.math.sin
 
 class ColorAndElectricity : CoreAsesino(
     "colorandelectricity",
-    Mistaken.instance.pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "asesinos.colorandelectricity.nombre", "<gradient:#ff0080:#00ffff:#ffff00><b>色彩電気</b></gradient>", "asesinos_info")
+    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.colorandelectricity.nombre", "asesinos_info")
 ) {
 
     private val path = "asesinos.colorandelectricity"
@@ -86,7 +86,7 @@ class ColorAndElectricity : CoreAsesino(
         inv.armorContents = arrayOfNulls(4)
 
         val configMecanica = plugin.configManager.getAsesinos()
-        val langInfo = plugin.messageConfig.getSpecificFile(player, "asesinos_info")
+        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "asesinos_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val id = if (isArmor) configMecanica.getString("asesinos.colorandelectricity.armadura.$key")
@@ -274,5 +274,8 @@ class ColorAndElectricity : CoreAsesino(
         player?.let { limpiarEntidades(it.uniqueId) }
     }
 }
+
+
+
 
 

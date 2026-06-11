@@ -1,0 +1,12 @@
+database:
+  type: SQLITE # Options: SQLITE, MYSQL
+  host: "localhost"
+  port: 3306
+  database: "minecraft"
+  username: "root"
+  password: ""
+
+settings:
+  max-level: 100
+  enable-action-bar: true
+  enable-chat-level-prefix: true

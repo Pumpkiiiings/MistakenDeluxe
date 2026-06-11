@@ -16,9 +16,10 @@ interface MistakenAPI {
     val asesinoManager: IAsesinoManager
     val sessionManager: ISessionManager
     val configManager: IConfigManager
+    val messages: pumpking.lib.messages.IMessageService
     val mm: MiniMessage
     val logger: Logger
-    
+
     fun isIgnored(player: org.bukkit.entity.Player): Boolean
 }
 

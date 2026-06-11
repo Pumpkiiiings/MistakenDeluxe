@@ -20,7 +20,7 @@ object BungeeUtils {
             }, null)
 
         } catch (e: Exception) {
-            plugin.componentLogger.error(plugin.mm.deserialize("<red>Error al enviar a ${player.name} al proxy: ${e.message}</red>"))
+            plugin.componentLogger.error(plugin.mm.deserialize("[ERROR] [Proxy] Failed to send ${player.name} to proxy: ${e.message}"))
         }
     }
 }
