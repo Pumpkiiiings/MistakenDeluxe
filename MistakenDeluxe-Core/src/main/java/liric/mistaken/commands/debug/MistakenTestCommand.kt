@@ -71,7 +71,22 @@ object MistakenTestCommand {
             Commands.literal("forcestart")
             .executes { ctx ->
                 val p = ctx.source.sender as? Player ?: return@executes 0
-                val session = plugin.sessionManager.getSession(p)
+                var session = plugin.sessionManager.getSession(p)
+                
+                if (session == null && plugin.serverMode == "MULTIARENA") {
+                    session = plugin.sessionManager.activeSessions.values.firstOrNull { 
+                        it.currentState == liric.mistaken.game.enums.GameState.LOBBY || 
+                        it.currentState == liric.mistaken.game.enums.GameState.VOTING || 
+                        it.currentState == liric.mistaken.game.enums.GameState.BREAK 
+                    }
+                    if (session == null) {
+                        session = plugin.sessionManager.createSession("Votando...")
+                    }
+                    
+                    val playersToJoin = Bukkit.getOnlinePlayers().filter { plugin.sessionManager.getSession(it) == null }
+                    playersToJoin.forEach { plugin.sessionManager.joinSession(it, session!!.id) }
+                }
+
                 if (session == null) {
                     p.sendMessage("§c[!] No estás en ninguna sesión, plebe.")
                     return@executes 0

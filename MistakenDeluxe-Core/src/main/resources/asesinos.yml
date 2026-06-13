@@ -116,6 +116,7 @@ asesinos:
 
   charlie:
     precio: 7500
+    permiso: "mistaken.skins.dev"
     icono_material: "MAGMA_BLOCK"
     armadura:
       casco: "mistaken:charlie_helmet"
@@ -144,6 +145,7 @@ asesinos:
 
   devesto:
     precio: 10000
+    permiso: "mistaken.skins.dev"
     icono_material: "NETHERITE_AXE"
     armadura:
       casco: "mistaken:devesto_helmet"
@@ -200,6 +202,7 @@ asesinos:
 
   teto:
     precio: 15000
+    permiso: "mistaken.skins.dev"
     icono_material: "MUSIC_DISC_PIGSTEP"
     armadura:
       casco: "mistaken:teto_helmet"
@@ -228,6 +231,7 @@ asesinos:
 
   miku:
     precio: 20000
+    permiso: "mistaken.skins.dev"
     icono_material: "CYAN_DYE"
     armadura:
       casco: "mistaken:miku_helmet"
@@ -256,10 +260,12 @@ asesinos:
 
   romeodebuff:
     precio: 30000
+    permiso: "mistaken.skins.dev"
     icono_material: "COMMAND_BLOCK"
 
   romeo:
     precio: 30000
+    permiso: "mistaken.skins.dev"
     icono_material: "COMMAND_BLOCK"
     armadura:
       casco: "mistaken:romeo_helmet"
@@ -292,6 +298,7 @@ asesinos:
 
   colorandelectricity:
     precio: 10500
+    permiso: "mistaken.skins.exclusivo"
     icono_material: "LIGHTNING_ROD"
     armadura:
       casco: "mistaken:muship_helmet"
@@ -348,6 +355,7 @@ asesinos:
 
   bendy:
     precio: 25000
+    permiso: "mistaken.skins.dev"
     icono_material: "COAL"
     armadura:
       casco: "mistaken:bendy_helmet"
@@ -376,6 +384,7 @@ asesinos:
 
   sowoul:
     precio: 850000
+    permiso: "mistaken.skins.dev"
     icono_material: "ENCHANTED_BOOK"
     armadura:
       casco: "mistaken:sowoul_helmet"
@@ -404,6 +413,7 @@ asesinos:
 
   pizzano:
     precio: 950000
+    permiso: "mistaken.skins.dev"
     icono_material: "SUGAR"
     armadura:
       casco: "mistaken:pizzano_helmet"
@@ -430,6 +440,7 @@ asesinos:
 
   error_estatico:
     precio: 1000000
+    permiso: "mistaken.skins.exclusivo"
     icono_material: "MUSIC_DISC_5"
     armadura:
       casco: "LEATHER_HELMET"

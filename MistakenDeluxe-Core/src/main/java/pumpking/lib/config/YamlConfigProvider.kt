@@ -25,6 +25,27 @@ class YamlConfigProvider(override val file: File) : ConfigProvider {
         }
         try {
             config = loadUtf8(file)
+            
+            // Auto-update missing keys from internal resources
+            val plugin = pumpking.lib.core.PumpkingLib.plugin
+            val relativePath = file.relativeToOrNull(plugin.dataFolder)?.path?.replace("\\", "/")
+            
+            val resourceStream = if (relativePath != null) plugin.getResource(relativePath) else plugin.getResource(file.name)
+            if (resourceStream != null) {
+                val defaultYml = YamlConfiguration()
+                java.io.InputStreamReader(resourceStream, Charsets.UTF_8).use { defaultYml.load(it) }
+                
+                var changed = false
+                for (key in defaultYml.getKeys(true)) {
+                    if (!config.contains(key)) {
+                        config.set(key, defaultYml.get(key))
+                        changed = true
+                    }
+                }
+                if (changed) {
+                    save()
+                }
+            }
         } catch (e: Exception) {
             pumpking.lib.core.PumpkingLib.logError(
                 pumpking.lib.core.PumpkingLib.LogCategory.CORE, 

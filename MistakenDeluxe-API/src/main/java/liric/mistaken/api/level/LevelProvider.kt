@@ -24,4 +24,9 @@ interface LevelProvider {
      * Adds the specified number of levels to a player.
      */
     fun addLevel(uuid: UUID, amount: Int)
+
+    /**
+     * Adds the specified amount of experience to a player.
+     */
+    fun addExperience(uuid: UUID, amount: Long)
 }

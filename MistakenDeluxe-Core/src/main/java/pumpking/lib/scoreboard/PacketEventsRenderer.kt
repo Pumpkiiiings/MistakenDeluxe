@@ -1,120 +1,144 @@
 package pumpking.lib.scoreboard
 
+import com.github.retrooper.packetevents.PacketEvents
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerScoreboardObjective
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
-import org.bukkit.Bukkit
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.entity.Player
 import pumpking.lib.color.ColorTranslator
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * PacketEvents-backed scoreboard renderer.
- *
- * Provides all features of BukkitRenderer PLUS:
- * - Animated RGB gradient title cycling
- * - Per-line animated color support via <animate> MiniMessage tag placeholder
- * - High-frequency update support (tick-based animation phase)
- * - Packet-level Team optimization (reuses Bukkit scoreboard but renders more aggressively)
- *
- * Instantiated ONLY when PacketEvents is confirmed available at runtime.
- * No PacketEvents classes are referenced in the import block so the class
- * loads safely regardless. All PE-specific code goes through reflection-free
- * hooks into PacketEvents' WrapperPlayServerTeams if needed in the future.
+ * Bypasses Bukkit entirely for updates, sending packets directly.
+ * Uses zero-allocation techniques and batching.
  */
 class PacketEventsRenderer : IScoreboardRenderer {
 
     override val supportsAnimations: Boolean = true
     override val supportsAdvancedRendering: Boolean = true
 
-    // Cache: UUID -> { lineIndex -> serialized Component JSON }
-    private val lineCache = ConcurrentHashMap<UUID, ConcurrentHashMap<Int, String>>()
-
-    // Per-player animation tick counter
-    private val animTick = ConcurrentHashMap<UUID, Int>()
-
     override fun render(player: Player, context: ScoreboardContext, template: ScoreboardTemplate) {
-        val uuid = player.uniqueId
-        val cache = lineCache.getOrPut(uuid) { ConcurrentHashMap() }
-        val tick = animTick.merge(uuid, 1, Int::plus) ?: 0
-
         val scoreboard = context.scoreboard
         val maxLines = 15
         val currentLines = template.lines
+        var packetsGenerated = 0
 
-        // --- Animated Title ---
-        val titleComponent = if (template.animatedTitle) {
-            ScoreboardAnimator.animatedGradient(stripColors(template.title), tick)
-        } else {
-            ColorTranslator.translate(template.title)
-        }
-        // Always update title on PacketEvents renderer for animation
-        context.objective.displayName(titleComponent)
-        cache[-1] = tick.toString() // use tick as sentinel so dirty check triggers every frame when animated
+        // --- Initialization (Runs once via Bukkit for compatibility) ---
+        if (!context.initialized) {
+            for (i in 0 until maxLines) {
+                val teamName = ScoreboardConstants.TEAM_NAMES[i]
+                val entryName = ScoreboardConstants.ENTRY_NAMES[i]
+                var team = scoreboard.getTeam(teamName)
 
-        // --- Scores & Teams setup (same as Bukkit) ---
-        for (i in 0 until maxLines) {
-            val teamName = "sb_line_${String.format("%02d", i)}"
-            val entryName = entryForLine(i)
-            var team = scoreboard.getTeam(teamName)
-
-            if (team == null) {
-                team = scoreboard.registerNewTeam(teamName)
-                team.addEntry(entryName)
+                if (team == null) {
+                    team = scoreboard.registerNewTeam(teamName)
+                    team.addEntry(entryName)
+                }
             }
+            context.initialized = true
+        }
 
-            val scoreObj = context.objective.getScore(entryName)
-            if (i < currentLines.size) {
-                if (scoreObj.score != maxLines - i) scoreObj.score = maxLines - i
-            } else {
-                if (scoreboard.entries.contains(entryName) && scoreObj.isScoreSet) {
+        // --- Layout Updates (Bukkit scores) ---
+        if (context.layoutChanged || currentLines.size != context.activeLines) {
+            for (i in 0 until maxLines) {
+                val entryName = ScoreboardConstants.ENTRY_NAMES[i]
+                val scoreObj = context.objective.getScore(entryName)
+
+                if (i < currentLines.size) {
+                    val targetScore = maxLines - i
+                    if (scoreObj.score != targetScore) {
+                        scoreObj.score = targetScore
+                    }
+                } else if (i < context.activeLines) {
                     scoreboard.resetScores(entryName)
                 }
             }
+            context.activeLines = currentLines.size
+            context.layoutChanged = false
         }
 
-        // --- Animated Line content ---
-        for (i in 0 until maxLines) {
-            val teamName = "sb_line_${String.format("%02d", i)}"
-            val team = scoreboard.getTeam(teamName) ?: continue
-
-            if (i < currentLines.size) {
-                val rawLine = currentLines[i].replace("%player%", player.name)
-
-                val component: Component = when {
-                    // Marker to enable per-line animated gradient: use <anim> tag
-                    rawLine.contains("<anim>") -> {
-                        val stripped = rawLine.replace("<anim>", "").replace("</anim>", "").trim()
-                        ScoreboardAnimator.animatedGradient(stripped, tick + i * 15)
+        // --- Title Updates ---
+        if (context.titleChanged) {
+            val titleText = template.title.replace("%player%", player.name)
+            if (template.animatedTitle || context.titleCache != titleText) {
+                
+                val titleComponent = if (template.animatedTitle) {
+                    if (context.strippedTitleCache == null || context.titleCache != titleText) {
+                        context.strippedTitleCache = stripColors(titleText)
                     }
-                    else -> ColorTranslator.translate(rawLine)
+                    ScoreboardAnimator.animatedGradient(context.strippedTitleCache!!, context.animTick)
+                } else {
+                    ColorTranslator.translate(titleText)
                 }
 
-                val serialized = GsonComponentSerializer.gson().serialize(component)
+                context.objective.displayName(titleComponent)
+                packetsGenerated++
 
-                // For animated lines we always update; for static lines we dirty-check
-                val isAnimated = rawLine.contains("<anim>")
-                if (isAnimated || cache[i] != serialized) {
-                    team.prefix(component)
-                    cache[i] = serialized
-                }
+                context.titleCache = titleText
+            }
+            context.titleChanged = false
+        }
+
+        // --- Line Updates ---
+        for (i in 0 until currentLines.size) {
+            if (!context.lineChanged[i]) continue
+
+            var componentToApply: Component? = null
+
+            if (!template.isLineDynamic[i]) {
+                componentToApply = context.staticLineCache[i]
             } else {
-                if (cache.containsKey(i)) {
-                    team.prefix(Component.empty())
-                    cache.remove(i)
+                val rawLine = currentLines[i].replace("%player%", player.name)
+                val isAnimated = rawLine.contains("<anim>")
+                
+                if (isAnimated) {
+                    if (context.strippedLineCache[i] == null || context.lineCache[i] != rawLine) {
+                        context.strippedLineCache[i] = rawLine.replace("<anim>", "").replace("</anim>", "").trim()
+                    }
+                    componentToApply = ScoreboardAnimator.animatedGradient(context.strippedLineCache[i]!!, context.animTick + i * 15)
+                    context.lineCache[i] = rawLine
+                } else {
+                    if (context.lineCache[i] != rawLine) {
+                        componentToApply = ColorTranslator.translate(rawLine)
+                        context.lineCache[i] = rawLine
+                    }
                 }
             }
+
+            if (componentToApply != null) {
+                sendTeamPrefixPacket(player, i, componentToApply)
+                packetsGenerated++
+            }
         }
+
+        // Clear unused lines if layout shrunk
+        for (i in currentLines.size until maxLines) {
+            if (context.lineChanged[i] || context.lineCache[i] != null) {
+                sendTeamPrefixPacket(player, i, Component.empty())
+                packetsGenerated++
+                context.lineCache[i] = null
+            }
+        }
+        
+        ScoreboardProfiler.recordPackets(packetsGenerated)
     }
 
-    override fun clearCache(uuid: UUID) {
-        lineCache.remove(uuid)
-        animTick.remove(uuid)
+    private fun sendTeamPrefixPacket(player: Player, lineIndex: Int, prefix: Component) {
+        val teamName = ScoreboardConstants.TEAM_NAMES[lineIndex]
+        val info = WrapperPlayServerTeams.ScoreBoardTeamInfo(
+            Component.empty(),
+            prefix,
+            Component.empty(),
+            WrapperPlayServerTeams.NameTagVisibility.ALWAYS,
+            WrapperPlayServerTeams.CollisionRule.NEVER,
+            NamedTextColor.WHITE,
+            WrapperPlayServerTeams.OptionData.NONE
+        )
+        val packet = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.UPDATE, info)
+        PacketEvents.getAPI().playerManager.sendPacket(player, packet)
     }
 
-    /**
-     * Strip MiniMessage and legacy color codes from text for gradient animation input.
-     */
     private fun stripColors(text: String): String {
         return text
             .replace(Regex("<[^>]+>"), "")
@@ -122,10 +146,5 @@ class PacketEventsRenderer : IScoreboardRenderer {
             .replace(Regex("&#[0-9A-Fa-f]{6}"), "")
             .replace(Regex("#[0-9A-Fa-f]{6}"), "")
             .trim()
-    }
-
-    private fun entryForLine(line: Int): String {
-        val codes = arrayOf("§0", "§1", "§2", "§3", "§4", "§5", "§6", "§7", "§8", "§9", "§a", "§b", "§c", "§d", "§e", "§f")
-        return codes[line] + "§r"
     }
 }

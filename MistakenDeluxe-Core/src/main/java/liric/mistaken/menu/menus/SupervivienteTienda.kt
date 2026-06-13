@@ -13,6 +13,7 @@ import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.persistence.PersistentDataType
+import liric.mistaken.api.requirements.RequirementEngine
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -45,6 +46,9 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
 
         for (survivorId in plugin.supervivienteManager.getClasesDisponibles().keys) {
             if (slotIndex >= slots.size) break
+
+            val permisoRequerido = globalMecanicas.getString("supervivientes.$survivorId.permiso")
+            if (permisoRequerido != null && !player.hasPermission(permisoRequerido)) continue
 
             // --- 🎨 DATOS VISUALES (Desde supervivientes_info.yml) ---
             // Ruta: supervivientes.<id>.nombre
@@ -87,6 +91,9 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
             val tiene = data.tieneSuperviviente(uuid, survivorId)
             val esSeleccionado = selected.equals(survivorId, ignoreCase = true)
 
+            val reqMessages = RequirementEngine.getRequirementMessages(player, "survivors", survivorId)
+            reqMessages.forEach { fullLore.add(parseSafe(it)) }
+
             when {
                 esSeleccionado -> fullLore.add(labelSeleccionado)
                 tiene -> fullLore.add(labelPoseido)
@@ -103,6 +110,11 @@ class SupervivienteTienda : MenuBase("supervivientes_tienda") {
                 .flags(*ItemFlag.entries.toTypedArray())
                 .asGuiItem { event ->
                     event.isCancelled = true
+                    if (reqMessages.isNotEmpty()) {
+                        player.sendMessage(parseSafe("<red>No cumples los requisitos para este superviviente.</red>"))
+                        player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
+                        return@asGuiItem
+                    }
                     handleLogic(player, survivorId, precio, tiene)
                 }
             )

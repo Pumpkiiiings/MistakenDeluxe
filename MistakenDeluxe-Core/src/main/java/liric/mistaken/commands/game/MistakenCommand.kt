@@ -1,4 +1,4 @@
-﻿package liric.mistaken.commands.game
+package liric.mistaken.commands.game
 
 import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -163,17 +163,33 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
             "start" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
-                if (gm == null) {
+                var session = gm
+
+                if (session == null && plugin.serverMode == "MULTIARENA") {
+                    session = plugin.sessionManager.activeSessions.values.firstOrNull { 
+                        it.currentState == GameState.LOBBY || 
+                        it.currentState == GameState.VOTING || 
+                        it.currentState == GameState.BREAK 
+                    }
+                    if (session == null) {
+                        session = plugin.sessionManager.createSession("Votando...")
+                    }
+                    val playersToJoin = Bukkit.getOnlinePlayers().filter { plugin.sessionManager.getSession(it) == null }
+                    playersToJoin.forEach { plugin.sessionManager.joinSession(it, session!!.id) }
+                }
+
+                if (session == null) {
                     sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesión para iniciarla."))
                     return
                 }
-                if (gm.currentState == GameState.INGAME) {
+
+                if (session.currentState == GameState.INGAME) {
                     sender.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "admin.start-already-ingame"))
                 } else {
                     sender.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "admin.start-forcing"))
-                    if (gm.currentState == GameState.LOBBY || gm.currentState == GameState.VOTING || gm.currentState == GameState.BREAK) {
-                        gm.stateController.startVotingProcess()
-                        gm.timer = 5
+                    if (session.currentState == GameState.LOBBY || session.currentState == GameState.VOTING || session.currentState == GameState.BREAK) {
+                        session.stateController.startVotingProcess()
+                        session.timer = 5
                     }
                 }
             }

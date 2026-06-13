@@ -14,6 +14,9 @@ import liric.mistaken.level.command.LevelCommand
 import liric.mistaken.level.command.LevelAdminCommand
 import liric.mistaken.level.config.LevelConfig
 import liric.mistaken.level.api.MistakenLevelExpansion
+import liric.mistaken.level.integration.UltimateAdvancementHook
+import liric.mistaken.level.rewards.RewardRegistry
+import liric.mistaken.level.rewards.types.*
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent
@@ -38,6 +41,12 @@ class LevelAddonPlugin : JavaPlugin() {
     lateinit var levelConfig: LevelConfig
         private set
 
+    lateinit var xpSourcesConfig: liric.mistaken.level.config.XpSourcesConfig
+        private set
+
+    lateinit var menuConfig: liric.mistaken.level.config.MenuConfig
+        private set
+
     private lateinit var databaseProvider: HikariDatabaseManager
 
     override fun onEnable() {
@@ -46,11 +55,18 @@ class LevelAddonPlugin : JavaPlugin() {
         // Init config
         saveDefaultConfig()
         saveResource("levels.yml", false)
-        saveResource("rewards.yml", false)
+        // No rewards.yml needed as it was merged, but keeping it if it's there
         saveResource("messages.yml", false)
+        try { saveResource("xp_sources.yml", false) } catch (e: Exception) {}
 
         levelConfig = LevelConfig(this)
         levelConfig.load()
+
+        xpSourcesConfig = liric.mistaken.level.config.XpSourcesConfig(this)
+        xpSourcesConfig.load()
+
+        menuConfig = liric.mistaken.level.config.MenuConfig(this)
+        menuConfig.load()
 
         // Init Database
         // For simplicity we will assume SQLite if config is SQLITE
@@ -69,8 +85,22 @@ class LevelAddonPlugin : JavaPlugin() {
         repository = LevelRepository(databaseProvider)
         repository.init()
 
+        // Init Hooks
+        val advancementHook = UltimateAdvancementHook(this)
+
         // Init Managers
         manager = LevelManager(this)
+
+        // Register Rewards
+        RewardRegistry.register("message", MessageReward())
+        RewardRegistry.register("actionbar", ActionBarReward())
+        RewardRegistry.register("title", TitleReward())
+        RewardRegistry.register("command", CommandReward())
+        RewardRegistry.register("killer", KillerReward())
+        RewardRegistry.register("survivor", SurvivorReward())
+        RewardRegistry.register("crystals", CurrencyReward())
+        RewardRegistry.register("permission", PermissionReward())
+        RewardRegistry.register("advancement", AdvancementReward(advancementHook))
 
         // Init providers
         levelProvider = LevelProviderImpl(this)
@@ -115,11 +145,15 @@ class LevelAddonPlugin : JavaPlugin() {
         logger.info("[MistakenDeluxe-Level-Addon] Shutting down...")
         
         // Save data
-        manager.saveAllSync()
+        if (this::manager.isInitialized) {
+            manager.saveAllSync()
+        }
 
         // Unregister services automatically handled by Bukkit, but good to be explicit for our own cleanup
         server.servicesManager.unregisterAll(this)
 
-        databaseProvider.close()
+        if (this::databaseProvider.isInitialized) {
+            databaseProvider.close()
+        }
     }
 }

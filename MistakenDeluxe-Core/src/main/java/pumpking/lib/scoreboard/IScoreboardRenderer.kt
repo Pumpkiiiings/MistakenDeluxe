@@ -16,12 +16,6 @@ interface IScoreboardRenderer {
     fun render(player: Player, context: ScoreboardContext, template: ScoreboardTemplate)
 
     /**
-     * Clear all cached state for a specific player.
-     * Call when removing a scoreboard or assigning a new template.
-     */
-    fun clearCache(uuid: UUID)
-
-    /**
      * Whether this renderer supports animated RGB gradients and animated titles.
      */
     val supportsAnimations: Boolean

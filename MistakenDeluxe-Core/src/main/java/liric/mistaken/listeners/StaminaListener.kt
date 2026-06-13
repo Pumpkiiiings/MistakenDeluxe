@@ -1,4 +1,4 @@
-﻿package liric.mistaken.listeners
+package liric.mistaken.listeners
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -114,7 +114,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                         }
 
                         if (currentStamina in 1.0..25.0 && isSprinting) {
-                            player.sendActionBar(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "listeners.stamina.low_warning", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("level", newLevel.toString())))
+                            player.sendActionBar(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "stamina.low_warning", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("level", newLevel.toString())))
                         }
                     }
                 }, null, 0L)

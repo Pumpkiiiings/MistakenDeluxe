@@ -24,7 +24,7 @@ import liric.mistaken.game.managers.gameplay.AmbientManager
 import liric.mistaken.game.managers.gameplay.CombatManager
 import liric.mistaken.game.managers.gameplay.GeneratorManager
 import liric.mistaken.game.managers.gameplay.SpectatorManager
-import liric.mistaken.game.managers.visual.CinematicManager
+import liric.mistaken.game.managers.cinematic.CinematicManager
 import liric.mistaken.game.managers.visual.ScoreboardManager
 import liric.mistaken.listeners.*
 import liric.mistaken.listeners.asesinos.AsesinoGeneralListener

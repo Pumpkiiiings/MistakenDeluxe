@@ -1,4 +1,4 @@
-﻿package liric.mistaken.api
+package liric.mistaken.api
 
 import liric.mistaken.api.managers.IAsesinoManager
 import liric.mistaken.api.managers.ISessionManager
@@ -16,6 +16,7 @@ interface MistakenAPI {
     val asesinoManager: IAsesinoManager
     val sessionManager: ISessionManager
     val configManager: IConfigManager
+    val playerDataManager: liric.mistaken.api.managers.IPlayerDataManager
     val messages: pumpking.lib.messages.IMessageService
     val mm: MiniMessage
     val logger: Logger

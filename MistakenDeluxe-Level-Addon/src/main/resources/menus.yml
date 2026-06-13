@@ -1,0 +1,9 @@
+progression_menu:
+  title: "<gold>Level Progression"
+  size: 54
+  nodes:
+    level_1: 10
+    level_2: 11
+    level_3: 12
+    level_4: 13
+    level_5: 14

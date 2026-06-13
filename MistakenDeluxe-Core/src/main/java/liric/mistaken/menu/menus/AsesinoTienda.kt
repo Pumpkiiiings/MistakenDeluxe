@@ -12,13 +12,11 @@ import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.persistence.PersistentDataType
+import liric.mistaken.api.requirements.RequirementEngine
 
 class AsesinoTienda : MenuBase("asesinos_tienda") {
 
-    companion object {
-        private val DEV_IDS = setOf("romeo", "bendy", "pizzano", "sowoul", "teto", "miku", "charlie", "devesto")
-        private val VIP_IDS = setOf("colorandelectricity", "errorestatico")
-    }
+
 
     override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
         val globalMecanicas = plugin.configManager.getAsesinos()
@@ -46,7 +44,8 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
         val asesinosCatalogo = plugin.asesinoManager.getClasesDisponibles().keys
 
         for (killerId in asesinosCatalogo) {
-            if (!tienePermisoParaVer(player, killerId)) continue
+            val permisoRequerido = globalMecanicas.getString("asesinos.$killerId.permiso")
+            if (permisoRequerido != null && !player.hasPermission(permisoRequerido)) continue
 
             // 🔥 NUEVO: Detección de slot fijo
             val targetSlot = if (fixedSlots.containsKey(killerId)) {
@@ -87,6 +86,9 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
             val tiene = data.tieneAsesino(uuid, killerId)
             val esSeleccionado = selected.equals(killerId, ignoreCase = true)
 
+            val reqMessages = RequirementEngine.getRequirementMessages(player, "killers", killerId)
+            reqMessages.forEach { fullLore.add(parseSafe(it)) }
+
             when {
                 esSeleccionado -> fullLore.add(labelSeleccionado)
                 tiene -> fullLore.add(labelPoseido)
@@ -102,6 +104,11 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
                 .flags(*ItemFlag.entries.toTypedArray())
                 .asGuiItem { event ->
                     event.isCancelled = true
+                    if (reqMessages.isNotEmpty()) {
+                        player.sendMessage(parseSafe("<red>No cumples los requisitos para este asesino.</red>"))
+                        player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
+                        return@asGuiItem
+                    }
                     handlePurchaseLogic(player, killerId, precio, tiene)
                 }
             )
@@ -168,13 +175,7 @@ class AsesinoTienda : MenuBase("asesinos_tienda") {
         }
     }
 
-    private fun tienePermisoParaVer(player: Player, id: String): Boolean {
-        return when (id.lowercase()) {
-            in DEV_IDS -> player.hasPermission("mistaken.skins.dev")
-            in VIP_IDS -> player.hasPermission("mistaken.skins.exclusivo")
-            else -> true
-        }
-    }
+
 }
 
 

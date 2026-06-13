@@ -28,20 +28,16 @@ object CraftEngine {
             return null
         }
 
-        // 2. Intento por CraftEngine (si tiene el formato namespace:id)
+        // 2. Intento por CraftEngine (usando la nueva API CraftEngineItems)
         if (property.contains(":") && isAvailable()) {
             try {
-                val split = property.split(":", limit = 2)
-                if (split.size == 2) {
-                    val key = Key.of(split[0], split[1])
-                    val optionalItem = BukkitItemManager.instance().getCustomItem(key)
-
-                    if (optionalItem.isPresent) {
-                        return optionalItem.get().buildItemStack()
-                    }
+                val itemDef = net.momirealms.craftengine.bukkit.api.CraftEngineItems.byId(property)
+                if (itemDef != null) {
+                    return itemDef.buildBukkitItem()
                 }
             } catch (e: Exception) {
                 Mistaken.Companion.instance.logger.warning("Fallo crítico al pedir ítem a CraftEngine: $property")
+                e.printStackTrace()
             }
         }
 

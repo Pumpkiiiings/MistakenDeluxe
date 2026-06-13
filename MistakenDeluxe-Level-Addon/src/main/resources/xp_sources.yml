@@ -1,0 +1,5 @@
+sources:
+  generator_repair: 50
+  player_kill: 100
+  survive_match: 150
+  killer_win: 200

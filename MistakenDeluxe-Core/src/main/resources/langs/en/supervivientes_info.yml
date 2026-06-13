@@ -1,4 +1,4 @@
-supervivientes:
+﻿supervivientes:
   civil:
     nombre: "<gradient:#ffffff:#aaaaaa><b>CIVILIAN</b></gradient>"
     descripcion:
@@ -48,7 +48,7 @@ supervivientes:
     habilidades_mensajes:
       habilidad1: "<gradient:#ff5555:#aa0000><b>⚔ SLASH!</b></gradient> <gray>A lightning-fast strike."
       habilidad2: "<gradient:#ffffff:#999999><b>💨 DASH!</b></gradient> <gray>Petra launches into battle!"
-      habilidad3: "<gradient:#555555:#000000><b>☁ POOF!</b></gradient> <gray>Disappeared into the shadows."
+      habilidad3: "<gradient:#555555:#000000><b>�  POOF!</b></gradient> <gray>Disappeared into the shadows."
 
   axel:
     nombre: "<gradient:#55ff55:#00aa00><b>AXEL</b></gradient>"
@@ -134,9 +134,9 @@ supervivientes:
       habilidad2: "<gradient:#ffffff:#aaffaa>Lunge</gradient>"
       habilidad3: "<gradient:#00aa00:#55ff55>Ferocious Howl</gradient>"
     habilidades_mensajes:
-      habilidad1: "<gradient:#aaffaa:#ffffff><b>🐾 SWIPE!</b></gradient> <gray>Killer stunned for <white>5s</white>."
+      habilidad1: "<gradient:#aaffaa:#ffffff><b>� � SWIPE!</b></gradient> <gray>Killer stunned for <white>5s</white>."
       habilidad2: "<gradient:#ffffff:#aaffaa><b>💨 RUN!</b></gradient> <gray>Wolf speed activated."
-      habilidad3: "<gradient:#00aa00:#55ff55><b>🐺 HOWL!</b></gradient> <gray>The ground shakes! Killer stunned."
+      habilidad3: "<gradient:#00aa00:#55ff55><b>� � HOWL!</b></gradient> <gray>The ground shakes! Killer stunned."
 
   raincoatkid:
     nombre: "<gradient:#ffff55:#ffaa00><b>RAINCOAT KID</b></gradient>"
@@ -187,4 +187,4 @@ supervivientes:
     habilidades_mensajes:
       habilidad1: "<aqua><b>¡A LA CARGA!</b></aqua>"
       habilidad2: "" # Melee
-      habilidad3: "<dark_aqua><b>¡FUERA DE AQUÍ!</b></dark_aqua>"
+      habilidad3: "<dark_aqua><b>¡FUERA DE AQU� !</b></dark_aqua>"

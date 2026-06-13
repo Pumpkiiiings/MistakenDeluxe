@@ -41,12 +41,14 @@ class MistakenLevelExpansion(private val plugin: LevelAddonPlugin) : Placeholder
                 val percent = if (reqXp > 0) (xp.toDouble() / reqXp.toDouble()) * 100.0 else 100.0
                 String.format("%.1f", percent)
             }
-            "level_prefix" -> plugin.levelConfig.getPrefixForLevel(level)
+            "level_prefix" -> plugin.levelConfig.getPrefixForLevel(level)?.display ?: ""
             "next_reward" -> {
-                val nextLvl = plugin.levelConfig.getNextRewardLevel(level)
-                if (nextLvl != -1) {
-                    val reward = plugin.levelConfig.getRewardForLevel(nextLvl)
-                    reward?.name ?: "Unknown"
+                val nextLvl = plugin.levelConfig.config.getConfigurationSection("levels")?.getKeys(false)
+                    ?.mapNotNull { it.toIntOrNull() }?.sorted()?.firstOrNull { it > level }
+                
+                if (nextLvl != null) {
+                    val rewards = plugin.levelConfig.getRewardsForLevel(nextLvl)
+                    if (rewards.isNotEmpty()) "Rewards at Level $nextLvl" else "Max Level Reached"
                 } else {
                     "Max Level Reached"
                 }

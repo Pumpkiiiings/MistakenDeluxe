@@ -18,4 +18,8 @@ class LevelProviderImpl(private val plugin: LevelAddonPlugin) : LevelProvider {
         val current = plugin.manager.getLevel(uuid)
         plugin.manager.setLevel(uuid, current + amount)
     }
+
+    override fun addExperience(uuid: UUID, amount: Long) {
+        plugin.manager.addExperience(uuid, amount)
+    }
 }

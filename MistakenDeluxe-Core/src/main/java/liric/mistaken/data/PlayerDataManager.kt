@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
  * PlayerDataManager: Gestión de perfiles con persistencia en MySQL (Network Ready).
  * Cero Disk I/O local, optimizado con AsyncScheduler de Paper.
  */
-class PlayerDataManager(private val plugin: Mistaken) {
+class PlayerDataManager(private val plugin: Mistaken) : liric.mistaken.api.managers.IPlayerDataManager {
 
     // Caché en RAM para acceso instantáneo (Cero Lag en juego)
     private val userDataCache = ConcurrentHashMap<UUID, MistakenUser>()
@@ -113,12 +113,12 @@ class PlayerDataManager(private val plugin: Mistaken) {
 
     // --- ASESINOS ---
 
-    fun tieneAsesino(uuid: UUID, killerId: String): Boolean {
+    override fun tieneAsesino(uuid: UUID, killerId: String): Boolean {
         val user = userDataCache[uuid] ?: return false
         return killerId.equals("slasher", true) || user.unlockedKillers.contains(killerId.lowercase())
     }
 
-    fun comprarAsesino(uuid: UUID, killerId: String) {
+    override fun comprarAsesino(uuid: UUID, killerId: String) {
         userDataCache[uuid]?.let { user ->
             val id = killerId.lowercase()
             if (user.unlockedKillers.add(id)) {
@@ -140,12 +140,12 @@ class PlayerDataManager(private val plugin: Mistaken) {
 
     // --- SUPERVIVIENTES ---
 
-    fun tieneSuperviviente(uuid: UUID, survivorId: String): Boolean {
+    override fun tieneSuperviviente(uuid: UUID, survivorId: String): Boolean {
         val user = userDataCache[uuid] ?: return false
         return survivorId.equals("civil", true) || user.unlockedSurvivors.contains(survivorId.lowercase())
     }
 
-    fun comprarSuperviviente(uuid: UUID, survivorId: String) {
+    override fun comprarSuperviviente(uuid: UUID, survivorId: String) {
         userDataCache[uuid]?.let { user ->
             val id = survivorId.lowercase()
             if (user.unlockedSurvivors.add(id)) {

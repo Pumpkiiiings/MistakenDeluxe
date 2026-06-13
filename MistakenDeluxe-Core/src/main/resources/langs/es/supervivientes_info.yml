@@ -1,237 +1,237 @@
 ﻿# ======================================================
-#       MISTAKEN - INFORMACIÃ“N DE SUPERVIVIENTES (ES)
+#       MISTAKEN - INFORMACIÓN DE SUPERVIVIENTES (ES)
 # ======================================================
 supervivientes:
   civil:
     nombre: "<gradient:#ffffff:#aaaaaa><b>CIVIL</b></gradient>"
     descripcion:
       - "<gray>Un ciudadano atrapado en el caos."
-      - "<gray>Equilibrio puro en todas sus estadÃ­sticas."
-      - "<white>MecÃ¡nica: <aqua>Sigilo y Autodefensa</aqua>"
+      - "<gray>Equilibrio puro en todas sus estadísticas."
+      - "<white>Mecánica: <aqua>Sigilo y Autodefensa</aqua>"
     lore_tienda:
       - "<italic><gray>\"Solo quiero volver a casa...\"</gray></italic>"
-      - "<white>Dificultad: <green>FÃ¡cil"
+      - "<white>Dificultad: <green>Fácil"
     habilidades_nombres:
       habilidad1: "<gradient:#ff55ff:#ff99ff>Adrenalina</gradient>"
       habilidad2: "<gradient:#888888:#cccccc>Desvanecer</gradient>"
       habilidad3: "<gradient:#dddddd:#888888>Lanzar Roca</gradient>"
     habilidades_mensajes:
-      habilidad1: "<gradient:#ff55ff:#ff99ff><b>âš¡ Â¡ADRENALINA!</b></gradient> <gray>Corres mÃ¡s rÃ¡pido por <white>5s</white>."
+      habilidad1: "<gradient:#ff55ff:#ff99ff><b>⚔¡ ¡ADRENALINA!</b></gradient> <gray>Corres más rápido por <white>5s</white>."
       habilidad2: "<gradient:#888888:#cccccc><b>ðŸ‘» DESVANECIDO...</b></gradient> <gray>Eres invisible por <white>5s</white>."
-      habilidad2_fin: "<gradient:#ff5555:#ff0000><b>âš  Â¡EXPUESTO!</b></gradient> <gray>Tu invisibilidad ha expirado."
-      habilidad3: "<gradient:#dddddd:#888888><b>ðŸ‘Š Â¡ROCA LANZADA!</b></gradient> <gray>Impacta para <aqua>ralentizar</aqua>."
+      habilidad2_fin: "<gradient:#ff5555:#ff0000><b>⚠ ¡EXPUESTO!</b></gradient> <gray>Tu invisibilidad ha expirado."
+      habilidad3: "<gradient:#dddddd:#888888><b>ðŸ‘Š ¡ROCA LANZADA!</b></gradient> <gray>Impacta para <aqua>ralentizar</aqua>."
 
   repartidor:
     nombre: "<gradient:#ffaa00:#ffee00><b>REPARTIDOR</b></gradient>"
     descripcion:
       - "<gray>Ni Herobrine detiene esta entrega."
-      - "<white>MecÃ¡nica: <gold>Soporte y Velocidad Extrema</gold>"
+      - "<white>Mecánica: <gold>Soporte y Velocidad Extrema</gold>"
     lore_tienda:
-      - "<italic><gray>\"Â¡Cinco estrellas o nada, pariente!\"</gray></italic>"
-      - "<white>Dificultad: <green>FÃ¡cil"
+      - "<italic><gray>\"¡Cinco estrellas o nada, pariente!\"</gray></italic>"
+      - "<white>Dificultad: <green>Fácil"
     habilidades_nombres:
-      habilidad1: "<gradient:#00ffff:#00aaff>Bebida EnergÃ©tica</gradient>"
+      habilidad1: "<gradient:#00ffff:#00aaff>Bebida Energética</gradient>"
       habilidad2: "<gradient:#ffaa00:#ffffff>Lanzar Pedido</gradient>"
       habilidad3: "<gradient:#ff5555:#aa0000>Derrame de Salsa</gradient>"
     habilidades_mensajes:
-      habilidad1: "<gradient:#00ffff:#00aaff><b>ðŸ¥¤ Â¡GLUP!</b></gradient> <gray>Velocidad de entrega <green>activada</green>."
-      habilidad2: "<gradient:#ffaa00:#ffffff><b>ðŸ“¦ Â¡PEDIDO EN CAMINO!</b></gradient> <gray>Cuidando la calificaciÃ³n."
-      habilidad3: "<gradient:#ff5555:#aa0000><b>ðŸ¥« Â¡UPS!</b></gradient> <gray>Â¡Se tirÃ³ la salsa! El suelo resbala."
+      habilidad1: "<gradient:#00ffff:#00aaff><b>ðŸ¥¤ ¡GLUP!</b></gradient> <gray>Velocidad de entrega <green>activada</green>."
+      habilidad2: "<gradient:#ffaa00:#ffffff><b>ðŸ“¦ ¡PEDIDO EN CAMINO!</b></gradient> <gray>Cuidando la calificación."
+      habilidad3: "<gradient:#ff5555:#aa0000><b>ðŸ¥« ¡UPS!</b></gradient> <gray>¡Se tiró la salsa! El suelo resbala."
 
   petra:
     nombre: "<gradient:#ff3333:#aa0000><b>PETRA</b></gradient>"
     lore_tienda:
-      - "La guerrera mÃ¡s hÃ¡bil de la Orden."
+      - "La guerrera más hábil de la Orden."
       - ""
-      - "<red>Â¡Especialista en combate rÃ¡pido y sigilo!"
+      - "<red>¡Especialista en combate rápido y sigilo!"
     habilidades_nombres:
       habilidad1: "<gradient:#ff5555:#aa0000>Espada de Petra</gradient>"
       habilidad2: "<gradient:#ffffff:#999999><b>Missile Strike</b></gradient>"
       habilidad3: "<gradient:#555555:#000000>Bomba de Humo</gradient>"
     habilidades_mensajes:
-      habilidad1: "<gradient:#ff5555:#aa0000><b>âš” Â¡CORTE RELÃMPAGO!</b></gradient> <gray>Ataque veloz."
-      habilidad2: "<gradient:#ffffff:#999999><b>ðŸ’¨ Â¡CARGA!</b></gradient> <gray>Â¡Petra se lanza al ataque!"
-      habilidad3: "<gradient:#555555:#000000><b>â˜ Â¡PUF!</b></gradient> <gray>DesapareciÃ³ entre el humo."
+      habilidad1: "<gradient:#ff5555:#aa0000><b>⚔�  ¡CORTE RELÃMPAGO!</b></gradient> <gray>Ataque veloz."
+      habilidad2: "<gradient:#ffffff:#999999><b>ðŸ’¨ ¡CARGA!</b></gradient> <gray>¡Petra se lanza al ataque!"
+      habilidad3: "<gradient:#555555:#000000><b>â˜ ¡PUF!</b></gradient> <gray>Desapareció entre el humo."
 
   axel:
     nombre: "<gradient:#55ff55:#00aa00><b>AXEL</b></gradient>"
     lore_tienda:
-      - "El mÃºsculo de la Orden."
+      - "El músculo de la Orden."
       - ""
-      - "<green>Â¡Especialista en explosivos y empuje!"
+      - "<green>¡Especialista en explosivos y empuje!"
     habilidades_nombres:
       habilidad1: "<gradient:#ff5555:#ff0000>Dinamita de Axel</gradient>"
       habilidad2: "<gradient:#55ff55:#ffffff><b>Hachazo de Empuje</b></gradient>"
       habilidad3: "<gradient:#ffff55:#ffaa00>Escudo del Gran Axel</gradient>"
     habilidades_mensajes:
-      habilidad1: "<gradient:#ff5555:#ff0000><b>ðŸ’£ Â¡BOOM!</b></gradient> <gray>Â¡CUIDADO! Â¡Va la dinamita!"
-      habilidad2: "<gradient:#55ff55:#00aa00><b>ðŸª“ Â¡FUERA!</b></gradient> <gray>Â¡Toma eso! Â¡AtrÃ¡s, bicho!"
-      habilidad3: "<gradient:#ffff55:#ffaa00><b>ðŸ›¡ Â¡BLOQUEADO!</b></gradient> <gray>Â¡Nadie pasa por aquÃ­!"
+      habilidad1: "<gradient:#ff5555:#ff0000><b>ðŸ’£ ¡BOOM!</b></gradient> <gray>¡CUIDADO! ¡Va la dinamita!"
+      habilidad2: "<gradient:#55ff55:#00aa00><b>ðŸª“ ¡FUERA!</b></gradient> <gray>¡Toma eso! ¡Atrás, bicho!"
+      habilidad3: "<gradient:#ffff55:#ffaa00><b>ðŸ›¡ ¡BLOQUEADO!</b></gradient> <gray>¡Nadie pasa por aquí!"
 
   steve:
     nombre: "<gradient:#5555ff:#0000aa><b>STEVE</b></gradient>"
     lore_tienda:
       - "El Dios del Survival."
       - ""
-      - "<blue>Â¡Domina el combate tÃ©cnico y la construcciÃ³n!"
+      - "<blue>¡Domina el combate técnico y la construcción!"
     habilidades_nombres:
-      habilidad1: "<gradient:#5555ff:#aa00aa><b>Hachazo CrÃ­tico</b></gradient>"
+      habilidad1: "<gradient:#5555ff:#aa00aa><b>Hachazo Crítico</b></gradient>"
       habilidad2: "<gradient:#aaaaaa:#555555><b>Muro Defensivo</b></gradient>"
       habilidad3: "<gradient:#55ffff:#00aaaa><b>Water Bucket Trick</b></gradient>"
     habilidades_mensajes:
-      habilidad1: "<gradient:#5555ff:#aa00aa><b>ðŸ’¥ Â¡CRÃTICO!</b></gradient> <gray>Â¡Golpe con salto perfecto!"
-      habilidad2: "<gradient:#aaaaaa:#555555><b>ðŸ§± Â¡MURO!</b></gradient> <gray>Â¡ConstrucciÃ³n rÃ¡pida activada!"
-      habilidad3: "<gradient:#55ffff:#00aaaa><b>ðŸ’§ Â¡MLG!</b></gradient> <gray>Â¡El asesino se estÃ¡ ahogando!"
+      habilidad1: "<gradient:#5555ff:#aa00aa><b>ðŸ’¥ ¡CRÃ� TICO!</b></gradient> <gray>¡Golpe con salto perfecto!"
+      habilidad2: "<gradient:#aaaaaa:#555555><b>ðŸ§± ¡MURO!</b></gradient> <gray>¡Construcción rápida activada!"
+      habilidad3: "<gradient:#55ffff:#00aaaa><b>ðŸ’§ ¡MLG!</b></gradient> <gray>¡El asesino se está ahogando!"
 
   gumi:
     nombre: "<gradient:#a9d14f:#ffffff><b>GUMI</b></gradient>"
     lore_tienda:
-      - "La diva de la distorsiÃ³n virtual."
+      - "La diva de la distorsión virtual."
       - ""
-      - "<color:#a9d14f>Â¡Domina el eco y las copias digitales!"
+      - "<color:#a9d14f>¡Domina el eco y las copias digitales!"
     habilidades_nombres:
       habilidad1: "<gradient:#a9d14f:#00ff00><b>System: ECHO</b></gradient>"
       habilidad2: "<gradient:#a9d14f:#ffff55><b>Copy Cat</b></gradient>"
       habilidad3: "<gradient:#ff4d4d:#ff0000><b>Matryoshka Frenzy</b></gradient>"
     habilidades_mensajes:
-      habilidad1: "<gradient:#a9d14f:#00ff00><b>ðŸ”Š ECHO...</b></gradient> <gray><i>The black and white... inside my head...</i>"
-      habilidad2: "<gradient:#a9d14f:#ffff55><b>ðŸ‘¥ Â¡CLON!</b></gradient> <gray>Â¿A quiÃ©n estÃ¡s persiguiendo realmente?"
-      habilidad3: "<gradient:#ff4d4d:#ff0000><b>ðŸŽ­ Â¡1, 2, 3, 4!</b></gradient> <gray>Â¡Matryoshka explosiva!"
+      habilidad1: "<gradient:#a9d14f:#00ff00><b>ðŸ� Š ECHO...</b></gradient> <gray><i>The black and white... inside my head...</i>"
+      habilidad2: "<gradient:#a9d14f:#ffff55><b>ðŸ‘¥ ¡CLON!</b></gradient> <gray>¿A quién estás persiguiendo realmente?"
+      habilidad3: "<gradient:#ff4d4d:#ff0000><b>ðŸŽ­ ¡1, 2, 3, 4!</b></gradient> <gray>¡Matryoshka explosiva!"
 
   neru:
     nombre: "<gradient:#ffcc00:#ffff55><b>AKITA NERU</b></gradient>"
     lore_tienda:
-      - "La diva del desinterÃ©s."
+      - "La diva del desinterés."
       - ""
-      - "<color:#ffcc00>Â¡Especialista en spam y ataques de lag!"
+      - "<color:#ffcc00>¡Especialista en spam y ataques de lag!"
     habilidades_nombres:
       habilidad1: "<gradient:#ffcc00:#ffaa00><b>Spam de Notificaciones</b></gradient>"
       habilidad2: "<gradient:#bbbbbb:#ffffff><b>Modo AFK</b></gradient>"
       habilidad3: "<gradient:#ffcc00:#ff5555><b>Triple Baka Strike</b></gradient>"
     habilidades_mensajes:
-      habilidad1: "<gradient:#ffcc00:#ffaa00><b>ðŸ“± Â¡DING! Â¡DING!</b></gradient> <gray>Â¡Neru estÃ¡ bombardeando al asesino!"
+      habilidad1: "<gradient:#ffcc00:#ffaa00><b>ðŸ“± ¡DING! ¡DING!</b></gradient> <gray>¡Neru está bombardeando al asesino!"
       habilidad2: "<gradient:#bbbbbb:#ffffff><b>ðŸ’¤ ABURRIDO...</b></gradient> <gray>Neru se fue AFK (Invulnerable)."
-      habilidad3: "<gradient:#ffcc00:#ff5555><b>ðŸ’¢ Â¡BAKA! Â¡BAKA!</b></gradient> <gray>Â¡Triple golpe!"
+      habilidad3: "<gradient:#ffcc00:#ff5555><b>ðŸ’¢ ¡BAKA! ¡BAKA!</b></gradient> <gray>¡Triple golpe!"
 
   mariachi:
     nombre: "<gradient:#fbca03:#ff5555><b>EL MARIACHI</b></gradient>"
     lore_tienda:
-      - "Â¡Ay, ay, ay! El que no canta, llora."
+      - "¡Ay, ay, ay! El que no canta, llora."
       - ""
       - "<color:#fbca03>Soporte musical y experto en huidas."
     habilidades_nombres:
       habilidad1: "<gradient:#fbca03:#ffffff><b>El Guitarrazo</b></gradient>"
-      habilidad2: "<gradient:#fbca03:#ffaa00><b>Jarabe TapatÃ­o</b></gradient>"
+      habilidad2: "<gradient:#fbca03:#ffaa00><b>Jarabe Tapatío</b></gradient>"
       habilidad3: "<gradient:#ff5555:#00aa00><b>Grito Mexicano</b></gradient>"
 
   minty:
     nombre: "<gradient:#55ffaa:#00aa55><b>MINTY</b></gradient>"
     descripcion:
       - "<gray>Un superviviente con instintos animales."
-      - "<white>MecÃ¡nica: <green>Aturdimiento y Huida</green>"
+      - "<white>Mecánica: <green>Aturdimiento y Huida</green>"
     lore_tienda:
-      - "<italic><gray>\"No soy una presa fÃ¡cil...\"</gray></italic>"
+      - "<italic><gray>\"No soy una presa fácil...\"</gray></italic>"
       - "<white>Dificultad: <yellow>Media"
     habilidades_nombres:
       habilidad1: "<gradient:#aaffaa:#ffffff>Sarpazo</gradient>"
       habilidad2: "<gradient:#ffffff:#aaffaa>Embestida</gradient>"
       habilidad3: "<gradient:#00aa00:#55ff55>Aullido Feroz</gradient>"
     habilidades_mensajes:
-      habilidad1: "<gradient:#aaffaa:#ffffff><b>ðŸ¾ Â¡SARPAZO!</b></gradient> <gray>Has aturdido al asesino por <white>5s</white>."
-      habilidad2: "<gradient:#ffffff:#aaffaa><b>ðŸ’¨ Â¡CORRE!</b></gradient> <gray>Velocidad de lobo activada."
-      habilidad3: "<gradient:#00aa00:#55ff55><b>ðŸº Â¡AULLIDO!</b></gradient> <gray>Â¡El suelo tiembla! Asesino aturdido."
+      habilidad1: "<gradient:#aaffaa:#ffffff><b>ðŸ� ¾ ¡SARPAZO!</b></gradient> <gray>Has aturdido al asesino por <white>5s</white>."
+      habilidad2: "<gradient:#ffffff:#aaffaa><b>ðŸ’¨ ¡CORRE!</b></gradient> <gray>Velocidad de lobo activada."
+      habilidad3: "<gradient:#00aa00:#55ff55><b>ðŸ� º ¡AULLIDO!</b></gradient> <gray>¡El suelo tiembla! Asesino aturdido."
 
   raincoatkid:
     nombre: "<gradient:#ffff55:#ffaa00><b>RAINCOAT KID</b></gradient>"
     descripcion:
-      - "<gray>Un niÃ±o pequeÃ±o con un impermeable amarillo."
-      - "<white>MecÃ¡nica: <yellow>Agilidad y Sigilo</yellow>"
+      - "<gray>Un niño pequeño con un impermeable amarillo."
+      - "<white>Mecánica: <yellow>Agilidad y Sigilo</yellow>"
     lore_tienda:
-      - "<italic><gray>\"Â¡No puedes atraparme!\"</gray></italic>"
-      - "<white>Dificultad: <green>FÃ¡cil"
+      - "<italic><gray>\"¡No puedes atraparme!\"</gray></italic>"
+      - "<white>Dificultad: <green>Fácil"
     habilidades_nombres:
-      habilidad1: "<yellow>SubidÃ³n de AzÃºcar</yellow>"
+      habilidad1: "<yellow>Subidón de Azúcar</yellow>"
       habilidad2: "<gold>Salto de Charco</gold>"
       habilidad3: "<red>Rama Afilada</red>"
     habilidades_mensajes:
-      habilidad1: "<yellow><b>Â¡CORRE!</b></yellow> <gray>Velocidad aumentada (Cansancio en 5s)."
-      habilidad2: "<gold><b>Â¡HOP!</b></gold> <gray>Impulso rÃ¡pido."
-      habilidad3: "" # Sin mensaje, es un Ã­tem de golpe
+      habilidad1: "<yellow><b>¡CORRE!</b></yellow> <gray>Velocidad aumentada (Cansancio en 5s)."
+      habilidad2: "<gold><b>¡HOP!</b></gold> <gray>Impulso rápido."
+      habilidad3: "" # Sin mensaje, es un ítem de golpe
 
   teto:
     nombre: "<gradient:#ff66cc:#ff0000><b>KASANE TETO</b></gradient>"
     descripcion:
       - "<gray>Quimera virtual con un arsenal de pan."
-      - "<white>MecÃ¡nica: <light_purple>Control y Distancia</light_purple>"
+      - "<white>Mecánica: <light_purple>Control y Distancia</light_purple>"
     lore_tienda:
-      - "<italic><gray>\"Â¿De verdad eres quimera?\"</gray></italic>"
-      - "<white>Dificultad: <red>DifÃ­cil"
+      - "<italic><gray>\"¿De verdad eres quimera?\"</gray></italic>"
+      - "<white>Dificultad: <red>Difícil"
     habilidades_nombres:
       habilidad1: "<light_purple>Salto Quimera</light_purple>"
       habilidad2: "<gold>La Gran Baguette</gold>"
       habilidad3: "<yellow>Proyectil de Pan</yellow>"
     habilidades_mensajes:
-      habilidad1: "<light_purple><b>Â¡SALTO!</b></light_purple> <gray>Pero te mareaste..."
+      habilidad1: "<light_purple><b>¡SALTO!</b></light_purple> <gray>Pero te mareaste..."
       habilidad2: "" # Es melee, no mensaje
-      habilidad3: "<yellow><b>Â¡LANZAMIENTO!</b></yellow> <gray>Tu visiÃ³n se nubla."
+      habilidad3: "<yellow><b>¡LANZAMIENTO!</b></yellow> <gray>Tu visión se nubla."
 
   jesse:
     nombre: "<gradient:#00aaff:#ffffff><b>JESSE</b></gradient>"
     descripcion:
-      - "<gray>El lÃ­der de la Orden de la Piedra."
-      - "<white>MecÃ¡nica: <aqua>ProtecciÃ³n y Empuje</aqua>"
+      - "<gray>El líder de la Orden de la Piedra."
+      - "<white>Mecánica: <aqua>Protección y Empuje</aqua>"
     lore_tienda:
-      - "<italic><gray>\"Nada se interpondrÃ¡ en mi camino.\"</gray></italic>"
+      - "<italic><gray>\"Nada se interpondrá en mi camino.\"</gray></italic>"
       - "<white>Dificultad: <yellow>Media"
     habilidades_nombres:
       habilidad1: "<aqua>Embestida Heroica</aqua>"
-      habilidad2: "<gold>PuÃ±o Pesado</gold>"
-      habilidad3: "<dark_aqua>Bloqueo SÃ³nico</dark_aqua>"
+      habilidad2: "<gold>Puño Pesado</gold>"
+      habilidad3: "<dark_aqua>Bloqueo Sónico</dark_aqua>"
     habilidades_mensajes:
-      habilidad1: "<aqua><b>Â¡A LA CARGA!</b></aqua>"
+      habilidad1: "<aqua><b>¡A LA CARGA!</b></aqua>"
       habilidad2: "" # Melee
-      habilidad3: "<dark_aqua><b>Â¡FUERA DE AQUÃ!</b></dark_aqua>"
+      habilidad3: "<dark_aqua><b>¡FUERA DE AQUÃ� !</b></dark_aqua>"
 
   aldeano:
     nombre: "<gradient:#55ff55:#00aa00><b>ALDEANO</b></gradient>"
     descripcion:
       - "<gray>Un comerciante experto en huir."
-      - "<white>MecÃ¡nica: <green>DistracciÃ³n y EvasiÃ³n</green>"
+      - "<white>Mecánica: <green>Distracción y Evasión</green>"
     lore_tienda:
       - "<italic><gray>\"Hrmmm...\"</gray></italic>"
-      - "<white>Dificultad: <green>FÃ¡cil"
+      - "<white>Dificultad: <green>Fácil"
     habilidades_nombres:
-      habilidad1: "<white>Â¡PÃ¡nico!</white>"
+      habilidad1: "<white>¡Pánico!</white>"
       habilidad2: "<green>Soborno</green>"
       habilidad3: "<gray>Guardaespaldas</gray>"
     habilidades_mensajes:
-      habilidad1: "<red><b>Â¡CORRE!</b></red> <gray>Â¡El asesino viene!</gray>"
-      habilidad2: "<green><b>Â¡TOMA!</b></green> <gray>Â¡DÃ©jame en paz!</gray>"
-      habilidad3: "<gray><b>Â¡GOLEM!</b></gray> <white>Â¡DefiÃ©ndeme!</white>"
+      habilidad1: "<red><b>¡CORRE!</b></red> <gray>¡El asesino viene!</gray>"
+      habilidad2: "<green><b>¡TOMA!</b></green> <gray>¡Déjame en paz!</gray>"
+      habilidad3: "<gray><b>¡GOLEM!</b></gray> <white>¡Defiéndeme!</white>"
 
   notch:
     nombre: "<gradient:#ffff55:#ffaa00><bold>NOTCH</bold></gradient>"
     descripcion:
-      - "<gray>El creador de todo lo cÃºbico."
-      - "<white>MecÃ¡nica: <yellow>Defensa y Control Divino</yellow>"
+      - "<gray>El creador de todo lo cúbico."
+      - "<white>Mecánica: <yellow>Defensa y Control Divino</yellow>"
     lore_tienda:
-      - "<italic><gray>\"Â¿Al matarlo te dara una manzana?\"</gray></italic>"
-      - "<white>Dificultad: <red>DifÃ­cil"
+      - "<italic><gray>\"¿Al matarlo te dara una manzana?\"</gray></italic>"
+      - "<white>Dificultad: <red>Difícil"
     habilidades_nombres:
-      habilidad1: "<white>AscensiÃ³n Creativa</white>"
+      habilidad1: "<white>Ascensión Creativa</white>"
       habilidad2: "<dark_gray>Acceso Denegado</dark_gray>"
       habilidad3: "<yellow>Manzana Divina</yellow>"
     habilidades_mensajes:
-      habilidad1: "<white><b>Â¡VUELO!</b></white> <gray>Modo creativo temporal activado."
-      habilidad2: "<dark_gray><b>Â¡DENEGADO!</b></dark_gray> <gray>El asesino ha sido rechazado."
-      habilidad3: "<yellow><b>Â¡PODER!</b></yellow> <gray>RegeneraciÃ³n y fuerza sagrada."
+      habilidad1: "<white><b>¡VUELO!</b></white> <gray>Modo creativo temporal activado."
+      habilidad2: "<dark_gray><b>¡DENEGADO!</b></dark_gray> <gray>El asesino ha sido rechazado."
+      habilidad3: "<yellow><b>¡PODER!</b></yellow> <gray>Regeneración y fuerza sagrada."
 
   troll:
     nombre: "<green><b>EL TROLL</b></green>"
     descripcion:
-      - "<gray>Un maestro del engaÃ±o que"
+      - "<gray>Un maestro del engaño que"
       - "<gray>disfruta haciendo sufrir al asesino."
     habilidades_nombres:
       habilidad1: "<green>Holograma Troll"
-      habilidad2: "<yellow>CÃ¡scara de PlÃ¡tano"
+      habilidad2: "<yellow>Cáscara de Plátano"
       habilidad3: "<gold>Caja Sorpresa"

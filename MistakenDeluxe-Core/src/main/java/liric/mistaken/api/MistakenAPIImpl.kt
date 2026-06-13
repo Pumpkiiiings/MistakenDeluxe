@@ -1,4 +1,4 @@
-﻿package liric.mistaken.api
+package liric.mistaken.api
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.managers.IAsesinoManager
@@ -17,6 +17,8 @@ class MistakenAPIImpl(private val _plugin: Mistaken) : MistakenAPI {
         get() = _plugin.sessionManager
     override val configManager: IConfigManager
         get() = _plugin.configManager
+    override val playerDataManager: liric.mistaken.api.managers.IPlayerDataManager
+        get() = _plugin.playerDataManager
     override val messages: pumpking.lib.messages.IMessageService
         get() = pumpking.lib.service.PumpkingServiceManager.messages
     override val mm: MiniMessage

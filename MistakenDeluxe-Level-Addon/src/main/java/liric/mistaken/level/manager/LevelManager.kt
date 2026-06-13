@@ -4,6 +4,8 @@ import liric.mistaken.api.level.event.PlayerExperienceGainEvent
 import liric.mistaken.api.level.event.PlayerLevelUpEvent
 import liric.mistaken.level.LevelAddonPlugin
 import liric.mistaken.level.database.PlayerLevelData
+import liric.mistaken.level.rewards.RewardRegistry
+import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -29,13 +31,27 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
         if (oldLevel != level) {
             val player = Bukkit.getPlayer(uuid)
             if (player != null) {
-                // We should fire level up event on main thread if possible, or async if required.
-                // Assuming sync is safer for API consumers:
+                // Fire level up event on main thread
                 plugin.server.scheduler.runTask(plugin, Runnable {
                     val event = PlayerLevelUpEvent(player, oldLevel, level)
                     Bukkit.getPluginManager().callEvent(event)
                     
-                    // TODO: Give rewards based on config
+                    // Give rewards for each level up
+                    for (l in (oldLevel + 1)..level) {
+                        val rewards = plugin.levelConfig.getRewardsForLevel(l)
+                        for (rewardStr in rewards) {
+                            RewardRegistry.executeReward(plugin, player, rewardStr)
+                        }
+                    }
+
+                    // Handle Prefix broadcast if a new prefix is reached exactly at this level
+                    val prefixData = plugin.levelConfig.getPrefixForLevel(level)
+                    if (prefixData != null && prefixData.requiredLevel in (oldLevel + 1)..level) {
+                        if (prefixData.broadcast) {
+                            val msg = "<green>Level Up!</green> ${player.name} reached level $level and unlocked the ${prefixData.display} prefix!"
+                            Bukkit.broadcast(MiniMessage.miniMessage().deserialize(msg))
+                        }
+                    }
                 })
             }
         }

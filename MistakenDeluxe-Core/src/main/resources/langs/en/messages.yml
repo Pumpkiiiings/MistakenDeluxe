@@ -10,17 +10,17 @@ lobby:
 # --- VOTING ---
 voting:
   started: "<green>Voting has started! Use <yellow>/vote <map></yellow>"
-  not-active: "<prefix><red>There is no active vote right now, bro."
+  not-active: "<prefix><red>There is no active vote at this moment."
   already-voted: "<prefix><red>You already cast your vote this game."
   usage: "<prefix><red>Usage: /vote <map>"
-  not-found: "<prefix><red>The map <white>{map}</white> doesn't exist, you gotta be kidding."
+  not-found: "<prefix><red>The map <white>{map}</white> does not exist."
   success: "<prefix><green>You voted for: <aqua>{map}</aqua>"
   map-option: "<dark_gray>» <aqua>{map}</aqua>"
-  not-enough-players: "<prefix><red>Not enough souls! There aren't enough players to start."
+  not-enough-players: "<prefix><red>There are not enough players to start."
 
 # --- BOSSBAR ---
 bossbar:
-  lobby: "<gradient:#ffcc00:#ffaa00><bold>WAITING FOR PLAYERS...</bold></gradient> <gray>({online})"
+  lobby: "<yellow><bold>WAITING FOR PLAYERS...</bold></yellow> <gray>({online})"
   break: "<yellow>Break <gray>| <white><time>s"
   voting: "<b><color:#8AFF73>VOTING IN PROGRESS</color></b> <gray>| <white>Ends in: <yellow>{time}s"
   starting: "<red><bold>GET READY!</bold> <white>Starting in <yellow>{time}s"
@@ -52,14 +52,14 @@ habilidades:
 
 # --- COMBAT ---
 combat:
-  heart-icon-on: "❤"
+  heart-icon-on: "� �"
   heart-icon-off: "🖤"
   hunters-mark: "<red>"
   health-bar: "<red>{hearts_on}<gray>{hearts_off}"
   cooldown: "<red>Wait <white>{time}s</white> before attacking again!"
   critical-wound: "<red><bold>YOUR LEGS ARE FAILING!</bold> <gray>Find help or crawl."
   kill-reward-actionbar: "<red><bold>+40 HEALTH</bold></red> <gray>|</gray> <gold><bold>+${reward} CREDITS</bold></gold>"
-  kill-reward-chat: "<prefix><gray>You received <green>${reward}</green> for claiming a victim."
+  kill-reward-chat: "<prefix><gray>You have received <green>${reward}</green> for eliminating a player."
   rescue-start-carrier: "<prefix><green>You picked up <white>{target}</white>! Take them to a safe place."
   rescue-start-victim: "<prefix><green><white>{carrier}</white> is carrying you."
   rescue-dropped-carrier: "<prefix><yellow>You dropped your teammate on the ground."
@@ -70,7 +70,7 @@ combat:
 
 # --- SCOREBOARD ---
 scoreboard:
-  title: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN</bold></gradient>"
+  title: "<aqua><bold>MISTAKEN</bold></aqua>"
   lobby:
     - ""
     - "<white>Status: <yellow>Lobby"
@@ -108,7 +108,7 @@ scoreboard:
     - "<white>Killer:"
     - "%killers%"
     - ""
-    - "<white>Lives: <red>%lives% ❤"
+    - "<white>Lives: <red>%lives% � �"
     - ""
   ingame_double_killer:
     - ""
@@ -119,7 +119,7 @@ scoreboard:
     - "<white>Killers:"
     - "%killers%"
     - ""
-    - "<white>Lives: <red>%lives% ❤"
+    - "<white>Lives: <red>%lives% � �"
     - ""
   ingame_one_bounce:
     - ""
@@ -129,7 +129,7 @@ scoreboard:
     - "<white>Gens: <green>%completed%/%total%"
     - "%killers%"
     - ""
-    - "<white>Lives: <red>%lives% ❤"
+    - "<white>Lives: <red>%lives% � �"
     - ""
   ingame_freeze_tag:
     - ""
@@ -189,11 +189,11 @@ tienda:
   habilidades-titulo: "<gray>▶ <white>Abilities:"
   estado-seleccionado: "<green>✔ <bold>SELECTED"
   estado-poseido: "<yellow>» Click to select"
-  estado-precio: "<white>Cost: <yellow>● {amount} coins"
+  estado-precio: "<white>Cost: <yellow>�  {amount} coins"
   estado-comprar: "<green>Click to purchase killer"
   estado-comprar-superviviente: "<#00d4ff>Click to purchase survivor"
   seleccionado: "<prefix><green>Selected: <white>{name}"
-  comprado: "<prefix><gold>Awesome! You unlocked: <white>{name}"
+  comprado: "<prefix><gold>Congratulations! You have unlocked: <white>{name}"
   ya-seleccionado: "<yellow><bold>[!] <reset><yellow>This class is already selected."
 
 # --- COMMANDS AND HELP ---
@@ -265,7 +265,7 @@ game:
   killer-died-victory: "<red>The Killer has died!"
   victory-killer: "<red><bold>EVIL HAS TRIUMPHED."
   victory-survivors: "<green><bold>YOU SURVIVED!"
-  killer-hit-actionbar: "<red>❤ <white>Killer's Health: <yellow>{health}</yellow>"
+  killer-hit-actionbar: "<red>� � <white>Killer's Health: <yellow>{health}</yellow>"
   killer-stunned-damager: "<red>You stunned the killer!"
   killer-stunned-victim: "<yellow>You have been stunned!"
   killer-title: "<red><bold>VICTORY!"
@@ -306,7 +306,7 @@ arena:
   check-survivors: "<gray> - Survivor Spawns: <white>{count}"
   check-generators: "<gray> - Generators: <white>{count}"
   check-killer: "<gray> - Killer Spawn: {icon}"
-  help-header: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN</bold></gradient> <dark_gray>| <gray>Arenas"
+  help-header: "<aqua><bold>MISTAKEN</bold></aqua> <dark_gray>| <gray>Arenas"
   help-line-create: " <yellow>/arena create <name>"
   help-line-delete: " <yellow>/arena delete <name>"
   help-line-check: " <yellow>/arena check <name>"
@@ -322,7 +322,7 @@ errors:
   only-players: "<red>Only for players."
   ability-cooldown: "<red>The ability</red> <gold><skill></gold> <red>is not ready. Cooldown remaining:</red> <yellow><time>s</yellow>"
   lang-not-found: "<prefix><red>That language doesn't exist."
-  no-money: "<prefix><red>You don't have enough cash."
+  no-money: "<prefix><red>You do not have enough coins."
   arena-not-found: "<prefix><red>The arena <white>{name}</white> doesn't exist."
   voting-not-active: "<prefix><red>Voting is not active."
   already-voted: "<prefix><red>You already voted."
@@ -351,14 +351,14 @@ stamina:
 # ==========================================
 menus:
   asesinos_tienda:
-    titulo: "<gradient:red:dark_red><b>» Assassin Shop</b></gradient>"
+    titulo: "<red><b>» Assassin Shop</b></red>"
   supervivientes_tienda:
-    titulo: "<gradient:#00d4ff:#004d99><b>» Survivor Shop</b></gradient>"
+    titulo: "<aqua><b>» Survivor Shop</b></aqua>"
   tienda_principal:
     titulo: "<#001a33>» Main Shop"
     items:
       asesinos:
-        nombre: "<gradient:red:dark_red><b>ASSASSIN SHOP</b></gradient>"
+        nombre: "<red><b>ASSASSIN SHOP</b></red>"
         lore:
           - ""
           - "<gray>Unleash your killer instinct."
@@ -367,7 +367,7 @@ menus:
           - ""
           - "<red>» Click to enter"
       supervivientes:
-        nombre: "<gradient:#00d4ff:#004d99><b>SURVIVOR SHOP</b></gradient>"
+        nombre: "<aqua><b>SURVIVOR SHOP</b></aqua>"
         lore:
           - ""
           - "<gray>Improve your odds of survival."

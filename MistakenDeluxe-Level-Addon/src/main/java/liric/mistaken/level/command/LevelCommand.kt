@@ -5,7 +5,7 @@ import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import org.bukkit.entity.Player
 import net.kyori.adventure.text.minimessage.MiniMessage
-import liric.mistaken.level.gui.ProgressionMenu
+import liric.mistaken.level.menu.ProgressionMenu
 
 class LevelCommand(private val plugin: LevelAddonPlugin) : BasicCommand {
 
@@ -19,7 +19,7 @@ class LevelCommand(private val plugin: LevelAddonPlugin) : BasicCommand {
         }
 
         if (args.isEmpty()) {
-            val gui = liric.mistaken.level.gui.ProgressionMenu(plugin)
+            val gui = liric.mistaken.level.menu.ProgressionMenu(plugin)
             gui.open(sender)
             return
         }

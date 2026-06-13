@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.logic
+package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -24,12 +24,18 @@ class GameStateController(private val game: GameSession) {
     fun startBreakProcess() {
         val venimosDePartida = game.currentState == GameState.ENDING
 
-        if (venimosDePartida && game.plugin.serverMode == "GAME_SERVER") {
+        if (venimosDePartida) {
             game.playerController.cleanupAllPlayers(lastKillerWon)
             game.worldController.limpiarMapa()
-            // TeleportAllToLobby los envía de regreso al proxy
-            game.playerController.teleportAllToLobby()
-            // Programar la destrucción de la sesión (4 segundos después) para dar tiempo al proxy de moverlos
+            
+            // Usamos leaveSession para cada jugador para que maneje el teleport, la visibilidad
+            // y, en caso de GAME_SERVER, el envío al proxy.
+            val playersToLeave = game.getPlayers().toList()
+            playersToLeave.forEach { player ->
+                game.plugin.sessionManager.leaveSession(player)
+            }
+            
+            // Programar la destrucción de la sesión
             game.plugin.server.globalRegionScheduler.runDelayed(game.plugin, { _ ->
                 game.plugin.sessionManager.destroySession(game.id)
             }, 80L)

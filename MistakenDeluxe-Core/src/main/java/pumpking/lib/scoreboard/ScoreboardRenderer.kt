@@ -19,8 +19,4 @@ object ScoreboardRenderer {
     fun render(player: Player, context: ScoreboardContext, template: ScoreboardTemplate) {
         ScoreboardManager.getRenderer().render(player, context, template)
     }
-
-    fun clearCache(uuid: UUID) {
-        ScoreboardManager.getRenderer().clearCache(uuid)
-    }
 }

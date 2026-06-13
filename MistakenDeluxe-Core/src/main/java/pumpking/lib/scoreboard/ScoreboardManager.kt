@@ -1,4 +1,4 @@
-﻿package pumpking.lib.scoreboard
+package pumpking.lib.scoreboard
 
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -67,7 +67,27 @@ object ScoreboardManager {
     // --- Static Template Management ---
 
     fun registerTemplate(template: ScoreboardTemplate) {
-        templates[template.id] = template
+        val old = templates.put(template.id, template)
+        if (old != null) {
+            for (context in contexts.values) {
+                if (context.templateId == template.id) {
+                    if (old.title != template.title || old.animatedTitle != template.animatedTitle) {
+                        context.titleChanged = true
+                    }
+                    if (old.lines.size != template.lines.size) {
+                        context.layoutChanged = true
+                    }
+                    for (i in template.lines.indices) {
+                        if (i >= old.lines.size || old.lines[i] != template.lines[i]) {
+                            context.lineChanged[i] = true
+                            if (!template.isLineDynamic[i]) {
+                                context.staticLineCache[i] = pumpking.lib.color.ColorTranslator.translate(template.lines[i])
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fun getTemplate(id: String): ScoreboardTemplate? = templates[id]
@@ -78,14 +98,33 @@ object ScoreboardManager {
     fun assignScoreboard(player: Player, templateId: String) {
         val uuid = player.uniqueId
         val context = ensureContext(player)
-        context.templateId = templateId
-        renderer.clearCache(uuid)
+        
+        if (context.templateId != templateId) {
+            context.templateId = templateId
+            context.initialized = false
+            context.activeLines = 0
+            context.markAllClean()
+            context.layoutChanged = true
+            context.titleChanged = true
+            
+            // Re-populate static cache for the new template
+            val template = getTemplate(templateId)
+            if (template != null) {
+                for (i in template.lines.indices) {
+                    if (!template.isLineDynamic[i]) {
+                        context.staticLineCache[i] = pumpking.lib.color.ColorTranslator.translate(template.lines[i])
+                    } else {
+                        context.staticLineCache[i] = null
+                    }
+                    context.lineChanged[i] = true
+                }
+            }
+        }
     }
 
     fun removeScoreboard(player: Player) {
         val uuid = player.uniqueId
         contexts.remove(uuid)
-        renderer.clearCache(uuid)
         player.scoreboard = Bukkit.getScoreboardManager().mainScoreboard
     }
 
