@@ -36,6 +36,13 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
                     val event = PlayerLevelUpEvent(player, oldLevel, level)
                     Bukkit.getPluginManager().callEvent(event)
                     
+                    player.showTitle(net.kyori.adventure.title.Title.title(
+                        MiniMessage.miniMessage().deserialize("<green><bold>NIVEL $level"),
+                        MiniMessage.miniMessage().deserialize("<gray>Siguiente nivel es ${level + 1}"),
+                        net.kyori.adventure.title.Title.Times.times(java.time.Duration.ofMillis(500), java.time.Duration.ofMillis(3000), java.time.Duration.ofMillis(1000))
+                    ))
+                    player.playSound(player.location, org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f)
+                    
                     // Give rewards for each level up
                     for (l in (oldLevel + 1)..level) {
                         val rewards = plugin.levelConfig.getRewardsForLevel(l)

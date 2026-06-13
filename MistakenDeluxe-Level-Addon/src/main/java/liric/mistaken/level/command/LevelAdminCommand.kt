@@ -18,7 +18,7 @@ class LevelAdminCommand(private val plugin: LevelAddonPlugin) : BasicCommand {
         }
 
         if (args.size < 3) {
-            sender.sendMessage(mm.deserialize("<red>Usage: /leveladmin <addxp|setlevel> <player> <amount>"))
+            sender.sendMessage(mm.deserialize("<red>Usage: /leveladmin <addxp|setlevel|addkills|addwins_survivor|addwins_killer|addgenerators> <player> <amount>"))
             return
         }
 
@@ -40,6 +40,33 @@ class LevelAdminCommand(private val plugin: LevelAddonPlugin) : BasicCommand {
             "setlevel" -> {
                 plugin.manager.setLevel(target.uniqueId, amount.toInt())
                 sender.sendMessage(mm.deserialize("<green>Set <yellow>${target.name}</yellow>'s level to <gold>$amount</gold>."))
+            }
+            "addkills", "addwins_survivor", "addwins_killer", "addgenerators" -> {
+                val mistakenCore = org.bukkit.Bukkit.getPluginManager().getPlugin("Mistaken") as? liric.mistaken.Mistaken
+                if (mistakenCore == null) {
+                    sender.sendMessage(mm.deserialize("<red>Core plugin not found!"))
+                    return
+                }
+                val stats = mistakenCore.statsManager.getStats(target.uniqueId)
+                when (action) {
+                    "addkills" -> {
+                        stats.kills.addAndGet(amount.toInt())
+                        sender.sendMessage(mm.deserialize("<green>Added <gold>$amount Kills</gold> to <yellow>${target.name}</yellow>."))
+                    }
+                    "addwins_survivor" -> {
+                        stats.winsSurvivor.addAndGet(amount.toInt())
+                        sender.sendMessage(mm.deserialize("<green>Added <gold>$amount Survivor Wins</gold> to <yellow>${target.name}</yellow>."))
+                    }
+                    "addwins_killer" -> {
+                        stats.winsAssassin.addAndGet(amount.toInt())
+                        sender.sendMessage(mm.deserialize("<green>Added <gold>$amount Killer Wins</gold> to <yellow>${target.name}</yellow>."))
+                    }
+                    "addgenerators" -> {
+                        stats.generatorsRepaired.addAndGet(amount.toInt())
+                        sender.sendMessage(mm.deserialize("<green>Added <gold>$amount Generators</gold> to <yellow>${target.name}</yellow>."))
+                    }
+                }
+                plugin.manager.checkLevelUp(target.uniqueId)
             }
             else -> {
                 sender.sendMessage(mm.deserialize("<red>Unknown action."))

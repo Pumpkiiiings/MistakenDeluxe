@@ -58,7 +58,7 @@ class ProgressionMenu(private val plugin: LevelAddonPlugin) {
             val currentGens = stats.generatorsRepaired.get()
 
             fun replacePlaceholders(text: String): String {
-                return text.replace("{level}", levelTarget.toString())
+                val replaced = text.replace("{level}", levelTarget.toString())
                     .replace("{exp_required}", reqXp.toString())
                     .replace("{exp_current}", currentXp.toString())
                     .replace("{exp_left}", max(0L, reqXp - currentXp).toString())
@@ -71,6 +71,7 @@ class ProgressionMenu(private val plugin: LevelAddonPlugin) {
                     .replace("{generators_required}", reqGens.toString())
                     .replace("{generators_current}", currentGens.toString())
                     .replace("{generators_left}", max(0, reqGens - currentGens).toString())
+                return "<!italic>$replaced"
             }
 
             val filteredLoreTemplate = loreTemplate.filter { line ->
@@ -91,22 +92,22 @@ class ProgressionMenu(private val plugin: LevelAddonPlugin) {
         }
 
         if (paginationEnabled) {
+            // Map items to slots first so it doesn't overwrite buttons
+            gui.filler.fillBorder(ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).name(net.kyori.adventure.text.Component.empty()).asGuiItem())
+
             val prevSlot = config.getInt("pagination.buttons.previous_page.slot", 45)
             val prevMat = Material.matchMaterial(config.getString("pagination.buttons.previous_page.material", "ARROW")!!) ?: Material.ARROW
             val prevName = config.getString("pagination.buttons.previous_page.name", "<yellow>Previous Page")!!
-            gui.setItem(prevSlot, ItemBuilder.from(prevMat).name(mm.deserialize(prevName)).asGuiItem {
+            gui.setItem(prevSlot, ItemBuilder.from(prevMat).name(mm.deserialize("<!italic>$prevName")).asGuiItem {
                 gui.previous()
             })
 
             val nextSlot = config.getInt("pagination.buttons.next_page.slot", 53)
             val nextMat = Material.matchMaterial(config.getString("pagination.buttons.next_page.material", "ARROW")!!) ?: Material.ARROW
             val nextName = config.getString("pagination.buttons.next_page.name", "<yellow>Next Page")!!
-            gui.setItem(nextSlot, ItemBuilder.from(nextMat).name(mm.deserialize(nextName)).asGuiItem {
+            gui.setItem(nextSlot, ItemBuilder.from(nextMat).name(mm.deserialize("<!italic>$nextName")).asGuiItem {
                 gui.next()
             })
-            
-            // Map items to slots
-            gui.filler.fillBorder(ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).name(net.kyori.adventure.text.Component.empty()).asGuiItem())
         }
 
         gui.open(player)
