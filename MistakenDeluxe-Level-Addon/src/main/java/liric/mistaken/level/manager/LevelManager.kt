@@ -98,7 +98,7 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
         var currentLevel = playerData.level
         val maxLevel = plugin.levelConfig.maxLevel
 
-        val mistakenCore = org.bukkit.Bukkit.getPluginManager().getPlugin("MistakenDeluxe-Core") as liric.mistaken.Mistaken
+        val mistakenCore = org.bukkit.Bukkit.getPluginManager().getPlugin("Mistaken") as liric.mistaken.Mistaken
         val stats = mistakenCore.statsManager.getStats(uuid)
 
         while (currentLevel < maxLevel) {

@@ -31,7 +31,7 @@ class ProgressionMenu(private val plugin: LevelAddonPlugin) {
         gui.setDefaultClickAction { event -> event.isCancelled = true }
 
         val currentLevel = plugin.manager.getLevel(player.uniqueId)
-        val mistakenCore = org.bukkit.Bukkit.getPluginManager().getPlugin("MistakenDeluxe-Core") as liric.mistaken.Mistaken
+        val mistakenCore = org.bukkit.Bukkit.getPluginManager().getPlugin("Mistaken") as liric.mistaken.Mistaken
         val stats = mistakenCore.statsManager.getStats(player.uniqueId)
 
         val maxLevel = plugin.levelConfig.maxLevel
