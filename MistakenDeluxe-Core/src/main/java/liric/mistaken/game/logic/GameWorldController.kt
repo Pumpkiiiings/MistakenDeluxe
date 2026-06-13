@@ -18,6 +18,9 @@ class GameWorldController(private val game: GameSession) {
         game.plugin.generatorManager.addProgress(loc, amount)
 
         if (game.plugin.generatorManager.isCompleted(loc)) {
+            if (player != null) {
+                game.plugin.statsManager.incrementStat(player.uniqueId, "generators_repaired")
+            }
             if (!game.changedBlocks.containsKey(loc)) game.changedBlocks[loc] = block.type
             block.type = Material.SEA_LANTERN
             block.world.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 2f, 1f)

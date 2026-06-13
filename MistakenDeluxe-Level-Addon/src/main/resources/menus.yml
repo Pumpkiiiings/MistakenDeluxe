@@ -1,9 +1,78 @@
 progression_menu:
   title: "<gold>Level Progression"
   size: 54
-  nodes:
-    level_1: 10
-    level_2: 11
-    level_3: 12
-    level_4: 13
-    level_5: 14
+  
+  # New pagination format
+  pagination:
+    enabled: true
+    items_per_page: 28 # Slots 10-16, 19-25, 28-34, 37-43
+    slots:
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 16
+      - 19
+      - 20
+      - 21
+      - 22
+      - 23
+      - 24
+      - 25
+      - 28
+      - 29
+      - 30
+      - 31
+      - 32
+      - 33
+      - 34
+      - 37
+      - 38
+      - 39
+      - 40
+      - 41
+      - 42
+      - 43
+      
+    buttons:
+      previous_page:
+        slot: 45
+        material: "ARROW"
+        name: "<yellow>Página Anterior"
+      next_page:
+        slot: 53
+        material: "ARROW"
+        name: "<yellow>Siguiente Página"
+        
+  styles:
+    locked:
+      material: "GRAY_DYE"
+      name: "<red><bold>Nivel {level}"
+      lore:
+        - ""
+        - "<gray>Aún no has desbloqueado"
+        - "<gray>este nivel."
+        - ""
+        - "<white><bold>REQUISITOS:"
+        - "<white>Experiencia: <red>{exp_current} / {exp_required} <dark_gray>({exp_left} restantes)"
+        - "<white>Kills: <red>{kills_current} / {kills_required} <dark_gray>({kills_left} restantes)"
+        - "<white>Victorias Globales: <red>{wins_global_current} / {wins_global_required} <dark_gray>({wins_global_left} restantes)"
+        - "<white>Generadores: <red>{generators_current} / {generators_required} <dark_gray>({generators_left} restantes)"
+        - ""
+        - "<red>Bloqueado"
+    unlocked:
+      material: "LIME_DYE"
+      name: "<green><bold>Nivel {level}"
+      lore:
+        - ""
+        - "<green>¡Ya has alcanzado este nivel!"
+        - ""
+        - "<white><bold>REQUISITOS CUMPLIDOS:"
+        - "<white>Experiencia: <green>{exp_required} / {exp_required}"
+        - "<white>Kills: <green>{kills_required} / {kills_required}"
+        - "<white>Victorias Globales: <green>{wins_global_required} / {wins_global_required}"
+        - "<white>Generadores: <green>{generators_required} / {generators_required}"
+        - ""
+        - "<green>Desbloqueado"

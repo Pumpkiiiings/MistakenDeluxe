@@ -1,27 +1,831 @@
-# Level Configuration
 settings:
   max_level: 100
 
 curves:
-  # Example: 500 means Level 50 requires 25000 XP (500 * 50)
   default-multiplier: 500
 
-ranks:
-  novice:
-    range: "1-10"
-    prefix: "<gray>[Novice]</gray>"
-  explorer:
-    range: "11-25"
-    prefix: "<green>[Explorer]</green>"
-  veteran:
-    range: "26-50"
-    prefix: "<blue>[Veteran]</blue>"
-  elite:
-    range: "51-75"
-    prefix: "<light_purple>[Elite]</light_purple>"
-  legend:
-    range: "76-99"
-    prefix: "<gold>[Legend]</gold>"
-  mythic:
-    range: "100"
-    prefix: "<dark_red><bold>[Mythic]</bold></dark_red>"
+prefixes:
+  1:
+    display: "<gray>[Novice]</gray>"
+    color: "GRAY"
+    broadcast: false
+  10:
+    display: "<green>[Explorer]</green>"
+    color: "GREEN"
+    broadcast: true
+  25:
+    display: "<blue>[Veteran]</blue>"
+    color: "BLUE"
+    broadcast: true
+  50:
+    display: "<light_purple>[Elite]</light_purple>"
+    color: "LIGHT_PURPLE"
+    broadcast: true
+  75:
+    display: "<gold>[Legend]</gold>"
+    color: "GOLD"
+    broadcast: true
+  100:
+    display: "<dark_red><bold>[Mythic]</bold></dark_red>"
+    color: "DARK_RED"
+    broadcast: true
+
+levels:
+  1:
+    requirements:
+      xp: 500
+    rewards:
+      []
+  2:
+    requirements:
+      xp: 1000
+      kills: 5
+      generators_repair: 2
+    rewards:
+      []
+  3:
+    requirements:
+      xp: 1500
+      kills: 10
+      wins_global: 1
+      generators_repair: 4
+    rewards:
+      []
+  4:
+    requirements:
+      xp: 2000
+      kills: 15
+      wins_global: 1
+      generators_repair: 6
+    rewards:
+      []
+  5:
+    requirements:
+      xp: 2500
+      kills: 20
+      wins_global: 2
+      generators_repair: 8
+    rewards:
+      []
+  6:
+    requirements:
+      xp: 3000
+      kills: 25
+      wins_global: 2
+      generators_repair: 10
+    rewards:
+      []
+  7:
+    requirements:
+      xp: 3500
+      kills: 30
+      wins_global: 3
+      generators_repair: 12
+    rewards:
+      []
+  8:
+    requirements:
+      xp: 4000
+      kills: 35
+      wins_global: 3
+      generators_repair: 14
+    rewards:
+      []
+  9:
+    requirements:
+      xp: 4500
+      kills: 40
+      wins_global: 4
+      generators_repair: 16
+    rewards:
+      []
+  10:
+    requirements:
+      xp: 5000
+      kills: 45
+      wins_global: 4
+      generators_repair: 18
+    rewards:
+      - "message:<gold>You reached Level 10!"
+  11:
+    requirements:
+      xp: 5500
+      kills: 50
+      wins_global: 5
+      generators_repair: 20
+    rewards:
+      []
+  12:
+    requirements:
+      xp: 6000
+      kills: 55
+      wins_global: 5
+      generators_repair: 22
+    rewards:
+      []
+  13:
+    requirements:
+      xp: 6500
+      kills: 60
+      wins_global: 6
+      generators_repair: 24
+    rewards:
+      []
+  14:
+    requirements:
+      xp: 7000
+      kills: 65
+      wins_global: 6
+      generators_repair: 26
+    rewards:
+      []
+  15:
+    requirements:
+      xp: 7500
+      kills: 70
+      wins_global: 7
+      generators_repair: 28
+    rewards:
+      []
+  16:
+    requirements:
+      xp: 8000
+      kills: 75
+      wins_global: 7
+      generators_repair: 30
+    rewards:
+      []
+  17:
+    requirements:
+      xp: 8500
+      kills: 80
+      wins_global: 8
+      generators_repair: 32
+    rewards:
+      []
+  18:
+    requirements:
+      xp: 9000
+      kills: 85
+      wins_global: 8
+      generators_repair: 34
+    rewards:
+      []
+  19:
+    requirements:
+      xp: 9500
+      kills: 90
+      wins_global: 9
+      generators_repair: 36
+    rewards:
+      []
+  20:
+    requirements:
+      xp: 10000
+      kills: 95
+      wins_global: 9
+      generators_repair: 38
+    rewards:
+      - "message:<gold>You reached Level 20!"
+  21:
+    requirements:
+      xp: 10500
+      kills: 100
+      wins_global: 10
+      generators_repair: 40
+    rewards:
+      []
+  22:
+    requirements:
+      xp: 11000
+      kills: 105
+      wins_global: 10
+      generators_repair: 42
+    rewards:
+      []
+  23:
+    requirements:
+      xp: 11500
+      kills: 110
+      wins_global: 11
+      generators_repair: 44
+    rewards:
+      []
+  24:
+    requirements:
+      xp: 12000
+      kills: 115
+      wins_global: 11
+      generators_repair: 46
+    rewards:
+      []
+  25:
+    requirements:
+      xp: 12500
+      kills: 120
+      wins_global: 12
+      generators_repair: 48
+    rewards:
+      []
+  26:
+    requirements:
+      xp: 13000
+      kills: 125
+      wins_global: 12
+      generators_repair: 50
+    rewards:
+      []
+  27:
+    requirements:
+      xp: 13500
+      kills: 130
+      wins_global: 13
+      generators_repair: 52
+    rewards:
+      []
+  28:
+    requirements:
+      xp: 14000
+      kills: 135
+      wins_global: 13
+      generators_repair: 54
+    rewards:
+      []
+  29:
+    requirements:
+      xp: 14500
+      kills: 140
+      wins_global: 14
+      generators_repair: 56
+    rewards:
+      []
+  30:
+    requirements:
+      xp: 15000
+      kills: 145
+      wins_global: 14
+      generators_repair: 58
+    rewards:
+      - "message:<gold>You reached Level 30!"
+  31:
+    requirements:
+      xp: 15500
+      kills: 150
+      wins_global: 15
+      generators_repair: 60
+    rewards:
+      []
+  32:
+    requirements:
+      xp: 16000
+      kills: 155
+      wins_global: 15
+      generators_repair: 62
+    rewards:
+      []
+  33:
+    requirements:
+      xp: 16500
+      kills: 160
+      wins_global: 16
+      generators_repair: 64
+    rewards:
+      []
+  34:
+    requirements:
+      xp: 17000
+      kills: 165
+      wins_global: 16
+      generators_repair: 66
+    rewards:
+      []
+  35:
+    requirements:
+      xp: 17500
+      kills: 170
+      wins_global: 17
+      generators_repair: 68
+    rewards:
+      []
+  36:
+    requirements:
+      xp: 18000
+      kills: 175
+      wins_global: 17
+      generators_repair: 70
+    rewards:
+      []
+  37:
+    requirements:
+      xp: 18500
+      kills: 180
+      wins_global: 18
+      generators_repair: 72
+    rewards:
+      []
+  38:
+    requirements:
+      xp: 19000
+      kills: 185
+      wins_global: 18
+      generators_repair: 74
+    rewards:
+      []
+  39:
+    requirements:
+      xp: 19500
+      kills: 190
+      wins_global: 19
+      generators_repair: 76
+    rewards:
+      []
+  40:
+    requirements:
+      xp: 20000
+      kills: 195
+      wins_global: 19
+      generators_repair: 78
+    rewards:
+      - "message:<gold>You reached Level 40!"
+  41:
+    requirements:
+      xp: 20500
+      kills: 200
+      wins_global: 20
+      generators_repair: 80
+    rewards:
+      []
+  42:
+    requirements:
+      xp: 21000
+      kills: 205
+      wins_global: 20
+      generators_repair: 82
+    rewards:
+      []
+  43:
+    requirements:
+      xp: 21500
+      kills: 210
+      wins_global: 21
+      generators_repair: 84
+    rewards:
+      []
+  44:
+    requirements:
+      xp: 22000
+      kills: 215
+      wins_global: 21
+      generators_repair: 86
+    rewards:
+      []
+  45:
+    requirements:
+      xp: 22500
+      kills: 220
+      wins_global: 22
+      generators_repair: 88
+    rewards:
+      []
+  46:
+    requirements:
+      xp: 23000
+      kills: 225
+      wins_global: 22
+      generators_repair: 90
+    rewards:
+      []
+  47:
+    requirements:
+      xp: 23500
+      kills: 230
+      wins_global: 23
+      generators_repair: 92
+    rewards:
+      []
+  48:
+    requirements:
+      xp: 24000
+      kills: 235
+      wins_global: 23
+      generators_repair: 94
+    rewards:
+      []
+  49:
+    requirements:
+      xp: 24500
+      kills: 240
+      wins_global: 24
+      generators_repair: 96
+    rewards:
+      []
+  50:
+    requirements:
+      xp: 25000
+      kills: 245
+      wins_global: 24
+      generators_repair: 98
+    rewards:
+      - "message:<gold>You reached Level 50!"
+      - "message:<light_purple>You reached Level 50! Unlock Elite Title!"
+  51:
+    requirements:
+      xp: 25500
+      kills: 250
+      wins_global: 25
+      generators_repair: 100
+    rewards:
+      []
+  52:
+    requirements:
+      xp: 26000
+      kills: 255
+      wins_global: 25
+      generators_repair: 102
+    rewards:
+      []
+  53:
+    requirements:
+      xp: 26500
+      kills: 260
+      wins_global: 26
+      generators_repair: 104
+    rewards:
+      []
+  54:
+    requirements:
+      xp: 27000
+      kills: 265
+      wins_global: 26
+      generators_repair: 106
+    rewards:
+      []
+  55:
+    requirements:
+      xp: 27500
+      kills: 270
+      wins_global: 27
+      generators_repair: 108
+    rewards:
+      []
+  56:
+    requirements:
+      xp: 28000
+      kills: 275
+      wins_global: 27
+      generators_repair: 110
+    rewards:
+      []
+  57:
+    requirements:
+      xp: 28500
+      kills: 280
+      wins_global: 28
+      generators_repair: 112
+    rewards:
+      []
+  58:
+    requirements:
+      xp: 29000
+      kills: 285
+      wins_global: 28
+      generators_repair: 114
+    rewards:
+      []
+  59:
+    requirements:
+      xp: 29500
+      kills: 290
+      wins_global: 29
+      generators_repair: 116
+    rewards:
+      []
+  60:
+    requirements:
+      xp: 30000
+      kills: 295
+      wins_global: 29
+      generators_repair: 118
+    rewards:
+      - "message:<gold>You reached Level 60!"
+  61:
+    requirements:
+      xp: 30500
+      kills: 300
+      wins_global: 30
+      generators_repair: 120
+    rewards:
+      []
+  62:
+    requirements:
+      xp: 31000
+      kills: 305
+      wins_global: 30
+      generators_repair: 122
+    rewards:
+      []
+  63:
+    requirements:
+      xp: 31500
+      kills: 310
+      wins_global: 31
+      generators_repair: 124
+    rewards:
+      []
+  64:
+    requirements:
+      xp: 32000
+      kills: 315
+      wins_global: 31
+      generators_repair: 126
+    rewards:
+      []
+  65:
+    requirements:
+      xp: 32500
+      kills: 320
+      wins_global: 32
+      generators_repair: 128
+    rewards:
+      []
+  66:
+    requirements:
+      xp: 33000
+      kills: 325
+      wins_global: 32
+      generators_repair: 130
+    rewards:
+      []
+  67:
+    requirements:
+      xp: 33500
+      kills: 330
+      wins_global: 33
+      generators_repair: 132
+    rewards:
+      []
+  68:
+    requirements:
+      xp: 34000
+      kills: 335
+      wins_global: 33
+      generators_repair: 134
+    rewards:
+      []
+  69:
+    requirements:
+      xp: 34500
+      kills: 340
+      wins_global: 34
+      generators_repair: 136
+    rewards:
+      []
+  70:
+    requirements:
+      xp: 35000
+      kills: 345
+      wins_global: 34
+      generators_repair: 138
+    rewards:
+      - "message:<gold>You reached Level 70!"
+  71:
+    requirements:
+      xp: 35500
+      kills: 350
+      wins_global: 35
+      generators_repair: 140
+    rewards:
+      []
+  72:
+    requirements:
+      xp: 36000
+      kills: 355
+      wins_global: 35
+      generators_repair: 142
+    rewards:
+      []
+  73:
+    requirements:
+      xp: 36500
+      kills: 360
+      wins_global: 36
+      generators_repair: 144
+    rewards:
+      []
+  74:
+    requirements:
+      xp: 37000
+      kills: 365
+      wins_global: 36
+      generators_repair: 146
+    rewards:
+      []
+  75:
+    requirements:
+      xp: 37500
+      kills: 370
+      wins_global: 37
+      generators_repair: 148
+    rewards:
+      []
+  76:
+    requirements:
+      xp: 38000
+      kills: 375
+      wins_global: 37
+      generators_repair: 150
+    rewards:
+      []
+  77:
+    requirements:
+      xp: 38500
+      kills: 380
+      wins_global: 38
+      generators_repair: 152
+    rewards:
+      []
+  78:
+    requirements:
+      xp: 39000
+      kills: 385
+      wins_global: 38
+      generators_repair: 154
+    rewards:
+      []
+  79:
+    requirements:
+      xp: 39500
+      kills: 390
+      wins_global: 39
+      generators_repair: 156
+    rewards:
+      []
+  80:
+    requirements:
+      xp: 40000
+      kills: 395
+      wins_global: 39
+      generators_repair: 158
+    rewards:
+      - "message:<gold>You reached Level 80!"
+  81:
+    requirements:
+      xp: 40500
+      kills: 400
+      wins_global: 40
+      generators_repair: 160
+    rewards:
+      []
+  82:
+    requirements:
+      xp: 41000
+      kills: 405
+      wins_global: 40
+      generators_repair: 162
+    rewards:
+      []
+  83:
+    requirements:
+      xp: 41500
+      kills: 410
+      wins_global: 41
+      generators_repair: 164
+    rewards:
+      []
+  84:
+    requirements:
+      xp: 42000
+      kills: 415
+      wins_global: 41
+      generators_repair: 166
+    rewards:
+      []
+  85:
+    requirements:
+      xp: 42500
+      kills: 420
+      wins_global: 42
+      generators_repair: 168
+    rewards:
+      []
+  86:
+    requirements:
+      xp: 43000
+      kills: 425
+      wins_global: 42
+      generators_repair: 170
+    rewards:
+      []
+  87:
+    requirements:
+      xp: 43500
+      kills: 430
+      wins_global: 43
+      generators_repair: 172
+    rewards:
+      []
+  88:
+    requirements:
+      xp: 44000
+      kills: 435
+      wins_global: 43
+      generators_repair: 174
+    rewards:
+      []
+  89:
+    requirements:
+      xp: 44500
+      kills: 440
+      wins_global: 44
+      generators_repair: 176
+    rewards:
+      []
+  90:
+    requirements:
+      xp: 45000
+      kills: 445
+      wins_global: 44
+      generators_repair: 178
+    rewards:
+      - "message:<gold>You reached Level 90!"
+  91:
+    requirements:
+      xp: 45500
+      kills: 450
+      wins_global: 45
+      generators_repair: 180
+    rewards:
+      []
+  92:
+    requirements:
+      xp: 46000
+      kills: 455
+      wins_global: 45
+      generators_repair: 182
+    rewards:
+      []
+  93:
+    requirements:
+      xp: 46500
+      kills: 460
+      wins_global: 46
+      generators_repair: 184
+    rewards:
+      []
+  94:
+    requirements:
+      xp: 47000
+      kills: 465
+      wins_global: 46
+      generators_repair: 186
+    rewards:
+      []
+  95:
+    requirements:
+      xp: 47500
+      kills: 470
+      wins_global: 47
+      generators_repair: 188
+    rewards:
+      []
+  96:
+    requirements:
+      xp: 48000
+      kills: 475
+      wins_global: 47
+      generators_repair: 190
+    rewards:
+      []
+  97:
+    requirements:
+      xp: 48500
+      kills: 480
+      wins_global: 48
+      generators_repair: 192
+    rewards:
+      []
+  98:
+    requirements:
+      xp: 49000
+      kills: 485
+      wins_global: 48
+      generators_repair: 194
+    rewards:
+      []
+  99:
+    requirements:
+      xp: 49500
+      kills: 490
+      wins_global: 49
+      generators_repair: 196
+    rewards:
+      []
+  100:
+    requirements:
+      xp: 50000
+      kills: 495
+      wins_global: 49
+      generators_repair: 198
+    rewards:
+      - "message:<gold>You reached Level 100!"
+      - "message:<dark_red><bold>Max Level Reached!"

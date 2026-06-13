@@ -1,4 +1,4 @@
-﻿package liric.mistaken.data.db
+package liric.mistaken.data.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -49,6 +49,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
             losses_assassin INT DEFAULT 0,
             deaths INT DEFAULT 0,
             kills INT DEFAULT 0,
+            generators_repaired INT DEFAULT 0,
             asesino_equipado VARCHAR(32) DEFAULT 'slasher'
         );
     """.trimIndent()
@@ -123,7 +124,8 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
                             rs.getInt("losses_survivor"),
                             rs.getInt("losses_assassin"),
                             rs.getInt("kills"),
-                            rs.getInt("deaths")
+                            rs.getInt("deaths"),
+                            rs.getInt("generators_repaired")
                         )
                         return stats
                     }
@@ -140,7 +142,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
             UPDATE stats SET
                 wins_survivor = ?, wins_assassin = ?,
                 losses_survivor = ?, losses_assassin = ?,
-                kills = ?, deaths = ?
+                kills = ?, deaths = ?, generators_repaired = ?
             WHERE uuid = ?
         """.trimIndent()
 
@@ -153,7 +155,8 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
                     ps.setInt(4, stats.lossesAssassin.get())
                     ps.setInt(5, stats.kills.get())
                     ps.setInt(6, stats.deaths.get())
-                    ps.setString(7, uuid)
+                    ps.setInt(7, stats.generatorsRepaired.get())
+                    ps.setString(8, uuid)
                     ps.executeUpdate()
                 }
             }

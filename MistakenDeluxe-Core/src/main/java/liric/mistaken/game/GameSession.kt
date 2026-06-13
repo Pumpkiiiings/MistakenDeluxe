@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game
+package liric.mistaken.game
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -63,6 +63,7 @@ class GameSession(
         players.remove(player.uniqueId)
         asesinosUUIDs.remove(player.uniqueId)
         if (currentAsesinoUUID == player.uniqueId) currentAsesinoUUID = null
+        uiController.hideBossBar(player)
     }
 
     fun getPlayers(): List<Player> {

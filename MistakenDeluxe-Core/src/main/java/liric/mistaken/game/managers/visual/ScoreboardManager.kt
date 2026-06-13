@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.visual
+package liric.mistaken.game.managers.visual
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -90,7 +90,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 result.addAll(killerLines)
                 continue
             }
-            val formatted = line
+            var formatted = line
                 .replace("%player%", player.name)
                 .replace("%timer%", timeStr)
                 .replace("%map%", mapName)
@@ -100,6 +100,10 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 .replace("%lives%", lives)
                 .replace("%id%", sessionID)
                 .replace("{", "<").replace("}", ">")
+
+            if (org.bukkit.Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+                formatted = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, formatted)
+            }
 
             // Convert to legacy string so the existing YAML format (MiniMessage) is preserved
             result.add(legacy.serialize(mm.deserialize(formatted)))

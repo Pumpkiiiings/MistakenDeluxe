@@ -17,6 +17,7 @@ class PlayerStats {
     val lossesAssassin = AtomicInteger(0)
     val deaths = AtomicInteger(0)
     val kills = AtomicInteger(0)
+    val generatorsRepaired = AtomicInteger(0)
 
     companion object {
         // Objeto estático para formateo, evita instanciar uno por cada jugador (Ahorro de RAM)
@@ -35,6 +36,7 @@ class PlayerStats {
             "losses_assassin" -> lossesAssassin.get()
             "kills" -> kills.get()
             "deaths" -> deaths.get()
+            "generators_repaired" -> generatorsRepaired.get()
             else -> 0
         }
     }
@@ -50,6 +52,7 @@ class PlayerStats {
             "losses_assassin" -> lossesAssassin.incrementAndGet()
             "kills" -> kills.incrementAndGet()
             "deaths" -> deaths.incrementAndGet()
+            "generators_repaired" -> generatorsRepaired.incrementAndGet()
         }
     }
 
@@ -94,12 +97,13 @@ class PlayerStats {
     /**
      * Carga masiva de datos (usado al entrar al servidor).
      */
-    fun load(ws: Int, wa: Int, ls: Int, la: Int, k: Int, d: Int) {
+    fun load(ws: Int, wa: Int, ls: Int, la: Int, k: Int, d: Int, gr: Int = 0) {
         winsSurvivor.set(ws)
         winsAssassin.set(wa)
         lossesSurvivor.set(ls)
         lossesAssassin.set(la)
         kills.set(k)
         deaths.set(d)
+        generatorsRepaired.set(gr)
     }
 }

@@ -88,15 +88,32 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
         data.experience += event.amount
         data.totalExperience += event.amount
 
-        // Check level up
+        // Check level up via the unified method
+        checkLevelUp(uuid, data)
+    }
+
+    fun checkLevelUp(uuid: UUID, data: PlayerLevelData? = null) {
+        val playerData = data ?: cache[uuid] ?: return
         var levelUps = 0
-        var currentLevel = data.level
-        var maxLevel = plugin.levelConfig.maxLevel
+        var currentLevel = playerData.level
+        val maxLevel = plugin.levelConfig.maxLevel
+
+        val mistakenCore = org.bukkit.Bukkit.getPluginManager().getPlugin("MistakenDeluxe-Core") as liric.mistaken.Mistaken
+        val stats = mistakenCore.statsManager.getStats(uuid)
 
         while (currentLevel < maxLevel) {
-            val requiredXp = getRequiredXp(currentLevel)
-            if (data.experience >= requiredXp) {
-                data.experience -= requiredXp
+            val reqs = plugin.levelConfig.getRequirementsForLevel(currentLevel + 1)
+            val requiredXp = reqs?.xp ?: getRequiredXp(currentLevel)
+
+            val hasXp = playerData.experience >= requiredXp
+            val hasKills = stats.kills.get() >= (reqs?.kills ?: 0)
+            val hasWinsS = stats.winsSurvivor.get() >= (reqs?.winsSurvivor ?: 0)
+            val hasWinsA = stats.winsAssassin.get() >= (reqs?.winsAssassin ?: 0)
+            val hasWinsG = stats.totalWins >= (reqs?.winsGlobal ?: 0)
+            val hasGens = stats.generatorsRepaired.get() >= (reqs?.generatorsRepaired ?: 0)
+
+            if (hasXp && hasKills && hasWinsS && hasWinsA && hasWinsG && hasGens) {
+                playerData.experience -= requiredXp
                 currentLevel++
                 levelUps++
             } else {
@@ -109,7 +126,7 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
         } else {
             // Just save experience asynchronously
             plugin.server.scheduler.runTaskAsynchronously(plugin, Runnable {
-                plugin.repository.save(data)
+                plugin.repository.save(playerData)
             })
         }
     }

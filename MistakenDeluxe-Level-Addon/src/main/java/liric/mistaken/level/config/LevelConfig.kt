@@ -16,6 +16,7 @@ class LevelConfig(private val plugin: LevelAddonPlugin) {
 
     private val prefixesMap = mutableMapOf<Int, PrefixData>()
     private val levelRewards = mutableMapOf<Int, List<String>>()
+    private val levelRequirements = mutableMapOf<Int, LevelRequirements>()
 
     fun load() {
         val levelsFile = File(plugin.dataFolder, "levels.yml")
@@ -40,14 +41,25 @@ class LevelConfig(private val plugin: LevelAddonPlugin) {
             }
         }
 
-        // Load Levels/Rewards
+        // Load Levels/Rewards/Requirements
         levelRewards.clear()
+        levelRequirements.clear()
         val levelsSection = config.getConfigurationSection("levels")
         if (levelsSection != null) {
             for (key in levelsSection.getKeys(false)) {
                 val level = key.toIntOrNull() ?: continue
                 val rewards = levelsSection.getStringList("$key.rewards")
                 levelRewards[level] = rewards
+
+                val reqSection = levelsSection.getConfigurationSection("$key.requirements")
+                val xp = reqSection?.getLong("xp") ?: 0L
+                val kills = reqSection?.getInt("kills") ?: 0
+                val winsS = reqSection?.getInt("wins_survivor") ?: 0
+                val winsA = reqSection?.getInt("wins_killer") ?: 0
+                val winsG = reqSection?.getInt("wins_global") ?: 0
+                val gens = reqSection?.getInt("generators_repair") ?: 0
+
+                levelRequirements[level] = LevelRequirements(xp, kills, winsS, winsA, winsG, gens)
             }
         }
     }
@@ -64,5 +76,18 @@ class LevelConfig(private val plugin: LevelAddonPlugin) {
         return levelRewards[level] ?: emptyList()
     }
 
+    fun getRequirementsForLevel(level: Int): LevelRequirements? {
+        return levelRequirements[level]
+    }
+
     data class PrefixData(val requiredLevel: Int, val display: String, val color: String, val broadcast: Boolean)
+
+    data class LevelRequirements(
+        val xp: Long,
+        val kills: Int,
+        val winsSurvivor: Int,
+        val winsAssassin: Int,
+        val winsGlobal: Int,
+        val generatorsRepaired: Int
+    )
 }

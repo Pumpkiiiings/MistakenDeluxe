@@ -41,6 +41,11 @@ class SessionManager(private val plugin: Mistaken) : liric.mistaken.api.managers
         val session = activeSessions[sessionId]
         session?.removePlayer(player)
 
+        // 🔥 FIX: Al salir de la sesión, aseguramos que el jugador se limpie completamente
+        // del modo espectador y se vuelva a modo supervivencia (vital para Multiarena)
+        plugin.spectatorManager.removeCustomSpectator(player)
+        player.gameMode = org.bukkit.GameMode.SURVIVAL
+
         val serverMode = plugin.serverMode
 
         if (serverMode.equals("GAME_SERVER", ignoreCase = true)) {

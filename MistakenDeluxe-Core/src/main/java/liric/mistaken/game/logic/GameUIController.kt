@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.logic
+package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -25,6 +25,14 @@ class GameUIController(private val game: GameSession) {
         }
         personalBars.clear()
         lastProcessedText.clear()
+    }
+
+    fun hideBossBar(player: Player) {
+        val uuid = player.uniqueId
+        personalBars.remove(uuid)?.let { bar ->
+            player.hideBossBar(bar)
+        }
+        lastProcessedText.remove(uuid)
     }
 
     fun updatePersonalBar(p: Player, online: Int) {
@@ -161,5 +169,3 @@ class GameUIController(private val game: GameSession) {
         }
     }
 }
-
-
