@@ -71,7 +71,7 @@ dependencies {
     // Librerías que se incluirán en el JAR (Shadow)
     zap("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     compileOnly("com.github.retrooper:packetevents-spigot:2.12.2")
-    zap("com.zaxxer:HikariCP:5.1.0")
+    zap("com.zaxxer:HikariCP:7.1.0")
     zap("fr.skytasul:glowingentities:1.4.11")
     zap("com.mysql:mysql-connector-j:8.4.0")
     zap("org.postgresql:postgresql:42.7.11")
