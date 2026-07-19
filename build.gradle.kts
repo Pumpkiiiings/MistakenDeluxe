@@ -74,7 +74,7 @@ dependencies {
     zap("com.zaxxer:HikariCP:5.1.0")
     zap("fr.skytasul:glowingentities:1.4.11")
     zap("com.mysql:mysql-connector-j:8.4.0")
-    zap("org.postgresql:postgresql:42.7.11")
+    zap("org.postgresql:postgresql:42.7.13")
     zap("org.xerial:sqlite-jdbc:3.45.2.0")
     zap("dev.triumphteam:triumph-gui:3.1.13")
     zap("org.slf4j:slf4j-simple:2.0.18")
