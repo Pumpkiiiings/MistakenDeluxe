@@ -227,7 +227,10 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
         val isAttackerKiller = session.isKiller(attacker.uniqueId)
         val isVictimKiller = session.isKiller(victim.uniqueId)
+<<<<<<< HEAD
         val isAssassinPvpMode = session.currentMode == MistakenMode.DOUBLE_KILLER
+=======
+>>>>>>> feb05550d000a1a820578e4b72b0c4e01b5b54a3
         if (isAttackerKiller == isVictimKiller) {
             if (!isAttackerKiller && session.currentMode == MistakenMode.FREEZE_TAG && isFrozen(victim)) {
                 event.isCancelled = true
