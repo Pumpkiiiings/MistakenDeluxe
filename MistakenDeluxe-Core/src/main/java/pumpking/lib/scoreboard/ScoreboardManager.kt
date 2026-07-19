@@ -68,21 +68,21 @@ object ScoreboardManager {
 
     fun registerTemplate(template: ScoreboardTemplate) {
         val old = templates.put(template.id, template)
-        if (old != null) {
-            for (context in contexts.values) {
-                if (context.templateId == template.id) {
-                    if (old.title != template.title || old.animatedTitle != template.animatedTitle) {
-                        context.titleChanged = true
-                    }
-                    if (old.lines.size != template.lines.size) {
-                        context.layoutChanged = true
-                    }
-                    for (i in template.lines.indices) {
-                        if (i >= old.lines.size || old.lines[i] != template.lines[i]) {
-                            context.lineChanged[i] = true
-                            if (!template.isLineDynamic[i]) {
-                                context.staticLineCache[i] = pumpking.lib.color.ColorTranslator.translate(template.lines[i])
-                            }
+        for (context in contexts.values) {
+            if (context.templateId == template.id) {
+                if (old == null || old.title != template.title || old.animatedTitle != template.animatedTitle) {
+                    context.titleChanged = true
+                }
+                if (old == null || old.lines.size != template.lines.size) {
+                    context.layoutChanged = true
+                }
+                for (i in template.lines.indices) {
+                    if (old == null || i >= old.lines.size || old.lines[i] != template.lines[i]) {
+                        context.lineChanged[i] = true
+                        if (!template.isLineDynamic[i]) {
+                            context.staticLineCache[i] = pumpking.lib.color.ColorTranslator.translate(template.lines[i])
+                        } else {
+                            context.staticLineCache[i] = null
                         }
                     }
                 }
