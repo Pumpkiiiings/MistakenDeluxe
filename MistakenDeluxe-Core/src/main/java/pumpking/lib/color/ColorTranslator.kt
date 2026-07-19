@@ -23,7 +23,7 @@ object ColorTranslator {
         // If there are tags, skip the cache to prevent stale placeholder values
         if (tags.isNotEmpty()) {
             val normalized = ColorNormalizer.normalizeToMiniMessage(input)
-            return pumpking.lib.color.ColorTranslator.translate(normalized, *tags)
+            return mm.deserialize(normalized, *tags)
         }
 
         // FIX #4: Evict before inserting to keep the map bounded.
@@ -31,7 +31,7 @@ object ColorTranslator {
         // number of concurrent inserting threads — negligible for this use case.
         if (cache.size >= 1000) cache.clear()
         return cache.computeIfAbsent(input) { k ->
-            pumpking.lib.color.ColorTranslator.translate(ColorNormalizer.normalizeToMiniMessage(k))
+            mm.deserialize(ColorNormalizer.normalizeToMiniMessage(k))
         }
     }
 
