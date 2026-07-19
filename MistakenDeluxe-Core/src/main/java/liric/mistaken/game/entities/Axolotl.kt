@@ -1,4 +1,4 @@
-package liric.mistaken.game.entities
+﻿package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -138,7 +138,7 @@ class Axolotl(private val plugin: Mistaken) {
                 2 -> { // Advertencia
                     if (ticks == 20) {
                         target.playSound(target.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.8f)
-                        target.showTitle(Title.title(pumpking.lib.color.ColorTranslator.translate("<pink><b>AJOLOTE HAMBRIENTO"), pumpking.lib.color.ColorTranslator.translate("<gray>¡Va a morder!")))
+                        target.showTitle(Title.title(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.axolotl.title-hungry"), pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.axolotl.subtitle-hungry")))
                     }
                     if (ticks >= 44) {
                         fase = 3
@@ -178,7 +178,7 @@ class Axolotl(private val plugin: Mistaken) {
                     if (ticks == 0) {
                         setGlowColor(NamedTextColor.RED)
                         target.playSound(target.location, Sound.ENTITY_ELDER_GUARDIAN_DEATH, 1.5f, 0.5f)
-                        target.sendMessage(pumpking.lib.color.ColorTranslator.translate("<dark_red><b>[!] EL AJOLOTE SE HA VUELTO AGRESIVO"))
+                        target.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.axolotl.rage"))
                     }
 
                     if (ticks > 20 && ticks < 120) {

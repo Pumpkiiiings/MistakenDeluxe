@@ -1,4 +1,4 @@
-package liric.mistaken.game.entities
+﻿package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -206,7 +206,7 @@ class WitherStorm(private val plugin: Mistaken) {
             if (p.location.distanceSquared(beamStart) < 12.25) { // 3.5 bloques reales
                 plugin.combatManager.takeDamage(p)
                 p.playSound(p.location, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 0.5f)
-                p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<dark_purple><i>EL RAYO TRACTOR TE ESTÁ CONSUMIENDO...</i></dark_purple>"))
+                p.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "anomalies.witherstorm.tractor-beam"))
             }
         }
     }
@@ -242,7 +242,7 @@ class WitherStorm(private val plugin: Mistaken) {
                     val push = p.location.toVector().subtract(pivot.toVector()).normalize().multiply(2.5).setY(0.6)
                     p.velocity = push
                     p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
-                    p.showTitle(Title.title(pumpking.lib.color.ColorTranslator.translate("<dark_purple><bold>¡RUUUUAAARRR!"), pumpking.lib.color.ColorTranslator.translate("<gray>La tormenta brama...")))
+                    p.showTitle(Title.title(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "anomalies.witherstorm.title-roar"), pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "anomalies.witherstorm.subtitle-roar")))
                 }
             }
         }

@@ -1,4 +1,4 @@
-package liric.mistaken.game.entities
+﻿package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -199,7 +199,7 @@ class PouEXE(private val plugin: Mistaken) {
                     if (ticksEnFase == 0) {
                         setGlowColor(NamedTextColor.RED)
                         target.playSound(target.location, Sound.ENTITY_PLAYER_HURT_ON_FIRE, 1.5f, 0.1f)
-                        target.sendMessage(pumpking.lib.color.ColorTranslator.translate("<dark_red><b>[!] POU SE HA VUELTO SALVAJE"))
+                        target.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.pou.rage"))
                     }
 
                     if (ticksEnFase > 20 && ticksEnFase < 120) {

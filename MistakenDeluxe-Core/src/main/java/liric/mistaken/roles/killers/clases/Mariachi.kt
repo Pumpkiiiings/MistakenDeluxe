@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+﻿package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -32,7 +32,8 @@ class Mariachi : CoreKiller(
 ) {
 
     private val pathBase = "asesinos.mariachi"
-    private val sonidoMúsicaId = "mistaken:jarabetapatio"
+    override val defaultMusic = "mistaken:jarabetapatio"
+    private val sonidoMúsicaId = defaultMusic!!
 
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val skullsOrbit = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()

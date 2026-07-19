@@ -441,3 +441,40 @@ menus:
           - "<#AAAAAA>para burlar a la muerte."
           - ""
           - "<#00d4ff>Â» Click para entrar"
+
+anomalies:
+  amongus:
+    title-detect: ""<red><b>IMPOSTOR DETECTADO""
+    subtitle-detect: ""<gray>¡Corre por tu vida!""
+    rage: ""<dark_red><b>[!] EL IMPOSTOR ESTÁ FURIOSO""
+    death: ""<prefix> <white>{player} fue eliminado por el impostor.""
+  axolotl:
+    title-hungry: ""<pink><b>AJOLOTE HAMBRIENTO""
+    subtitle-hungry: ""<gray>¡Va a morder!""
+    rage: ""<dark_red><b>[!] EL AJOLOTE SE HA VUELTO AGRESIVO""
+    death: ""<prefix> <white>{player} fue devorado por el ajolote.""
+  eyedrooms:
+    title-infect: ""<dark_green><bold>INFECCIÓN OCULAR""
+    subtitle-infect: ""<green>La plaga se expande...""
+    death: ""<prefix> <white>{player} fue consumido por la infección ocular.""
+  geoffrey:
+    spawn: ""<red><b>[!]</b> <dark_red>ANOMALÍA DETECTADA: <b>EL ABISMO HA DESPERTADO.</b>""
+    title-comes: ""<dark_red><bold>!!! VIENE !!!""
+    subtitle-comes: ""<red>¡corre!!!!""
+    rage: ""<dark_red><bold>!!! GEOFFREY ESTÁ FURIOSO !!!""
+    death: ""<prefix> <white>{player} fue destrozado por Geoffrey.""
+  observant:
+    title-look-up: ""<dark_red>MIRA ARRIBA</dark_red>""
+    subtitle-look-up: """"
+    rage: ""<dark_red><b>[!] THE OBSERVANT TE ESTÁ CAZANDO""
+    death: ""<prefix> <white>{player} fue aniquilado por The Observant.""
+  pou:
+    title-attack: ""<gold><bold>¡SPLAT!""
+    subtitle-attack: ""<yellow>Pou saltó sobre ti""
+    rage: ""<dark_red><b>[!] POU SE HA VUELTO SALVAJE""
+    death: ""<prefix> <white>{player} fue aplastado por Pou.""
+  witherstorm:
+    tractor-beam: ""<dark_purple><i>EL RAYO TRACTOR TE ESTÁ CONSUMIENDO...</i></dark_purple>""
+    title-roar: ""<dark_purple><bold>¡RUUUUAAARRR!""
+    subtitle-roar: ""<gray>La tormenta brama...""
+    death: ""<prefix> <white>{player} fue absorbido por la Wither Storm.""

@@ -1,4 +1,4 @@
-package liric.mistaken.game.logic
+﻿package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -20,6 +20,7 @@ import kotlin.math.min
 class GamePlayerController(private val game: GameSession) {
 
     private var lmsActivado = false
+    private var activeLmsMusic = "mistaken:lms"
 
     fun setupPlayers(arena: liric.mistaken.game.Arena) {
         // 🔥 FIX: Solo tomamos los jugadores de ESTA sesión
@@ -217,7 +218,14 @@ class GamePlayerController(private val game: GameSession) {
     }
 
     private fun triggerLMS(player: Player) {
-        game.uiController.broadcastLMS(player)
+        val asesinoPlayer = game.getCurrentAsesino()
+        val killerClass = asesinoPlayer?.let { game.plugin.asesinoManager.getKillerOfPlayer(it) }
+        val customMusic = killerClass?.let { killer ->
+            game.plugin.configManager.getKillerConfig(killer.id).getString("lms_music") ?: killer.defaultMusic
+        }
+        activeLmsMusic = customMusic ?: "mistaken:lms"
+
+        game.uiController.broadcastLMS(player, activeLmsMusic)
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 20 * 60, 0))
         if (game.timer > 90) {
             game.timer = 90
@@ -310,7 +318,7 @@ class GamePlayerController(private val game: GameSession) {
 
         // 🔥 FIX: Solo limpiamos a los jugadores de ESTA sesión
         game.getPlayers().forEach { p ->
-            p.stopSound("mistaken:lms", SoundCategory.RECORDS)
+            p.stopSound(activeLmsMusic, SoundCategory.RECORDS)
 
             p.passengers.forEach { p.removePassenger(it) }
             p.vehicle?.removePassenger(p)

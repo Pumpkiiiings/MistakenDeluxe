@@ -1,4 +1,4 @@
-package liric.mistaken.game.entities
+﻿package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -216,7 +216,7 @@ class ObservantEXE(private val plugin: Mistaken) {
 
     private fun ejecutarDobleAereo() {
         val initialTarget = getClosestTarget() ?: return
-        initialTarget.showTitle(Title.title(pumpking.lib.color.ColorTranslator.translate("<dark_red>MIRA ARRIBA</dark_red>"), pumpking.lib.color.ColorTranslator.translate("")))
+        initialTarget.showTitle(Title.title(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(initialTarget, "anomalies.observant.title-look-up"), pumpking.lib.service.PumpkingServiceManager.messages.getComponent(initialTarget, "anomalies.observant.subtitle-look-up")))
         var step = 0
         var diveCount = 0
 
@@ -306,7 +306,7 @@ class ObservantEXE(private val plugin: Mistaken) {
 
         val rageMsg = pumpking.lib.color.ColorTranslator.translate("<dark_red><b>[!] EL ABISMO SE HA DESBORDADO.</b>")
         assignedSession?.getPlayers()?.forEach {
-            it.sendMessage(rageMsg)
+            it.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(it, "anomalies.observant.rage"))
             it.playSound(it.location, Sound.ENTITY_WARDEN_ROAR, 1.5f, 0.5f)
         }
 

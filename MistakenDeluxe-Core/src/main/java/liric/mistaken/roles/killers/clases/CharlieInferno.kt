@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+﻿package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -38,7 +38,8 @@ class CharlieInferno : CoreKiller(
 ) {
 
     private val pathBase = "asesinos.charlie"
-    private val sonidoId = "mistaken:charlieinferno"
+    override val defaultMusic = "mistaken:charlieinferno"
+    private val sonidoId = defaultMusic!!
 
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()

@@ -8,7 +8,7 @@ object ColorNormalizer {
 
     // FIX #11: Was compiled inside normalizeToMiniMessage() on every call.
     // Pattern.compile() is expensive (NFA construction). Moved here as a compile-once constant.
-    private val STANDALONE_HEX_PATTERN = Pattern.compile("(?<!<)#([A-Fa-f0-9]{6})")
+    private val STANDALONE_HEX_PATTERN = Pattern.compile("(?<![<:/])#([A-Fa-f0-9]{6})")
 
     // Map of legacy color codes to MiniMessage tags
     private val LEGACY_MAP = mapOf(

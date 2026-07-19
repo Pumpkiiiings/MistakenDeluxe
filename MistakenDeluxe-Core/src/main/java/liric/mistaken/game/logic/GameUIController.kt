@@ -1,4 +1,4 @@
-package liric.mistaken.game.logic
+﻿package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -105,7 +105,7 @@ class GameUIController(private val game: GameSession) {
         }
     }
 
-    fun broadcastLMS(lastSurvivor: Player) {
+    fun broadcastLMS(lastSurvivor: Player, lmsMusic: String) {
         val parsedSurvivorName = Placeholder.parsed("player", lastSurvivor.name)
 
         game.plugin.server.onlinePlayers.forEach { p ->
@@ -130,7 +130,7 @@ class GameUIController(private val game: GameSession) {
             p.showTitle(Title.title(titleMain, subtitle, Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(4), Duration.ofMillis(1000))))
             p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f)
             p.playSound(p.location, Sound.AMBIENT_CAVE, 1f, 0.5f)
-            p.playSound(p.location, "mistaken:lms", SoundCategory.RECORDS, 1f, 1f)
+            p.playSound(p.location, lmsMusic, SoundCategory.RECORDS, 1f, 1f)
         }
     }
 

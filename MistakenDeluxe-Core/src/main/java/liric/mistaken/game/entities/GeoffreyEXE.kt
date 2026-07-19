@@ -1,4 +1,4 @@
-package liric.mistaken.game.entities
+﻿package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.format.NamedTextColor
@@ -84,7 +84,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
                 ))
 
                 setGlowColor(NamedTextColor.WHITE)
-                Bukkit.broadcast(pumpking.lib.color.ColorTranslator.translate("<red><b>[!]</b> <dark_red>ANOMALÍA DETECTADA: <b>EL ABISMO HA DESPERTADO.</b>"))
+                Bukkit.broadcast(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.spawn"))
 
                 iniciarIANativa()
             } catch (e: Exception) {
@@ -296,7 +296,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
             parts[4].block = Material.RED_CONCRETE.createBlockData()
         }
 
-        Bukkit.broadcast(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>!!! GEOFFREY ESTÁ FURIOSO !!!"))
+        Bukkit.broadcast(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.rage"))
 
         var hasHit = false
         var ticks = 0
@@ -353,7 +353,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
             // AQUÍ SÍ MUERE
             victim.health = 0.0
             val prefix = if (enrage) "<dark_red><b>[FURIA]</b>" else "<red><b>[!]</b>"
-            Bukkit.broadcast(pumpking.lib.color.ColorTranslator.translate("$prefix <white>${victim.name} fue destrozado por Geoffrey."))
+            Bukkit.broadcast(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.death", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("player", victim.name)))
         } else {
             // SOBREVIVE AL GOLPE, PERO QUEDA GRAVEMENTE HERIDO Y EMPUJADO
             victim.health = nuevaVida

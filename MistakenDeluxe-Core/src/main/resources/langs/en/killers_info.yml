@@ -1,0 +1,224 @@
+﻿asesinos:
+  slasher:
+    nombre: "<white><b>PUMPKIN WHITE</b>"
+    descripcion:
+      - "<gray>A classic and brutal killer."
+      - "<gray>Specialist in physical pursuit."
+      - "<red>Mechanic: <white>Causes constant bleeding."
+    lore_tienda:
+      - "<gray>\"His bloodlust has no end...\""
+      - "<white>Difficulty: <green>Easy"
+    skill_names:
+      weapon: "<red>Axe"
+      skill1: "<red>Bloodlust"
+      skill2: "<gold>Throwable Machete"
+      skill3: "<dark_purple>Terrifying Presence"
+      skill4: "<dark_red><bold>EXECUTION MODE</bold>"
+
+  herobrine:
+    nombre: "<white><b>HEROBRINE</b>"
+    descripcion:
+      - "<gray>The myth that corrupts reality."
+      - "<gray>Specialist in stalking and mobility."
+      - "<white>Mechanic: <white>Teleportation and revelation."
+    lore_tienda:
+      - "<gray>\"He shouldn't be here...\""
+      - "<white>Difficulty: <yellow>Medium"
+    skill_names:
+      weapon: "<white>Blade of Oblivion"
+      skill1: "<white>Void Dash"
+      skill2: "<aqua>Dimensional Jump"
+      skill3: "<dark_gray>Pulse of Terror"
+      skill4: "<red><bold>WORLD ERROR</bold>"
+
+  entity303:
+    nombre: "<red><b>ENTITY 303</b>"
+    descripcion:
+      - "<gray>A critical error in the code."
+      - "<gray>Specialist in glitch and fire attacks."
+      - "<red>Mechanic: <white>Data infection and flight."
+    lore_tienda:
+      - "<gray>\"SYSTEM ERROR: 303 FOUND\""
+      - "<white>Difficulty: <yellow>Medium"
+    skill_names:
+      weapon: "<red>Corrupted Saber"
+      skill1: "<red>Code Dash"
+      skill2: "<red>Error Star"
+      skill3: "<red>Flight Protocol"
+      skill4: "<dark_red><bold>SYSTEM CRASH</bold>"
+
+  null:
+    nombre: "<dark_gray><b>NULL</b>"
+    descripcion:
+      - "<gray>The absolute absence of existence."
+      - "<gray>Specialist in blindness and traps."
+      - "<dark_gray>Mechanic: <white>Total darkness and suffocation."
+    lore_tienda:
+      - "<gray>\"Nothing remains where he walks...\""
+      - "<white>Difficulty: <red>Hard"
+    skill_names:
+      weapon: "<dark_gray>Void Dagger"
+      skill1: "<red>Render Error"
+      skill2: "<aqua>Beacon of Souls"
+      skill3: "<dark_gray>Void Prison"
+      skill4: "<gray><bold>FANGS OF THE ABYSS</bold>"
+
+  charlie:
+    nombre: "<gradient:#ff4500:#ff8c00><b>CHARLIE INFERNO</b></gradient>"
+    descripcion:
+      - "<gray>The herald of fire and eternal ice."
+      - "<gray>Dominates the field with massive elemental attacks."
+      - "<gradient:#ff4500:#ff8c00>Mechanic:</gradient> <white>Devastating power vs Exhaustion."
+    lore_tienda:
+      - "<gray>\"You can run from your demons until you are exhausted...\""
+      - "<white>Difficulty: <red>Expert"
+    skill_names:
+      weapon: "<gradient:#ff4500:#ff8c00>Hell's Edge</gradient>"
+      skill1: "<red><b>HELL!</b>"
+      skill2: "<gradient:#ff4500:#000000><b>Demon's Run</b></gradient>"
+      skill3: "<aqua><b>Glacier Spikes</b>"
+      skill4: "<dark_red><b>Underworld Fangs</b>"
+
+  devesto:
+    nombre: "<gradient:#4b0082:#000000><b>DEVESTO</b></gradient> <white>[F3X]</white>"
+    descripcion:
+      - "<gray>The corrupt code architect."
+      - "<gray>Manipulates the map at will."
+      - "<dark_purple>Mechanic:</gradient> <white>//set 0 and restoration."
+    lore_tienda:
+      - "<gray>\"Control-Alt-Delete to your existence.\""
+      - "<white>Difficulty: <red>Impossible"
+    skill_names:
+      weapon: "<gradient:#4b0082:#000000>Architect's Axe</gradient>"
+      skill1: "<blue>[F3X]</blue> <white>Move Tool"
+      skill2: "<blue>[F3X]</blue> <white>Paint Tool"
+      skill3: "<blue>[F3X]</blue> <white>Resize Tool"
+      skill4: "<red><bold>//SET 0 (DELETE)</bold>"
+
+  mariachi:
+    nombre: "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>"
+    descripcion:
+      - "<gray>The Black Charro has come for your soul."
+      - "<gray>Specialist in auditory stun."
+      - "<red>Mechanic:</gradient> <white>Global music and dizziness."
+    lore_tienda:
+      - "<gray>\"¡Ay ay ay! Sing and don't cry...\""
+      - "<white>Difficulty: <red>Expert"
+    skill_names:
+      weapon: "<gradient:#ff0000:#000000>Guitar of Destiny</gradient>"
+      skill1: "<red>Terrifying Scream"
+      skill2: "<gold>Tapatio Dance (Stomp)"
+      skill3: "<white>Accurate Guitar Strike"
+      skill4: "<green><bold>TEQUILA SHOT</bold>"
+
+  teto:
+    nombre: "<gradient:#ff66cc:#ff0000><b>KASANE TETO</b></gradient>"
+    descripcion:
+      - "<gray>The UTAU chimera has arrived in Mistaken."
+      - "<gray>Specialist in distortion and tactical attacks."
+      - "<red>Mechanic: <white>Powerful skills with auto-debuffs."
+    lore_tienda:
+      - "<gray>\"You're such a fool! (Baka!)\""
+      - "<white>Difficulty: <red>Hard"
+    skill_names:
+      weapon: "<gradient:#ff66cc:#ff0000>Chimera's Microphone</gradient>"
+      skill1: "<gradient:#7d7d7d:#ff0000>Chimeric Drill</gradient>"
+      skill2: "<gradient:#ffcc99:#e6ac00>Iron Baguette</gradient>"
+      skill3: "<gradient:#ff0000:#ffffff>April Fools' Joke</gradient>"
+      skill4: "<dark_red><bold>TERRITORY (0401)</bold>"
+
+  miku:
+    nombre: "<gradient:#00ffcc:#0099ff><b>HATSUNE MIKU</b></gradient>"
+    descripcion:
+      - "<gray>The ultimate virtual idol has arrived."
+      - "<gray>Specialist in crowd control and lasers."
+      - "<aqua>Mechanic: <white>Light projections and massive damage."
+    lore_tienda:
+      - "<gray>\"The world is mine!\""
+      - "<white>Difficulty: <yellow>Medium"
+    skill_names:
+      weapon: "<gradient:#00ffcc:#0099ff>Negi-Saber</gradient>"
+      skill1: "<aqua>Projection 39"
+      skill2: "<gradient:#00ffcc:#ffffff>WORLD DOMINATION</gradient>"
+      skill3: "<gradient:#ff00cc:#00ffcc><b>MIKU MIKU BEAMMMM</b></gradient>"
+      skill4: "<gradient:#00ffcc:#0099ff><bold>FINAL CONCERT</bold></gradient>"
+
+  romeo:
+    nombre: "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient> <white>[ADMIN]</white>"
+    descripcion:
+      - "<red>The World Admin has returned."
+      - "<gray>Controls the battlefield with the power of code."
+      - "<gold>Mechanic: <white>Destructive dash and Void attacks."
+    lore_tienda:
+      - "<gray>\"I make the rules here!\""
+      - "<white>Difficulty: <dark_red>UNSTOPPABLE"
+    skill_names:
+      weapon: "<gradient:#ff0000:#ffff00>Admin's Pickaxe</gradient>"
+      skill1: "<red><b>Admin Dash</b>"
+      skill2: "<white><b>Admin's Vision</b>"
+      skill3: "<dark_purple><b>Void Fangs</b>"
+      skill4: "<gold><b>Star of the End</b>"
+
+  colorandelectricity:
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>SHIKISAI DENKI</b></gradient>"
+    descripcion:
+      - "<gray>A bodiless being made of pure static."
+      - "<gray>Specialist in vision theft and speed."
+      - "<gradient:#ff0080:#00ffff>Mechanic:</gradient> <white>Chromatic overload."
+    lore_tienda:
+      - "<gray>\"I want colors... give me your colors.\""
+      - "<white>Difficulty: <red>Hard"
+    skill_names:
+      weapon: "<gradient:#ff0080:#00ffff>High Voltage Blade</gradient>"
+      skill1: "<gradient:#ff0080:#ffffff>Vivid Trace (Dash)</gradient>"
+      skill2: "<gradient:#00ffff:#ffffff>Color Drain</gradient>"
+      skill3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
+      skill4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
+
+  coolkid:
+    nombre: "<gradient:#00ff00:#004400><b>COOLKID</b></gradient> <gray>[DEV]</gray>"
+    descripcion:
+      - "<gray>Test killer v4.1 (DEV Branch)."
+      - "<gray>Specialist in network attacks and glitches."
+      - "<green>Mechanic: <white>Packet loss and critical errors."
+    lore_tienda:
+      - "<dark_gray>\"127.0.0.1: Connection Terminated.\""
+      - "<white>Difficulty: <green>Test"
+    skill_names:
+      weapon: "<green>Force Op Stick"
+      skill1: "<green>Force Login (Dash)"
+      skill2: "<green>Packet Loss (Clones)"
+      skill3: "<red>System Shutdown"
+      skill4: "<dark_red><bold>CRITICAL ERROR</bold>"
+
+  bendy:
+    nombre: "<gradient:#000000:#333333><b>BENDY</b></gradient> <white>[INK]</white>"
+    descripcion:
+      - "<gray>The ink demon has escaped the studio."
+      - "<gray>Specialist in mobility and blindness."
+      - "<black>Mechanic: <white>Ink tunnels and Beast form."
+    lore_tienda:
+      - "<gray>\"Inky.\""
+      - "<white>Difficulty: <red>HARD"
+    skill_names:
+      weapon: "<black>Ink-Stained Axe"
+      skill1: "<dark_gray><b>Ink Tunnel</b>"
+      skill2: "<black><b>Overflow</b>"
+      skill3: "<dark_gray><b>Corrosive Puddle</b>"
+      skill4: "<black><bold>THE INK DEMON</bold>"
+
+  colorsito:
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>COLORSITO</b></gradient>"
+    descripcion:
+      - "<grayUna version mas pequeña de Color And Electricity."
+      - "<gray>Hecha por: MarAgridulce."
+    lore_tienda:
+      - "<gray>\"Es electrico y colorido.\""
+      - "<white>Dificultad: <yellow>Media"
+    skill_names:
+      weapon: "<gradient:#ff0080:#00ffff>Colorsito Blade</gradient>"
+      skill1: "<gradient:#ff0080:#ffffff>Vivid Trace</gradient>"
+      skill2: "<gradient:#00ffff:#ffffff>Color Drain</gradient>"
+      skill3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
+      skill4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
+

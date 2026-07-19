@@ -290,10 +290,14 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         runOnMain {
             if (victim.gameMode == GameMode.SPECTATOR || victim.isInvisible || victim.gameMode == GameMode.ADVENTURE) return@runOnMain
 
+            val isSurvivor = !currentSession.isKiller(victim.uniqueId)
+            if (isSurvivor && currentSession.currentMode == MistakenMode.FREEZE_TAG) {
+                freezePlayer(victim, currentSession)
+                return@runOnMain
+            }
+
             val nextHP = (victim.health - amount).coerceAtLeast(0.0)
             victim.health = nextHP
-
-            val isSurvivor = !currentSession.isKiller(victim.uniqueId)
 
             if (isSurvivor && nextHP <= 4.0 && nextHP > 0.0) {
                 if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {

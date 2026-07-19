@@ -1,4 +1,4 @@
-package liric.mistaken.game.entities
+﻿package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -63,7 +63,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
                 setGlowColor(NamedTextColor.WHITE)
 
                 // 🔥 Broadcast aislado solo para la sesión
-                assignedSession?.broadcastLocalized("events.amongus-spawn") ?: Bukkit.broadcast(pumpking.lib.color.ColorTranslator.translate("<red><b>[!]</b> <white>Hay un <b>IMPOSTOR</b> entre nosotros..."))
+                assignedSession?.broadcastLocalized("events.amongus-spawn")
 
                 isRunning = true
                 iniciarIA()
@@ -145,7 +145,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
                 2 -> { // FASE 2: Advertencia
                     if (ticksEnFase == 16) {
                         target.playSound(target.location, Sound.ENTITY_CREEPER_PRIMED, 1f, 0.5f)
-                        target.showTitle(Title.title(pumpking.lib.color.ColorTranslator.translate("<red><b>IMPOSTOR DETECTADO"), pumpking.lib.color.ColorTranslator.translate("<gray>¡Corre por tu vida!")))
+                        target.showTitle(Title.title(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.amongus.title-detect"), pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.amongus.subtitle-detect")))
                     }
                     if (ticksEnFase >= 36) {
                         fase = 3
@@ -184,7 +184,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
                     if (ticksEnFase == 0) {
                         setGlowColor(NamedTextColor.RED)
                         target.playSound(target.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 0.5f)
-                        target.sendMessage(pumpking.lib.color.ColorTranslator.translate("<dark_red><b>[!] EL IMPOSTOR ESTÁ FURIOSO"))
+                        target.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.amongus.rage"))
                     }
 
                     if (ticksEnFase > 20 && ticksEnFase < 120) {
@@ -223,7 +223,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 3, false, false, true))
 
         val prefix = if (rage) "<dark_red><b>[SABOTAJE]</b>" else "<red><b>[!]</b>"
-        val deathMsg = pumpking.lib.color.ColorTranslator.translate("$prefix <white>${victim.name} fue eliminado por el impostor.")
+        val deathMsg = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(victim, "anomalies.amongus.death", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("player", victim.name))
 
         // 🔥 Mensaje solo para los de la sesión
         assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
