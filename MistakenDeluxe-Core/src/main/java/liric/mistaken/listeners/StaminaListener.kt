@@ -81,8 +81,8 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                 // --- Cálculo de pérdida/recuperación ---
                 if (isSprinting && currentStamina > 0.0) {
                     // 🔥 MULTIARENA: Verificamos si es asesino en SU sesión
-                    var loss = if (session.esAsesino(uuid)) lossKiller else lossSurvivor
-                    if (session.currentMode == liric.mistaken.game.enums.MistakenMode.ONE_BOUNCE && !session.esAsesino(uuid)) {
+                    var loss = if (session.isKiller(uuid)) lossKiller else lossSurvivor
+                    if (session.currentMode == liric.mistaken.game.enums.MistakenMode.ONE_BOUNCE && !session.isKiller(uuid)) {
                         loss /= 2.0
                     }
                     currentStamina = (currentStamina - loss).coerceAtLeast(0.0)

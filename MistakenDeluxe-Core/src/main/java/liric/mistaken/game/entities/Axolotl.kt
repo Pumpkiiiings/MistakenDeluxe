@@ -157,7 +157,7 @@ class Axolotl(private val plugin: Mistaken) {
                         // Solo golpea si es de la sesión y no es el asesino
                         val hit = next.world.getNearbyPlayers(next, 4.0).filter { p ->
                             val pSession = plugin.sessionManager.getSession(p)
-                            pSession == session && pSession?.esAsesino(p.uniqueId) != true
+                            pSession == session && pSession?.isKiller(p.uniqueId) != true
                         }
 
                         if (hit.isNotEmpty()) {
@@ -228,7 +228,7 @@ class Axolotl(private val plugin: Mistaken) {
     private fun aplicarAuraMiedo(loc: Location, duration: Int) {
         loc.world.getNearbyPlayers(loc, 15.0).forEach { p ->
             val pSession = plugin.sessionManager.getSession(p)
-            if (pSession == assignedSession && pSession?.esAsesino(p.uniqueId) != true) {
+            if (pSession == assignedSession && pSession?.isKiller(p.uniqueId) != true) {
                 p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, duration, 0, false, false, false))
                 p.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, duration, 2, false, false, false))
             }

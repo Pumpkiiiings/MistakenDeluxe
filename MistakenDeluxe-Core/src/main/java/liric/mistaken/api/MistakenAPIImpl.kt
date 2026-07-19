@@ -1,7 +1,7 @@
 package liric.mistaken.api
 
 import liric.mistaken.Mistaken
-import liric.mistaken.api.managers.IAsesinoManager
+import liric.mistaken.api.managers.IKillerManager
 import liric.mistaken.api.managers.IConfigManager
 import liric.mistaken.api.managers.ISessionManager
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -11,7 +11,7 @@ import java.util.logging.Logger
 class MistakenAPIImpl(private val _plugin: Mistaken) : MistakenAPI {
     override val plugin: Plugin
         get() = _plugin
-    override val asesinoManager: IAsesinoManager
+    override val asesinoManager: IKillerManager
         get() = _plugin.asesinoManager
     override val sessionManager: ISessionManager
         get() = _plugin.sessionManager

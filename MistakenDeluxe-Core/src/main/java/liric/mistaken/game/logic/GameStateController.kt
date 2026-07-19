@@ -84,9 +84,9 @@ class GameStateController(private val game: GameSession) {
                 // 🔥 REPRODUCIR INTRO DEL ASESINO 🔥
                 val killer = game.getCurrentAsesino()
                 if (killer != null && killer.isOnline) {
-                    val claseAsesino = game.plugin.asesinoManager.getAsesinoDelJugador(killer)
-                    if (claseAsesino != null) {
-                        game.plugin.cinematicManager.playKillerIntro(killer, claseAsesino)
+                    val killerClass = game.plugin.asesinoManager.getKillerOfPlayer(killer)
+                    if (killerClass != null) {
+                        game.plugin.cinematicManager.playKillerIntro(killer, killerClass)
                     }
                 }
             }
@@ -111,7 +111,7 @@ class GameStateController(private val game: GameSession) {
         // Solo ocurre en el modo INITIALIZES y exactamente a los 290 segundos (10s después del inicio)
         if (game.currentMode == MistakenMode.INITIALIZES && game.timer == 290) {
 
-            // 1. Títulos de Terror a todos los jugadores (Incluyendo el Asesino)
+            // 1. Títulos de Terror a todos los jugadores (Incluyendo el Killer)
             val title = game.plugin.mm.deserialize("<dark_red><bold><obfuscated>||</obfuscated> ¡GEOFFREY ESTÃ AQUÃ! <obfuscated>||</obfuscated>")
             val subtitle = game.plugin.mm.deserialize("<dark_gray>Nadie sobrevivirá...")
             val times = Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(4), Duration.ofMillis(500))
@@ -126,7 +126,7 @@ class GameStateController(private val game: GameSession) {
                 p.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1, false, false, false))
             }
 
-            // 2. Invocar la entidad en el centro (Spawn de Supervivientes o del Asesino)
+            // 2. Invocar la entidad en el centro (Spawn de Survivors o del Killer)
             val spawnLoc = game.getCurrentAsesino()?.location ?: game.plugin.server.onlinePlayers.firstOrNull()?.location
 
             if (spawnLoc != null) {
@@ -209,8 +209,8 @@ class GameStateController(private val game: GameSession) {
         val mapName = game.currentMapName
         val killer = game.getCurrentAsesino()
 
-        val defaultAssassinWord = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "words.assassin", "El Asesino", "messages")
-        val defaultSurvivorsWord = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "words.survivors", "Supervivientes", "messages")
+        val defaultAssassinWord = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "words.assassin", "El Killer", "messages")
+        val defaultSurvivorsWord = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "words.survivors", "Survivors", "messages")
 
         val ganadorNombre = if (killerWon) (killer?.name ?: defaultAssassinWord) else defaultSurvivorsWord
         val razon = if (killerWon) {
@@ -220,7 +220,7 @@ class GameStateController(private val game: GameSession) {
         }
 
         val escapados = game.plugin.server.onlinePlayers.filter {
-            !game.esAsesino(it.uniqueId) && it.gameMode == GameMode.SURVIVAL
+            !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL
         }.map { it.name }
 
         game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
@@ -228,19 +228,19 @@ class GameStateController(private val game: GameSession) {
             game.plugin.server.onlinePlayers.forEach { p ->
                 val uuid = p.uniqueId
                 if (killerWon) {
-                    if (game.esAsesino(uuid)) game.plugin.statsManager.incrementStat(uuid, "wins_assassin")
+                    if (game.isKiller(uuid)) game.plugin.statsManager.incrementStat(uuid, "wins_assassin")
                     else game.plugin.statsManager.incrementStat(uuid, "losses_survivor")
                 } else {
-                    if (game.esAsesino(uuid)) game.plugin.statsManager.incrementStat(uuid, "losses_assassin")
+                    if (game.isKiller(uuid)) game.plugin.statsManager.incrementStat(uuid, "losses_assassin")
                     else if (p.gameMode != GameMode.SPECTATOR) game.plugin.statsManager.incrementStat(uuid, "wins_survivor")
                 }
             }
         }
 
         if (killerWon && killer != null) {
-            val claseAsesino = game.plugin.asesinoManager.getAsesinoDelJugador(killer)
-            if (claseAsesino != null) {
-                game.plugin.cinematicManager.playKillerOutro(killer, claseAsesino)
+            val killerClass = game.plugin.asesinoManager.getKillerOfPlayer(killer)
+            if (killerClass != null) {
+                game.plugin.cinematicManager.playKillerOutro(killer, killerClass)
             } else {
                 game.broadcastLocalized(configPath)
             }
@@ -269,7 +269,7 @@ class GameStateController(private val game: GameSession) {
 
         game.currentState = GameState.LOBBY
         game.timer = 0
-        game.currentAsesinoUUID = null
+        game.currentKillerUUID = null
         game.asesinosUUIDs.clear()
         game.modeForced = false
         game.forceStart = false

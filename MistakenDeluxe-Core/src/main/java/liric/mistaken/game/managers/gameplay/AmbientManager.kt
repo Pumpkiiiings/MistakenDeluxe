@@ -64,8 +64,8 @@ class AmbientManager(private val plugin: Mistaken) {
      */
     private fun processSurvivorLogic(survivor: Player, killer: Player, session: GameSession) {
 
-        // Si este "superviviente" en realidad fue elegido como el Asesino en esta ronda
-        if (session.esAsesino(survivor.uniqueId)) {
+        // Si este "superviviente" en realidad fue elegido como el Killer en esta ronda
+        if (session.isKiller(survivor.uniqueId)) {
             trackedSurvivors.remove(survivor.uniqueId)
             survivor.removePotionEffect(PotionEffectType.DARKNESS)
             return

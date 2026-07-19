@@ -39,9 +39,9 @@ object LeaveCommand {
 
                 // 2. LÓGICA DE ABANDONO (Si la partida ya empezó)
                 if (session.currentState == GameState.INGAME) {
-                    if (session.esAsesino(player.uniqueId)) {
+                    if (session.isKiller(player.uniqueId)) {
                         // Si el asesino se rinde
-                        plugin.asesinoManager.removerAsesino(player)
+                        plugin.asesinoManager.removeKiller(player)
                         session.asesinosUUIDs.remove(player.uniqueId)
 
                         if (session.asesinosUUIDs.isEmpty()) {

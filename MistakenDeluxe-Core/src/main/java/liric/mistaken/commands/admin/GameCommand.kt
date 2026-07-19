@@ -44,7 +44,7 @@ object GameCommand {
                                 val arenaObj = plugin.arenaManager.getArena(session.currentMapName)
 
                                 // 🔥 FIX: Buscamos un punto de spawn válido entre los datos de la arena
-                                // Intentamos: 1. Spawn Asesino -> 2. Primer Spawn Superviviente
+                                // Intentamos: 1. Spawn Killer -> 2. Primer Spawn Survivor
                                 val spawn = arenaObj?.asesinoSpawn ?: arenaObj?.survivorSpawns?.firstOrNull()
 
                                 if (spawn != null) {

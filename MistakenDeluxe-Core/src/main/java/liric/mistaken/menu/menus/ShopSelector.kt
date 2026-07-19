@@ -34,7 +34,7 @@ class ShopSelector : MenuBase("tienda_principal") {
         val loreA = getTranslatedList(player, "menus.tienda_principal.items.asesinos.lore")
             .map { parseSafe(it) }
 
-        val itemAsesinos = ItemBuilder.from(matA)
+        val itemKillers = ItemBuilder.from(matA)
             .name(parseSafe(nombreA))
             .lore(loreA)
             .flags(*ItemFlag.entries.toTypedArray())
@@ -63,7 +63,7 @@ class ShopSelector : MenuBase("tienda_principal") {
                 plugin.supervivienteTienda.abrir(player)
             }
 
-        gui.setItem(config.getInt("items.asesinos.slot", 11), itemAsesinos)
+        gui.setItem(config.getInt("items.killers.slot", 11), itemKillers)
         gui.setItem(config.getInt("items.supervivientes.slot", 15), itemSurvivors)
     }
 }

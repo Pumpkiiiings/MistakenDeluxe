@@ -113,12 +113,12 @@ class PlayerDataManager(private val plugin: Mistaken) : liric.mistaken.api.manag
 
     // --- ASESINOS ---
 
-    override fun tieneAsesino(uuid: UUID, killerId: String): Boolean {
+    override fun hasKiller(uuid: UUID, killerId: String): Boolean {
         val user = userDataCache[uuid] ?: return false
         return killerId.equals("slasher", true) || user.unlockedKillers.contains(killerId.lowercase())
     }
 
-    override fun comprarAsesino(uuid: UUID, killerId: String) {
+    override fun buyKiller(uuid: UUID, killerId: String) {
         userDataCache[uuid]?.let { user ->
             val id = killerId.lowercase()
             if (user.unlockedKillers.add(id)) {
@@ -131,7 +131,7 @@ class PlayerDataManager(private val plugin: Mistaken) : liric.mistaken.api.manag
 
     fun setSelectedKiller(uuid: UUID, killerId: String) {
         val user = userDataCache[uuid] ?: return
-        if (tieneAsesino(uuid, killerId)) {
+        if (hasKiller(uuid, killerId)) {
             val killer = killerId.lowercase()
             user.selectedKiller = killer
             saveDataAsync(uuid)
@@ -140,12 +140,12 @@ class PlayerDataManager(private val plugin: Mistaken) : liric.mistaken.api.manag
 
     // --- SUPERVIVIENTES ---
 
-    override fun tieneSuperviviente(uuid: UUID, survivorId: String): Boolean {
+    override fun tieneSurvivor(uuid: UUID, survivorId: String): Boolean {
         val user = userDataCache[uuid] ?: return false
         return survivorId.equals("civil", true) || user.unlockedSurvivors.contains(survivorId.lowercase())
     }
 
-    override fun comprarSuperviviente(uuid: UUID, survivorId: String) {
+    override fun comprarSurvivor(uuid: UUID, survivorId: String) {
         userDataCache[uuid]?.let { user ->
             val id = survivorId.lowercase()
             if (user.unlockedSurvivors.add(id)) {
@@ -158,7 +158,7 @@ class PlayerDataManager(private val plugin: Mistaken) : liric.mistaken.api.manag
 
     fun setSelectedSurvivor(uuid: UUID, survivorId: String) {
         val user = userDataCache[uuid] ?: return
-        if (tieneSuperviviente(uuid, survivorId)) {
+        if (tieneSurvivor(uuid, survivorId)) {
             user.selectedSurvivor = survivorId.lowercase()
             saveDataAsync(uuid)
         }

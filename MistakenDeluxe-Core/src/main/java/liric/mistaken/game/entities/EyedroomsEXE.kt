@@ -1,4 +1,4 @@
-package liric.mistaken.game.entities
+﻿package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -27,7 +27,7 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0] - MODO PESADILLA
  * EYEDROOMS.EXE: El Ojo de los Backrooms.
- * ADAPTADO: Multiarena/Velocity con tracking dinámico y aislamiento de sesión.
+ * ADAPTADO: Multiarena/Velocity con tracking dinÃ¡mico y aislamiento de sesiÃ³n.
  */
 class EyedroomsEXE(private val plugin: Mistaken) {
 
@@ -36,7 +36,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
     private var lastVictimUUID: UUID? = null
     private val teamName = "EyedroomsGlow"
 
-    // 🔥 Referencia a la sesión a la que pertenece esta entidad
+    // ðŸ”¥ Referencia a la sesiÃ³n a la que pertenece esta entidad
     private var assignedSession: GameSession? = null
 
     private var fase = 0
@@ -44,7 +44,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
     private var pasos = 0
 
     fun spawn(startLoc: Location) {
-        // 🔥 Detectamos la sesión basada en el mundo del spawn
+        // ðŸ”¥ Detectamos la sesiÃ³n basada en el mundo del spawn
         assignedSession = plugin.sessionManager.activeSessions.values.find {
             it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
         }
@@ -64,7 +64,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
                 parts.addAll(listOf(whiteEye, pupil, glitch1, glitch2))
                 parts.forEach { scoreboard.getTeam(teamName)?.addEntry(it.uniqueId.toString()) }
 
-                // 🔥 Broadcast solo para la sesión infectada
+                // ðŸ”¥ Broadcast solo para la sesiÃ³n infectada
                 val infectMsg = plugin.mm.deserialize("<newline><dark_purple><b>[!]</b> <white>EL SISTEMA HA SIDO INFECTADO POR <dark_red><b>EYEDROOMS.EXE</b>")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(infectMsg) }
 
@@ -77,7 +77,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
     }
 
     private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): BlockDisplay {
-        return loc.world.spawn(loc, BlockDisplay::class.java) { bd ->
+        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(translation, Quaternionf(), scale, Quaternionf())
             bd.isPersistent = false
@@ -88,7 +88,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
         }
     }
 
-    // 🔥 Obtener el objetivo más cercano dentro de la sesión asignada
+    // ðŸ”¥ Obtener el objetivo mÃ¡s cercano dentro de la sesiÃ³n asignada
     private fun getClosestTarget(): Player? {
         val bodyLoc = if (parts.isNotEmpty()) parts[0].location else return null
         val potentialTargets = if (assignedSession != null) {
@@ -122,7 +122,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
                 return@Consumer
             }
 
-            // PERDIÓ AL TARGET O CAMBIÓ DE SESIÓN
+            // PERDIÃ“ AL TARGET O CAMBIÃ“ DE SESIÃ“N
             if (target == null || !target.isOnline) {
                 fase = 0
                 return@Consumer
@@ -150,7 +150,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
                         target.playSound(target.location, Sound.BLOCK_CONDUIT_ACTIVATE, 2f, 0.1f)
                         target.showTitle(Title.title(
                             plugin.mm.deserialize("<dark_purple><obfuscated>ERR_VOICE"),
-                            plugin.mm.deserialize("<gray>Has recibido una <green>bendición <red>corrupta"),
+                            plugin.mm.deserialize("<gray>Has recibido una <green>bendiciÃ³n <red>corrupta"),
                             Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(2), Duration.ofMillis(500))
                         ))
                         target.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 2, false, false))
@@ -163,7 +163,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
                         pasos = 0
                     }
                 }
-                3 -> { // Modo Misil Cuántico (Tracking Dinámico cada 2 ticks)
+                3 -> { // Modo Misil CuÃ¡ntico (Tracking DinÃ¡mico cada 2 ticks)
                     if (ticksEnFase % 2 == 0) {
                         val dir = target.location.add(0.0, 1.0, 0.0).toVector().subtract(bodyLoc.toVector()).normalize()
                         val next = bodyLoc.add(dir.multiply(5.0))
@@ -192,8 +192,8 @@ class EyedroomsEXE(private val plugin: Mistaken) {
     private fun aplicarEfectosAgresivos(loc: Location, duration: Int) {
         loc.world.getNearbyPlayers(loc, 15.0).forEach { p ->
             val pSession = plugin.sessionManager.getSession(p)
-            // Solo afecta si es de la misma sesión y no es el asesino "jugador"
-            if (pSession == assignedSession && pSession?.esAsesino(p.uniqueId) != true) {
+            // Solo afecta si es de la misma sesiÃ³n y no es el asesino "jugador"
+            if (pSession == assignedSession && pSession?.isKiller(p.uniqueId) != true) {
                 p.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, duration, 0, false, false, false))
                 p.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, duration, 2, false, false, false))
                 p.playSound(p.location, Sound.BLOCK_BEEHIVE_WORK, 0.5f, 0.1f)
@@ -215,7 +215,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
         victim.world.spawnParticle(org.bukkit.Particle.SONIC_BOOM, victim.location, 1)
         victim.world.playSound(victim.location, Sound.ENTITY_WARDEN_SONIC_BOOM, 2f, 0.5f)
 
-        // Daño directo (bypass al combatManager global para asegurar ejecución)
+        // DaÃ±o directo (bypass al combatManager global para asegurar ejecuciÃ³n)
         victim.health = 0.0
 
         victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 200, 0))
@@ -231,3 +231,4 @@ class EyedroomsEXE(private val plugin: Mistaken) {
         parts.clear()
     }
 }
+

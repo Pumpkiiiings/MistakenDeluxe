@@ -55,7 +55,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val victim = event.rightClicked as? Player ?: return
 
         if (plugin.combatManager.isFrozen(victim)) {
-            if (!session.esAsesino(player.uniqueId)) {
+            if (!session.isKiller(player.uniqueId)) {
                 if (plugin.combatManager.getHealth(player) <= 1) {
                     player.sendActionBar(mm.deserialize("<red>¡Estás muy herido para rescatar a nadie!"))
                     return
@@ -85,8 +85,8 @@ class GameListener(private val plugin: Mistaken) : Listener {
             else -> null
         } ?: return
 
-        val isDamagerKiller = session.esAsesino(damager.uniqueId)
-        val isVictimKiller = session.esAsesino(victim.uniqueId)
+        val isDamagerKiller = session.isKiller(damager.uniqueId)
+        val isVictimKiller = session.isKiller(victim.uniqueId)
 
         if (!isDamagerKiller && isVictimKiller) {
             val killerHealth = plugin.combatManager.getHealth(victim)
@@ -94,7 +94,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                 Placeholder.parsed("health", killerHealth.toString())))
 
             if (ThreadLocalRandom.current().nextInt(100) < 15) {
-                aplicarStunAlAsesino(victim, damager)
+                applyStunToKiller(victim, damager)
             }
         }
     }
@@ -129,7 +129,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                 victim.scheduler.runDelayed(plugin, Consumer { _ ->
                     if (session.currentState == GameState.INGAME) {
                         // 🔥 FIX: En infección el jugador se convierte en asesino, nunca espectador
-                        if (!session.esAsesino(victim.uniqueId)) {
+                        if (!session.isKiller(victim.uniqueId)) {
                             plugin.spectatorManager.setCustomSpectator(victim)
                         }
                     }
@@ -152,7 +152,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         }
     }
 
-    private fun aplicarStunAlAsesino(killer: Player, damager: Player) {
+    private fun applyStunToKiller(killer: Player, damager: Player) {
         killer.removePotionEffect(PotionEffectType.SPEED)
         killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
         killer.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3))
@@ -163,8 +163,8 @@ class GameListener(private val plugin: Mistaken) : Listener {
         killer.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(killer, "game.killer-stunned-victim"))
         damager.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(damager, "game.killer-stunned-damager"))
 
-        val claseAsesino = plugin.playerDataManager.getSelectedKiller(killer.uniqueId)
-        if (claseAsesino == "slasher") {
+        val killerClass = plugin.playerDataManager.getSelectedKiller(killer.uniqueId)
+        if (killerClass == "slasher") {
             val uuid = killer.uniqueId
             val queue = stunSoundsQueue.getOrPut(uuid) { mutableListOf(1, 2).apply { shuffle() } }
             if (queue.isEmpty()) { queue.addAll(listOf(1, 2)); queue.shuffle() }

@@ -6,11 +6,11 @@ import fr.skytasul.glowingentities.GlowingEntities
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.data.stats.StatsManager
 import liric.mistaken.game.managers.audio.MusicManager
-import liric.mistaken.roles.asesinos.AsesinoManager
-import liric.mistaken.menu.menus.AsesinoTienda
+import liric.mistaken.roles.killers.KillerManager
+import liric.mistaken.menu.menus.KillerShop
 import liric.mistaken.commands.CommandRegistry
 import liric.mistaken.data.PlayerDataManager
-import liric.mistaken.roles.asesinos.Asesino
+import liric.mistaken.roles.killers.Killer
 import liric.mistaken.data.DatabaseManager
 import liric.mistaken.utils.hooks.WebHook
 import liric.mistaken.game.enums.GameState
@@ -20,6 +20,8 @@ import liric.mistaken.game.managers.engine.IsolationManager
 import liric.mistaken.game.managers.engine.MapManager
 import liric.mistaken.game.managers.engine.SessionManager
 import liric.mistaken.game.managers.engine.VoteManager
+import liric.mistaken.game.managers.engine.visibility.VisibilityManager
+import liric.mistaken.game.managers.engine.visibility.PacketVisibilityListener
 import liric.mistaken.game.managers.gameplay.AmbientManager
 import liric.mistaken.game.managers.gameplay.CombatManager
 import liric.mistaken.game.managers.gameplay.GeneratorManager
@@ -27,12 +29,12 @@ import liric.mistaken.game.managers.gameplay.SpectatorManager
 import liric.mistaken.game.managers.cinematic.CinematicManager
 import liric.mistaken.game.managers.visual.ScoreboardManager
 import liric.mistaken.listeners.*
-import liric.mistaken.listeners.asesinos.AsesinoGeneralListener
-import liric.mistaken.listeners.asesinos.AsesinoHabilidadListener
-import liric.mistaken.listeners.supervivientes.SupervivienteHabilidadListener
+import liric.mistaken.listeners.killers.KillerGeneralListener
+import liric.mistaken.listeners.killers.KillerSkillListener
+import liric.mistaken.listeners.survivors.SurvivorHabilidadListener
 import liric.mistaken.menu.menus.ShopSelector
-import liric.mistaken.roles.supervivientes.SupervivienteManager
-import liric.mistaken.menu.menus.SupervivienteTienda
+import liric.mistaken.roles.survivors.SurvivorManager
+import liric.mistaken.menu.menus.SurvivorTienda
 import liric.mistaken.utils.hooks.Placeholders
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.milkbowl.vault.economy.Economy
@@ -44,7 +46,7 @@ import org.bukkit.entity.Player
 import org.bukkit.plugin.ServicePriority
 import java.io.File
 import java.util.UUID
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.ConcurrentHashMap
 import org.bukkit.plugin.java.JavaPlugin
 
 @Suppress("UnstableApiUsage")
@@ -70,11 +72,14 @@ class Mistaken : JavaPlugin() {
     var serverMode: String = "GAME_SERVER"
         private set
 
-    val staffEditMode = mutableSetOf<UUID>()
-    val afkPlayers = mutableSetOf<UUID>()
+    // FIX #12: mutableSetOf<UUID>() returns a LinkedHashSet which is NOT thread-safe.
+    // iniciarMotorDeParticulas() runs on the async scheduler and reads these sets via isIgnored().
+    // ConcurrentHashMap.newKeySet() provides a thread-safe, lock-free Set backed by CHM.
+    val staffEditMode: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
+    val afkPlayers: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
     var lobbyLocation: Location? = null
     var isReady = false
-    val ignoredTestPlayers = mutableSetOf<UUID>()
+    val ignoredTestPlayers: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
 
     val configManager get() = pumpking.lib.config.ConfigManager
     lateinit var statsManager: StatsManager
@@ -83,6 +88,7 @@ class Mistaken : JavaPlugin() {
 
     lateinit var sessionManager: SessionManager
     lateinit var isolationManager: IsolationManager
+    lateinit var visibilityManager: VisibilityManager
 
     lateinit var antiBlockListener: AntiBlockListener
     lateinit var voteManager: VoteManager
@@ -95,12 +101,13 @@ class Mistaken : JavaPlugin() {
     lateinit var combatManager: CombatManager
     lateinit var webHook: WebHook
     lateinit var cinematicManager: CinematicManager
+    lateinit var observerHUDManager: liric.mistaken.game.managers.visual.ObserverHUDManager
 
     lateinit var spectatorManager: SpectatorManager
-    lateinit var asesinoManager: AsesinoManager
-    lateinit var supervivienteManager: SupervivienteManager
-    lateinit var asesinoTienda: AsesinoTienda
-    lateinit var supervivienteTienda: SupervivienteTienda
+    lateinit var asesinoManager: KillerManager
+    lateinit var supervivienteManager: SurvivorManager
+    lateinit var asesinoTienda: KillerShop
+    lateinit var supervivienteTienda: SurvivorTienda
     lateinit var shopSelector: ShopSelector
     lateinit var glowingAPI: GlowingEntities
 
@@ -120,7 +127,11 @@ class Mistaken : JavaPlugin() {
 
         PacketEvents.getAPI().init()
         assassinKey = NamespacedKey(this, "selected_assassin")
-        server.messenger.registerOutgoingPluginChannel(this, "BungeeCord")
+        // FIX #20: registerOutgoingPluginChannel throws IllegalArgumentException if the
+        // channel is already registered (e.g. on hot-reload). Guard with isOutgoingChannelRegistered.
+        if (!server.messenger.isOutgoingChannelRegistered(this, "BungeeCord")) {
+            server.messenger.registerOutgoingPluginChannel(this, "BungeeCord")
+        }
 
         saveDefaultConfig()
         createRequiredFolders()
@@ -167,11 +178,15 @@ class Mistaken : JavaPlugin() {
 
         sessionManager = SessionManager(this)
         isolationManager = IsolationManager(this)
+        visibilityManager = VisibilityManager(this)
+
+        PacketEvents.getAPI().eventManager.registerListener(PacketVisibilityListener(visibilityManager))
+        PacketEvents.getAPI().eventManager.registerListener(liric.mistaken.packet.PacketInteractListener())
 
         mapManager = MapManager(this)
         arenaManager = ArenaManager(this)
-        asesinoManager = AsesinoManager(this)
-        supervivienteManager = SupervivienteManager(this)
+        asesinoManager = KillerManager(this)
+        supervivienteManager = SurvivorManager(this)
         webHook = WebHook(this)
         musicManager = MusicManager(this)
         spectatorManager = SpectatorManager(this)
@@ -179,10 +194,11 @@ class Mistaken : JavaPlugin() {
 
         server.pluginManager.registerEvents(spectatorManager, this)
 
-        asesinoTienda = AsesinoTienda()
-        supervivienteTienda = SupervivienteTienda()
+        asesinoTienda = KillerShop()
+        supervivienteTienda = SurvivorTienda()
         shopSelector = ShopSelector()
         scoreboardManager = ScoreboardManager(this)
+        observerHUDManager = liric.mistaken.game.managers.visual.ObserverHUDManager(this)
 
         server.servicesManager.register(HealthAPI::class.java, combatManager, this, ServicePriority.Normal)
 
@@ -219,8 +235,12 @@ class Mistaken : JavaPlugin() {
         pumpking.lib.core.PumpkingLib.shutdown()
         if (::asesinoManager.isInitialized) runCatching { asesinoManager.shutdown() }
         if (::supervivienteManager.isInitialized) runCatching { supervivienteManager.shutdown() }
+        if (::observerHUDManager.isInitialized) runCatching { observerHUDManager.shutdown() }
         if (::glowingAPI.isInitialized) runCatching { glowingAPI.disable() }
         if (::databaseManager.isInitialized) runCatching { databaseManager.close() }
+        // FIX #3: webHook.shutdown() was missing from onDisable — the CoroutineScope and
+        // HttpClient were never released, leaking IO threads and TLS sockets.
+        if (::webHook.isInitialized) runCatching { webHook.shutdown() }
 
         PacketEvents.getAPI().terminate()
 
@@ -262,41 +282,38 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(PlayerQuitListener(this), this)
         pm.registerEvents(GameListener(this), this)
         pm.registerEvents(StaminaListener(this), this)
-        pm.registerEvents(AsesinoHabilidadListener(this), this)
-        pm.registerEvents(AsesinoGeneralListener(this), this)
+        pm.registerEvents(KillerSkillListener(this), this)
+        pm.registerEvents(KillerGeneralListener(this), this)
         pm.registerEvents(antiBlockListener, this)
-        pm.registerEvents(SupervivienteHabilidadListener(this), this)
+        pm.registerEvents(SurvivorHabilidadListener(this), this)
         pm.registerEvents(GeneratorListener(this), this)
     }
 
     private fun iniciarMotorDeParticulas() {
-        server.asyncScheduler.runAtFixedRate(this, { _ ->
+        // FIX #13: asyncScheduler runs on an IO thread where Bukkit API calls like
+        // server.getPlayer(), player.isOnline, player.velocity, player.isSprinting
+        // are NOT thread-safe and can cause IllegalStateException / data corruption.
+        // globalRegionScheduler runs on the main thread — safe for all Bukkit API.
+        // Period of 2 ticks (100 ms) matches the original 100 ms interval.
+        server.globalRegionScheduler.runAtFixedRate(this, { _ ->
             if (!isReady) return@runAtFixedRate
 
             sessionManager.activeSessions.values.forEach { session ->
                 if (session.currentState != GameState.INGAME) return@forEach
 
-                val targetsForPhysicalTrail = mutableListOf<Pair<Player, Asesino>>()
-
                 session.asesinosUUIDs.forEach { uuid ->
                     val p = server.getPlayer(uuid) ?: return@forEach
-                    val asesino = asesinoManager.getAsesinoDelJugador(p) ?: return@forEach
+                    val asesino = asesinoManager.getKillerOfPlayer(p) ?: return@forEach
 
                     if (p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
-                        asesino.mostrarTrail(p)
-                        targetsForPhysicalTrail.add(p to asesino)
-                    }
-                }
-
-                if (targetsForPhysicalTrail.isNotEmpty()) {
-                    server.globalRegionScheduler.run(this) { _ ->
-                        for (pair in targetsForPhysicalTrail) {
-                            if (pair.first.isOnline) pair.second.mostrarTrailFisico(pair.first)
-                        }
+                        // Both trail calls are now safe on the main thread — no need for the
+                        // inner globalRegionScheduler.run() dispatch that was required before.
+                        asesino.showTrail(p)
+                        asesino.showPhysicalTrail(p)
                     }
                 }
             }
-        }, 0L, 100L, TimeUnit.MILLISECONDS)
+        }, 0L, 2L) // 2 ticks = 100 ms, on main thread
     }
 
     private fun loadLobbyLocation() {

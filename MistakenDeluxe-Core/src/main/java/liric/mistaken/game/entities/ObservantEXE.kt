@@ -1,4 +1,4 @@
-package liric.mistaken.game.entities
+﻿package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -27,7 +27,7 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0] - MODO TROLL SUPREMO
  * OBSERVANT 4.0: EL HERMANO MAYOR.
- * ADAPTADO: Multiarena/Velocity con tracking dinámico y aislamiento de sesión.
+ * ADAPTADO: Multiarena/Velocity con tracking dinÃ¡mico y aislamiento de sesiÃ³n.
  */
 class ObservantEXE(private val plugin: Mistaken) {
 
@@ -35,7 +35,7 @@ class ObservantEXE(private val plugin: Mistaken) {
     private var isRunning = true
     private var lastVictimUUID: UUID? = null
 
-    // 🔥 Referencia a la sesión a la que pertenece esta entidad
+    // ðŸ”¥ Referencia a la sesiÃ³n a la que pertenece esta entidad
     private var assignedSession: GameSession? = null
 
     private val teamWhite = "ObsGlow"
@@ -46,7 +46,7 @@ class ObservantEXE(private val plugin: Mistaken) {
     private var currentState = State.BUSCANDO
 
     fun spawn(startLoc: Location) {
-        // 🔥 Detectamos la sesión basada en el mundo del spawn
+        // ðŸ”¥ Detectamos la sesiÃ³n basada en el mundo del spawn
         assignedSession = plugin.sessionManager.activeSessions.values.find {
             it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
         }
@@ -57,7 +57,7 @@ class ObservantEXE(private val plugin: Mistaken) {
                 if (scoreboard.getTeam(teamWhite) == null) scoreboard.registerNewTeam(teamWhite).apply { color(NamedTextColor.WHITE) }
                 if (scoreboard.getTeam(teamRed) == null) scoreboard.registerNewTeam(teamRed).apply { color(NamedTextColor.RED) }
 
-                // --- CONSTRUCCIÓN MASIVA (Scale 3.5) ---
+                // --- CONSTRUCCIÃ“N MASIVA (Scale 3.5) ---
                 parts.add(createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(3.5f, 3.5f, 3.5f), Vector3f(-1.75f, 0f, -1.75f)))
                 parts.add(createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(3.8f, 3.0f, 3.0f), Vector3f(-1.9f, 0.25f, -1.5f)))
                 parts.add(createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(3.0f, 3.8f, 3.0f), Vector3f(-1.5f, -0.15f, -1.5f)))
@@ -80,8 +80,8 @@ class ObservantEXE(private val plugin: Mistaken) {
 
                 setGlowColor(NamedTextColor.WHITE)
 
-                // 🔥 Broadcast solo para la sesión
-                val spawnMsg = plugin.mm.deserialize("<dark_purple><b>[!]</b> <dark_gray>EL HERMANO MAYOR HA DESPERTADO. <b>OBSERVANT</b> ESTÁ AQUÍ.</dark_gray>")
+                // ðŸ”¥ Broadcast solo para la sesiÃ³n
+                val spawnMsg = plugin.mm.deserialize("<dark_purple><b>[!]</b> <dark_gray>EL HERMANO MAYOR HA DESPERTADO. <b>OBSERVANT</b> ESTÃ AQUÃ.</dark_gray>")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(spawnMsg) }
 
                 iniciarIA()
@@ -92,7 +92,7 @@ class ObservantEXE(private val plugin: Mistaken) {
     }
 
     private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): BlockDisplay {
-        return loc.world.spawn(loc, BlockDisplay::class.java) { bd ->
+        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(translation, Quaternionf(), scale, Quaternionf())
             bd.isPersistent = false
@@ -116,7 +116,7 @@ class ObservantEXE(private val plugin: Mistaken) {
         }
     }
 
-    // 🔥 Obtener el objetivo más cercano dentro de la sesión asignada
+    // ðŸ”¥ Obtener el objetivo mÃ¡s cercano dentro de la sesiÃ³n asignada
     private fun getClosestTarget(): Player? {
         val bodyLoc = if (parts.isNotEmpty()) parts[0].location else return null
         val potentialTargets = if (assignedSession != null) {
@@ -198,7 +198,7 @@ class ObservantEXE(private val plugin: Mistaken) {
                 target.playSound(nextLoc, Sound.ENTITY_WARDEN_ATTACK_IMPACT, 1f, 0.5f)
 
                 if (nextLoc.distanceSquared(target.location) < 12.25) { // Radio 3.5 bloques reales
-                    ejecutarDaño(target, 3)
+                    ejecutarDaÃ±o(target, 3)
                     target.velocity = dir.multiply(2.0).setY(0.5)
                     consecutiveMisses = 0
                     task.cancel()
@@ -240,7 +240,7 @@ class ObservantEXE(private val plugin: Mistaken) {
                 parts.forEach { it.transformation = it.transformation.apply { leftRotation.rotateZ(0.5f) } }
 
                 if (nextLoc.distanceSquared(target.location) < 12.25) {
-                    ejecutarDaño(target, 4)
+                    ejecutarDaÃ±o(target, 4)
                     target.playSound(target.location, Sound.BLOCK_ANVIL_DESTROY, 1f, 0.5f)
                     consecutiveMisses = 0
                     parts.forEach { it.transformation = it.transformation.apply { leftRotation.set(0f,0f,0f,1f) } }
@@ -260,7 +260,7 @@ class ObservantEXE(private val plugin: Mistaken) {
     private fun ejecutarAgarre() {
         val initialTarget = getClosestTarget() ?: return
         initialTarget.showTitle(Title.title(
-            plugin.mm.deserialize("<dark_purple>NO ESCAPARÁS</dark_purple>"),
+            plugin.mm.deserialize("<dark_purple>NO ESCAPARÃS</dark_purple>"),
             plugin.mm.deserialize("<gray>Observant te ha atrapado...</gray>")
         ))
         initialTarget.playSound(initialTarget.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.1f)
@@ -344,7 +344,7 @@ class ObservantEXE(private val plugin: Mistaken) {
         }, 30L)
     }
 
-    private fun ejecutarDaño(victim: Player, amount: Int) {
+    private fun ejecutarDaÃ±o(victim: Player, amount: Int) {
         victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1f, 1f)
         repeat(amount) { plugin.combatManager.takeDamage(victim) }
     }
@@ -368,7 +368,7 @@ class ObservantEXE(private val plugin: Mistaken) {
     private fun aplicarAuraMiedo(loc: Location, duration: Int) {
         loc.world.getNearbyPlayers(loc, 15.0).forEach { p ->
             val pSession = plugin.sessionManager.getSession(p)
-            if (pSession == assignedSession && !plugin.asesinoManager.esElAsesino(p)) {
+            if (pSession == assignedSession && !plugin.asesinoManager.isKiller(p)) {
                 p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, duration, 0, false, false, false))
             }
         }
@@ -398,3 +398,4 @@ class ObservantEXE(private val plugin: Mistaken) {
         parts.clear()
     }
 }
+

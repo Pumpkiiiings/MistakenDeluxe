@@ -29,12 +29,12 @@ class IsolationManager(private val plugin: Mistaken) : Listener {
 
             // Si están en la misma partida (o ambos están en el Lobby) se ven
             if (targetSessionId == onlineSessionId) {
-                target.showPlayer(plugin, online)
-                online.showPlayer(plugin, target)
+                plugin.visibilityManager.showPlayer(target, online)
+                plugin.visibilityManager.showPlayer(online, target)
             } else {
                 // Si están en partidas distintas, se vuelven inexistentes el uno para el otro
-                target.hidePlayer(plugin, online)
-                online.hidePlayer(plugin, target)
+                plugin.visibilityManager.hidePlayer(target, online)
+                plugin.visibilityManager.hidePlayer(online, target)
             }
         }
     }

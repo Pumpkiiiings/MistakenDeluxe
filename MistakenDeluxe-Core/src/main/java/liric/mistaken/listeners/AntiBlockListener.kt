@@ -69,17 +69,17 @@ class AntiBlockListener(private val plugin: Mistaken) : Listener {
         }
 
         // Aplicamos reglas de equipo basadas en SU sesión
-        val damagerIsKiller = session.esAsesino(damager.uniqueId)
-        val victimIsKiller = session.esAsesino(victim.uniqueId)
+        val damagerIsKiller = session.isKiller(damager.uniqueId)
+        val victimIsKiller = session.isKiller(victim.uniqueId)
 
         if (damagerIsKiller && !victimIsKiller) {
-            // Asesino pegando a Humano -> PERMITIDO
+            // Killer pegando a Humano -> PERMITIDO
             event.isCancelled = false
         } else if (!damagerIsKiller && victimIsKiller) {
-            // Humano pegando a Asesino -> PERMITIDO (Empuje/Stun)
+            // Humano pegando a Killer -> PERMITIDO (Empuje/Stun)
             event.isCancelled = false
         } else {
-            // Fuego amigo (Humano vs Humano o Asesino vs Asesino) -> DENEGADO
+            // Fuego amigo (Humano vs Humano o Killer vs Killer) -> DENEGADO
             event.isCancelled = true
         }
     }

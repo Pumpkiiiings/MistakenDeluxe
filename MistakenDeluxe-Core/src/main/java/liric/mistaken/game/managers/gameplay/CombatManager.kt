@@ -69,7 +69,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                     for (target in session.getPlayers()) {
                         if (target == killer || target.world != killerLoc.world) continue
 
-                        if (session.esAsesino(target.uniqueId)) {
+                        if (session.isKiller(target.uniqueId)) {
                             val mode = session.currentMode
                             if (mode == MistakenMode.DOUBLE_KILLER || mode == MistakenMode.ONE_BOUNCE) {
                                 target.scheduler.run(plugin, Consumer { _ ->
@@ -198,7 +198,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
     fun resetHealth(player: Player) = runOnMain {
         val session = plugin.sessionManager.getSession(player)
-        val isKiller = session?.esAsesino(player.uniqueId) ?: false
+        val isKiller = session?.isKiller(player.uniqueId) ?: false
         val maxHP = if (isKiller) 160.0 else 20.0
 
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
@@ -225,8 +225,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         val session = plugin.sessionManager.getSession(victim) ?: return
         if (session.currentState != GameState.INGAME) return
 
-        val isAttackerKiller = session.esAsesino(attacker.uniqueId)
-        val isVictimKiller = session.esAsesino(victim.uniqueId)
+        val isAttackerKiller = session.isKiller(attacker.uniqueId)
+        val isVictimKiller = session.isKiller(victim.uniqueId)
         val isAssassinPvpMode = session.currentMode == MistakenMode.DOUBLE_KILLER
 
         if (isAttackerKiller == isVictimKiller && !isAssassinPvpMode) {
@@ -300,7 +300,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             val nextHP = (victim.health - amount).coerceAtLeast(0.0)
             victim.health = nextHP
 
-            val isSurvivor = !currentSession.esAsesino(victim.uniqueId)
+            val isSurvivor = !currentSession.isKiller(victim.uniqueId)
 
             if (isSurvivor && nextHP <= 4.0 && nextHP > 0.0) {
                 if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {
@@ -494,7 +494,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         if (effect.type == PotionEffectType.DARKNESS || effect.type == PotionEffectType.BLINDNESS) {
             val session = plugin.sessionManager.getSession(player) ?: return
 
-            if (session.esAsesino(player.uniqueId)) {
+            if (session.isKiller(player.uniqueId)) {
                 event.isCancelled = true
             }
         }

@@ -32,10 +32,10 @@ class EspectearCommand(private val plugin: Mistaken) : BasicCommand {
         }
 
         // Si el jugador todavía está participando activamente (vivo)
-        val esAsesino = session.esAsesino(player.uniqueId)
-        val esSuperviviente = plugin.supervivienteManager.esSupervivienteActivo(player)
+        val isKiller = session.isKiller(player.uniqueId)
+        val esSurvivor = plugin.supervivienteManager.esSurvivorActivo(player)
 
-        if (player.gameMode == GameMode.SURVIVAL && (esAsesino || esSuperviviente)) {
+        if (player.gameMode == GameMode.SURVIVAL && (isKiller || esSurvivor)) {
             player.sendMessage(plugin.mm.deserialize("<red>¡Aún estás participando en la caza! No puedes entrar en modo espectador."))
             return
         }

@@ -27,9 +27,9 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
             if (session.currentState == GameState.INGAME) {
 
                 // Si el jugador es un asesino en SU sesión
-                if (session.esAsesino(uuid)) {
+                if (session.isKiller(uuid)) {
                     // Limpiar visuales
-                    plugin.asesinoManager.removerAsesino(player)
+                    plugin.asesinoManager.removeKiller(player)
                     // Quitar de la lista de la sesión
                     session.asesinosUUIDs.remove(uuid)
 
@@ -45,8 +45,8 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
 
             // Limpieza interna de la sesión
             session.asesinosUUIDs.remove(uuid)
-            if (session.currentAsesinoUUID == uuid) {
-                session.currentAsesinoUUID = null
+            if (session.currentKillerUUID == uuid) {
+                session.currentKillerUUID = null
             }
 
             // 🔥 IMPORTANTE: Notificar al SessionManager que el jugador abandonó la instancia

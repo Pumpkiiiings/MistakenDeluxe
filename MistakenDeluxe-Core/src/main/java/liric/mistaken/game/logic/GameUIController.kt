@@ -36,6 +36,10 @@ class GameUIController(private val game: GameSession) {
     }
 
     fun updatePersonalBar(p: Player, online: Int) {
+        if (liric.mistaken.utils.hooks.ObserverHook.hasObserver(p)) {
+            hideBossBar(p)
+            return
+        }
         val uuid = p.uniqueId
         val stateName = game.currentState.name.lowercase()
 
@@ -105,7 +109,7 @@ class GameUIController(private val game: GameSession) {
         val parsedSurvivorName = Placeholder.parsed("player", lastSurvivor.name)
 
         game.plugin.server.onlinePlayers.forEach { p ->
-            val isKiller = game.esAsesino(p.uniqueId)
+            val isKiller = game.isKiller(p.uniqueId)
             val isTheSurvivor = p.uniqueId == lastSurvivor.uniqueId
 
             val titleMain = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "lms.title")

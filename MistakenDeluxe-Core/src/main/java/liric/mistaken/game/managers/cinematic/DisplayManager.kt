@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic
+﻿package liric.mistaken.game.managers.cinematic
 
 import liric.mistaken.Mistaken
 import org.bukkit.Location
@@ -25,7 +25,7 @@ class DisplayManager(private val plugin: Mistaken) {
     }
 
     fun spawnStaticBlock(loc: Location, mat: Material, scale: Float): BlockDisplay {
-        val display = loc.world.spawn(loc, BlockDisplay::class.java) { bd ->
+        val display = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(
                 Vector3f(-scale / 2, 0f, -scale / 2),
@@ -39,7 +39,7 @@ class DisplayManager(private val plugin: Mistaken) {
     }
 
     fun spawnOrbitingBlock(center: Location, mat: Material, scale: Float, radius: Double, speed: Double, yOffset: Double) {
-        val display = center.world.spawn(center, BlockDisplay::class.java) { bd ->
+        val display = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), center) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(
                 Vector3f(-scale / 2, 0f, -scale / 2),
@@ -76,7 +76,7 @@ class DisplayManager(private val plugin: Mistaken) {
     }
 
     fun spawnFallingItem(loc: Location, mat: Material) {
-        val display = loc.world.spawn(loc, ItemDisplay::class.java) { id ->
+        val display = liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { id ->
             id.setItemStack(ItemStack(mat))
             id.transformation = Transformation(Vector3f(), Quaternionf(), Vector3f(0.8f, 0.8f, 0.8f), Quaternionf())
         }
@@ -109,3 +109,4 @@ class DisplayManager(private val plugin: Mistaken) {
         }, 1L, 2L)
     }
 }
+

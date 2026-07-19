@@ -31,6 +31,25 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
             "timer" -> session?.timer?.toString() ?: "0"
             "map" -> session?.currentMapName ?: "Lobby"
             "session_id" -> session?.id ?: "NONE"
+            
+            // --- OBSERVER PLACEHOLDERS ---
+            "vivos" -> session?.getPlayers()?.count { !session.isKiller(it.uniqueId) && it.gameMode == org.bukkit.GameMode.SURVIVAL && !it.isInvisible }?.toString() ?: "0"
+            "id" -> session?.id ?: "NONE"
+            "tiempo" -> session?.timer?.toString() ?: "0"
+            "modo" -> session?.currentMode?.name ?: "N/A"
+            "votes" -> {
+                val arenas = plugin.arenaManager.getArenas()
+                if (arenas.isEmpty()) "No hay mapas configurados"
+                else {
+                    val format = plugin.config.getString("visuals.vote-format", "<white>{map}</white> - <yellow>({votes})</yellow><newline>") ?: "<white>{map}</white> - <yellow>({votes})</yellow><newline>"
+                    val builder = StringBuilder()
+                    arenas.keys.forEach { mapName ->
+                        val votes = session?.voteManager?.getVotesForMap(mapName) ?: 0
+                        builder.append(format.replace("{map}", mapName).replace("{votes}", votes.toString()))
+                    }
+                    builder.toString().removeSuffix("<newline>")
+                }
+            }
 
             // --- GENERADORES (Contextuales a la arena del jugador) ---
             // Nota: Se asume que generatorManager puede filtrar por el mundo/sesión del jugador
@@ -44,16 +63,16 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
             }
 
             // --- LÓGICA DE ROL ---
-            "is_asesino" -> if (session?.esAsesino(player.uniqueId) == true) "Si" else "No"
+            "is_asesino" -> if (session?.isKiller(player.uniqueId) == true) "Si" else "No"
 
-            "asesino_nombre" -> {
+            "asesino_name" -> {
                 if (p == null) return "N/A"
-                plugin.asesinoManager.getAsesinoDelJugador(p)?.nombre ?: "Ninguno"
+                plugin.asesinoManager.getKillerOfPlayer(p)?.nombre ?: "Ninguno"
             }
 
             "asesino_id" -> {
                 if (p == null) return "none"
-                plugin.asesinoManager.getAsesinoDelJugador(p)?.id ?: "none"
+                plugin.asesinoManager.getKillerOfPlayer(p)?.id ?: "none"
             }
 
             // --- ESTADÍSTICAS GLOBALES (Independientes de la sesión) ---

@@ -2,7 +2,7 @@ package liric.mistaken.game.managers.cinematic
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.profiles.*
-import liric.mistaken.roles.asesinos.Asesino
+import liric.mistaken.roles.killers.Killer
 import net.kyori.adventure.title.Title
 import org.bukkit.GameMode
 import org.bukkit.entity.ArmorStand
@@ -52,7 +52,7 @@ class CinematicManager(private val plugin: Mistaken) {
         return profiles[id.lowercase()] ?: defaultProfile
     }
 
-    fun playKillerIntro(killer: Player, asesino: Asesino) {
+    fun playKillerIntro(killer: Player, asesino: Killer) {
         val id = asesino.id.lowercase()
         val profile = getProfile(id)
         
@@ -128,7 +128,7 @@ class CinematicManager(private val plugin: Mistaken) {
         }
     }
 
-    fun playKillerOutro(killer: Player, asesino: Asesino) {
+    fun playKillerOutro(killer: Player, asesino: Killer) {
         val id = asesino.id.lowercase()
         val profile = getProfile(id)
         

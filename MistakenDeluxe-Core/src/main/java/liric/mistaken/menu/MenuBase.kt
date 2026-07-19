@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap
  * varía según el idioma pero el layout es idéntico para todos.
  */
 abstract class MenuBase(
-    /** Nombre del archivo YAML sin extensión, ej: "asesinos_tienda" */
+    /** Nombre del archivo YAML sin extensión, ej: "killers_shop" */
     private val menuName: String
 ) {
 

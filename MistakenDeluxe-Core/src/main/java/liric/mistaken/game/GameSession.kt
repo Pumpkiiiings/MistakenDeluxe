@@ -30,7 +30,7 @@ class GameSession(
     var modeForced = false
     var forceStart = false
 
-    var currentAsesinoUUID: UUID? = null
+    var currentKillerUUID: UUID? = null
     var lastKillerWon: Boolean = false
 
     override val asesinosUUIDs = ConcurrentHashMap.newKeySet<UUID>()
@@ -62,8 +62,9 @@ class GameSession(
     fun removePlayer(player: Player) {
         players.remove(player.uniqueId)
         asesinosUUIDs.remove(player.uniqueId)
-        if (currentAsesinoUUID == player.uniqueId) currentAsesinoUUID = null
+        if (currentKillerUUID == player.uniqueId) currentKillerUUID = null
         uiController.hideBossBar(player)
+        plugin.observerHUDManager.clearPlayer(player)
     }
 
     fun getPlayers(): List<Player> {
@@ -71,8 +72,8 @@ class GameSession(
     }
 
     // --- GETTERS ÚTILES ---
-    fun getCurrentAsesino(): Player? = currentAsesinoUUID?.let { plugin.server.getPlayer(it) }
-    override fun esAsesino(uuid: UUID): Boolean = asesinosUUIDs.contains(uuid)
+    fun getCurrentAsesino(): Player? = currentKillerUUID?.let { plugin.server.getPlayer(it) }
+    override fun isKiller(uuid: UUID): Boolean = asesinosUUIDs.contains(uuid)
 
     // Solo envía mensajes a los jugadores DE ESTA SESIÓN
     fun broadcastLocalized(path: String, vararg tags: net.kyori.adventure.text.minimessage.tag.resolver.TagResolver) {
@@ -82,8 +83,13 @@ class GameSession(
 
     fun shutdown() {
         loopTask.stop()
-        getPlayers().forEach { plugin.sessionManager.leaveSession(it) }
-        players.clear()
+        // FIX #7: Snapshot the player list before iterating.
+        // leaveSession() → removePlayer() modifies `players` concurrently.
+        // Taking a snapshot first makes the iteration deterministic and prevents
+        // any ambiguous state between leaveSession and the final players.clear().
+        val snapshot = getPlayers().toList()
+        snapshot.forEach { plugin.sessionManager.leaveSession(it) }
+        players.clear()       // defensive clear for any UUIDs whose Player was offline
         changedBlocks.clear()
         plugin.componentLogger.info(plugin.mm.deserialize("[INFO] [Session] Session $id destroyed."))
     }

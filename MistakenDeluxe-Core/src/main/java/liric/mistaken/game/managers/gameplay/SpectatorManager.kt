@@ -73,10 +73,10 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         Bukkit.getOnlinePlayers().forEach { online ->
             if (online != player) {
                 if (isSpectator(online)) {
-                    online.showPlayer(plugin, player)
-                    player.showPlayer(plugin, online)
+                    plugin.visibilityManager.showPlayer(player, online)
+                    plugin.visibilityManager.showPlayer(online, player)
                 } else {
-                    online.hidePlayer(plugin, player)
+                    plugin.visibilityManager.hidePlayer(player, online)
                 }
             }
         }
@@ -101,8 +101,8 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         }
 
         Bukkit.getOnlinePlayers().forEach { online ->
-            online.showPlayer(plugin, player)
-            player.showPlayer(plugin, online)
+            plugin.visibilityManager.showPlayer(player, online)
+            plugin.visibilityManager.showPlayer(online, player)
         }
     }
 
@@ -146,7 +146,7 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
                 if (spectator != null && spectator.isOnline) {
                     // 🔥 Solo ocultamos al espectador si pertenece a la MISMA arena que el que entra
                     if (plugin.sessionManager.getSession(spectator) == session) {
-                        player.hidePlayer(plugin, spectator)
+                        plugin.visibilityManager.hidePlayer(spectator, player)
                     }
                 }
             }
@@ -156,7 +156,10 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         }
     }
     @EventHandler
-    fun onQuit(e: PlayerQuitEvent) = removeCustomSpectator(e.player)
+    fun onQuit(e: PlayerQuitEvent) {
+        removeCustomSpectator(e.player)
+        plugin.visibilityManager.removePlayer(e.player.uniqueId)
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onInteract(e: PlayerInteractEvent) {

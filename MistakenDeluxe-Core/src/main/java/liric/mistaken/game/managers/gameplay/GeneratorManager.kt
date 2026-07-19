@@ -141,7 +141,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val holoLoc = loc.clone().add(0.5, 1.3, 0.5)
         plugin.server.regionScheduler.execute(plugin, holoLoc, Runnable {
             state.displayEntity?.remove()
-            state.displayEntity = holoLoc.world.spawn(holoLoc, TextDisplay::class.java) { display ->
+            state.displayEntity = liric.mistaken.packet.PacketFactory.displays.buildTextDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.activeSessions.values.find { it.mapName == state.mapName }?.getPlayers() ?: org.bukkit.Bukkit.getOnlinePlayers().toList(), holoLoc) { display ->
                 display.billboard = Display.Billboard.CENTER
                 display.brightness = Display.Brightness(15, 15)
                 display.backgroundColor = Color.fromARGB(0, 0, 0, 0)
@@ -237,3 +237,4 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     fun getTotalGenerators(): Int = generators.size
     fun getGeneratorLocations(): List<Location> = generators.keys.toList()
 }
+

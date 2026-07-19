@@ -11,7 +11,7 @@ import org.bukkit.entity.Player
 class GameWorldController(private val game: GameSession) {
 
     fun addProgress(block: Block, amount: Int, player: Player?) {
-        if (player != null && game.esAsesino(player.uniqueId)) return
+        if (player != null && game.isKiller(player.uniqueId)) return
         val loc = block.location
         if (game.plugin.generatorManager.isCompleted(loc)) return
 

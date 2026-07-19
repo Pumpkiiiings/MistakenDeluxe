@@ -6,7 +6,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import liric.mistaken.Mistaken
-import liric.mistaken.roles.asesinos.Asesino
+import liric.mistaken.roles.killers.Killer
 import org.bukkit.entity.Player
 
 object CinematicaCommand {
@@ -65,12 +65,12 @@ object CinematicaCommand {
             .build()
     }
 
-    private fun createDummy(id: String): Asesino {
-        return object : Asesino(id, "<gold><bold>${id.uppercase()}</bold></gold>") {
-            override fun equipar(player: Player) {}
-            override fun usarHabilidad(player: Player, slot: Int) {}
-            override fun mostrarTrail(player: Player) {}
-            override fun mostrarTrailFisico(player: Player) {}
+    private fun createDummy(id: String): Killer {
+        return object : Killer(id, "<gold><bold>${id.uppercase()}</bold></gold>") {
+            override fun equip(player: Player) {}
+            override fun useSkill(player: Player, slot: Int) {}
+            override fun showTrail(player: Player) {}
+            override fun showPhysicalTrail(player: Player) {}
         }
     }
 }

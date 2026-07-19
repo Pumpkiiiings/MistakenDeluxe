@@ -55,7 +55,7 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val session = plugin.sessionManager.getSession(player) ?: return
 
-        if (session.esAsesino(player.uniqueId)) {
+        if (session.isKiller(player.uniqueId)) {
             player.sendMessage(killerError)
             return
         }

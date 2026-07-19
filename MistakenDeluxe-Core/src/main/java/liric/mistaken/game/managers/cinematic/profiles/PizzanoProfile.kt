@@ -20,7 +20,7 @@ class PizzanoProfile : CinematicProfile {
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<red>LA CAZA COMIENZA"), plugin.mm.deserialize("<gray>El Asesino es: \$realName"))
+        return Pair(plugin.mm.deserialize("<red>LA CAZA COMIENZA"), plugin.mm.deserialize("<gray>El Killer es: \$realName"))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {

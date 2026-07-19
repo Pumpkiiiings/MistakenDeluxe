@@ -28,6 +28,11 @@ class ScoreboardManager(private val plugin: Mistaken) {
         val interval = if (PumpkingScoreboardManager.supportsAnimations()) 2L else 10L
         updateTask = plugin.server.scheduler.runTaskTimerAsynchronously(plugin, Runnable {
             for (player in plugin.server.onlinePlayers) {
+                if (liric.mistaken.utils.hooks.ObserverHook.hasObserver(player)) {
+                    PumpkingScoreboardManager.removeScoreboard(player)
+                    continue
+                }
+
                 val config = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "messages")
                 val title = config.getString("scoreboard.title") ?: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN"
                 val lines = buildLines(player)

@@ -229,34 +229,34 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "setasesino" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (player == null || args.size < 2) return
-                val asesino = plugin.asesinoManager.getClasePorId(args[1])
+                val asesino = plugin.asesinoManager.getClassById(args[1])
                 if (asesino == null) {
                     player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "errors.killer-not-found", Placeholder.parsed("type", args[1])))
                 } else {
-                    plugin.asesinoManager.registrarAsesino(player, asesino)
+                    plugin.asesinoManager.registerKiller(player, asesino)
                 }
             }
 
             "setsuperviviente" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (player == null || args.size < 2) return
-                val clase = plugin.supervivienteManager.getClasePorId(args[1])
+                val clase = plugin.supervivienteManager.getClassById(args[1])
                 if (clase == null) {
                     player.sendMessage(mm.deserialize("<red>Esa clase no existe, bro."))
                 } else {
-                    plugin.supervivienteManager.registrarSuperviviente(player, clase)
+                    plugin.supervivienteManager.registrarSurvivor(player, clase)
                 }
             }
 
             "removekiller" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (args.size == 1) {
-                    player?.let { plugin.asesinoManager.removerAsesino(it) }
+                    player?.let { plugin.asesinoManager.removeKiller(it) }
                 } else {
                     val target = Bukkit.getPlayer(args[1])
                     if (target != null) {
-                        plugin.asesinoManager.removerAsesino(target)
-                        sender.sendMessage(mm.deserialize("<green>Asesino removido: ${target.name}"))
+                        plugin.asesinoManager.removeKiller(target)
+                        sender.sendMessage(mm.deserialize("<green>Killer removido: ${target.name}"))
                     }
                 }
             }
@@ -301,8 +301,8 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             2 -> {
                 when (args[0].lowercase()) {
                     "setmode" -> if (isAdmin) MistakenMode.entries.map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
-                    "setasesino" -> if (isAdmin) plugin.asesinoManager.getClasesDisponibles().keys.filter { it.startsWith(args[1], true) } else emptyList()
-                    "setsuperviviente" -> if (isAdmin) plugin.supervivienteManager.getClasesDisponibles().keys.filter { it.startsWith(args[1], true) } else emptyList()
+                    "setasesino" -> if (isAdmin) plugin.asesinoManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
+                    "setsuperviviente" -> if (isAdmin) plugin.supervivienteManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "stats" -> if (isAdmin) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
                     "langs", "language" -> pumpking.lib.service.PumpkingServiceManager.messages.getLoadedLanguages().toList()
                     else -> emptyList()
