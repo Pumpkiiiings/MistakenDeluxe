@@ -87,7 +87,7 @@ dependencies {
         exclude(group = "org.bukkit", module = "bukkit")
     }
     compileOnly("net.momirealms:craft-engine-core:0.0.67.11")
-    compileOnly("net.momirealms:craft-engine-bukkit:0.0.67.11")
+    compileOnly("net.momirealms:craft-engine-bukkit:26.7.4")
     compileOnly(files("libs/CraftEngine.jar"))
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
