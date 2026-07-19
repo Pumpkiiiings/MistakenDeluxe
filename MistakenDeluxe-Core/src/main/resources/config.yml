@@ -64,6 +64,7 @@ gameplay:
 # --- ESTÉTICA & MUNDO ---
 visuals:
   bossbar-style: "SOLID" # SOLID, SEGMENTED_6, 10, 12, 20
+  vote-format: "<white>{map}</white> - <yellow>({votes})</yellow><newline>"
 
 # --- PERSISTENCIA (Auto-generado) ---
 # Usa /setlobby para actualizar estas coordenadas
@@ -75,3 +76,27 @@ settings:
     z: 0.0
     yaw: 0.0
     pitch: 0.0
+
+  # ==========================================
+  # Configuración de Mistaken-Gen
+  # ==========================================
+  generator-block: "RAW_IRON_BLOCK"
+  repair-amount: 10
+
+  rewards:
+    commands:
+      - "eco give %player% 500"
+      - "msg %player% &a&l[!] &fHas recibido &6500 monedas &fpor tu trabajo."
+
+  sounds:
+    repair: "BLOCK_ANVIL_USE"
+    complete: "UI_TOAST_CHALLENGE_COMPLETE"
+    memory-show: "BLOCK_NOTE_BLOCK_HARP"
+    memory-hide: "BLOCK_NOTE_BLOCK_CHIME"
+
+messages:
+  prefix: "<blue><bold>[Mistaken-Gen]</bold></blue> "
+  already-completed: "<green>¡Este generador ya está funcionando al 100%!"
+  no-killer: "<red><bold>[!]</bold> Los asesinos no pueden reparar, ¡tu misión es cazar!"
+  success: "<green><bold>[!]</bold> <white>¡Generador encendido exitosamente! Has recibido tus recompensas."
+  fail-click: "<red><bold>[!]</bold> <white>¡Ese lingote era falso! El progreso bajó un 10%."
