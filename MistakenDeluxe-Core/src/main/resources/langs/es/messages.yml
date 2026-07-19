@@ -210,8 +210,15 @@ generators:
       - "<white>Progreso: <#AAAAAA>{progress}%"
       - "<#FFD700>¡Click para reparar!"
     lines-completed:
-      - "<#76F869><bold>✔�  ENERGÍA RESTAURADA ✔� "
+      - "<#76F869><bold>✔  ENERGÍA RESTAURADA ✔ "
       - "<#AAAAAA>¡Buen trabajo!"
+
+listeners:
+  generators:
+    gui_title: "<#FFA500><bold>🛠 REPARANDO GENERADOR</bold>"
+    progress_lore: "<white>Progreso actual: <color><progress>%"
+    progress_loss_lore: "<#FF4C4C>¡Pierdes 10% de progreso por fallar!"
+    not_this_one: "<#FF4C4C><bold>¡LINGOTE FALSO!</bold>"
 
 # --- ROLES ---
 roles:

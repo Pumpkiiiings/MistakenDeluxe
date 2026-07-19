@@ -181,6 +181,13 @@ generators:
       - "<#76F869><bold>✔ POWER RESTORED ✔"
       - "<#AAAAAA>Good job!"
 
+listeners:
+  generators:
+    gui_title: "<#FFA500><bold>🛠 REPAIRING GENERATOR</bold>"
+    progress_lore: "<white>Current progress: <color><progress>%"
+    progress_loss_lore: "<#FF4C4C>You lose 10% progress for failing!"
+    not_this_one: "<#FF4C4C><bold>FAKE INGOT!</bold>"
+
 # --- ROLES ---
 roles:
   survivor:
