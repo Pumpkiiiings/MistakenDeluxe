@@ -50,7 +50,7 @@ dependencies {
 
     // Addon specific Zapper dependencies
     zap("com.zaxxer:HikariCP:5.1.0")
-    zap("com.mysql:mysql-connector-j:8.4.0")
+    zap("com.mysql:mysql-connector-j:9.7.0")
     zap("org.xerial:sqlite-jdbc:3.45.2.0")
     zap("dev.triumphteam:triumph-gui:3.1.13")
 
