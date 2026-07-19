@@ -29,6 +29,7 @@ class GameSession(
     var currentMapName = mapName
     var modeForced = false
     var forceStart = false
+    var forcedKillerUUID: UUID? = null
 
     var currentKillerUUID: UUID? = null
     var lastKillerWon: Boolean = false

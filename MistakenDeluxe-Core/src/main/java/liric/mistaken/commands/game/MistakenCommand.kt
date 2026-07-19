@@ -261,6 +261,29 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 }
             }
 
+            "forcekiller" -> {
+                if (!sender.hasPermission("mistaken.admin")) return
+                if (args.size < 2) {
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Uso: /mistaken forcekiller <jugador>"))
+                    return
+                }
+                val target = Bukkit.getPlayer(args[1])
+                if (target == null) {
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Ese jugador no está conectado."))
+                    return
+                }
+                if (gm == null) {
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Debes estar en una partida para forzar un asesino."))
+                    return
+                }
+                if (gm.currentState != GameState.LOBBY && gm.currentState != GameState.INITIALIZES) {
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No puedes forzar el rol porque la partida ya inició."))
+                    return
+                }
+                gm.forcedKillerUUID = target.uniqueId
+                sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Has forzado a <white>${target.name}</white> a ser el asesino en la siguiente partida de <aqua>${gm.id}</aqua>."))
+            }
+
             else -> sender.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "errors.unknown-command"))
         }
     }
@@ -294,7 +317,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
         return when (args.size) {
             1 -> {
-                val list = if (isAdmin) listOf("start", "stop", "stats", "setstamina", "setasesino", "setsuperviviente", "reload", "removekiller", "shop", "langs", "setmode", "afk", "edit")
+                val list = if (isAdmin) listOf("start", "stop", "stats", "setstamina", "setasesino", "setsuperviviente", "reload", "removekiller", "forcekiller", "shop", "langs", "setmode", "afk", "edit")
                 else publicSubs.toList()
                 list.filter { it.startsWith(args[0], true) }
             }
@@ -303,7 +326,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     "setmode" -> if (isAdmin) MistakenMode.entries.map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
                     "setasesino" -> if (isAdmin) plugin.asesinoManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "setsuperviviente" -> if (isAdmin) plugin.supervivienteManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
-                    "stats" -> if (isAdmin) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
+                    "stats", "forcekiller", "removekiller" -> if (isAdmin) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
                     "langs", "language" -> pumpking.lib.service.PumpkingServiceManager.messages.getLoadedLanguages().toList()
                     else -> emptyList()
                 }

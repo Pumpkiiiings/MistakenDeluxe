@@ -42,8 +42,21 @@ class GamePlayerController(private val game: GameSession) {
             MistakenMode.ONE_BOUNCE -> (sessionPlayers.size - 1).coerceAtLeast(1)
             else -> 1
         }
+        
+        var selectedCount = 0
+        
+        // Asignar el killer forzado si existe y esta en la partida
+        game.forcedKillerUUID?.let { forcedUuid ->
+            if (sessionPlayers.any { it.uniqueId == forcedUuid }) {
+                game.asesinosUUIDs.add(forcedUuid)
+                game.yaJugaronAsesino.add(forcedUuid)
+                candidatos.removeAll { it.uniqueId == forcedUuid }
+                selectedCount++
+                game.forcedKillerUUID = null // Solo sirve para 1 partida
+            }
+        }
 
-        for (i in 0 until min(killersToSelect, candidatos.size)) {
+        for (i in 0 until min(killersToSelect - selectedCount, candidatos.size)) {
             val uuid = candidatos[i].uniqueId
             game.asesinosUUIDs.add(uuid)
             game.yaJugaronAsesino.add(uuid)
