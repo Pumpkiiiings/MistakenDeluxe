@@ -313,7 +313,7 @@ class Mistaken : JavaPlugin() {
                     }
                 }
             }
-        }, 0L, 2L) // 2 ticks = 100 ms, on main thread
+        }, 1L, 2L) // 1 tick inicial, 2 ticks = 100 ms, on main thread
     }
 
     private fun loadLobbyLocation() {
