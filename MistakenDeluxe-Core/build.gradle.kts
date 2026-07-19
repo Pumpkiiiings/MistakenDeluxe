@@ -82,7 +82,7 @@ dependencies {
     compileOnly("net.momirealms:craft-engine-bukkit:0.0.67.11")
     compileOnly(files("../libs/CraftEngine.jar"))
     compileOnly("net.luckperms:api:5.5")
-    compileOnly("me.clip:placeholderapi:2.12.2")
+    compileOnly("me.clip:placeholderapi:2.12.3")
 
     // Paper ya incluye Adventure y MiniMessage nativamente
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")

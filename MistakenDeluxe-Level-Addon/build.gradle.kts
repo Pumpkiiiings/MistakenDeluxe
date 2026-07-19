@@ -40,7 +40,7 @@ zapper {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     compileOnly("io.github.revxrsal:zapper.api:1.0.3")
-    compileOnly("me.clip:placeholderapi:2.11.5")
+    compileOnly("me.clip:placeholderapi:2.12.3")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     
     // Core API
