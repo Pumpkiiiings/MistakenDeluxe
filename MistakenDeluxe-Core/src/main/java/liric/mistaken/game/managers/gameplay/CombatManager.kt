@@ -384,7 +384,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     fun freezePlayer(victim: Player, session: GameSession) {
         if (!frozenPlayers.add(victim.uniqueId)) return
         runOnMain {
-            victim.inventory.helmet = ItemStack(Material.BLUE_ICE)
+            victim.inventory.helmet = ItemStack(Material.ICE)
             victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.0
             victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.0
             victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, false))

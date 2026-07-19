@@ -76,13 +76,13 @@ class KillerManager(private val plugin: Mistaken) : liric.mistaken.api.managers.
                 val currentItems = (1..4).associateWith { player.inventory.getItem(it) }
 
                 for (i in 1..4) {
-                    val targetSlot = config.getInt("items.habilidad${i}_slot", i)
+                    val targetSlot = config.getInt("items.skill${i}_slot", i)
                     if (targetSlot != i) {
                         player.inventory.setItem(i, null)
                     }
                 }
                 for (i in 1..4) {
-                    val targetSlot = config.getInt("items.habilidad${i}_slot", i)
+                    val targetSlot = config.getInt("items.skill${i}_slot", i)
                     val item = currentItems[i]
                     if (item != null && item.type != org.bukkit.Material.AIR) {
                         player.inventory.setItem(targetSlot, item)
