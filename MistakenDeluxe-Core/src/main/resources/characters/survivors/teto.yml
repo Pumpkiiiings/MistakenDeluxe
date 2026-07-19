@@ -1,0 +1,21 @@
+id: "teto"
+precio: 4500
+icono_material: "BREAD"
+armor:
+  helmet: "mistaken:kasane_teto_helmet"
+  chestplate: "mistaken:kasane_teto_chestplate"
+  leggings: "mistaken:kasane_teto_leggings"
+  boots: "mistaken:kasane_teto_boots"
+items:
+  # H1: Dash
+  skill1: "FEATHER"
+  skill1_cooldown: 15
+  skill1_sound: "ENTITY_BAT_TAKEOFF"
+  # H2: Baguette Melee
+  skill2: "BREAD"
+  skill2_cooldown: 30
+  skill2_sound: "ENTITY_PLAYER_ATTACK_STRONG"
+  # H3: Baguette Lanzable
+  skill3: "BREAD"
+  skill3_cooldown: 25
+  skill3_sound: "ENTITY_EGG_THROW"

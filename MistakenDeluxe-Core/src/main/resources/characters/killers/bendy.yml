@@ -1,0 +1,28 @@
+id: "bendy"
+precio: 25000
+permiso: "mistaken.skins.dev"
+icono_material: "COAL"
+armor:
+  helmet: "mistaken:bendy_helmet"
+  chestplate: "mistaken:bendy_chestplate"
+  leggings: "mistaken:bendy_leggings"
+  boots: "mistaken:bendy_boots"
+items:
+  weapon: "NETHERITE_AXE"
+  weapon_slot: 8
+  skill1: "SQUID_INK"
+  skill1_slot: 1
+  skill1_cooldown: 18
+  skill1_sound: "ENTITY_SQUID_SQUIRT"
+  skill2: "BLACK_DYE"
+  skill2_slot: 2
+  skill2_cooldown: 25
+  skill2_sound: "ENTITY_GENERIC_SPLASH"
+  skill3: "COAL_BLOCK"
+  skill3_slot: 3
+  skill3_cooldown: 15
+  skill3_sound: "BLOCK_SLIME_BLOCK_PLACE"
+  skill4: "WITHER_SKELETON_SKULL"
+  skill4_slot: 4
+  skill4_cooldown: 120
+  skill4_sound: "ENTITY_WITHER_SPAWN"

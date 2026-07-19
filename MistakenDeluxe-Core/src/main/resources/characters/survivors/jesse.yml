@@ -1,0 +1,21 @@
+id: "jesse"
+precio: 5000
+icono_material: "IRON_SWORD"
+armor:
+  helmet: "mistaken:jesse_helmet"
+  chestplate: "mistaken:jesse_chestplate"
+  leggings: "mistaken:jesse_leggings"
+  boots: "mistaken:jesse_boots"
+items:
+  # H1: Hero Dash
+  skill1: "FEATHER"
+  skill1_cooldown: 20
+  skill1_sound: "ENTITY_ENDER_DRAGON_FLAP"
+  # H2: Puñetazo
+  skill2: "IRON_NUGGET"
+  skill2_cooldown: 15
+  skill2_sound: "ENTITY_PLAYER_ATTACK_CRIT"
+  # H3: Sonic Boom
+  skill3: "SHIELD"
+  skill3_cooldown: 35
+  skill3_sound: "ENTITY_WARDEN_SONIC_CHARGE"

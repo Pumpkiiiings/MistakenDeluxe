@@ -1,0 +1,16 @@
+id: "gumi"
+precio: 5200
+icono_material: "LIME_DYE"
+ajustes:
+  distancia_swap: 10.0
+  duracion_estatica: 4
+items:
+  skill1: "ECHO_SHARD"
+  skill1_cooldown: 25
+  skill1_sound: "BLOCK_AMETHYST_BLOCK_BREAK"
+  skill2: "ARMOR_STAND"
+  skill2_cooldown: 35
+  skill2_sound: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+  skill3: "DECORATED_POT"
+  skill3_cooldown: 45
+  skill3_sound: "ENTITY_GENERIC_EXPLODE"

@@ -1,0 +1,18 @@
+id: "minty"
+precio: 2000000
+icono_material: "LIME_DYE"
+armor:
+  helmet: "none"
+  chestplate: "none"
+  leggings: "none"
+  boots: "none"
+items:
+  skill1: "FLINT"
+  skill1_cooldown: 15
+  skill1_sound: "ENTITY_PLAYER_ATTACK_SWEEP"
+  skill2: "FEATHER"
+  skill2_cooldown: 20
+  skill2_sound: "ENTITY_HORSE_GALLOP"
+  skill3: "GOAT_HORN"
+  skill3_cooldown: 30
+  skill3_sound: "ENTITY_WOLF_HOWL"

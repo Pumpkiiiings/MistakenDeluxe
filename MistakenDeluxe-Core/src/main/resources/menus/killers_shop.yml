@@ -1,0 +1,42 @@
+# ==========================================
+# Mistaken - Assassin Shop (GLOBAL)
+# ==========================================
+# Este archivo es ÚNICO para todos los idiomas.
+# El título se lee desde messages.yml del jugador via la clave:
+#   menus.killers_shop.titulo
+#
+# Si quieres el título en inglés para jugadores con lang=en,
+# ponlo en langs/en/messages.yml bajo menus.killers_shop.titulo
+
+titulo: "%menu_title%"
+filas: 6
+
+ajustes:
+  sonido-click: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  # Slots donde se colocan los asesinos dinámicamente
+  slots-disponibles: [19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34]
+
+  # Slots fijos para asesinos específicos (por su ID de clase)
+  slots-fijos:
+    pizzano: 38
+    romeodebuff: 39
+
+  # Botón para volver al menú principal
+  boton-atras:
+    material: "ARROW"
+    slot: 49
+    nombre: "<red><b>Volver</b>"
+
+# Decoraciones de la GUI (compartidas para todos los idiomas)
+decoraciones:
+  bordes_grises:
+    material: "GRAY_STAINED_GLASS_PANE"
+    nombre: " "
+    slots: [0,1,2,3,4,5,6,7,8,9,17,18,26,27,35,36,44,45,46,47,48,49,50,51,52,53]
+  separador_rojo:
+    material: "RED_STAINED_GLASS_PANE"
+    nombre: "<red><b>⚠ ASSASSIN SECTION</b>"
+    slots: [10,16,37,43]
+
+# Nota: Los items de los asesinos NO se ponen aquí porque
+# el plugin los genera desde killers_info.yml + messages.yml del jugador.

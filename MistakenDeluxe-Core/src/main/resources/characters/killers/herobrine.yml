@@ -1,0 +1,27 @@
+id: "herobrine"
+precio: 2500
+icono_material: "NETHER_STAR"
+armor:
+  helmet: "mistaken:herobrine_helmet"
+  chestplate: "mistaken:herobrine_chestplate"
+  leggings: "mistaken:herobrine_leggings"
+  boots: "mistaken:herobrine_boots"
+items:
+  weapon: "DIAMOND_AXE"
+  weapon_slot: 8
+  skill1: "WIND_CHARGE"
+  skill1_slot: 1
+  skill1_cooldown: 15
+  skill1_sound: "ENTITY_WARDEN_SONIC_BOOM"
+  skill2: "COMPASS"
+  skill2_slot: 2
+  skill2_cooldown: 35
+  skill2_sound: "BLOCK_PORTAL_TRAVEL"
+  skill3: "NETHER_STAR"
+  skill3_slot: 3
+  skill3_cooldown: 20
+  skill3_sound: "ENTITY_WITHER_SHOOT"
+  skill4: "BEACON"
+  skill4_slot: 4
+  skill4_cooldown: 80
+  skill4_sound: "ENTITY_ELDER_GUARDIAN_CURSE"

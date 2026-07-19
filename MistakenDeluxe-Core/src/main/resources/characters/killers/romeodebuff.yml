@@ -1,0 +1,5 @@
+id: "romeodebuff"
+precio: 30000
+permiso: "mistaken.skins.dev"
+icono_material: "COMMAND_BLOCK"
+# Sin armor ni items definidos — variante de debuff de Romeo

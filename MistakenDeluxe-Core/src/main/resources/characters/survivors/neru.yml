@@ -1,0 +1,16 @@
+id: "neru"
+precio: 4900
+icono_material: "GOLD_INGOT"
+ajustes:
+  duracion_stun: 3
+  radio_spam: 7.0
+items:
+  skill1: "GOLDEN_CARROT"
+  skill1_cooldown: 20
+  skill1_sound: "BLOCK_NOTE_BLOCK_BELL"
+  skill2: "BARRIER"
+  skill2_cooldown: 35
+  skill2_sound: "BLOCK_IRON_DOOR_CLOSE"
+  skill3: "YELLOW_DYE"
+  skill3_cooldown: 25
+  skill3_sound: "ENTITY_FIREWORK_ROCKET_TWINKLE"

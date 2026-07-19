@@ -1,0 +1,28 @@
+id: "charlie"
+precio: 7500
+permiso: "mistaken.skins.dev"
+icono_material: "MAGMA_BLOCK"
+armor:
+  helmet: "mistaken:charlie_helmet"
+  chestplate: "mistaken:charlie_chestplate"
+  leggings: "mistaken:charlie_leggings"
+  boots: "mistaken:charlie_boots"
+items:
+  weapon: "GOLDEN_SWORD"
+  weapon_slot: 8
+  skill1: "FIRE_CHARGE"
+  skill1_slot: 1
+  skill1_cooldown: 30
+  skill1_sound: "ITEM_FIRECHARGE_USE"
+  skill2: "RECOVERY_COMPASS"
+  skill2_slot: 2
+  skill2_cooldown: 45
+  skill2_sound: "ENTITY_WARDEN_HEARTBEAT"
+  skill3: "PACKED_ICE"
+  skill3_slot: 3
+  skill3_cooldown: 20
+  skill3_sound: "BLOCK_GLASS_BREAK"
+  skill4: "ECHO_SHARD"
+  skill4_slot: 4
+  skill4_cooldown: 60
+  skill4_sound: "ENTITY_EVOKER_PREPARE_ATTACK"

@@ -1,0 +1,28 @@
+id: "devesto"
+precio: 10000
+permiso: "mistaken.skins.dev"
+icono_material: "NETHERITE_AXE"
+armor:
+  helmet: "mistaken:devesto_helmet"
+  chestplate: "mistaken:devesto_chestplate"
+  leggings: "mistaken:devesto_leggings"
+  boots: "mistaken:devesto_boots"
+items:
+  weapon: "NETHERITE_AXE"
+  weapon_slot: 8
+  skill1: "PISTON"
+  skill1_slot: 1
+  skill1_cooldown: 15
+  skill1_sound: "BLOCK_PISTON_EXTEND"
+  skill2: "CYAN_DYE"
+  skill2_slot: 2
+  skill2_cooldown: 20
+  skill2_sound: "ITEM_DYE_USE"
+  skill3: "STICK"
+  skill3_slot: 3
+  skill3_cooldown: 30
+  skill3_sound: "ENTITY_ITEM_FRAME_ROTATE_ITEM"
+  skill4: "BARRIER"
+  skill4_slot: 4
+  skill4_cooldown: 120
+  skill4_sound: "ENTITY_GENERIC_EXPLODE"

@@ -1,0 +1,164 @@
+# observer-hud.yml
+# Aquí puedes editar los componentes de la HUD que se muestran a los jugadores con el mod Observer.
+
+global:
+  components:
+    title:
+      type: TEXT
+      alignment: BOTTOM_RIGHT
+      text_alignment: RIGHT
+      offset_x: -10
+      offset_y: -60
+      scale: 1.0
+      content: "&#4EAAFF<bold>MISTAKEN"
+    player_name:
+      type: TEXT
+      alignment: BOTTOM_RIGHT
+      text_alignment: RIGHT
+      offset_x: -10
+      offset_y: -50
+      scale: 1.0
+      content: "<white>Jugando como <yellow>%player_name%"
+    player_level:
+      type: TEXT
+      alignment: BOTTOM_RIGHT
+      text_alignment: RIGHT
+      offset_x: -10
+      offset_y: -40
+      scale: 1.0
+      content: "<white>Nivel: %mistakenlevel_level_prefix%</white>"
+    id:
+      type: TEXT
+      alignment: BOTTOM_RIGHT
+      text_alignment: RIGHT
+      offset_x: -10
+      offset_y: -30
+      scale: 1.0
+      content: "<white>Id: <gray>%mistaken_session_id%</white>"
+    modo:
+      type: TEXT
+      alignment: BOTTOM_RIGHT
+      text_alignment: RIGHT
+      offset_x: -10
+      offset_y: -20
+      scale: 1.0
+      content: "<white>Modo: <green>%mistaken_mode%</white>"
+
+prelobby:
+  components:
+    waiting_players:
+      type: TEXT
+      alignment: MIDDLE_CENTER
+      text_alignment: CENTER
+      offset_x: 0
+      offset_y: -40
+      scale: 1.0
+      content: "<white>Esperando jugadores...</white>"
+    vote:
+      type: TEXT
+      alignment: MIDDLE_CENTER
+      text_alignment: CENTER
+      offset_x: 0
+      offset_y: -20
+      scale: 1.0
+      content: "<white>Usa /vote</white>"
+    vote_maps:
+      type: TEXT
+      alignment: MIDDLE_CENTER
+      text_alignment: CENTER
+      offset_x: 0
+      offset_y: 10
+      scale: 1.0
+      content: "<white>%mistaken_votes%</white>"
+
+ingame:
+  components:
+    timer_icon:
+      type: ITEM
+      material: "minecraft:clock"
+      alignment: TOP_CENTER
+      text_alignment: LEFT
+      offset_x: -70
+      offset_y: 5
+      scale: 1.0
+      amount: 1
+    timer_text:
+      type: TEXT
+      alignment: TOP_CENTER
+      text_alignment: LEFT
+      offset_x: -50
+      offset_y: 9
+      scale: 1.0
+      content: "<gold><bold>%mistaken_timer%</bold></gold>"
+    player_icon:
+      type: ITEM
+      material: "minecraft:player_head"
+      alignment: TOP_CENTER
+      text_alignment: LEFT
+      offset_x: 10
+      offset_y: 5
+      scale: 1.0
+      amount: 1
+    player_text:
+      type: TEXT
+      alignment: TOP_CENTER
+      text_alignment: LEFT
+      offset_x: 30
+      offset_y: 9
+      scale: 1.0
+      content: "<green><bold>%mistaken_vivos%</bold> Vivos</green>"
+    gens_icon:
+      type: ITEM
+      material: "minecraft:redstone_torch"
+      alignment: TOP_CENTER
+      text_alignment: LEFT
+      offset_x: 90
+      offset_y: 5
+      scale: 1.0
+      amount: 1
+    gens_text:
+      type: TEXT
+      alignment: TOP_CENTER
+      text_alignment: LEFT
+      offset_x: 110
+      offset_y: 9
+      scale: 1.0
+      content: "<red><bold>%mistaken_gens_reparados%/%mistaken_gens_total%</bold> Gens</red>"
+
+roles:
+  survivor:
+    components:
+      title:
+        type: TEXT
+        alignment: TOP_LEFT
+        text_alignment: LEFT
+        offset_x: 10
+        offset_y: 10
+        scale: 1.2
+        content: "<green><bold>SUPERVIVIENTE</bold></green>"
+      desc:
+        type: TEXT
+        alignment: TOP_LEFT
+        text_alignment: LEFT
+        offset_x: 10
+        offset_y: 25
+        scale: 1.0
+        content: "<white>Repara los generadores y sobrevive.</white>"
+  killer:
+    components:
+      title:
+        type: TEXT
+        alignment: TOP_LEFT
+        text_alignment: LEFT
+        offset_x: 10
+        offset_y: 10
+        scale: 1.2
+        content: "<red><bold>ASESINO</bold></red>"
+      desc:
+        type: TEXT
+        alignment: TOP_LEFT
+        text_alignment: LEFT
+        offset_x: 10
+        offset_y: 25
+        scale: 1.0
+        content: "<white>Elimina a todos los supervivientes.</white>"

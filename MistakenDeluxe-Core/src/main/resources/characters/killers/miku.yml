@@ -1,0 +1,28 @@
+id: "miku"
+precio: 20000
+permiso: "mistaken.skins.dev"
+icono_material: "CYAN_DYE"
+armor:
+  helmet: "mistaken:miku_helmet"
+  chestplate: "mistaken:miku_chestplate"
+  leggings: "mistaken:miku_leggings"
+  boots: "mistaken:miku_boots"
+items:
+  weapon: "DIAMOND_SWORD"
+  weapon_slot: 8
+  skill1: "END_ROD"
+  skill1_slot: 1
+  skill1_cooldown: 12
+  skill1_sound: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+  skill2: "BEACON"
+  skill2_slot: 2
+  skill2_cooldown: 30
+  skill2_sound: "BLOCK_BEACON_POWER_SELECT"
+  skill3: "SEA_LANTERN"
+  skill3_slot: 3
+  skill3_cooldown: 45
+  skill3_sound: "ENTITY_WARDEN_SONIC_BOOM"
+  skill4: "NETHER_STAR"
+  skill4_slot: 4
+  skill4_cooldown: 100
+  skill4_sound: "UI_TOAST_CHALLENGE_COMPLETE"

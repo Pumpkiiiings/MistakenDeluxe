@@ -1,0 +1,18 @@
+id: "troll"
+precio: 300
+icono_material: "YELLOW_DYE"
+armor:
+  helmet: "none"
+  chestplate: "LEATHER_CHESTPLATE"
+  leggings: "LEATHER_LEGGINGS"
+  boots: "LEATHER_BOOTS"
+items:
+  skill1: "ARMOR_STAND"
+  skill1_cooldown: 30
+  skill1_sound: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+  skill2: "YELLOW_DYE"
+  skill2_cooldown: 20
+  skill2_sound: "ENTITY_EGG_THROW"
+  skill3: "CHEST"
+  skill3_cooldown: 30
+  skill3_sound: "BLOCK_WOOD_PLACE"

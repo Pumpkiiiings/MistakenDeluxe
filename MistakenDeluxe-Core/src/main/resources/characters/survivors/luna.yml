@@ -1,0 +1,25 @@
+id: "luna"
+precio: 7200
+icono_material: "GLISTERING_MELON_SLICE"
+armor:
+  helmet: "mistaken:luna_helmet"
+  chestplate: "mistaken:luna_chestplate"
+  leggings: "mistaken:luna_leggings"
+  boots: "mistaken:luna_boots"
+ajustes:
+  curacion_h1: 3.0
+  radio_curacion_h2: 6.0
+  duracion_escudo_h3: 5
+items:
+  # H1: Pulso Vital — auto-curación 3 corazones + Regen I 4s
+  skill1: "GLISTERING_MELON_SLICE"
+  skill1_cooldown: 22
+  skill1_sound: "ENTITY_PLAYER_BURP"
+  # H2: Aura Restauradora — campo de curación AoE 3s
+  skill2: "SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE"
+  skill2_cooldown: 35
+  skill2_sound: "ENTITY_EVOKER_PREPARE_WOLOLO"
+  # H3: Barrera Biomédica — Absorption II 5s a Luna y un aliado
+  skill3: "TOTEM_OF_UNDYING"
+  skill3_cooldown: 50
+  skill3_sound: "ITEM_TOTEM_USE"

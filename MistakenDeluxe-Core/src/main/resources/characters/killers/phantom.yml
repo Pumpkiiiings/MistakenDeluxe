@@ -1,0 +1,32 @@
+id: "phantom"
+precio: 18000
+permiso: "mistaken.skins.phantom"
+icono_material: "PHANTOM_MEMBRANE"
+armor:
+  helmet: "mistaken:phantom_helmet"
+  chestplate: "mistaken:phantom_chestplate"
+  leggings: "mistaken:phantom_leggings"
+  boots: "mistaken:phantom_boots"
+items:
+  weapon: "BONE"
+  weapon_slot: 8
+  # H1: Vuelo Espectral — invisible + teletransporte al frente
+  skill1: "PHANTOM_MEMBRANE"
+  skill1_slot: 1
+  skill1_cooldown: 14
+  skill1_sound: "ENTITY_PHANTOM_FLAP"
+  # H2: Ráfaga de Sombras — proyectil que aplica Ceguera 3s
+  skill2: "GRAY_DYE"
+  skill2_slot: 2
+  skill2_cooldown: 22
+  skill2_sound: "ENTITY_PHANTOM_BITE"
+  # H3: Grito Etéreo — AoE que lentifica a supervivientes cercanos
+  skill3: "ECHO_SHARD"
+  skill3_slot: 3
+  skill3_cooldown: 35
+  skill3_sound: "ENTITY_PHANTOM_DEATH"
+  # H4: Forma Espectral — inmune a proyectiles durante 4s
+  skill4: "ENDER_EYE"
+  skill4_slot: 4
+  skill4_cooldown: 75
+  skill4_sound: "ENTITY_EVOKER_PREPARE_ATTACK"

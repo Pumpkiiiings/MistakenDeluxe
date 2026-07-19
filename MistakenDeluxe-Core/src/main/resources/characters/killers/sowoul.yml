@@ -1,0 +1,28 @@
+id: "sowoul"
+precio: 850000
+permiso: "mistaken.skins.dev"
+icono_material: "ENCHANTED_BOOK"
+armor:
+  helmet: "mistaken:sowoul_helmet"
+  chestplate: "mistaken:sowoul_chestplate"
+  leggings: "mistaken:sowoul_leggings"
+  boots: "mistaken:sowoul_boots"
+items:
+  weapon: "BOOK"
+  weapon_slot: 8
+  skill1: "ENDER_PEARL"
+  skill1_slot: 1
+  skill1_cooldown: 15
+  skill1_sound: "ENTITY_ENDERMAN_TELEPORT"
+  skill2: "PAPER"
+  skill2_slot: 2
+  skill2_cooldown: 8
+  skill2_sound: "ENTITY_SNOWBALL_THROW"
+  skill3: "FERMENTED_SPIDER_EYE"
+  skill3_slot: 3
+  skill3_cooldown: 15
+  skill3_sound: "ENTITY_EVOKER_PREPARE_ATTACK"
+  skill4: "WITHER_SKELETON_SKULL"
+  skill4_slot: 4
+  skill4_cooldown: 45
+  skill4_sound: "ENTITY_WITHER_SPAWN"

@@ -1,0 +1,18 @@
+id: "repartidor"
+precio: 750
+icono_material: "IRON_CHESTPLATE"
+armor:
+  helmet: "none"
+  chestplate: "none"
+  leggings: "none"
+  boots: "none"
+items:
+  skill1: "SUGAR"
+  skill1_cooldown: 35
+  skill1_sound: "ENTITY_GENERIC_DRINK"
+  skill2: "COOKIE"
+  skill2_cooldown: 15
+  skill2_sound: "ENTITY_SNOWBALL_THROW"
+  skill3: "CHEST"
+  skill3_cooldown: 50
+  skill3_sound: "BLOCK_SLIME_BLOCK_PLACE"

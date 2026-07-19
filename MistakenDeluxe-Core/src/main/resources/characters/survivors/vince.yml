@@ -1,0 +1,25 @@
+id: "vince"
+precio: 6500
+icono_material: "REDSTONE"
+armor:
+  helmet: "mistaken:vince_helmet"
+  chestplate: "mistaken:vince_chestplate"
+  leggings: "mistaken:vince_leggings"
+  boots: "mistaken:vince_boots"
+ajustes:
+  duracion_trampa: 4
+  radio_pulso: 8.0
+  alcance_link: 12.0
+items:
+  # H1: Trampa Magnética
+  skill1: "TRIPWIRE_HOOK"
+  skill1_cooldown: 20
+  skill1_sound: "BLOCK_TRIPWIRE_CLICK_ON"
+  # H2: Pulso de Radar
+  skill2: "COMPASS"
+  skill2_cooldown: 18
+  skill2_sound: "BLOCK_AMETHYST_BLOCK_CHIME"
+  # H3: Enlace Táctico
+  skill3: "CHAIN"
+  skill3_cooldown: 38
+  skill3_sound: "BLOCK_CHAIN_PLACE"

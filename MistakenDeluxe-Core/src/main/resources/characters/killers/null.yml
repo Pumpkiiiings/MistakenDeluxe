@@ -1,0 +1,27 @@
+id: "null"
+precio: 5000
+icono_material: "COAL_BLOCK"
+armor:
+  helmet: "mistaken:null_helmet"
+  chestplate: "mistaken:null_chestplate"
+  leggings: "mistaken:null_leggings"
+  boots: "mistaken:null_boots"
+items:
+  weapon: "NETHERITE_SWORD"
+  weapon_slot: 8
+  skill1: "RECOVERY_COMPASS"
+  skill1_slot: 1
+  skill1_cooldown: 20
+  skill1_sound: "BLOCK_GLASS_BREAK"
+  skill2: "BEACON"
+  skill2_slot: 2
+  skill2_cooldown: 30
+  skill2_sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  skill3: "CHAIN"
+  skill3_slot: 3
+  skill3_cooldown: 25
+  skill3_sound: "BLOCK_CHAIN_PLACE"
+  skill4: "ECHO_SHARD"
+  skill4_slot: 4
+  skill4_cooldown: 45
+  skill4_sound: "ENTITY_EVOKER_PREPARE_ATTACK"

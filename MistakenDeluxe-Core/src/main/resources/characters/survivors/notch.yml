@@ -1,0 +1,21 @@
+id: "notch"
+precio: 8000
+icono_material: "ENCHANTED_GOLDEN_APPLE"
+armor:
+  helmet: "GOLDEN_HELMET"
+  chestplate: "GOLDEN_CHESTPLATE"
+  leggings: "GOLDEN_LEGGINGS"
+  boots: "GOLDEN_BOOTS"
+items:
+  # H1: Salto Creativo
+  skill1: "FEATHER"
+  skill1_cooldown: 20
+  skill1_sound: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+  # H2: Muro de Bedrock
+  skill2: "BEDROCK"
+  skill2_cooldown: 30
+  skill2_sound: "BLOCK_ANVIL_LAND"
+  # H3: Manzana de Dios
+  skill3: "ENCHANTED_GOLDEN_APPLE"
+  skill3_cooldown: 60
+  skill3_sound: "ITEM_TOTEM_USE"

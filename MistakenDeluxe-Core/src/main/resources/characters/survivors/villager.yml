@@ -1,0 +1,21 @@
+id: "aldeano"
+precio: 3000
+icono_material: "EMERALD"
+armor:
+  helmet: "LEATHER_HELMET"
+  chestplate: "LEATHER_CHESTPLATE"
+  leggings: "LEATHER_LEGGINGS"
+  boots: "LEATHER_BOOTS"
+items:
+  # H1: Pánico — velocidad
+  skill1: "SUGAR"
+  skill1_cooldown: 20
+  skill1_sound: "ENTITY_VILLAGER_NO"
+  # H2: Soborno — lanzar
+  skill2: "EMERALD"
+  skill2_cooldown: 15
+  skill2_sound: "ENTITY_SNOWBALL_THROW"
+  # H3: Golem — empuje área
+  skill3: "IRON_INGOT"
+  skill3_cooldown: 40
+  skill3_sound: "ENTITY_IRON_GOLEM_ATTACK"

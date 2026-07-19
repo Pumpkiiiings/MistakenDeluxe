@@ -1,0 +1,27 @@
+id: "coolkid"
+precio: 0
+icono_material: "COMMAND_BLOCK"
+armor:
+  helmet: "mistaken:coolkid_helmet"
+  chestplate: "mistaken:coolkid_chestplate"
+  leggings: "mistaken:coolkid_leggings"
+  boots: "mistaken:coolkid_boots"
+items:
+  weapon: "mistaken:coolkid_weapon"
+  weapon_slot: 8
+  skill1: "mistaken:coolkid_h1"
+  skill1_slot: 1
+  skill1_cooldown: 10
+  skill1_sound: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+  skill2: "mistaken:coolkid_h2"
+  skill2_slot: 2
+  skill2_cooldown: 25
+  skill2_sound: "BLOCK_NOTE_BLOCK_BIT"
+  skill3: "mistaken:coolkid_h3"
+  skill3_slot: 3
+  skill3_cooldown: 30
+  skill3_sound: "BLOCK_BEACON_DEACTIVATE"
+  skill4: "mistaken:coolkid_h4"
+  skill4_slot: 4
+  skill4_cooldown: 60
+  skill4_sound: "ENTITY_ENDERMAN_TELEPORT"

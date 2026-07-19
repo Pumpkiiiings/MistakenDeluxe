@@ -1,0 +1,16 @@
+id: "petra"
+precio: 6000
+icono_material: "IRON_SWORD"
+ajustes:
+  danio_dash: 2
+  duracion_sigilo: 5
+items:
+  skill1: "IRON_SWORD"
+  skill1_cooldown: 10
+  skill1_sound: "ENTITY_PLAYER_ATTACK_SWEEP"
+  skill2: "FEATHER"
+  skill2_cooldown: 15
+  skill2_sound: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+  skill3: "GRAY_DYE"
+  skill3_cooldown: 35
+  skill3_sound: "ENTITY_GENERIC_EXTINGUISH_FIRE"

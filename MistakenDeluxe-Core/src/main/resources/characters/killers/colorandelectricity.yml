@@ -1,0 +1,28 @@
+id: "colorandelectricity"
+precio: 10500
+permiso: "mistaken.skins.exclusivo"
+icono_material: "LIGHTNING_ROD"
+armor:
+  helmet: "mistaken:muship_helmet"
+  chestplate: "mistaken:muship_chestplate"
+  leggings: "mistaken:muship_leggings"
+  boots: "mistaken:muship_boots"
+items:
+  weapon: "GOLDEN_SWORD"
+  weapon_slot: 8
+  skill1: "FEATHER"
+  skill1_slot: 1
+  skill1_cooldown: 8
+  skill1_sound: "BLOCK_AMETHYST_BLOCK_CHIME"
+  skill2: "CYAN_DYE"
+  skill2_slot: 2
+  skill2_cooldown: 20
+  skill2_sound: "BLOCK_CONDUIT_ATTACK_TARGET"
+  skill3: "COPPER_INGOT"
+  skill3_slot: 3
+  skill3_cooldown: 15
+  skill3_sound: "BLOCK_NOTE_BLOCK_BIT"
+  skill4: "NETHER_STAR"
+  skill4_slot: 4
+  skill4_cooldown: 50
+  skill4_sound: "ENTITY_FIREWORK_ROCKET_TWINKLE"

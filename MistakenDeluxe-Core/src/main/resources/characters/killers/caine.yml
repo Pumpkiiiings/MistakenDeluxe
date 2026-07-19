@@ -1,0 +1,31 @@
+id: "caine"
+precio: 67000000
+icono_material: "RED_CONCRETE"
+armor:
+  helmet: "mistaken:caine_helmet"
+  chestplate: "mistaken:caine_chestplate"
+  leggings: "mistaken:caine_leggings"
+  boots: "mistaken:caine_boots"
+items:
+  weapon: "STICK"
+  weapon_slot: 8
+  # Mazo Chillón — aplasta desde el cielo
+  skill1: "RED_CONCRETE"
+  skill1_slot: 1
+  skill1_cooldown: 18
+  skill1_sound: "ENTITY_ILLUSIONER_CAST_SPELL"
+  # Dash Potente — manda a volar
+  skill2: "FEATHER"
+  skill2_slot: 2
+  skill2_cooldown: 10
+  skill2_sound: "ENTITY_ENDER_DRAGON_FLAP"
+  # Danza Obligatoria — control de masas
+  skill3: "MUSIC_DISC_CAT"
+  skill3_slot: 3
+  skill3_cooldown: 25
+  skill3_sound: "BLOCK_NOTE_BLOCK_BELL"
+  # Proyectil Ojo — ciega y daña
+  skill4: "SNOWBALL"
+  skill4_slot: 4
+  skill4_cooldown: 8
+  skill4_sound: "ENTITY_EGG_THROW"

@@ -1,0 +1,16 @@
+id: "steve"
+precio: 0
+icono_material: "PLAYER_HEAD"
+ajustes:
+  duracion_muro: 5
+  fuerza_empuje: 1.4
+items:
+  skill1: "NETHERITE_AXE"
+  skill1_cooldown: 12
+  skill1_sound: "ENTITY_PLAYER_ATTACK_CRIT"
+  skill2: "COBBLESTONE"
+  skill2_cooldown: 18
+  skill2_sound: "BLOCK_STONE_PLACE"
+  skill3: "WATER_BUCKET"
+  skill3_cooldown: 25
+  skill3_sound: "ITEM_BUCKET_EMPTY"

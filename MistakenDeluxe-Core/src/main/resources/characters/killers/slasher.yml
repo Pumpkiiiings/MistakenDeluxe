@@ -1,0 +1,27 @@
+id: "slasher"
+precio: 0
+icono_material: "NETHERITE_SWORD"
+armor:
+  helmet: "mistaken:pumpkinwhite_helmet"
+  chestplate: "mistaken:pumpkinwhite_chestplate"
+  leggings: "mistaken:pumpkinwhite_leggings"
+  boots: "mistaken:pumpkinwhite_boots"
+items:
+  weapon: "DIAMOND_AXE"
+  weapon_slot: 8
+  skill1: "BLAZE_POWDER"
+  skill1_slot: 1
+  skill1_cooldown: 20
+  skill1_sound: "ENTITY_ENDER_DRAGON_GROWL"
+  skill2: "SNOWBALL"
+  skill2_slot: 2
+  skill2_cooldown: 12
+  skill2_sound: "ENTITY_ARROW_SHOOT"
+  skill3: "GHAST_TEAR"
+  skill3_slot: 3
+  skill3_cooldown: 25
+  skill3_sound: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+  skill4: "NETHER_STAR"
+  skill4_slot: 4
+  skill4_cooldown: 60
+  skill4_sound: "ENTITY_WITHER_SPAWN"

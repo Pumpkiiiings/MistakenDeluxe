@@ -1,0 +1,16 @@
+id: "axel"
+precio: 4800
+icono_material: "TNT"
+ajustes:
+  fuerza_tnt: 1.5
+  radio_tnt: 5.0
+items:
+  skill1: "TNT"
+  skill1_cooldown: 25
+  skill1_sound: "ENTITY_TNT_PRIMED"
+  skill2: "IRON_AXE"
+  skill2_cooldown: 15
+  skill2_sound: "ENTITY_ZOMBIE_ATTACK_IRON_DOOR"
+  skill3: "SHIELD"
+  skill3_cooldown: 40
+  skill3_sound: "ITEM_SHIELD_BLOCK"

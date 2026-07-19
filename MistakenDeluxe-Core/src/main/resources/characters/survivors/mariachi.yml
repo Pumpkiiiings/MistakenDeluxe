@@ -1,0 +1,10 @@
+id: "mariachi"
+precio: 5000
+icono_material: "GOLDEN_AXE"
+items:
+  skill1: "WOODEN_HOE"
+  skill1_cooldown: 15
+  skill2: "HONEY_BOTTLE"
+  skill2_cooldown: 25
+  skill3: "GOLDEN_CHESTPLATE"
+  skill3_cooldown: 40

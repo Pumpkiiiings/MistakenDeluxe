@@ -1,0 +1,28 @@
+id: "teto"
+precio: 15000
+permiso: "mistaken.skins.dev"
+icono_material: "MUSIC_DISC_PIGSTEP"
+armor:
+  helmet: "mistaken:teto_helmet"
+  chestplate: "mistaken:teto_chestplate"
+  leggings: "mistaken:teto_leggings"
+  boots: "mistaken:teto_boots"
+items:
+  weapon: "IRON_SWORD"
+  weapon_slot: 8
+  skill1: "HOPPER"
+  skill1_slot: 1
+  skill1_cooldown: 15
+  skill1_sound: "ENTITY_ZOMBIE_ATTACK_IRON_DOOR"
+  skill2: "BREAD"
+  skill2_slot: 2
+  skill2_cooldown: 10
+  skill2_sound: "ENTITY_ITEM_BREAK"
+  skill3: "TNT"
+  skill3_slot: 3
+  skill3_cooldown: 25
+  skill3_sound: "ENTITY_CREEPER_PRIMED"
+  skill4: "NETHER_STAR"
+  skill4_slot: 4
+  skill4_cooldown: 80
+  skill4_sound: "BLOCK_BEACON_ACTIVATE"

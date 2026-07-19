@@ -1,0 +1,27 @@
+id: "entity303"
+precio: 3000
+icono_material: "NETHERITE_UPGRADE_SMITHING_TEMPLATE"
+armor:
+  helmet: "mistaken:entity303_helmet"
+  chestplate: "mistaken:entity303_chestplate"
+  leggings: "mistaken:entity303_leggings"
+  boots: "mistaken:entity303_boots"
+items:
+  weapon: "IRON_SWORD"
+  weapon_slot: 8
+  skill1: "FIRE_CHARGE"
+  skill1_slot: 1
+  skill1_cooldown: 12
+  skill1_sound: "ENTITY_DRAGON_FIREBALL_EXPLODE"
+  skill2: "REDSTONE"
+  skill2_slot: 2
+  skill2_cooldown: 20
+  skill2_sound: "ENTITY_ZOMBIE_VILLAGER_CONVERTED"
+  skill3: "FEATHER"
+  skill3_slot: 3
+  skill3_cooldown: 30
+  skill3_sound: "ENTITY_BAT_LOOP"
+  skill4: "OBSERVER"
+  skill4_slot: 4
+  skill4_cooldown: 90
+  skill4_sound: "BLOCK_NOTE_BLOCK_BASEDRUM"

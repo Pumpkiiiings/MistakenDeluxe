@@ -1,0 +1,18 @@
+id: "civil"
+precio: 0
+icono_material: "LEATHER_CHESTPLATE"
+armor:
+  helmet: "none"
+  chestplate: "none"
+  leggings: "none"
+  boots: "none"
+items:
+  skill1: "SUGAR"
+  skill1_cooldown: 30
+  skill1_sound: "ENTITY_PLAYER_BREATH"
+  skill2: "FERMENTED_SPIDER_EYE"
+  skill2_cooldown: 50
+  skill2_sound: "ENTITY_ILLUSIONER_MIRROR_MOVE"
+  skill3: "COBBLESTONE"
+  skill3_cooldown: 20
+  skill3_sound: "ENTITY_SNOWBALL_THROW"

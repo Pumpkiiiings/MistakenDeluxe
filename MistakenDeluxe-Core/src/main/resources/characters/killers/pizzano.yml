@@ -1,0 +1,26 @@
+id: "pizzano"
+precio: 950000
+permiso: "mistaken.skins.dev"
+icono_material: "SUGAR"
+armor:
+  helmet: "mistaken:pizzano_helmet"
+  chestplate: "mistaken:pizzano_chestplate"
+  leggings: "mistaken:pizzano_leggings"
+  boots: "mistaken:pizzano_boots"
+items:
+  weapon: "GOLDEN_SWORD"
+  weapon_slot: 8
+  skill1: "BLUE_DYE"
+  skill1_slot: 1
+  skill1_cooldown: 8
+  skill1_sound: "ENTITY_BAT_TAKEOFF"
+  skill2: "STRING"
+  skill2_slot: 2
+  skill2_cooldown: 15
+  skill2_sound: "ENTITY_PHANTOM_FLAP"
+  skill3: "SUGAR"
+  skill3_slot: 3
+  skill3_cooldown: 45
+  skill3_sound: "ENTITY_WITHER_SPAWN"
+  skill4: "none"
+  skill4_slot: 4  # Pasiva — no requiere ítem

@@ -1,0 +1,21 @@
+id: "raincoatkid"
+precio: 3500
+icono_material: "YELLOW_DYE"
+armor:
+  helmet: "mistaken:raincoat_helmet"
+  chestplate: "mistaken:raincoat_chestplate"
+  leggings: "none"
+  boots: "none"
+items:
+  # H1: Correr
+  skill1: "SUGAR"
+  skill1_cooldown: 25
+  skill1_sound: "ENTITY_PLAYER_ATTACK_SWEEP"
+  # H2: Dash
+  skill2: "FEATHER"
+  skill2_cooldown: 15
+  skill2_sound: "ENTITY_BAT_TAKEOFF"
+  # H3: Palo Aturdidor
+  skill3: "STICK"
+  skill3_cooldown: 40
+  skill3_sound: "ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR"

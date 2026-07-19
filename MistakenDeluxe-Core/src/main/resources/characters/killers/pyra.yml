@@ -1,0 +1,31 @@
+id: "pyra"
+precio: 22000
+icono_material: "BLAZE_ROD"
+armor:
+  helmet: "mistaken:pyra_helmet"
+  chestplate: "mistaken:pyra_chestplate"
+  leggings: "mistaken:pyra_leggings"
+  boots: "mistaken:pyra_boots"
+items:
+  weapon: "BLAZE_ROD"
+  weapon_slot: 8
+  # H1: Dash de Llamas — dash con estela de fuego en el suelo
+  skill1: "FIRE_CHARGE"
+  skill1_slot: 1
+  skill1_cooldown: 10
+  skill1_sound: "ITEM_FIRECHARGE_USE"
+  # H2: Muro de Fuego — pared de fuego temporal (3 bloques)
+  skill2: "MAGMA_BLOCK"
+  skill2_slot: 2
+  skill2_cooldown: 28
+  skill2_sound: "BLOCK_LAVA_POP"
+  # H3: Meteorito — bloque ardiente desde el cielo sobre superviviente marcado
+  skill3: "BLAZE_POWDER"
+  skill3_slot: 3
+  skill3_cooldown: 40
+  skill3_sound: "ENTITY_BLAZE_SHOOT"
+  # H4: Infierno Absoluto — incendia el área de juego 8s
+  skill4: "NETHER_STAR"
+  skill4_slot: 4
+  skill4_cooldown: 90
+  skill4_sound: "ENTITY_BLAZE_DEATH"

@@ -1,0 +1,27 @@
+id: "mariachi"
+precio: 12000
+icono_material: "GOLDEN_SWORD"
+armor:
+  helmet: "mistaken:charro_helmet"
+  chestplate: "mistaken:charro_chestplate"
+  leggings: "mistaken:charro_leggings"
+  boots: "mistaken:charro_boots"
+items:
+  weapon: "GOLDEN_AXE"
+  weapon_slot: 8
+  skill1: "ECHO_SHARD"
+  skill1_slot: 1
+  skill1_cooldown: 20
+  skill1_sound: "ENTITY_ENDER_DRAGON_GROWL"
+  skill2: "LEATHER_BOOTS"
+  skill2_slot: 2
+  skill2_cooldown: 25
+  skill2_sound: "ENTITY_HORSE_GALLOP"
+  skill3: "WOODEN_SWORD"
+  skill3_slot: 3
+  skill3_cooldown: 15
+  skill3_sound: "BLOCK_WOOD_BREAK"
+  skill4: "POTION"
+  skill4_slot: 4
+  skill4_cooldown: 45
+  skill4_sound: "ENTITY_GENERIC_DRINK"
