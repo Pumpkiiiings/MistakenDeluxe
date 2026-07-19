@@ -371,7 +371,8 @@ paranoia:
 
 # --- STAMINA ---
 stamina:
-  exhausted: "<#FF4C4C><bold>YOU ARE EXHAUSTED!</bold> <#AAAAAA>Catch your breath..."
+  exhausted: "<#FF4C4C><bold>EXHAUSTED!</bold> <#AAAAAA>Catch your breath..."
+  low_warning: "<#FFA500>⚠ You are losing stamina quickly!"
 
 # ==========================================
 # --- MENU TITLES (resolved via %menu_title%) ---

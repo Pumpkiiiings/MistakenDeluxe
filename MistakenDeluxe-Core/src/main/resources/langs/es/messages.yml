@@ -410,6 +410,7 @@ paranoia:
 # --- ESTAMINA ---
 stamina:
   exhausted: "<#FF4C4C><bold>¡ESTÁS AGOTADO!</bold> <#AAAAAA>Recupera el aliento..."
+  low_warning: "<#FFA500>⚠ ¡Estás perdiendo estamina rápidamente!"
 
 # ==========================================
 # --- TÃ� TULOS DE MENÚS (resueltos por %menu_title%) ---
