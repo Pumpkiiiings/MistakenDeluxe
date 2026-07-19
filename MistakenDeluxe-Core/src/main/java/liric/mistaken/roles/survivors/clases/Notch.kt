@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -16,9 +16,9 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Notch: El Creador.
- * MECÃNICAS:
+ * MECÁNICAS:
  * - Movilidad vertical (Vuelo falso).
- * - Control de Ã¡rea (Empuje de Bedrock).
+ * - Control de área (Empuje de Bedrock).
  * - Supervivencia (Manzana de Notch).
  */
 class Notch : Survivor(
@@ -92,7 +92,7 @@ class Notch : Survivor(
 
     private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
         val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(mm.deserialize(msg))
+        if (!msg.isNullOrEmpty()) player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
     }
 
     override fun equip(player: Player) {
@@ -105,7 +105,7 @@ class Notch : Survivor(
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
             langConfig.getString("skill_names.$key")?.let {
-                item.editMeta { m -> m.displayName(mm.deserialize(it)) }
+                item.editMeta { m -> m.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
             inv.setItem(slot, item)
         }
@@ -124,19 +124,19 @@ class Notch : Survivor(
 
     // --- H1: SALTO CREATIVO (Vuelo temporal) ---
     private fun usarSaltoCreativo(player: Player) {
-        // Impulso fÃ­sico
+        // Impulso físico
         val velocity = player.location.direction.multiply(1.2).setY(1.1) // Salto alto y hacia adelante
         player.velocity = velocity
 
-        // SFX Combinado: Cohete + Experiencia (Sonido "MÃ¡gico")
+        // SFX Combinado: Cohete + Experiencia (Sonido "Mágico")
         player.world.playSound(player.location, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.5f, 0.8f)
         player.world.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 0.5f)
 
-        // PartÃ­culas: Nubes debajo de los pies
+        // Partículas: Nubes debajo de los pies
         player.world.spawnParticle(Particle.CLOUD, player.location, 15, 0.3, 0.1, 0.3, 0.05)
         player.world.spawnParticle(Particle.WAX_OFF, player.location, 10, 0.5, 0.5, 0.5) // Destellos blancos
 
-        // CaÃ­da lenta para simular "Creative Mode" al bajar
+        // Caída lenta para simular "Creative Mode" al bajar
         val task = player.scheduler.runDelayed(plugin, {
             if (player.isOnline) {
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOW_FALLING, 60, 0))
@@ -148,15 +148,15 @@ class Notch : Survivor(
 
     // --- H2: MURO DEL ADMIN (Empuje de Bedrock) ---
     private fun usarMuroAdmin(player: Player) {
-        // SFX Combinado: Yunque + PistÃ³n (Sonido "Pesado/Denegado")
+        // SFX Combinado: Yunque + Pistón (Sonido "Pesado/Denegado")
         player.world.playSound(player.location, Sound.BLOCK_ANVIL_LAND, 0.8f, 0.5f)
         player.world.playSound(player.location, Sound.BLOCK_PISTON_EXTEND, 1.0f, 0.5f)
 
-        // VFX: CÃ­rculo de Bedrock y Runas
+        // VFX: Círculo de Bedrock y Runas
         player.world.spawnParticle(Particle.BLOCK, player.location.add(0.0, 1.0, 0.0), 40, 3.0, 0.5, 3.0, Material.BEDROCK.createBlockData())
         player.world.spawnParticle(Particle.ENCHANT, player.location.add(0.0, 1.0, 0.0), 30, 2.0, 2.0, 2.0, 1.0)
 
-        // LÃ³gica de empuje
+        // Lógica de empuje
         player.getNearbyEntities(6.0, 6.0, 6.0).forEach { entity ->
             if (entity is Player && plugin.sessionManager.getSession(entity)?.isKiller(entity.uniqueId) == true) {
                 // Vector de rechazo fuerte
@@ -164,7 +164,7 @@ class Notch : Survivor(
                 entity.velocity = push
 
                 // Efectos al asesino
-                entity.sendMessage(mm.deserialize("<red><bold>DENIED!</bold> <gray>Acceso denegado por el administrador.</gray>"))
+                entity.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><bold>DENIED!</bold> <gray>Acceso denegado por el administrador.</gray>"))
                 entity.playSound(entity.location, Sound.ENTITY_VILLAGER_NO, 1f, 0.8f)
             }
         }
@@ -172,11 +172,11 @@ class Notch : Survivor(
 
     // --- H3: MANZANA DEL CREADOR (Buffs Epicos) ---
     private fun usarManzanaCreador(player: Player) {
-        // SFX Combinado: TÃ³tem + Comer
+        // SFX Combinado: Tótem + Comer
         player.world.playSound(player.location, Sound.ITEM_TOTEM_USE, 1.0f, 1.2f)
         player.world.playSound(player.location, Sound.ENTITY_GENERIC_EAT, 1.0f, 1.0f)
 
-        // VFX: ExplosiÃ³n de TÃ³tem + Flash
+        // VFX: Explosión de Tótem + Flash
         player.world.spawnParticle(Particle.TOTEM_OF_UNDYING, player.location.add(0.0, 1.0, 0.0), 40, 0.5, 0.5, 0.5, 0.3)
         player.world.spawnParticle(Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 1)
 
@@ -185,7 +185,7 @@ class Notch : Survivor(
         player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 100, 1))   // Resistencia II por 5s
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 1))        // Velocidad II por 5s
 
-        // CuraciÃ³n instantÃ¡nea visual
+        // Curación instantánea visual
         val maxHealth = player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.value ?: 20.0
         player.health = (player.health + 6.0).coerceAtMost(maxHealth) // Cura 3 corazones
     }

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.entities
+package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -26,7 +26,7 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0] - MODO TROLL
  * POU.EXE: La mascota virtual abandonada.
- * ADAPTADO: Multiarena/Velocity con tracking dinÃ¡mico y aislamiento de sesiÃ³n.
+ * ADAPTADO: Multiarena/Velocity con tracking dinámico y aislamiento de sesión.
  */
 class PouEXE(private val plugin: Mistaken) {
 
@@ -36,7 +36,7 @@ class PouEXE(private val plugin: Mistaken) {
     private var lastVictimUUID: UUID? = null
     private var consecutiveMisses = 0
 
-    // ðŸ”¥ Referencia a la sesiÃ³n a la que pertenece esta entidad
+    // 🔥 Referencia a la sesión a la que pertenece esta entidad
     private var assignedSession: GameSession? = null
 
     private val teamWhite = "PouGlow"
@@ -47,7 +47,7 @@ class PouEXE(private val plugin: Mistaken) {
     private var saltos = 0
 
     fun spawn(startLoc: Location) {
-        // ðŸ”¥ Detectamos la sesiÃ³n basada en el mundo del spawn
+        // 🔥 Detectamos la sesión basada en el mundo del spawn
         assignedSession = plugin.sessionManager.activeSessions.values.find {
             it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
         }
@@ -58,7 +58,7 @@ class PouEXE(private val plugin: Mistaken) {
                 if (scoreboard.getTeam(teamWhite) == null) scoreboard.registerNewTeam(teamWhite).apply { color(NamedTextColor.WHITE) }
                 if (scoreboard.getTeam(teamRed) == null) scoreboard.registerNewTeam(teamRed).apply { color(NamedTextColor.RED) }
 
-                // --- INGENIERÃA DE LA PAPA (POU) ---
+                // --- INGENIERÍA DE LA PAPA (POU) ---
                 val base = createPart(startLoc, Material.BROWN_CONCRETE, Vector3f(2.5f, 0.8f, 2.5f), Vector3f(-1.25f, 0f, -1.25f))
                 val mid = createPart(startLoc, Material.BROWN_CONCRETE, Vector3f(2.0f, 0.8f, 2.0f), Vector3f(-1.0f, 0.8f, -1.0f))
                 val top = createPart(startLoc, Material.BROWN_CONCRETE, Vector3f(1.2f, 0.6f, 1.2f), Vector3f(-0.6f, 1.6f, -0.6f))
@@ -70,8 +70,8 @@ class PouEXE(private val plugin: Mistaken) {
                 parts.addAll(listOf(base, mid, top, eyeL, eyeR, pupilL, pupilR))
                 setGlowColor(NamedTextColor.WHITE)
 
-                // ðŸ”¥ Broadcast solo para la sesiÃ³n afectada
-                val spawnMsg = plugin.mm.deserialize("<newline><yellow><b>[!]</b> <white>Se ha detectado una mascota virtual abandonada... <brown><b>POU.EXE</b>")
+                // 🔥 Broadcast solo para la sesión afectada
+                val spawnMsg = pumpking.lib.color.ColorTranslator.translate("<newline><yellow><b>[!]</b> <white>Se ha detectado una mascota virtual abandonada... <brown><b>POU.EXE</b>")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(spawnMsg) }
 
                 isRunning = true
@@ -94,7 +94,7 @@ class PouEXE(private val plugin: Mistaken) {
         }
     }
 
-    // ðŸ”¥ Obtener el objetivo mÃ¡s cercano dentro de la sesiÃ³n asignada
+    // 🔥 Obtener el objetivo más cercano dentro de la sesión asignada
     private fun getClosestTarget(): Player? {
         val bodyLoc = if (parts.isNotEmpty()) parts[0].location else return null
         val potentialTargets = if (assignedSession != null) {
@@ -128,7 +128,7 @@ class PouEXE(private val plugin: Mistaken) {
                 return@Consumer
             }
 
-            // PERDIÃ“ AL TARGET O CAMBIÃ“ DE SESIÃ“N
+            // PERDIÓ AL TARGET O CAMBIÓ DE SESIÓN
             if (target == null || !target.isOnline) {
                 fase = 0
                 currentTarget = null
@@ -157,8 +157,8 @@ class PouEXE(private val plugin: Mistaken) {
                     if (ticksEnFase == 16) {
                         target.playSound(target.location, Sound.ENTITY_GENERIC_EAT, 2f, 0.5f)
                         target.showTitle(Title.title(
-                            plugin.mm.deserialize("<gradient:#8B4513:#D2B48C><b>POU TIENE HAMBRE"),
-                            plugin.mm.deserialize("<red>Â¡AlimÃ©ntalo con tu alma!"),
+                            pumpking.lib.color.ColorTranslator.translate("<gradient:#8B4513:#D2B48C><b>POU TIENE HAMBRE"),
+                            pumpking.lib.color.ColorTranslator.translate("<red>¡Aliméntalo con tu alma!"),
                             Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(2), Duration.ofMillis(500))
                         ))
                     }
@@ -175,7 +175,7 @@ class PouEXE(private val plugin: Mistaken) {
                         moverTodo(next, target.location)
                         target.playSound(next, Sound.BLOCK_ANVIL_LAND, 1f, 0.8f)
 
-                        // Detectar colisiÃ³n con supervivientes de la sesiÃ³n
+                        // Detectar colisión con supervivientes de la sesión
                         val hit = next.world.getNearbyPlayers(next, 3.0).filter { p ->
                             val pSession = plugin.sessionManager.getSession(p)
                             pSession == assignedSession && pSession?.isKiller(p.uniqueId) != true
@@ -199,7 +199,7 @@ class PouEXE(private val plugin: Mistaken) {
                     if (ticksEnFase == 0) {
                         setGlowColor(NamedTextColor.RED)
                         target.playSound(target.location, Sound.ENTITY_PLAYER_HURT_ON_FIRE, 1.5f, 0.1f)
-                        target.sendMessage(plugin.mm.deserialize("<dark_red><b>[!] POU SE HA VUELTO SALVAJE"))
+                        target.sendMessage(pumpking.lib.color.ColorTranslator.translate("<dark_red><b>[!] POU SE HA VUELTO SALVAJE"))
                     }
 
                     if (ticksEnFase > 20 && ticksEnFase < 120) {
@@ -239,7 +239,7 @@ class PouEXE(private val plugin: Mistaken) {
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 4))
 
         val prefix = if (enrage) "<dark_red><b>[HAMBRE]</b>" else "<brown><b>[!]</b>"
-        val deathMsg = plugin.mm.deserialize("$prefix <white>${victim.name} fue devorado por <brown>POU.EXE")
+        val deathMsg = pumpking.lib.color.ColorTranslator.translate("$prefix <white>${victim.name} fue devorado por <brown>POU.EXE")
 
         assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
     }

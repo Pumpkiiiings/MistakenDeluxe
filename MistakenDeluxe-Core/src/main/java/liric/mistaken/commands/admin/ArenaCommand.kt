@@ -1,4 +1,4 @@
-﻿package liric.mistaken.commands.admin
+package liric.mistaken.commands.admin
 
 import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -10,7 +10,7 @@ import org.bukkit.entity.Player
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * ArenaCommand: Gestión administrativa de mapas.
+ * ArenaCommand: Gesti�n administrativa de mapas.
  * Optimizado con la API de Brigadier para Paper 1.21.4.
  */
 class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
@@ -30,7 +30,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
 
         // Filtro de seguridad: Si no es admin, fingimos que el comando no existe
         if (!sender.hasPermission("mistaken.admin")) {
-            sender.sendMessage(plugin.mm.deserialize("<red>Unknown command. Type \"/help\" for help."))
+            sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Unknown command. Type \"/help\" for help."))
             return
         }
 
@@ -43,7 +43,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
         val arenaName = args[1]
         val arena = plugin.arenaManager.getArena(arenaName)
 
-        // Validar existencia excepto para creación
+        // Validar existencia excepto para creaci�n
         if (arena == null && sub != "create") {
             player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "errors.arena-not-found",
                 Placeholder.parsed("name", arenaName)))
@@ -56,7 +56,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
                 player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "arena.created",
                     Placeholder.parsed("name", arenaName)))
                 player.playSound(player.location, Sound.ENTITY_VILLAGER_YES, 1f, 1f)
-                player.sendMessage(plugin.mm.deserialize("<gray>Nota: Asegúrate de tener el archivo <white>$arenaName.slime</white> en su carpeta."))
+                player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<gray>Nota: Aseg�rate de tener el archivo <white>$arenaName.slime</white> en su carpeta."))
             }
 
             "delete" -> {
@@ -131,7 +131,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
                     player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "arena.check-generators",
                         Placeholder.parsed("count", it.generators.size.toString())))
 
-                    val killerIcon = if (it.asesinoSpawn != null) "<green>✔" else "<red>✘"
+                    val killerIcon = if (it.asesinoSpawn != null) "<green>?" else "<red>?"
                     player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "arena.check-killer",
                         Placeholder.parsed("icon", killerIcon)))
 

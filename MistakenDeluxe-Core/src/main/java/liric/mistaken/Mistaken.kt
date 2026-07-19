@@ -144,17 +144,17 @@ class Mistaken : JavaPlugin() {
         CommandRegistry(this).registerAll()
 
         serverMode = config.getString("server-mode", "GAME_SERVER")?.uppercase() ?: "GAME_SERVER"
-        componentLogger.info(mm.deserialize("[INFO] Server mode set to: $serverMode"))
+        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[INFO] Server mode set to: $serverMode"))
 
         loadLobbyLocation()
         if (serverMode == "MULTIARENA" || serverMode == "NETWORK_LOBBY") {
             if (lobbyLocation != null) {
                 lobbyLocation?.world?.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
             } else {
-                componentLogger.warn(mm.deserialize("[WARN] Lobby is not set (/setlobby)."))
+                componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("[WARN] Lobby is not set (/setlobby)."))
             }
         } else if (serverMode == "GAME_SERVER" && lobbyLocation == null) {
-            componentLogger.warn(mm.deserialize("[WARN] GAME_SERVER requires /setlobby to create the glass Pre-Lobby."))
+            componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("[WARN] GAME_SERVER requires /setlobby to create the glass Pre-Lobby."))
         }
 
         // 🔥 FIX 2: Si falla la conexión de DB o Vault, no apagamos el plugin entero.
@@ -221,7 +221,7 @@ class Mistaken : JavaPlugin() {
         sendLogo()
 
         val time = System.currentTimeMillis() - start
-        componentLogger.info(mm.deserialize("[SUCCESS] Mistaken v${pluginMeta.version} enabled in ${time}ms ($serverMode)"))
+        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[SUCCESS] Mistaken v${pluginMeta.version} enabled in ${time}ms ($serverMode)"))
     }
 
     override fun onDisable() {
@@ -244,7 +244,7 @@ class Mistaken : JavaPlugin() {
 
         PacketEvents.getAPI().terminate()
 
-        componentLogger.info(mm.deserialize("[INFO] MISTAKEN has been successfully disabled."))
+        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[INFO] MISTAKEN has been successfully disabled."))
     }
 
     private fun setupDatabase(): Boolean {
@@ -256,7 +256,7 @@ class Mistaken : JavaPlugin() {
             databaseManager.setup()
             true
         } catch (e: Exception) {
-            componentLogger.error(mm.deserialize("[ERROR] Could not connect to the database. Data will not be saved."))
+            componentLogger.error(pumpking.lib.color.ColorTranslator.translate("[ERROR] Could not connect to the database. Data will not be saved."))
             false
         }
     }
@@ -265,13 +265,13 @@ class Mistaken : JavaPlugin() {
         val rsp: RegisteredServiceProvider<Economy>? = server.servicesManager.getRegistration(Economy::class.java)
 
         if (rsp == null) {
-            componentLogger.error(mm.deserialize("[ERROR] Vault found no compatible economy plugin."))
+            componentLogger.error(pumpking.lib.color.ColorTranslator.translate("[ERROR] Vault found no compatible economy plugin."))
             return false
         }
         economy = rsp.provider
 
         craftEngineEnabled = server.pluginManager.isPluginEnabled("CraftEngine")
-        if (craftEngineEnabled) componentLogger.info(mm.deserialize("[SUCCESS] CraftEngine detected and hooked."))
+        if (craftEngineEnabled) componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[SUCCESS] CraftEngine detected and hooked."))
 
         return true
     }
@@ -375,7 +375,7 @@ class Mistaken : JavaPlugin() {
         val b5 = "<#004488>"
         val info = "<#00d4ff>"
 
-        componentLogger.info(mm.deserialize("""
+        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("""
             <newline>
              $b1<bold>███╗   ███╗██╗███████╗████████╗ █████╗ ██╗  ██╗███████╗███╗   ██╗</bold>$b1
              $b1<bold>████╗ ████║██║██╔════╝╚══██╔══╝██╔══██╗██║ ██╔╝██╔════╝████╗  ██║</bold>$b1

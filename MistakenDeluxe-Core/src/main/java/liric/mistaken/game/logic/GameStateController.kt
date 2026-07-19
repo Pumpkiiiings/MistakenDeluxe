@@ -112,8 +112,8 @@ class GameStateController(private val game: GameSession) {
         if (game.currentMode == MistakenMode.INITIALIZES && game.timer == 290) {
 
             // 1. Títulos de Terror a todos los jugadores (Incluyendo el Killer)
-            val title = game.plugin.mm.deserialize("<dark_red><bold><obfuscated>||</obfuscated> ¡GEOFFREY ESTÃ AQUÃ! <obfuscated>||</obfuscated>")
-            val subtitle = game.plugin.mm.deserialize("<dark_gray>Nadie sobrevivirá...")
+            val title = game.pumpking.lib.color.ColorTranslator.translate("<dark_red><bold><obfuscated>||</obfuscated> ¡GEOFFREY ESTÃ AQUÃ! <obfuscated>||</obfuscated>")
+            val subtitle = game.pumpking.lib.color.ColorTranslator.translate("<dark_gray>Nadie sobrevivirá...")
             val times = Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(4), Duration.ofMillis(500))
 
             game.plugin.server.onlinePlayers.forEach { p ->

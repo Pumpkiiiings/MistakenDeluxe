@@ -18,11 +18,11 @@ class SlasherProfile : CinematicProfile {
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<dark_red>LA EJECUCIÓN"), plugin.mm.deserialize("<red>Nadie escapa de White Pumpkin."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red>LA EJECUCIÓN"), pumpking.lib.color.ColorTranslator.translate("<red>Nadie escapa de White Pumpkin."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<dark_red><bold>¡LO TENGO!</bold>"), plugin.mm.deserialize("<red>Por fin... mi pedernal y acero."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>¡LO TENGO!</bold>"), pumpking.lib.color.ColorTranslator.translate("<red>Por fin... mi pedernal y acero."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.entities
+package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -23,7 +23,7 @@ import java.util.function.Consumer
 /**
  *[LIRIC-MISTAKEN 2.0] - MODO TROLL
  * AMONGUS.EXE: El Impostor de Concreto.
- * ADAPTADO: Multiarena/Velocity con aislamiento de sesiÃ³n.
+ * ADAPTADO: Multiarena/Velocity con aislamiento de sesión.
  */
 class AmongUsEXE(private val plugin: Mistaken) {
 
@@ -33,7 +33,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
     private var lastVictimUUID: UUID? = null
     private var consecutiveMisses = 0
 
-    // ðŸ”¥ Referencia a la sesiÃ³n a la que pertenece esta entidad
+    // 🔥 Referencia a la sesión a la que pertenece esta entidad
     private var assignedSession: GameSession? = null
 
     private val teamNormal = "SusNormal"
@@ -44,7 +44,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
     private var saltos = 0
 
     fun spawn(startLoc: Location) {
-        // ðŸ”¥ Detectamos la sesiÃ³n en la ubicaciÃ³n de spawn
+        // 🔥 Detectamos la sesión en la ubicación de spawn
         assignedSession = plugin.sessionManager.activeSessions.values.find { it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world } }
 
         plugin.server.globalRegionScheduler.run(plugin) { _ ->
@@ -62,8 +62,8 @@ class AmongUsEXE(private val plugin: Mistaken) {
                 parts.addAll(listOf(body, visor, backpack, legL, legR))
                 setGlowColor(NamedTextColor.WHITE)
 
-                // ðŸ”¥ Broadcast aislado solo para la sesiÃ³n
-                assignedSession?.broadcastLocalized("events.amongus-spawn") ?: Bukkit.broadcast(plugin.mm.deserialize("<red><b>[!]</b> <white>Hay un <b>IMPOSTOR</b> entre nosotros..."))
+                // 🔥 Broadcast aislado solo para la sesión
+                assignedSession?.broadcastLocalized("events.amongus-spawn") ?: Bukkit.broadcast(pumpking.lib.color.ColorTranslator.translate("<red><b>[!]</b> <white>Hay un <b>IMPOSTOR</b> entre nosotros..."))
 
                 isRunning = true
                 iniciarIA()
@@ -95,7 +95,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
             val bodyLoc = parts[0].location
             val session = assignedSession
 
-            // BUSCAR PRESA (Filtrada por SesiÃ³n)
+            // BUSCAR PRESA (Filtrada por Sesión)
             if (fase == 0) {
                 val potentialTargets = if (session != null) {
                     session.getPlayers().filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
@@ -145,7 +145,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
                 2 -> { // FASE 2: Advertencia
                     if (ticksEnFase == 16) {
                         target.playSound(target.location, Sound.ENTITY_CREEPER_PRIMED, 1f, 0.5f)
-                        target.showTitle(Title.title(plugin.mm.deserialize("<red><b>IMPOSTOR DETECTADO"), plugin.mm.deserialize("<gray>Â¡Corre por tu vida!")))
+                        target.showTitle(Title.title(pumpking.lib.color.ColorTranslator.translate("<red><b>IMPOSTOR DETECTADO"), pumpking.lib.color.ColorTranslator.translate("<gray>¡Corre por tu vida!")))
                     }
                     if (ticksEnFase >= 36) {
                         fase = 3
@@ -160,7 +160,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
                         moverTodo(next, false)
                         target.playSound(next, Sound.BLOCK_ANVIL_LAND, 1f, 0.5f)
 
-                        // Solo golpea a los de su sesiÃ³n que no sean el asesino
+                        // Solo golpea a los de su sesión que no sean el asesino
                         val hit = next.world.getNearbyPlayers(next, 2.5).filter { p ->
                             val pSession = plugin.sessionManager.getSession(p)
                             pSession == session && pSession?.isKiller(p.uniqueId) != true
@@ -184,7 +184,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
                     if (ticksEnFase == 0) {
                         setGlowColor(NamedTextColor.RED)
                         target.playSound(target.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 0.5f)
-                        target.sendMessage(plugin.mm.deserialize("<dark_red><b>[!] EL IMPOSTOR ESTÃ FURIOSO"))
+                        target.sendMessage(pumpking.lib.color.ColorTranslator.translate("<dark_red><b>[!] EL IMPOSTOR ESTÁ FURIOSO"))
                     }
 
                     if (ticksEnFase > 20 && ticksEnFase < 120) {
@@ -216,23 +216,23 @@ class AmongUsEXE(private val plugin: Mistaken) {
         lastVictimUUID = victim.uniqueId
         victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2f, 0.5f)
 
-        // DaÃ±o procesado por el manager global (detecta sesiÃ³n automÃ¡ticamente)
+        // Daño procesado por el manager global (detecta sesión automáticamente)
         repeat(5) { plugin.combatManager.takeDamage(victim) }
 
         victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 80, 0, false, false, true))
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 3, false, false, true))
 
         val prefix = if (rage) "<dark_red><b>[SABOTAJE]</b>" else "<red><b>[!]</b>"
-        val deathMsg = plugin.mm.deserialize("$prefix <white>${victim.name} fue eliminado por el impostor.")
+        val deathMsg = pumpking.lib.color.ColorTranslator.translate("$prefix <white>${victim.name} fue eliminado por el impostor.")
 
-        // ðŸ”¥ Mensaje solo para los de la sesiÃ³n
+        // 🔥 Mensaje solo para los de la sesión
         assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
     }
 
     private fun aplicarAura(loc: Location, time: Int) {
         loc.world.getNearbyPlayers(loc, 8.0).forEach { p ->
             val pSession = plugin.sessionManager.getSession(p)
-            // Solo afecta si es de la misma sesiÃ³n y no es asesino
+            // Solo afecta si es de la misma sesión y no es asesino
             if (pSession == assignedSession && pSession?.isKiller(p.uniqueId) != true) {
                 p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, time, 0, false, false, false))
                 p.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, time, 1, false, false, false))

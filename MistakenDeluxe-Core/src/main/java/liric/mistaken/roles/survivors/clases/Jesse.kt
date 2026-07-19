@@ -51,7 +51,7 @@ class Jesse : Survivor(
 
     private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
         val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(mm.deserialize(msg))
+        if (!msg.isNullOrEmpty()) player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
 
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_PLAYER_ATTACK_SWEEP")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
@@ -81,7 +81,7 @@ class Jesse : Survivor(
             if (key == "skill2") meta.persistentDataContainer.set(MELEE_PUNCH_KEY, PersistentDataType.BYTE, 1.toByte())
 
             langInfo.getString("$pathBase.skill_names.$key")?.let {
-                meta.displayName(mm.deserialize(it))
+                meta.displayName(pumpking.lib.color.ColorTranslator.translate(it))
             }
             item.itemMeta = meta
 

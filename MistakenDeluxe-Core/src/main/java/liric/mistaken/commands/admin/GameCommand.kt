@@ -32,7 +32,7 @@ object GameCommand {
 
                                 val session = plugin.sessionManager.activeSessions[id]
                                 if (session == null) {
-                                    player.sendMessage(plugin.mm.deserialize("<red>No existe ninguna partida con el ID: $id"))
+                                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No existe ninguna partida con el ID: $id"))
                                     return@executes 0
                                 }
 
@@ -49,9 +49,9 @@ object GameCommand {
 
                                 if (spawn != null) {
                                     player.teleportAsync(spawn)
-                                    player.sendMessage(plugin.mm.deserialize("<green>Teletransportado a la partida <yellow>$id</yellow> (<white>${session.currentMapName}</white>)"))
+                                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Teletransportado a la partida <yellow>$id</yellow> (<white>${session.currentMapName}</white>)"))
                                 } else {
-                                    player.sendMessage(plugin.mm.deserialize("<yellow>Te uniste a la sesión, pero el mapa aún no tiene spawns configurados."))
+                                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<yellow>Te uniste a la sesión, pero el mapa aún no tiene spawns configurados."))
                                 }
 
                                 Command.SINGLE_SUCCESS

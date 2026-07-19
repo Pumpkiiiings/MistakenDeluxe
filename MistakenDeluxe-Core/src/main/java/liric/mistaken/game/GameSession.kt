@@ -51,7 +51,7 @@ class GameSession(
 
     init {
         loopTask.start()
-        plugin.componentLogger.info(plugin.mm.deserialize("[INFO] [Session] Session $id started."))
+        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[INFO] [Session] Session $id started."))
     }
 
     // --- MÉTODOS DE JUGADORES ---
@@ -91,7 +91,7 @@ class GameSession(
         snapshot.forEach { plugin.sessionManager.leaveSession(it) }
         players.clear()       // defensive clear for any UUIDs whose Player was offline
         changedBlocks.clear()
-        plugin.componentLogger.info(plugin.mm.deserialize("[INFO] [Session] Session $id destroyed."))
+        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[INFO] [Session] Session $id destroyed."))
     }
 }
 

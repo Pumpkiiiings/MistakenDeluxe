@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -260,13 +260,13 @@ class Sowoul : CoreKiller(
         val target = player.world.getNearbyPlayers(player.location, 25.0).firstOrNull { isValidTarget(player, it) }
 
         if (target == null) {
-            player.sendActionBar(mm.deserialize("<red>Nadie en tu rango de visiÃ³n. Se gastÃ³ la habilidad."))
+            player.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<red>Nadie en tu rango de visión. Se gastó la habilidad."))
             return
         }
 
         player.playSound(player.location, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1.5f, 0.5f)
         target.playSound(target.location, Sound.ENTITY_ENDERMAN_STARE, 1.5f, 0.1f)
-        target.sendActionBar(mm.deserialize("<dark_purple><b>Â¡UNA MANO MÃGICA TE HA ATRAPADO!</b>"))
+        target.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<dark_purple><b>¡UNA MANO MÁGICA TE HA ATRAPADO!</b>"))
 
         val manoDisplay = target.world.spawn(target.location.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) { bd ->
             bd.block = Material.PURPUR_PILLAR.createBlockData()
@@ -308,20 +308,20 @@ class Sowoul : CoreKiller(
         }, null, 1L, 1L)
     }
 
-    // --- ðŸ’€ FINISHERS: EFECTOS DE ASESINATO ALEATORIOS ---
+    // --- 💀 FINISHERS: EFECTOS DE ASESINATO ALEATORIOS ---
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onSowoulKill(event: EntityDamageByEntityEvent) {
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        // ðŸ”¥ MULTIARENA FIX: Obtenemos la sesiÃ³n del atacante
+        // 🔥 MULTIARENA FIX: Obtenemos la sesión del atacante
         val session = plugin.sessionManager.getSession(attacker) ?: return
 
         // Usamos "session" en lugar de "plugin.gameSession"
         if (session.isKiller(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
 
-            // Verificamos si la vÃ­ctima ya es espectador en esta arena
+            // Verificamos si la víctima ya es espectador en esta arena
             if (plugin.spectatorManager.isSpectator(victim)) {
                 val now = System.currentTimeMillis()
 
@@ -422,7 +422,7 @@ class Sowoul : CoreKiller(
             else "asesinos.sowoul.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {

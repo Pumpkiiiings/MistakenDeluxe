@@ -1,4 +1,4 @@
-﻿package liric.mistaken.commands.game
+package liric.mistaken.commands.game
 
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.StringArgumentType
@@ -38,7 +38,7 @@ object VoteCommand {
 
                         val session = plugin.sessionManager.getSession(player)
                         if (session == null) {
-                            player.sendMessage(plugin.mm.deserialize("<red>No estás en ninguna partida activa para votar."))
+                            player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No est�s en ninguna partida activa para votar."))
                             return@executes 0
                         }
 

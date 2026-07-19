@@ -30,13 +30,13 @@ object JoinCommand {
                 if (serverMode == "NETWORK_LOBBY") {
                     // 🔥 MODO VELOCITY: Lo mandamos al servidor de arenas
                     val arenaServer = plugin.config.getString("proxy-arena-server", "arenas") ?: "arenas"
-                    player.sendMessage(plugin.mm.deserialize("<green>Conectando al servidor de juegos..."))
+                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Conectando al servidor de juegos..."))
                     BungeeUtils.sendToServer(plugin, player, arenaServer)
                 } else {
                     // 🔥 MODO MULTIARENA LOCAL: Lo metemos a una sesión de cristal (Pre-Lobby)
                     val currentSession = plugin.sessionManager.getSession(player)
                     if (currentSession != null) {
-                        player.sendMessage(plugin.mm.deserialize("<red>Ya estás dentro de una partida."))
+                        player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Ya estás dentro de una partida."))
                         return@executes 0
                     }
 
@@ -61,7 +61,7 @@ object JoinCommand {
                         }
                     }
 
-                    player.sendMessage(plugin.mm.deserialize("<green>¡Te has unido a la partida! <gray>[${targetSession.id}]"))
+                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>¡Te has unido a la partida! <gray>[${targetSession.id}]"))
 
                     // Revisar si ya son suficientes para arrancar el contador
                     val minPlayers = plugin.config.getInt("settings.min-players", 2)

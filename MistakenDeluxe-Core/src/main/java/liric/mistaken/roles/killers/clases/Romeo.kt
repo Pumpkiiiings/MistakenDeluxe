@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
@@ -40,7 +40,7 @@ import kotlin.math.sin
 class Romeo : CoreKiller(
     "romeo",
     pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.romeo.nombre", "killers_info")
-), Listener { // ðŸ”¥ Agregado Listener para los Finishers
+), Listener { // 🔥 Agregado Listener para los Finishers
 
     private val pathBase = "asesinos.romeo"
     private val orbitadores = ConcurrentHashMap<UUID, BlockDisplay>()
@@ -91,7 +91,7 @@ class Romeo : CoreKiller(
         }
     }
 
-    // --- ðŸ’€ FINISHERS: EFECTOS DE ASESINATO ALEATORIOS DE ADMIN ---
+    // --- 💀 FINISHERS: EFECTOS DE ASESINATO ALEATORIOS DE ADMIN ---
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onRomeoKill(event: EntityDamageByEntityEvent) {
@@ -100,7 +100,7 @@ class Romeo : CoreKiller(
 
         val session = plugin.sessionManager.getSession(attacker) ?: return
         if (session.isKiller(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
-            // Verificamos que la vÃ­ctima haya muerto (GameMode cambiado por CombatManager)
+            // Verificamos que la víctima haya muerto (GameMode cambiado por CombatManager)
             if (victim.gameMode == GameMode.SPECTATOR) {
                 val now = System.currentTimeMillis()
                 if (now - lastKillEffect.getOrDefault(victim.uniqueId, 0L) > 2000L) {
@@ -117,10 +117,10 @@ class Romeo : CoreKiller(
 
         when (effectType) {
             0 -> {
-                // EFECTO 1: //SET 0 (BORRADO DE CÃ“DIGO)
+                // EFECTO 1: //SET 0 (BORRADO DE CÓDIGO)
                 world.playSound(loc, Sound.BLOCK_BEACON_DEACTIVATE, 1.5f, 0.5f)
 
-                // CÃ¡rcel de cristal rojo glitch
+                // Cárcel de cristal rojo glitch
                 val jail = world.spawn(loc.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) {
                     it.block = Material.RED_STAINED_GLASS.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-1f, -1f, -1f), Quaternionf(), JomlVector3f(2f, 2f, 2f), Quaternionf())
@@ -140,7 +140,7 @@ class Romeo : CoreKiller(
                 val block = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), dropLoc) {
                     it.block = Material.COMMAND_BLOCK.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-1.5f, -1.5f, -1.5f), Quaternionf(), JomlVector3f(3f, 3f, 3f), Quaternionf())
-                    it.teleportDuration = 10 // Cae sÃºper rÃ¡pido
+                    it.teleportDuration = 10 // Cae súper rápido
                 }
 
                 // Lo hacemos caer al suelo
@@ -159,7 +159,7 @@ class Romeo : CoreKiller(
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ -> block.remove() }, 30L)
             }
             2 -> {
-                // EFECTO 3: ASCENSIÃ“N A LA TERMINAL
+                // EFECTO 3: ASCENSIÓN A LA TERMINAL
                 world.playSound(loc, Sound.BLOCK_PORTAL_TRIGGER, 0.5f, 2f)
                 val star = world.spawn(loc.clone().add(0.0, 0.5, 0.0), ItemDisplay::class.java) {
                     it.setItemStack(ItemStack(Material.NETHER_STAR))
@@ -322,7 +322,7 @@ class Romeo : CoreKiller(
             else "asesinos.romeo.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Minty: El Survivor LicÃ¡ntropo.
+ * Minty: El Survivor Licántropo.
  * Rol: Control de Masas (CC) y Huida.
  * FIX: Null-Safety en activeTasks.add()
  */
@@ -95,7 +95,7 @@ class Minty : Survivor(
             player.world.spawnParticle(Particle.CLOUD, player.location, 2, 0.2, 0.1, 0.2, 0.05)
         }, null, 1L, 5L)
 
-        // SOLUCIÃ“N AL ERROR: Guardar solo si la tarea no es nula
+        // SOLUCIÓN AL ERROR: Guardar solo si la tarea no es nula
         task?.let { activeTasks.add(it) }
 
         // Cancelar a los 5 segundos
@@ -122,7 +122,7 @@ class Minty : Survivor(
         var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) {
             msg = msg.replace("<prefix>", "", true).replace("%prefix%", "", true).trim()
-            player.sendMessage(mm.deserialize(msg))
+            player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
         }
         val soundName = mech.getString("$pathBase.items.${key}_sound", "UI_BUTTON_CLICK")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
@@ -138,7 +138,7 @@ class Minty : Survivor(
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
             langConfig.getString("skill_names.$key")?.let {
-                item.editMeta { m -> m.displayName(mm.deserialize(it)) }
+                item.editMeta { m -> m.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
             inv.setItem(slot, item)
         }

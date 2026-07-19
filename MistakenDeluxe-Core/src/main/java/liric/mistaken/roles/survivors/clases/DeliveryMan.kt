@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -18,8 +18,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * DeliveryMan: Soporte tÃ¡ctico y control de Ã¡rea.
- * OPTIMIZADO: SeparaciÃ³n MecÃ¡nica/Info + Schedulers.
+ * DeliveryMan: Soporte táctico y control de área.
+ * OPTIMIZADO: Separación Mecánica/Info + Schedulers.
  */
 class DeliveryMan : Survivor(
     "repartidor",
@@ -76,7 +76,7 @@ class DeliveryMan : Survivor(
         var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) {
             msg = msg.replace("<prefix>", "", true).replace("%prefix%", "", true).trim()
-            player.sendMessage(mm.deserialize(msg))
+            player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
         }
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_GENERIC_EAT")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
@@ -92,7 +92,7 @@ class DeliveryMan : Survivor(
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
             langConfig.getString("skill_names.$key")?.let {
-                item.editMeta { m -> m.displayName(mm.deserialize(it)) }
+                item.editMeta { m -> m.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
             inv.setItem(slot, item)
         }

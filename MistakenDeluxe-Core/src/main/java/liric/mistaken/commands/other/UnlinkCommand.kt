@@ -31,7 +31,7 @@ object UnlinkCommand {
                         val sender = ctx.source.sender
                         val targetName = StringArgumentType.getString(ctx, "target")
 
-                        sender.sendMessage(mm.deserialize("<gray>Procesando desvinculación para <yellow>$targetName</yellow>...</gray>"))
+                        sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<gray>Procesando desvinculación para <yellow>$targetName</yellow>...</gray>"))
 
                         CoroutineScope(Dispatchers.IO).launch {
                             val sql = "UPDATE discord_links SET discord_id = NULL, code = NULL WHERE username = ?;"
@@ -42,15 +42,15 @@ object UnlinkCommand {
                                         val rowsAffected = stmt.executeUpdate()
 
                                         if (rowsAffected > 0) {
-                                            sender.sendMessage(mm.deserialize("<newline><green>✅ ¡Vínculo eliminado!</green>"))
-                                            sender.sendMessage(mm.deserialize("<gray>El jugador <white>$targetName</white> ya puede usar <aqua>/link</aqua> de nuevo.<newline>"))
+                                            sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<newline><green>✅ ¡Vínculo eliminado!</green>"))
+                                            sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<gray>El jugador <white>$targetName</white> ya puede usar <aqua>/link</aqua> de nuevo.<newline>"))
                                         } else {
-                                            sender.sendMessage(mm.deserialize("<red>❌ No se encontró a <white>$targetName</white> en la base de datos."))
+                                            sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>❌ No se encontró a <white>$targetName</white> en la base de datos."))
                                         }
                                     }
                                 }
                             } catch (e: Exception) {
-                                sender.sendMessage(mm.deserialize("<red><bold>[!]</bold> Error crítico de DB. Revisa la consola."))
+                                sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><bold>[!]</bold> Error crítico de DB. Revisa la consola."))
                                 e.printStackTrace()
                             }
                         }

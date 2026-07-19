@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -17,8 +17,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Civilian: La clase balanceada y versÃ¡til.
- * OPTIMIZADO: SeparaciÃ³n MecÃ¡nica/Info + Schedulers.
+ * Civilian: La clase balanceada y versátil.
+ * OPTIMIZADO: Separación Mecánica/Info + Schedulers.
  */
 class Civilian : Survivor(
     "civil",
@@ -76,7 +76,7 @@ class Civilian : Survivor(
         var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) {
             msg = msg.replace("<prefix>", "", true).replace("%prefix%", "", true).trim()
-            player.sendMessage(mm.deserialize(msg))
+            player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
         }
         val soundName = mech.getString("$pathBase.items.${key}_sound", "UI_BUTTON_CLICK")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
@@ -92,7 +92,7 @@ class Civilian : Survivor(
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
             langConfig.getString("skill_names.$key")?.let {
-                item.editMeta { m -> m.displayName(mm.deserialize(it)) }
+                item.editMeta { m -> m.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
             inv.setItem(slot, item)
         }
@@ -122,7 +122,7 @@ class Civilian : Survivor(
 
         val task = player.scheduler.runDelayed(plugin, {
             if (player.isOnline) {
-                mensajeFin?.let { player.sendMessage(mm.deserialize(it)) }
+                mensajeFin?.let { player.sendMessage(pumpking.lib.color.ColorTranslator.translate(it)) }
                 player.playSound(player.location, Sound.BLOCK_BEACON_DEACTIVATE, 0.5f, 1.5f)
             }
         }, null, 100L)

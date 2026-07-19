@@ -20,11 +20,11 @@ class BendyProfile : CinematicProfile {
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<black><bold>LA TINTA LLAMA</bold>"), plugin.mm.deserialize("<dark_gray>Él ha sido liberado..."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<black><bold>LA TINTA LLAMA</bold>"), pumpking.lib.color.ColorTranslator.translate("<dark_gray>Él ha sido liberado..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<black><bold>CONSUMIDOS</bold>"), plugin.mm.deserialize("<dark_gray>El estudio reclamó lo que es suyo."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<black><bold>CONSUMIDOS</bold>"), pumpking.lib.color.ColorTranslator.translate("<dark_gray>El estudio reclamó lo que es suyo."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

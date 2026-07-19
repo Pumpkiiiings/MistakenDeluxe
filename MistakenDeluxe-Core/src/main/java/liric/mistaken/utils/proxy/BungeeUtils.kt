@@ -20,7 +20,7 @@ object BungeeUtils {
             }, null)
 
         } catch (e: Exception) {
-            plugin.componentLogger.error(plugin.mm.deserialize("[ERROR] [Proxy] Failed to send ${player.name} to proxy: ${e.message}"))
+            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("[ERROR] [Proxy] Failed to send ${player.name} to proxy: ${e.message}"))
         }
     }
 }

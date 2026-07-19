@@ -98,7 +98,7 @@ class Villager : Survivor(
 
     private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
         var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(mm.deserialize(msg))
+        if (!msg.isNullOrEmpty()) player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
 
         // Sonido por defecto "Hrmm"
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_VILLAGER_YES")
@@ -117,7 +117,7 @@ class Villager : Survivor(
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
             langInfo.getString("$pathBase.skill_names.$key")?.let {
-                item.editMeta { m -> m.displayName(mm.deserialize(it)) }
+                item.editMeta { m -> m.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
             inv.setItem(slot, item)
         }
@@ -166,7 +166,7 @@ class Villager : Survivor(
                 victim.velocity = knockback
 
                 victim.playSound(victim.location, Sound.ENTITY_IRON_GOLEM_HURT, 1f, 1f)
-                victim.sendMessage(mm.deserialize("<red><b>[!]</b> ¡El Golem te ha rechazado!"))
+                victim.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><b>[!]</b> ¡El Golem te ha rechazado!"))
             }
         }
     }

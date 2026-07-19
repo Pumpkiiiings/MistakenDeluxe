@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
@@ -39,7 +39,7 @@ import kotlin.math.sin
 class Herobrine : CoreKiller(
     "herobrine",
     pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.herobrine.nombre", "killers_info")
-), Listener { // ðŸ”¥ Listener aÃ±adido para los Finishers
+), Listener { // 🔥 Listener añadido para los Finishers
 
     private val pathBase = "asesinos.herobrine"
     private val blockOrbiters = ConcurrentHashMap<UUID, BlockDisplay>()
@@ -87,7 +87,7 @@ class Herobrine : CoreKiller(
         playSkillEffects(player, slot)
     }
 
-    // --- ðŸ’€ FINISHERS: EFECTOS DE ASESINATO ALEATORIOS DE HEROBRINE ---
+    // --- 💀 FINISHERS: EFECTOS DE ASESINATO ALEATORIOS DE HEROBRINE ---
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onHerobrineKill(event: EntityDamageByEntityEvent) {
@@ -132,12 +132,12 @@ class Herobrine : CoreKiller(
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     cruz.remove()
                     brazoCruz.remove()
-                    // ðŸ”¥ FIX: BLOCK_CRACK -> BLOCK
+                    // 🔥 FIX: BLOCK_CRACK -> BLOCK
                     world.spawnParticle(org.bukkit.Particle.BLOCK, loc, 150, 1.0, 2.0, 1.0, Material.OBSIDIAN.createBlockData())
                 }, 30L)
             }
             1 -> {
-                // EFECTO 2: ASCENSIÃ“N FALSA (RAYO BEACON + MURCIÃ‰LAGOS)
+                // EFECTO 2: ASCENSIÓN FALSA (RAYO BEACON + MURCIÉLAGOS)
                 world.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 2f, 1f)
 
                 val beacon = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) {
@@ -167,7 +167,7 @@ class Herobrine : CoreKiller(
                 }, 25L)
             }
             2 -> {
-                // EFECTO 3: TEMPLO DEL VACÃO (MARCO DE PIEDRA Y ANTORCHAS)
+                // EFECTO 3: TEMPLO DEL VACÍO (MARCO DE PIEDRA Y ANTORCHAS)
                 world.playSound(loc, Sound.BLOCK_STONE_PLACE, 1f, 0.1f)
                 val altar = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) {
                     it.block = Material.MOSSY_COBBLESTONE.createBlockData()
@@ -181,7 +181,7 @@ class Herobrine : CoreKiller(
                 }, 10L)
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
-                    // ðŸ”¥ FIX: SMOKE_LARGE -> LARGE_SMOKE
+                    // 🔥 FIX: SMOKE_LARGE -> LARGE_SMOKE
                     world.spawnParticle(org.bukkit.Particle.LARGE_SMOKE, loc, 100, 1.5, 0.5, 1.5, 0.1)
                     world.playSound(loc, Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1f, 0.5f)
                     altar.remove()
@@ -210,7 +210,7 @@ class Herobrine : CoreKiller(
 
             val eyeLoc = player.eyeLocation.add(dir.clone().multiply(0.8))
             if (eyeLoc.block.type.isSolid) {
-                player.sendMessage(mm.deserialize("<red><b>[!]</b> Â¡Te estampaste contra el muro!"))
+                player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><b>[!]</b> ¡Te estampaste contra el muro!"))
                 repeat(3) { plugin.combatManager.takeDamage(player) }
                 player.playSound(player.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
                 task.cancel()
@@ -222,7 +222,7 @@ class Herobrine : CoreKiller(
                     hitted.add(victim.uniqueId)
                     repeat(3) { plugin.combatManager.takeDamage(player) }
                     victim.playSound(victim.location, Sound.ENTITY_WITHER_BREAK_BLOCK, 1f, 0.8f)
-                    victim.sendMessage(mm.deserialize("<red><b>[!]</b> Herobrine te ha embestido con el poder del VacÃ­o."))
+                    victim.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><b>[!]</b> Herobrine te ha embestido con el poder del Vacío."))
                 }
             }
             ticks++
@@ -321,7 +321,7 @@ class Herobrine : CoreKiller(
             else "asesinos.herobrine.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {

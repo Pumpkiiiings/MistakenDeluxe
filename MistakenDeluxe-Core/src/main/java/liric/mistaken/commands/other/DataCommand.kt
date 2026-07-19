@@ -27,17 +27,17 @@ object DataCommand {
                                 val fileName = StringArgumentType.getString(context, "file")
 
                                 if (fileName != "players.yml") {
-                                    sender.sendMessage(plugin.mm.deserialize("<red>Solo se soporta players.yml por ahora."))
+                                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Solo se soporta players.yml por ahora."))
                                     return@executes 0
                                 }
 
                                 val file = File(plugin.dataFolder, fileName)
                                 if (!file.exists()) {
-                                    sender.sendMessage(plugin.mm.deserialize("<red>No se encontró el archivo $fileName"))
+                                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No se encontró el archivo $fileName"))
                                     return@executes 0
                                 }
 
-                                sender.sendMessage(plugin.mm.deserialize("<yellow>Iniciando transferencia de datos a MySQL... Esto puede tardar unos segundos.</yellow>"))
+                                sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<yellow>Iniciando transferencia de datos a MySQL... Esto puede tardar unos segundos.</yellow>"))
 
                                 // Ejecutar asíncronamente para no congelar el servidor
                                 plugin.server.asyncScheduler.runNow(plugin) { _ ->
@@ -66,13 +66,13 @@ object DataCommand {
                                             count++
                                         }
 
-                                        sender.sendMessage(plugin.mm.deserialize("<green><bold>¡ÉXITO!</bold> Se han migrado los datos de $count jugadores a la base de datos.</green>"))
+                                        sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green><bold>¡ÉXITO!</bold> Se han migrado los datos de $count jugadores a la base de datos.</green>"))
 
                                         // Renombrar el archivo para que no se vuelva a usar por error
                                         file.renameTo(File(plugin.dataFolder, "players_OLD_BACKUP.yml"))
 
                                     } catch (e: Exception) {
-                                        sender.sendMessage(plugin.mm.deserialize("<red>Error durante la migración: ${e.message}"))
+                                        sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Error durante la migración: ${e.message}"))
                                         e.printStackTrace()
                                     }
                                 }

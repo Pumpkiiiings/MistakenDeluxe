@@ -20,11 +20,11 @@ class DevestoProfile : CinematicProfile {
     override val isFloating: Boolean = true
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<dark_purple><bold>[F3X]</bold>"), plugin.mm.deserialize("<gray>Cargando herramientas de construcción..."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_purple><bold>[F3X]</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray>Cargando herramientas de construcción..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<dark_purple><bold>//SET 0</bold>"), plugin.mm.deserialize("<gray>Borrado exitoso."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_purple><bold>//SET 0</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray>Borrado exitoso."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

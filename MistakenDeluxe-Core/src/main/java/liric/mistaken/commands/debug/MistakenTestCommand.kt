@@ -199,8 +199,8 @@ object MistakenTestCommand {
 
                 p.showTitle(
                     Title.title(
-                    plugin.mm.deserialize("<dark_red><bold>APOCALIPSIS EXE"),
-                    plugin.mm.deserialize("<red>7 ENTES HAN APARECIDO. No sobrevivirás...")
+                    pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>APOCALIPSIS EXE"),
+                    pumpking.lib.color.ColorTranslator.translate("<red>7 ENTES HAN APARECIDO. No sobrevivirás...")
                 ))
                 1
             }

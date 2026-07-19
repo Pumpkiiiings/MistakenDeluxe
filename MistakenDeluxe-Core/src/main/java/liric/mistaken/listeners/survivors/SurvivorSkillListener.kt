@@ -1,4 +1,4 @@
-﻿package liric.mistaken.listeners.survivors
+package liric.mistaken.listeners.survivors
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * [LIRIC-MISTAKEN 2.0]
  * SurvivorHabilidadListener: Adaptado para MULTIARENA / VELOCITY.
- * FIX: Ahora detecta la sesiï¿½n individual de cada jugador para procesar sus habilidades.
+ * FIX: Ahora detecta la sesi�n individual de cada jugador para procesar sus habilidades.
  */
 class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
 
@@ -59,7 +59,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         if (event.hand != EquipmentSlot.HAND) return
         val player = event.player
 
-        // ?? MULTIARENA: Buscamos la sesiï¿½n del jugador
+        // ?? MULTIARENA: Buscamos la sesi�n del jugador
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
 
@@ -70,7 +70,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         val slot = player.inventory.heldItemSlot
         if (slot > 2) return
 
-        // Verifica que NO sea el asesino de SU sesiï¿½n
+        // Verifica que NO sea el asesino de SU sesi�n
         if (session.isKiller(player.uniqueId)) return
 
         val clase = plugin.supervivienteManager.getSurvivorClass(player) ?: return
@@ -86,7 +86,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
                 clase.useSkill(player, slot)
             }
             Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> {
-                // Comandante Teto dispara su Revï¿½lver con Click Izquierdo en el Slot 0
+                // Comandante Teto dispara su Rev�lver con Click Izquierdo en el Slot 0
                 if (clase is KasaneTeto && slot == 0) {
                     event.isCancelled = true
                     clase.useSkill(player, slot)
@@ -105,11 +105,11 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        // ?? MULTIARENA: Buscamos la sesiï¿½n del atacante
+        // ?? MULTIARENA: Buscamos la sesi�n del atacante
         val session = plugin.sessionManager.getSession(attacker) ?: return
         if (session.currentState != GameState.INGAME) return
 
-        // Reglas de equipo: El atacante debe ser humano y la vï¿½ctima asesino en la MISMA sesiï¿½n
+        // Reglas de equipo: El atacante debe ser humano y la v�ctima asesino en la MISMA sesi�n
         if (session.isKiller(attacker.uniqueId)) return
         if (!session.isKiller(victim.uniqueId)) return
 
@@ -126,18 +126,18 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
             val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("supervivientes.raincoatkid.items.skill3_cooldown", 40)
             if (!clase.checkCooldown(attacker, 2, cooldownTime)) {
                 clase.aplicarGolpePalo(victim)
-                attacker.sendMessage(plugin.mm.deserialize("<green><bold>ï¿½BAM!</bold> <gray>Killer aturdido."))
+                attacker.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green><bold>�BAM!</bold> <gray>Killer aturdido."))
                 attacker.playSound(attacker.location, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.5f, 1.2f)
             }
             return
         }
 
-        // 2. Jesse (Puï¿½etazo)
+        // 2. Jesse (Pu�etazo)
         if (pdc.has(JESSE_PUNCH_KEY, PersistentDataType.BYTE) && clase is Jesse) {
             val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("supervivientes.jesse.items.skill2_cooldown", 15)
             if (!clase.checkCooldown(attacker, 1, cooldownTime)) {
                 clase.aplicarGolpePuno(victim)
-                attacker.sendMessage(plugin.mm.deserialize("<gold><b>ï¿½TOMA ESO!</b></gold>"))
+                attacker.sendMessage(pumpking.lib.color.ColorTranslator.translate("<gold><b>�TOMA ESO!</b></gold>"))
             }
             return
         }
@@ -149,7 +149,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         val victim = event.hitEntity as? Player ?: return
         val pdc = snowball.persistentDataContainer
 
-        // ?? MULTIARENA: Buscamos la sesiï¿½n de la vï¿½ctima para validar el rol
+        // ?? MULTIARENA: Buscamos la sesi�n de la v�ctima para validar el rol
         val session = plugin.sessionManager.getSession(victim) ?: return
 
         if (victim.gameMode != GameMode.SURVIVAL || victim.isInvisible) return
@@ -188,7 +188,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1))
                 victim.world.playSound(victim.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                victim.sendMessage(plugin.mm.deserialize("<green>ï¿½Ooh! ï¿½Una esmeralda! (Te has distraï¿½do)"))
+                victim.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>�Ooh! �Una esmeralda! (Te has distra�do)"))
             }
             return
         }

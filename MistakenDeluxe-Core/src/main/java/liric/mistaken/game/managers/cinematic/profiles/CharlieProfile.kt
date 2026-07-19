@@ -20,11 +20,11 @@ class CharlieProfile : CinematicProfile {
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<gold>CAÍDO DEL CIELO"), plugin.mm.deserialize("<red>Bienvenido a mi infierno."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<gold>CAÍDO DEL CIELO"), pumpking.lib.color.ColorTranslator.translate("<red>Bienvenido a mi infierno."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<dark_red><bold>CENIZAS</bold>"), plugin.mm.deserialize("<gold>¿Es este el fin de Charlie?"))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>CENIZAS</bold>"), pumpking.lib.color.ColorTranslator.translate("<gold>¿Es este el fin de Charlie?"))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

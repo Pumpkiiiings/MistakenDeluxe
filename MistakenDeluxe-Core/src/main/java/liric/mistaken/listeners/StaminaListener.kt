@@ -46,7 +46,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
         exhaustionEffect = PotionEffect(PotionEffectType.SLOWNESS, 80, slownessLevel, false, false, true)
 
         val rawExhausted = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "stamina.exhausted", "<red><bold>¡AGOTADO!</bold></red>")
-        exhaustedMsg = mm.deserialize(rawExhausted)
+        exhaustedMsg = pumpking.lib.color.ColorTranslator.translate(rawExhausted)
     }
 
     private fun startStaminaTask() {

@@ -18,9 +18,9 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
         try {
             dataSource = HikariDataSource(config)
             createTables()
-            plugin.componentLogger.info(plugin.mm.deserialize("[SUCCESS] [Database] Connection established (${this::class.simpleName})."))
+            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[SUCCESS] [Database] Connection established (${this::class.simpleName})."))
         } catch (e: Exception) {
-            plugin.componentLogger.error(plugin.mm.deserialize("[ERROR] [Database] Connection failed: ${e.message}"))
+            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("[ERROR] [Database] Connection failed: ${e.message}"))
         }
     }
 
@@ -97,7 +97,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
                 }
             }
         } catch (e: SQLException) {
-            plugin.componentLogger.error(plugin.mm.deserialize("[ERROR] [Database] Failed to create tables: ${e.message}"))
+            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("[ERROR] [Database] Failed to create tables: ${e.message}"))
         }
     }
 
@@ -138,6 +138,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
     }
 
     override fun saveStats(uuid: String, stats: PlayerStats) {
+        if (!::dataSource.isInitialized || dataSource.isClosed) return
         val query = """
             UPDATE stats SET
                 wins_survivor = ?, wins_assassin = ?,
@@ -195,6 +196,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
         uuid: String, lang: String, killersOwned: String, killerSelected: String,
         survOwned: String, survSelected: String, nick: String, skin: String
     ) {
+        if (!::dataSource.isInitialized || dataSource.isClosed) return
         try {
             connection.use { conn ->
                 conn.prepareStatement(upsertPlayerDataQuery).use { ps ->

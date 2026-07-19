@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -104,7 +104,7 @@ class CharlieInferno : CoreKiller(
             else "asesinos.charlie.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -154,10 +154,10 @@ class CharlieInferno : CoreKiller(
         Bukkit.getOnlinePlayers().forEach { it.stopSound(sonidoId, SoundCategory.RECORDS) }
     }
 
-    // --- ðŸ”¥ HABILIDADES ---
+    // --- 🔥 HABILIDADES ---
 
     private fun habilidadInfierno(player: Player) {
-        // ðŸ”¥ HITBOX: ExplosiÃ³n de Fuego
+        // 🔥 HITBOX: Explosión de Fuego
         HitboxVisualizer.drawInstantHitbox(plugin, player.location, 7.5, 7.5, 7.5, 10L, Material.ORANGE_STAINED_GLASS)
 
         player.world.getNearbyPlayers(player.location, 7.5).forEach { target ->
@@ -173,7 +173,7 @@ class CharlieInferno : CoreKiller(
     }
 
     private fun habilidadDemonRun(player: Player) {
-        // ðŸ”¥ HITBOX: Rango de Marcado
+        // 🔥 HITBOX: Rango de Marcado
         HitboxVisualizer.drawInstantHitbox(plugin, player.location, 10.0, 10.0, 10.0, 20L, Material.GRAY_STAINED_GLASS)
 
         val targets = player.world.getNearbyPlayers(player.location, 10.0).toMutableList()
@@ -197,7 +197,7 @@ class CharlieInferno : CoreKiller(
         }
         val dir = player.location.direction.multiply(1.2)
 
-        // ðŸ”¥ HITBOX: Proyectil
+        // 🔥 HITBOX: Proyectil
         val hitbox = HitboxVisualizer.createHitbox(player.eyeLocation, 1.0, 1.0, 1.0, Material.LIGHT_BLUE_STAINED_GLASS)
 
         var ticks = 0
@@ -247,7 +247,7 @@ class CharlieInferno : CoreKiller(
             plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
                 locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
 
-                // ðŸ”¥ HITBOX: Diente individual
+                // 🔥 HITBOX: Diente individual
                 HitboxVisualizer.drawInstantHitbox(plugin, locToSpawn, 1.5, 1.5, 1.5, 5L, Material.RED_STAINED_GLASS)
 
                 locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
@@ -260,7 +260,7 @@ class CharlieInferno : CoreKiller(
         }
     }
 
-    // --- ðŸš€ VISUALES ---
+    // --- 🚀 VISUALES ---
 
     override fun showPhysicalTrail(player: Player) {
         val uuid = player.uniqueId

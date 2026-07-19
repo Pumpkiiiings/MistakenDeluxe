@@ -50,6 +50,6 @@ class CommandRegistry(private val plugin: Mistaken) {
             registrar.register("espectear", "Entrar al modo espectador", listOf("spectate"), EspectearCommand(plugin))
         }
 
-        plugin.componentLogger.info(plugin.mm.deserialize("[SUCCESS] [CommandRegistry] Commands registered successfully."))
+        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[SUCCESS] [CommandRegistry] Commands registered successfully."))
     }
 }

@@ -111,18 +111,18 @@ class ScoreboardManager(private val plugin: Mistaken) {
             }
 
             // Convert to legacy string so the existing YAML format (MiniMessage) is preserved
-            result.add(legacy.serialize(mm.deserialize(formatted)))
+            result.add(legacy.serialize(pumpking.lib.color.ColorTranslator.translate(formatted)))
         }
 
         return result
     }
 
     private fun getKillerDisplayStrings(ids: Set<java.util.UUID>): List<String> {
-        if (ids.isEmpty()) return listOf(legacy.serialize(mm.deserialize(" <gray>Ninguno")))
+        if (ids.isEmpty()) return listOf(legacy.serialize(pumpking.lib.color.ColorTranslator.translate(" <gray>Ninguno")))
         return ids.mapNotNull { id ->
             val killer = plugin.server.getPlayer(id)
             if (killer != null && killer.isOnline)
-                legacy.serialize(mm.deserialize(" <white>• <red>${killer.name}"))
+                legacy.serialize(pumpking.lib.color.ColorTranslator.translate(" <white>• <red>${killer.name}"))
             else null
         }
     }

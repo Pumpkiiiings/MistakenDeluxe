@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.entities
+package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -27,7 +27,7 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0] - MODO TROLL SUPREMO
  * OBSERVANT 4.0: EL HERMANO MAYOR.
- * ADAPTADO: Multiarena/Velocity con tracking dinÃƒÂ¡mico y aislamiento de sesiÃƒÂ³n.
+ * ADAPTADO: Multiarena/Velocity con tracking dinÃ¡mico y aislamiento de sesiÃ³n.
  */
 class ObservantEXE(private val plugin: Mistaken) {
 
@@ -35,7 +35,7 @@ class ObservantEXE(private val plugin: Mistaken) {
     private var isRunning = true
     private var lastVictimUUID: UUID? = null
 
-    // Ã°Å¸â€Â¥ Referencia a la sesiÃƒÂ³n a la que pertenece esta entidad
+    // ðŸ”¥ Referencia a la sesiÃ³n a la que pertenece esta entidad
     private var assignedSession: GameSession? = null
 
     private val teamWhite = "ObsGlow"
@@ -46,7 +46,7 @@ class ObservantEXE(private val plugin: Mistaken) {
     private var currentState = State.BUSCANDO
 
     fun spawn(startLoc: Location) {
-        // Ã°Å¸â€Â¥ Detectamos la sesiÃƒÂ³n basada en el mundo del spawn
+        // ðŸ”¥ Detectamos la sesiÃ³n basada en el mundo del spawn
         assignedSession = plugin.sessionManager.activeSessions.values.find {
             it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
         }
@@ -57,7 +57,7 @@ class ObservantEXE(private val plugin: Mistaken) {
                 if (scoreboard.getTeam(teamWhite) == null) scoreboard.registerNewTeam(teamWhite).apply { color(NamedTextColor.WHITE) }
                 if (scoreboard.getTeam(teamRed) == null) scoreboard.registerNewTeam(teamRed).apply { color(NamedTextColor.RED) }
 
-                // --- CONSTRUCCIÃƒâ€œN MASIVA (Scale 3.5) ---
+                // --- CONSTRUCCIÃ“N MASIVA (Scale 3.5) ---
                 parts.add(createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(3.5f, 3.5f, 3.5f), Vector3f(-1.75f, 0f, -1.75f)))
                 parts.add(createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(3.8f, 3.0f, 3.0f), Vector3f(-1.9f, 0.25f, -1.5f)))
                 parts.add(createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(3.0f, 3.8f, 3.0f), Vector3f(-1.5f, -0.15f, -1.5f)))
@@ -80,8 +80,8 @@ class ObservantEXE(private val plugin: Mistaken) {
 
                 setGlowColor(NamedTextColor.WHITE)
 
-                // Ã°Å¸â€Â¥ Broadcast solo para la sesiÃƒÂ³n
-                val spawnMsg = plugin.mm.deserialize("<dark_purple><b>[!]</b> <dark_gray>EL HERMANO MAYOR HA DESPERTADO. <b>OBSERVANT</b> ESTÃƒÂ AQUÃƒÂ.</dark_gray>")
+                // ðŸ”¥ Broadcast solo para la sesiÃ³n
+                val spawnMsg = pumpking.lib.color.ColorTranslator.translate("<dark_purple><b>[!]</b> <dark_gray>EL HERMANO MAYOR HA DESPERTADO. <b>OBSERVANT</b> ESTÃ AQUÃ.</dark_gray>")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(spawnMsg) }
 
                 iniciarIA()
@@ -116,7 +116,7 @@ class ObservantEXE(private val plugin: Mistaken) {
         }
     }
 
-    // Ã°Å¸â€Â¥ Obtener el objetivo mÃƒÂ¡s cercano dentro de la sesiÃƒÂ³n asignada
+    // ðŸ”¥ Obtener el objetivo mÃ¡s cercano dentro de la sesiÃ³n asignada
     private fun getClosestTarget(): Player? {
         val bodyLoc = if (parts.isNotEmpty()) parts[0].location else return null
         val potentialTargets = if (assignedSession != null) {
@@ -172,8 +172,8 @@ class ObservantEXE(private val plugin: Mistaken) {
         var ticks = 0
         val initialTarget = getClosestTarget() ?: return
         initialTarget.showTitle(Title.title(
-            plugin.mm.deserialize("<dark_gray>Te estoy observando...</dark_gray>"),
-            plugin.mm.deserialize("<red>No te muevas.")
+            pumpking.lib.color.ColorTranslator.translate("<dark_gray>Te estoy observando...</dark_gray>"),
+            pumpking.lib.color.ColorTranslator.translate("<red>No te muevas.")
         ))
 
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
@@ -216,7 +216,7 @@ class ObservantEXE(private val plugin: Mistaken) {
 
     private fun ejecutarDobleAereo() {
         val initialTarget = getClosestTarget() ?: return
-        initialTarget.showTitle(Title.title(plugin.mm.deserialize("<dark_red>MIRA ARRIBA</dark_red>"), plugin.mm.deserialize("")))
+        initialTarget.showTitle(Title.title(pumpking.lib.color.ColorTranslator.translate("<dark_red>MIRA ARRIBA</dark_red>"), pumpking.lib.color.ColorTranslator.translate("")))
         var step = 0
         var diveCount = 0
 
@@ -260,8 +260,8 @@ class ObservantEXE(private val plugin: Mistaken) {
     private fun ejecutarAgarre() {
         val initialTarget = getClosestTarget() ?: return
         initialTarget.showTitle(Title.title(
-            plugin.mm.deserialize("<dark_purple>NO ESCAPARÃƒÂS</dark_purple>"),
-            plugin.mm.deserialize("<gray>Observant te ha atrapado...</gray>")
+            pumpking.lib.color.ColorTranslator.translate("<dark_purple>NO ESCAPARÃS</dark_purple>"),
+            pumpking.lib.color.ColorTranslator.translate("<gray>Observant te ha atrapado...</gray>")
         ))
         initialTarget.playSound(initialTarget.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.1f)
 
@@ -304,7 +304,7 @@ class ObservantEXE(private val plugin: Mistaken) {
             parts[6].block = Material.RED_CONCRETE.createBlockData()
         }
 
-        val rageMsg = plugin.mm.deserialize("<dark_red><b>[!] EL ABISMO SE HA DESBORDADO.</b>")
+        val rageMsg = pumpking.lib.color.ColorTranslator.translate("<dark_red><b>[!] EL ABISMO SE HA DESBORDADO.</b>")
         assignedSession?.getPlayers()?.forEach {
             it.sendMessage(rageMsg)
             it.playSound(it.location, Sound.ENTITY_WARDEN_ROAR, 1.5f, 0.5f)
@@ -360,7 +360,7 @@ class ObservantEXE(private val plugin: Mistaken) {
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3, false, false, true))
 
         val prefix = if (enrage) "<dark_red><b>[FURIA DESATADA]</b>" else "<dark_purple><b>[!]</b>"
-        val deathMsg = plugin.mm.deserialize("$prefix <white>${victim.name} fue atrapado por las garras de <dark_purple>OBSERVANT 4.0</dark_purple>.")
+        val deathMsg = pumpking.lib.color.ColorTranslator.translate("$prefix <white>${victim.name} fue atrapado por las garras de <dark_purple>OBSERVANT 4.0</dark_purple>.")
 
         assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
     }

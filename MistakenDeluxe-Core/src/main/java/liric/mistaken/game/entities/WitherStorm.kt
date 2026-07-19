@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.entities
+package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -24,7 +24,7 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0] - BOSS ENTITY
  * WITHER STORM: El Devorador de Mundos.
- * ADAPTADO: Multiarena/Velocity con aislamiento de sesiÃ³n y tracking dinÃ¡mico.
+ * ADAPTADO: Multiarena/Velocity con aislamiento de sesión y tracking dinámico.
  */
 class WitherStorm(private val plugin: Mistaken) {
 
@@ -32,7 +32,7 @@ class WitherStorm(private val plugin: Mistaken) {
     private var isRunning = true
     private var currentTarget: Player? = null
 
-    // ðŸ”¥ Referencia a la sesiÃ³n a la que pertenece este Boss
+    // 🔥 Referencia a la sesión a la que pertenece este Boss
     private var assignedSession: GameSession? = null
 
     private val teamPurple = "StormGlow"
@@ -50,7 +50,7 @@ class WitherStorm(private val plugin: Mistaken) {
     private var currentLocation: Location? = null
 
     fun spawn(startLoc: Location) {
-        // ðŸ”¥ Detectamos la sesiÃ³n basada en el mundo del spawn
+        // 🔥 Detectamos la sesión basada en el mundo del spawn
         assignedSession = plugin.sessionManager.activeSessions.values.find {
             it.currentMapName != "Esperando..." && it.getPlayers().any { p -> p.world == startLoc.world }
         }
@@ -67,12 +67,12 @@ class WitherStorm(private val plugin: Mistaken) {
                 // 1. Cuerpo
                 parts.add(createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(4f, 4f, 4f), bodyOffset))
 
-                // 2. NÃºcleo (Comandos)
+                // 2. Núcleo (Comandos)
                 parts.add(createPart(startLoc, Material.REPEATING_COMMAND_BLOCK, Vector3f(1.2f, 1.2f, 1.2f), coreOffset).apply {
                     brightness = Display.Brightness(15, 15)
                 })
 
-                // 3. Cabezas y Ojos (Froglights para el brillo pÃºrpura)
+                // 3. Cabezas y Ojos (Froglights para el brillo púrpura)
                 parts.add(createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(2.5f, 2.5f, 2.5f), headCenterOffset))
                 parts.add(createPart(startLoc, Material.PEARLESCENT_FROGLIGHT, Vector3f(1.8f, 0.4f, 0.2f), headCenterOffset.clone().add(Vector(0.0, 0.5, 1.3))))
 
@@ -84,8 +84,8 @@ class WitherStorm(private val plugin: Mistaken) {
 
                 parts.forEach { scoreboard.getTeam(teamPurple)?.addEntry(it.uniqueId.toString()) }
 
-                // ðŸ”¥ Broadcast solo para la sesiÃ³n
-                val msg = plugin.mm.deserialize("<gradient:#aa00aa:#000000><bold>WITHER STORM</bold></gradient> <red>ha sido invocado.")
+                // 🔥 Broadcast solo para la sesión
+                val msg = pumpking.lib.color.ColorTranslator.translate("<gradient:#aa00aa:#000000><bold>WITHER STORM</bold></gradient> <red>ha sido invocado.")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(msg) }
 
                 startLoc.world.playSound(startLoc, Sound.ENTITY_WITHER_SPAWN, 5f, 0.5f)
@@ -122,7 +122,7 @@ class WitherStorm(private val plugin: Mistaken) {
             val pivot = currentLocation ?: return@Consumer
             val session = assignedSession
 
-            // BUSCAR PRESA (Aislado por sesiÃ³n)
+            // BUSCAR PRESA (Aislado por sesión)
             if (stateTicks % 20 == 0) {
                 val potentialTargets = if (session != null) {
                     session.getPlayers().filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
@@ -192,7 +192,7 @@ class WitherStorm(private val plugin: Mistaken) {
 
         if (stateTicks % 10 == 0) pivot.world.playSound(pivot, Sound.BLOCK_BEACON_AMBIENT, 5f, 0.5f)
 
-        // SucciÃ³n de jugadores
+        // Succión de jugadores
         val session = assignedSession
         val victims = (session?.getPlayers() ?: pivot.world.players).filter {
             it.gameMode == GameMode.SURVIVAL && it.location.distanceSquared(beamStart) < 100.0 // Radio de 10 bloques
@@ -206,7 +206,7 @@ class WitherStorm(private val plugin: Mistaken) {
             if (p.location.distanceSquared(beamStart) < 12.25) { // 3.5 bloques reales
                 plugin.combatManager.takeDamage(p)
                 p.playSound(p.location, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 0.5f)
-                p.sendMessage(plugin.mm.deserialize("<dark_purple><i>EL RAYO TRACTOR TE ESTÃ CONSUMIENDO...</i></dark_purple>"))
+                p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<dark_purple><i>EL RAYO TRACTOR TE ESTÁ CONSUMIENDO...</i></dark_purple>"))
             }
         }
     }
@@ -242,7 +242,7 @@ class WitherStorm(private val plugin: Mistaken) {
                     val push = p.location.toVector().subtract(pivot.toVector()).normalize().multiply(2.5).setY(0.6)
                     p.velocity = push
                     p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
-                    p.showTitle(Title.title(plugin.mm.deserialize("<dark_purple><bold>Â¡RUUUUAAARRR!"), plugin.mm.deserialize("<gray>La tormenta brama...")))
+                    p.showTitle(Title.title(pumpking.lib.color.ColorTranslator.translate("<dark_purple><bold>¡RUUUUAAARRR!"), pumpking.lib.color.ColorTranslator.translate("<gray>La tormenta brama...")))
                 }
             }
         }
@@ -278,7 +278,7 @@ class WitherStorm(private val plugin: Mistaken) {
         }
         parts.clear()
 
-        val deathMsg = plugin.mm.deserialize("<green>Â¡La <dark_purple>Wither Storm<green> ha sido derrotada!")
+        val deathMsg = pumpking.lib.color.ColorTranslator.translate("<green>¡La <dark_purple>Wither Storm<green> ha sido derrotada!")
         assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
     }
 

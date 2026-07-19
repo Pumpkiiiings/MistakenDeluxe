@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
@@ -34,7 +34,7 @@ import java.util.function.Consumer
 
 /**
  *[LIRIC-MISTAKEN 2.0]
- * Troll: El maestro del engaÃ±o.
+ * Troll: El maestro del engaño.
  * FIX: Actualizado al constructor moderno de PlayerInfo de PacketEvents.
  */
 class Troll : Survivor(
@@ -67,7 +67,7 @@ class Troll : Survivor(
 
     private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
         val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(mm.deserialize(msg))
+        if (!msg.isNullOrEmpty()) player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_BAT_TAKEOFF")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
     }
@@ -90,7 +90,7 @@ class Troll : Survivor(
             } ?: return
 
             langInfo.getString("$pathBase.skill_names.$key")?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -110,7 +110,7 @@ class Troll : Survivor(
         player.updateInventory()
     }
 
-    // --- ðŸƒâ€â™‚ï¸ HABILIDAD 1: CLON INTELIGENTE (PAQUETES FALSOS) ---
+    // --- 🏃‍♂️ HABILIDAD 1: CLON INTELIGENTE (PAQUETES FALSOS) ---
 
     private fun invocarClonInteligente(player: Player) {
         val loc = player.location.clone()
@@ -125,7 +125,7 @@ class Troll : Survivor(
         }
 
         // 2. Crear Paquetes Base (Spawn & Metadata)
-        // ðŸ”¥ FIX: WrapperPlayServerPlayerInfoUpdate requiere ahora el enum GameMode y el display name.
+        // 🔥 FIX: WrapperPlayServerPlayerInfoUpdate requiere ahora el enum GameMode y el display name.
         val infoData = WrapperPlayServerPlayerInfoUpdate.PlayerInfo(
             profile,
             true,
@@ -176,7 +176,7 @@ class Troll : Survivor(
                 return@Consumer
             }
 
-            // FÃ­sica de IA simple
+            // Física de IA simple
             val lookAhead = currentLoc.clone().add(direction.clone().multiply(1.0))
             if (lookAhead.block.type.isSolid) {
                 // Si hay pared, salta o gira
@@ -209,7 +209,7 @@ class Troll : Survivor(
         }, null, 1L, 1L)
     }
 
-    // --- ðŸŒ HABILIDAD 2: CÃSCARA DE PLÃTANO ---
+    // --- 🍌 HABILIDAD 2: CÁSCARA DE PLÁTANO ---
 
     private fun colocarCascaraPlatano(player: Player) {
         val loc = player.location.clone()
@@ -236,16 +236,16 @@ class Troll : Survivor(
                 plugin.sessionManager.getSession(it)?.isKiller(it.uniqueId) == true
             }
             if (killer != null) {
-                // Â¡Se resbalÃ³!
+                // ¡Se resbaló!
                 killer.playSound(killer.location, Sound.ENTITY_SLIME_SQUISH, 1f, 0.5f)
                 killer.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 4))
                 killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 40, 0))
 
-                // Sacudida de cÃ¡mara fuerte y salto involuntario
+                // Sacudida de cámara fuerte y salto involuntario
                 killer.velocity = Vector(0.0, 0.6, 0.0)
                 killer.setRotation(killer.yaw + 180f, -45f)
 
-                killer.sendMessage(plugin.mm.deserialize("<yellow>Â¡Te resbalaste con una cÃ¡scara de plÃ¡tano!"))
+                killer.sendMessage(pumpking.lib.color.ColorTranslator.translate("<yellow>¡Te resbalaste con una cáscara de plátano!"))
 
                 platano.world.spawnParticle(Particle.DUST, platano.location, 10, 0.2, 0.2, 0.2, Particle.DustOptions(Color.YELLOW, 1f))
                 platano.remove()
@@ -255,7 +255,7 @@ class Troll : Survivor(
         }, null, 1L, 1L)
     }
 
-    // --- ðŸŽ HABILIDAD 3: CAJA SORPRESA ---
+    // --- 🎁 HABILIDAD 3: CAJA SORPRESA ---
 
     private fun colocarCajaSorpresa(player: Player) {
         val loc = player.location.block.location.add(0.5, 0.0, 0.5)
@@ -276,14 +276,14 @@ class Troll : Survivor(
                 plugin.sessionManager.getSession(it)?.isKiller(it.uniqueId) == true
             }
             if (killer != null) {
-                // Â¡Sorpresa!
+                // ¡Sorpresa!
                 caja.world.playSound(caja.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f)
                 caja.world.playSound(caja.location, Sound.ENTITY_WITCH_CELEBRATE, 1f, 1f)
                 caja.world.spawnParticle(Particle.EXPLOSION_EMITTER, caja.location, 1)
 
                 killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 80, 0))
                 killer.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
-                killer.sendMessage(plugin.mm.deserialize("<red><b>Â¡BOOM!</b> <gray>Â¡Era una trampa!"))
+                killer.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><b>¡BOOM!</b> <gray>¡Era una trampa!"))
 
                 caja.remove()
                 task.cancel()

@@ -25,11 +25,11 @@ class ColorAndElectricityProfile : CinematicProfile {
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<aqua>COLOR & ELECTRICITY"), plugin.mm.deserialize("<yellow>Mmm... deliciosos colores..."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<aqua>COLOR & ELECTRICITY"), pumpking.lib.color.ColorTranslator.translate("<yellow>Mmm... deliciosos colores..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<dark_red><bold>¡QUÉ HE HECHO!</bold>"), plugin.mm.deserialize("<red>M-Mi color... todo se deforma..."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>¡QUÉ HE HECHO!</bold>"), pumpking.lib.color.ColorTranslator.translate("<red>M-Mi color... todo se deforma..."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

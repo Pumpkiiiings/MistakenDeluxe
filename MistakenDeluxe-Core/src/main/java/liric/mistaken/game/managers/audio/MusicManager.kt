@@ -60,7 +60,7 @@ class MusicManager(private val plugin: Mistaken) {
             playlist.add(Track(id, duration))
         }
 
-        plugin.componentLogger.info(plugin.mm.deserialize("[INFO] [Music] Multiarena System loaded with ${playlist.size} tracks."))
+        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[INFO] [Music] Multiarena System loaded with ${playlist.size} tracks."))
     }
 
     private fun startMusicLoop() {

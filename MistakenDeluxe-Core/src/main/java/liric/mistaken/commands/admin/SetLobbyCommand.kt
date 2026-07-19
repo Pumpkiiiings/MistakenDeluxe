@@ -36,7 +36,7 @@ object SetLobbyCommand {
 
                 // Validación de ejecutor técnico
                 if (player == null) {
-                    sender.sendMessage(mm.deserialize("<red>Este comando solo puede ser ejecutado por jugadores."))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Este comando solo puede ser ejecutado por jugadores."))
                     return@executes 0 // Retornamos 0 para indicar fallo/no acción
                 }
 
@@ -54,7 +54,7 @@ object SetLobbyCommand {
 
                 // 6. Registro de Auditoría (Logger de Paper)
                 // Usamos Templates de Kotlin ($) para máxima legibilidad y rendimiento
-                plugin.componentLogger.info(mm.deserialize(
+                plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate(
                     "<gray>[Mistaken]</gray> <green>Lobby actualizado en </green><white>${player.world.name}</white><green> por </green><white>${player.name}</white>"
                 ))
 

@@ -66,7 +66,7 @@ class Axolotl(private val plugin: Mistaken) {
                 }
 
                 // 🔥 Broadcast solo para la sesión
-                val spawnMsg = plugin.mm.deserialize("<newline><aqua><b>[!]</b> <white>Algo enorme ha salido del agua... <pink><b>AXOLOTL.EXE</b>")
+                val spawnMsg = pumpking.lib.color.ColorTranslator.translate("<newline><aqua><b>[!]</b> <white>Algo enorme ha salido del agua... <pink><b>AXOLOTL.EXE</b>")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(spawnMsg) }
 
                 isRunning = true
@@ -138,7 +138,7 @@ class Axolotl(private val plugin: Mistaken) {
                 2 -> { // Advertencia
                     if (ticks == 20) {
                         target.playSound(target.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.8f)
-                        target.showTitle(Title.title(plugin.mm.deserialize("<pink><b>AJOLOTE HAMBRIENTO"), plugin.mm.deserialize("<gray>¡Va a morder!")))
+                        target.showTitle(Title.title(pumpking.lib.color.ColorTranslator.translate("<pink><b>AJOLOTE HAMBRIENTO"), pumpking.lib.color.ColorTranslator.translate("<gray>¡Va a morder!")))
                     }
                     if (ticks >= 44) {
                         fase = 3
@@ -178,7 +178,7 @@ class Axolotl(private val plugin: Mistaken) {
                     if (ticks == 0) {
                         setGlowColor(NamedTextColor.RED)
                         target.playSound(target.location, Sound.ENTITY_ELDER_GUARDIAN_DEATH, 1.5f, 0.5f)
-                        target.sendMessage(plugin.mm.deserialize("<dark_red><b>[!] EL AJOLOTE SE HA VUELTO AGRESIVO"))
+                        target.sendMessage(pumpking.lib.color.ColorTranslator.translate("<dark_red><b>[!] EL AJOLOTE SE HA VUELTO AGRESIVO"))
                     }
 
                     if (ticks > 20 && ticks < 120) {
@@ -220,7 +220,7 @@ class Axolotl(private val plugin: Mistaken) {
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 4, false, false, true))
 
         val prefix = if (enrage) "<dark_red><b>[DEPREDADOR]</b>" else "<pink><b>[!]</b>"
-        val deathMsg = plugin.mm.deserialize("$prefix <white>${victim.name} fue devorado por <pink>AXOLOTL.EXE")
+        val deathMsg = pumpking.lib.color.ColorTranslator.translate("$prefix <white>${victim.name} fue devorado por <pink>AXOLOTL.EXE")
 
         assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
     }

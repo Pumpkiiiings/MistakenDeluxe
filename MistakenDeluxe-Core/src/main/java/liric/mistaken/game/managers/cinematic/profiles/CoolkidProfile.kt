@@ -23,11 +23,11 @@ class CoolkidProfile : CinematicProfile {
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<green><bold>CONNECTION ESTABLISHED</bold>"), plugin.mm.deserialize("<gray>Inyectando paquetes malignos..."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<green><bold>CONNECTION ESTABLISHED</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray>Inyectando paquetes malignos..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<green><bold>CONNECTION TERMINATED</bold>"), plugin.mm.deserialize("<gray>El servidor ha sido desconectado."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<green><bold>CONNECTION TERMINATED</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray>El servidor ha sido desconectado."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

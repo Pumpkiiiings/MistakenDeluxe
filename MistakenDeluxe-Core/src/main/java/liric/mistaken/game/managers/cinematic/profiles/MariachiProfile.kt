@@ -21,11 +21,11 @@ class MariachiProfile : CinematicProfile {
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<red><bold>EL CHARRO NEGRO</bold>"), plugin.mm.deserialize("<gold>¡Ay ay ay! Canta y no llores..."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<red><bold>EL CHARRO NEGRO</bold>"), pumpking.lib.color.ColorTranslator.translate("<gold>¡Ay ay ay! Canta y no llores..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<gold><bold>¡SALUD!</bold>"), plugin.mm.deserialize("<yellow>*Toma un trago de tequila*"))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<gold><bold>¡SALUD!</bold>"), pumpking.lib.color.ColorTranslator.translate("<yellow>*Toma un trago de tequila*"))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

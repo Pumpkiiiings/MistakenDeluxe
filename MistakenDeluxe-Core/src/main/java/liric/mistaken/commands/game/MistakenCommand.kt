@@ -32,7 +32,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             player?.let {
                 plugin.statsManager.incrementStat(it.uniqueId, "kills")
                 plugin.statsManager.incrementStat(it.uniqueId, "wins_survivor")
-                it.sendMessage(mm.deserialize("<red>⚡ <white>Debug: Stats inyectadas y sincronizando..."))
+                it.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>⚡ <white>Debug: Stats inyectadas y sincronizando..."))
                 it.playSound(it.location, Sound.BLOCK_ANVIL_USE, 1f, 2f)
             }
             return
@@ -40,13 +40,13 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
         // --- [CAPA DE PRIVACIDAD] ---
         if (sub !in publicSubs && !sender.hasPermission("mistaken.admin")) {
-            sender.sendMessage(mm.deserialize("<red>Unknown command. Type \"/help\" for help."))
+            sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Unknown command. Type \"/help\" for help."))
             return
         }
 
         // Bloquear tienda y stats si estamos en un servidor de juegos
         if (sub in lobbyOnlySubs && plugin.serverMode == "GAME_SERVER") {
-            sender.sendMessage(mm.deserialize("<red><b>[!]</b> <gray>Para usar este comando, debes volver al <b>Lobby Principal</b>.</gray>"))
+            sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><b>[!]</b> <gray>Para usar este comando, debes volver al <b>Lobby Principal</b>.</gray>"))
             return
         }
 
@@ -143,21 +143,21 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "setmode" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (player == null || gm == null) {
-                    sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesión para forzar un modo."))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Debes estar dentro de una sesión para forzar un modo."))
                     return
                 }
                 if (args.size < 2) {
-                    sender.sendMessage(mm.deserialize("<red>Uso: /mistaken setmode <MODO>"))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Uso: /mistaken setmode <MODO>"))
                     return
                 }
                 try {
                     val mode = MistakenMode.valueOf(args[1].uppercase())
                     gm.currentMode = mode
                     gm.modeForced = true
-                    sender.sendMessage(mm.deserialize("<green>Modo forzado a: <aqua>${mode.name} <gray>(Sesión: ${gm.id})"))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Modo forzado a: <aqua>${mode.name} <gray>(Sesión: ${gm.id})"))
                     player.playSound(player.location, Sound.BLOCK_ANVIL_USE, 1f, 1f)
                 } catch (e: Exception) {
-                    sender.sendMessage(mm.deserialize("<red>Modo inválido."))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Modo inválido."))
                 }
             }
 
@@ -179,7 +179,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 }
 
                 if (session == null) {
-                    sender.sendMessage(mm.deserialize("<red>Debes estar dentro de una sesión para iniciarla."))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Debes estar dentro de una sesión para iniciarla."))
                     return
                 }
 
@@ -197,7 +197,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "stop" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (gm == null || gm.currentState == GameState.LOBBY) {
-                    sender.sendMessage(mm.deserialize("<red>No hay ninguna partida activa en tu ubicación."))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No hay ninguna partida activa en tu ubicación."))
                 } else {
                     gm.stateController.endGame("admin.stop-broadcast", false)
                     sender.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "admin.stop-success"))
@@ -242,7 +242,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 if (player == null || args.size < 2) return
                 val clase = plugin.supervivienteManager.getClassById(args[1])
                 if (clase == null) {
-                    player.sendMessage(mm.deserialize("<red>Esa clase no existe, bro."))
+                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Esa clase no existe, bro."))
                 } else {
                     plugin.supervivienteManager.registrarSurvivor(player, clase)
                 }
@@ -256,7 +256,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     val target = Bukkit.getPlayer(args[1])
                     if (target != null) {
                         plugin.asesinoManager.removeKiller(target)
-                        sender.sendMessage(mm.deserialize("<green>Killer removido: ${target.name}"))
+                        sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Killer removido: ${target.name}"))
                     }
                 }
             }

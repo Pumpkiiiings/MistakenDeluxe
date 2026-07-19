@@ -53,7 +53,7 @@ class ObserverHUDManager(private val plugin: Mistaken) {
                 if (!ObserverHook.hasObserver(player)) continue
                 
                 if (loggedObserverPlayers.add(player.uniqueId)) {
-                    plugin.componentLogger.info(plugin.mm.deserialize("[<green>ObserverHook</green>] <white>¡El jugador <yellow>${player.name}</yellow> se ha detectado con el mod instalado!</white>"))
+                    plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[<green>ObserverHook</green>] <white>¡El jugador <yellow>${player.name}</yellow> se ha detectado con el mod instalado!</white>"))
                 }
 
                 handlePlayerState(player)

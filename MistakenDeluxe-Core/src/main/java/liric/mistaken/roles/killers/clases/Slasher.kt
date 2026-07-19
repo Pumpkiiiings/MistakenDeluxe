@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -44,7 +44,7 @@ class Slasher : CoreKiller(
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val temporaryEntities = ConcurrentHashMap.newKeySet<Entity>()
 
-    // ðŸ”¥ Sistema de sonidos sin repeticiÃ³n
+    // 🔥 Sistema de sonidos sin repetición
     private val attackSoundsQueue = ConcurrentHashMap<UUID, MutableList<Int>>()
 
     init {
@@ -106,7 +106,7 @@ class Slasher : CoreKiller(
             else "asesinos.${this.id}.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -173,7 +173,7 @@ class Slasher : CoreKiller(
         temporaryEntities.add(machete)
         val direction = player.location.direction.multiply(1.4)
 
-        // ðŸ”¥ HITBOX: Proyectil
+        // 🔥 HITBOX: Proyectil
         val hitbox = HitboxVisualizer.createHitbox(spawnLoc, 1.2, 1.2, 1.2, Material.ORANGE_STAINED_GLASS)
 
         var ticks = 0
@@ -208,7 +208,7 @@ class Slasher : CoreKiller(
     private fun habilidadPresencia(player: Player) {
         player.playSound(player.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1.5f, 0.8f)
 
-        // ðŸ”¥ HITBOX: Grito en Ã¡rea
+        // 🔥 HITBOX: Grito en área
         HitboxVisualizer.drawInstantHitbox(plugin, player.location, 8.0, 8.0, 8.0, 20L, Material.PURPLE_STAINED_GLASS)
 
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->

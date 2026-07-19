@@ -20,11 +20,11 @@ class NullProfile : CinematicProfile {
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<red>LA CAZA COMIENZA"), plugin.mm.deserialize("<gray>El Killer es: \$realName"))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<red>LA CAZA COMIENZA"), pumpking.lib.color.ColorTranslator.translate("<gray>El Killer es: \$realName"))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<dark_red><bold>¡MASCARADA FINAL!</bold>"), plugin.mm.deserialize("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

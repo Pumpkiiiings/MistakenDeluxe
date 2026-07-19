@@ -109,7 +109,7 @@ class CinematicManager(private val plugin: Mistaken) {
             if (dialogos.isNotEmpty()) {
                 val index = (tickDial / 40) % dialogos.size
                 if (tickDial < dialogos.size * 40) {
-                    plugin.server.onlinePlayers.forEach { it.sendActionBar(plugin.mm.deserialize(dialogos[index])) }
+                    plugin.server.onlinePlayers.forEach { it.sendActionBar(pumpking.lib.color.ColorTranslator.translate(dialogos[index])) }
                 }
             }
             tickDial++
@@ -175,7 +175,7 @@ class CinematicManager(private val plugin: Mistaken) {
             if (dialogos.isNotEmpty()) {
                 val index = (tickDial / 40) % dialogos.size
                 if (tickDial < dialogos.size * 40) {
-                    plugin.server.onlinePlayers.forEach { it.sendActionBar(plugin.mm.deserialize(dialogos[index])) }
+                    plugin.server.onlinePlayers.forEach { it.sendActionBar(pumpking.lib.color.ColorTranslator.translate(dialogos[index])) }
                 }
             }
             tickDial++

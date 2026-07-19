@@ -116,7 +116,7 @@ class MessageService : IMessageService {
         return TagResolver.resolver(
             Placeholder.parsed("player", player?.name ?: "Console"),
             Placeholder.parsed("online", Bukkit.getOnlinePlayers().size.toString()),
-            Placeholder.component("prefix", mm.deserialize(parseLegacy(prefixRaw)))
+            Placeholder.component("prefix", pumpking.lib.color.ColorTranslator.translate(parseLegacy(prefixRaw)))
         )
     }
 
@@ -135,11 +135,11 @@ class MessageService : IMessageService {
         if (raw == null) {
             PumpkingLib.logError(PumpkingLib.LogCategory.CORE, "[WARN] Missing config path:\nFile: $fileName.yml\nPath: $path")
             val allTags = TagResolver.resolver(getGlobalResolvers(player, config), *extraTags)
-            return mm.deserialize("<red>Missing Path: $fileName -> $path", allTags)
+            return pumpking.lib.color.ColorTranslator.translate("<red>Missing Path: $fileName -> $path", allTags)
         }
 
         val allTags = TagResolver.resolver(getGlobalResolvers(player, config), *extraTags)
-        return mm.deserialize(parseLegacy(raw), allTags)
+        return pumpking.lib.color.ColorTranslator.translate(parseLegacy(raw), allTags)
     }
 
     override fun getComponentList(player: Player?, path: String, fileName: String): List<Component> {
@@ -151,7 +151,7 @@ class MessageService : IMessageService {
         }
 
         val globalTags = getGlobalResolvers(player, config)
-        return rawList.map { mm.deserialize(parseLegacy(it), globalTags) }
+        return rawList.map { pumpking.lib.color.ColorTranslator.translate(parseLegacy(it), globalTags) }
     }
 
     override fun getRawString(player: Player?, path: String, def: String, fileName: String): String {

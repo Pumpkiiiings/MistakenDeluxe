@@ -22,11 +22,11 @@ class ErrorStaticProfile : CinematicProfile {
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<white><obfuscated>||</obfuscated> ERROR <obfuscated>||</obfuscated>"), plugin.mm.deserialize("<gray>S1st3m4 C0rrupt0..."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<white><obfuscated>||</obfuscated> ERROR <obfuscated>||</obfuscated>"), pumpking.lib.color.ColorTranslator.translate("<gray>S1st3m4 C0rrupt0..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<dark_aqua><obfuscated>|</obfuscated> <aqua>STATIC</aqua> <dark_aqua><obfuscated>|</obfuscated>"), plugin.mm.deserialize("<gray>T H I S   I S   H O W   I T   S H O U L D   B E."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_aqua><obfuscated>|</obfuscated> <aqua>STATIC</aqua> <dark_aqua><obfuscated>|</obfuscated>"), pumpking.lib.color.ColorTranslator.translate("<gray>T H I S   I S   H O W   I T   S H O U L D   B E."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

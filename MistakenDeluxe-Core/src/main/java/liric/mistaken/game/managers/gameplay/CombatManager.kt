@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.gameplay
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.HealthAPI
@@ -36,7 +36,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     private val killerCooldowns = ConcurrentHashMap<UUID, Long>()
     private val survivorCooldowns = ConcurrentHashMap<UUID, Long>()
 
-    // 🔥 TIEMPOS DE COOLDOWN
+    // ?? TIEMPOS DE COOLDOWN
     private val KILLER_COOLDOWN = 1000L
     private val SURVIVOR_COOLDOWN = 1000L
 
@@ -50,7 +50,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             if (!plugin.isReady) return@runAtFixedRate
 
-            // 🔥 MULTIARENA: Recorremos todas las sesiones activas
+            // ?? MULTIARENA: Recorremos todas las sesiones activas
             val sessions = plugin.sessionManager.activeSessions.values
 
             for (session in sessions) {
@@ -65,7 +65,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                     var foundSomeone = false
                     var ghostName = ""
 
-                    // Obtenemos los jugadores de ESTA sesión para no escanear a todo el servidor
+                    // Obtenemos los jugadores de ESTA sesi�n para no escanear a todo el servidor
                     for (target in session.getPlayers()) {
                         if (target == killer || target.world != killerLoc.world) continue
 
@@ -161,7 +161,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
                     if (foundSomeone) {
                         val realDist = Math.sqrt(minDistanceSq)
-                        killer.sendActionBar(mm.deserialize("<yellow>Escuchas el latido de alguien.."))
+                        killer.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<yellow>Escuchas el latido de alguien.."))
 
 
                         val (vol, pitch) = when {
@@ -221,7 +221,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             return
         }
 
-        // 🔥 MULTIARENA: Obtenemos la sesión donde ocurre la pelea
+        // ?? MULTIARENA: Obtenemos la sesi�n donde ocurre la pelea
         val session = plugin.sessionManager.getSession(victim) ?: return
         if (session.currentState != GameState.INGAME) return
 
@@ -304,8 +304,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             if (isSurvivor && nextHP <= 4.0 && nextHP > 0.0) {
                 if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {
-                    val msg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(victim, "combat.critical-wound", "<red><bold>¡HERIDA CRÃTICA!</bold>")
-                    victim.sendMessage(mm.deserialize(msg))
+                    val msg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(victim, "combat.critical-wound", "<red><bold>�HERIDA CRÍTICA!</bold>")
+                    victim.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
                     victim.addPotionEffect(
                         PotionEffect(
                             PotionEffectType.DARKNESS,
@@ -361,7 +361,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         }
     }
 
-    // 🔥 FIX: Adaptado a Multiarena
+    // ?? FIX: Adaptado a Multiarena
     fun giveWinRewards(killerWon: Boolean, session: GameSession) {
         val killers = session.asesinosUUIDs
         val winners = if (killerWon) {
@@ -485,7 +485,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         }
     }
 
-    // 🔥 EL ESCUDO ABSOLUTO MULTIARENA
+    // ?? EL ESCUDO ABSOLUTO MULTIARENA
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onKillerDarkness(event: EntityPotionEffectEvent) {
         val player = event.entity as? Player ?: return

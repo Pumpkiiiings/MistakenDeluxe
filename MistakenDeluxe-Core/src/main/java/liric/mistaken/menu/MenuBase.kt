@@ -43,7 +43,7 @@ abstract class MenuBase(
      * ya que Minecraft la aplica forzosamente al lore de los items.
      */
     protected fun parseSafe(text: String): net.kyori.adventure.text.Component {
-        return mm.deserialize("<!italic>$text")
+        return pumpking.lib.color.ColorTranslator.translate("<!italic>$text")
     }
 
     // Clave en messages.yml donde se lee el título traducido.
@@ -80,7 +80,7 @@ abstract class MenuBase(
         val config = getGlobalConfig()
 
         val gui = Gui.gui()
-            .title(mm.deserialize(baked.resolvedTitle))
+            .title(pumpking.lib.color.ColorTranslator.translate(baked.resolvedTitle))
             .rows(baked.filas)
             .disableAllInteractions()
             .create()

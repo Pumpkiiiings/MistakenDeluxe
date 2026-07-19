@@ -21,13 +21,13 @@ class EspectearCommand(private val plugin: Mistaken) : BasicCommand {
         val session = plugin.sessionManager.getSession(player)
 
         if (session == null) {
-            player.sendMessage(plugin.mm.deserialize("<red>No estás en ninguna partida activa."))
+            player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No estás en ninguna partida activa."))
             return
         }
 
         // Verificamos el estado de SU partida
         if (session.currentState != GameState.INGAME) {
-            player.sendMessage(plugin.mm.deserialize("<red>Solo puedes usar esto mientras tu partida está en curso."))
+            player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Solo puedes usar esto mientras tu partida está en curso."))
             return
         }
 
@@ -36,12 +36,12 @@ class EspectearCommand(private val plugin: Mistaken) : BasicCommand {
         val esSurvivor = plugin.supervivienteManager.esSurvivorActivo(player)
 
         if (player.gameMode == GameMode.SURVIVAL && (isKiller || esSurvivor)) {
-            player.sendMessage(plugin.mm.deserialize("<red>¡Aún estás participando en la caza! No puedes entrar en modo espectador."))
+            player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>¡Aún estás participando en la caza! No puedes entrar en modo espectador."))
             return
         }
 
         // Si ya está muerto o es un espectador legítimo de esa arena
-        player.sendMessage(plugin.mm.deserialize("<green>Reactivando herramientas de espectador..."))
+        player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Reactivando herramientas de espectador..."))
         plugin.spectatorManager.setCustomSpectator(player)
     }
 }

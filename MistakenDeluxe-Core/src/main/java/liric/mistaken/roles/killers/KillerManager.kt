@@ -46,7 +46,7 @@ class KillerManager(private val plugin: Mistaken) : liric.mistaken.api.managers.
         // ?? FIX: Ejecutamos el cleanup de forma segura en el hilo del jugador (Entity Scheduler)
         player.scheduler.run(plugin, Consumer { _ ->
             clase.cleanup(player)
-            plugin.componentLogger.info(mm.deserialize("[INFO] [Manager] ${player.name} synchronized with ${clase.nombre}"))
+            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[INFO] [Manager] ${player.name} synchronized with ${clase.nombre}"))
         }, null)
     }
 
@@ -60,7 +60,7 @@ class KillerManager(private val plugin: Mistaken) : liric.mistaken.api.managers.
 
         // Feedback
         player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "killer.transform",
-            Placeholder.component("name", mm.deserialize(asesino.nombre))))
+            Placeholder.component("name", pumpking.lib.color.ColorTranslator.translate(asesino.nombre))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
         // 2. ?? FIX: EntityScheduler de Paper con runDelayed y Consumer expl�cito
@@ -134,7 +134,7 @@ class KillerManager(private val plugin: Mistaken) : liric.mistaken.api.managers.
                 removeKiller(player)
             } else {
                 activeKillers[uuid]?.let {
-                    plugin.componentLogger.warn(mm.deserialize("[WARN] [Manager] Cleaning ghost data of disconnected assassin: $uuid"))
+                    plugin.componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("[WARN] [Manager] Cleaning ghost data of disconnected assassin: $uuid"))
                 }
             }
             iterador.remove()

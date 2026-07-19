@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -104,7 +104,7 @@ class ColorAndElectricity : CoreKiller(
             else "asesinos.colorandelectricity.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -135,7 +135,7 @@ class ColorAndElectricity : CoreKiller(
         var count = 0
         val hitted = mutableSetOf<UUID>()
 
-        // ?? HITBOX: Caja Dinï¿½mica
+        // ?? HITBOX: Caja Din�mica
         val hitbox = HitboxVisualizer.createHitbox(player.location, 2.5, 2.5, 2.5, Material.CYAN_STAINED_GLASS)
 
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
@@ -162,7 +162,7 @@ class ColorAndElectricity : CoreKiller(
     private fun habilidadColorDrain(player: Player) {
         player.playSound(player.location, Sound.BLOCK_CONDUIT_ATTACK_TARGET, 1f, 1.8f)
 
-        // ?? HITBOX: Caja Instantï¿½nea
+        // ?? HITBOX: Caja Instant�nea
         HitboxVisualizer.drawInstantHitbox(plugin, player.location, 8.0, 8.0, 8.0, 15L, Material.PURPLE_STAINED_GLASS)
 
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
@@ -200,7 +200,7 @@ class ColorAndElectricity : CoreKiller(
     }
 
     private fun habilidadShikisaiEnd(player: Player) {
-        // ?? HITBOX: Area de Bï¿½squeda
+        // ?? HITBOX: Area de B�squeda
         HitboxVisualizer.drawInstantHitbox(plugin, player.location, 15.0, 15.0, 15.0, 20L, Material.ORANGE_STAINED_GLASS)
 
         val target = player.getNearbyEntities(15.0, 15.0, 15.0).filterIsInstance<Player>().find { isValidTarget(player, it) }
@@ -208,7 +208,7 @@ class ColorAndElectricity : CoreKiller(
             player.teleportAsync(t.location).thenAccept {
                 player.scheduler.run(plugin, Consumer { _ ->
                     player.world.spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, player.location, 30, 0.5, 1.0, 0.5, 0.5)
-                    t.sendMessage(mm.deserialize("<red><b>[!] SOBRECARGA CROMï¿½TICA</b></red>"))
+                    t.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><b>[!] SOBRECARGA CROM�TICA</b></red>"))
                     t.velocity = Vector(0.0, 1.2, 0.0)
                 }, null)
             }

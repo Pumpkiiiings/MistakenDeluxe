@@ -21,11 +21,11 @@ class MikuProfile : CinematicProfile {
     override val isFloating: Boolean = true
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<aqua>DOMINACIÓN MUNDIAL</aqua>"), plugin.mm.deserialize("<white>¡El mundo es mío!"))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<aqua>DOMINACIÓN MUNDIAL</aqua>"), pumpking.lib.color.ColorTranslator.translate("<white>¡El mundo es mío!"))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<aqua><bold>CONCIERTO FINAL</bold>"), plugin.mm.deserialize("<white>¡Gracias a todos por venir!"))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<aqua><bold>CONCIERTO FINAL</bold>"), pumpking.lib.color.ColorTranslator.translate("<white>¡Gracias a todos por venir!"))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

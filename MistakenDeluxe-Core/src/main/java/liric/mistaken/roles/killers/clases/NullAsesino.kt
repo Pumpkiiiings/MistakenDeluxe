@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -33,7 +33,7 @@ import kotlin.math.sin
 /**
  * [LIRIC-MISTAKEN 2.0]
  * NullAsesino: El Ente del Glitch.
- * MEJORAS: Escala 1.1, Fï¿½sicas mejoradas y Finishers del Abismo agregados.
+ * MEJORAS: Escala 1.1, F�sicas mejoradas y Finishers del Abismo agregados.
  */
 class NullAsesino : CoreKiller(
     "null",
@@ -141,7 +141,7 @@ class NullAsesino : CoreKiller(
                 }, 40L)
             }
             1 -> {
-                // EFECTO 2: PRISIï¿½N DE OBSIDIANA LLOROSA
+                // EFECTO 2: PRISI�N DE OBSIDIANA LLOROSA
                 world.playSound(loc, Sound.BLOCK_RESPAWN_ANCHOR_SET_SPAWN, 1.5f, 0.5f)
 
                 val prison = world.spawn(loc.clone().add(0.0, 2.0, 0.0), BlockDisplay::class.java) {
@@ -161,7 +161,7 @@ class NullAsesino : CoreKiller(
                 }, 30L)
             }
             2 -> {
-                // EFECTO 3: MIRADA DEL VACï¿½O
+                // EFECTO 3: MIRADA DEL VAC�O
                 world.playSound(loc, Sound.AMBIENT_CAVE, 2f, 0.5f)
 
                 val displays = mutableListOf<BlockDisplay>()
@@ -212,7 +212,7 @@ class NullAsesino : CoreKiller(
             else "asesinos.${this.id}.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -239,7 +239,7 @@ class NullAsesino : CoreKiller(
         player.world.spawnParticle(org.bukkit.Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 3, 0.5, 0.5, 0.5, 0.0)
 
         player.world.getNearbyPlayers(player.location, 12.0).forEach { victim ->
-            // ?? Uso de la funciï¿½n centralizada
+            // ?? Uso de la funci�n centralizada
             if (isValidTarget(player, victim)) {
                 victim.apply {
                     addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 200, 0))
@@ -273,7 +273,7 @@ class NullAsesino : CoreKiller(
             val z = sin(angle) * 0.7
             loc.world.spawnParticle(org.bukkit.Particle.END_ROD, loc.clone().add(x, 1.0, z), 1, 0.0, 0.0, 0.0, 0.0)
 
-            // ?? Uso de la funciï¿½n centralizada
+            // ?? Uso de la funci�n centralizada
             val victim = loc.world.getNearbyPlayers(loc, 3.5).firstOrNull { isValidTarget(player, it) }
 
             if (victim != null) {
@@ -287,7 +287,7 @@ class NullAsesino : CoreKiller(
     }
 
     private fun habilidadPrisionVacio(player: Player) {
-        // ?? Uso de la funciï¿½n centralizada
+        // ?? Uso de la funci�n centralizada
         val ray = player.world.rayTraceEntities(player.eyeLocation, player.location.direction, 15.0) {
             it is Player && isValidTarget(player, it)
         }
@@ -308,7 +308,7 @@ class NullAsesino : CoreKiller(
                 if (!locToSpawn.block.type.isSolid) {
                     locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
                     locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
-                        // ?? Uso de la funciï¿½n centralizada
+                        // ?? Uso de la funci�n centralizada
                         if (isValidTarget(player, victim)) {
                             plugin.combatManager.takeDamage(victim)
                             victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))

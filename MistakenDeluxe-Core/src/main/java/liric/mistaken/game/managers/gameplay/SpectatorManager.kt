@@ -60,10 +60,10 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         player.inventory.clear()
 
         val tpItem = ItemStack(Material.COMPASS).apply {
-            editMeta { it.displayName(plugin.mm.deserialize("<aqua><bold>▶ Teletransportarse a Jugador")) }
+            editMeta { it.displayName(pumpking.lib.color.ColorTranslator.translate("<aqua><bold>▶ Teletransportarse a Jugador")) }
         }
         val speedItem = ItemStack(Material.FEATHER).apply {
-            editMeta { it.displayName(plugin.mm.deserialize("<yellow><bold>▶ Velocidad de Vuelo")) }
+            editMeta { it.displayName(pumpking.lib.color.ColorTranslator.translate("<yellow><bold>▶ Velocidad de Vuelo")) }
         }
 
         player.inventory.setItem(0, tpItem)
@@ -80,7 +80,7 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
                 }
             }
         }
-        player.sendMessage(plugin.mm.deserialize("<green>Has entrado al modo espectador invisible."))
+        player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Has entrado al modo espectador invisible."))
     }
 
     fun removeCustomSpectator(player: Player) {
@@ -177,9 +177,9 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
 
     private fun toggleFlySpeed(p: Player) {
         p.flySpeed = when (p.flySpeed) {
-            0.1f -> 0.2f.also { p.sendActionBar(plugin.mm.deserialize("<yellow>Velocidad: <bold>x2")) }
-            0.2f -> 0.4f.also { p.sendActionBar(plugin.mm.deserialize("<yellow>Velocidad: <bold>x4")) }
-            else -> 0.1f.also { p.sendActionBar(plugin.mm.deserialize("<yellow>Velocidad: <bold>x1")) }
+            0.1f -> 0.2f.also { p.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<yellow>Velocidad: <bold>x2")) }
+            0.2f -> 0.4f.also { p.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<yellow>Velocidad: <bold>x4")) }
+            else -> 0.1f.also { p.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<yellow>Velocidad: <bold>x1")) }
         }
         p.playSound(p.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.5f)
     }
@@ -187,16 +187,16 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     private fun abrirMenuTeleport(p: Player) {
         val vivos = Bukkit.getOnlinePlayers().filter { it.gameMode == GameMode.SURVIVAL && !isSpectator(it) }
         if (vivos.isEmpty()) {
-            p.sendMessage(plugin.mm.deserialize("<red>No hay jugadores vivos."))
+            p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No hay jugadores vivos."))
             return
         }
 
-        val inv = Bukkit.createInventory(SpectatorHolder(), 27, plugin.mm.deserialize("<dark_gray>Espectear Jugador"))
+        val inv = Bukkit.createInventory(SpectatorHolder(), 27, pumpking.lib.color.ColorTranslator.translate("<dark_gray>Espectear Jugador"))
         vivos.forEach { target ->
             val head = ItemStack(Material.PLAYER_HEAD).apply {
                 editMeta { meta ->
                     if (meta is SkullMeta) meta.owningPlayer = target
-                    meta.displayName(plugin.mm.deserialize("<aqua>${target.name}"))
+                    meta.displayName(pumpking.lib.color.ColorTranslator.translate("<aqua>${target.name}"))
                 }
             }
             inv.addItem(head)

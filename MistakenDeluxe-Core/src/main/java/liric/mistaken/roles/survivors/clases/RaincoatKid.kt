@@ -48,7 +48,7 @@ class RaincoatKid : Survivor(
     private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
         var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) {
-            player.sendMessage(mm.deserialize(msg))
+            player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
         }
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_BAT_TAKEOFF")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
@@ -88,7 +88,7 @@ class RaincoatKid : Survivor(
             // Le ponemos el nombre
             val namePath = "$pathBase.skill_names.$key"
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(mm.deserialize(it)) }
+                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -124,7 +124,7 @@ class RaincoatKid : Survivor(
             if (player.isOnline) {
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 0))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_BREATH, 1f, 0.8f)
-                player.sendActionBar(mm.deserialize("<red><i>*jadeo*</i>"))
+                player.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<red><i>*jadeo*</i>"))
             }
         }, null, 100L)
 

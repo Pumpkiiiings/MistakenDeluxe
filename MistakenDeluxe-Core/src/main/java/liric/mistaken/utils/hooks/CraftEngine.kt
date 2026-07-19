@@ -67,8 +67,8 @@ object CraftEngine {
         // Si falló, fabricamos un ítem de error para que el admin sepa qué onda
         return ItemStack(Material.BARRIER).apply {
             editMeta { meta ->
-                meta.displayName(Mistaken.Companion.instance.mm.deserialize("<red><bold>ERROR:</bold> <white>$property"))
-                meta.lore(listOf(Mistaken.Companion.instance.mm.deserialize("<gray>Este ítem no se encontró en la config.")))
+                meta.displayName(pumpking.lib.color.ColorTranslator.translate("<red><bold>ERROR:</bold> <white>$property"))
+                meta.lore(listOf(pumpking.lib.color.ColorTranslator.translate("<gray>Este ítem no se encontró en la config.")))
             }
         }
     }

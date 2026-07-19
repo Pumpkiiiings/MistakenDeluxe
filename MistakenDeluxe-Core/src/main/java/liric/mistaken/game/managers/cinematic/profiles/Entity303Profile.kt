@@ -21,11 +21,11 @@ class Entity303Profile : CinematicProfile {
     override val isFloating: Boolean = true
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<red><bold>ERROR CRÍTICO</bold>"), plugin.mm.deserialize("<dark_red>SYSTEM ERROR: 303 FOUND"))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<red><bold>ERROR CRÍTICO</bold>"), pumpking.lib.color.ColorTranslator.translate("<dark_red>SYSTEM ERROR: 303 FOUND"))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<dark_red><bold>¡MASCARADA FINAL!</bold>"), plugin.mm.deserialize("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

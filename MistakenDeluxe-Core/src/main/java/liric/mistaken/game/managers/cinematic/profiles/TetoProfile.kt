@@ -22,11 +22,11 @@ class TetoProfile : CinematicProfile {
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<red>TERRITORY</red>"), plugin.mm.deserialize("<white>¡Eres tan tonto!"))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<red>TERRITORY</red>"), pumpking.lib.color.ColorTranslator.translate("<white>¡Eres tan tonto!"))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(plugin.mm.deserialize("<dark_red><bold>¡MASCARADA FINAL!</bold>"), plugin.mm.deserialize("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

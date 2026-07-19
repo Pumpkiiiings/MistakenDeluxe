@@ -23,7 +23,7 @@ object LeaveCommand {
                 val player = sender as? Player
 
                 if (player == null) {
-                    sender.sendMessage(plugin.mm.deserialize("<red>Solo los jugadores pueden usar este comando."))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Solo los jugadores pueden usar este comando."))
                     return@executes 0
                 }
 
@@ -31,11 +31,11 @@ object LeaveCommand {
                 val session = plugin.sessionManager.getSession(player)
 
                 if (session == null) {
-                    player.sendMessage(plugin.mm.deserialize("<red>No estás en ninguna partida activa en este momento."))
+                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No estás en ninguna partida activa en este momento."))
                     return@executes 0
                 }
 
-                player.sendMessage(plugin.mm.deserialize("<yellow>Saliendo de la partida..."))
+                player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<yellow>Saliendo de la partida..."))
 
                 // 2. LÓGICA DE ABANDONO (Si la partida ya empezó)
                 if (session.currentState == GameState.INGAME) {

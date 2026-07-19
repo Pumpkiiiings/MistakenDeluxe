@@ -34,7 +34,7 @@ object CinematicaCommand {
                                 val asesinoId = StringArgumentType.getString(context, "asesino")
 
                                 val asesinoDummy = createDummy(asesinoId)
-                                source.sendMessage(plugin.mm.deserialize("<green>Reproduciendo <bold>INTRO</bold> de: <yellow>$asesinoId"))
+                                source.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Reproduciendo <bold>INTRO</bold> de: <yellow>$asesinoId"))
 
                                 plugin.cinematicManager.playKillerIntro(source, asesinoDummy)
                                 Command.SINGLE_SUCCESS
@@ -55,7 +55,7 @@ object CinematicaCommand {
                                 val asesinoId = StringArgumentType.getString(context, "asesino")
 
                                 val asesinoDummy = createDummy(asesinoId)
-                                source.sendMessage(plugin.mm.deserialize("<red>Reproduciendo <bold>OUTRO</bold> de: <yellow>$asesinoId"))
+                                source.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Reproduciendo <bold>OUTRO</bold> de: <yellow>$asesinoId"))
 
                                 plugin.cinematicManager.playKillerOutro(source, asesinoDummy)
                                 Command.SINGLE_SUCCESS
