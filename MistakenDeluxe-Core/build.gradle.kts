@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+﻿import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -67,7 +67,7 @@ dependencies {
     zap("fr.skytasul:glowingentities:1.4.11")
     zap("com.mysql:mysql-connector-j:9.7.0")
     zap("org.postgresql:postgresql:42.7.11")
-    zap("org.xerial:sqlite-jdbc:3.45.2.0")
+    zap("com.h2database:h2:2.2.224")
     zap("dev.triumphteam:triumph-gui:3.1.13")
     zap("org.slf4j:slf4j-simple:2.0.18")
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")

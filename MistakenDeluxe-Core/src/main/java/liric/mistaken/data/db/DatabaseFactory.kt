@@ -1,4 +1,4 @@
-package liric.mistaken.data.db
+﻿package liric.mistaken.data.db
 
 import liric.mistaken.Mistaken
 import liric.mistaken.data.DatabaseManager
@@ -8,7 +8,7 @@ object DatabaseFactory {
         val type = plugin.config.getString("database.type", "mysql")?.lowercase() ?: "mysql"
         return when (type) {
             "postgresql" -> PostgreSQLDatabaseManager(plugin)
-            "sqlite" -> SQLiteDatabaseManager(plugin)
+            "h2" -> H2DatabaseManager(plugin)
             else -> MySQLDatabaseManager(plugin)
         }
     }

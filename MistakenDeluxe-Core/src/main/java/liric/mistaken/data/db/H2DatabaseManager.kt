@@ -5,28 +5,27 @@ import liric.mistaken.Mistaken
 import java.io.File
 import java.sql.PreparedStatement
 
-class SQLiteDatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(plugin) {
+class H2DatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(plugin) {
 
     override fun getHikariConfig(): HikariConfig {
         val hikariConfig = HikariConfig()
 
-        val dbFile = File(plugin.dataFolder, "database.db")
-        if (!dbFile.exists()) {
+        val dbFile = File(plugin.dataFolder, "database")
+        if (!dbFile.parentFile.exists()) {
             dbFile.parentFile.mkdirs()
-            dbFile.createNewFile()
         }
 
-        hikariConfig.jdbcUrl = "jdbc:sqlite:${dbFile.absolutePath}"
-        hikariConfig.driverClassName = "org.sqlite.JDBC"
+        // MODE=PostgreSQL to allow ON CONFLICT syntax
+        hikariConfig.jdbcUrl = "jdbc:h2:;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH"
+        hikariConfig.driverClassName = "org.h2.Driver"
 
-        // SQLite no soporta conexiones concurrentes de escritura de forma nativa sin WAL
-        hikariConfig.maximumPoolSize = 1
+        hikariConfig.maximumPoolSize = 10
         hikariConfig.connectionTestQuery = "SELECT 1"
 
         return hikariConfig
     }
 
-    override val insertIgnoreStatsQuery = "INSERT OR IGNORE INTO stats (uuid, username) VALUES (?, ?)"
+    override val insertIgnoreStatsQuery = "INSERT INTO stats (uuid, username) VALUES (?, ?) ON CONFLICT DO NOTHING"
 
     override val upsertPlayerDataQuery = """
         INSERT INTO mistaken_player_data
