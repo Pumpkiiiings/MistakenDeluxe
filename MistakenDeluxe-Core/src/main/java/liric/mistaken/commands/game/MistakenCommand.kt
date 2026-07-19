@@ -1,4 +1,4 @@
-package liric.mistaken.commands.game
+﻿package liric.mistaken.commands.game
 
 import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -129,6 +129,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     pumpking.lib.service.PumpkingServiceManager.messages.loadAllLanguages()
                     plugin.configManager.loadAllConfigs()
                     plugin.configManager.reloadMenus()
+                    plugin.musicManager.loadMusicConfig()
 
                     plugin.server.globalRegionScheduler.execute(plugin) {
                         plugin.shopSelector.reload()
