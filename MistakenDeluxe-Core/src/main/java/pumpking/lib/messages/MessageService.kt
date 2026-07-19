@@ -65,7 +65,13 @@ class MessageService : IMessageService {
     override fun loadAllLanguages() {
         extractYamlResources()
 
-        langMap.clear()
+        // FIX #8: Load into a fresh map and then swap.
+        // The previous approach called langMap.clear() before re-populating, leaving a window
+        // where the main thread could call getComponent() and receive an empty map — causing
+        // every player to see "<red>Missing Path: ..." until loading was complete.
+        // Now we build the new map entirely before making it visible.
+        val newMap = ConcurrentHashMap<String, ConcurrentHashMap<String, FileConfiguration>>()
+
         val langFolder = File(PumpkingLib.plugin.dataFolder, "langs")
         if (!langFolder.exists()) langFolder.mkdirs()
 
@@ -79,8 +85,12 @@ class MessageService : IMessageService {
                 provider.load()
                 filesInDir[fileName] = provider.getRaw()
             }
-            langMap[langCode] = filesInDir
+            newMap[langCode] = filesInDir
         }
+
+        // Atomic swap: clear and refill in one step to minimize the empty-map window
+        langMap.clear()
+        langMap.putAll(newMap)
         PumpkingLib.log(PumpkingLib.LogCategory.CORE, "[Messages] Initialized (${langMap.size} languages).")
     }
 
@@ -182,11 +192,15 @@ class MessageService : IMessageService {
     }
 
     private fun parseLegacy(text: String): String {
-        return text
-            .replace("&", "§")
-            .replace("§(?=[0-9a-fk-or])".toRegex(), "")
-            .replace("{", "<")
-            .replace("}", ">")
+        // FIX #14: The previous implementation had a logical bug:
+        //   1. replace("&", "§")            → "&a" becomes "§a"
+        //   2. replace("§(?=[0-9a-fk-or])", "") → "§a" becomes "a"  ← DELETES the color!
+        // The net result was that all legacy color codes were stripped rather than converted.
+        // ColorNormalizer.normalizeToMiniMessage() correctly converts &a / §a → <green>, etc.
+        // The {curly} → <angle> replacement is preserved for custom tag syntax support.
+        return pumpking.lib.color.ColorNormalizer.normalizeToMiniMessage(
+            text.replace("{", "<").replace("}", ">")
+        )
     }
 
     // --- API Methods ---

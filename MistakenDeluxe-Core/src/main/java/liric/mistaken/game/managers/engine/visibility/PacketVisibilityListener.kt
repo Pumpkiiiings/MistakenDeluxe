@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.engine.visibility
+﻿package liric.mistaken.game.managers.engine.visibility
 
 import com.github.retrooper.packetevents.event.PacketListenerAbstract
 import com.github.retrooper.packetevents.event.PacketSendEvent
@@ -12,13 +12,13 @@ import org.bukkit.entity.Player
 class PacketVisibilityListener(private val manager: VisibilityManager) : PacketListenerAbstract() {
 
     override fun onPacketSend(event: PacketSendEvent) {
-        val viewer = event.player as? Player ?: return
+        val viewer = (event.getPlayer() as? Player) ?: return
         val packetType = event.packetType
 
         // 1. Interceptar Spawn
         if (packetType == PacketType.Play.Server.SPAWN_ENTITY) {
             val spawn = WrapperPlayServerSpawnEntity(event)
-            // Se debe buscar por UUID porque los Fake Displays usarán la lista de UUIDs
+            // Se debe buscar por UUID porque los Fake Displays usarÃ¡n la lista de UUIDs
             if (manager.isHidden(spawn.uuid.get(), viewer.uniqueId)) {
                 event.isCancelled = true
             }
@@ -47,7 +47,7 @@ class PacketVisibilityListener(private val manager: VisibilityManager) : PacketL
             var shouldCancel = false
             
             val newEntries = entries.filter { entry ->
-                if (manager.isHidden(entry.userProfile.uuid, viewer.uniqueId)) {
+                if (manager.isHidden(entry.profileId, viewer.uniqueId)) {
                     shouldCancel = true
                     false
                 } else {
@@ -66,3 +66,4 @@ class PacketVisibilityListener(private val manager: VisibilityManager) : PacketL
         }
     }
 }
+

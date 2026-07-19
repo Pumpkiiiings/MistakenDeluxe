@@ -26,14 +26,16 @@ class ScoreboardContext(
     var templateId: String? = null
 ) {
     // Initialization State
-    var initialized = false
-    var activeLines = 0
-    
+    // FIX #15: @Volatile ensures writes from registerTemplate() (potentially off main thread)
+    // are immediately visible to ScoreboardUpdateTask running on the main thread.
+    @Volatile var initialized = false
+    @Volatile var activeLines = 0
+
     // Dirty Flags
-    var titleChanged = true
-    var layoutChanged = true
+    @Volatile var titleChanged = true
+    @Volatile var layoutChanged = true
     val lineChanged = BooleanArray(15) { true }
-    
+
     fun markAllClean() {
         titleChanged = false
         layoutChanged = false
@@ -41,7 +43,7 @@ class ScoreboardContext(
             lineChanged[i] = false
         }
     }
-    
+
     fun isDirty(): Boolean {
         if (titleChanged || layoutChanged) return true
         for (i in 0 until activeLines) {

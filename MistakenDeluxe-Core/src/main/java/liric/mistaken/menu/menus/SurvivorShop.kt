@@ -1,4 +1,4 @@
-package liric.mistaken.menu.menus
+﻿package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -17,8 +17,8 @@ import liric.mistaken.api.requirements.RequirementEngine
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * SurvivorTienda: Menú de selección de humanos.
- * OPTIMIZADO: Lectura híbrida (Mecánicas Globales + Info Localizada).
+ * SurvivorTienda: MenÃº de selecciÃ³n de humanos.
+ * OPTIMIZADO: Lectura hÃ­brida (MecÃ¡nicas Globales + Info Localizada).
  */
 class SurvivorTienda : MenuBase("survivors_shop") {
 
@@ -26,7 +26,7 @@ class SurvivorTienda : MenuBase("survivors_shop") {
 
     override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
         // 1. Cargamos las dos fuentes de datos
-        val globalMecanicas = plugin.configManager.getSurvivorConfig(this.id) // Números e Ítems
+        val globalMecanicas = plugin.configManager.getSurvivorConfig("global") // NÃºmeros e Ãtems
 
         val slots = config.getIntegerList("ajustes.slots-disponibles")
         if (slots.isEmpty()) return
@@ -50,25 +50,25 @@ class SurvivorTienda : MenuBase("survivors_shop") {
             val permisoRequerido = globalMecanicas.getString("supervivientes.$survivorId.permiso")
             if (permisoRequerido != null && !player.hasPermission(permisoRequerido)) continue
 
-            // --- 🎨 DATOS VISUALES (Desde survivors_info.yml) ---
+            // --- ðŸŽ¨ DATOS VISUALES (Desde survivors_info.yml) ---
             // Ruta: supervivientes.<id>.nombre
             val nombreVisual = pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "supervivientes.$survivorId.nombre", "survivors_info")
             // Ruta: supervivientes.<id>.lore_tienda
             val loreTienda = pumpking.lib.service.PumpkingServiceManager.messages.getStrictStringList(player, "supervivientes.$survivorId.lore_tienda", "survivors_info")
 
-            // --- ⚙️ DATOS MECÁNICOS (Desde supervivientes.yml) ---
+            // --- âš™ï¸ DATOS MECÃNICOS (Desde supervivientes.yml) ---
             // Ruta: supervivientes.<id>.precio
             val precio = globalMecanicas.getInt("supervivientes.$survivorId.precio", 0)
             // Ruta: supervivientes.<id>.icono_material
             val matStr = globalMecanicas.getString("supervivientes.$survivorId.icono_material", "IRON_CHESTPLATE")!!
             val iconoMat = Material.matchMaterial(matStr) ?: Material.IRON_CHESTPLATE
 
-            // --- 🔨 CONSTRUCCIÓN DEL LORE ---
+            // --- ðŸ”¨ CONSTRUCCIÃ“N DEL LORE ---
             val fullLore = mutableListOf<Component>().apply {
                 add(labelHumano)
                 add(Component.empty())
 
-                // Descripción del personaje
+                // DescripciÃ³n del personaje
                 loreTienda.forEach { line ->
                     add(parseSafe(line))
                 }
@@ -81,13 +81,13 @@ class SurvivorTienda : MenuBase("survivors_shop") {
                 for (i in 1..3) {
                     val habName = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "supervivientes.$survivorId.skill_names.habilidad$i", "", "survivors_info")
                     if (habName.isNotEmpty()) {
-                        add(parseSafe(" <dark_gray>•</dark_gray> <white>$habName</white>"))
+                        add(parseSafe(" <dark_gray>â€¢</dark_gray> <white>$habName</white>"))
                     }
                 }
                 add(Component.empty())
             }
 
-            // Estado de Compra/Selección
+            // Estado de Compra/SelecciÃ³n
             val tiene = data.tieneSurvivor(uuid, survivorId)
             val esSeleccionado = selected.equals(survivorId, ignoreCase = true)
 
@@ -122,7 +122,7 @@ class SurvivorTienda : MenuBase("survivors_shop") {
         }
 
         val botonAtrasMat = config.getString("ajustes.atras.material", "ARROW")!!
-        val botonAtrasNombre = config.getString("ajustes.atras.nombre", "Atrás")!!
+        val botonAtrasNombre = config.getString("ajustes.atras.nombre", "AtrÃ¡s")!!
         val botonAtrasSlot = config.getInt("ajustes.atras.slot", 40)
         val matAtras = Material.matchMaterial(botonAtrasMat.uppercase()) ?: Material.ARROW
         gui.setItem(botonAtrasSlot, ItemBuilder.from(matAtras)
@@ -150,7 +150,7 @@ class SurvivorTienda : MenuBase("survivors_shop") {
             data.setSelectedSurvivor(uuid, id)
             player.persistentDataContainer.set(survivorKey, PersistentDataType.STRING, id)
 
-            // Obtenemos el nombre bonito para el mensaje de confirmación
+            // Obtenemos el nombre bonito para el mensaje de confirmaciÃ³n
             val nombreVisual = pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "supervivientes.$id.nombre", "survivors_info")
 
             player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.seleccionado", Placeholder.component("name", parseSafe(nombreVisual))))
@@ -162,7 +162,7 @@ class SurvivorTienda : MenuBase("survivors_shop") {
         // 3. Comprar (Vault)
         val econ = Mistaken.Companion.economy
         if (econ == null) {
-            player.sendMessage(parseSafe("<red>Error: Vault no está conectado.</red>"))
+            player.sendMessage(parseSafe("<red>Error: Vault no estÃ¡ conectado.</red>"))
             return
         }
 
@@ -187,6 +187,7 @@ class SurvivorTienda : MenuBase("survivors_shop") {
         }
     }
 }
+
 
 
 

@@ -81,7 +81,7 @@ dependencies {
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
 
     // APIs Externas (Solo para compilar)
-    compileOnly("io.github.toxicity188:bettermodel-bukkit-api:3.2.0")
+    compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.0.0")
     compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude(group = "org.bukkit", module = "bukkit")
@@ -91,6 +91,7 @@ dependencies {
     compileOnly(files("libs/CraftEngine.jar"))
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
+    compileOnly(files("libs/observer-paper.jar"))
 
     // Paper ya incluye Adventure y MiniMessage nativamente
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")

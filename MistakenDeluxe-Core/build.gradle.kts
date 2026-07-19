@@ -62,7 +62,7 @@ dependencies {
     zap("com.mojang:brigadier:1.2.9")
     // Librerías que se incluirán en el JAR (Shadow)
     zap("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    compileOnly("com.github.retrooper:packetevents-spigot:2.12.2")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
     zap("com.zaxxer:HikariCP:5.1.0")
     zap("fr.skytasul:glowingentities:1.4.11")
     zap("com.mysql:mysql-connector-j:9.7.0")
@@ -73,7 +73,7 @@ dependencies {
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
 
     // APIs Externas (Solo para compilar)
-    compileOnly("io.github.toxicity188:bettermodel-bukkit-api:3.2.0")
+    compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.0.0")
     compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude(group = "org.bukkit", module = "bukkit")
@@ -83,6 +83,7 @@ dependencies {
     compileOnly(files("../libs/CraftEngine.jar"))
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
+    compileOnly(files("../libs/observer-paper.jar"))
 
     // Paper ya incluye Adventure y MiniMessage nativamente
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")

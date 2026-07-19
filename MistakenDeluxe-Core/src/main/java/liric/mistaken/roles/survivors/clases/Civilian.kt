@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.clases
+﻿package liric.mistaken.roles.survivors.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -17,8 +17,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Civilian: La clase balanceada y versátil.
- * OPTIMIZADO: Separación Mecánica/Info + Schedulers.
+ * Civilian: La clase balanceada y versÃ¡til.
+ * OPTIMIZADO: SeparaciÃ³n MecÃ¡nica/Info + Schedulers.
  */
 class Civilian : Survivor(
     "civil",
@@ -56,7 +56,7 @@ class Civilian : Survivor(
                 sendAbilityMessage(player, langConfig, mechConfig, "skill1")
             }
             1 -> if (!checkCooldown(player, 1, mechConfig.getInt("items.skill2_cooldown", 45))) {
-                val mensajeFin = langconfig.getString("habilidades_mensajes.skill2_fin")
+                val mensajeFin = langConfig.getString("habilidades_mensajes.skill2_fin")
                 usarInvisibilidad(player, mensajeFin)
                 sendAbilityMessage(player, langConfig, mechConfig, "skill2")
             }
@@ -91,7 +91,7 @@ class Civilian : Survivor(
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
-            langconfig.getString("skill_names.$key")?.let {
+            langConfig.getString("skill_names.$key")?.let {
                 item.editMeta { m -> m.displayName(mm.deserialize(it)) }
             }
             inv.setItem(slot, item)
@@ -147,6 +147,7 @@ class Civilian : Survivor(
         activeTasks.clear()
     }
 }
+
 
 
 

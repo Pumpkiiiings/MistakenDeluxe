@@ -152,5 +152,11 @@ object ScoreboardManager {
 
     internal fun getContext(uuid: UUID): ScoreboardContext? = contexts[uuid]
 
-    internal fun getRenderer(): IScoreboardRenderer = renderer
+    // FIX #5: Guard against calling getRenderer() before init() (possible on /reload).
+    internal fun getRenderer(): IScoreboardRenderer {
+        check(::renderer.isInitialized) {
+            "ScoreboardManager.getRenderer() called before init(). Make sure PumpkingLib.init() runs in onEnable()."
+        }
+        return renderer
+    }
 }

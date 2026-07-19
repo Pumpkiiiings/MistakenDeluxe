@@ -249,7 +249,7 @@ class ColorAndElectricity : CoreKiller(
     }
 
     private fun crearBloqueOrbitante(loc: Location, mat: Material): BlockDisplay {
-        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { bd ->
+        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(JomlVector3f(-0.125f, -0.125f, -0.125f), Quaternionf(), JomlVector3f(0.25f, 0.25f, 0.25f), Quaternionf())
             bd.teleportDuration = 3; bd.interpolationDuration = 3
@@ -274,6 +274,7 @@ class ColorAndElectricity : CoreKiller(
         player?.let { limpiarEntidades(it.uniqueId) }
     }
 }
+
 
 
 

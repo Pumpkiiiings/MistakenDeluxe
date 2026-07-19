@@ -8,5 +8,5 @@ interface ISession {
     var currentState: GameState
     val asesinosUUIDs: Set<UUID>
 
-    fun esAsesino(uuid: UUID): Boolean
+    fun isKiller(uuid: UUID): Boolean
 }

@@ -3,8 +3,8 @@ package liric.mistaken.api.managers
 import java.util.UUID
 
 interface IPlayerDataManager {
-    fun tieneAsesino(uuid: UUID, killerId: String): Boolean
-    fun comprarAsesino(uuid: UUID, killerId: String)
-    fun tieneSuperviviente(uuid: UUID, survivorId: String): Boolean
-    fun comprarSuperviviente(uuid: UUID, survivorId: String)
+    fun hasKiller(uuid: UUID, killerId: String): Boolean
+    fun buyKiller(uuid: UUID, killerId: String)
+    fun tieneSurvivor(uuid: UUID, survivorId: String): Boolean
+    fun comprarSurvivor(uuid: UUID, survivorId: String)
 }

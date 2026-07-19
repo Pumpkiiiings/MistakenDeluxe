@@ -75,4 +75,16 @@ abstract class PlayerProfileCache<V : Any>(
             }
         }
     }
+
+    /**
+     * FIX #18: Unregisters both event handlers before clearing the cache.
+     * Without this, a new PlayerProfileCache instance created on reload would coexist
+     * with the old one, causing duplicate handler invocations and a listener memory leak.
+     */
+    override fun shutdown() {
+        super.shutdown()
+        org.bukkit.event.player.PlayerQuitEvent.getHandlerList().unregister(this)
+        org.bukkit.event.player.AsyncPlayerPreLoginEvent.getHandlerList().unregister(this)
+        PumpkingLib.log(PumpkingLib.LogCategory.CORE, "[Cache] PlayerProfileCache listener unregistered.")
+    }
 }

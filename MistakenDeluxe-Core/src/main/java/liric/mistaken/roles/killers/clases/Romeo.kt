@@ -137,7 +137,7 @@ class Romeo : CoreKiller(
             1 -> {
                 // EFECTO 2: JUICIO DEL ADMINISTRADOR (BLOQUE APLASTANTE)
                 val dropLoc = loc.clone().add(0.0, 10.0, 0.0)
-                val block = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), dropLoc) {
+                val block = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), dropLoc) {
                     it.block = Material.COMMAND_BLOCK.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-1.5f, -1.5f, -1.5f), Quaternionf(), JomlVector3f(3f, 3f, 3f), Quaternionf())
                     it.teleportDuration = 10 // Cae sÃºper rÃ¡pido
@@ -270,7 +270,7 @@ class Romeo : CoreKiller(
     }
 
     private fun habilidadNetherStar(player: Player) {
-        val star = liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.eyeLocation) {
+        val star = liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), player.eyeLocation) {
             it.setItemStack(ItemStack(Material.NETHER_STAR))
             it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.7f, 0.7f, 0.7f), Quaternionf())
             it.interpolationDuration = 1; it.teleportDuration = 1
@@ -353,7 +353,7 @@ class Romeo : CoreKiller(
         if (orbitadores[uuid]?.world != playerWorld) limpiar(uuid)
 
         val display = orbitadores.getOrPut(uuid) {
-            liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) {
+            liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), player.location) {
                 it.block = Material.COMMAND_BLOCK.createBlockData()
                 it.transformation = Transformation(
                     JomlVector3f(-0.2f, -0.2f, -0.2f),
@@ -397,6 +397,7 @@ class Romeo : CoreKiller(
         }
     }
 }
+
 
 
 

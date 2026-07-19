@@ -1,6 +1,6 @@
 package liric.mistaken.api
 
-import liric.mistaken.api.managers.IAsesinoManager
+import liric.mistaken.api.managers.IKillerManager
 import liric.mistaken.api.managers.ISessionManager
 import liric.mistaken.api.managers.IConfigManager
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -13,7 +13,7 @@ import java.util.logging.Logger
  */
 interface MistakenAPI {
     val plugin: Plugin
-    val asesinoManager: IAsesinoManager
+    val asesinoManager: IKillerManager
     val sessionManager: ISessionManager
     val configManager: IConfigManager
     val playerDataManager: liric.mistaken.api.managers.IPlayerDataManager

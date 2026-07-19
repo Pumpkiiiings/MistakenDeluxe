@@ -1,4 +1,4 @@
-﻿package pumpking.lib.animation
+package pumpking.lib.animation
 
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -18,7 +18,10 @@ class AnimationEngine(private val plugin: JavaPlugin) {
     private var taskId: Int = -1
 
     fun init() {
-        taskId = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, Runnable { tick() }, 0L, 2L).taskId
+        // FIX #1: was runTaskTimerAsynchronously — tick() accesses Bukkit API (getPlayer,
+        // isOnline, applyTo) which is NOT thread-safe. Using the sync scheduler is correct
+        // here; animations are lightweight and do not need a background thread.
+        taskId = Bukkit.getScheduler().runTaskTimer(plugin, Runnable { tick() }, 0L, 2L).taskId
         PumpkingLib.log(PumpkingLib.LogCategory.CORE, "[Animation] Engine initialized.")
     }
 

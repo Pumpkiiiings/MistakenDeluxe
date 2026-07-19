@@ -25,18 +25,18 @@ object LevelAPI {
     }
 
     fun unlockKiller(player: Player, killerId: String) {
-        mistakenAPI.playerDataManager.comprarAsesino(player.uniqueId, killerId)
+        mistakenAPI.playerDataManager.buyKiller(player.uniqueId, killerId)
     }
 
     fun unlockSurvivor(player: Player, survivorId: String) {
-        mistakenAPI.playerDataManager.comprarSuperviviente(player.uniqueId, survivorId)
+        mistakenAPI.playerDataManager.comprarSurvivor(player.uniqueId, survivorId)
     }
 
     fun hasUnlockedKiller(player: Player, killerId: String): Boolean {
-        return mistakenAPI.playerDataManager.tieneAsesino(player.uniqueId, killerId)
+        return mistakenAPI.playerDataManager.hasKiller(player.uniqueId, killerId)
     }
 
     fun hasUnlockedSurvivor(player: Player, survivorId: String): Boolean {
-        return mistakenAPI.playerDataManager.tieneSuperviviente(player.uniqueId, survivorId)
+        return mistakenAPI.playerDataManager.tieneSurvivor(player.uniqueId, survivorId)
     }
 }

@@ -1,4 +1,4 @@
-﻿package pumpking.lib.color
+package pumpking.lib.color
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -8,33 +8,30 @@ import java.util.concurrent.ConcurrentHashMap
 object ColorTranslator {
     private val mm = MiniMessage.miniMessage()
 
-    // LRU Cache for high performance (limits to 1000 entries)
-    private val cache = object : LinkedHashMap<String, Component>(1000, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Component>): Boolean {
-            return size > 1000
-        }
-    }
-    private val lock = Any()
+    // FIX #4: Replace LinkedHashMap + synchronized(lock) with a ConcurrentHashMap.
+    // The previous approach used a global lock that caused contention on the scoreboard
+    // hot path (every tick, every player). ConcurrentHashMap.computeIfAbsent() is lock-free
+    // for most reads and uses stripe-level locking only on first insertion.
+    // Simple bounded eviction: clear the map when it reaches the size limit.
+    // This is not LRU but is fully thread-safe and sufficient for this use case.
+    private val cache = ConcurrentHashMap<String, Component>(1024)
 
     /**
      * Translates a string with mixed color formats (Legacy, Hex, MiniMessage) into a Component.
      */
     fun translate(input: String, vararg tags: TagResolver): Component {
-        // If there are tags, we don't cache to prevent stale placeholders
+        // If there are tags, skip the cache to prevent stale placeholder values
         if (tags.isNotEmpty()) {
             val normalized = ColorNormalizer.normalizeToMiniMessage(input)
             return mm.deserialize(normalized, *tags)
         }
 
-        // Use cache for raw strings without runtime tags
-        synchronized(lock) {
-            val cached = cache[input]
-            if (cached != null) return cached
-
-            val normalized = ColorNormalizer.normalizeToMiniMessage(input)
-            val component = mm.deserialize(normalized)
-            cache[input] = component
-            return component
+        // FIX #4: Evict before inserting to keep the map bounded.
+        // The TOCTOU gap is acceptable: worst case we exceed 1000 entries by the
+        // number of concurrent inserting threads — negligible for this use case.
+        if (cache.size >= 1000) cache.clear()
+        return cache.computeIfAbsent(input) { k ->
+            mm.deserialize(ColorNormalizer.normalizeToMiniMessage(k))
         }
     }
 

@@ -1,4 +1,4 @@
-package liric.mistaken.menu.menus
+﻿package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -19,11 +19,11 @@ class KillerShop : MenuBase("killers_shop") {
 
 
     override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
-        val globalMecanicas = plugin.configManager.getKillerConfig(this.id)
+        val globalMecanicas = plugin.configManager.getKillerConfig("global")
 
         val preferredSlots = config.getIntegerList("ajustes.slots-disponibles").toMutableList()
 
-        // 🔥 NUEVO: Slots fijos configurados desde el YAML
+        // ðŸ”¥ NUEVO: Slots fijos configurados desde el YAML
         val fixedSlotsSection = config.getConfigurationSection("ajustes.slots-fijos")
         val fixedSlots = mutableMapOf<String, Int>()
         if (fixedSlotsSection != null) {
@@ -47,7 +47,7 @@ class KillerShop : MenuBase("killers_shop") {
             val permisoRequerido = globalMecanicas.getString("asesinos.$killerId.permiso")
             if (permisoRequerido != null && !player.hasPermission(permisoRequerido)) continue
 
-            // 🔥 NUEVO: Detección de slot fijo
+            // ðŸ”¥ NUEVO: DetecciÃ³n de slot fijo
             val targetSlot = if (fixedSlots.containsKey(killerId)) {
                 fixedSlots[killerId]!!
             } else if (preferredSlots.isNotEmpty()) {
@@ -78,7 +78,7 @@ class KillerShop : MenuBase("killers_shop") {
             for (i in 1..4) {
                 val habName = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "asesinos.$killerId.skill_names.habilidad$i", "", "killers_info")
                 if (habName.isNotEmpty()) {
-                    fullLore.add(parseSafe(" <dark_gray>•</dark_gray> <white>$habName</white>"))
+                    fullLore.add(parseSafe(" <dark_gray>â€¢</dark_gray> <white>$habName</white>"))
                 }
             }
             fullLore.add(Component.empty())
@@ -149,7 +149,7 @@ class KillerShop : MenuBase("killers_shop") {
         val econ = Mistaken.Companion.economy
 
         if (econ == null) {
-            player.sendMessage(parseSafe("<red><b>[!]</b> Error interno: El sistema de economía (Vault) no está conectado.</red>"))
+            player.sendMessage(parseSafe("<red><b>[!]</b> Error interno: El sistema de economÃ­a (Vault) no estÃ¡ conectado.</red>"))
             plugin.componentLogger.error("[ERROR] [Economy] Purchase failed due to disconnected Vault: Player ${player.name}, Assassin $killerId")
             return
         }
@@ -177,6 +177,7 @@ class KillerShop : MenuBase("killers_shop") {
 
 
 }
+
 
 
 

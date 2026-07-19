@@ -79,7 +79,7 @@ scoreboard:
     - "<white>Players: <#76F869>%online%"
     - ""
     - "<white>Profile: <#00FFFF>%player%"
-    - "<white>Level: %mistaken_level_prefix%"
+    - "<white>Level: %mistakenlevel_level_prefix%"
     - ""
   voting:
     - ""
@@ -98,7 +98,7 @@ scoreboard:
     - "<white>Players: <#76F869>%online%"
     - ""
     - "<white>Profile: <#00FFFF>%player%"
-    - "<white>Level: %mistaken_level_prefix%"
+    - "<white>Level: %mistakenlevel_level_prefix%"
     - ""
   starting:
     - ""
@@ -370,9 +370,9 @@ stamina:
 # --- MENU TITLES (resolved via %menu_title%) ---
 # ==========================================
 menus:
-  asesinos_tienda:
+  killers_shop:
     titulo: "<#FF4C4C><b>» Assassin Shop</b></#FF4C4C>"
-  supervivientes_tienda:
+  survivors_shop:
     titulo: "<#00FFFF><b>» Survivor Shop</b></#00FFFF>"
   tienda_principal:
     titulo: "<#001a33>» Main Shop"

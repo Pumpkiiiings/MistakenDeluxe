@@ -7,7 +7,7 @@ import org.bukkit.entity.Player
 class MistakenLevelExpansion(private val plugin: LevelAddonPlugin) : PlaceholderExpansion() {
 
     override fun getIdentifier(): String {
-        return "mistaken"
+        return "mistakenlevel"
     }
 
     override fun getAuthor(): String {

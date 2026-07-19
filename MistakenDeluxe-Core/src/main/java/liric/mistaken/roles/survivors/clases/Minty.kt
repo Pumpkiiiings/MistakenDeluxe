@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.clases
+﻿package liric.mistaken.roles.survivors.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Minty: El Survivor Licántropo.
+ * Minty: El Survivor LicÃ¡ntropo.
  * Rol: Control de Masas (CC) y Huida.
  * FIX: Null-Safety en activeTasks.add()
  */
@@ -95,7 +95,7 @@ class Minty : Survivor(
             player.world.spawnParticle(Particle.CLOUD, player.location, 2, 0.2, 0.1, 0.2, 0.05)
         }, null, 1L, 5L)
 
-        // SOLUCIÓN AL ERROR: Guardar solo si la tarea no es nula
+        // SOLUCIÃ“N AL ERROR: Guardar solo si la tarea no es nula
         task?.let { activeTasks.add(it) }
 
         // Cancelar a los 5 segundos
@@ -137,7 +137,7 @@ class Minty : Survivor(
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
-            langconfig.getString("skill_names.$key")?.let {
+            langConfig.getString("skill_names.$key")?.let {
                 item.editMeta { m -> m.displayName(mm.deserialize(it)) }
             }
             inv.setItem(slot, item)
@@ -157,6 +157,7 @@ class Minty : Survivor(
         activeTasks.clear()
     }
 }
+
 
 
 

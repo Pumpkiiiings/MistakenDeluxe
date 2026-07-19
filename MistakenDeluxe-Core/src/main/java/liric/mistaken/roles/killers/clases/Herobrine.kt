@@ -140,7 +140,7 @@ class Herobrine : CoreKiller(
                 // EFECTO 2: ASCENSIÃ“N FALSA (RAYO BEACON + MURCIÃ‰LAGOS)
                 world.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 2f, 1f)
 
-                val beacon = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) {
+                val beacon = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) {
                     it.block = Material.BEACON.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-0.5f, 0f, -0.5f), Quaternionf(), JomlVector3f(1f, 10f, 1f), Quaternionf())
                     it.isGlowing = true
@@ -169,7 +169,7 @@ class Herobrine : CoreKiller(
             2 -> {
                 // EFECTO 3: TEMPLO DEL VACÃO (MARCO DE PIEDRA Y ANTORCHAS)
                 world.playSound(loc, Sound.BLOCK_STONE_PLACE, 1f, 0.1f)
-                val altar = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) {
+                val altar = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) {
                     it.block = Material.MOSSY_COBBLESTONE.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-1.5f, -0.5f, -1.5f), Quaternionf(), JomlVector3f(3f, 1f, 3f), Quaternionf())
                 }
@@ -351,7 +351,7 @@ class Herobrine : CoreKiller(
         if (blockOrbiters[uuid]?.world != player.world) limpiarVisuales(uuid)
 
         if (!blockOrbiters.containsKey(uuid)) {
-            val bMain = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { bd ->
+            val bMain = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), player.location) { bd ->
                 bd.block = Material.NETHERRACK.createBlockData()
                 bd.transformation = Transformation(JomlVector3f(-0.15f, -0.15f, -0.15f), Quaternionf(), JomlVector3f(0.3f, 0.3f, 0.3f), Quaternionf())
                 bd.teleportDuration = 3
@@ -360,13 +360,13 @@ class Herobrine : CoreKiller(
             blockOrbiters[uuid] = bMain
 
             val extras = mutableListOf<Entity>().apply {
-                add(liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { id ->
+                add(liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), player.location) { id ->
                     id.setItemStack(ItemStack(Material.NETHER_STAR))
                     id.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
                     id.teleportDuration = 3
                     id.interpolationDuration = 3
                 })
-                add(liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { bd ->
+                add(liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), player.location) { bd ->
                     bd.block = Material.GOLD_BLOCK.createBlockData()
                     bd.transformation = Transformation(JomlVector3f(-0.15f), Quaternionf(), JomlVector3f(0.3f, 0.3f, 0.3f), Quaternionf())
                     bd.teleportDuration = 3
@@ -428,6 +428,7 @@ class Herobrine : CoreKiller(
         }
     }
 }
+
 
 
 

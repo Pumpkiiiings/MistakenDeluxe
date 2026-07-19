@@ -16,10 +16,13 @@ object ConfigManager : IConfigManager {
 
     private lateinit var plugin: JavaPlugin
 
-    @Volatile private lateinit var asesinosConfig: ConfigProvider
-    @Volatile private lateinit var supervivientesConfig: ConfigProvider
+    private val killersCache = ConcurrentHashMap<String, ConfigProvider>()
+    private val survivorsCache = ConcurrentHashMap<String, ConfigProvider>()
 
     private val menusCache = ConcurrentHashMap<String, ConfigProvider>()
+    // FIX #19: genericCache can grow indefinitely if callers use dynamic file names.
+    // Current usage is bounded to a known set of config files, so growth is acceptable.
+    // If this changes, replace with a Caffeine cache with maximumSize().
     private val genericCache = ConcurrentHashMap<String, ConfigProvider>()
 
     fun get(fileName: String): ConfigProvider {
@@ -33,6 +36,7 @@ object ConfigManager : IConfigManager {
     fun init(plugin: JavaPlugin) {
         this.plugin = plugin
 
+        pumpking.lib.config.sync.CharacterMigrator.migrate(plugin)
         loadAllConfigs()
         ConfigWatcher.init(plugin)
     }
@@ -44,17 +48,36 @@ object ConfigManager : IConfigManager {
     }
 
     fun loadAllConfigs() {
-        val asesinosFile = File(plugin.dataFolder, "asesinos.yml")
-        pumpking.lib.config.sync.ConfigSynchronizer.sync(plugin, "asesinos.yml", asesinosFile)
-        asesinosConfig = YamlConfigProvider(asesinosFile).apply { load() }
+        val killersDir = File(plugin.dataFolder, "characters/killers")
+        if (!killersDir.exists()) killersDir.mkdirs()
+        killersDir.listFiles { _, name -> name.endsWith(".yml") }?.forEach { file ->
+            val id = file.nameWithoutExtension.lowercase()
+            killersCache[id] = YamlConfigProvider(file).apply { load() }
+        }
 
-        val supervivientesFile = File(plugin.dataFolder, "supervivientes.yml")
-        pumpking.lib.config.sync.ConfigSynchronizer.sync(plugin, "supervivientes.yml", supervivientesFile)
-        supervivientesConfig = YamlConfigProvider(supervivientesFile).apply { load() }
+        val survivorsDir = File(plugin.dataFolder, "characters/survivors")
+        if (!survivorsDir.exists()) survivorsDir.mkdirs()
+        survivorsDir.listFiles { _, name -> name.endsWith(".yml") }?.forEach { file ->
+            val id = file.nameWithoutExtension.lowercase()
+            survivorsCache[id] = YamlConfigProvider(file).apply { load() }
+        }
     }
 
-    override fun getAsesinos(): org.bukkit.configuration.file.FileConfiguration = (asesinosConfig as YamlConfigProvider).getRaw()
-    override fun getSupervivientes(): org.bukkit.configuration.file.FileConfiguration = (supervivientesConfig as YamlConfigProvider).getRaw()
+    override fun getKillerConfig(id: String): org.bukkit.configuration.file.FileConfiguration {
+        val provider = killersCache.getOrPut(id.lowercase()) {
+            val file = File(plugin.dataFolder, "characters/killers/$id.yml")
+            YamlConfigProvider(file).apply { load() }
+        }
+        return (provider as YamlConfigProvider).getRaw()
+    }
+
+    override fun getSurvivorConfig(id: String): org.bukkit.configuration.file.FileConfiguration {
+        val provider = survivorsCache.getOrPut(id.lowercase()) {
+            val file = File(plugin.dataFolder, "characters/survivors/$id.yml")
+            YamlConfigProvider(file).apply { load() }
+        }
+        return (provider as YamlConfigProvider).getRaw()
+    }
 
     override fun getMenuConfig(fileName: String): org.bukkit.configuration.file.FileConfiguration {
         val provider = menusCache.getOrPut(fileName) {
@@ -70,19 +93,20 @@ object ConfigManager : IConfigManager {
     }
 
     override fun getAssassinName(player: Player?, assassinId: String): String {
-
-        val mistaken = plugin as liric.mistaken.Mistaken
+        // FIX #6: Removed the useless `val mistaken = plugin as liric.mistaken.Mistaken` cast.
+        // The variable was never used after the cast, and having a library class depend on
+        // a concrete plugin implementation violates layer separation (SRP/DIP).
         return pumpking.lib.service.PumpkingServiceManager.messages.getRawString(
             player = player,
-            fileName = "asesinos_info",
+            fileName = "killers_info",
             path = "asesinos.$assassinId.nombre",
             def = assassinId.uppercase()
         )
     }
 
     fun saveAll() {
-        saveConfigAsync(asesinosConfig, "asesinos.yml")
-        saveConfigAsync(supervivientesConfig, "supervivientes.yml")
+        killersCache.forEach { (id, config) -> saveConfigAsync(config, "characters/killers/$id.yml") }
+        survivorsCache.forEach { (id, config) -> saveConfigAsync(config, "characters/survivors/$id.yml") }
     }
 
     private fun saveConfigAsync(config: ConfigProvider, name: String) {
@@ -95,12 +119,13 @@ object ConfigManager : IConfigManager {
         }
     }
 
-    fun getCraftKey(path: String): String? {
-        val value = asesinosConfig.getString("asesinos.$path")
-        if (value.isEmpty() || value.equals("none", ignoreCase = true)) return null
+    fun getCraftKey(killerId: String, path: String): String? {
+        val config = getKillerConfig(killerId)
+        val value = config.getString(path)
+        if (value == null || value.isEmpty() || value.equals("none", ignoreCase = true)) return null
 
         return if (value.contains(":")) value
-        else "${asesinosConfig.getString("namespace", "mistaken")}:$value"
+        else "mistaken:$value"
     }
 }
 

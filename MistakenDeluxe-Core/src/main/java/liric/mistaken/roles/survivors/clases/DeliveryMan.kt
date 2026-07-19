@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.clases
+﻿package liric.mistaken.roles.survivors.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -18,8 +18,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * DeliveryMan: Soporte táctico y control de área.
- * OPTIMIZADO: Separación Mecánica/Info + Schedulers.
+ * DeliveryMan: Soporte tÃ¡ctico y control de Ã¡rea.
+ * OPTIMIZADO: SeparaciÃ³n MecÃ¡nica/Info + Schedulers.
  */
 class DeliveryMan : Survivor(
     "repartidor",
@@ -91,7 +91,7 @@ class DeliveryMan : Survivor(
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
-            langconfig.getString("skill_names.$key")?.let {
+            langConfig.getString("skill_names.$key")?.let {
                 item.editMeta { m -> m.displayName(mm.deserialize(it)) }
             }
             inv.setItem(slot, item)
@@ -145,6 +145,7 @@ class DeliveryMan : Survivor(
         activeTasks.clear()
     }
 }
+
 
 
 

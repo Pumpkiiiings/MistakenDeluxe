@@ -337,7 +337,7 @@ class Entity303 : CoreKiller(
         if (orbitadores[uuid]?.firstOrNull()?.world != playerWorld) limpiar(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
-            orbitMaterials.map { mat -> crearBloqueOrbitante(player.location, mat) }.toMutableList()
+            orbitMaterials.map { mat -> crearBloqueOrbitante(player, player.location, mat) }.toMutableList()
         }
 
         val anguloActual = (angulos.getOrDefault(uuid, 0.0) + 0.15) % (Math.PI * 2)
@@ -363,7 +363,7 @@ class Entity303 : CoreKiller(
         angulos[uuid] = anguloActual
     }
 
-    private fun crearBloqueOrbitante(loc: Location, mat: Material): BlockDisplay {
+    private fun crearBloqueOrbitante(player: Player, loc: Location, mat: Material): BlockDisplay {
         return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(
@@ -409,6 +409,7 @@ class Entity303 : CoreKiller(
         }
     }
 }
+
 
 
 

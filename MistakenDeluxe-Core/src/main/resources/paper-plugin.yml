@@ -26,3 +26,6 @@ dependencies:
     packetevents:
       load: BEFORE
       required: true
+    ObserverPaper:
+      load: BEFORE
+      required: false

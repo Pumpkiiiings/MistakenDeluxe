@@ -1,10 +1,14 @@
-﻿package pumpking.lib.color
+package pumpking.lib.color
 
 import java.util.regex.Pattern
 
 object ColorNormalizer {
     private val HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})")
     private val BUKKIT_HEX_PATTERN = Pattern.compile("§x(§[A-Fa-f0-9]){6}")
+
+    // FIX #11: Was compiled inside normalizeToMiniMessage() on every call.
+    // Pattern.compile() is expensive (NFA construction). Moved here as a compile-once constant.
+    private val STANDALONE_HEX_PATTERN = Pattern.compile("(?<!<)#([A-Fa-f0-9]{6})")
 
     // Map of legacy color codes to MiniMessage tags
     private val LEGACY_MAP = mapOf(
@@ -33,8 +37,8 @@ object ColorNormalizer {
         text = sbHex.toString()
 
         // Catch standalone #FF0000 if it's not already inside a tag like <#FF0000>
-        // A simple regex that replaces #RRGGBB not preceded by <
-        val standaloneHexMatcher = Pattern.compile("(?<!<)#([A-Fa-f0-9]{6})").matcher(text)
+        // FIX #11: STANDALONE_HEX_PATTERN is now a pre-compiled constant.
+        val standaloneHexMatcher = STANDALONE_HEX_PATTERN.matcher(text)
         val sbStand = StringBuffer()
         while (standaloneHexMatcher.find()) {
             standaloneHexMatcher.appendReplacement(sbStand, "<#${standaloneHexMatcher.group(1)}>")

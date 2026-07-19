@@ -51,14 +51,14 @@ class CommandReward : RewardExecutor {
 class KillerReward : RewardExecutor {
     override fun execute(player: Player, value: String) {
         val api = MistakenProvider.get()
-        api.playerDataManager.comprarAsesino(player.uniqueId, value)
+        api.playerDataManager.buyKiller(player.uniqueId, value)
     }
 }
 
 class SurvivorReward : RewardExecutor {
     override fun execute(player: Player, value: String) {
         val api = MistakenProvider.get()
-        api.playerDataManager.comprarSuperviviente(player.uniqueId, value)
+        api.playerDataManager.comprarSurvivor(player.uniqueId, value)
     }
 }
 

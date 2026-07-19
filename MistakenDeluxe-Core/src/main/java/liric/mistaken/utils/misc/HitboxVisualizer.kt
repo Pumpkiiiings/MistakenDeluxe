@@ -21,8 +21,12 @@ object HitboxVisualizer {
     val isEnabled: Boolean get() = _isEnabled.get()
 
     /** Atomically flips the enabled flag and returns the new value. */
-    fun toggle(): Boolean = _isEnabled.updateAndGet { !it }
-
+    fun toggle(): Boolean {
+        while (true) {
+            val current = _isEnabled.get()
+            if (_isEnabled.compareAndSet(current, !current)) return !current
+        }
+    }
     /**
      * Crea una Hitbox 3D usando BlockDisplays (Cristal tintado).
      * Ideal para habilidades continuas o proyectiles (debes borrarla manualmente con hitbox.remove()).
@@ -76,3 +80,4 @@ object HitboxVisualizer {
         }, ticks)
     }
 }
+

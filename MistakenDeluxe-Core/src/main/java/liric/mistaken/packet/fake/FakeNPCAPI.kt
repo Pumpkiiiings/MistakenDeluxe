@@ -17,9 +17,9 @@ class FakeNPCAPI {
 
     /**
      * Crea un NPC completamente Client-Side.
-     * @param player El jugador que lo verá.
-     * @param location Ubicación del NPC.
-     * @param name Nombre (mostrará la tag si no está oculta por Scoreboard Teams).
+     * @param player El jugador que lo verÃƒÂ¡.
+     * @param location UbicaciÃƒÂ³n del NPC.
+     * @param name Nombre (mostrarÃƒÂ¡ la tag si no estÃƒÂ¡ oculta por Scoreboard Teams).
      * @param textureValue Textura de skin (Base64).
      * @param textureSignature Firma de la skin.
      * @return El ID de Entidad generado.
@@ -53,14 +53,14 @@ class FakeNPCAPI {
         val pos = SpigotConversionUtil.fromBukkitLocation(location)
         val spawnPacket = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity(
             entityId,
-            fakeUUID,
+            java.util.Optional.of(fakeUUID),
             EntityTypes.PLAYER,
             pos.position,
             pos.pitch,
             pos.yaw,
             pos.yaw,
             0,
-            java.util.Optional.empty()
+            java.util.Optional.empty<com.github.retrooper.packetevents.util.Vector3d>()
         )
         pm.sendPacket(player, spawnPacket)
 
@@ -71,3 +71,5 @@ class FakeNPCAPI {
         return entityId
     }
 }
+
+

@@ -14,9 +14,9 @@ class FakeEntityAPI {
 
     /**
      * Spawnea una entidad falsa (Client-Side).
-     * Útil para crear hitboxes invisibles o efectos decorativos.
+     * Ãštil para crear hitboxes invisibles o efectos decorativos.
      * @param player Jugador objetivo
-     * @param location Ubicación
+     * @param location UbicaciÃ³n
      * @param type Tipo de Entidad (PacketEvents EntityType)
      * @return El ID de Entidad generado.
      */
@@ -27,7 +27,7 @@ class FakeEntityAPI {
 
         val spawnPacket = WrapperPlayServerSpawnEntity(
             entityId,
-            uuid,
+            java.util.Optional.of(uuid),
             type,
             pos.position,
             pos.pitch,
@@ -49,3 +49,4 @@ class FakeEntityAPI {
         PacketEvents.getAPI().playerManager.sendPacket(player, destroy)
     }
 }
+

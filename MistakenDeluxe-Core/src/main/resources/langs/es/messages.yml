@@ -38,8 +38,8 @@ bossbar:
 
 words:
   lobby: "Lobby Principal"
-  assassin: "El Asesino"
-  survivors: "Supervivientes"
+  assassin: "El Killer"
+  survivors: "Survivors"
 
 discord:
   reason_killer_won: "¡El asesino masacró a todos!"
@@ -90,7 +90,7 @@ scoreboard:
     - "<white>Jugadores: <#76F869>%online%"
     - ""
     - "<white>Perfil: <#00FFFF>%player%"
-    - "<white>Nivel: %mistaken_level_prefix%"
+    - "<white>Nivel: %mistakenlevel_level_prefix%"
     - ""
   voting:
     - ""
@@ -109,7 +109,7 @@ scoreboard:
     - "<white>Jugadores: <#76F869>%online%"
     - ""
     - "<white>Perfil: <#00FFFF>%player%"
-    - "<white>Nivel: %mistaken_level_prefix%"
+    - "<white>Nivel: %mistakenlevel_level_prefix%"
     - ""
   starting:
     - ""
@@ -128,7 +128,7 @@ scoreboard:
     - "<white>Tiempo: <#FFD700>%timer%"
     - ""
     - "<white>Gens: <#76F869>%completed%/%total%"
-    - "<white>Asesino:"
+    - "<white>Killer:"
     - "%killers%"
     - ""
     - "<white>Vidas: <#FF4C4C>%lives% ❤"
@@ -166,7 +166,7 @@ scoreboard:
     - "<white>Tiempo: <#FFD700>%timer%"
     - ""
     - "<white>Gens: <#76F869>%completed%/%total%"
-    - "<white>Asesino:"
+    - "<white>Killer:"
     - "%killers%"
     - ""
   ingame_assassin_pvp:
@@ -187,7 +187,7 @@ scoreboard:
     - "<white>Tiempo: <#FFD700>%timer%"
     - ""
     - "<white>Gens: <#76F869>%completed%/%total%"
-    - "<white>Asesino:"
+    - "<white>Killer:"
     - "%killers%"
     - ""
   ending:
@@ -237,7 +237,7 @@ killer:
 # --- TIENDA ---
 tienda:
   clase-especial: "<#555555>Entidad de Clase Especial"
-  clase-humana: "<#AAAAAA>Clase: <white>Superviviente Humano"
+  clase-humana: "<#AAAAAA>Clase: <white>Survivor Humano"
   habilidades-titulo: "<#AAAAAA>▶ <white>Habilidades:"
   estado-seleccionado: "<#76F869>✔�  <bold>SELECCIONADO"
   estado-poseido: "<#FFD700>» Click para seleccionar"
@@ -286,8 +286,8 @@ admin:
 
 stats:
   header: "<#555555> <st>            </st> <#FFA500>ESTADÍSTICAS: <white><player></#FFA500> <st>            </st> "
-  wins-survivor: "<#AAAAAA>Victorias Superviviente: <#76F869><value>"
-  wins-assassin: "<#AAAAAA>Victorias Asesino: <#FF4C4C><value>"
+  wins-survivor: "<#AAAAAA>Victorias Survivor: <#76F869><value>"
+  wins-assassin: "<#AAAAAA>Victorias Killer: <#FF4C4C><value>"
   kills: "<#AAAAAA>Kills Totales: <#AA0000><value>"
   deaths: "<#AAAAAA>Muertes Totales: <#555555><value>"
   footer: "<#555555><st>"
@@ -319,11 +319,11 @@ game:
   map-loaded: "<#76F869>Mapa <#FFD700>{map}</#FFD700> seleccionado."
   player-died: "<#FF4C4C><white>{player}</white> ha sido eliminado."
   player-frozen-death: "<#FF4C4C><white>{player}</white> murió congelado."
-  killer-disconnected: "<prefix><#FF4C4C>¡El Asesino se dio a la fuga!"
-  killer-died-victory: "<#FF4C4C>¡El Asesino ha muerto!"
+  killer-disconnected: "<prefix><#FF4C4C>¡El Killer se dio a la fuga!"
+  killer-died-victory: "<#FF4C4C>¡El Killer ha muerto!"
   victory-killer: "<#FF4C4C><bold>EL MAL HA TRIUNFADO."
   victory-survivors: "<#76F869><bold>¡SOBREVIVISTE!"
-  killer-hit-actionbar: "<#FF4C4C>❤ <white>Vida del Asesino: <#FFD700>{health}</#FFD700>"
+  killer-hit-actionbar: "<#FF4C4C>❤ <white>Vida del Killer: <#FFD700>{health}</#FFD700>"
   killer-stunned-damager: "<#FF4C4C>¡Aturdiste al asesino!"
   killer-stunned-victim: "<#FFD700>¡Has sido aturdido!"
   killer-title: "<#FF4C4C><bold>¡VICTORIA!"
@@ -361,9 +361,9 @@ arena:
   status-ready: "<#76F869>LISTO"
   status-incomplete: "<#FF4C4C>INCOMPLETO"
   check-header: "<#555555>» <#AAAAAA>Estado de <#FFD700>{name}</#FFD700>: {status}"
-  check-survivors: "<#AAAAAA> - Spawns Supervivientes: <white>{count}"
+  check-survivors: "<#AAAAAA> - Spawns Survivors: <white>{count}"
   check-generators: "<#AAAAAA> - Generadores: <white>{count}"
-  check-killer: "<#AAAAAA> - Spawn Asesino: {icon}"
+  check-killer: "<#AAAAAA> - Spawn Killer: {icon}"
   help-header: "<#00FFFF><bold>MISTAKEN</bold></#00FFFF> <#555555>| <#AAAAAA>Arenas"
   help-line-create: " <#FFD700>/arena create <name>"
   help-line-delete: " <#FFD700>/arena delete <name>"
@@ -408,10 +408,10 @@ stamina:
 # --- TÃ� TULOS DE MENÚS (resueltos por %menu_title%) ---
 # ==========================================
 menus:
-  asesinos_tienda:
+  killers_shop:
     titulo: "<#FF4C4C><b>» Tienda de Asesinos</b></#FF4C4C>"
-  supervivientes_tienda:
-    titulo: "<#00FFFF><b>» Tienda de Supervivientes</b></#00FFFF>"
+  survivors_shop:
+    titulo: "<#00FFFF><b>» Tienda de Survivors</b></#00FFFF>"
   tienda_principal:
     titulo: "<#001a33>» Tienda Principal"
     items:

@@ -359,7 +359,7 @@ class NullAsesino : CoreKiller(
     }
 
     private fun crearItemOrbitante(loc: Location, mat: Material): ItemDisplay {
-        return liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { id ->
+        return liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { id ->
             id.setItemStack(ItemStack(mat))
             id.transformation = Transformation(
                 JomlVector3f(0f, 0f, 0f),
@@ -394,6 +394,7 @@ class NullAsesino : CoreKiller(
         activeTraps.clear()
     }
 }
+
 
 
 
