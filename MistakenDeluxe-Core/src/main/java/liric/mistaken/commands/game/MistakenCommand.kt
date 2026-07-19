@@ -276,7 +276,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Debes estar en una partida para forzar un asesino."))
                     return
                 }
-                if (gm.currentState != GameState.LOBBY && gm.currentState != GameState.INITIALIZES) {
+                if (gm.currentState == GameState.INGAME || gm.currentState == GameState.ENDING || gm.currentState == GameState.STARTING) {
                     sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No puedes forzar el rol porque la partida ya inició."))
                     return
                 }
