@@ -31,11 +31,10 @@ class EspectearCommand(private val plugin: Mistaken) : BasicCommand {
             return
         }
 
-        // Si el jugador todavía está participando activamente (vivo)
-        val isKiller = session.isKiller(player.uniqueId)
-        val esSurvivor = plugin.supervivienteManager.esSurvivorActivo(player)
+        // Si el jugador no está en modo espectador (es decir, sigue vivo)
+        val isSpectator = plugin.spectatorManager.isSpectator(player)
 
-        if (player.gameMode == GameMode.SURVIVAL && (isKiller || esSurvivor)) {
+        if (!isSpectator) {
             player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>¡Aún estás participando en la caza! No puedes entrar en modo espectador."))
             return
         }

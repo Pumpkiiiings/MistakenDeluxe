@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.audio
+package liric.mistaken.game.managers.audio
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -68,7 +68,6 @@ class MusicManager(private val plugin: Mistaken) {
             while (isActive && !plugin.isReady) delay(1000L)
 
             while (isActive) {
-                try {
                 // 1. Decidir la canción actual para los que están en "espera" (Lobby/Votación/Break)
                 if (currentLobbyTrack == null && playlist.isNotEmpty()) {
                     currentLobbyTrack = playlist.random()

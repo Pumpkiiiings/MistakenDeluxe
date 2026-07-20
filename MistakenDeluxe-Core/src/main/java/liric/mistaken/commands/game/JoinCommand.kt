@@ -44,7 +44,7 @@ object JoinCommand {
 
                     // Buscar una partida que esté esperando jugadores
                     var targetSession = plugin.sessionManager.activeSessions.values.firstOrNull {
-                        (it.currentState == GameState.LOBBY || it.currentState == GameState.VOTING) && it.getPlayers().size < maxPlayers
+                        (it.currentState == GameState.LOBBY || it.currentState == GameState.VOTING || it.currentState == GameState.BREAK) && it.getPlayers().size < maxPlayers
                     }
 
                     // Si todo está lleno o en juego, creamos una nueva arena
