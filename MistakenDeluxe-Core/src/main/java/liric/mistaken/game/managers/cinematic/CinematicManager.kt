@@ -1,13 +1,11 @@
 package liric.mistaken.game.managers.cinematic
 
-import com.pumpkiiiings.pkcinematics.api.PkCinematics
-import com.pumpkiiiings.pkcinematics.model.Cinematic
-import com.pumpkiiiings.pkcinematics.model.timeline.CameraKeyframe
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.profiles.*
 import liric.mistaken.roles.killers.Killer
 import net.kyori.adventure.title.Title
 import org.bukkit.GameMode
+import org.bukkit.Location
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Player
 import java.time.Duration
@@ -54,34 +52,6 @@ class CinematicManager(private val plugin: Mistaken) {
         return profiles[id.lowercase()] ?: defaultProfile
     }
 
-    private fun generateDynamicCinematic(id: String, centerLoc: org.bukkit.Location, duracionTicks: Int, radius: Double = 5.0): Cinematic {
-        val cinematic = Cinematic(id)
-        val worldName = centerLoc.world.name
-        
-        val numKeyframes = duracionTicks / 10
-        val angleStep = (2 * Math.PI) / numKeyframes
-        
-        for (i in 0..numKeyframes) {
-            val tick = i * 10
-            val angle = i * angleStep
-            
-            val x = centerLoc.x + radius * kotlin.math.cos(angle)
-            val z = centerLoc.z + radius * kotlin.math.sin(angle)
-            val y = centerLoc.y + 1.5
-            
-            val dx = centerLoc.x - x
-            val dz = centerLoc.z - z
-            val yaw = (Math.toDegrees(Math.atan2(dz, dx)) - 90.0).toFloat()
-            val pitch = 10f
-            
-            cinematic.timeline.cameraTrack.addKeyframe(CameraKeyframe(
-                tick, worldName, x, y, z, yaw, pitch, 70f, "LINEAR"
-            ))
-        }
-        
-        cinematic.timeline.calculateDuration()
-        return cinematic
-    }
 
     fun playKillerIntro(killer: Player, asesino: Killer) {
         val id = asesino.id.lowercase()
@@ -104,42 +74,63 @@ class CinematicManager(private val plugin: Mistaken) {
         val titlePair = profile.getIntroTexts(plugin, asesino.nombre)
         val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(6), Duration.ofMillis(1000))
 
-        val cinematicId = "intro_$id" + "_" + UUID.randomUUID().toString().take(6)
-        val dynamicCinematic = generateDynamicCinematic(cinematicId, centerLoc, duracionTicks)
-
+        val cameras = mutableListOf<VirtualCamera>()
         plugin.server.onlinePlayers.forEach { p ->
             p.showTitle(Title.title(titlePair.first, titlePair.second, times))
             if (p == killer) p.isInvisible = true
-            PkCinematics.getApi().playbackManager.play(p, dynamicCinematic)
+            
+            val cam = VirtualCamera(p)
+            // Initial position fallback, we will update it immediately in the task
+            cam.startSpectating(centerLoc.clone().add(5.0, 1.5, 0.0))
+            cameras.add(cam)
         }
 
         val fxLoc = centerLoc.clone(); fxLoc.y -= yOffset
         
-        // Start dialogs
-        val dialogos = profile.getDialogs(isIntro = true)
-        var tickDial = 0
-        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!visualDummy.isValid) {
-                task.cancel(); return@Consumer
-            }
-            if (dialogos.isNotEmpty()) {
-                val index = (tickDial / 40) % dialogos.size
-                if (tickDial < dialogos.size * 40) {
-                    plugin.server.onlinePlayers.forEach { it.sendActionBar(pumpking.lib.color.ColorTranslator.translate(dialogos[index])) }
-                }
-            }
-            tickDial++
-        }, 1L, 1L)
-
         // Play visual effects
         profile.playEffects(plugin, fxLoc, visualDummy, isIntro = true, displayManager)
 
-        // Cleanup after duracionTicks
-        plugin.server.globalRegionScheduler.runDelayed(plugin, Consumer { _ ->
-            visualDummy.remove()
-            killer.isInvisible = false
-            plugin.server.onlinePlayers.forEach { p -> PkCinematics.getApi().playbackManager.stop(p) }
-        }, duracionTicks.toLong())
+        // Start cinematic orbit and dialogs
+        val dialogos = profile.getDialogs(isIntro = true)
+        var ticks = 0
+        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (ticks >= duracionTicks || !visualDummy.isValid) {
+                task.cancel()
+                visualDummy.remove()
+                killer.isInvisible = false
+                cameras.forEach { it.stopSpectating() }
+                return@Consumer
+            }
+            
+            // Dialog logic
+            if (dialogos.isNotEmpty()) {
+                val index = (ticks / 40) % dialogos.size
+                if (ticks < dialogos.size * 40) {
+                    val msg = pumpking.lib.color.ColorTranslator.translate(dialogos[index])
+                    plugin.server.onlinePlayers.forEach { it.sendActionBar(msg) }
+                }
+            }
+
+            // Cinematic Epic Orbit - Starts far and orbits while getting closer
+            val progress = ticks.toDouble() / duracionTicks.toDouble()
+            val angle = progress * Math.PI * 2.0 // One full rotation
+            val radius = 5.0 - (progress * 2.5) // Radius shrinks from 5.0 to 2.5 blocks
+            val yOffsetCam = 0.5 + (progress * 2.0) // Camera rises from +0.5 to +2.5
+            
+            val camX = centerLoc.x + radius * kotlin.math.cos(angle)
+            val camZ = centerLoc.z + radius * kotlin.math.sin(angle)
+            val camY = centerLoc.y + yOffsetCam
+            
+            val camLoc = Location(centerLoc.world, camX, camY, camZ)
+            
+            // Look directly at the center of the entity (Y + 1.2 approx)
+            val lookAt = centerLoc.clone().add(0.0, 1.2, 0.0)
+            camLoc.direction = lookAt.toVector().subtract(camLoc.toVector())
+            
+            cameras.forEach { it.updatePosition(camLoc) }
+
+            ticks++
+        }, 1L, 1L)
     }
 
     fun playKillerOutro(killer: Player, asesino: Killer) {
@@ -162,39 +153,59 @@ class CinematicManager(private val plugin: Mistaken) {
         val titlePair = profile.getOutroTexts(plugin, asesino.nombre)
         val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(8), Duration.ofMillis(1000))
 
-        val cinematicId = "outro_$id" + "_" + UUID.randomUUID().toString().take(6)
-        val dynamicCinematic = generateDynamicCinematic(cinematicId, centerLoc, duracionTicks)
-
+        val cameras = mutableListOf<VirtualCamera>()
         plugin.server.onlinePlayers.forEach { p ->
             p.showTitle(Title.title(titlePair.first, titlePair.second, times))
             if (p == killer) p.isInvisible = true
-            PkCinematics.getApi().playbackManager.play(p, dynamicCinematic)
+            
+            val cam = VirtualCamera(p)
+            cam.startSpectating(centerLoc.clone().add(3.0, 1.5, 0.0))
+            cameras.add(cam)
         }
-
-        // Start dialogs
-        val dialogos = profile.getDialogs(isIntro = false)
-        var tickDial = 0
-        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!visualDummy.isValid) {
-                task.cancel(); return@Consumer
-            }
-            if (dialogos.isNotEmpty()) {
-                val index = (tickDial / 40) % dialogos.size
-                if (tickDial < dialogos.size * 40) {
-                    plugin.server.onlinePlayers.forEach { it.sendActionBar(pumpking.lib.color.ColorTranslator.translate(dialogos[index])) }
-                }
-            }
-            tickDial++
-        }, 1L, 1L)
 
         // Play visual effects
         profile.playEffects(plugin, centerLoc, visualDummy, isIntro = false, displayManager)
 
-        // Cleanup after duracionTicks
-        plugin.server.globalRegionScheduler.runDelayed(plugin, Consumer { _ ->
-            visualDummy.remove()
-            killer.isInvisible = false
-            plugin.server.onlinePlayers.forEach { p -> PkCinematics.getApi().playbackManager.stop(p) }
-        }, duracionTicks.toLong())
+        // Start cinematic orbit and dialogs
+        val dialogos = profile.getDialogs(isIntro = false)
+        var ticks = 0
+        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
+            if (ticks >= duracionTicks || !visualDummy.isValid) {
+                task.cancel()
+                visualDummy.remove()
+                killer.isInvisible = false
+                cameras.forEach { it.stopSpectating() }
+                return@Consumer
+            }
+            
+            // Dialog logic
+            if (dialogos.isNotEmpty()) {
+                val index = (ticks / 40) % dialogos.size
+                if (ticks < dialogos.size * 40) {
+                    val msg = pumpking.lib.color.ColorTranslator.translate(dialogos[index])
+                    plugin.server.onlinePlayers.forEach { it.sendActionBar(msg) }
+                }
+            }
+
+            // Cinematic Epic Outro - Starts close and zooms out slowly while panning up
+            val progress = ticks.toDouble() / duracionTicks.toDouble()
+            val angle = progress * Math.PI // Half rotation
+            val radius = 2.5 + (progress * 6.0) // Radius expands from 2.5 to 8.5 blocks
+            val yOffsetCam = 1.0 + (progress * 4.0) // Camera rises from +1.0 to +5.0
+            
+            val camX = centerLoc.x + radius * kotlin.math.cos(angle)
+            val camZ = centerLoc.z + radius * kotlin.math.sin(angle)
+            val camY = centerLoc.y + yOffsetCam
+            
+            val camLoc = Location(centerLoc.world, camX, camY, camZ)
+            
+            // Look directly at the center of the entity (Y + 1.2 approx)
+            val lookAt = centerLoc.clone().add(0.0, 1.2, 0.0)
+            camLoc.direction = lookAt.toVector().subtract(camLoc.toVector())
+            
+            cameras.forEach { it.updatePosition(camLoc) }
+
+            ticks++
+        }, 1L, 1L)
     }
 }

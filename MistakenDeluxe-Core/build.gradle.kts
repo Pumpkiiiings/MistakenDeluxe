@@ -60,7 +60,7 @@ dependencies {
 
     zap(kotlin("stdlib"))
     zap("com.mojang:brigadier:1.2.9")
-    // Librerías que se incluirán en el JAR (Shadow)
+    // Librerï¿½as que se incluirï¿½n en el JAR (Shadow)
     zap("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
     zap("com.zaxxer:HikariCP:5.1.0")
@@ -81,7 +81,6 @@ dependencies {
     compileOnly("net.momirealms:craft-engine-core:0.0.67.11")
     compileOnly("net.momirealms:craft-engine-bukkit:0.0.67.11")
     compileOnly(files("../libs/CraftEngine.jar"))
-    compileOnly(files("C:/Users/L900m/OneDrive/Desktop/PkCinematic/build/libs/PkCinematics-1.2-FIX-dev-all.jar"))
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
     compileOnly(files("../libs/observer-paper.jar"))
