@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+﻿import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -60,13 +60,13 @@ dependencies {
 
     zap(kotlin("stdlib"))
     zap("com.mojang:brigadier:1.2.9")
-    // Librer�as que se incluir�n en el JAR (Shadow)
-    zap("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    // Librerï¿½as que se incluirï¿½n en el JAR (Shadow)
+    zap("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
     zap("com.zaxxer:HikariCP:5.1.0")
     zap("fr.skytasul:glowingentities:1.4.11")
     zap("com.mysql:mysql-connector-j:9.7.0")
-    zap("org.postgresql:postgresql:42.7.11")
+    zap("org.postgresql:postgresql:42.7.13")
     zap("com.h2database:h2:2.2.224")
     zap("dev.triumphteam:triumph-gui:3.1.13")
     zap("org.slf4j:slf4j-simple:2.0.18")
@@ -87,7 +87,7 @@ dependencies {
 
     // Paper ya incluye Adventure y MiniMessage nativamente
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
-    compileOnly("org.jetbrains:annotations:24.0.1")
+    compileOnly("org.jetbrains:annotations:26.0.1")
 }
 
 tasks {

@@ -1,4 +1,4 @@
-plugins {
+﻿plugins {
     java
     kotlin("jvm") version "2.3.0"
     id("maven-publish")
@@ -23,7 +23,7 @@ dependencies {
     compileOnly(kotlin("stdlib"))
 
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
-    compileOnly("org.jetbrains:annotations:24.0.1")
+    compileOnly("org.jetbrains:annotations:26.0.1")
 }
 
 tasks {

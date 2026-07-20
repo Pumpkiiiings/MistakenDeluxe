@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+﻿import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -51,7 +51,7 @@ dependencies {
     // Addon specific Zapper dependencies
     zap("com.zaxxer:HikariCP:5.1.0")
     zap("com.mysql:mysql-connector-j:9.7.0")
-    zap("org.xerial:sqlite-jdbc:3.45.2.0")
+    zap("org.xerial:sqlite-jdbc:3.53.2.0")
     zap("dev.triumphteam:triumph-gui:3.1.13")
 
     // compileOnly("com.frengor:ultimateadvancementapi:2.8.0")

@@ -1,13 +1,13 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget // 🔥 IMPORTANTE: Necesario para el nuevo compilerOptions
+﻿import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget // ðŸ”¥ IMPORTANTE: Necesario para el nuevo compilerOptions
 
 buildscript {
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath("org.ow2.asm:asm:9.6")
-        classpath("org.ow2.asm:asm-commons:9.6")
+        classpath("org.ow2.asm:asm:9.10.1")
+        classpath("org.ow2.asm:asm-commons:9.10.1")
     }
 }
 
@@ -68,14 +68,14 @@ dependencies {
     
     zap(kotlin("stdlib"))
     zap("com.mojang:brigadier:1.2.9")
-    // Librerías que se incluirán en el JAR (Shadow)
-    zap("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    compileOnly("com.github.retrooper:packetevents-spigot:2.12.2")
+    // LibrerÃ­as que se incluirÃ¡n en el JAR (Shadow)
+    zap("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
     zap("com.zaxxer:HikariCP:5.1.0")
     zap("fr.skytasul:glowingentities:1.4.11")
     zap("com.mysql:mysql-connector-j:9.7.0")
-    zap("org.postgresql:postgresql:42.7.11")
-    zap("org.xerial:sqlite-jdbc:3.45.2.0")
+    zap("org.postgresql:postgresql:42.7.13")
+    zap("org.xerial:sqlite-jdbc:3.53.2.0")
     zap("dev.triumphteam:triumph-gui:3.1.13")
     zap("org.slf4j:slf4j-simple:2.0.18")
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
@@ -96,7 +96,7 @@ dependencies {
 
     // Paper ya incluye Adventure y MiniMessage nativamente
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
-    compileOnly("org.jetbrains:annotations:24.0.1")
+    compileOnly("org.jetbrains:annotations:26.0.1")
 }
 
 tasks {
@@ -113,7 +113,7 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        // 🔥 CORRECCIÓN: Migración de kotlinOptions a compilerOptions
+        // ðŸ”¥ CORRECCIÃ“N: MigraciÃ³n de kotlinOptions a compilerOptions
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
         }
