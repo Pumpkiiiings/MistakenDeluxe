@@ -53,7 +53,7 @@ class CinematicManager(private val plugin: Mistaken) {
     }
 
 
-    fun playKillerIntro(killer: Player, asesino: Killer) {
+    fun playKillerIntro(killer: Player, asesino: Killer, viewers: List<Player>) {
         val id = asesino.id.lowercase()
         val profile = getProfile(id)
         val duracionTicks = 160
@@ -75,7 +75,7 @@ class CinematicManager(private val plugin: Mistaken) {
         val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(6), Duration.ofMillis(1000))
 
         val cameras = mutableListOf<VirtualCamera>()
-        plugin.server.onlinePlayers.forEach { p ->
+        viewers.forEach { p ->
             p.showTitle(Title.title(titlePair.first, titlePair.second, times))
             if (p == killer) p.isInvisible = true
             
@@ -107,7 +107,7 @@ class CinematicManager(private val plugin: Mistaken) {
                 val index = (ticks / 40) % dialogos.size
                 if (ticks < dialogos.size * 40) {
                     val msg = pumpking.lib.color.ColorTranslator.translate(dialogos[index])
-                    plugin.server.onlinePlayers.forEach { it.sendActionBar(msg) }
+                    viewers.forEach { it.sendActionBar(msg) }
                 }
             }
 
@@ -133,7 +133,7 @@ class CinematicManager(private val plugin: Mistaken) {
         }, 1L, 1L)
     }
 
-    fun playKillerOutro(killer: Player, asesino: Killer) {
+    fun playKillerOutro(killer: Player, asesino: Killer, viewers: List<Player>) {
         val id = asesino.id.lowercase()
         val profile = getProfile(id)
         val duracionTicks = 200
@@ -154,7 +154,7 @@ class CinematicManager(private val plugin: Mistaken) {
         val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(8), Duration.ofMillis(1000))
 
         val cameras = mutableListOf<VirtualCamera>()
-        plugin.server.onlinePlayers.forEach { p ->
+        viewers.forEach { p ->
             p.showTitle(Title.title(titlePair.first, titlePair.second, times))
             if (p == killer) p.isInvisible = true
             
@@ -183,7 +183,7 @@ class CinematicManager(private val plugin: Mistaken) {
                 val index = (ticks / 40) % dialogos.size
                 if (ticks < dialogos.size * 40) {
                     val msg = pumpking.lib.color.ColorTranslator.translate(dialogos[index])
-                    plugin.server.onlinePlayers.forEach { it.sendActionBar(msg) }
+                    viewers.forEach { it.sendActionBar(msg) }
                 }
             }
 

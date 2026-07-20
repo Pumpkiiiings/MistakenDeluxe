@@ -36,7 +36,7 @@ object CinematicaCommand {
                                 val asesinoDummy = createDummy(asesinoId)
                                 source.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Reproduciendo <bold>INTRO</bold> de: <yellow>$asesinoId"))
 
-                                plugin.cinematicManager.playKillerIntro(source, asesinoDummy)
+                                plugin.cinematicManager.playKillerIntro(source, asesinoDummy, listOf(source))
                                 Command.SINGLE_SUCCESS
                             }
                     )
@@ -57,7 +57,7 @@ object CinematicaCommand {
                                 val asesinoDummy = createDummy(asesinoId)
                                 source.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Reproduciendo <bold>OUTRO</bold> de: <yellow>$asesinoId"))
 
-                                plugin.cinematicManager.playKillerOutro(source, asesinoDummy)
+                                plugin.cinematicManager.playKillerOutro(source, asesinoDummy, listOf(source))
                                 Command.SINGLE_SUCCESS
                             }
                     )

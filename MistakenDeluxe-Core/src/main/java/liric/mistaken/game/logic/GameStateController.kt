@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.logic
+package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -86,7 +86,7 @@ class GameStateController(private val game: GameSession) {
                 if (killer != null && killer.isOnline) {
                     val killerClass = game.plugin.asesinoManager.getKillerOfPlayer(killer)
                     if (killerClass != null) {
-                        game.plugin.cinematicManager.playKillerIntro(killer, killerClass)
+                        game.plugin.cinematicManager.playKillerIntro(killer, killerClass, game.getPlayers())
                     }
                 }
             }
@@ -271,7 +271,7 @@ class GameStateController(private val game: GameSession) {
         if (killerWon && killer != null) {
             val killerClass = game.plugin.asesinoManager.getKillerOfPlayer(killer)
             if (killerClass != null) {
-                game.plugin.cinematicManager.playKillerOutro(killer, killerClass)
+                game.plugin.cinematicManager.playKillerOutro(killer, killerClass, game.getPlayers())
             } else {
                 game.broadcastLocalized(configPath)
             }
