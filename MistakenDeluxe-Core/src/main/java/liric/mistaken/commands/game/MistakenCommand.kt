@@ -257,7 +257,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     val target = Bukkit.getPlayer(args[1])
                     if (target != null) {
                         plugin.asesinoManager.removeKiller(target)
-                        val msg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "admin.removekiller-success", "<green>Killer removido: {player}", "messages")
+                        val msg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, liric.mistaken.config.Messages.ADMIN_REMOVEKILLER_SUCCESS, "<green>Killer removido: {player}", "messages")
                             .replace("{player}", target.name)
                         sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
                     }
@@ -267,24 +267,24 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "forcekiller" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (args.size < 2) {
-                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "admin.forcekiller-usage", "<red>Uso: /mistaken forcekiller <jugador>", "messages")))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, liric.mistaken.config.Messages.ADMIN_FORCEKILLER_USAGE, "<red>Uso: /mistaken forcekiller <jugador>", "messages")))
                     return
                 }
                 val target = Bukkit.getPlayer(args[1])
                 if (target == null) {
-                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "errors.player-not-found", "<red>Jugador desconectado.", "messages")))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, liric.mistaken.config.Messages.ERRORS_PLAYER_NOT_FOUND, "<red>Jugador desconectado.", "messages")))
                     return
                 }
                 if (gm == null) {
-                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "admin.forcekiller-not-in-game", "<red>Debes estar en una partida para forzar un asesino.", "messages")))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, liric.mistaken.config.Messages.ADMIN_FORCEKILLER_NOT_IN_GAME, "<red>Debes estar en una partida para forzar un asesino.", "messages")))
                     return
                 }
                 if (gm.currentState == GameState.INGAME || gm.currentState == GameState.ENDING || gm.currentState == GameState.STARTING) {
-                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "admin.forcekiller-already-started", "<red>No puedes forzar el rol porque la partida ya inició.", "messages")))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, liric.mistaken.config.Messages.ADMIN_FORCEKILLER_ALREADY_STARTED, "<red>No puedes forzar el rol porque la partida ya inició.", "messages")))
                     return
                 }
                 gm.forcedKillerUUID = target.uniqueId
-                val successMsg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "admin.forcekiller-success", "<green>Has forzado a <white>{player}</white> a ser el asesino en la siguiente partida de <aqua>{arena}</aqua>.", "messages")
+                val successMsg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, liric.mistaken.config.Messages.ADMIN_FORCEKILLER_SUCCESS, "<green>Has forzado a <white>{player}</white> a ser el asesino en la siguiente partida de <aqua>{arena}</aqua>.", "messages")
                     .replace("{player}", target.name)
                     .replace("{arena}", gm.id)
                 sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(successMsg))
