@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic.profiles
+﻿package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -61,17 +61,6 @@ class DevestoProfile : CinematicProfile {
                 )
                 world.playSound(loc, Sound.BLOCK_GLASS_BREAK, 0.5f, 0.5f)
             }, 1L, 5L)
-        }
     }
-
-    override fun processCameraTick(camLoc: Location, center: Location, dummy: ArmorStand, ticks: Int, isIntro: Boolean, plugin: Mistaken) {
-        if (isIntro) {
-            camLoc.add(0.0, 1.0 + (ticks * 0.02), 5.0)
-            camLoc.setDirection(center.clone().add(0.0, 2.5, 0.0).toVector().subtract(camLoc.toVector()))
-        } else {
-            val altura = Math.min(10.0, 4.0 + (ticks * 0.1))
-            camLoc.add(0.0, altura, 1.0)
-            camLoc.setDirection(center.clone().add(0.0, 2.5, 0.0).toVector().subtract(camLoc.toVector()))
-        }
     }
 }

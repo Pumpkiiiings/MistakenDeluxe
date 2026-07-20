@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+﻿package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -44,7 +44,7 @@ class Entity303 : CoreKiller(
 
     private val path = "asesinos.entity303"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
-    private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
+    private val orbitadores = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualBlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
 
     // Anti-spam para los efectos de muerte
@@ -167,7 +167,7 @@ class Entity303 : CoreKiller(
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     tnt.teleport(loc.clone().add(0.0, 3.0, 0.0))
                     val t = tnt.transformation
-                    t.leftRotation.rotateY(5f).rotateX(2f)
+                    t!!.leftRotation.rotateY(5f).rotateX(2f)
                     tnt.transformation = t
                 }, 1L)
 
@@ -363,7 +363,7 @@ class Entity303 : CoreKiller(
         angulos[uuid] = anguloActual
     }
 
-    private fun crearBloqueOrbitante(player: Player, loc: Location, mat: Material): BlockDisplay {
+    private fun crearBloqueOrbitante(player: Player, loc: Location, mat: Material): liric.mistaken.packet.fake.VirtualBlockDisplay {
         return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(
@@ -409,6 +409,8 @@ class Entity303 : CoreKiller(
         }
     }
 }
+
+
 
 
 

@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic.profiles
+﻿package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -58,14 +58,5 @@ class NullProfile : CinematicProfile {
             if (!isIntro && dTicks == 100) dummy.isInvisible = true
             dTicks++
         }, 1L, 1L)
-    }
-
-    override fun processCameraTick(camLoc: Location, center: Location, dummy: ArmorStand, ticks: Int, isIntro: Boolean, plugin: Mistaken) {
-        val dist = 5.0 - (ticks * 0.02)
-        camLoc.add(0.0, 1.0, dist)
-        camLoc.setDirection(center.clone().add(0.0, 1.0, 0.0).toVector().subtract(camLoc.toVector()))
-        if (!isIntro && ticks > 120) plugin.server.onlinePlayers.forEach {
-            it.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
-        }
     }
 }

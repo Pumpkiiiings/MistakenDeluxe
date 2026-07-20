@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic.profiles
+﻿package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -83,24 +83,6 @@ class ColorAndElectricityProfile : CinematicProfile {
                     20, 0.5, 0.5, 0.5, Particle.DustOptions(Color.RED, 2f)
                 )
             }, 1L, 2L)
-        }
-    }
-
-    override fun processCameraTick(camLoc: Location, center: Location, dummy: ArmorStand, ticks: Int, isIntro: Boolean, plugin: Mistaken) {
-        if (!isIntro) {
-            val angulo = ticks * 0.08
-            val radio = 3.0 + sin(ticks * 0.1) * 2.0
-            camLoc.add(radio * cos(angulo), 2.0 + sin(ticks * 0.2), radio * sin(angulo))
-            camLoc.setDirection(center.clone().add(0.0, 1.0, 0.0).toVector().subtract(camLoc.toVector()))
-
-            if (ticks == 10) plugin.server.onlinePlayers.forEach {
-                it.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 200, 2, false, false, false))
-            }
-        } else {
-            val angulo = ticks * 0.04
-            val radio = 4.0
-            camLoc.add(radio * cos(angulo), 1.5, radio * sin(angulo))
-            camLoc.setDirection(center.clone().add(0.0, 1.0, 0.0).toVector().subtract(camLoc.toVector()))
         }
     }
 }

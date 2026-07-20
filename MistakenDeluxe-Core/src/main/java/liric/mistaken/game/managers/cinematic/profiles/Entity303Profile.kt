@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic.profiles
+﻿package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -60,12 +60,5 @@ class Entity303Profile : CinematicProfile {
                 world.spawnParticle(Particle.EXPLOSION_EMITTER, tntLoc, 1)
             }
         }, 1L, 5L)
-    }
-
-    override fun processCameraTick(camLoc: Location, center: Location, dummy: ArmorStand, ticks: Int, isIntro: Boolean, plugin: Mistaken) {
-        val angulo = ticks * 0.04
-        val radio = 6.5
-        camLoc.add(radio * cos(angulo), 2.5 + (ticks * 0.005), radio * sin(angulo))
-        camLoc.setDirection(center.clone().add(0.0, 1.2, 0.0).toVector().subtract(camLoc.toVector()))
     }
 }

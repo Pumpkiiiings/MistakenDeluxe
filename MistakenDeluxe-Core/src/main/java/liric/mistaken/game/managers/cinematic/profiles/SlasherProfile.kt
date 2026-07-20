@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic.profiles
+﻿package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -66,12 +66,5 @@ class SlasherProfile : CinematicProfile {
         } else {
             world.playSound(loc, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 0.5f)
         }
-    }
-
-    override fun processCameraTick(camLoc: Location, center: Location, dummy: ArmorStand, ticks: Int, isIntro: Boolean, plugin: Mistaken) {
-        val dist = 3.0
-        camLoc.add(0.0, 0.2, dist)
-        camLoc.setDirection(center.clone().add(0.0, 1.8, 0.0).toVector().subtract(camLoc.toVector()))
-        if (!isIntro) dummy.setRotation((ticks * 0.5f) % 360, dummy.location.pitch)
     }
 }

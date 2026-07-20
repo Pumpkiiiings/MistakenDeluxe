@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+﻿package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -42,7 +42,7 @@ class Slasher : CoreKiller(
 
     private val pathBase = "asesinos.slasher"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
-    private val temporaryEntities = ConcurrentHashMap.newKeySet<Entity>()
+    private val temporaryEntities = ConcurrentHashMap.newKeySet<liric.mistaken.packet.fake.VirtualDisplay>()
 
     // 🔥 Sistema de sonidos sin repetición
     private val attackSoundsQueue = ConcurrentHashMap<UUID, MutableList<Int>>()
@@ -268,6 +268,8 @@ class Slasher : CoreKiller(
         temporaryEntities.clear()
     }
 }
+
+
 
 
 

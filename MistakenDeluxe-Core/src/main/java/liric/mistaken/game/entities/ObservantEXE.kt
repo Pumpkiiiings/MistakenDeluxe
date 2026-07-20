@@ -31,7 +31,7 @@ import kotlin.math.sin
  */
 class ObservantEXE(private val plugin: Mistaken) {
 
-    private val parts = mutableListOf<BlockDisplay>()
+    private val parts = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
     private var isRunning = true
     private var lastVictimUUID: UUID? = null
 
@@ -91,7 +91,7 @@ class ObservantEXE(private val plugin: Mistaken) {
         }
     }
 
-    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): BlockDisplay {
+    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): liric.mistaken.packet.fake.VirtualBlockDisplay {
         return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(translation, Quaternionf(), scale, Quaternionf())
@@ -237,13 +237,13 @@ class ObservantEXE(private val plugin: Mistaken) {
                 val dir = target.location.add(0.0, 1.0, 0.0).toVector().subtract(current.toVector()).normalize()
                 val nextLoc = current.add(dir.multiply(2.5))
                 moverTodo(nextLoc, target.location)
-                parts.forEach { it.transformation = it.transformation.apply { leftRotation.rotateZ(0.5f) } }
+                parts.forEach { it.transformation = it.transformation?.apply { leftRotation.rotateZ(0.5f) } }
 
                 if (nextLoc.distanceSquared(target.location) < 12.25) {
                     ejecutarDano(target, 4)
                     target.playSound(target.location, Sound.BLOCK_ANVIL_DESTROY, 1f, 0.5f)
                     consecutiveMisses = 0
-                    parts.forEach { it.transformation = it.transformation.apply { leftRotation.set(0f,0f,0f,1f) } }
+                    parts.forEach { it.transformation = it.transformation?.apply { leftRotation.set(0f,0f,0f,1f) } }
                     task.cancel()
                     currentState = State.BUSCANDO
                     return@Consumer
@@ -251,7 +251,7 @@ class ObservantEXE(private val plugin: Mistaken) {
             } else {
                 step = -1
                 diveCount++
-                parts.forEach { it.transformation = it.transformation.apply { leftRotation.set(0f,0f,0f,1f) } }
+                parts.forEach { it.transformation = it.transformation?.apply { leftRotation.set(0f,0f,0f,1f) } }
             }
             step++
         }, 1L, 1L)
@@ -398,5 +398,8 @@ class ObservantEXE(private val plugin: Mistaken) {
         parts.clear()
     }
 }
+
+
+
 
 

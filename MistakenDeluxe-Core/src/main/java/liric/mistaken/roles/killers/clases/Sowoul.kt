@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+﻿package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -46,9 +46,9 @@ class Sowoul : CoreKiller(
     private val pathBase = "asesinos.sowoul"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
 
-    private val orbitadores = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
+    private val orbitadores = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
-    private val fakeEntities = ConcurrentHashMap.newKeySet<Entity>()
+    private val fakeEntities = ConcurrentHashMap.newKeySet<liric.mistaken.packet.fake.VirtualDisplay>()
 
     // Anti-spam de los efectos de muerte
     private val lastKillEffect = ConcurrentHashMap<UUID, Long>()
@@ -196,7 +196,7 @@ class Sowoul : CoreKiller(
 
             carta.teleport(carta.location.add(dir))
             val t = carta.transformation
-            t.leftRotation.rotateY(0.8f).rotateZ(0.8f)
+            t!!.leftRotation.rotateY(0.8f).rotateZ(0.8f)
             carta.transformation = t
 
             carta.world.spawnParticle(org.bukkit.Particle.ENCHANT, carta.location, 3, 0.1, 0.1, 0.1, 0.0)
@@ -455,7 +455,7 @@ class Sowoul : CoreKiller(
         if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
-            mutableListOf<ItemDisplay>().apply {
+            mutableListOf<liric.mistaken.packet.fake.VirtualItemDisplay>().apply {
                 repeat(4) {
                     add(liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { id ->
                         id.setItemStack(ItemStack(Material.PAPER))
@@ -520,6 +520,12 @@ class Sowoul : CoreKiller(
         fakeEntities.clear()
     }
 }
+
+
+
+
+
+
 
 
 

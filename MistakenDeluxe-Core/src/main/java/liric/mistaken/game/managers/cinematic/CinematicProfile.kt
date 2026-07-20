@@ -18,6 +18,4 @@ interface CinematicProfile {
     fun applyEquipment(killer: Player, dummy: ArmorStand, isIntro: Boolean)
     
     fun playEffects(plugin: Mistaken, loc: Location, dummy: ArmorStand, isIntro: Boolean, displayManager: DisplayManager)
-    
-    fun processCameraTick(camLoc: Location, center: Location, dummy: ArmorStand, ticks: Int, isIntro: Boolean, plugin: Mistaken)
 }

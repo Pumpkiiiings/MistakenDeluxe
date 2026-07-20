@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic.profiles
+﻿package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -57,12 +57,5 @@ class MikuProfile : CinematicProfile {
             world.spawnParticle(Particle.END_ROD, dummy.location.clone().add(0.0, 1.5, 0.0), 10, 5.0, 0.1, 5.0, 0.0)
             world.spawnParticle(Particle.DUST, loc, 20, 3.0, 3.0, 3.0, Particle.DustOptions(Color.AQUA, 1.5f))
         }, 1L, 2L)
-    }
-
-    override fun processCameraTick(camLoc: Location, center: Location, dummy: ArmorStand, ticks: Int, isIntro: Boolean, plugin: Mistaken) {
-        val angulo = Math.PI / 2 + sin(ticks * 0.02) * 2.0
-        val radio = 6.0
-        camLoc.add(radio * cos(angulo), 2.5, radio * sin(angulo))
-        camLoc.setDirection(center.clone().add(0.0, 2.5, 0.0).toVector().subtract(camLoc.toVector()))
     }
 }

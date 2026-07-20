@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic.profiles
+﻿package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -55,12 +55,5 @@ class TetoProfile : CinematicProfile {
         world.playSound(loc, Sound.ENTITY_GHAST_SCREAM, 0.5f, 2f)
         displayManager.spawnRotatingItem(loc.clone().add(0.0, 2.0, 0.0), Material.BREAD, 2.0f)
         world.spawnParticle(Particle.DUST, loc, 200, 3.0, 3.0, 3.0, Particle.DustOptions(Color.RED, 1.5f))
-    }
-
-    override fun processCameraTick(camLoc: Location, center: Location, dummy: ArmorStand, ticks: Int, isIntro: Boolean, plugin: Mistaken) {
-        val angulo = Math.PI / 2 + sin(ticks * 0.02) * 2.0
-        val radio = 6.0
-        camLoc.add(radio * cos(angulo), 2.5, radio * sin(angulo))
-        camLoc.setDirection(center.clone().add(0.0, 2.5, 0.0).toVector().subtract(camLoc.toVector()))
     }
 }

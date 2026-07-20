@@ -19,14 +19,14 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * GeneratorManager: GestiÛn de generadores adaptada a MULTIARENA.
- * FIX: MÈtodos de conteo por mundo aÒadidos para evitar mezcla de datos entre arenas.
+ * GeneratorManager: GestiÈèÆ de generadores adaptada a MULTIARENA.
+ * FIX: MÂΩãodos de conteo por mundo aÈéôdidos para evitar mezcla de datos entre arenas.
  */
 class GeneratorManager(private val plugin: Mistaken) : Listener {
 
     private val mm = MiniMessage.miniMessage()
 
-    // Cache en RAM pura para acceso instant·neo
+    // Cache en RAM pura para acceso instantÂ´ïeo
     private val generators = ConcurrentHashMap<Location, GeneratorState>()
     private val nameCache = ConcurrentHashMap<Material, String>()
 
@@ -41,7 +41,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val originalMaterial: Material,
         var progress: Int,
         var completed: Boolean,
-        var displayEntity: TextDisplay? = null
+        var displayEntity: liric.mistaken.packet.fake.VirtualTextDisplay? = null
     )
 
     init {
@@ -52,11 +52,11 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(null, "messages")
 
         idleLines = langConfig.getStringList("generators.hologram.lines-idle").ifEmpty {
-            listOf("<gold><bold>{name}", "<white>Progreso: <gray>{progress}%", "<yellow>°Click para reparar!")
+            listOf("<gold><bold>{name}", "<white>Progreso: <gray>{progress}%", "<yellow>„ÄÇlick para reparar!")
         }
 
         completedLines = langConfig.getStringList("generators.hologram.lines-completed").ifEmpty {
-            listOf("<green><bold>? ENERG√çA RESTAURADA ?", "<gray>°Buen trabajo!")
+            listOf("<green><bold>? ENERGÔøΩA RESTAURADA ?", "<gray>„ÄÅuen trabajo!")
         }
 
         nameCache.clear()
@@ -130,7 +130,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         saveStateToConfigAsync(loc, state)
         updateHologramVisual(state)
 
-        // Buscamos la sesiÛn del mundo actual para el check de victoria
+        // Buscamos la sesiÈèÆ del mundo actual para el check de victoria
         val session = plugin.sessionManager.activeSessions.values.find { s ->
             s.getPlayers().any { p -> p.world == loc.world }
         }
@@ -141,7 +141,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val holoLoc = loc.clone().add(0.5, 1.3, 0.5)
         plugin.server.regionScheduler.execute(plugin, holoLoc, Runnable {
             state.displayEntity?.remove()
-            state.displayEntity = liric.mistaken.packet.PacketFactory.displays.buildTextDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList() ?: org.bukkit.Bukkit.getOnlinePlayers().toList(), holoLoc) { display ->
+            state.displayEntity = liric.mistaken.packet.PacketFactory.displays.buildTextDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), holoLoc) { display ->
                 display.billboard = Display.Billboard.CENTER
                 display.brightness = Display.Brightness(15, 15)
                 display.backgroundColor = Color.fromARGB(0, 0, 0, 0)
@@ -153,9 +153,9 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         })
     }
 
-    private fun updateHologramVisual(state: GeneratorState, directEntity: TextDisplay? = null) {
+    private fun updateHologramVisual(state: GeneratorState, directEntity: liric.mistaken.packet.fake.VirtualTextDisplay? = null) {
         val entity = directEntity ?: state.displayEntity ?: return
-        if (entity.isDead) return
+        if (entity?.isValid == false) return
 
         val typeName = getFriendlyName(state.originalMaterial)
         val lines = if (state.completed) completedLines else idleLines
@@ -163,7 +163,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val text = lines.joinToString("<newline><reset>") { line ->
             line.replace("{name}", typeName).replace("{progress}", state.progress.toString())
         }
-        entity.text(pumpking.lib.color.ColorTranslator.translate("<reset>$text"))
+        entity.text = pumpking.lib.color.ColorTranslator.translate("<reset>$text")
     }
 
     private fun saveStateToConfigAsync(loc: Location, state: GeneratorState) {
@@ -214,11 +214,11 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     }
 
     // =========================================================================
-    // ?? M…TODOS CONTEXTUALES PARA MULTIARENA
+    // ?? M‰ªàODOS CONTEXTUALES PARA MULTIARENA
     // =========================================================================
 
     /**
-     * Cuenta cu·ntos generadores han sido completados en un mundo especÌfico.
+     * Cuenta cuÂ´ïtos generadores han sido completados en un mundo especÁíóico.
      */
     fun getCompletedCountInWorld(world: World): Int {
         return generators.entries.count { (loc, state) ->
@@ -227,7 +227,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * Devuelve el total de generadores registrados en un mundo especÌfico.
+     * Devuelve el total de generadores registrados en un mundo especÁíóico.
      */
     fun getTotalGeneratorsInWorld(world: World): Int {
         return generators.keys.count { it.world == world }
@@ -237,5 +237,9 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     fun getTotalGenerators(): Int = generators.size
     fun getGeneratorLocations(): List<Location> = generators.keys.toList()
 }
+
+
+
+
 
 

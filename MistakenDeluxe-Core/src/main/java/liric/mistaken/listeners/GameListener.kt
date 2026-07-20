@@ -32,7 +32,7 @@ import java.util.function.Consumer
 /**
  * [LIRIC-MISTAKEN 2.0]
  * GameListener: Adaptado para MULTIARENA / VELOCITY.
- * Gestiona la lógica de juego basándose en la sesión individual de cada jugador.
+ * Gestiona la lï¿½gica de juego basï¿½ndose en la sesiï¿½n individual de cada jugador.
  */
 class GameListener(private val plugin: Mistaken) : Listener {
 
@@ -57,7 +57,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         if (plugin.combatManager.isFrozen(victim)) {
             if (!session.isKiller(player.uniqueId)) {
                 if (plugin.combatManager.getHealth(player) <= 1) {
-                    player.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<red>¡Estás muy herido para rescatar a nadie!"))
+                    player.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<red>ï¿½Estï¿½s muy herido para rescatar a nadie!"))
                     return
                 }
 
@@ -100,7 +100,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * ?? MUERTE LÓGICA POR ARENA
+     * ?? MUERTE Lï¿½GICA POR ARENA
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
@@ -114,21 +114,21 @@ class GameListener(private val plugin: Mistaken) : Listener {
         event.droppedExp = 0
         event.deathMessage(null)
 
-        // ?? FIX INFECCIÓN: Guardamos la ubicación ANTES de handlePlayerDeath
+        // ?? FIX INFECCIï¿½N: Guardamos la ubicaciï¿½n ANTES de handlePlayerDeath
         // para que onRespawn siempre tenga la loc disponible
         if (session.currentMode == MistakenMode.INFECTION) {
             infectionDeathLocs[victim.uniqueId] = deathLoc
         }
 
-        // Procesar muerte en su controlador de sesión
+        // Procesar muerte en su controlador de sesiï¿½n
         session.playerController.handlePlayerDeath(victim)
 
         victim.scheduler.runDelayed(plugin, Consumer { _ ->
-            if (victim.isOnline && victim.isDead) {
+            if (victim.isOnline && victim?.isValid == false) {
                 victim.spigot().respawn()
                 victim.scheduler.runDelayed(plugin, Consumer { _ ->
                     if (session.currentState == GameState.INGAME) {
-                        // ?? FIX: En infección el jugador se convierte en asesino, nunca espectador
+                        // ?? FIX: En infecciï¿½n el jugador se convierte en asesino, nunca espectador
                         if (!session.isKiller(victim.uniqueId)) {
                             plugin.spectatorManager.setCustomSpectator(victim)
                         }
@@ -138,7 +138,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         }, null, 1L)
     }
 
-    // ?? FIX INFECCIÓN: HIGHEST para que nuestro respawnLocation no sea sobreescrito por otros plugins/sistemas
+    // ?? FIX INFECCIï¿½N: HIGHEST para que nuestro respawnLocation no sea sobreescrito por otros plugins/sistemas
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onRespawn(event: org.bukkit.event.player.PlayerRespawnEvent) {
         val player = event.player
@@ -216,7 +216,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         }
     }
 
-    // --- PROTECCIONES AISLADAS POR SESIÓN ---
+    // --- PROTECCIONES AISLADAS POR SESIï¿½N ---
     @EventHandler fun onDrop(e: PlayerDropItemEvent) {
         val session = plugin.sessionManager.getSession(e.player)
         if (session?.currentState == GameState.INGAME) e.isCancelled = true

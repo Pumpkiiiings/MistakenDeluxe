@@ -44,7 +44,7 @@ class NullAsesino : CoreKiller(
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val activeTraps = ConcurrentHashMap.newKeySet<Entity>()
 
-    private val orbitadores = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
+    private val orbitadores = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val orbitMaterials = listOf(Material.BEACON, Material.ENDER_EYE, Material.NETHER_STAR)
 
@@ -161,18 +161,18 @@ class NullAsesino : CoreKiller(
                 }, 30L)
             }
             2 -> {
-                // EFECTO 3: MIRADA DEL VAC�O
+                // EFECTO 3: MIRADA DEL VACO
                 world.playSound(loc, Sound.AMBIENT_CAVE, 2f, 0.5f)
 
-                val displays = mutableListOf<BlockDisplay>()
+                val displays = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
                 for (i in 0..2) {
                     val angle = (i * Math.PI * 2) / 3
                     val x = 2.0 * cos(angle)
                     val z = 2.0 * sin(angle)
 
-                    displays.add(world.spawn(loc.clone().add(x, 2.0, z), BlockDisplay::class.java) {
-                        it.block = Material.BEACON.createBlockData()
-                        it.transformation = Transformation(JomlVector3f(-0.5f, -0.5f, -0.5f), Quaternionf(), JomlVector3f(1f, 1f, 1f), Quaternionf())
+                    displays.add(liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc.clone().add(x, 2.0, z)) { bd ->
+                        bd.block = Material.BEACON.createBlockData()
+                        bd.transformation = Transformation(JomlVector3f(-0.5f, -0.5f, -0.5f), Quaternionf(), JomlVector3f(1f, 1f, 1f), Quaternionf())
                     })
                 }
 
@@ -327,7 +327,7 @@ class NullAsesino : CoreKiller(
         if (orbitadores[uuid]?.firstOrNull()?.world != playerWorld) limpiarVisuales(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
-            mutableListOf<ItemDisplay>().apply {
+            mutableListOf<liric.mistaken.packet.fake.VirtualItemDisplay>().apply {
                 orbitMaterials.forEach { mat ->
                     add(crearItemOrbitante(player.location, mat))
                 }
@@ -358,7 +358,7 @@ class NullAsesino : CoreKiller(
         angulos[uuid] = anguloActual + 0.12
     }
 
-    private fun crearItemOrbitante(loc: Location, mat: Material): ItemDisplay {
+    private fun crearItemOrbitante(loc: Location, mat: Material): liric.mistaken.packet.fake.VirtualItemDisplay {
         return liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { id ->
             id.setItemStack(ItemStack(mat))
             id.transformation = Transformation(
@@ -394,6 +394,11 @@ class NullAsesino : CoreKiller(
         activeTraps.clear()
     }
 }
+
+
+
+
+
 
 
 

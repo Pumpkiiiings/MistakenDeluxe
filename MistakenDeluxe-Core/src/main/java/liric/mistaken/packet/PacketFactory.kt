@@ -14,7 +14,7 @@ object PacketFactory {
 
     val blocks = FakeBlockAPI()
     val entities = FakeEntityAPI()
-    val displays = FakeDisplayAPI()
+    val displays = VirtualDisplayAPI()
     val npcs = FakeNPCAPI()
     val glow = FakeGlowAPI()
 

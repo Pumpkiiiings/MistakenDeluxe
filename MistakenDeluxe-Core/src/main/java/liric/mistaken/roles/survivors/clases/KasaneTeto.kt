@@ -40,7 +40,7 @@ class KasaneTeto : Survivor(
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
 
     // Guardamos las piezas individuales para aplicarles la matemática de rotación
-    private val tetoAccesorios = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
+    private val tetoAccesorios = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualBlockDisplay>>()
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
@@ -197,10 +197,10 @@ class KasaneTeto : Survivor(
         borrarCosmeticos(uuid)
 
         val startLoc = player.location
-        val displays = mutableListOf<BlockDisplay>()
+        val displays = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
 
         // Helper para crear un bloque con la escala centrada en -50% (Para que rote desde el medio de sí mismo)
-        fun spawnBlock(mat: Material, scale: JomlVector3f): BlockDisplay {
+        fun spawnBlock(mat: Material, scale: JomlVector3f): liric.mistaken.packet.fake.VirtualBlockDisplay {
             return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), startLoc) { bd ->
                 bd.block = mat.createBlockData()
                 bd.transformation = Transformation(JomlVector3f(-scale.x/2, -scale.y/2, -scale.z/2), Quaternionf(), scale, Quaternionf())
@@ -230,7 +230,7 @@ class KasaneTeto : Survivor(
 
         // BUCLE ACTUALIZADOR
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!player.isOnline || player.isDead || !plugin.supervivienteManager.esSurvivorActivo(player)) {
+            if (!player.isOnline || player?.isValid == false || !plugin.supervivienteManager.esSurvivorActivo(player)) {
                 borrarCosmeticos(uuid)
                 task.cancel()
                 return@Consumer
@@ -239,7 +239,7 @@ class KasaneTeto : Survivor(
         }, null, 1L, 1L)
     }
 
-    private fun actualizarMatematicas3D(player: Player, displays: List<BlockDisplay>) {
+    private fun actualizarMatematicas3D(player: Player, displays: List<liric.mistaken.packet.fake.VirtualBlockDisplay>) {
         if (displays.size < 10) return
 
         val eyeLoc = player.eyeLocation
@@ -267,7 +267,7 @@ class KasaneTeto : Survivor(
             // Mantiene su centro, y rota con la cabeza (más una rotación extra si se requiere)
             val currentTrans = displays[index].transformation
             val finalRot = if (rotExtra != null) Quaternionf(headRot).mul(rotExtra) else headRot
-            displays[index].transformation = Transformation(currentTrans.translation, finalRot, currentTrans.scale, Quaternionf())
+            displays[index].transformation = Transformation(currentTrans!!.translation, finalRot, currentTrans!!.scale, Quaternionf())
         }
 
         // ===================================
@@ -304,6 +304,10 @@ class KasaneTeto : Survivor(
         }
     }
 }
+
+
+
+
 
 
 

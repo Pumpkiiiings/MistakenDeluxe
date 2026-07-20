@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.entities
+package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -30,7 +30,7 @@ import kotlin.math.sin
  */
 class PouEXE(private val plugin: Mistaken) {
 
-    private val parts = mutableListOf<BlockDisplay>()
+    private val parts = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
     private var isRunning = false
     private var currentTarget: Player? = null
     private var lastVictimUUID: UUID? = null
@@ -82,7 +82,7 @@ class PouEXE(private val plugin: Mistaken) {
         }
     }
 
-    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): BlockDisplay {
+    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): liric.mistaken.packet.fake.VirtualBlockDisplay {
         return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(translation, Quaternionf(), scale, Quaternionf())
@@ -275,4 +275,6 @@ class PouEXE(private val plugin: Mistaken) {
         parts.clear()
     }
 }
+
+
 

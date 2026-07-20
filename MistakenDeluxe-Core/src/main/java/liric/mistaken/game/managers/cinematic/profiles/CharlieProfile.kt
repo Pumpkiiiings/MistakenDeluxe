@@ -78,17 +78,4 @@ class CharlieProfile : CinematicProfile {
             }, 1L, 2L)
         }
     }
-
-    override fun processCameraTick(camLoc: Location, center: Location, dummy: ArmorStand, ticks: Int, isIntro: Boolean, plugin: Mistaken) {
-        if (isIntro) {
-            val dropY = Math.max(0.0, 15.0 - (ticks * 0.5))
-            dummy.teleport(center.clone().add(0.0, dropY, 0.0))
-            camLoc.add(4.0, dropY + 1.0, 4.0)
-            camLoc.setDirection(dummy.location.clone().add(0.0, 1.0, 0.0).toVector().subtract(camLoc.toVector()))
-        } else {
-            val dist = 3.0 + (ticks * 0.05)
-            camLoc.add(0.0, 1.5 + (ticks * 0.01), dist)
-            camLoc.setDirection(center.clone().add(0.0, 1.0, 0.0).toVector().subtract(camLoc.toVector()))
-        }
-    }
 }

@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+﻿package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
@@ -42,8 +42,10 @@ class Herobrine : CoreKiller(
 ), Listener { // 🔥 Listener añadido para los Finishers
 
     private val pathBase = "asesinos.herobrine"
-    private val blockOrbiters = ConcurrentHashMap<UUID, BlockDisplay>()
-    private val itemOrbiters = ConcurrentHashMap<UUID, MutableList<Entity>>()
+    private var blockDisplay: liric.mistaken.packet.fake.VirtualBlockDisplay? = null
+    private var itemDisplay: liric.mistaken.packet.fake.VirtualItemDisplay? = null
+    private val blockOrbiters = ConcurrentHashMap<UUID, liric.mistaken.packet.fake.VirtualBlockDisplay>()
+    private val itemOrbiters = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
 
@@ -359,7 +361,7 @@ class Herobrine : CoreKiller(
             }
             blockOrbiters[uuid] = bMain
 
-            val extras = mutableListOf<Entity>().apply {
+            val extras = mutableListOf<liric.mistaken.packet.fake.VirtualDisplay>().apply {
                 add(liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), player.location) { id ->
                     id.setItemStack(ItemStack(Material.NETHER_STAR))
                     id.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
@@ -428,6 +430,13 @@ class Herobrine : CoreKiller(
         }
     }
 }
+
+
+
+
+
+
+
 
 
 

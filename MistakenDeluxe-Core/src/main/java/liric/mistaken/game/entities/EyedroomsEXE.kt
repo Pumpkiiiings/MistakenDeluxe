@@ -31,7 +31,7 @@ import kotlin.math.sin
  */
 class EyedroomsEXE(private val plugin: Mistaken) {
 
-    private val parts = mutableListOf<BlockDisplay>()
+    private val parts = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
     private var isRunning = false
     private var lastVictimUUID: UUID? = null
     private val teamName = "EyedroomsGlow"
@@ -76,7 +76,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
         }
     }
 
-    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): BlockDisplay {
+    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): liric.mistaken.packet.fake.VirtualBlockDisplay {
         return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(translation, Quaternionf(), scale, Quaternionf())
@@ -231,4 +231,6 @@ class EyedroomsEXE(private val plugin: Mistaken) {
         parts.clear()
     }
 }
+
+
 

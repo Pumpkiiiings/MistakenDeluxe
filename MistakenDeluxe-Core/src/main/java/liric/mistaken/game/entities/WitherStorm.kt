@@ -28,7 +28,7 @@ import kotlin.math.sin
  */
 class WitherStorm(private val plugin: Mistaken) {
 
-    private val parts = mutableListOf<BlockDisplay>()
+    private val parts = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
     private var isRunning = true
     private var currentTarget: Player? = null
 
@@ -98,7 +98,7 @@ class WitherStorm(private val plugin: Mistaken) {
         }
     }
 
-    private fun createPart(base: Location, mat: Material, scale: Vector3f, offset: Vector): BlockDisplay {
+    private fun createPart(base: Location, mat: Material, scale: Vector3f, offset: org.bukkit.util.Vector): liric.mistaken.packet.fake.VirtualBlockDisplay {
         return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), base) { bd ->
             bd.block = mat.createBlockData()
             val translation = Vector3f(offset.x.toFloat() - (scale.x / 2), offset.y.toFloat() - (scale.y / 2), offset.z.toFloat() - (scale.z / 2))
@@ -295,4 +295,6 @@ class WitherStorm(private val plugin: Mistaken) {
         parts.clear()
     }
 }
+
+
 

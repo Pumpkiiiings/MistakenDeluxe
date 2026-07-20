@@ -24,7 +24,7 @@ object RespawnUtils {
      * Útil como fallback si falla la GameRule.
      */
     fun forceRespawn(player: Player) {
-        if (player.isDead) {
+        if (player?.isValid == false) {
             player.spigot().respawn()
         }
     }

@@ -36,7 +36,7 @@ class Mariachi : CoreKiller(
     private val sonidoMúsicaId = defaultMusic!!
 
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
-    private val skullsOrbit = ConcurrentHashMap<UUID, MutableList<ItemDisplay>>()
+    private val skullsOrbit = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
 
     init {
@@ -146,7 +146,7 @@ class Mariachi : CoreKiller(
         if (skullsOrbit[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
 
         val skulls = skullsOrbit.getOrPut(uuid) {
-            mutableListOf<ItemDisplay>().apply {
+            mutableListOf<liric.mistaken.packet.fake.VirtualItemDisplay>().apply {
                 repeat(3) {
                     add(liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { id ->
                         id.setItemStack(ItemStack(Material.PLAYER_HEAD))
@@ -227,6 +227,9 @@ class Mariachi : CoreKiller(
         }
     }
 }
+
+
+
 
 
 

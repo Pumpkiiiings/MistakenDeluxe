@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic.profiles
+﻿package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -59,12 +59,5 @@ class CoolkidProfile : CinematicProfile {
             val codeLoc = loc.clone().add(Math.random() * 6 - 3, Math.random() * 5, Math.random() * 6 - 3)
             world.spawnParticle(Particle.DUST, codeLoc, 1, Particle.DustOptions(Color.LIME, 1.5f))
         }, 1L, 1L)
-    }
-
-    override fun processCameraTick(camLoc: Location, center: Location, dummy: ArmorStand, ticks: Int, isIntro: Boolean, plugin: Mistaken) {
-        val angulo = ticks * 0.04
-        val radio = 6.5
-        camLoc.add(radio * cos(angulo), 2.5 + (ticks * 0.005), radio * sin(angulo))
-        camLoc.setDirection(center.clone().add(0.0, 1.2, 0.0).toVector().subtract(camLoc.toVector()))
     }
 }

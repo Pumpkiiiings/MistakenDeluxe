@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+﻿package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
@@ -43,7 +43,7 @@ class Romeo : CoreKiller(
 ), Listener { // 🔥 Agregado Listener para los Finishers
 
     private val pathBase = "asesinos.romeo"
-    private val orbitadores = ConcurrentHashMap<UUID, BlockDisplay>()
+    private val orbitadores = ConcurrentHashMap<UUID, liric.mistaken.packet.fake.VirtualBlockDisplay>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
 
@@ -171,7 +171,7 @@ class Romeo : CoreKiller(
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     star.teleport(loc.clone().add(0.0, 4.0, 0.0)) // Asciende 4 bloques
                     val t = star.transformation
-                    t.leftRotation.rotateY(5f) // Gira como loco
+                    t!!.leftRotation.rotateY(5f) // Gira como loco
                     star.transformation = t
                 }, 1L)
 
@@ -397,6 +397,9 @@ class Romeo : CoreKiller(
         }
     }
 }
+
+
+
 
 
 

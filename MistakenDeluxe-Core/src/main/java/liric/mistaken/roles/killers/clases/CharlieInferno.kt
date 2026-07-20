@@ -42,7 +42,7 @@ class CharlieInferno : CoreKiller(
     private val sonidoId = defaultMusic!!
 
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
-    private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
+    private val orbitadores = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualBlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
 
     private val musicTasks = ConcurrentHashMap<UUID, ScheduledTask>()
@@ -312,6 +312,7 @@ class CharlieInferno : CoreKiller(
         }
     }
 }
+
 
 
 

@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic.profiles
+﻿package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -54,12 +54,5 @@ class MariachiProfile : CinematicProfile {
         world.playSound(loc, Sound.BLOCK_NOTE_BLOCK_CHIME, 2f, 1f)
         world.spawnParticle(Particle.NOTE, loc.clone().add(0.0, 2.0, 0.0), 100, 2.0, 2.0, 2.0, 1.0)
         if (!isIntro) displayManager.spawnRotatingItem(loc.clone().add(0.0, 2.5, 0.0), Material.HONEY_BOTTLE, 2f)
-    }
-
-    override fun processCameraTick(camLoc: Location, center: Location, dummy: ArmorStand, ticks: Int, isIntro: Boolean, plugin: Mistaken) {
-        val angulo = ticks * 0.04
-        val radio = 6.5
-        camLoc.add(radio * cos(angulo), 2.5 + (ticks * 0.005), radio * sin(angulo))
-        camLoc.setDirection(center.clone().add(0.0, 1.2, 0.0).toVector().subtract(camLoc.toVector()))
     }
 }

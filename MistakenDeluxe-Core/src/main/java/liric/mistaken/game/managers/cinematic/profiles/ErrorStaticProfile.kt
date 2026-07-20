@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic.profiles
+﻿package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -75,21 +75,6 @@ class ErrorStaticProfile : CinematicProfile {
             plugin.server.globalRegionScheduler.runDelayed(plugin, Consumer { _ ->
                 world.playSound(loc, Sound.BLOCK_BEACON_DEACTIVATE, 2f, 0.5f)
             }, 100L)
-        }
-    }
-
-    override fun processCameraTick(camLoc: Location, center: Location, dummy: ArmorStand, ticks: Int, isIntro: Boolean, plugin: Mistaken) {
-        if (!isIntro && ticks > 100) {
-            val dist = Math.max(0.5, 4.0 - ((ticks - 100) * 0.3))
-            camLoc.add(0.0, 1.5, dist)
-            camLoc.setDirection(center.clone().add(0.0, 1.5, 0.0).toVector().subtract(camLoc.toVector()))
-
-            if (ticks == 115) plugin.server.onlinePlayers.forEach {
-                it.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0, false, false, false))
-            }
-        } else {
-            camLoc.add(0.0, 1.5, 4.0)
-            camLoc.setDirection(center.clone().add(0.0, 1.5, 0.0).toVector().subtract(camLoc.toVector()))
         }
     }
 }

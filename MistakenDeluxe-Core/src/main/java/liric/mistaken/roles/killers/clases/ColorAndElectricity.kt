@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+﻿package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -37,7 +37,7 @@ class ColorAndElectricity : CoreKiller(
 
     private val path = "asesinos.colorandelectricity"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
-    private val orbitadores = ConcurrentHashMap<UUID, MutableList<BlockDisplay>>()
+    private val orbitadores = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualBlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
 
     private val orbitMaterials = listOf(
@@ -248,7 +248,7 @@ class ColorAndElectricity : CoreKiller(
         angulos[uuid] = anguloBase + 0.15
     }
 
-    private fun crearBloqueOrbitante(loc: Location, mat: Material): BlockDisplay {
+    private fun crearBloqueOrbitante(loc: Location, mat: Material): liric.mistaken.packet.fake.VirtualBlockDisplay {
         return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(JomlVector3f(-0.125f, -0.125f, -0.125f), Quaternionf(), JomlVector3f(0.25f, 0.25f, 0.25f), Quaternionf())
@@ -274,6 +274,8 @@ class ColorAndElectricity : CoreKiller(
         player?.let { limpiarEntidades(it.uniqueId) }
     }
 }
+
+
 
 
 

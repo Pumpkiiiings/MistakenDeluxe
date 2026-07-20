@@ -27,7 +27,7 @@ import java.util.concurrent.ThreadLocalRandom
  */
 class GeoffreyEXE(private val plugin: Mistaken) {
 
-    private val parts = mutableListOf<BlockDisplay>()
+    private val parts = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
     private var isRunning = true
     private var currentTarget: Player? = null
     private var lastVictimUUID: UUID? = null
@@ -93,7 +93,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         }
     }
 
-    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f, rotZ: Float = 0f, rotX: Float = 0f): BlockDisplay {
+    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f, rotZ: Float = 0f, rotX: Float = 0f): liric.mistaken.packet.fake.VirtualBlockDisplay {
         return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             val leftRotation = Quaternionf().rotateX(rotX).rotateZ(rotZ)
@@ -409,4 +409,6 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         parts.clear()
     }
 }
+
+
 

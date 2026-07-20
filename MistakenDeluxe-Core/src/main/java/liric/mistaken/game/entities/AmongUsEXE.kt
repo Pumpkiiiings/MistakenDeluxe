@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.entities
+package liric.mistaken.game.entities
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -27,7 +27,7 @@ import java.util.function.Consumer
  */
 class AmongUsEXE(private val plugin: Mistaken) {
 
-    private val parts = mutableListOf<BlockDisplay>()
+    private val parts = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
     private var isRunning = false
     private var currentTarget: Player? = null
     private var lastVictimUUID: UUID? = null
@@ -73,10 +73,10 @@ class AmongUsEXE(private val plugin: Mistaken) {
         }
     }
 
-    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): BlockDisplay {
-        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
+    private fun createPart(base: Location, mat: Material, scale: Vector3f, offset: Vector3f): liric.mistaken.packet.fake.VirtualBlockDisplay {
+        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), base) { bd ->
             bd.block = mat.createBlockData()
-            bd.transformation = Transformation(translation, Quaternionf(), scale, Quaternionf())
+            bd.transformation = Transformation(offset, Quaternionf(), scale, Quaternionf())
             bd.isPersistent = false
             bd.interpolationDuration = 1
             bd.teleportDuration = 1

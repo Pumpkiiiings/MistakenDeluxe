@@ -36,7 +36,7 @@ object HitboxVisualizer {
      * @param mat El color del cristal.
      * @return El BlockDisplay creado.
      */
-    fun createHitbox(loc: Location, x: Double, y: Double, z: Double, mat: Material = Material.LIME_STAINED_GLASS): BlockDisplay? {
+    fun createHitbox(loc: Location, x: Double, y: Double, z: Double, mat: Material = Material.LIME_STAINED_GLASS): liric.mistaken.packet.fake.VirtualBlockDisplay? {
         if (!isEnabled) return null
 
         return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { display ->
@@ -80,4 +80,5 @@ object HitboxVisualizer {
         }, ticks)
     }
 }
+
 
