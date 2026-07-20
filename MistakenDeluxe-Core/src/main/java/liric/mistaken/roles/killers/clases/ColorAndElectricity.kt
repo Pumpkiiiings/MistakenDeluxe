@@ -89,8 +89,8 @@ class ColorAndElectricity : CoreKiller(
         val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val id = if (isArmor) configMecanica.getString("asesinos.colorandelectricity.armor.$key")
-            else configMecanica.getString("asesinos.colorandelectricity.items.$key")
+            val id = if (isArmor) configMecanica.getString("armor.$key")
+            else configMecanica.getString("items.$key")
 
             if (id == null || id == "none") return
 
