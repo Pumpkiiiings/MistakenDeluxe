@@ -32,12 +32,14 @@ open class VirtualBaseDisplay(
         if (flags > 0) list.add(EntityData(0, EntityDataTypes.BYTE, flags))
 
         if (interpolationDuration > 0) list.add(EntityData(9, EntityDataTypes.INT, interpolationDuration))
+        // Index 10 = teleport_interpolation_duration (added in 1.21, must always be sent as int)
+        list.add(EntityData(10, EntityDataTypes.INT, teleportDuration))
         
         transformation?.let {
-            list.add(EntityData(10, EntityDataTypes.VECTOR3F, Vector3f(it.translation.x, it.translation.y, it.translation.z)))
-            list.add(EntityData(11, EntityDataTypes.VECTOR3F, Vector3f(it.scale.x, it.scale.y, it.scale.z)))
-            list.add(EntityData(12, EntityDataTypes.QUATERNION, Quaternion4f(it!!.leftRotation.x, it!!.leftRotation.y, it!!.leftRotation.z, it!!.leftRotation.w)))
-            list.add(EntityData(13, EntityDataTypes.QUATERNION, Quaternion4f(it!!.rightRotation.x, it!!.rightRotation.y, it!!.rightRotation.z, it!!.rightRotation.w)))
+            list.add(EntityData(11, EntityDataTypes.VECTOR3F, Vector3f(it.translation.x, it.translation.y, it.translation.z)))
+            list.add(EntityData(12, EntityDataTypes.VECTOR3F, Vector3f(it.scale.x, it.scale.y, it.scale.z)))
+            list.add(EntityData(13, EntityDataTypes.QUATERNION, Quaternion4f(it.leftRotation.x, it.leftRotation.y, it.leftRotation.z, it.leftRotation.w)))
+            list.add(EntityData(14, EntityDataTypes.QUATERNION, Quaternion4f(it.rightRotation.x, it.rightRotation.y, it.rightRotation.z, it.rightRotation.w)))
         }
 
         return list
