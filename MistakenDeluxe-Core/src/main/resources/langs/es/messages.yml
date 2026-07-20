@@ -1,4 +1,4 @@
-﻿# ======================================================
+# ======================================================
 #          MISTAKEN - SPANISH LANGUAGE (MEXICO)
 # ======================================================
 
@@ -347,8 +347,12 @@ game:
   killer-stunned-victim: "&#FFE300¡Has sido aturdido!"
   killer-title: "&#FF3344&l¡VICTORIA!"
   killer-subtitle: "&#FFFFFFNadie quedó vivo."
+  killer-defeat-title: "&#FF3344&l¡SOBREVIVISTE!"
+  killer-defeat-subtitle: "&#FFFFFFLos supervivientes escaparon..."
   survivor-title: "&#42F56C&l¡VICTORIA!"
   survivor-subtitle: "&#FFFFFFLograste escapar con vida."
+  survivor-defeat-title: "&#FF3344&l¡DERROTA!"
+  survivor-defeat-subtitle: "&#FFFFFFEl asesino masacró a todos."
   join-as-spectator: "<prefix>&#CCCCCCLa partida ya empezó. Estás de espectador."
   rejoin-msg: "<prefix>&#FF3344Bienvenido de nuevo, asesino. Continúa la masacre."
   infection-hit: "<prefix>&#FF3344¡SISTEMA CORRUPTO! Te infectó la Error Star."

@@ -224,6 +224,36 @@ class GameStateController(private val game: GameSession) {
             !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL
         }.map { it.name }
 
+        val titlePair: Pair<String, String> = if (killerWon) {
+            Pair("game.killer-title", "game.killer-subtitle")
+        } else {
+            Pair("game.killer-defeat-title", "game.killer-defeat-subtitle")
+        }
+        val survivorTitlePair: Pair<String, String> = if (!killerWon) {
+            Pair("game.survivor-title", "game.survivor-subtitle")
+        } else {
+            Pair("game.survivor-defeat-title", "game.survivor-defeat-subtitle")
+        }
+
+        val tK1 = pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, titlePair.first, "", "messages"))
+        val tK2 = pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, titlePair.second, "", "messages"))
+        val tS1 = pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, survivorTitlePair.first, "", "messages"))
+        val tS2 = pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, survivorTitlePair.second, "", "messages"))
+
+        val times = net.kyori.adventure.title.Title.Times.times(java.time.Duration.ofMillis(500), java.time.Duration.ofSeconds(5), java.time.Duration.ofMillis(1000))
+        
+        game.plugin.server.onlinePlayers.forEach { p ->
+            val isK = game.isKiller(p.uniqueId)
+            val t1 = if (isK) tK1 else tS1
+            val t2 = if (isK) tK2 else tS2
+            
+            p.showTitle(net.kyori.adventure.title.Title.title(
+                t1,
+                t2,
+                times
+            ))
+        }
+
         game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
             game.plugin.webHook.sendGameEnd(mapName, ganadorNombre, razon, escapados)
             game.plugin.server.onlinePlayers.forEach { p ->

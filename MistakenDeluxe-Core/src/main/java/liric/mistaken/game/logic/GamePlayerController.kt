@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.logic
+package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -254,6 +254,10 @@ class GamePlayerController(private val game: GameSession) {
             game.combatManager.resetHealth(player)
 
             game.uiController.setLuckPermsPrefix(player, "<red>")
+
+            game.plugin.lobbyLocation?.let { loc ->
+                player.teleportAsync(loc)
+            }
 
             player.scheduler.runDelayed(
                 game.plugin,
