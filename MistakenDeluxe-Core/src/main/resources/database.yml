@@ -1,7 +1,7 @@
 # Mistaken - Multi-Database Configuration
 database:
-  # Opciones: mysql, postgresql, sqlite
-  type: "mysql"
+  # Opciones: mysql, postgresql, h2
+  type: "h2"
 
   mysql:
     host: "localhost"
