@@ -1,4 +1,4 @@
-﻿# ======================================================
+# ======================================================
 #          MISTAKEN - ENGLISH LANGUAGE (US)
 # ======================================================
 
@@ -231,6 +231,11 @@ listeners:
     progress_lore: "&#FFFFFFCurrent progress: &#42F56C<progress>%"
     progress_loss_lore: "&#FF3344You lose 10% progress for failing!"
     not_this_one: "&#FF3344&lFAKE INGOT!"
+    repair_item_name: "&#FFE300&lQUICK CLICK!"
+    repair_item_lore: "&#CCCCCCHelp your teammates!"
+    fake_item_name: "{color}&lQUICK CLICK!"
+    fake_item_lore: "&#CCCCCCDo you really want to help?"
+    killer_error: "&#FF3344You are the killer! You cannot repair generators."
 
 # --- ROLES ---
 roles:

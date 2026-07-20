@@ -1,4 +1,4 @@
-﻿# ======================================================
+# ======================================================
 #          MISTAKEN - SPANISH LANGUAGE (MEXICO)
 # ======================================================
 
@@ -231,6 +231,11 @@ listeners:
     progress_lore: "&#FFFFFFProgreso actual: &#42F56C<progress>%"
     progress_loss_lore: "&#FF3344¡Pierdes 10% de progreso por fallar!"
     not_this_one: "&#FF3344&l¡LINGOTE FALSO!"
+    repair_item_name: "&#FFE300&l¡CLIC RÁPIDO!"
+    repair_item_lore: "&#CCCCCC¡Ayuda a tus compañeros!"
+    fake_item_name: "{color}&l¡CLIC RÁPIDO!"
+    fake_item_lore: "&#CCCCCC¿De verdad quieres ayudar?"
+    killer_error: "&#FF3344¡Eres el asesino! No puedes reparar generadores."
 
 # --- ROLES ---
 roles:
