@@ -10,6 +10,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -88,7 +89,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
         plugin.lobbyLocation?.let { loc ->
             player.teleportAsync(loc).thenAccept { success ->
                 if (success) {
-                    val welcome = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "lobby.welcome")
+                    val welcome = PumpkingServiceManager.messages.getComponent(player, "lobby.welcome")
                     if (welcome.toString().isNotEmpty()) player.sendMessage(welcome)
                 }
             }

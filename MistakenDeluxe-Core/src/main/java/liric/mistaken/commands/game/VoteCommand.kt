@@ -11,6 +11,8 @@ import liric.mistaken.game.enums.GameState
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Sound
 import org.bukkit.entity.Player
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 object VoteCommand {
 
@@ -19,7 +21,7 @@ object VoteCommand {
             .executes { ctx ->
                 val sender = ctx.source.sender
                 val player = sender as? Player
-                sender.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "voting.usage"))
+                sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "voting.usage"))
                 1
             }
             .then(
@@ -38,18 +40,18 @@ object VoteCommand {
 
                         val session = plugin.sessionManager.getSession(player)
                         if (session == null) {
-                            player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No est·s en ninguna partida activa para votar."))
+                            player.sendMessage(ColorTranslator.translate("<red>No est√°s en ninguna partida activa para votar."))
                             return@executes 0
                         }
 
                         if (session.currentState != GameState.VOTING) {
-                            player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "voting.not-active"))
+                            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "voting.not-active"))
                             return@executes 0
                         }
 
                         val voteManager = session.voteManager
                         if (voteManager.hasVoted(player.uniqueId)) {
-                            player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "voting.already-voted"))
+                            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "voting.already-voted"))
                             return@executes 0
                         }
 
@@ -59,7 +61,7 @@ object VoteCommand {
 
                         if (actualMapName == null) {
                             player.sendMessage(
-                                pumpking.lib.service.PumpkingServiceManager.messages.getComponent(
+                                PumpkingServiceManager.messages.getComponent(
                                     player,
                                     "voting.not-found",
                                     Placeholder.parsed("map", inputName)
@@ -71,7 +73,7 @@ object VoteCommand {
                         voteManager.addVote(player.uniqueId, actualMapName)
 
                         player.sendMessage(
-                            pumpking.lib.service.PumpkingServiceManager.messages.getComponent(
+                            PumpkingServiceManager.messages.getComponent(
                                 player,
                                 "voting.success",
                                 Placeholder.parsed("map", actualMapName)

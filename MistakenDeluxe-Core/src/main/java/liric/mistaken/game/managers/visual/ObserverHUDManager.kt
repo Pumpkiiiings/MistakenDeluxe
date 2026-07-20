@@ -13,6 +13,9 @@ import org.bukkit.entity.Player
 import java.io.File
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
+import java.util.UUID
+import org.bukkit.scheduler.BukkitTask
+import pumpking.lib.color.ColorTranslator
 
 /**
  * LIRIC-MISTAKEN 2.0
@@ -24,16 +27,16 @@ class ObserverHUDManager(private val plugin: Mistaken) {
     private var config: YamlConfiguration = YamlConfiguration()
 
     // Estado actual pintado para no sobreescribir: Map<PlayerUUID, State>
-    private val activeStates = ConcurrentHashMap<java.util.UUID, String>()
+    private val activeStates = ConcurrentHashMap<UUID, String>()
     // Componentes dinámicos que deben ser actualizados
-    private val activeDynamicTexts = ConcurrentHashMap<java.util.UUID, MutableSet<DynamicTextComponent>>()
+    private val activeDynamicTexts = ConcurrentHashMap<UUID, MutableSet<DynamicTextComponent>>()
     // IDs de los componentes globales (nunca se borran mientras el jugador esté)
-    private val globalComponentIds = ConcurrentHashMap<java.util.UUID, MutableSet<String>>()
+    private val globalComponentIds = ConcurrentHashMap<UUID, MutableSet<String>>()
     // IDs de los componentes de estado actual para borrado manual
-    private val stateComponentIds = ConcurrentHashMap<java.util.UUID, MutableSet<String>>()
+    private val stateComponentIds = ConcurrentHashMap<UUID, MutableSet<String>>()
 
-    private var updateTask: org.bukkit.scheduler.BukkitTask? = null
-    private val loggedObserverPlayers = ConcurrentHashMap.newKeySet<java.util.UUID>()
+    private var updateTask: BukkitTask? = null
+    private val loggedObserverPlayers = ConcurrentHashMap.newKeySet<UUID>()
 
     init {
         loadConfig()
@@ -53,7 +56,7 @@ class ObserverHUDManager(private val plugin: Mistaken) {
                 if (!ObserverHook.hasObserver(player)) continue
                 
                 if (loggedObserverPlayers.add(player.uniqueId)) {
-                    plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[<green>ObserverHook</green>] <white>¡El jugador <yellow>${player.name}</yellow> se ha detectado con el mod instalado!</white>"))
+                    plugin.componentLogger.info(ColorTranslator.translate("[<green>ObserverHook</green>] <white>¡El jugador <yellow>${player.name}</yellow> se ha detectado con el mod instalado!</white>"))
                 }
 
                 handlePlayerState(player)

@@ -16,13 +16,17 @@ import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.min
+import liric.mistaken.game.Arena
+import liric.mistaken.roles.survivors.clases.Civilian
+import net.kyori.adventure.text.minimessage.MiniMessage
+import pumpking.lib.service.PumpkingServiceManager
 
 class GamePlayerController(private val game: GameSession) {
 
     private var lmsActivado = false
     private var activeLmsMusic = "mistaken:lms"
 
-    fun setupPlayers(arena: liric.mistaken.game.Arena) {
+    fun setupPlayers(arena: Arena) {
         // 🔥 FIX: Solo tomamos los jugadores de ESTA sesión
         val sessionPlayers = game.getPlayers().filter { !game.plugin.isIgnored(it) }.toMutableList()
         if (sessionPlayers.isEmpty()) return
@@ -106,7 +110,7 @@ class GamePlayerController(private val game: GameSession) {
                         p.teleportAsync(spawnLoc).thenAccept { success ->
                             if (success && p.isOnline) {
                                 val idElegido = game.plugin.playerDataManager.getSelectedSurvivor(p.uniqueId)
-                                val clase = game.plugin.supervivienteManager.getClassById(idElegido) ?: liric.mistaken.roles.survivors.clases.Civilian()
+                                val clase = game.plugin.supervivienteManager.getClassById(idElegido) ?: Civilian()
                                 game.plugin.supervivienteManager.registrarSurvivor(p, clase)
 
                                 if (game.currentMode == MistakenMode.ONE_BOUNCE) {
@@ -270,7 +274,7 @@ class GamePlayerController(private val game: GameSession) {
                 5L
             )
 
-            game.getPlayers().forEach { it.sendMessage(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize("<dark_red>Infección</dark_red> <dark_gray>»</dark_gray> <red>¡${player.name} ha sido infectado y ahora es un asesino!</red>")) }
+            game.getPlayers().forEach { it.sendMessage(MiniMessage.miniMessage().deserialize("<dark_red>Infección</dark_red> <dark_gray>»</dark_gray> <red>¡${player.name} ha sido infectado y ahora es un asesino!</red>")) }
             player.world.playSound(player.location, Sound.ENTITY_ZOMBIE_VILLAGER_CONVERTED, 1f, 1f)
 
             game.getCurrentAsesino()?.let { killer ->
@@ -351,8 +355,8 @@ class GamePlayerController(private val game: GameSession) {
             }
 
             p.showTitle(Title.title(
-                pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "game.$type-title"),
-                pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "game.$type-subtitle")
+                PumpkingServiceManager.messages.getComponent(p, "game.$type-title"),
+                PumpkingServiceManager.messages.getComponent(p, "game.$type-subtitle")
             ))
 
             p.playSound(p.location, winSound, 1f, 1f)
@@ -370,7 +374,7 @@ class GamePlayerController(private val game: GameSession) {
         val serverMode = game.plugin.serverMode
 
         game.getPlayers().forEach { p ->
-            p.gameMode = org.bukkit.GameMode.SURVIVAL
+            p.gameMode = GameMode.SURVIVAL
 
             if (serverMode == "GAME_SERVER") {
                 // 🔥 Modo Network: Los pateamos al proxy (Servidor Lobby Principal)

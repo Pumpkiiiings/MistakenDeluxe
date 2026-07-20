@@ -10,6 +10,10 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import net.kyori.adventure.text.Component
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.config.ConfigManager
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.1]
@@ -42,8 +46,8 @@ abstract class MenuBase(
      * Parsea un texto con MiniMessage desactivando la cursiva (italic) por defecto,
      * ya que Minecraft la aplica forzosamente al lore de los items.
      */
-    protected fun parseSafe(text: String): net.kyori.adventure.text.Component {
-        return pumpking.lib.color.ColorTranslator.translate("<!italic>$text")
+    protected fun parseSafe(text: String): Component {
+        return ColorTranslator.translate("<!italic>$text")
     }
 
     // Clave en messages.yml donde se lee el título traducido.
@@ -80,7 +84,7 @@ abstract class MenuBase(
         val config = getGlobalConfig()
 
         val gui = Gui.gui()
-            .title(pumpking.lib.color.ColorTranslator.translate(baked.resolvedTitle))
+            .title(ColorTranslator.translate(baked.resolvedTitle))
             .rows(baked.filas)
             .disableAllInteractions()
             .create()
@@ -113,14 +117,14 @@ abstract class MenuBase(
      * @param def    Valor por defecto si no se encuentra la clave.
      */
     fun getTranslatedString(player: Player, path: String, def: String = "<red>Missing: $path"): String {
-        return pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, path, def, "messages")
+        return PumpkingServiceManager.messages.getRawString(player, path, def, "messages")
     }
 
     /**
      * Obtiene una lista de strings traducidos desde messages.yml del jugador.
      */
     fun getTranslatedList(player: Player, path: String): List<String> {
-        return pumpking.lib.service.PumpkingServiceManager.messages.getRawStringList(player, path, "messages")
+        return PumpkingServiceManager.messages.getRawStringList(player, path, "messages")
     }
 
 
@@ -154,7 +158,7 @@ abstract class MenuBase(
             val config = getGlobalConfig()
 
             // Resolver el título desde messages.yml (no desde el YAML del menú)
-            val rawTitle = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, titleMessageKey, titleFallback, "messages")
+            val rawTitle = PumpkingServiceManager.messages.getRawString(player, titleMessageKey, titleFallback, "messages")
 
             val filas = config.getInt("filas", 3)
             val decorList = mutableListOf<Pair<List<Int>, GuiItem>>()
@@ -180,7 +184,7 @@ abstract class MenuBase(
      * Carga el YAML global del menú usando PumpkingLib ConfigManager
      */
     private fun loadGlobalConfig(): FileConfiguration {
-        return pumpking.lib.config.ConfigManager.getMenuConfig(menuName)
+        return ConfigManager.getMenuConfig(menuName)
     }
 }
 

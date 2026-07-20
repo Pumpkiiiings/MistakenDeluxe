@@ -31,10 +31,15 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import org.bukkit.plugin.java.JavaPlugin
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 class CharlieInferno : CoreKiller(
     "charlie",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.charlie.nombre", "killers_info")
+    PumpkingServiceManager.messages.getStrictString(null, "asesinos.charlie.nombre", "killers_info")
 ) {
 
     private val pathBase = "asesinos.charlie"
@@ -42,7 +47,7 @@ class CharlieInferno : CoreKiller(
     private val sonidoId = defaultMusic!!
 
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
-    private val orbitadores = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualBlockDisplay>>()
+    private val orbitadores = ConcurrentHashMap<UUID, MutableList<VirtualBlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
 
     private val musicTasks = ConcurrentHashMap<UUID, ScheduledTask>()
@@ -87,7 +92,7 @@ class CharlieInferno : CoreKiller(
         inv.armorContents = arrayOfNulls(4)
 
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val id = if (isArmor) configMecanica.getString("armor.$key")
@@ -105,7 +110,7 @@ class CharlieInferno : CoreKiller(
             else "asesinos.charlie.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -192,7 +197,7 @@ class CharlieInferno : CoreKiller(
     }
 
     private fun habilidadBloqueHielo(player: Player) {
-        val ice = liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.eyeLocation) {
+        val ice = PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.eyeLocation) {
             it.setItemStack(ItemStack(Material.PACKED_ICE))
             it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.6f, 0.6f, 0.6f), Quaternionf())
         }
@@ -270,7 +275,7 @@ class CharlieInferno : CoreKiller(
 
         val entidades = orbitadores.getOrPut(uuid) {
             orbitMaterials.map { mat ->
-                liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { bd ->
+                PacketFactory.displays.buildBlockDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { bd ->
                     bd.block = mat.createBlockData()
                     bd.transformation = Transformation(JomlVector3f(-0.15f, -0.15f, -0.15f), Quaternionf(), JomlVector3f(0.3f, 0.3f, 0.3f), Quaternionf())
                     bd.teleportDuration = 2; bd.interpolationDuration = 2

@@ -15,6 +15,8 @@ import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.forEach
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.config.ConfigManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -24,7 +26,7 @@ import kotlin.collections.forEach
 class ArenaManager(private val plugin: Mistaken) {
 
     private val arenas = ConcurrentHashMap<String, Arena>()
-    private var configProvider = pumpking.lib.config.ConfigManager.get("arenas.yml")
+    private var configProvider = ConfigManager.get("arenas.yml")
     private var config = configProvider.getRaw()
     private val mm = MiniMessage.miniMessage()
 
@@ -64,7 +66,7 @@ class ArenaManager(private val plugin: Mistaken) {
             // Reemplazo atómico para no causar tirones
             arenas.clear()
             arenas.putAll(tempArenas)
-            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[SUCCESS] [Arenas] ${arenas.size} templates loaded into secure memory."))
+            plugin.componentLogger.info(ColorTranslator.translate("[SUCCESS] [Arenas] ${arenas.size} templates loaded into secure memory."))
         }
     }
 
@@ -180,7 +182,7 @@ class ArenaManager(private val plugin: Mistaken) {
                     configProvider.save()
                 }
             } catch (e: Exception) {
-                plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("[ERROR] [Arenas] Failed to save arenas.yml: ${e.message}"))
+                plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [Arenas] Failed to save arenas.yml: ${e.message}"))
             }
         }
     }

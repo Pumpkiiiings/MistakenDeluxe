@@ -15,17 +15,18 @@ import org.bukkit.util.EulerAngle
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import pumpking.lib.color.ColorTranslator
 
 class SowoulProfile : CinematicProfile {
     override val id: String = "sowoul"
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_purple>EL MAGO HA LLEGADO"), pumpking.lib.color.ColorTranslator.translate("<light_purple>Que comience el espectáculo..."))
+        return Pair(ColorTranslator.translate("<dark_purple>EL MAGO HA LLEGADO"), ColorTranslator.translate("<light_purple>Que comience el espectáculo..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

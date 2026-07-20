@@ -23,6 +23,10 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import org.bukkit.Particle
+import pumpking.lib.color.ColorTranslator
 
 /**
  * [LIRIC-MISTAKEN 2.0] - MODO PESADILLA
@@ -31,7 +35,7 @@ import kotlin.math.sin
  */
 class EyedroomsEXE(private val plugin: Mistaken) {
 
-    private val parts = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
+    private val parts = mutableListOf<VirtualBlockDisplay>()
     private var isRunning = false
     private var lastVictimUUID: UUID? = null
     private val teamName = "EyedroomsGlow"
@@ -65,7 +69,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
                 parts.forEach { scoreboard.getTeam(teamName)?.addEntry(it.uniqueId.toString()) }
 
                 // 🔥 Broadcast solo para la sesión infectada
-                val infectMsg = pumpking.lib.color.ColorTranslator.translate("<newline><dark_purple><b>[!]</b> <white>EL SISTEMA HA SIDO INFECTADO POR <dark_red><b>EYEDROOMS.EXE</b>")
+                val infectMsg = ColorTranslator.translate("<newline><dark_purple><b>[!]</b> <white>EL SISTEMA HA SIDO INFECTADO POR <dark_red><b>EYEDROOMS.EXE</b>")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(infectMsg) }
 
                 isRunning = true
@@ -76,8 +80,8 @@ class EyedroomsEXE(private val plugin: Mistaken) {
         }
     }
 
-    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): liric.mistaken.packet.fake.VirtualBlockDisplay {
-        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
+    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): VirtualBlockDisplay {
+        return PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(translation, Quaternionf(), scale, Quaternionf())
             bd.isPersistent = false
@@ -149,8 +153,8 @@ class EyedroomsEXE(private val plugin: Mistaken) {
                     if (ticksEnFase == 30) {
                         target.playSound(target.location, Sound.BLOCK_CONDUIT_ACTIVATE, 2f, 0.1f)
                         target.showTitle(Title.title(
-                            pumpking.lib.color.ColorTranslator.translate("<dark_purple><obfuscated>ERR_VOICE"),
-                            pumpking.lib.color.ColorTranslator.translate("<gray>Has recibido una <green>bendición <red>corrupta"),
+                            ColorTranslator.translate("<dark_purple><obfuscated>ERR_VOICE"),
+                            ColorTranslator.translate("<gray>Has recibido una <green>bendición <red>corrupta"),
                             Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(2), Duration.ofMillis(500))
                         ))
                         target.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 2, false, false))
@@ -170,7 +174,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
                         moverTodo(next, target.location)
 
                         target.playSound(next, Sound.ENTITY_GHAST_SCREAM, 0.8f, 2.0f)
-                        next.world.spawnParticle(org.bukkit.Particle.DRAGON_BREATH, next, 15, 0.8, 0.8, 0.8, 0.1)
+                        next.world.spawnParticle(Particle.DRAGON_BREATH, next, 15, 0.8, 0.8, 0.8, 0.1)
 
                         if (next.distanceSquared(target.location) < 12.25) { // 3.5 bloques reales
                             ejecutarMuerte(target)
@@ -212,7 +216,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
 
     private fun ejecutarMuerte(victim: Player) {
         lastVictimUUID = victim.uniqueId
-        victim.world.spawnParticle(org.bukkit.Particle.SONIC_BOOM, victim.location, 1)
+        victim.world.spawnParticle(Particle.SONIC_BOOM, victim.location, 1)
         victim.world.playSound(victim.location, Sound.ENTITY_WARDEN_SONIC_BOOM, 2f, 0.5f)
 
         // Daño directo (bypass al combatManager global para asegurar ejecución)
@@ -221,7 +225,7 @@ class EyedroomsEXE(private val plugin: Mistaken) {
         victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 200, 0))
         victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 200, 0))
 
-        val deathMsg = pumpking.lib.color.ColorTranslator.translate("<dark_purple><b>[!]</b> <white>${victim.name} fue borrado por la mirada de <dark_red>EYEDROOMS")
+        val deathMsg = ColorTranslator.translate("<dark_purple><b>[!]</b> <white>${victim.name} fue borrado por la mirada de <dark_red>EYEDROOMS")
         assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
     }
 

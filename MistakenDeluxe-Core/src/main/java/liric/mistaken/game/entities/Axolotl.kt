@@ -18,6 +18,9 @@ import org.bukkit.potion.PotionEffectType
 import java.time.Duration
 import java.util.*
 import java.util.function.Consumer
+import org.bukkit.Particle
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0] - MODO TROLL
@@ -66,7 +69,7 @@ class Axolotl(private val plugin: Mistaken) {
                 }
 
                 // 🔥 Broadcast solo para la sesión
-                val spawnMsg = pumpking.lib.color.ColorTranslator.translate("<newline><aqua><b>[!]</b> <white>Algo enorme ha salido del agua... <pink><b>AXOLOTL.EXE</b>")
+                val spawnMsg = ColorTranslator.translate("<newline><aqua><b>[!]</b> <white>Algo enorme ha salido del agua... <pink><b>AXOLOTL.EXE</b>")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(spawnMsg) }
 
                 isRunning = true
@@ -138,7 +141,7 @@ class Axolotl(private val plugin: Mistaken) {
                 2 -> { // Advertencia
                     if (ticks == 20) {
                         target.playSound(target.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.8f)
-                        target.showTitle(Title.title(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.axolotl.title-hungry"), pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.axolotl.subtitle-hungry")))
+                        target.showTitle(Title.title(PumpkingServiceManager.messages.getComponent(target, "anomalies.axolotl.title-hungry"), PumpkingServiceManager.messages.getComponent(target, "anomalies.axolotl.subtitle-hungry")))
                     }
                     if (ticks >= 44) {
                         fase = 3
@@ -152,7 +155,7 @@ class Axolotl(private val plugin: Mistaken) {
                         val next = loc.add(dir.multiply(4.0))
                         entity!!.teleport(next)
                         target.playSound(next, Sound.BLOCK_ANVIL_LAND, 1.5f, 0.2f)
-                        next.world.spawnParticle(org.bukkit.Particle.BUBBLE_POP, next, 20, 1.0, 1.0, 1.0, 0.1)
+                        next.world.spawnParticle(Particle.BUBBLE_POP, next, 20, 1.0, 1.0, 1.0, 0.1)
 
                         // Solo golpea si es de la sesión y no es el asesino
                         val hit = next.world.getNearbyPlayers(next, 4.0).filter { p ->
@@ -178,7 +181,7 @@ class Axolotl(private val plugin: Mistaken) {
                     if (ticks == 0) {
                         setGlowColor(NamedTextColor.RED)
                         target.playSound(target.location, Sound.ENTITY_ELDER_GUARDIAN_DEATH, 1.5f, 0.5f)
-                        target.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.axolotl.rage"))
+                        target.sendMessage(PumpkingServiceManager.messages.getComponent(target, "anomalies.axolotl.rage"))
                     }
 
                     if (ticks > 20 && ticks < 120) {
@@ -210,7 +213,7 @@ class Axolotl(private val plugin: Mistaken) {
 
     private fun ejecutarMuerte(victim: Player, enrage: Boolean = false) {
         lastVictimUUID = victim.uniqueId
-        victim.world.spawnParticle(org.bukkit.Particle.SPLASH, victim.location, 50, 1.0, 1.0, 1.0, 0.2)
+        victim.world.spawnParticle(Particle.SPLASH, victim.location, 50, 1.0, 1.0, 1.0, 0.2)
         victim.world.playSound(victim.location, Sound.ENTITY_FISH_SWIM, 2f, 0.1f)
 
         // Daño procesado por manager global
@@ -220,7 +223,7 @@ class Axolotl(private val plugin: Mistaken) {
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 4, false, false, true))
 
         val prefix = if (enrage) "<dark_red><b>[DEPREDADOR]</b>" else "<pink><b>[!]</b>"
-        val deathMsg = pumpking.lib.color.ColorTranslator.translate("$prefix <white>${victim.name} fue devorado por <pink>AXOLOTL.EXE")
+        val deathMsg = ColorTranslator.translate("$prefix <white>${victim.name} fue devorado por <pink>AXOLOTL.EXE")
 
         assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
     }

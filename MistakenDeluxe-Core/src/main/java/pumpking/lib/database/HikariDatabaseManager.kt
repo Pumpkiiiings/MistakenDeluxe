@@ -1,10 +1,11 @@
-﻿package pumpking.lib.database
+package pumpking.lib.database
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import pumpking.lib.core.PumpkingLib
 import java.io.File
 import java.sql.Connection
+import com.mysql.cj.jdbc.Driver
 
 enum class DatabaseType {
     SQLITE, MYSQL, POSTGRESQL
@@ -42,7 +43,7 @@ class HikariDatabaseManager(
                 config.jdbcUrl = "jdbc:mysql://$host:$port/$database?useSSL=false&autoReconnect=true"
                 config.username = username
                 config.password = password
-                config.driverClassName = "com.mysql.cj.jdbc.Driver"
+                config.driverClassName = "Driver"
                 config.maximumPoolSize = 10
             }
             DatabaseType.POSTGRESQL -> {

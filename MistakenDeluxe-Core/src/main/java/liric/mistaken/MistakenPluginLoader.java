@@ -13,6 +13,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Scanner;
+import revxrsal.zapper.relocation.Relocation;
+import revxrsal.zapper.repository.Repository;
 
 @SuppressWarnings("UnstableApiUsage")
 public class MistakenPluginLoader implements PluginLoader {
@@ -45,7 +47,7 @@ public class MistakenPluginLoader implements PluginLoader {
                         while (scanner.hasNextLine()) {
                             String line = scanner.nextLine().trim();
                             if (!line.isEmpty()) {
-                                dependencyManager.repository(revxrsal.zapper.repository.Repository.maven(line));
+                                dependencyManager.repository(Repository.maven(line));
                             }
                         }
                     }
@@ -72,7 +74,7 @@ public class MistakenPluginLoader implements PluginLoader {
                             String line = scanner.nextLine().trim();
                             if (!line.isEmpty() && line.contains(":")) {
                                 String[] parts = line.split(":");
-                                dependencyManager.relocate(new revxrsal.zapper.relocation.Relocation(parts[0], parts[1]));
+                                dependencyManager.relocate(new Relocation(parts[0], parts[1]));
                             }
                         }
                     }

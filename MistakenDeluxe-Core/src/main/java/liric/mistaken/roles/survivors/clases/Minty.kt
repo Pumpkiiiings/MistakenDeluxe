@@ -12,6 +12,10 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
+import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.util.Vector
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -21,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class Minty : Survivor(
     "minty",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.minty.nombre", "survivors_info")
+    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.minty.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.minty"
@@ -46,7 +50,7 @@ class Minty : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 15))) {
@@ -113,16 +117,16 @@ class Minty : Survivor(
             killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
             killer.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
             killer.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
-            killer.velocity = killer.velocity.add(org.bukkit.util.Vector(0.0, 0.4, 0.0))
+            killer.velocity = killer.velocity.add(Vector(0.0, 0.4, 0.0))
             killer.damage(0.0)
         }
     }
 
-    private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
+    private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
         var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) {
             msg = msg.replace("<prefix>", "", true).replace("%prefix%", "", true).trim()
-            player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
+            player.sendMessage(ColorTranslator.translate(msg))
         }
         val soundName = mech.getString("$pathBase.items.${key}_sound", "UI_BUTTON_CLICK")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
@@ -133,12 +137,12 @@ class Minty : Survivor(
         inv.clear()
         if (itemCache.isEmpty()) preLoadKit()
 
-        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
             langConfig.getString("skill_names.$key")?.let {
-                item.editMeta { m -> m.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { m -> m.displayName(ColorTranslator.translate(it)) }
             }
             inv.setItem(slot, item)
         }

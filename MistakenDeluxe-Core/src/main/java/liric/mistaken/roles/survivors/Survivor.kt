@@ -4,6 +4,7 @@ import kotlinx.coroutines.Job
 import liric.mistaken.Mistaken
 import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
+import pumpking.lib.color.ColorTranslator
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -42,7 +43,7 @@ abstract class Survivor(val id: String, val nombre: String) {
 
         if (now < expireTime) {
             val remaining = (expireTime - now) / 1000.0
-            player.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<red>Cooldown: <white>${"%.1f".format(remaining)}s</white>"))
+            player.sendActionBar(ColorTranslator.translate("<red>Cooldown: <white>${"%.1f".format(remaining)}s</white>"))
             return true
         }
 

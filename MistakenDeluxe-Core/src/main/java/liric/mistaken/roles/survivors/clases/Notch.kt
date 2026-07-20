@@ -12,6 +12,10 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
+import org.bukkit.attribute.Attribute
+import org.bukkit.configuration.file.FileConfiguration
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -23,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class Notch : Survivor(
     "notch",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.notch.nombre", "survivors_info")
+    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.notch.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.notch"
@@ -72,7 +76,7 @@ class Notch : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 20))) {
@@ -90,9 +94,9 @@ class Notch : Survivor(
         }
     }
 
-    private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
+    private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
         val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
+        if (!msg.isNullOrEmpty()) player.sendMessage(ColorTranslator.translate(msg))
     }
 
     override fun equip(player: Player) {
@@ -100,12 +104,12 @@ class Notch : Survivor(
         inv.clear()
         if (itemCache.isEmpty()) preLoadKit()
 
-        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
             langConfig.getString("skill_names.$key")?.let {
-                item.editMeta { m -> m.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { m -> m.displayName(ColorTranslator.translate(it)) }
             }
             inv.setItem(slot, item)
         }
@@ -164,7 +168,7 @@ class Notch : Survivor(
                 entity.velocity = push
 
                 // Efectos al asesino
-                entity.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><bold>DENIED!</bold> <gray>Acceso denegado por el administrador.</gray>"))
+                entity.sendMessage(ColorTranslator.translate("<red><bold>DENIED!</bold> <gray>Acceso denegado por el administrador.</gray>"))
                 entity.playSound(entity.location, Sound.ENTITY_VILLAGER_NO, 1f, 0.8f)
             }
         }
@@ -186,7 +190,7 @@ class Notch : Survivor(
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 1))        // Velocidad II por 5s
 
         // Curación instantánea visual
-        val maxHealth = player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.value ?: 20.0
+        val maxHealth = player.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
         player.health = (player.health + 6.0).coerceAtMost(maxHealth) // Cura 3 corazones
     }
 

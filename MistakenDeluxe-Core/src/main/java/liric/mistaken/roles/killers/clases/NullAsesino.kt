@@ -29,6 +29,12 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import liric.mistaken.packet.fake.VirtualItemDisplay
+import org.bukkit.Bukkit
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -37,14 +43,14 @@ import kotlin.math.sin
  */
 class NullAsesino : CoreKiller(
     "null",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.null.nombre", "killers_info")
+    PumpkingServiceManager.messages.getStrictString(null, "asesinos.null.nombre", "killers_info")
 ), Listener { // ?? Agregado Listener para Finishers
 
     private val pathBase = "asesinos.null"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val activeTraps = ConcurrentHashMap.newKeySet<Entity>()
 
-    private val orbitadores = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualItemDisplay>>()
+    private val orbitadores = ConcurrentHashMap<UUID, MutableList<VirtualItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val orbitMaterials = listOf(Material.BEACON, Material.ENDER_EYE, Material.NETHER_STAR)
 
@@ -164,13 +170,13 @@ class NullAsesino : CoreKiller(
                 // EFECTO 3: MIRADA DEL VACO
                 world.playSound(loc, Sound.AMBIENT_CAVE, 2f, 0.5f)
 
-                val displays = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
+                val displays = mutableListOf<VirtualBlockDisplay>()
                 for (i in 0..2) {
                     val angle = (i * Math.PI * 2) / 3
                     val x = 2.0 * cos(angle)
                     val z = 2.0 * sin(angle)
 
-                    displays.add(liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc.clone().add(x, 2.0, z)) { bd ->
+                    displays.add(PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc.clone().add(x, 2.0, z)) { bd ->
                         bd.block = Material.BEACON.createBlockData()
                         bd.transformation = Transformation(JomlVector3f(-0.5f, -0.5f, -0.5f), Quaternionf(), JomlVector3f(1f, 1f, 1f), Quaternionf())
                     })
@@ -193,7 +199,7 @@ class NullAsesino : CoreKiller(
         // ?? ESCALA AUMENTADA
         player.getAttribute(Attribute.SCALE)?.baseValue = 1.1
 
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -212,7 +218,7 @@ class NullAsesino : CoreKiller(
             else "asesinos.${this.id}.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -244,7 +250,7 @@ class NullAsesino : CoreKiller(
                 victim.apply {
                     addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 200, 0))
                     addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 200, 0))
-                    sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "roles.killer.abilities.null_asesino.sistema_corrupto"))
+                    sendMessage(PumpkingServiceManager.messages.getComponent(null, "roles.killer.abilities.null_asesino.sistema_corrupto"))
                 }
             }
         }
@@ -327,7 +333,7 @@ class NullAsesino : CoreKiller(
         if (orbitadores[uuid]?.firstOrNull()?.world != playerWorld) limpiarVisuales(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
-            mutableListOf<liric.mistaken.packet.fake.VirtualItemDisplay>().apply {
+            mutableListOf<VirtualItemDisplay>().apply {
                 orbitMaterials.forEach { mat ->
                     add(crearItemOrbitante(player.location, mat))
                 }
@@ -358,8 +364,8 @@ class NullAsesino : CoreKiller(
         angulos[uuid] = anguloActual + 0.12
     }
 
-    private fun crearItemOrbitante(loc: Location, mat: Material): liric.mistaken.packet.fake.VirtualItemDisplay {
-        return liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { id ->
+    private fun crearItemOrbitante(loc: Location, mat: Material): VirtualItemDisplay {
+        return PacketFactory.displays.buildItemDisplay(Bukkit.getOnlinePlayers().toList(), loc) { id ->
             id.setItemStack(ItemStack(mat))
             id.transformation = Transformation(
                 JomlVector3f(0f, 0f, 0f),

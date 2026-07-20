@@ -12,6 +12,10 @@ import net.kyori.adventure.text.Component
 import org.bukkit.Location
 import org.bukkit.entity.Player
 import java.util.UUID
+import com.github.retrooper.packetevents.util.Vector3d
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity
+import java.util.Optional
+import liric.mistaken.packet.PacketFactory
 
 class FakeNPCAPI {
 
@@ -25,7 +29,7 @@ class FakeNPCAPI {
      * @return El ID de Entidad generado.
      */
     fun spawnNPC(player: Player, location: Location, name: String, textureValue: String? = null, textureSignature: String? = null): Int {
-        val entityId = liric.mistaken.packet.PacketFactory.generateEntityId()
+        val entityId = PacketFactory.generateEntityId()
         val fakeUUID = UUID.randomUUID()
         val pm = PacketEvents.getAPI().playerManager
 
@@ -51,16 +55,16 @@ class FakeNPCAPI {
 
         // 2. SPAWN FISICO
         val pos = SpigotConversionUtil.fromBukkitLocation(location)
-        val spawnPacket = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity(
+        val spawnPacket = WrapperPlayServerSpawnEntity(
             entityId,
-            java.util.Optional.of(fakeUUID),
+            Optional.of(fakeUUID),
             EntityTypes.PLAYER,
             pos.position,
             pos.pitch,
             pos.yaw,
             pos.yaw,
             0,
-            java.util.Optional.empty<com.github.retrooper.packetevents.util.Vector3d>()
+            Optional.empty<Vector3d>()
         )
         pm.sendPacket(player, spawnPacket)
 

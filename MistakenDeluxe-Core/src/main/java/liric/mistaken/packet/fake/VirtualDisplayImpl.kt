@@ -11,18 +11,22 @@ import org.bukkit.block.data.BlockData
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Transformation
+import com.github.retrooper.packetevents.protocol.entity.type.EntityType
+import net.kyori.adventure.text.Component
+import org.bukkit.Color
+import org.bukkit.entity.Display
 
 open class VirtualBaseDisplay(
     location: Location,
     viewers: List<Player>,
-    entityType: com.github.retrooper.packetevents.protocol.entity.type.EntityType
+    entityType: EntityType
 ) : VirtualDisplay(location, viewers, entityType) {
     var interpolationDuration: Int = 0
     var teleportDuration: Int = 0
     var transformation: Transformation? = null
     var isGlowing: Boolean = false
-    var billboard: org.bukkit.entity.Display.Billboard? = null
-    var brightness: org.bukkit.entity.Display.Brightness? = null
+    var billboard: Display.Billboard? = null
+    var brightness: Display.Brightness? = null
 
     override fun buildMetadata(): List<EntityData<*>> {
         val list = mutableListOf<EntityData<*>>()
@@ -65,7 +69,7 @@ class VirtualItemDisplay(location: Location, viewers: List<Player>) : VirtualBas
 
 class VirtualBlockDisplay(location: Location, viewers: List<Player>) : VirtualBaseDisplay(location, viewers, EntityTypes.BLOCK_DISPLAY) {
     var block: BlockData? = null
-    var glowColorOverride: org.bukkit.Color? = null
+    var glowColorOverride: Color? = null
 
     override fun buildMetadata(): List<EntityData<*>> {
         val list = super.buildMetadata().toMutableList()
@@ -78,8 +82,8 @@ class VirtualBlockDisplay(location: Location, viewers: List<Player>) : VirtualBa
 }
 
 class VirtualTextDisplay(location: Location, viewers: List<Player>) : VirtualBaseDisplay(location, viewers, EntityTypes.TEXT_DISPLAY) {
-    var text: net.kyori.adventure.text.Component? = null
-    var backgroundColor: org.bukkit.Color? = null
+    var text: Component? = null
+    var backgroundColor: Color? = null
 
     override fun buildMetadata(): List<EntityData<*>> {
         val list = super.buildMetadata().toMutableList()

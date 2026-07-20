@@ -19,6 +19,10 @@ import org.joml.Quaternionf
 import org.joml.Vector3f
 import java.util.*
 import java.util.function.Consumer
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  *[LIRIC-MISTAKEN 2.0] - MODO TROLL
@@ -27,7 +31,7 @@ import java.util.function.Consumer
  */
 class AmongUsEXE(private val plugin: Mistaken) {
 
-    private val parts = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
+    private val parts = mutableListOf<VirtualBlockDisplay>()
     private var isRunning = false
     private var currentTarget: Player? = null
     private var lastVictimUUID: UUID? = null
@@ -73,8 +77,8 @@ class AmongUsEXE(private val plugin: Mistaken) {
         }
     }
 
-    private fun createPart(base: Location, mat: Material, scale: Vector3f, offset: Vector3f): liric.mistaken.packet.fake.VirtualBlockDisplay {
-        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), base) { bd ->
+    private fun createPart(base: Location, mat: Material, scale: Vector3f, offset: Vector3f): VirtualBlockDisplay {
+        return PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), base) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(offset, Quaternionf(), scale, Quaternionf())
             bd.isPersistent = false
@@ -145,7 +149,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
                 2 -> { // FASE 2: Advertencia
                     if (ticksEnFase == 16) {
                         target.playSound(target.location, Sound.ENTITY_CREEPER_PRIMED, 1f, 0.5f)
-                        target.showTitle(Title.title(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.amongus.title-detect"), pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.amongus.subtitle-detect")))
+                        target.showTitle(Title.title(PumpkingServiceManager.messages.getComponent(target, "anomalies.amongus.title-detect"), PumpkingServiceManager.messages.getComponent(target, "anomalies.amongus.subtitle-detect")))
                     }
                     if (ticksEnFase >= 36) {
                         fase = 3
@@ -184,7 +188,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
                     if (ticksEnFase == 0) {
                         setGlowColor(NamedTextColor.RED)
                         target.playSound(target.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 0.5f)
-                        target.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.amongus.rage"))
+                        target.sendMessage(PumpkingServiceManager.messages.getComponent(target, "anomalies.amongus.rage"))
                     }
 
                     if (ticksEnFase > 20 && ticksEnFase < 120) {
@@ -223,7 +227,7 @@ class AmongUsEXE(private val plugin: Mistaken) {
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 3, false, false, true))
 
         val prefix = if (rage) "<dark_red><b>[SABOTAJE]</b>" else "<red><b>[!]</b>"
-        val deathMsg = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(victim, "anomalies.amongus.death", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("player", victim.name))
+        val deathMsg = PumpkingServiceManager.messages.getComponent(victim, "anomalies.amongus.death", Placeholder.parsed("player", victim.name))
 
         // 🔥 Mensaje solo para los de la sesión
         assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }

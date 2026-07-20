@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import pumpking.lib.color.ColorTranslator
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -118,7 +119,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
                 world.spawnParticle(Particle.ANGRY_VILLAGER, location.add(0.0, 1.5, 0.0), 5, 0.2, 0.2, 0.2, 0.1)
                 playSound(location, Sound.BLOCK_ANVIL_LAND, 0.7f, 1.5f)
 
-                sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><bold>[!]</bold> <gray>SISTEMA CORROMPIDO: <white>Has sido infectado por la Estrella del Error."))
+                sendMessage(ColorTranslator.translate("<red><bold>[!]</bold> <gray>SISTEMA CORROMPIDO: <white>Has sido infectado por la Estrella del Error."))
             }
         }
     }

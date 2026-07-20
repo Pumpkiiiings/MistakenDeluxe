@@ -6,6 +6,7 @@ import pumpking.lib.core.PumpkingLib
 import java.nio.file.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import pumpking.lib.task.PumpkingTask
 
 object ConfigWatcher {
     private lateinit var watchService: WatchService
@@ -24,7 +25,7 @@ object ConfigWatcher {
             menusPath.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
         }
 
-        job = pumpking.lib.task.PumpkingTask.ioScope.launch {
+        job = PumpkingTask.ioScope.launch {
             while (isActive) {
                 val key = try {
                     watchService.poll(1, TimeUnit.SECONDS)

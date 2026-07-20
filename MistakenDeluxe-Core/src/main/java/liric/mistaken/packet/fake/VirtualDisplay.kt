@@ -14,13 +14,20 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import java.util.Optional
 import java.util.UUID
+import com.github.retrooper.packetevents.wrapper.PacketWrapper
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
+import java.util.function.Consumer
+import liric.mistaken.packet.PacketFactory
+import org.bukkit.Bukkit
+import org.bukkit.entity.Entity
+import org.bukkit.plugin.Plugin
 
 abstract class VirtualDisplay(
     var location: Location,
     val viewers: List<Player>,
     val entityType: EntityType
 ) {
-    val entityId: Int = liric.mistaken.packet.PacketFactory.generateEntityId()
+    val entityId: Int = PacketFactory.generateEntityId()
     val uuid: UUID = UUID.randomUUID()
     val uniqueId: UUID get() = uuid
     var isValid: Boolean = true
@@ -73,7 +80,7 @@ abstract class VirtualDisplay(
     protected fun sendPacket(packet: Any) {
         viewers.forEach { player ->
             if (player.isOnline) {
-                PacketEvents.getAPI().playerManager.sendPacket(player, packet as com.github.retrooper.packetevents.wrapper.PacketWrapper<*>)
+                PacketEvents.getAPI().playerManager.sendPacket(player, packet as PacketWrapper<*>)
             }
         }
     }
@@ -89,7 +96,7 @@ abstract class VirtualDisplay(
 
     abstract fun buildMetadata(): List<EntityData<*>>
 
-    fun getNearbyEntities(x: Double, y: Double, z: Double): Collection<org.bukkit.entity.Entity> {
+    fun getNearbyEntities(x: Double, y: Double, z: Double): Collection<Entity> {
         return location.world.getNearbyEntities(location, x, y, z)
     }
 
@@ -97,22 +104,22 @@ abstract class VirtualDisplay(
 
     inner class VirtualScheduler {
         fun runAtFixedRate(
-            plugin: org.bukkit.plugin.Plugin,
-            task: java.util.function.Consumer<io.papermc.paper.threadedregions.scheduler.ScheduledTask>,
+            plugin: Plugin,
+            task: Consumer<ScheduledTask>,
             retired: Runnable?,
             initialDelayTicks: Long,
             periodTicks: Long
-        ): io.papermc.paper.threadedregions.scheduler.ScheduledTask {
-            return org.bukkit.Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, task, initialDelayTicks, periodTicks)
+        ): ScheduledTask {
+            return Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, task, initialDelayTicks, periodTicks)
         }
 
         fun runDelayed(
-            plugin: org.bukkit.plugin.Plugin,
-            task: java.util.function.Consumer<io.papermc.paper.threadedregions.scheduler.ScheduledTask>,
+            plugin: Plugin,
+            task: Consumer<ScheduledTask>,
             retired: Runnable?,
             delayTicks: Long
-        ): io.papermc.paper.threadedregions.scheduler.ScheduledTask {
-            return org.bukkit.Bukkit.getGlobalRegionScheduler().runDelayed(plugin, task, delayTicks)
+        ): ScheduledTask {
+            return Bukkit.getGlobalRegionScheduler().runDelayed(plugin, task, delayTicks)
         }
     }
 }

@@ -48,6 +48,15 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import org.bukkit.plugin.java.JavaPlugin
+import dev.triumphteam.gui.TriumphGui
+import liric.mistaken.api.MistakenAPIImpl
+import liric.mistaken.api.MistakenProvider
+import liric.mistaken.data.db.DatabaseFactory
+import liric.mistaken.game.managers.visual.ObserverHUDManager
+import liric.mistaken.packet.PacketInteractListener
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.config.ConfigManager
+import pumpking.lib.core.PumpkingLib
 
 @Suppress("UnstableApiUsage")
 class Mistaken : JavaPlugin() {
@@ -81,7 +90,7 @@ class Mistaken : JavaPlugin() {
     var isReady = false
     val ignoredTestPlayers: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
 
-    val configManager get() = pumpking.lib.config.ConfigManager
+    val configManager get() = ConfigManager
     lateinit var statsManager: StatsManager
     lateinit var playerDataManager: PlayerDataManager
     lateinit var databaseManager: DatabaseManager
@@ -101,7 +110,7 @@ class Mistaken : JavaPlugin() {
     lateinit var combatManager: CombatManager
     lateinit var webHook: WebHook
     lateinit var cinematicManager: CinematicManager
-    lateinit var observerHUDManager: liric.mistaken.game.managers.visual.ObserverHUDManager
+    lateinit var observerHUDManager: ObserverHUDManager
 
     lateinit var spectatorManager: SpectatorManager
     lateinit var asesinoManager: KillerManager
@@ -123,7 +132,7 @@ class Mistaken : JavaPlugin() {
         instance = this
         
         // Fix for Triumph-GUI classloader crash in Paper
-        dev.triumphteam.gui.TriumphGui.init(this)
+        TriumphGui.init(this)
 
         PacketEvents.getAPI().init()
         assassinKey = NamespacedKey(this, "selected_assassin")
@@ -137,24 +146,24 @@ class Mistaken : JavaPlugin() {
         createRequiredFolders()
 
         // Initialize PumpkingLib internal framework
-        pumpking.lib.core.PumpkingLib.init(this)
+        PumpkingLib.init(this)
 
         // 🔥 FIX 1: Registramos los comandos PRIMERO.
         // Si la base de datos o el lobby fallan, al menos tendrás comandos para arreglarlo.
         CommandRegistry(this).registerAll()
 
         serverMode = config.getString("server-mode", "GAME_SERVER")?.uppercase() ?: "GAME_SERVER"
-        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[INFO] Server mode set to: $serverMode"))
+        componentLogger.info(ColorTranslator.translate("[INFO] Server mode set to: $serverMode"))
 
         loadLobbyLocation()
         if (serverMode == "MULTIARENA" || serverMode == "NETWORK_LOBBY") {
             if (lobbyLocation != null) {
                 lobbyLocation?.world?.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
             } else {
-                componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("[WARN] Lobby is not set (/setlobby)."))
+                componentLogger.warn(ColorTranslator.translate("[WARN] Lobby is not set (/setlobby)."))
             }
         } else if (serverMode == "GAME_SERVER" && lobbyLocation == null) {
-            componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("[WARN] GAME_SERVER requires /setlobby to create the glass Pre-Lobby."))
+            componentLogger.warn(ColorTranslator.translate("[WARN] GAME_SERVER requires /setlobby to create the glass Pre-Lobby."))
         }
 
         // 🔥 FIX 2: Si falla la conexión de DB o Vault, no apagamos el plugin entero.
@@ -166,8 +175,8 @@ class Mistaken : JavaPlugin() {
         playerDataManager = PlayerDataManager(this)
 
         // 🔥 FIX 3: Inicializamos la API ANTES de cargar los managers y asesinos
-        val apiImpl = liric.mistaken.api.MistakenAPIImpl(this)
-        liric.mistaken.api.MistakenProvider.register(apiImpl)
+        val apiImpl = MistakenAPIImpl(this)
+        MistakenProvider.register(apiImpl)
 
         glowingAPI = GlowingEntities(this)
         combatManager = CombatManager(this)
@@ -181,7 +190,7 @@ class Mistaken : JavaPlugin() {
         visibilityManager = VisibilityManager(this)
 
         PacketEvents.getAPI().eventManager.registerListener(PacketVisibilityListener(visibilityManager))
-        PacketEvents.getAPI().eventManager.registerListener(liric.mistaken.packet.PacketInteractListener())
+        PacketEvents.getAPI().eventManager.registerListener(PacketInteractListener())
 
         mapManager = MapManager(this)
         arenaManager = ArenaManager(this)
@@ -198,7 +207,7 @@ class Mistaken : JavaPlugin() {
         supervivienteTienda = SurvivorTienda()
         shopSelector = ShopSelector()
         scoreboardManager = ScoreboardManager(this)
-        observerHUDManager = liric.mistaken.game.managers.visual.ObserverHUDManager(this)
+        observerHUDManager = ObserverHUDManager(this)
 
         server.servicesManager.register(HealthAPI::class.java, combatManager, this, ServicePriority.Normal)
 
@@ -221,7 +230,7 @@ class Mistaken : JavaPlugin() {
         sendLogo()
 
         val time = System.currentTimeMillis() - start
-        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[SUCCESS] Mistaken v${pluginMeta.version} enabled in ${time}ms ($serverMode)"))
+        componentLogger.info(ColorTranslator.translate("[SUCCESS] Mistaken v${pluginMeta.version} enabled in ${time}ms ($serverMode)"))
     }
 
     override fun onDisable() {
@@ -232,7 +241,7 @@ class Mistaken : JavaPlugin() {
         if (::musicManager.isInitialized) musicManager.shutdown()
         if (::generatorManager.isInitialized) runCatching { generatorManager.clearGenerators() }
         if (::scoreboardManager.isInitialized) runCatching { scoreboardManager.removeAll() }
-        pumpking.lib.core.PumpkingLib.shutdown()
+        PumpkingLib.shutdown()
         if (::asesinoManager.isInitialized) runCatching { asesinoManager.shutdown() }
         if (::supervivienteManager.isInitialized) runCatching { supervivienteManager.shutdown() }
         if (::observerHUDManager.isInitialized) runCatching { observerHUDManager.shutdown() }
@@ -244,7 +253,7 @@ class Mistaken : JavaPlugin() {
 
         PacketEvents.getAPI().terminate()
 
-        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[INFO] MISTAKEN has been successfully disabled."))
+        componentLogger.info(ColorTranslator.translate("[INFO] MISTAKEN has been successfully disabled."))
     }
 
     private fun setupDatabase(): Boolean {
@@ -252,11 +261,11 @@ class Mistaken : JavaPlugin() {
             val dbFile = File(dataFolder, "database.yml")
             if (!dbFile.exists()) saveResource("database.yml", false)
 
-            databaseManager = liric.mistaken.data.db.DatabaseFactory.create(this)
+            databaseManager = DatabaseFactory.create(this)
             databaseManager.setup()
             true
         } catch (e: Exception) {
-            componentLogger.error(pumpking.lib.color.ColorTranslator.translate("[ERROR] Could not connect to the database. Data will not be saved."))
+            componentLogger.error(ColorTranslator.translate("[ERROR] Could not connect to the database. Data will not be saved."))
             false
         }
     }
@@ -265,13 +274,13 @@ class Mistaken : JavaPlugin() {
         val rsp: RegisteredServiceProvider<Economy>? = server.servicesManager.getRegistration(Economy::class.java)
 
         if (rsp == null) {
-            componentLogger.error(pumpking.lib.color.ColorTranslator.translate("[ERROR] Vault found no compatible economy plugin."))
+            componentLogger.error(ColorTranslator.translate("[ERROR] Vault found no compatible economy plugin."))
             return false
         }
         economy = rsp.provider
 
         craftEngineEnabled = server.pluginManager.isPluginEnabled("CraftEngine")
-        if (craftEngineEnabled) componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[SUCCESS] CraftEngine detected and hooked."))
+        if (craftEngineEnabled) componentLogger.info(ColorTranslator.translate("[SUCCESS] CraftEngine detected and hooked."))
 
         return true
     }
@@ -375,7 +384,7 @@ class Mistaken : JavaPlugin() {
         val b5 = "<#004488>"
         val info = "<#00d4ff>"
 
-        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("""
+        componentLogger.info(ColorTranslator.translate("""
             <newline>
              $b1<bold>███╗   ███╗██╗███████╗████████╗ █████╗ ██╗  ██╗███████╗███╗   ██╗</bold>$b1
              $b1<bold>████╗ ████║██║██╔════╝╚══██╔══╝██╔══██╗██║ ██╔╝██╔════╝████╗  ██║</bold>$b1

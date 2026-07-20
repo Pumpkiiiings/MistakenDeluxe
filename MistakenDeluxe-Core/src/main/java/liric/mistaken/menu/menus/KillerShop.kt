@@ -13,6 +13,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.persistence.PersistentDataType
 import liric.mistaken.api.requirements.RequirementEngine
+import pumpking.lib.service.PumpkingServiceManager
 
 class KillerShop : MenuBase("killers_shop") {
 
@@ -36,10 +37,10 @@ class KillerShop : MenuBase("killers_shop") {
         val uuid = player.uniqueId
         val selected = data.getSelectedKiller(uuid)
 
-        val labelSeleccionado = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.estado-seleccionado")
-        val labelPoseido = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.estado-poseido")
-        val labelComprar = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.estado-comprar")
-        val labelHabilidades = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.habilidades-titulo")
+        val labelSeleccionado = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-seleccionado")
+        val labelPoseido = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-poseido")
+        val labelComprar = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-comprar")
+        val labelHabilidades = PumpkingServiceManager.messages.getComponent(player, "tienda.habilidades-titulo")
 
         val asesinosCatalogo = plugin.asesinoManager.getAvailableClasses().keys
 
@@ -58,9 +59,9 @@ class KillerShop : MenuBase("killers_shop") {
 
             if (targetSlot == -1) continue // Si no hay espacio en el inventario, lo salta
 
-            val nombreVisual = pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.$killerId.nombre", "killers_info")
-            val descripcion = pumpking.lib.service.PumpkingServiceManager.messages.getStrictStringList(player, "asesinos.$killerId.descripcion", "killers_info")
-            val loreTienda = pumpking.lib.service.PumpkingServiceManager.messages.getStrictStringList(player, "asesinos.$killerId.lore_tienda", "killers_info")
+            val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "asesinos.$killerId.nombre", "killers_info")
+            val descripcion = PumpkingServiceManager.messages.getStrictStringList(player, "asesinos.$killerId.descripcion", "killers_info")
+            val loreTienda = PumpkingServiceManager.messages.getStrictStringList(player, "asesinos.$killerId.lore_tienda", "killers_info")
 
             val precio = globalMecanicas.getInt("asesinos.$killerId.precio", 0)
             val matStr = globalMecanicas.getString("asesinos.$killerId.icono_material", "STONE")!!
@@ -76,7 +77,7 @@ class KillerShop : MenuBase("killers_shop") {
 
             fullLore.add(labelHabilidades)
             for (i in 1..4) {
-                val habName = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "asesinos.$killerId.skill_names.habilidad$i", "", "killers_info")
+                val habName = PumpkingServiceManager.messages.getRawString(player, "asesinos.$killerId.skill_names.habilidad$i", "", "killers_info")
                 if (habName.isNotEmpty()) {
                     fullLore.add(parseSafe(" <dark_gray>â€¢</dark_gray> <white>$habName</white>"))
                 }
@@ -93,7 +94,7 @@ class KillerShop : MenuBase("killers_shop") {
                 esSeleccionado -> fullLore.add(labelSeleccionado)
                 tiene -> fullLore.add(labelPoseido)
                 else -> {
-                    fullLore.add(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.estado-precio", Placeholder.parsed("amount", precio.toString())))
+                    fullLore.add(PumpkingServiceManager.messages.getComponent(player, "tienda.estado-precio", Placeholder.parsed("amount", precio.toString())))
                     fullLore.add(labelComprar)
                 }
             }
@@ -132,7 +133,7 @@ class KillerShop : MenuBase("killers_shop") {
         val actual = data.getSelectedKiller(uuid)
 
         if (killerId.equals(actual, ignoreCase = true)) {
-            player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.ya-seleccionado"))
+            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda.ya-seleccionado"))
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
             return
         }
@@ -140,7 +141,7 @@ class KillerShop : MenuBase("killers_shop") {
         if (tiene) {
             data.setSelectedKiller(uuid, killerId)
             player.persistentDataContainer.set(plugin.assassinKey, PersistentDataType.STRING, killerId)
-            player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.seleccionado", Placeholder.parsed("name", killerId)))
+            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda.seleccionado", Placeholder.parsed("name", killerId)))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
             abrir(player)
             return
@@ -161,16 +162,16 @@ class KillerShop : MenuBase("killers_shop") {
 
             if (response.transactionSuccess()) {
                 data.buyKiller(uuid, killerId)
-                player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda.comprado", Placeholder.parsed("name", killerId)))
+                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda.comprado", Placeholder.parsed("name", killerId)))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.5f)
                 abrir(player)
             } else {
-                player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "tienda_errores.error_bancario", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("error", response.errorMessage ?: "Unknown error")))
+                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda_errores.error_bancario", Placeholder.parsed("error", response.errorMessage ?: "Unknown error")))
                 player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
             }
 
         } else {
-            player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "errors.no-money"))
+            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.no-money"))
             player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
         }
     }

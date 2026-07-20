@@ -18,6 +18,10 @@ import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.function.Consumer
+import java.util.UUID
+import org.bukkit.configuration.file.FileConfiguration
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -26,7 +30,7 @@ import java.util.function.Consumer
  */
 class Jesse : Survivor(
     "jesse",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.jesse.nombre", "survivors_info")
+    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.jesse.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.jesse"
@@ -34,7 +38,7 @@ class Jesse : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 20))) {
@@ -49,9 +53,9 @@ class Jesse : Survivor(
         }
     }
 
-    private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
+    private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
         val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
+        if (!msg.isNullOrEmpty()) player.sendMessage(ColorTranslator.translate(msg))
 
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_PLAYER_ATTACK_SWEEP")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
@@ -62,7 +66,7 @@ class Jesse : Survivor(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
         val configMecanica = plugin.configManager.getSurvivorConfig(this.id)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -81,7 +85,7 @@ class Jesse : Survivor(
             if (key == "skill2") meta.persistentDataContainer.set(MELEE_PUNCH_KEY, PersistentDataType.BYTE, 1.toByte())
 
             langInfo.getString("$pathBase.skill_names.$key")?.let {
-                meta.displayName(pumpking.lib.color.ColorTranslator.translate(it))
+                meta.displayName(ColorTranslator.translate(it))
             }
             item.itemMeta = meta
 
@@ -110,7 +114,7 @@ class Jesse : Survivor(
         player.velocity = dir
 
         var count = 0
-        val hitted = mutableSetOf<java.util.UUID>()
+        val hitted = mutableSetOf<UUID>()
 
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
             if (count >= 10 || !player.isOnline) {

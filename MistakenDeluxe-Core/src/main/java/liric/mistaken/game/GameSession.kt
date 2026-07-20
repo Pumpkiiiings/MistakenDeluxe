@@ -7,6 +7,12 @@ import liric.mistaken.game.logic.*
 import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import liric.mistaken.api.managers.ISession
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import org.bukkit.Location
+import org.bukkit.Material
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  *[LIRIC-MISTAKEN 2.0]
@@ -17,7 +23,7 @@ class GameSession(
     val plugin: Mistaken,
     override val id: String,
     val mapName: String = "Esperando..."
-) : liric.mistaken.api.managers.ISession {
+) : ISession {
 
     // --- JUGADORES AISLADOS DE ESTA SESIÓN ---
     val players = ConcurrentHashMap.newKeySet<UUID>()
@@ -36,7 +42,7 @@ class GameSession(
 
     override val asesinosUUIDs = ConcurrentHashMap.newKeySet<UUID>()
     val yaJugaronAsesino = ConcurrentHashMap.newKeySet<UUID>()
-    val changedBlocks = ConcurrentHashMap<org.bukkit.Location, org.bukkit.Material>()
+    val changedBlocks = ConcurrentHashMap<Location, Material>()
 
     // --- MANAGERS GLOBALES (Compartidos) ---
     val voteManager = plugin.voteManager
@@ -52,7 +58,7 @@ class GameSession(
 
     init {
         loopTask.start()
-        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[INFO] [Session] Session $id started."))
+        plugin.componentLogger.info(ColorTranslator.translate("[INFO] [Session] Session $id started."))
     }
 
     // --- MÉTODOS DE JUGADORES ---
@@ -77,8 +83,8 @@ class GameSession(
     override fun isKiller(uuid: UUID): Boolean = asesinosUUIDs.contains(uuid)
 
     // Solo envía mensajes a los jugadores DE ESTA SESIÓN
-    fun broadcastLocalized(path: String, vararg tags: net.kyori.adventure.text.minimessage.tag.resolver.TagResolver) {
-        val message = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, path, *tags)
+    fun broadcastLocalized(path: String, vararg tags: TagResolver) {
+        val message = PumpkingServiceManager.messages.getComponent(null, path, *tags)
         getPlayers().forEach { p -> p.sendMessage(message) }
     }
 
@@ -92,7 +98,7 @@ class GameSession(
         snapshot.forEach { plugin.sessionManager.leaveSession(it) }
         players.clear()       // defensive clear for any UUIDs whose Player was offline
         changedBlocks.clear()
-        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[INFO] [Session] Session $id destroyed."))
+        plugin.componentLogger.info(ColorTranslator.translate("[INFO] [Session] Session $id destroyed."))
     }
 }
 

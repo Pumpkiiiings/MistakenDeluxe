@@ -16,17 +16,18 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.EulerAngle
 import java.util.function.Consumer
+import pumpking.lib.color.ColorTranslator
 
 class ErrorStaticProfile : CinematicProfile {
     override val id: String = "error_estatico"
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<white><obfuscated>||</obfuscated> ERROR <obfuscated>||</obfuscated>"), pumpking.lib.color.ColorTranslator.translate("<gray>S1st3m4 C0rrupt0..."))
+        return Pair(ColorTranslator.translate("<white><obfuscated>||</obfuscated> ERROR <obfuscated>||</obfuscated>"), ColorTranslator.translate("<gray>S1st3m4 C0rrupt0..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_aqua><obfuscated>|</obfuscated> <aqua>STATIC</aqua> <dark_aqua><obfuscated>|</obfuscated>"), pumpking.lib.color.ColorTranslator.translate("<gray>T H I S   I S   H O W   I T   S H O U L D   B E."))
+        return Pair(ColorTranslator.translate("<dark_aqua><obfuscated>|</obfuscated> <aqua>STATIC</aqua> <dark_aqua><obfuscated>|</obfuscated>"), ColorTranslator.translate("<gray>T H I S   I S   H O W   I T   S H O U L D   B E."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

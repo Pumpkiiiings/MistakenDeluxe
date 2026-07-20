@@ -7,6 +7,8 @@ import liric.mistaken.Mistaken
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Sound
 import org.bukkit.entity.Player
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * SetLobbyCommand - Kotlin Edition (Paper 1.21.4+)
@@ -36,7 +38,7 @@ object SetLobbyCommand {
 
                 // Validación de ejecutor técnico
                 if (player == null) {
-                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Este comando solo puede ser ejecutado por jugadores."))
+                    sender.sendMessage(ColorTranslator.translate("<red>Este comando solo puede ser ejecutado por jugadores."))
                     return@executes 0 // Retornamos 0 para indicar fallo/no acción
                 }
 
@@ -46,7 +48,7 @@ object SetLobbyCommand {
                 plugin.setLobbyLocationConfig(player.location)
 
                 // 4. Feedback Visual (Multilingüe)
-                val message = pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "admin.lobby-set")
+                val message = PumpkingServiceManager.messages.getComponent(player, "admin.lobby-set")
                 player.sendMessage(message)
 
                 // 5. Feedback Auditivo
@@ -54,7 +56,7 @@ object SetLobbyCommand {
 
                 // 6. Registro de Auditoría (Logger de Paper)
                 // Usamos Templates de Kotlin ($) para máxima legibilidad y rendimiento
-                plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate(
+                plugin.componentLogger.info(ColorTranslator.translate(
                     "<gray>[Mistaken]</gray> <green>Lobby actualizado en </green><white>${player.world.name}</white><green> por </green><white>${player.name}</white>"
                 ))
 

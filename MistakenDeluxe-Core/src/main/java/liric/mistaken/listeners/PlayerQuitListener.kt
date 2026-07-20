@@ -6,6 +6,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerQuitEvent
+import net.luckperms.api.LuckPermsProvider
+import net.luckperms.api.node.types.PrefixNode
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -64,9 +66,9 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
             // Limpiar Prefijos de LuckPerms
             try {
                 if (plugin.server.pluginManager.isPluginEnabled("LuckPerms")) {
-                    val lp = net.luckperms.api.LuckPermsProvider.get()
+                    val lp = LuckPermsProvider.get()
                     lp.userManager.modifyUser(uuid) { user ->
-                        user.data().clear { node -> node is net.luckperms.api.node.types.PrefixNode }
+                        user.data().clear { node -> node is PrefixNode }
                     }
                 }
             } catch (ignored: Exception) {}

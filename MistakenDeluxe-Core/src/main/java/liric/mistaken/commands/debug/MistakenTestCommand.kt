@@ -17,6 +17,8 @@ import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
+import liric.mistaken.game.enums.GameState
+import pumpking.lib.color.ColorTranslator
 
 object MistakenTestCommand {
 
@@ -75,9 +77,9 @@ object MistakenTestCommand {
                 
                 if (session == null && plugin.serverMode == "MULTIARENA") {
                     session = plugin.sessionManager.activeSessions.values.firstOrNull { 
-                        it.currentState == liric.mistaken.game.enums.GameState.LOBBY || 
-                        it.currentState == liric.mistaken.game.enums.GameState.VOTING || 
-                        it.currentState == liric.mistaken.game.enums.GameState.BREAK 
+                        it.currentState == GameState.LOBBY || 
+                        it.currentState == GameState.VOTING || 
+                        it.currentState == GameState.BREAK 
                     }
                     if (session == null) {
                         session = plugin.sessionManager.createSession("Votando...")
@@ -199,8 +201,8 @@ object MistakenTestCommand {
 
                 p.showTitle(
                     Title.title(
-                    pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>APOCALIPSIS EXE"),
-                    pumpking.lib.color.ColorTranslator.translate("<red>7 ENTES HAN APARECIDO. No sobrevivirás...")
+                    ColorTranslator.translate("<dark_red><bold>APOCALIPSIS EXE"),
+                    ColorTranslator.translate("<red>7 ENTES HAN APARECIDO. No sobrevivirás...")
                 ))
                 1
             }

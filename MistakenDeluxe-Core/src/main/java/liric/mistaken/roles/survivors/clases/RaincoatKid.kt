@@ -14,6 +14,10 @@ import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
+import org.bukkit.Particle
+import org.bukkit.configuration.file.FileConfiguration
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -22,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class RaincoatKid : Survivor(
     "raincoatkid",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.raincoatkid.nombre", "survivors_info")
+    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.raincoatkid.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.raincoatkid"
@@ -31,7 +35,7 @@ class RaincoatKid : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 25))) {
@@ -45,10 +49,10 @@ class RaincoatKid : Survivor(
         }
     }
 
-    private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
+    private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
         var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) {
-            player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
+            player.sendMessage(ColorTranslator.translate(msg))
         }
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_BAT_TAKEOFF")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
@@ -62,7 +66,7 @@ class RaincoatKid : Survivor(
 
         player.getAttribute(Attribute.SCALE)?.baseValue = 0.8
 
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
         val configMecanica = plugin.configManager.getSurvivorConfig(this.id) // El global supervivientes.yml
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -88,7 +92,7 @@ class RaincoatKid : Survivor(
             // Le ponemos el nombre
             val namePath = "$pathBase.skill_names.$key"
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -118,13 +122,13 @@ class RaincoatKid : Survivor(
     // --- HABILIDADES ---
     private fun usarSprint(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 2))
-        player.world.spawnParticle(org.bukkit.Particle.CLOUD, player.location, 5, 0.2, 0.1, 0.2, 0.05)
+        player.world.spawnParticle(Particle.CLOUD, player.location, 5, 0.2, 0.1, 0.2, 0.05)
 
         val task = player.scheduler.runDelayed(plugin, {
             if (player.isOnline) {
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 0))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_BREATH, 1f, 0.8f)
-                player.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<red><i>*jadeo*</i>"))
+                player.sendActionBar(ColorTranslator.translate("<red><i>*jadeo*</i>"))
             }
         }, null, 100L)
 
@@ -142,7 +146,7 @@ class RaincoatKid : Survivor(
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
         victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
         victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, 1f, 0.5f)
-        victim.world.spawnParticle(org.bukkit.Particle.CRIT, victim.eyeLocation, 10)
+        victim.world.spawnParticle(Particle.CRIT, victim.eyeLocation, 10)
     }
 
     override fun cleanup(player: Player?) {

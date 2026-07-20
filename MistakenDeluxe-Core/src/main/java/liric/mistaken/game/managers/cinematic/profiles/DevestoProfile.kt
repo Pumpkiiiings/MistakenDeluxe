@@ -14,17 +14,18 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.EulerAngle
 import java.util.function.Consumer
+import pumpking.lib.color.ColorTranslator
 
 class DevestoProfile : CinematicProfile {
     override val id: String = "devesto"
     override val isFloating: Boolean = true
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_purple><bold>[F3X]</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray>Cargando herramientas de construcción..."))
+        return Pair(ColorTranslator.translate("<dark_purple><bold>[F3X]</bold>"), ColorTranslator.translate("<gray>Cargando herramientas de construcción..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_purple><bold>//SET 0</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray>Borrado exitoso."))
+        return Pair(ColorTranslator.translate("<dark_purple><bold>//SET 0</bold>"), ColorTranslator.translate("<gray>Borrado exitoso."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

@@ -32,6 +32,12 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualDisplay
+import liric.mistaken.packet.fake.VirtualItemDisplay
+import org.bukkit.plugin.java.JavaPlugin
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  *[LIRIC-MISTAKEN 2.0]
@@ -40,15 +46,15 @@ import kotlin.math.sin
  */
 class Sowoul : CoreKiller(
     "sowoul",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.sowoul.nombre", "killers_info")
+    PumpkingServiceManager.messages.getStrictString(null, "asesinos.sowoul.nombre", "killers_info")
 ), Listener {
 
     private val pathBase = "asesinos.sowoul"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
 
-    private val orbitadores = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualItemDisplay>>()
+    private val orbitadores = ConcurrentHashMap<UUID, MutableList<VirtualItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
-    private val fakeEntities = ConcurrentHashMap.newKeySet<liric.mistaken.packet.fake.VirtualDisplay>()
+    private val fakeEntities = ConcurrentHashMap.newKeySet<VirtualDisplay>()
 
     // Anti-spam de los efectos de muerte
     private val lastKillEffect = ConcurrentHashMap<UUID, Long>()
@@ -177,7 +183,7 @@ class Sowoul : CoreKiller(
     }
 
     private fun habilidadLanzarCartas(player: Player) {
-        val carta = liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.eyeLocation) { id ->
+        val carta = PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.eyeLocation) { id ->
             id.setItemStack(ItemStack(Material.PAPER))
             id.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
             id.teleportDuration = 1; id.interpolationDuration = 1
@@ -260,13 +266,13 @@ class Sowoul : CoreKiller(
         val target = player.world.getNearbyPlayers(player.location, 25.0).firstOrNull { isValidTarget(player, it) }
 
         if (target == null) {
-            player.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<red>Nadie en tu rango de visión. Se gastó la habilidad."))
+            player.sendActionBar(ColorTranslator.translate("<red>Nadie en tu rango de visión. Se gastó la habilidad."))
             return
         }
 
         player.playSound(player.location, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1.5f, 0.5f)
         target.playSound(target.location, Sound.ENTITY_ENDERMAN_STARE, 1.5f, 0.1f)
-        target.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<dark_purple><b>¡UNA MANO MÁGICA TE HA ATRAPADO!</b>"))
+        target.sendActionBar(ColorTranslator.translate("<dark_purple><b>¡UNA MANO MÁGICA TE HA ATRAPADO!</b>"))
 
         val manoDisplay = target.world.spawn(target.location.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) { bd ->
             bd.block = Material.PURPUR_PILLAR.createBlockData()
@@ -404,7 +410,7 @@ class Sowoul : CoreKiller(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -422,7 +428,7 @@ class Sowoul : CoreKiller(
             else "asesinos.sowoul.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -455,9 +461,9 @@ class Sowoul : CoreKiller(
         if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
-            mutableListOf<liric.mistaken.packet.fake.VirtualItemDisplay>().apply {
+            mutableListOf<VirtualItemDisplay>().apply {
                 repeat(4) {
-                    add(liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { id ->
+                    add(PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { id ->
                         id.setItemStack(ItemStack(Material.PAPER))
                         id.transformation = Transformation(
                             JomlVector3f(0f, 0f, 0f),

@@ -16,6 +16,12 @@ import org.joml.Quaternionf
 import org.joml.Vector3f
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualTextDisplay
+import org.bukkit.Bukkit
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.config.ConfigManager
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -33,7 +39,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     private var idleLines: List<String> = emptyList()
     private var completedLines: List<String> = emptyList()
 
-    private val configProvider = pumpking.lib.config.ConfigManager.get("generator_data.yml")
+    private val configProvider = ConfigManager.get("generator_data.yml")
     private var dataConfig = configProvider.getRaw()
     private val fileLock = Any()
 
@@ -41,7 +47,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val originalMaterial: Material,
         var progress: Int,
         var completed: Boolean,
-        var displayEntity: liric.mistaken.packet.fake.VirtualTextDisplay? = null
+        var displayEntity: VirtualTextDisplay? = null
     )
 
     init {
@@ -49,7 +55,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     }
 
     fun loadTemplates() {
-        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(null, "messages")
+        val langConfig = PumpkingServiceManager.messages.getSpecificFile(null, "messages")
 
         idleLines = langConfig.getStringList("generators.hologram.lines-idle").ifEmpty {
             listOf("<gold><bold>{name}", "<white>Progreso: <gray>{progress}%", "<yellow>。lick para reparar!")
@@ -64,7 +70,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
     private fun getFriendlyName(material: Material): String {
         return nameCache.getOrPut(material) {
-            val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(null, "messages")
+            val langConfig = PumpkingServiceManager.messages.getSpecificFile(null, "messages")
             langConfig.getString("generators.names.${material.name}")
                 ?: material.name.lowercase().replace("_", " ").split(" ")
                     .joinToString(" ") { it.replaceFirstChar { char -> char.uppercase() } }
@@ -141,7 +147,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val holoLoc = loc.clone().add(0.5, 1.3, 0.5)
         plugin.server.regionScheduler.execute(plugin, holoLoc, Runnable {
             state.displayEntity?.remove()
-            state.displayEntity = liric.mistaken.packet.PacketFactory.displays.buildTextDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), holoLoc) { display ->
+            state.displayEntity = PacketFactory.displays.buildTextDisplay(Bukkit.getOnlinePlayers().toList(), holoLoc) { display ->
                 display.billboard = Display.Billboard.CENTER
                 display.brightness = Display.Brightness(15, 15)
                 display.backgroundColor = Color.fromARGB(0, 0, 0, 0)
@@ -153,7 +159,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         })
     }
 
-    private fun updateHologramVisual(state: GeneratorState, directEntity: liric.mistaken.packet.fake.VirtualTextDisplay? = null) {
+    private fun updateHologramVisual(state: GeneratorState, directEntity: VirtualTextDisplay? = null) {
         val entity = directEntity ?: state.displayEntity ?: return
         if (entity?.isValid == false) return
 
@@ -163,7 +169,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val text = lines.joinToString("<newline><reset>") { line ->
             line.replace("{name}", typeName).replace("{progress}", state.progress.toString())
         }
-        entity.text = pumpking.lib.color.ColorTranslator.translate("<reset>$text")
+        entity.text = ColorTranslator.translate("<reset>$text")
     }
 
     private fun saveStateToConfigAsync(loc: Location, state: GeneratorState) {

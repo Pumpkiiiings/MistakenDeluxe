@@ -14,17 +14,18 @@ import org.bukkit.util.EulerAngle
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import pumpking.lib.color.ColorTranslator
 
 class BendyProfile : CinematicProfile {
     override val id: String = "bendy"
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<black><bold>LA TINTA LLAMA</bold>"), pumpking.lib.color.ColorTranslator.translate("<dark_gray>Él ha sido liberado..."))
+        return Pair(ColorTranslator.translate("<black><bold>LA TINTA LLAMA</bold>"), ColorTranslator.translate("<dark_gray>Él ha sido liberado..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<black><bold>CONSUMIDOS</bold>"), pumpking.lib.color.ColorTranslator.translate("<dark_gray>El estudio reclamó lo que es suyo."))
+        return Pair(ColorTranslator.translate("<black><bold>CONSUMIDOS</bold>"), ColorTranslator.translate("<dark_gray>El estudio reclamó lo que es suyo."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

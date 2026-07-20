@@ -19,17 +19,18 @@ import org.bukkit.util.EulerAngle
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import pumpking.lib.color.ColorTranslator
 
 class ColorAndElectricityProfile : CinematicProfile {
     override val id: String = "colorandelectricity" // Or colorsito
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<aqua>COLOR & ELECTRICITY"), pumpking.lib.color.ColorTranslator.translate("<yellow>Mmm... deliciosos colores..."))
+        return Pair(ColorTranslator.translate("<aqua>COLOR & ELECTRICITY"), ColorTranslator.translate("<yellow>Mmm... deliciosos colores..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>¡QUÉ HE HECHO!</bold>"), pumpking.lib.color.ColorTranslator.translate("<red>M-Mi color... todo se deforma..."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>¡QUÉ HE HECHO!</bold>"), ColorTranslator.translate("<red>M-Mi color... todo se deforma..."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

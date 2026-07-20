@@ -9,6 +9,9 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import kotlin.math.max
+import liric.mistaken.Mistaken
+import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
 
 class ProgressionMenu(private val plugin: LevelAddonPlugin) {
 
@@ -31,7 +34,7 @@ class ProgressionMenu(private val plugin: LevelAddonPlugin) {
         gui.setDefaultClickAction { event -> event.isCancelled = true }
 
         val currentLevel = plugin.manager.getLevel(player.uniqueId)
-        val mistakenCore = org.bukkit.Bukkit.getPluginManager().getPlugin("Mistaken") as liric.mistaken.Mistaken
+        val mistakenCore = Bukkit.getPluginManager().getPlugin("Mistaken") as Mistaken
         val stats = mistakenCore.statsManager.getStats(player.uniqueId)
 
         val maxLevel = plugin.levelConfig.maxLevel
@@ -93,7 +96,7 @@ class ProgressionMenu(private val plugin: LevelAddonPlugin) {
 
         if (paginationEnabled) {
             // Map items to slots first so it doesn't overwrite buttons
-            gui.filler.fillBorder(ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).name(net.kyori.adventure.text.Component.empty()).asGuiItem())
+            gui.filler.fillBorder(ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).name(Component.empty()).asGuiItem())
 
             val prevSlot = config.getInt("pagination.buttons.previous_page.slot", 45)
             val prevMat = Material.matchMaterial(config.getString("pagination.buttons.previous_page.material", "ARROW")!!) ?: Material.ARROW

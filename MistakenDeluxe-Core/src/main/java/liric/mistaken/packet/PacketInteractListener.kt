@@ -7,6 +7,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientIn
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
+import liric.mistaken.Mistaken
 
 /**
  * Escucha interacciones del cliente con Entidades Falsas.
@@ -41,7 +42,7 @@ class PacketInteractListener : PacketListenerAbstract() {
                 // Las acciones suelen ser INTERACT o ATTACK
                 // Ejecutamos en el Main Thread porque Bukkit API (ej. abrir menÃº) 
                 // fallarÃ¡ si se ejecuta en el hilo asÃ­ncrono de Netty.
-                Bukkit.getScheduler().runTask(liric.mistaken.Mistaken.instance, Runnable {
+                Bukkit.getScheduler().runTask(Mistaken.instance, Runnable {
                     callback.invoke(player, interact.action)
                 })
             }

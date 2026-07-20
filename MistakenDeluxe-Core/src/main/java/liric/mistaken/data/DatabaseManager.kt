@@ -1,6 +1,7 @@
 ﻿package liric.mistaken.data
 
 import liric.mistaken.data.stats.PlayerStats
+import java.sql.Connection
 
 /**
  * [LIRIC-MISTAKEN 2.2]
@@ -10,7 +11,7 @@ interface DatabaseManager {
     fun setup()
     fun close()
 
-    val connection: java.sql.Connection
+    val connection: Connection
 
     // Player Stats
     fun loadStats(uuid: String, username: String): PlayerStats?

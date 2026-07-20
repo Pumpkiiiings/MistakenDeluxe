@@ -12,6 +12,9 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.time.Duration
 import java.util.concurrent.ThreadLocalRandom
+import org.bukkit.Particle
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 class GameStateController(private val game: GameSession) {
 
@@ -112,8 +115,8 @@ class GameStateController(private val game: GameSession) {
         if (game.currentMode == MistakenMode.INITIALIZES && game.timer == 290) {
 
             // 1. Títulos de Terror a todos los jugadores (Incluyendo el Killer)
-            val title = pumpking.lib.color.ColorTranslator.translate("<dark_red><bold><obfuscated>||</obfuscated> ¡GEOFFREY ESTÃ  AQUÃ ! <obfuscated>||</obfuscated>")
-            val subtitle = pumpking.lib.color.ColorTranslator.translate("<dark_gray>Nadie sobrevivirá...")
+            val title = ColorTranslator.translate("<dark_red><bold><obfuscated>||</obfuscated> ¡GEOFFREY ESTÃ  AQUÃ ! <obfuscated>||</obfuscated>")
+            val subtitle = ColorTranslator.translate("<dark_gray>Nadie sobrevivirá...")
             val times = Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(4), Duration.ofMillis(500))
 
             game.plugin.server.onlinePlayers.forEach { p ->
@@ -134,7 +137,7 @@ class GameStateController(private val game: GameSession) {
                 val geoffreyLoc = spawnLoc.clone().add(0.0, 15.0, 0.0)
 
                 // Efecto de aparición en el cielo
-                geoffreyLoc.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, geoffreyLoc, 2)
+                geoffreyLoc.world.spawnParticle(Particle.EXPLOSION_EMITTER, geoffreyLoc, 2)
                 geoffreyLoc.world.playSound(geoffreyLoc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 2f, 0.5f)
 
                 geoffreyEntity = GeoffreyEXE(game.plugin)
@@ -210,14 +213,14 @@ class GameStateController(private val game: GameSession) {
         val mapName = game.currentMapName
         val killer = game.getCurrentAsesino()
 
-        val defaultAssassinWord = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "words.assassin", "El Killer", "messages")
-        val defaultSurvivorsWord = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "words.survivors", "Survivors", "messages")
+        val defaultAssassinWord = PumpkingServiceManager.messages.getRawString(null, "words.assassin", "El Killer", "messages")
+        val defaultSurvivorsWord = PumpkingServiceManager.messages.getRawString(null, "words.survivors", "Survivors", "messages")
 
         val ganadorNombre = if (killerWon) (killer?.name ?: defaultAssassinWord) else defaultSurvivorsWord
         val razon = if (killerWon) {
-            pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "discord.reason_killer_won", "¡El asesino ganó!", "messages")
+            PumpkingServiceManager.messages.getRawString(null, "discord.reason_killer_won", "¡El asesino ganó!", "messages")
         } else {
-            pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "discord.reason_survivors_won", "¡Los supervivientes escaparon!", "messages")
+            PumpkingServiceManager.messages.getRawString(null, "discord.reason_survivors_won", "¡Los supervivientes escaparon!", "messages")
         }
 
         val escapados = game.plugin.server.onlinePlayers.filter {
@@ -235,19 +238,19 @@ class GameStateController(private val game: GameSession) {
             Pair("game.survivor-defeat-title", "game.survivor-defeat-subtitle")
         }
 
-        val tK1 = pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, titlePair.first, "", "messages"))
-        val tK2 = pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, titlePair.second, "", "messages"))
-        val tS1 = pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, survivorTitlePair.first, "", "messages"))
-        val tS2 = pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, survivorTitlePair.second, "", "messages"))
+        val tK1 = ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(null, titlePair.first, "", "messages"))
+        val tK2 = ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(null, titlePair.second, "", "messages"))
+        val tS1 = ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(null, survivorTitlePair.first, "", "messages"))
+        val tS2 = ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(null, survivorTitlePair.second, "", "messages"))
 
-        val times = net.kyori.adventure.title.Title.Times.times(java.time.Duration.ofMillis(500), java.time.Duration.ofSeconds(5), java.time.Duration.ofMillis(1000))
+        val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(5), Duration.ofMillis(1000))
         
         game.plugin.server.onlinePlayers.forEach { p ->
             val isK = game.isKiller(p.uniqueId)
             val t1 = if (isK) tK1 else tS1
             val t2 = if (isK) tK2 else tS2
             
-            p.showTitle(net.kyori.adventure.title.Title.title(
+            p.showTitle(Title.title(
                 t1,
                 t2,
                 times

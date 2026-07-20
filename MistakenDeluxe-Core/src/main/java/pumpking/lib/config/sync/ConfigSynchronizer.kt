@@ -7,6 +7,7 @@ import pumpking.lib.config.YamlConfigProvider
 import pumpking.lib.core.PumpkingLib
 import java.io.File
 import java.io.InputStreamReader
+import org.bukkit.configuration.ConfigurationSection
 
 object ConfigSynchronizer {
 
@@ -60,7 +61,7 @@ object ConfigSynchronizer {
                 // but Bukkit's getKeys(true) will also list the children.
                 // To avoid duplicate logs for parent and children, we can just set them all.
 
-                if (defaultValue !is org.bukkit.configuration.ConfigurationSection) {
+                if (defaultValue !is ConfigurationSection) {
                     localConfig.set(key, defaultValue)
                     pathsAdded++
                     isUpdated = true

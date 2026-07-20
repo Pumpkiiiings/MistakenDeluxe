@@ -17,6 +17,7 @@ import liric.mistaken.commands.game.LeaveCommand
 import liric.mistaken.commands.game.MistakenCommand
 import liric.mistaken.commands.game.VoteCommand
 import liric.mistaken.commands.other.LinkCommand
+import pumpking.lib.color.ColorTranslator
 
 class CommandRegistry(private val plugin: Mistaken) {
 
@@ -50,6 +51,6 @@ class CommandRegistry(private val plugin: Mistaken) {
             registrar.register("espectear", "Entrar al modo espectador", listOf("spectate"), EspectearCommand(plugin))
         }
 
-        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[SUCCESS] [CommandRegistry] Commands registered successfully."))
+        plugin.componentLogger.info(ColorTranslator.translate("[SUCCESS] [CommandRegistry] Commands registered successfully."))
     }
 }

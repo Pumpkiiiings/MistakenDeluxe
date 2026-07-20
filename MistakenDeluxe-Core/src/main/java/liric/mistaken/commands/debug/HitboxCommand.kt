@@ -6,6 +6,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import liric.mistaken.Mistaken
 import liric.mistaken.utils.misc.HitboxVisualizer
+import pumpking.lib.color.ColorTranslator
 
 object HitboxCommand {
 
@@ -21,7 +22,7 @@ object HitboxCommand {
 
                 // Mensaje con colores dependiendo de si se activó o desactivó
                 val estado = if (isNowEnabled) "<green><bold>ACTIVADO</bold></green>" else "<red><bold>DESACTIVADO</bold></red>"
-                sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<gray>[<yellow>DEBUG</yellow>] <white>Visor de Hitboxes: $estado"))
+                sender.sendMessage(ColorTranslator.translate("<gray>[<yellow>DEBUG</yellow>] <white>Visor de Hitboxes: $estado"))
 
                 Command.SINGLE_SUCCESS
             }

@@ -7,6 +7,8 @@ import liric.mistaken.data.DatabaseManager
 import liric.mistaken.data.stats.PlayerStats
 import java.sql.Connection
 import java.sql.SQLException
+import java.sql.PreparedStatement
+import pumpking.lib.color.ColorTranslator
 
 abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : DatabaseManager {
 
@@ -18,9 +20,9 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
         try {
             dataSource = HikariDataSource(config)
             createTables()
-            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[SUCCESS] [Database] Connection established (${this::class.simpleName})."))
+            plugin.componentLogger.info(ColorTranslator.translate("[SUCCESS] [Database] Connection established (${this::class.simpleName})."))
         } catch (e: Exception) {
-            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("[ERROR] [Database] Connection failed: ${e.message}"))
+            plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [Database] Connection failed: ${e.message}"))
         }
     }
 
@@ -97,7 +99,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
                 }
             }
         } catch (e: SQLException) {
-            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("[ERROR] [Database] Failed to create tables: ${e.message}"))
+            plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [Database] Failed to create tables: ${e.message}"))
         }
     }
 
@@ -211,7 +213,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
     }
 
     // Método virtual para bindear las variables del Upsert
-    protected open fun bindUpsertVariables(ps: java.sql.PreparedStatement, uuid: String, lang: String, killersOwned: String, killerSelected: String, survOwned: String, survSelected: String, nick: String, skin: String) {
+    protected open fun bindUpsertVariables(ps: PreparedStatement, uuid: String, lang: String, killersOwned: String, killerSelected: String, survOwned: String, survSelected: String, nick: String, skin: String) {
         // Formato por defecto para MySQL (15 params totales por duplicarse)
         ps.setString(1, uuid); ps.setString(2, lang); ps.setString(3, killersOwned)
         ps.setString(4, killerSelected); ps.setString(5, survOwned); ps.setString(6, survSelected)

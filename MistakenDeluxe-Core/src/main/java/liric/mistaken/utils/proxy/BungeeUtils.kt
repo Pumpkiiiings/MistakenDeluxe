@@ -4,6 +4,7 @@ import liric.mistaken.Mistaken
 import org.bukkit.entity.Player
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
+import pumpking.lib.color.ColorTranslator
 
 object BungeeUtils {
 
@@ -20,7 +21,7 @@ object BungeeUtils {
             }, null)
 
         } catch (e: Exception) {
-            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("[ERROR] [Proxy] Failed to send ${player.name} to proxy: ${e.message}"))
+            plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [Proxy] Failed to send ${player.name} to proxy: ${e.message}"))
         }
     }
 }

@@ -8,6 +8,7 @@ import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
+import pumpking.lib.color.ColorTranslator
 
 /**
  *[LIRIC-MISTAKEN 2.0]
@@ -23,7 +24,7 @@ object LeaveCommand {
                 val player = sender as? Player
 
                 if (player == null) {
-                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Solo los jugadores pueden usar este comando."))
+                    sender.sendMessage(ColorTranslator.translate("<red>Solo los jugadores pueden usar este comando."))
                     return@executes 0
                 }
 
@@ -31,11 +32,11 @@ object LeaveCommand {
                 val session = plugin.sessionManager.getSession(player)
 
                 if (session == null) {
-                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No estás en ninguna partida activa en este momento."))
+                    player.sendMessage(ColorTranslator.translate("<red>No estás en ninguna partida activa en este momento."))
                     return@executes 0
                 }
 
-                player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<yellow>Saliendo de la partida..."))
+                player.sendMessage(ColorTranslator.translate("<yellow>Saliendo de la partida..."))
 
                 // 2. LÓGICA DE ABANDONO (Si la partida ya empezó)
                 if (session.currentState == GameState.INGAME) {

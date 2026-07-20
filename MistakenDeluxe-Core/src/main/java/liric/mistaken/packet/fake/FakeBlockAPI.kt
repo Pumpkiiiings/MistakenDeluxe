@@ -8,6 +8,7 @@ import io.github.retrooper.packetevents.util.SpigotConversionUtil
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import com.github.retrooper.packetevents.util.Vector3i
 
 class FakeBlockAPI {
 
@@ -20,7 +21,7 @@ class FakeBlockAPI {
     fun sendBlockChange(player: Player, location: Location, material: Material) {
         val blockState = SpigotConversionUtil.fromBukkitBlockData(material.createBlockData())
         val packet = WrapperPlayServerBlockChange(
-            com.github.retrooper.packetevents.util.Vector3i(location.blockX, location.blockY, location.blockZ),
+            Vector3i(location.blockX, location.blockY, location.blockZ),
             blockState.globalId
         )
         PacketEvents.getAPI().playerManager.sendPacket(player, packet)

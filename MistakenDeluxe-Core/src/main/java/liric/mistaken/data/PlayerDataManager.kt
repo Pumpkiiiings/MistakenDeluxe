@@ -5,13 +5,14 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import liric.mistaken.api.managers.IPlayerDataManager
 
 /**
  *[LIRIC-MISTAKEN 2.0]
  * PlayerDataManager: Gestión de perfiles con persistencia en MySQL (Network Ready).
  * Cero Disk I/O local, optimizado con AsyncScheduler de Paper.
  */
-class PlayerDataManager(private val plugin: Mistaken) : liric.mistaken.api.managers.IPlayerDataManager {
+class PlayerDataManager(private val plugin: Mistaken) : IPlayerDataManager {
 
     // Caché en RAM para acceso instantáneo (Cero Lag en juego)
     private val userDataCache = ConcurrentHashMap<UUID, MistakenUser>()

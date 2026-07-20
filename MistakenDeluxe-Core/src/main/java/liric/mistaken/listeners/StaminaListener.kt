@@ -13,6 +13,10 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
+import liric.mistaken.game.enums.MistakenMode
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -45,8 +49,8 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
         val slownessLevel = (config.getInt("stamina.exhaustion-slowness-level", 2).coerceAtLeast(1) - 1)
         exhaustionEffect = PotionEffect(PotionEffectType.SLOWNESS, 80, slownessLevel, false, false, true)
 
-        val rawExhausted = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "stamina.exhausted", "<red><bold>¡AGOTADO!</bold></red>")
-        exhaustedMsg = pumpking.lib.color.ColorTranslator.translate(rawExhausted)
+        val rawExhausted = PumpkingServiceManager.messages.getRawString(null, "stamina.exhausted", "<red><bold>¡AGOTADO!</bold></red>")
+        exhaustedMsg = ColorTranslator.translate(rawExhausted)
     }
 
     private fun startStaminaTask() {
@@ -82,7 +86,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                 if (isSprinting && currentStamina > 0.0) {
                     // 🔥 MULTIARENA: Verificamos si es asesino en SU sesión
                     var loss = if (session.isKiller(uuid)) lossKiller else lossSurvivor
-                    if (session.currentMode == liric.mistaken.game.enums.MistakenMode.ONE_BOUNCE && !session.isKiller(uuid)) {
+                    if (session.currentMode == MistakenMode.ONE_BOUNCE && !session.isKiller(uuid)) {
                         loss /= 2.0
                     }
                     currentStamina = (currentStamina - loss).coerceAtLeast(0.0)
@@ -114,7 +118,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                         }
 
                         if (currentStamina in 1.0..25.0 && isSprinting) {
-                            player.sendActionBar(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "stamina.low_warning", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("level", newLevel.toString())))
+                            player.sendActionBar(PumpkingServiceManager.messages.getComponent(player, "stamina.low_warning", Placeholder.parsed("level", newLevel.toString())))
                         }
                     }
                 }, null, 0L)

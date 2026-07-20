@@ -1,4 +1,4 @@
-package pumpking.lib.config.sync
+package liric.mistaken.config.sync
 
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin

@@ -5,6 +5,8 @@ import org.bukkit.Bukkit
 import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import net.kyori.adventure.text.minimessage.MiniMessage
+import liric.mistaken.Mistaken
+import liric.mistaken.api.level.event.PlayerExperienceGainEvent
 
 class LevelAdminCommand(private val plugin: LevelAddonPlugin) : BasicCommand {
 
@@ -34,7 +36,7 @@ class LevelAdminCommand(private val plugin: LevelAddonPlugin) : BasicCommand {
 
         when (action) {
             "addxp" -> {
-                plugin.manager.addExperience(target.uniqueId, amount, liric.mistaken.api.level.event.PlayerExperienceGainEvent.GainReason.COMMAND)
+                plugin.manager.addExperience(target.uniqueId, amount, PlayerExperienceGainEvent.GainReason.COMMAND)
                 sender.sendMessage(mm.deserialize("<green>Added <gold>$amount XP</gold> to <yellow>${target.name}</yellow>."))
             }
             "setlevel" -> {
@@ -42,7 +44,7 @@ class LevelAdminCommand(private val plugin: LevelAddonPlugin) : BasicCommand {
                 sender.sendMessage(mm.deserialize("<green>Set <yellow>${target.name}</yellow>'s level to <gold>$amount</gold>."))
             }
             "addkills", "addwins_survivor", "addwins_killer", "addgenerators" -> {
-                val mistakenCore = org.bukkit.Bukkit.getPluginManager().getPlugin("Mistaken") as? liric.mistaken.Mistaken
+                val mistakenCore = Bukkit.getPluginManager().getPlugin("Mistaken") as? Mistaken
                 if (mistakenCore == null) {
                     sender.sendMessage(mm.deserialize("<red>Core plugin not found!"))
                     return

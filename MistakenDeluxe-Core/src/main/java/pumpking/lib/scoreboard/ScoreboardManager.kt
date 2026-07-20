@@ -8,6 +8,9 @@ import org.bukkit.scoreboard.DisplaySlot
 import pumpking.lib.core.PumpkingLib
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import io.papermc.paper.scoreboard.numbers.NumberFormat
+import net.kyori.adventure.text.Component
+import pumpking.lib.color.ColorTranslator
 
 object ScoreboardManager {
 
@@ -80,7 +83,7 @@ object ScoreboardManager {
                     if (old == null || i >= old.lines.size || old.lines[i] != template.lines[i]) {
                         context.lineChanged[i] = true
                         if (!template.isLineDynamic[i]) {
-                            context.staticLineCache[i] = pumpking.lib.color.ColorTranslator.translate(template.lines[i])
+                            context.staticLineCache[i] = ColorTranslator.translate(template.lines[i])
                         } else {
                             context.staticLineCache[i] = null
                         }
@@ -112,7 +115,7 @@ object ScoreboardManager {
             if (template != null) {
                 for (i in template.lines.indices) {
                     if (!template.isLineDynamic[i]) {
-                        context.staticLineCache[i] = pumpking.lib.color.ColorTranslator.translate(template.lines[i])
+                        context.staticLineCache[i] = ColorTranslator.translate(template.lines[i])
                     } else {
                         context.staticLineCache[i] = null
                     }
@@ -135,11 +138,11 @@ object ScoreboardManager {
             val objective = scoreboard.registerNewObjective(
                 "pumpking_sb",
                 Criteria.DUMMY,
-                net.kyori.adventure.text.Component.empty()
+                Component.empty()
             )
             objective.displaySlot = DisplaySlot.SIDEBAR
             try {
-                objective.numberFormat(io.papermc.paper.scoreboard.numbers.NumberFormat.blank())
+                objective.numberFormat(NumberFormat.blank())
             } catch (ignored: Throwable) {}
 
             val ctx = ScoreboardContext(scoreboard, objective)

@@ -9,6 +9,10 @@ import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.time.Duration
+import liric.mistaken.Mistaken
+import net.kyori.adventure.title.Title
+import org.bukkit.Sound
 
 class LevelManager(private val plugin: LevelAddonPlugin) {
 
@@ -36,12 +40,12 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
                     val event = PlayerLevelUpEvent(player, oldLevel, level)
                     Bukkit.getPluginManager().callEvent(event)
                     
-                    player.showTitle(net.kyori.adventure.title.Title.title(
+                    player.showTitle(Title.title(
                         MiniMessage.miniMessage().deserialize("<green><bold>NIVEL $level"),
                         MiniMessage.miniMessage().deserialize("<gray>Siguiente nivel es ${level + 1}"),
-                        net.kyori.adventure.title.Title.Times.times(java.time.Duration.ofMillis(500), java.time.Duration.ofMillis(3000), java.time.Duration.ofMillis(1000))
+                        Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(1000))
                     ))
-                    player.playSound(player.location, org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f)
+                    player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f)
                     
                     // Give rewards for each level up
                     for (l in (oldLevel + 1)..level) {
@@ -105,7 +109,7 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
         var currentLevel = playerData.level
         val maxLevel = plugin.levelConfig.maxLevel
 
-        val mistakenCore = org.bukkit.Bukkit.getPluginManager().getPlugin("Mistaken") as liric.mistaken.Mistaken
+        val mistakenCore = Bukkit.getPluginManager().getPlugin("Mistaken") as Mistaken
         val stats = mistakenCore.statsManager.getStats(uuid)
 
         while (currentLevel < maxLevel) {

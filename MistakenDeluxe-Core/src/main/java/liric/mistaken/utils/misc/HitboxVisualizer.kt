@@ -9,6 +9,9 @@ import org.joml.Quaternionf
 import org.joml.Vector3f
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import org.bukkit.Bukkit
 
 object HitboxVisualizer {
 
@@ -36,10 +39,10 @@ object HitboxVisualizer {
      * @param mat El color del cristal.
      * @return El BlockDisplay creado.
      */
-    fun createHitbox(loc: Location, x: Double, y: Double, z: Double, mat: Material = Material.LIME_STAINED_GLASS): liric.mistaken.packet.fake.VirtualBlockDisplay? {
+    fun createHitbox(loc: Location, x: Double, y: Double, z: Double, mat: Material = Material.LIME_STAINED_GLASS): VirtualBlockDisplay? {
         if (!isEnabled) return null
 
-        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { display ->
+        return PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) { display ->
             display.block = mat.createBlockData()
             display.isPersistent = false
             display.setGravity(false)

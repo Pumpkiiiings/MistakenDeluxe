@@ -5,6 +5,8 @@ import org.bukkit.plugin.java.JavaPlugin
 import pumpking.lib.config.ConfigManager
 import pumpking.lib.cooldown.CooldownManager
 import pumpking.lib.scoreboard.ScoreboardManager
+import pumpking.lib.service.PumpkingServiceManager
+import pumpking.lib.task.PumpkingTask
 
 object PumpkingLib {
     lateinit var plugin: JavaPlugin
@@ -62,7 +64,7 @@ object PumpkingLib {
         }
 
         try {
-            pumpking.lib.service.PumpkingServiceManager.init(plugin)
+            PumpkingServiceManager.init(plugin)
             log(LogCategory.CORE, "SERVICES INIT OK")
         } catch (e: Exception) {
             logError(LogCategory.CORE, "FAIL SAFE ERROR - ${e.message}")
@@ -87,10 +89,10 @@ object PumpkingLib {
         ScoreboardManager.shutdown()
         log(LogCategory.SCOREBOARD, "CLEANUP EVENT OK")
 
-        pumpking.lib.service.PumpkingServiceManager.shutdown()
+        PumpkingServiceManager.shutdown()
         log(LogCategory.CORE, "SERVICES OK")
 
-        pumpking.lib.task.PumpkingTask.shutdown()
+        PumpkingTask.shutdown()
         log(LogCategory.CORE, "TASKS OK")
 
         log(LogCategory.CORE, "Shutdown complete.")

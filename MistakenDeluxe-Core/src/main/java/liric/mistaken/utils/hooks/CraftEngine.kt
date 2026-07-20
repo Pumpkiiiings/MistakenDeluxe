@@ -6,6 +6,8 @@ import net.momirealms.craftengine.core.util.Key
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
+import net.momirealms.craftengine.bukkit.api.CraftEngineItems
+import pumpking.lib.color.ColorTranslator
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -31,7 +33,7 @@ object CraftEngine {
         // 2. Intento por CraftEngine (usando la nueva API CraftEngineItems)
         if (property.contains(":") && isAvailable()) {
             try {
-                val itemDef = net.momirealms.craftengine.bukkit.api.CraftEngineItems.byId(property)
+                val itemDef = CraftEngineItems.byId(property)
                 if (itemDef != null) {
                     return itemDef.buildBukkitItem()
                 }
@@ -67,8 +69,8 @@ object CraftEngine {
         // Si falló, fabricamos un ítem de error para que el admin sepa qué onda
         return ItemStack(Material.BARRIER).apply {
             editMeta { meta ->
-                meta.displayName(pumpking.lib.color.ColorTranslator.translate("<red><bold>ERROR:</bold> <white>$property"))
-                meta.lore(listOf(pumpking.lib.color.ColorTranslator.translate("<gray>Este ítem no se encontró en la config.")))
+                meta.displayName(ColorTranslator.translate("<red><bold>ERROR:</bold> <white>$property"))
+                meta.lore(listOf(ColorTranslator.translate("<gray>Este ítem no se encontró en la config.")))
             }
         }
     }

@@ -16,6 +16,11 @@ import kotlinx.coroutines.*
 import net.kyori.adventure.title.Title
 import java.time.Duration
 import java.util.jar.JarFile
+import net.kyori.adventure.bossbar.BossBar
+import org.bukkit.configuration.file.YamlConfiguration
+import pumpking.lib.color.ColorNormalizer
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.task.PumpkingTask
 
 /**
  * PumpkingLib - Modular Message API
@@ -108,7 +113,7 @@ class MessageService : IMessageService {
 
         return langMap[lang]?.get(safeFileName)
             ?: langMap[defaultLang]?.get(safeFileName)
-            ?: org.bukkit.configuration.file.YamlConfiguration()
+            ?: YamlConfiguration()
     }
 
     private fun getGlobalResolvers(player: Player?, config: FileConfiguration): TagResolver {
@@ -116,7 +121,7 @@ class MessageService : IMessageService {
         return TagResolver.resolver(
             Placeholder.parsed("player", player?.name ?: "Console"),
             Placeholder.parsed("online", Bukkit.getOnlinePlayers().size.toString()),
-            Placeholder.component("prefix", pumpking.lib.color.ColorTranslator.translate(parseLegacy(prefixRaw)))
+            Placeholder.component("prefix", ColorTranslator.translate(parseLegacy(prefixRaw)))
         )
     }
 
@@ -135,11 +140,11 @@ class MessageService : IMessageService {
         if (raw == null) {
             PumpkingLib.logError(PumpkingLib.LogCategory.CORE, "[WARN] Missing config path:\nFile: $fileName.yml\nPath: $path")
             val allTags = TagResolver.resolver(getGlobalResolvers(player, config), *extraTags)
-            return pumpking.lib.color.ColorTranslator.translate("<red>Missing Path: $fileName -> $path", allTags)
+            return ColorTranslator.translate("<red>Missing Path: $fileName -> $path", allTags)
         }
 
         val allTags = TagResolver.resolver(getGlobalResolvers(player, config), *extraTags)
-        return pumpking.lib.color.ColorTranslator.translate(parseLegacy(raw), allTags)
+        return ColorTranslator.translate(parseLegacy(raw), allTags)
     }
 
     override fun getComponentList(player: Player?, path: String, fileName: String): List<Component> {
@@ -151,7 +156,7 @@ class MessageService : IMessageService {
         }
 
         val globalTags = getGlobalResolvers(player, config)
-        return rawList.map { pumpking.lib.color.ColorTranslator.translate(parseLegacy(it), globalTags) }
+        return rawList.map { ColorTranslator.translate(parseLegacy(it), globalTags) }
     }
 
     override fun getRawString(player: Player?, path: String, def: String, fileName: String): String {
@@ -198,7 +203,7 @@ class MessageService : IMessageService {
         // The net result was that all legacy color codes were stripped rather than converted.
         // ColorNormalizer.normalizeToMiniMessage() correctly converts &a / §a → <green>, etc.
         // The {curly} → <angle> replacement is preserved for custom tag syntax support.
-        return pumpking.lib.color.ColorNormalizer.normalizeToMiniMessage(
+        return ColorNormalizer.normalizeToMiniMessage(
             text.replace("{", "<").replace("}", ">")
         )
     }
@@ -227,15 +232,15 @@ class MessageService : IMessageService {
     }
 
     // Basic implementation for bossbars (could be extended)
-    override fun bossBar(player: Player, path: String, color: net.kyori.adventure.bossbar.BossBar.Color, overlay: net.kyori.adventure.bossbar.BossBar.Overlay, vararg extraTags: TagResolver): net.kyori.adventure.bossbar.BossBar {
+    override fun bossBar(player: Player, path: String, color: BossBar.Color, overlay: BossBar.Overlay, vararg extraTags: TagResolver): BossBar {
         val comp = getComponent(player, path, *extraTags)
-        val bar = net.kyori.adventure.bossbar.BossBar.bossBar(comp, 1.0f, color, overlay)
+        val bar = BossBar.bossBar(comp, 1.0f, color, overlay)
         player.showBossBar(bar)
         return bar
     }
 
     override fun reload() {
-        pumpking.lib.task.PumpkingTask.ioScope.launch {
+        PumpkingTask.ioScope.launch {
             loadAllLanguages()
         }
     }

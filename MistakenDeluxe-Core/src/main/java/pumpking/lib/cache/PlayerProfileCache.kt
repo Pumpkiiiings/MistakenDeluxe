@@ -10,6 +10,7 @@ import pumpking.lib.core.PumpkingLib
 import java.util.UUID
 import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
+import pumpking.lib.task.PumpkingTask
 
 abstract class PlayerProfileCache<V : Any>(
     val plugin: JavaPlugin,
@@ -54,7 +55,7 @@ abstract class PlayerProfileCache<V : Any>(
 
         if (profile != null) {
             // Save on quit asynchronously
-            pumpking.lib.task.PumpkingTask.ioScope.launch {
+            PumpkingTask.ioScope.launch {
                 try {
                     saveProfile(uuid, profile)
                 } catch (e: Exception) {
@@ -66,7 +67,7 @@ abstract class PlayerProfileCache<V : Any>(
 
     override fun onExpire(key: UUID, value: V?) {
         if (value != null) {
-            pumpking.lib.task.PumpkingTask.ioScope.launch {
+            PumpkingTask.ioScope.launch {
                 try {
                     saveProfile(key, value)
                 } catch (e: Exception) {
@@ -83,8 +84,8 @@ abstract class PlayerProfileCache<V : Any>(
      */
     override fun shutdown() {
         super.shutdown()
-        org.bukkit.event.player.PlayerQuitEvent.getHandlerList().unregister(this)
-        org.bukkit.event.player.AsyncPlayerPreLoginEvent.getHandlerList().unregister(this)
+        PlayerQuitEvent.getHandlerList().unregister(this)
+        AsyncPlayerPreLoginEvent.getHandlerList().unregister(this)
         PumpkingLib.log(PumpkingLib.LogCategory.CORE, "[Cache] PlayerProfileCache listener unregistered.")
     }
 }

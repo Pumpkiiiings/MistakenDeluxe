@@ -16,17 +16,18 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.util.EulerAngle
 import kotlin.math.cos
 import kotlin.math.sin
+import pumpking.lib.color.ColorTranslator
 
 class TetoProfile : CinematicProfile {
     override val id: String = "teto"
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<red>TERRITORY</red>"), pumpking.lib.color.ColorTranslator.translate("<white>¡Eres tan tonto!"))
+        return Pair(ColorTranslator.translate("<red>TERRITORY</red>"), ColorTranslator.translate("<white>¡Eres tan tonto!"))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

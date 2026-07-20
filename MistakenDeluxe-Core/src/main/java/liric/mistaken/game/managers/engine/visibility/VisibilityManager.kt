@@ -8,6 +8,7 @@ import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import org.bukkit.Bukkit
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -56,7 +57,7 @@ class VisibilityManager(private val plugin: Mistaken) {
         visibleOnlyTo[target.uniqueId] = viewerIds
         
         // Destruimos la entidad para los que no están en la lista
-        org.bukkit.Bukkit.getOnlinePlayers().forEach { online ->
+        Bukkit.getOnlinePlayers().forEach { online ->
             if (!viewerIds.contains(online.uniqueId)) {
                 val destroyPacket = WrapperPlayServerDestroyEntities(target.entityId)
                 PacketEvents.getAPI().playerManager.sendPacket(online, destroyPacket)
@@ -110,7 +111,7 @@ class VisibilityManager(private val plugin: Mistaken) {
      */
     fun isHidden(targetEntityId: Int, viewerUuid: UUID): Boolean {
         // Optimización 1: ¿Es un jugador?
-        val online = org.bukkit.Bukkit.getOnlinePlayers().find { it.entityId == targetEntityId }
+        val online = Bukkit.getOnlinePlayers().find { it.entityId == targetEntityId }
         if (online != null) return isHidden(online.uniqueId, viewerUuid)
         
         // Si no es jugador, necesitamos saber su UUID. Como este chequeo ocurre millones de veces, 

@@ -15,6 +15,9 @@ import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
+import org.bukkit.configuration.file.FileConfiguration
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -26,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class Villager : Survivor(
     "aldeano",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.aldeano.nombre", "survivors_info")
+    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.aldeano.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.aldeano"
@@ -78,7 +81,7 @@ class Villager : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 20))) {
@@ -96,9 +99,9 @@ class Villager : Survivor(
         }
     }
 
-    private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
+    private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
         var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
+        if (!msg.isNullOrEmpty()) player.sendMessage(ColorTranslator.translate(msg))
 
         // Sonido por defecto "Hrmm"
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_VILLAGER_YES")
@@ -112,12 +115,12 @@ class Villager : Survivor(
         // Recarga segura
         preLoadKit()
 
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
             langInfo.getString("$pathBase.skill_names.$key")?.let {
-                item.editMeta { m -> m.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { m -> m.displayName(ColorTranslator.translate(it)) }
             }
             inv.setItem(slot, item)
         }
@@ -166,7 +169,7 @@ class Villager : Survivor(
                 victim.velocity = knockback
 
                 victim.playSound(victim.location, Sound.ENTITY_IRON_GOLEM_HURT, 1f, 1f)
-                victim.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><b>[!]</b> ¡El Golem te ha rechazado!"))
+                victim.sendMessage(ColorTranslator.translate("<red><b>[!]</b> ¡El Golem te ha rechazado!"))
             }
         }
     }

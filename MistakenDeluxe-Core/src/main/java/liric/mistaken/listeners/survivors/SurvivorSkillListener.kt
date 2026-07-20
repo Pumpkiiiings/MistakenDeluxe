@@ -24,6 +24,9 @@ import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
+import org.bukkit.Location
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -43,12 +46,12 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         private val STICK_KEY = NamespacedKey("mistaken", "kid_stick")
         private val JESSE_PUNCH_KEY = NamespacedKey("mistaken", "jesse_punch")
 
-        fun marcarBloque(loc: org.bukkit.Location) {
+        fun marcarBloque(loc: Location) {
             val key = "${loc.world.name}_${loc.blockX}_${loc.blockY}_${loc.blockZ}"
             bloquesDerrame.add(key)
         }
 
-        fun desmarcarBloque(loc: org.bukkit.Location) {
+        fun desmarcarBloque(loc: Location) {
             val key = "${loc.world.name}_${loc.blockX}_${loc.blockY}_${loc.blockZ}"
             bloquesDerrame.remove(key)
         }
@@ -126,7 +129,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
             val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("supervivientes.raincoatkid.items.skill3_cooldown", 40)
             if (!clase.checkCooldown(attacker, 2, cooldownTime)) {
                 clase.aplicarGolpePalo(victim)
-                attacker.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green><bold>�BAM!</bold> <gray>Killer aturdido."))
+                attacker.sendMessage(ColorTranslator.translate("<green><bold>�BAM!</bold> <gray>Killer aturdido."))
                 attacker.playSound(attacker.location, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.5f, 1.2f)
             }
             return
@@ -137,7 +140,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
             val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("supervivientes.jesse.items.skill2_cooldown", 15)
             if (!clase.checkCooldown(attacker, 1, cooldownTime)) {
                 clase.aplicarGolpePuno(victim)
-                attacker.sendMessage(pumpking.lib.color.ColorTranslator.translate("<gold><b>�TOMA ESO!</b></gold>"))
+                attacker.sendMessage(ColorTranslator.translate("<gold><b>�TOMA ESO!</b></gold>"))
             }
             return
         }
@@ -159,7 +162,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
             victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 1))
             victim.playSound(victim.location, Sound.BLOCK_STONE_BREAK, 1f, 0.8f)
             (snowball.shooter as? Player)?.let { shooter ->
-                shooter.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(shooter, "habilidades.roca-impacto-exito"))
+                shooter.sendMessage(PumpkingServiceManager.messages.getComponent(shooter, "habilidades.roca-impacto-exito"))
             }
             return
         }
@@ -170,12 +173,12 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
             if (isKiller) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
-                victim.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(victim, "habilidades.pedido-impacto-asesino"))
+                victim.sendMessage(PumpkingServiceManager.messages.getComponent(victim, "habilidades.pedido-impacto-asesino"))
                 victim.playSound(victim.location, Sound.ENTITY_GENERIC_SPLASH, 1f, 1f)
             } else {
                 val maxHealth = victim.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
                 victim.health = (victim.health + 4.0).coerceAtMost(maxHealth)
-                victim.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(victim, "habilidades.pedido-recibido-cura"))
+                victim.sendMessage(PumpkingServiceManager.messages.getComponent(victim, "habilidades.pedido-recibido-cura"))
                 victim.playSound(victim.location, Sound.ENTITY_PLAYER_BURP, 1f, 1f)
             }
             return
@@ -188,7 +191,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1))
                 victim.world.playSound(victim.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                victim.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>�Ooh! �Una esmeralda! (Te has distra�do)"))
+                victim.sendMessage(ColorTranslator.translate("<green>�Ooh! �Una esmeralda! (Te has distra�do)"))
             }
             return
         }

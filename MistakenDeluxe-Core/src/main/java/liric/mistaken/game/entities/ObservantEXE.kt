@@ -23,6 +23,11 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import org.bukkit.Particle
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0] - MODO TROLL SUPREMO
@@ -31,7 +36,7 @@ import kotlin.math.sin
  */
 class ObservantEXE(private val plugin: Mistaken) {
 
-    private val parts = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
+    private val parts = mutableListOf<VirtualBlockDisplay>()
     private var isRunning = true
     private var lastVictimUUID: UUID? = null
 
@@ -81,7 +86,7 @@ class ObservantEXE(private val plugin: Mistaken) {
                 setGlowColor(NamedTextColor.WHITE)
 
                 // ðŸ”¥ Broadcast solo para la sesiÃ³n
-                val spawnMsg = pumpking.lib.color.ColorTranslator.translate("<dark_purple><b>[!]</b> <dark_gray>EL HERMANO MAYOR HA DESPERTADO. <b>OBSERVANT</b> ESTÃ AQUÃ.</dark_gray>")
+                val spawnMsg = ColorTranslator.translate("<dark_purple><b>[!]</b> <dark_gray>EL HERMANO MAYOR HA DESPERTADO. <b>OBSERVANT</b> ESTÃ AQUÃ.</dark_gray>")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(spawnMsg) }
 
                 iniciarIA()
@@ -91,8 +96,8 @@ class ObservantEXE(private val plugin: Mistaken) {
         }
     }
 
-    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): liric.mistaken.packet.fake.VirtualBlockDisplay {
-        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
+    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): VirtualBlockDisplay {
+        return PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(translation, Quaternionf(), scale, Quaternionf())
             bd.isPersistent = false
@@ -172,8 +177,8 @@ class ObservantEXE(private val plugin: Mistaken) {
         var ticks = 0
         val initialTarget = getClosestTarget() ?: return
         initialTarget.showTitle(Title.title(
-            pumpking.lib.color.ColorTranslator.translate("<dark_gray>Te estoy observando...</dark_gray>"),
-            pumpking.lib.color.ColorTranslator.translate("<red>No te muevas.")
+            ColorTranslator.translate("<dark_gray>Te estoy observando...</dark_gray>"),
+            ColorTranslator.translate("<red>No te muevas.")
         ))
 
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
@@ -216,7 +221,7 @@ class ObservantEXE(private val plugin: Mistaken) {
 
     private fun ejecutarDobleAereo() {
         val initialTarget = getClosestTarget() ?: return
-        initialTarget.showTitle(Title.title(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(initialTarget, "anomalies.observant.title-look-up"), pumpking.lib.service.PumpkingServiceManager.messages.getComponent(initialTarget, "anomalies.observant.subtitle-look-up")))
+        initialTarget.showTitle(Title.title(PumpkingServiceManager.messages.getComponent(initialTarget, "anomalies.observant.title-look-up"), PumpkingServiceManager.messages.getComponent(initialTarget, "anomalies.observant.subtitle-look-up")))
         var step = 0
         var diveCount = 0
 
@@ -260,8 +265,8 @@ class ObservantEXE(private val plugin: Mistaken) {
     private fun ejecutarAgarre() {
         val initialTarget = getClosestTarget() ?: return
         initialTarget.showTitle(Title.title(
-            pumpking.lib.color.ColorTranslator.translate("<dark_purple>NO ESCAPARÃS</dark_purple>"),
-            pumpking.lib.color.ColorTranslator.translate("<gray>Observant te ha atrapado...</gray>")
+            ColorTranslator.translate("<dark_purple>NO ESCAPARÃS</dark_purple>"),
+            ColorTranslator.translate("<gray>Observant te ha atrapado...</gray>")
         ))
         initialTarget.playSound(initialTarget.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.1f)
 
@@ -284,7 +289,7 @@ class ObservantEXE(private val plugin: Mistaken) {
             val dist = obsLoc.distance(playerLoc)
             for (i in 0..dist.toInt()) {
                 val point = playerLoc.clone().add(pullDir.clone().multiply(i))
-                point.world.spawnParticle(org.bukkit.Particle.WITCH, point.add(0.0, 1.0, 0.0), 2, 0.1, 0.1, 0.1, 0.0)
+                point.world.spawnParticle(Particle.WITCH, point.add(0.0, 1.0, 0.0), 2, 0.1, 0.1, 0.1, 0.0)
             }
 
             if (obsLoc.distanceSquared(playerLoc) < 12.25) {
@@ -304,9 +309,9 @@ class ObservantEXE(private val plugin: Mistaken) {
             parts[6].block = Material.RED_CONCRETE.createBlockData()
         }
 
-        val rageMsg = pumpking.lib.color.ColorTranslator.translate("<dark_red><b>[!] EL ABISMO SE HA DESBORDADO.</b>")
+        val rageMsg = ColorTranslator.translate("<dark_red><b>[!] EL ABISMO SE HA DESBORDADO.</b>")
         assignedSession?.getPlayers()?.forEach {
-            it.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(it, "anomalies.observant.rage"))
+            it.sendMessage(PumpkingServiceManager.messages.getComponent(it, "anomalies.observant.rage"))
             it.playSound(it.location, Sound.ENTITY_WARDEN_ROAR, 1.5f, 0.5f)
         }
 
@@ -351,7 +356,7 @@ class ObservantEXE(private val plugin: Mistaken) {
 
     private fun ejecutarMuerte(victim: Player, enrage: Boolean = false) {
         lastVictimUUID = victim.uniqueId
-        victim.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, victim.location, 5)
+        victim.world.spawnParticle(Particle.EXPLOSION_EMITTER, victim.location, 5)
         victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2f, 0.1f)
 
         victim.health = 0.0 // Muerte nativa directa
@@ -360,7 +365,7 @@ class ObservantEXE(private val plugin: Mistaken) {
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3, false, false, true))
 
         val prefix = if (enrage) "<dark_red><b>[FURIA DESATADA]</b>" else "<dark_purple><b>[!]</b>"
-        val deathMsg = pumpking.lib.color.ColorTranslator.translate("$prefix <white>${victim.name} fue atrapado por las garras de <dark_purple>OBSERVANT 4.0</dark_purple>.")
+        val deathMsg = ColorTranslator.translate("$prefix <white>${victim.name} fue atrapado por las garras de <dark_purple>OBSERVANT 4.0</dark_purple>.")
 
         assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
     }
@@ -386,7 +391,7 @@ class ObservantEXE(private val plugin: Mistaken) {
     private fun explodeAndRemove() {
         if (parts.isNotEmpty() && parts[0].isValid) {
             val loc = parts[0].location
-            loc.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, loc, 8)
+            loc.world.spawnParticle(Particle.EXPLOSION_EMITTER, loc, 8)
             loc.world.playSound(loc, Sound.ENTITY_WITHER_DEATH, 1.0f, 0.5f)
         }
         remove()

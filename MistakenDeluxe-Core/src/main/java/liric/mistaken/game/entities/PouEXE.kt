@@ -22,6 +22,10 @@ import java.util.*
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0] - MODO TROLL
@@ -30,7 +34,7 @@ import kotlin.math.sin
  */
 class PouEXE(private val plugin: Mistaken) {
 
-    private val parts = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
+    private val parts = mutableListOf<VirtualBlockDisplay>()
     private var isRunning = false
     private var currentTarget: Player? = null
     private var lastVictimUUID: UUID? = null
@@ -71,7 +75,7 @@ class PouEXE(private val plugin: Mistaken) {
                 setGlowColor(NamedTextColor.WHITE)
 
                 // 🔥 Broadcast solo para la sesión afectada
-                val spawnMsg = pumpking.lib.color.ColorTranslator.translate("<newline><yellow><b>[!]</b> <white>Se ha detectado una mascota virtual abandonada... <brown><b>POU.EXE</b>")
+                val spawnMsg = ColorTranslator.translate("<newline><yellow><b>[!]</b> <white>Se ha detectado una mascota virtual abandonada... <brown><b>POU.EXE</b>")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(spawnMsg) }
 
                 isRunning = true
@@ -82,8 +86,8 @@ class PouEXE(private val plugin: Mistaken) {
         }
     }
 
-    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): liric.mistaken.packet.fake.VirtualBlockDisplay {
-        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
+    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f): VirtualBlockDisplay {
+        return PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(translation, Quaternionf(), scale, Quaternionf())
             bd.isPersistent = false
@@ -157,8 +161,8 @@ class PouEXE(private val plugin: Mistaken) {
                     if (ticksEnFase == 16) {
                         target.playSound(target.location, Sound.ENTITY_GENERIC_EAT, 2f, 0.5f)
                         target.showTitle(Title.title(
-                            pumpking.lib.color.ColorTranslator.translate("<gradient:#8B4513:#D2B48C><b>POU TIENE HAMBRE"),
-                            pumpking.lib.color.ColorTranslator.translate("<red>¡Aliméntalo con tu alma!"),
+                            ColorTranslator.translate("<gradient:#8B4513:#D2B48C><b>POU TIENE HAMBRE"),
+                            ColorTranslator.translate("<red>¡Aliméntalo con tu alma!"),
                             Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(2), Duration.ofMillis(500))
                         ))
                     }
@@ -199,7 +203,7 @@ class PouEXE(private val plugin: Mistaken) {
                     if (ticksEnFase == 0) {
                         setGlowColor(NamedTextColor.RED)
                         target.playSound(target.location, Sound.ENTITY_PLAYER_HURT_ON_FIRE, 1.5f, 0.1f)
-                        target.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(target, "anomalies.pou.rage"))
+                        target.sendMessage(PumpkingServiceManager.messages.getComponent(target, "anomalies.pou.rage"))
                     }
 
                     if (ticksEnFase > 20 && ticksEnFase < 120) {
@@ -239,7 +243,7 @@ class PouEXE(private val plugin: Mistaken) {
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 4))
 
         val prefix = if (enrage) "<dark_red><b>[HAMBRE]</b>" else "<brown><b>[!]</b>"
-        val deathMsg = pumpking.lib.color.ColorTranslator.translate("$prefix <white>${victim.name} fue devorado por <brown>POU.EXE")
+        val deathMsg = ColorTranslator.translate("$prefix <white>${victim.name} fue devorado por <brown>POU.EXE")
 
         assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
     }

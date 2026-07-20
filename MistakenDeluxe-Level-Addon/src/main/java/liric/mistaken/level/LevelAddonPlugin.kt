@@ -23,6 +23,9 @@ import io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEven
 import pumpking.lib.database.HikariDatabaseManager
 import pumpking.lib.database.DatabaseType
 import org.bukkit.Bukkit
+import java.io.File
+import liric.mistaken.level.config.MenuConfig
+import liric.mistaken.level.config.XpSourcesConfig
 
 class LevelAddonPlugin : JavaPlugin() {
 
@@ -41,10 +44,10 @@ class LevelAddonPlugin : JavaPlugin() {
     lateinit var levelConfig: LevelConfig
         private set
 
-    lateinit var xpSourcesConfig: liric.mistaken.level.config.XpSourcesConfig
+    lateinit var xpSourcesConfig: XpSourcesConfig
         private set
 
-    lateinit var menuConfig: liric.mistaken.level.config.MenuConfig
+    lateinit var menuConfig: MenuConfig
         private set
 
     private lateinit var databaseProvider: HikariDatabaseManager
@@ -62,10 +65,10 @@ class LevelAddonPlugin : JavaPlugin() {
         levelConfig = LevelConfig(this)
         levelConfig.load()
 
-        xpSourcesConfig = liric.mistaken.level.config.XpSourcesConfig(this)
+        xpSourcesConfig = XpSourcesConfig(this)
         xpSourcesConfig.load()
 
-        menuConfig = liric.mistaken.level.config.MenuConfig(this)
+        menuConfig = MenuConfig(this)
         menuConfig.load()
 
         // Init Database
@@ -80,7 +83,7 @@ class LevelAddonPlugin : JavaPlugin() {
             config.getString("database.database", "minecraft")!!,
             config.getString("database.username", "root")!!,
             config.getString("database.password", "")!!,
-            java.io.File(dataFolder, "levels.db")
+            File(dataFolder, "levels.db")
         )
         repository = LevelRepository(databaseProvider)
         repository.init()

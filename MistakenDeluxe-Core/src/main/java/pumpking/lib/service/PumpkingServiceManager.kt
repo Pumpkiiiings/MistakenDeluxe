@@ -4,6 +4,10 @@ import org.bukkit.plugin.java.JavaPlugin
 import pumpking.lib.animation.AnimationEngine
 import pumpking.lib.messages.MessageService
 import pumpking.lib.command.PumpkingCommand
+import io.papermc.paper.command.brigadier.Commands
+import io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
+import pumpking.lib.core.PumpkingLib
 
 object PumpkingServiceManager {
     lateinit var messages: MessageService
@@ -22,11 +26,11 @@ object PumpkingServiceManager {
         // Register Command
         try {
             val manager = plugin.lifecycleManager
-            manager.registerEventHandler(io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents.COMMANDS) { event: io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent<io.papermc.paper.command.brigadier.Commands> ->
+            manager.registerEventHandler(LifecycleEvents.COMMANDS) { event: ReloadableRegistrarEvent<Commands> ->
                 event.registrar().register("pumpking", "Pumpking Framework Commands", listOf("pk"), PumpkingCommand())
             }
         } catch (e: Exception) {
-            pumpking.lib.core.PumpkingLib.logError(pumpking.lib.core.PumpkingLib.LogCategory.CORE, "Failed to register pumpking command via lifecycle")
+            PumpkingLib.logError(PumpkingLib.LogCategory.CORE, "Failed to register pumpking command via lifecycle")
         }
     }
 

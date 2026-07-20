@@ -6,6 +6,13 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.entity.Player
 import pumpking.lib.scoreboard.ScoreboardTemplate
 import pumpking.lib.scoreboard.ScoreboardManager as PumpkingScoreboardManager
+import java.util.UUID
+import liric.mistaken.utils.hooks.ObserverHook
+import me.clip.placeholderapi.PlaceholderAPI
+import org.bukkit.Bukkit
+import org.bukkit.scheduler.BukkitTask
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -18,7 +25,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
     private val mm = plugin.mm
     private val legacy = LegacyComponentSerializer.legacySection()
 
-    private var updateTask: org.bukkit.scheduler.BukkitTask? = null
+    private var updateTask: BukkitTask? = null
 
     init {
         startUpdateTask()
@@ -28,12 +35,12 @@ class ScoreboardManager(private val plugin: Mistaken) {
         val interval = if (PumpkingScoreboardManager.supportsAnimations()) 2L else 10L
         updateTask = plugin.server.scheduler.runTaskTimerAsynchronously(plugin, Runnable {
             for (player in plugin.server.onlinePlayers) {
-                if (liric.mistaken.utils.hooks.ObserverHook.hasObserver(player)) {
+                if (ObserverHook.hasObserver(player)) {
                     PumpkingScoreboardManager.removeScoreboard(player)
                     continue
                 }
 
-                val config = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "messages")
+                val config = PumpkingServiceManager.messages.getSpecificFile(player, "messages")
                 val title = config.getString("scoreboard.title") ?: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN"
                 val lines = buildLines(player)
 
@@ -51,7 +58,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
 
     private fun buildLines(player: Player): List<String> {
         val gm = plugin.sessionManager.getSession(player)
-        val config = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "messages")
+        val config = PumpkingServiceManager.messages.getSpecificFile(player, "messages")
         val onlineCount = plugin.server.onlinePlayers.size.toString()
 
         val path: String
@@ -106,23 +113,23 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 .replace("%id%", sessionID)
                 .replace("{", "<").replace("}", ">")
 
-            if (org.bukkit.Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-                formatted = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, formatted)
+            if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+                formatted = PlaceholderAPI.setPlaceholders(player, formatted)
             }
 
             // Convert to legacy string so the existing YAML format (MiniMessage) is preserved
-            result.add(legacy.serialize(pumpking.lib.color.ColorTranslator.translate(formatted)))
+            result.add(legacy.serialize(ColorTranslator.translate(formatted)))
         }
 
         return result
     }
 
-    private fun getKillerDisplayStrings(ids: Set<java.util.UUID>): List<String> {
-        if (ids.isEmpty()) return listOf(legacy.serialize(pumpking.lib.color.ColorTranslator.translate(" <gray>Ninguno")))
+    private fun getKillerDisplayStrings(ids: Set<UUID>): List<String> {
+        if (ids.isEmpty()) return listOf(legacy.serialize(ColorTranslator.translate(" <gray>Ninguno")))
         return ids.mapNotNull { id ->
             val killer = plugin.server.getPlayer(id)
             if (killer != null && killer.isOnline)
-                legacy.serialize(pumpking.lib.color.ColorTranslator.translate(" <white>• <red>${killer.name}"))
+                legacy.serialize(ColorTranslator.translate(" <white>• <red>${killer.name}"))
             else null
         }
     }

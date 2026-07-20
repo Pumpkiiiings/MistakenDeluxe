@@ -8,6 +8,7 @@ import io.papermc.paper.command.brigadier.Commands
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.killers.Killer
 import org.bukkit.entity.Player
+import pumpking.lib.color.ColorTranslator
 
 object CinematicaCommand {
 
@@ -34,7 +35,7 @@ object CinematicaCommand {
                                 val asesinoId = StringArgumentType.getString(context, "asesino")
 
                                 val asesinoDummy = createDummy(asesinoId)
-                                source.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Reproduciendo <bold>INTRO</bold> de: <yellow>$asesinoId"))
+                                source.sendMessage(ColorTranslator.translate("<green>Reproduciendo <bold>INTRO</bold> de: <yellow>$asesinoId"))
 
                                 plugin.cinematicManager.playKillerIntro(source, asesinoDummy, listOf(source))
                                 Command.SINGLE_SUCCESS
@@ -55,7 +56,7 @@ object CinematicaCommand {
                                 val asesinoId = StringArgumentType.getString(context, "asesino")
 
                                 val asesinoDummy = createDummy(asesinoId)
-                                source.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Reproduciendo <bold>OUTRO</bold> de: <yellow>$asesinoId"))
+                                source.sendMessage(ColorTranslator.translate("<red>Reproduciendo <bold>OUTRO</bold> de: <yellow>$asesinoId"))
 
                                 plugin.cinematicManager.playKillerOutro(source, asesinoDummy, listOf(source))
                                 Command.SINGLE_SUCCESS

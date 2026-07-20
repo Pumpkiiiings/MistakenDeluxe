@@ -15,17 +15,18 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.util.EulerAngle
 import kotlin.math.cos
 import kotlin.math.sin
+import pumpking.lib.color.ColorTranslator
 
 class MariachiProfile : CinematicProfile {
     override val id: String = "mariachi"
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<red><bold>EL CHARRO NEGRO</bold>"), pumpking.lib.color.ColorTranslator.translate("<gold>¡Ay ay ay! Canta y no llores..."))
+        return Pair(ColorTranslator.translate("<red><bold>EL CHARRO NEGRO</bold>"), ColorTranslator.translate("<gold>¡Ay ay ay! Canta y no llores..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<gold><bold>¡SALUD!</bold>"), pumpking.lib.color.ColorTranslator.translate("<yellow>*Toma un trago de tequila*"))
+        return Pair(ColorTranslator.translate("<gold><bold>¡SALUD!</bold>"), ColorTranslator.translate("<yellow>*Toma un trago de tequila*"))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

@@ -8,6 +8,7 @@ import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.time.Duration
+import net.milkbowl.vault.economy.Economy
 
 class MessageReward : RewardExecutor {
     private val mm = MiniMessage.miniMessage()
@@ -66,7 +67,7 @@ class CurrencyReward : RewardExecutor {
     override fun execute(player: Player, value: String) {
         val amount = value.toDoubleOrNull() ?: return
         if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
-            val rsp = Bukkit.getServer().servicesManager.getRegistration(net.milkbowl.vault.economy.Economy::class.java)
+            val rsp = Bukkit.getServer().servicesManager.getRegistration(Economy::class.java)
             val econ = rsp?.provider ?: return
             econ.depositPlayer(player, amount)
         }

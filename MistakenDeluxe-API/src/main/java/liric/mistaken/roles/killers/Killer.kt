@@ -7,6 +7,9 @@ import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
+import liric.mistaken.api.MistakenProvider
+import org.bukkit.GameMode
+import org.bukkit.NamespacedKey
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -17,7 +20,7 @@ abstract class Killer(val id: String, val nombre: String) {
 
     open val defaultMusic: String? = null
 
-    protected val api = liric.mistaken.api.MistakenProvider.get()
+    protected val api = MistakenProvider.get()
     protected val mm = api.mm
 
     // Cooldowns: UUID_Slot -> Timestamp (ms)
@@ -114,7 +117,7 @@ abstract class Killer(val id: String, val nombre: String) {
                 p.inventory.heldItemSlot = 0
 
                 // Ã°Å¸â€™¡ FIX ESPECTADOR: Solo apagar vuelo si no es espectador
-                if (p.gameMode != org.bukkit.GameMode.SPECTATOR) {
+                if (p.gameMode != GameMode.SPECTATOR) {
                     p.allowFlight = false
                     p.isFlying = false
                 }
@@ -124,7 +127,7 @@ abstract class Killer(val id: String, val nombre: String) {
                 val prefix = p.uniqueId.toString()
                 cooldowns.keys.removeIf { it.startsWith(prefix) }
 
-                p.persistentDataContainer.remove(org.bukkit.NamespacedKey(api.plugin, "assassin_id"))
+                p.persistentDataContainer.remove(NamespacedKey(api.plugin, "assassin_id"))
                 p.updateInventory()
             }
         }
@@ -160,7 +163,7 @@ abstract class Killer(val id: String, val nombre: String) {
      */
     protected fun isValidTarget(atacante: Player, victima: Player): Boolean {
         // 1. Inmortales o Espectadores ignorados
-        if (victima.gameMode != org.bukkit.GameMode.SURVIVAL) return false
+        if (victima.gameMode != GameMode.SURVIVAL) return false
         if (api.isIgnored(victima)) return false
         if (victima.isInvisible) return false
 

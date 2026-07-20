@@ -25,6 +25,13 @@ import org.joml.Vector3f as JomlVector3f
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.util.Vector
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  *[LIRIC-MISTAKEN 2.0]
@@ -33,18 +40,18 @@ import java.util.function.Consumer
  */
 class KasaneTeto : Survivor(
     "teto",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.teto.nombre", "survivors_info")
+    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.teto.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.teto"
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
 
     // Guardamos las piezas individuales para aplicarles la matemática de rotación
-    private val tetoAccesorios = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualBlockDisplay>>()
+    private val tetoAccesorios = ConcurrentHashMap<UUID, MutableList<VirtualBlockDisplay>>()
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 15))) {
@@ -62,9 +69,9 @@ class KasaneTeto : Survivor(
         }
     }
 
-    private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
+    private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
         val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
+        if (!msg.isNullOrEmpty()) player.sendMessage(ColorTranslator.translate(msg))
     }
 
     override fun equip(player: Player) {
@@ -74,7 +81,7 @@ class KasaneTeto : Survivor(
 
         player.getAttribute(Attribute.SCALE)?.baseValue = 0.8861
 
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
         val configMecanica = plugin.configManager.getSurvivorConfig(this.id)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -91,7 +98,7 @@ class KasaneTeto : Survivor(
 
             val meta = item.itemMeta
             langInfo.getString("$pathBase.skill_names.$key")?.let {
-                meta.displayName(pumpking.lib.color.ColorTranslator.translate(it))
+                meta.displayName(ColorTranslator.translate(it))
             }
             item.itemMeta = meta
 
@@ -145,7 +152,7 @@ class KasaneTeto : Survivor(
             hitEntity.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 4))
             hitEntity.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3))
 
-            player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>¡Impacto directo! El asesino ha sido paralizado."))
+            player.sendMessage(ColorTranslator.translate("<green>¡Impacto directo! El asesino ha sido paralizado."))
         }
     }
 
@@ -197,11 +204,11 @@ class KasaneTeto : Survivor(
         borrarCosmeticos(uuid)
 
         val startLoc = player.location
-        val displays = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
+        val displays = mutableListOf<VirtualBlockDisplay>()
 
         // Helper para crear un bloque con la escala centrada en -50% (Para que rote desde el medio de sí mismo)
-        fun spawnBlock(mat: Material, scale: JomlVector3f): liric.mistaken.packet.fake.VirtualBlockDisplay {
-            return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), startLoc) { bd ->
+        fun spawnBlock(mat: Material, scale: JomlVector3f): VirtualBlockDisplay {
+            return PacketFactory.displays.buildBlockDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), startLoc) { bd ->
                 bd.block = mat.createBlockData()
                 bd.transformation = Transformation(JomlVector3f(-scale.x/2, -scale.y/2, -scale.z/2), Quaternionf(), scale, Quaternionf())
                 bd.teleportDuration = 1
@@ -239,7 +246,7 @@ class KasaneTeto : Survivor(
         }, null, 1L, 1L)
     }
 
-    private fun actualizarMatematicas3D(player: Player, displays: List<liric.mistaken.packet.fake.VirtualBlockDisplay>) {
+    private fun actualizarMatematicas3D(player: Player, displays: List<VirtualBlockDisplay>) {
         if (displays.size < 10) return
 
         val eyeLoc = player.eyeLocation
@@ -247,8 +254,8 @@ class KasaneTeto : Survivor(
         val pitchRad = Math.toRadians(eyeLoc.pitch.coerceIn(-30f, 45f).toDouble()).toFloat() // Límite de inclinación
 
         val forward = eyeLoc.direction.clone().setY(0).normalize()
-        val right = forward.clone().crossProduct(org.bukkit.util.Vector(0, 1, 0)).normalize()
-        val up = org.bukkit.util.Vector(0, 1, 0)
+        val right = forward.clone().crossProduct(Vector(0, 1, 0)).normalize()
+        val up = Vector(0, 1, 0)
 
         val bobbingY = if (player.velocity.lengthSquared() > 0.01) Math.sin((System.currentTimeMillis() / 100) % 360.toDouble()) * 0.05 else 0.0
         val baseHead = eyeLoc.clone().add(0.0, 0.25 + bobbingY, 0.0).add(forward.clone().multiply(-0.05))

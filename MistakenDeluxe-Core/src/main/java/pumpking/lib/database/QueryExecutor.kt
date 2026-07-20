@@ -3,6 +3,7 @@ package pumpking.lib.database
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.util.function.Function
 
 object QueryExecutor {
 
@@ -22,7 +23,7 @@ object QueryExecutor {
         }
     }
 
-    fun <T> executeQuery(provider: DatabaseProvider, query: String, processor: java.util.function.Function<ResultSet, T>, vararg parameters: Any): T? {
+    fun <T> executeQuery(provider: DatabaseProvider, query: String, processor: Function<ResultSet, T>, vararg parameters: Any): T? {
         var connection: Connection? = null
         var ps: PreparedStatement? = null
         var rs: ResultSet? = null

@@ -31,6 +31,11 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
+import liric.mistaken.packet.PacketFactory
+import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.plugin.java.JavaPlugin
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  *[LIRIC-MISTAKEN 2.0]
@@ -39,7 +44,7 @@ import java.util.function.Consumer
  */
 class Troll : Survivor(
     "troll",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.troll.nombre", "survivors_info")
+    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.troll.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.troll"
@@ -47,7 +52,7 @@ class Troll : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 30))) {
@@ -65,9 +70,9 @@ class Troll : Survivor(
         }
     }
 
-    private fun sendAbilityMessage(player: Player, lang: org.bukkit.configuration.file.FileConfiguration, mech: org.bukkit.configuration.file.FileConfiguration, key: String) {
+    private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
         val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
+        if (!msg.isNullOrEmpty()) player.sendMessage(ColorTranslator.translate(msg))
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_BAT_TAKEOFF")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
     }
@@ -77,7 +82,7 @@ class Troll : Survivor(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
         val configMecanica = plugin.configManager.getSurvivorConfig(this.id)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -90,7 +95,7 @@ class Troll : Survivor(
             } ?: return
 
             langInfo.getString("$pathBase.skill_names.$key")?.let {
-                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -213,7 +218,7 @@ class Troll : Survivor(
 
     private fun colocarCascaraPlatano(player: Player) {
         val loc = player.location.clone()
-        val platano = liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { id ->
+        val platano = PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { id ->
             id.setItemStack(ItemStack(Material.YELLOW_DYE))
             // Acostado en el piso
             id.transformation = Transformation(
@@ -245,7 +250,7 @@ class Troll : Survivor(
                 killer.velocity = Vector(0.0, 0.6, 0.0)
                 killer.setRotation(killer.yaw + 180f, -45f)
 
-                killer.sendMessage(pumpking.lib.color.ColorTranslator.translate("<yellow>¡Te resbalaste con una cáscara de plátano!"))
+                killer.sendMessage(ColorTranslator.translate("<yellow>¡Te resbalaste con una cáscara de plátano!"))
 
                 platano.world.spawnParticle(Particle.DUST, platano.location, 10, 0.2, 0.2, 0.2, Particle.DustOptions(Color.YELLOW, 1f))
                 platano.remove()
@@ -259,7 +264,7 @@ class Troll : Survivor(
 
     private fun colocarCajaSorpresa(player: Player) {
         val loc = player.location.block.location.add(0.5, 0.0, 0.5)
-        val caja = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { bd ->
+        val caja = PacketFactory.displays.buildBlockDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { bd ->
             bd.block = Material.CHEST.createBlockData()
             bd.transformation = Transformation(JomlVector3f(-0.5f, 0f, -0.5f), Quaternionf(), JomlVector3f(1f, 1f, 1f), Quaternionf())
         }
@@ -283,7 +288,7 @@ class Troll : Survivor(
 
                 killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 80, 0))
                 killer.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
-                killer.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><b>¡BOOM!</b> <gray>¡Era una trampa!"))
+                killer.sendMessage(ColorTranslator.translate("<red><b>¡BOOM!</b> <gray>¡Era una trampa!"))
 
                 caja.remove()
                 task.cancel()

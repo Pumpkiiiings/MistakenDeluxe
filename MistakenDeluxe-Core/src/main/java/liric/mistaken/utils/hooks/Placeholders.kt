@@ -3,6 +3,7 @@ package liric.mistaken.utils.hooks
 import liric.mistaken.Mistaken
 import me.clip.placeholderapi.expansion.PlaceholderExpansion
 import org.bukkit.OfflinePlayer
+import org.bukkit.GameMode
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -33,7 +34,7 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
             "session_id" -> session?.id ?: "NONE"
             
             // --- OBSERVER PLACEHOLDERS ---
-            "vivos" -> session?.getPlayers()?.count { !session.isKiller(it.uniqueId) && it.gameMode == org.bukkit.GameMode.SURVIVAL && !it.isInvisible }?.toString() ?: "0"
+            "vivos" -> session?.getPlayers()?.count { !session.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible }?.toString() ?: "0"
             "id" -> session?.id ?: "NONE"
             "tiempo" -> session?.timer?.toString() ?: "0"
             "modo" -> session?.currentMode?.name ?: "N/A"

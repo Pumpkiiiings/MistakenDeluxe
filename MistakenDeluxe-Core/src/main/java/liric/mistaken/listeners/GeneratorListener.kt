@@ -23,6 +23,9 @@ import org.bukkit.inventory.ItemStack
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 class GeneratorListener(private val plugin: Mistaken) : Listener {
 
@@ -32,8 +35,8 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
     private val activeMenus = ConcurrentHashMap<Location, Inventory>()
     private val colaboradores = ConcurrentHashMap<Location, MutableSet<UUID>>()
 
-    private val menuTitle by lazy { pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.gui_title") }
-    private val killerError get() = pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "listeners.generators.killer_error", "<red>Error!", "messages"))
+    private val menuTitle by lazy { PumpkingServiceManager.messages.getComponent(null, "listeners.generators.gui_title") }
+    private val killerError get() = ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(null, "listeners.generators.killer_error", "<red>Error!", "messages"))
 
     class GeneratorHolder(val loc: Location) : InventoryHolder {
         override fun getInventory(): Inventory = Bukkit.createInventory(this, 27)
@@ -63,8 +66,8 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         val loc = block.location
 
         if (plugin.generatorManager.isCompleted(loc)) {
-            val msg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "messages.already-completed", "<red>Ya completado")
-            player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
+            val msg = PumpkingServiceManager.messages.getRawString(player, "messages.already-completed", "<red>Ya completado")
+            player.sendMessage(ColorTranslator.translate(msg))
             return
         }
 
@@ -103,7 +106,7 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         } else {
             plugin.generatorManager.addProgress(loc, -10)
             player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 0.8f, 1.0f)
-            player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>�Fallaste! El progreso ha bajado un 10%."))
+            player.sendMessage(ColorTranslator.translate("<red>�Fallaste! El progreso ha bajado un 10%."))
             loc.world.spawnParticle(Particle.FLAME, loc.clone().add(0.5, 1.1, 0.5), 8, 0.2, 0.2, 0.2, 0.1)
         }
 
@@ -131,7 +134,7 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
     private fun finalizarGenerador(loc: Location, inv: Inventory) {
         val listaColaboradores = colaboradores.remove(loc)
         val commands = plugin.config.getStringList("settings.rewards.commands")
-        val successMsg = pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "messages.success", "<green>�Reparado!"))
+        val successMsg = ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(null, "messages.success", "<green>�Reparado!"))
 
         listaColaboradores?.forEach { uuid ->
             val p = Bukkit.getPlayer(uuid)
@@ -164,14 +167,14 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         val item = ItemStack(Material.IRON_INGOT)
         item.editMeta { meta ->
             val color = if (progress < 40) "<red>" else if (progress < 80) "<yellow>" else "<green>"
-            val titleRaw = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "listeners.generators.repair_item_name", "<yellow><bold>CLIC RAPIDO!", "messages")
-            meta.displayName(pumpking.lib.color.ColorTranslator.translate(titleRaw))
+            val titleRaw = PumpkingServiceManager.messages.getRawString(null, "listeners.generators.repair_item_name", "<yellow><bold>CLIC RAPIDO!", "messages")
+            meta.displayName(ColorTranslator.translate(titleRaw))
             
-            val loreLine = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "listeners.generators.repair_item_lore", "<gray>Ayuda a tus companeros!", "messages")
+            val loreLine = PumpkingServiceManager.messages.getRawString(null, "listeners.generators.repair_item_lore", "<gray>Ayuda a tus companeros!", "messages")
             meta.lore(listOf(
                 Component.empty(),
-                pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.progress_lore", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("color", color), net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("progress", progress.toString())),
-                pumpking.lib.color.ColorTranslator.translate(loreLine),
+                PumpkingServiceManager.messages.getComponent(null, "listeners.generators.progress_lore", Placeholder.parsed("color", color), Placeholder.parsed("progress", progress.toString())),
+                ColorTranslator.translate(loreLine),
                 Component.empty()
             ))
         }
@@ -183,18 +186,18 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         item.editMeta { meta ->
             if (progress >= 80) {
                 val color = if (ThreadLocalRandom.current().nextBoolean()) "<gold>" else "<red>"
-                val titleRaw = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "listeners.generators.fake_item_name", "{color}<bold>CLIC RAPIDO!", "messages")
-                meta.displayName(pumpking.lib.color.ColorTranslator.translate(titleRaw.replace("{color}", color)))
+                val titleRaw = PumpkingServiceManager.messages.getRawString(null, "listeners.generators.fake_item_name", "{color}<bold>CLIC RAPIDO!", "messages")
+                meta.displayName(ColorTranslator.translate(titleRaw.replace("{color}", color)))
                 
-                val loreLine = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(null, "listeners.generators.fake_item_lore", "<gray>De verdad quieres ayudar?", "messages")
+                val loreLine = PumpkingServiceManager.messages.getRawString(null, "listeners.generators.fake_item_lore", "<gray>De verdad quieres ayudar?", "messages")
                 meta.lore(listOf(
                     Component.empty(),
-                    pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.progress_loss_lore"),
-                    pumpking.lib.color.ColorTranslator.translate(loreLine),
+                    PumpkingServiceManager.messages.getComponent(null, "listeners.generators.progress_loss_lore"),
+                    ColorTranslator.translate(loreLine),
                     Component.empty()
                 ))
             } else {
-                meta.displayName(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "listeners.generators.not_this_one"))
+                meta.displayName(PumpkingServiceManager.messages.getComponent(null, "listeners.generators.not_this_one"))
             }
         }
         return item

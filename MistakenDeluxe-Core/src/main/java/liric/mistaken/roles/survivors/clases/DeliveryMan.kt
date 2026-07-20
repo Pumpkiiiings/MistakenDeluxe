@@ -15,6 +15,9 @@ import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
+import org.bukkit.configuration.file.FileConfiguration
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -23,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class DeliveryMan : Survivor(
     "repartidor",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "supervivientes.repartidor.nombre", "survivors_info")
+    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.repartidor.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.repartidor"
@@ -49,7 +52,7 @@ class DeliveryMan : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 30))) {
@@ -69,14 +72,14 @@ class DeliveryMan : Survivor(
 
     private fun sendAbilityMessage(
         player: Player,
-        lang: org.bukkit.configuration.file.FileConfiguration,
-        mech: org.bukkit.configuration.file.FileConfiguration,
+        lang: FileConfiguration,
+        mech: FileConfiguration,
         key: String
     ) {
         var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) {
             msg = msg.replace("<prefix>", "", true).replace("%prefix%", "", true).trim()
-            player.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
+            player.sendMessage(ColorTranslator.translate(msg))
         }
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_GENERIC_EAT")
         runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
@@ -87,12 +90,12 @@ class DeliveryMan : Survivor(
         inv.clear()
         if (itemCache.isEmpty()) preLoadKit()
 
-        val langConfig = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
             langConfig.getString("skill_names.$key")?.let {
-                item.editMeta { m -> m.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { m -> m.displayName(ColorTranslator.translate(it)) }
             }
             inv.setItem(slot, item)
         }

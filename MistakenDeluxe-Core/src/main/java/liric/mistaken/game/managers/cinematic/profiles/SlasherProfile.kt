@@ -12,17 +12,19 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.EulerAngle
+import org.bukkit.Particle
+import pumpking.lib.color.ColorTranslator
 
 class SlasherProfile : CinematicProfile {
     override val id: String = "slasher"
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red>LA EJECUCIÓN"), pumpking.lib.color.ColorTranslator.translate("<red>Nadie escapa de White Pumpkin."))
+        return Pair(ColorTranslator.translate("<dark_red>LA EJECUCIÓN"), ColorTranslator.translate("<red>Nadie escapa de White Pumpkin."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>¡LO TENGO!</bold>"), pumpking.lib.color.ColorTranslator.translate("<red>Por fin... mi pedernal y acero."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>¡LO TENGO!</bold>"), ColorTranslator.translate("<red>Por fin... mi pedernal y acero."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {
@@ -57,7 +59,7 @@ class SlasherProfile : CinematicProfile {
 
     override fun playEffects(plugin: Mistaken, loc: Location, dummy: ArmorStand, isIntro: Boolean, displayManager: DisplayManager) {
         val world = loc.world ?: return
-        world.spawnParticle(org.bukkit.Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 3)
+        world.spawnParticle(Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 3)
         
         if (!isIntro) {
             world.playSound(loc, Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.5f)

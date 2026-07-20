@@ -17,17 +17,18 @@ import org.bukkit.util.EulerAngle
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import pumpking.lib.color.ColorTranslator
 
 class CoolkidProfile : CinematicProfile {
     override val id: String = "coolkid"
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<green><bold>CONNECTION ESTABLISHED</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray>Inyectando paquetes malignos..."))
+        return Pair(ColorTranslator.translate("<green><bold>CONNECTION ESTABLISHED</bold>"), ColorTranslator.translate("<gray>Inyectando paquetes malignos..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<green><bold>CONNECTION TERMINATED</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray>El servidor ha sido desconectado."))
+        return Pair(ColorTranslator.translate("<green><bold>CONNECTION TERMINATED</bold>"), ColorTranslator.translate("<gray>El servidor ha sido desconectado."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

@@ -3,6 +3,7 @@ package liric.mistaken.level.api
 import liric.mistaken.api.level.ExperienceProvider
 import liric.mistaken.level.LevelAddonPlugin
 import java.util.UUID
+import liric.mistaken.api.level.event.PlayerExperienceGainEvent
 
 class ExperienceProviderImpl(private val plugin: LevelAddonPlugin) : ExperienceProvider {
 
@@ -11,7 +12,7 @@ class ExperienceProviderImpl(private val plugin: LevelAddonPlugin) : ExperienceP
     }
 
     override fun addExperience(uuid: UUID, amount: Long) {
-        plugin.manager.addExperience(uuid, amount, liric.mistaken.api.level.event.PlayerExperienceGainEvent.GainReason.PLUGIN_API)
+        plugin.manager.addExperience(uuid, amount, PlayerExperienceGainEvent.GainReason.PLUGIN_API)
     }
 
     override fun setExperience(uuid: UUID, amount: Long) {

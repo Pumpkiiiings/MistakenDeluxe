@@ -9,6 +9,8 @@ import io.github.retrooper.packetevents.util.SpigotConversionUtil
 import org.bukkit.Location
 import org.bukkit.entity.Player
 import java.util.UUID
+import java.util.Optional
+import liric.mistaken.packet.PacketFactory
 
 class FakeEntityAPI {
 
@@ -21,20 +23,20 @@ class FakeEntityAPI {
      * @return El ID de Entidad generado.
      */
     fun spawnEntity(player: Player, location: Location, type: EntityType): Int {
-        val entityId = liric.mistaken.packet.PacketFactory.generateEntityId()
+        val entityId = PacketFactory.generateEntityId()
         val uuid = UUID.randomUUID()
         val pos = SpigotConversionUtil.fromBukkitLocation(location)
 
         val spawnPacket = WrapperPlayServerSpawnEntity(
             entityId,
-            java.util.Optional.of(uuid),
+            Optional.of(uuid),
             type,
             pos.position,
             pos.pitch,
             pos.yaw,
             pos.yaw,
             0,
-            java.util.Optional.empty()
+            Optional.empty()
         )
 
         PacketEvents.getAPI().playerManager.sendPacket(player, spawnPacket)

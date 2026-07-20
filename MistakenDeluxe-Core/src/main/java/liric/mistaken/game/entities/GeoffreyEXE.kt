@@ -18,6 +18,12 @@ import org.joml.Quaternionf
 import org.joml.Vector3f
 import java.util.UUID
 import java.util.concurrent.ThreadLocalRandom
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import org.bukkit.Particle
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  *[LIRIC-MISTAKEN 2.0] - MODO TROLL SUPREMO
@@ -27,7 +33,7 @@ import java.util.concurrent.ThreadLocalRandom
  */
 class GeoffreyEXE(private val plugin: Mistaken) {
 
-    private val parts = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
+    private val parts = mutableListOf<VirtualBlockDisplay>()
     private var isRunning = true
     private var currentTarget: Player? = null
     private var lastVictimUUID: UUID? = null
@@ -84,17 +90,17 @@ class GeoffreyEXE(private val plugin: Mistaken) {
                 ))
 
                 setGlowColor(NamedTextColor.WHITE)
-                Bukkit.broadcast(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.spawn"))
+                Bukkit.broadcast(PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.spawn"))
 
                 iniciarIANativa()
             } catch (e: Exception) {
-                plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("[ERROR] [Entity] Failed to invoke dark entity: ${e.message}"))
+                plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [Entity] Failed to invoke dark entity: ${e.message}"))
             }
         }
     }
 
-    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f, rotZ: Float = 0f, rotX: Float = 0f): liric.mistaken.packet.fake.VirtualBlockDisplay {
-        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
+    private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f, rotZ: Float = 0f, rotX: Float = 0f): VirtualBlockDisplay {
+        return PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             val leftRotation = Quaternionf().rotateX(rotX).rotateZ(rotZ)
             bd.transformation = Transformation(translation, leftRotation, scale, Quaternionf())
@@ -194,8 +200,8 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         val initialTarget = getClosestTarget() ?: return
         initialTarget.playSound(initialTarget.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.5f)
         initialTarget.showTitle(Title.title(
-            pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>!!! VIENE !!!"),
-            pumpking.lib.color.ColorTranslator.translate("<red>¡¡¡¡corre!!!!")
+            ColorTranslator.translate("<dark_red><bold>!!! VIENE !!!"),
+            ColorTranslator.translate("<red>¡¡¡¡corre!!!!")
         ))
 
         plugin.server.globalRegionScheduler.runDelayed(plugin, {
@@ -219,7 +225,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
 
                 aplicarAuraMiedo(nextLoc, 40)
                 target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1.5f, 0.3f)
-                nextLoc.world.spawnParticle(org.bukkit.Particle.SOUL_FIRE_FLAME, nextLoc, 10, 0.5, 0.5, 0.5, 0.1)
+                nextLoc.world.spawnParticle(Particle.SOUL_FIRE_FLAME, nextLoc, 10, 0.5, 0.5, 0.5, 0.1)
 
                 // 🔥 FIX: También daña a cualquiera en Survival (incluyendo asesinos)
                 val victims = nextLoc.world.getNearbyPlayers(nextLoc, 2.0).filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
@@ -296,7 +302,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
             parts[4].block = Material.RED_CONCRETE.createBlockData()
         }
 
-        Bukkit.broadcast(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.rage"))
+        Bukkit.broadcast(PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.rage"))
 
         var hasHit = false
         var ticks = 0
@@ -340,7 +346,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
 
     private fun ejecutarMuerte(victim: Player, enrage: Boolean = false) {
         lastVictimUUID = victim.uniqueId
-        victim.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, victim.location, 2)
+        victim.world.spawnParticle(Particle.EXPLOSION_EMITTER, victim.location, 2)
         victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2f, 0.5f)
 
         // Cuánto daño hará el ataque (14.0 = 7 corazones).
@@ -353,7 +359,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
             // AQUÍ SÍ MUERE
             victim.health = 0.0
             val prefix = if (enrage) "<dark_red><b>[FURIA]</b>" else "<red><b>[!]</b>"
-            Bukkit.broadcast(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.death", net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("player", victim.name)))
+            Bukkit.broadcast(PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.death", Placeholder.parsed("player", victim.name)))
         } else {
             // SOBREVIVE AL GOLPE, PERO QUEDA GRAVEMENTE HERIDO Y EMPUJADO
             victim.health = nuevaVida
@@ -397,7 +403,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
     private fun explodeAndRemove() {
         if (parts.isNotEmpty() && parts[0].isValid) {
             val loc = parts[0].location
-            loc.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, loc, 5)
+            loc.world.spawnParticle(Particle.EXPLOSION_EMITTER, loc, 5)
             loc.world.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1.5f, 0.5f)
         }
         remove()

@@ -14,17 +14,18 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.util.EulerAngle
 import kotlin.math.cos
 import kotlin.math.sin
+import pumpking.lib.color.ColorTranslator
 
 class RomeoProfile : CinematicProfile {
     override val id: String = "romeo" // Or romeodebuff
     override val isFloating: Boolean = true
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red>EL ADMINISTRADOR"), pumpking.lib.color.ColorTranslator.translate("<red>Este mundo me pertenece."))
+        return Pair(ColorTranslator.translate("<dark_red>EL ADMINISTRADOR"), ColorTranslator.translate("<red>Este mundo me pertenece."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

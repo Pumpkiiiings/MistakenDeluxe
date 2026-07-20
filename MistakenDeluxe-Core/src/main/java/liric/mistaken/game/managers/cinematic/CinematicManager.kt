@@ -11,6 +11,7 @@ import org.bukkit.entity.Player
 import java.time.Duration
 import java.util.UUID
 import java.util.function.Consumer
+import pumpking.lib.color.ColorTranslator
 
 class CinematicManager(private val plugin: Mistaken) {
 
@@ -106,7 +107,7 @@ class CinematicManager(private val plugin: Mistaken) {
             if (dialogos.isNotEmpty()) {
                 val index = (ticks / 40) % dialogos.size
                 if (ticks < dialogos.size * 40) {
-                    val msg = pumpking.lib.color.ColorTranslator.translate(dialogos[index])
+                    val msg = ColorTranslator.translate(dialogos[index])
                     viewers.forEach { it.sendActionBar(msg) }
                 }
             }
@@ -182,7 +183,7 @@ class CinematicManager(private val plugin: Mistaken) {
             if (dialogos.isNotEmpty()) {
                 val index = (ticks / 40) % dialogos.size
                 if (ticks < dialogos.size * 40) {
-                    val msg = pumpking.lib.color.ColorTranslator.translate(dialogos[index])
+                    val msg = ColorTranslator.translate(dialogos[index])
                     viewers.forEach { it.sendActionBar(msg) }
                 }
             }

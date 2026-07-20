@@ -8,6 +8,7 @@ import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.utils.proxy.BungeeUtils
 import org.bukkit.entity.Player
+import pumpking.lib.color.ColorTranslator
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -30,13 +31,13 @@ object JoinCommand {
                 if (serverMode == "NETWORK_LOBBY") {
                     // 🔥 MODO VELOCITY: Lo mandamos al servidor de arenas
                     val arenaServer = plugin.config.getString("proxy-arena-server", "arenas") ?: "arenas"
-                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Conectando al servidor de juegos..."))
+                    player.sendMessage(ColorTranslator.translate("<green>Conectando al servidor de juegos..."))
                     BungeeUtils.sendToServer(plugin, player, arenaServer)
                 } else {
                     // 🔥 MODO MULTIARENA LOCAL: Lo metemos a una sesión de cristal (Pre-Lobby)
                     val currentSession = plugin.sessionManager.getSession(player)
                     if (currentSession != null) {
-                        player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Ya estás dentro de una partida."))
+                        player.sendMessage(ColorTranslator.translate("<red>Ya estás dentro de una partida."))
                         return@executes 0
                     }
 
@@ -61,7 +62,7 @@ object JoinCommand {
                         }
                     }
 
-                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>¡Te has unido a la partida! <gray>[${targetSession.id}]"))
+                    player.sendMessage(ColorTranslator.translate("<green>¡Te has unido a la partida! <gray>[${targetSession.id}]"))
 
                     // Revisar si ya son suficientes para arrancar el contador
                     val minPlayers = plugin.config.getInt("settings.min-players", 2)

@@ -28,6 +28,10 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
+import org.bukkit.Location
+import org.bukkit.event.player.PlayerRespawnEvent
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -39,7 +43,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     private val mm = plugin.mm
     private val plain = PlainTextComponentSerializer.plainText()
     private val stunSoundsQueue = ConcurrentHashMap<UUID, MutableList<Int>>()
-    private val infectionDeathLocs = ConcurrentHashMap<UUID, org.bukkit.Location>()
+    private val infectionDeathLocs = ConcurrentHashMap<UUID, Location>()
 
     /**
      * 🧊 SISTEMA DE RESCATE (Freeze Tag)
@@ -57,7 +61,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         if (plugin.combatManager.isFrozen(victim)) {
             if (!session.isKiller(player.uniqueId)) {
                 if (plugin.combatManager.getHealth(player) <= 1) {
-                    player.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<red>�Est�s muy herido para rescatar a nadie!"))
+                    player.sendActionBar(ColorTranslator.translate("<red>�Est�s muy herido para rescatar a nadie!"))
                     return
                 }
 
@@ -90,7 +94,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
         if (!isDamagerKiller && isVictimKiller) {
             val killerHealth = plugin.combatManager.getHealth(victim)
-            damager.sendActionBar(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(damager, "game.killer-hit-actionbar",
+            damager.sendActionBar(PumpkingServiceManager.messages.getComponent(damager, "game.killer-hit-actionbar",
                 Placeholder.parsed("health", killerHealth.toString())))
 
             if (ThreadLocalRandom.current().nextInt(100) < 15) {
@@ -140,7 +144,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
     // ?? FIX INFECCI�N: HIGHEST para que nuestro respawnLocation no sea sobreescrito por otros plugins/sistemas
     @EventHandler(priority = EventPriority.HIGHEST)
-    fun onRespawn(event: org.bukkit.event.player.PlayerRespawnEvent) {
+    fun onRespawn(event: PlayerRespawnEvent) {
         val player = event.player
         val session = plugin.sessionManager.getSession(player) ?: return
 
@@ -160,8 +164,8 @@ class GameListener(private val plugin: Mistaken) : Listener {
         killer.playSound(killer.location, Sound.ENTITY_ZOMBIE_VILLAGER_CONVERTED, 1f, 0.5f)
         killer.world.spawnParticle(Particle.ENCHANTED_HIT, killer.location.add(0.0, 2.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
 
-        killer.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(killer, "game.killer-stunned-victim"))
-        damager.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(damager, "game.killer-stunned-damager"))
+        killer.sendMessage(PumpkingServiceManager.messages.getComponent(killer, "game.killer-stunned-victim"))
+        damager.sendMessage(PumpkingServiceManager.messages.getComponent(damager, "game.killer-stunned-damager"))
 
         val killerClass = plugin.playerDataManager.getSelectedKiller(killer.uniqueId)
         if (killerClass == "slasher") {

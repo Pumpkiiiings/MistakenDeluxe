@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig
 import liric.mistaken.Mistaken
 import java.io.File
 import java.sql.PreparedStatement
+import org.h2.Driver
 
 class H2DatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(plugin) {
 
@@ -17,7 +18,7 @@ class H2DatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(plugin) {
 
         // MODE=PostgreSQL to allow ON CONFLICT syntax
         hikariConfig.jdbcUrl = "jdbc:h2:;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH"
-        hikariConfig.driverClassName = "org.h2.Driver"
+        hikariConfig.driverClassName = "Driver"
 
         hikariConfig.maximumPoolSize = 10
         hikariConfig.connectionTestQuery = "SELECT 1"

@@ -31,6 +31,12 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import org.bukkit.Bukkit
+import org.bukkit.Particle
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -39,11 +45,11 @@ import kotlin.math.sin
  */
 class Romeo : CoreKiller(
     "romeo",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.romeo.nombre", "killers_info")
+    PumpkingServiceManager.messages.getStrictString(null, "asesinos.romeo.nombre", "killers_info")
 ), Listener { // 🔥 Agregado Listener para los Finishers
 
     private val pathBase = "asesinos.romeo"
-    private val orbitadores = ConcurrentHashMap<UUID, liric.mistaken.packet.fake.VirtualBlockDisplay>()
+    private val orbitadores = ConcurrentHashMap<UUID, VirtualBlockDisplay>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
 
@@ -137,7 +143,7 @@ class Romeo : CoreKiller(
             1 -> {
                 // EFECTO 2: JUICIO DEL ADMINISTRADOR (BLOQUE APLASTANTE)
                 val dropLoc = loc.clone().add(0.0, 10.0, 0.0)
-                val block = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), dropLoc) {
+                val block = PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), dropLoc) {
                     it.block = Material.COMMAND_BLOCK.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-1.5f, -1.5f, -1.5f), Quaternionf(), JomlVector3f(3f, 3f, 3f), Quaternionf())
                     it.teleportDuration = 10 // Cae súper rápido
@@ -270,7 +276,7 @@ class Romeo : CoreKiller(
     }
 
     private fun habilidadNetherStar(player: Player) {
-        val star = liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), player.eyeLocation) {
+        val star = PacketFactory.displays.buildItemDisplay(Bukkit.getOnlinePlayers().toList(), player.eyeLocation) {
             it.setItemStack(ItemStack(Material.NETHER_STAR))
             it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.7f, 0.7f, 0.7f), Quaternionf())
             it.interpolationDuration = 1; it.teleportDuration = 1
@@ -289,7 +295,7 @@ class Romeo : CoreKiller(
             val hit = player.world.getNearbyPlayers(star.location, 1.5).firstOrNull { isValidTarget(player, it) }
 
             if (hit != null || star.location.block.type.isSolid) {
-                star.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, star.location, 1)
+                star.world.spawnParticle(Particle.EXPLOSION_EMITTER, star.location, 1)
                 hit?.let { plugin.combatManager.takeDamage(it) }
                 star.remove()
                 task.cancel()
@@ -304,7 +310,7 @@ class Romeo : CoreKiller(
         inv.armorContents = arrayOfNulls(4)
 
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val id = if (isArmor) configMecanica.getString("armor.$key")
@@ -322,7 +328,7 @@ class Romeo : CoreKiller(
             else "asesinos.romeo.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -353,7 +359,7 @@ class Romeo : CoreKiller(
         if (orbitadores[uuid]?.world != playerWorld) limpiar(uuid)
 
         val display = orbitadores.getOrPut(uuid) {
-            liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), player.location) {
+            PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), player.location) {
                 it.block = Material.COMMAND_BLOCK.createBlockData()
                 it.transformation = Transformation(
                     JomlVector3f(-0.2f, -0.2f, -0.2f),

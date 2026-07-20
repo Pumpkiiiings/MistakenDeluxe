@@ -19,7 +19,7 @@ class LevelCommand(private val plugin: LevelAddonPlugin) : BasicCommand {
         }
 
         if (args.isEmpty()) {
-            val gui = liric.mistaken.level.menu.ProgressionMenu(plugin)
+            val gui = ProgressionMenu(plugin)
             gui.open(sender)
             return
         }

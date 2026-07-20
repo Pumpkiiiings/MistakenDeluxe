@@ -3,16 +3,19 @@ package pumpking.lib.cooldown
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
+import pumpking.lib.task.PumpkingTask
 
 object CooldownManager {
 
     // Map<PlayerUUID, Map<CooldownKey, Cooldown>>
     internal val cooldowns = ConcurrentHashMap<UUID, ConcurrentHashMap<String, Cooldown>>()
-    private var scheduledTask: java.util.concurrent.ScheduledFuture<*>? = null
+    private var scheduledTask: ScheduledFuture<*>? = null
 
     fun init(plugin: JavaPlugin) {
         val cleanerTask = CooldownCleanerTask()
-        scheduledTask = pumpking.lib.task.PumpkingTask.cacheExecutor.scheduleAtFixedRate(cleanerTask, 2, 2, java.util.concurrent.TimeUnit.SECONDS)
+        scheduledTask = PumpkingTask.cacheExecutor.scheduleAtFixedRate(cleanerTask, 2, 2, TimeUnit.SECONDS)
     }
 
     fun shutdown() {

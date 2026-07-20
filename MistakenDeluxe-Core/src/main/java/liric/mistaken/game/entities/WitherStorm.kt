@@ -20,6 +20,11 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import org.bukkit.Bukkit
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0] - BOSS ENTITY
@@ -28,7 +33,7 @@ import kotlin.math.sin
  */
 class WitherStorm(private val plugin: Mistaken) {
 
-    private val parts = mutableListOf<liric.mistaken.packet.fake.VirtualBlockDisplay>()
+    private val parts = mutableListOf<VirtualBlockDisplay>()
     private var isRunning = true
     private var currentTarget: Player? = null
 
@@ -85,7 +90,7 @@ class WitherStorm(private val plugin: Mistaken) {
                 parts.forEach { scoreboard.getTeam(teamPurple)?.addEntry(it.uniqueId.toString()) }
 
                 // 🔥 Broadcast solo para la sesión
-                val msg = pumpking.lib.color.ColorTranslator.translate("<gradient:#aa00aa:#000000><bold>WITHER STORM</bold></gradient> <red>ha sido invocado.")
+                val msg = ColorTranslator.translate("<gradient:#aa00aa:#000000><bold>WITHER STORM</bold></gradient> <red>ha sido invocado.")
                 assignedSession?.getPlayers()?.forEach { it.sendMessage(msg) }
 
                 startLoc.world.playSound(startLoc, Sound.ENTITY_WITHER_SPAWN, 5f, 0.5f)
@@ -98,8 +103,8 @@ class WitherStorm(private val plugin: Mistaken) {
         }
     }
 
-    private fun createPart(base: Location, mat: Material, scale: Vector3f, offset: org.bukkit.util.Vector): liric.mistaken.packet.fake.VirtualBlockDisplay {
-        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), base) { bd ->
+    private fun createPart(base: Location, mat: Material, scale: Vector3f, offset: Vector): VirtualBlockDisplay {
+        return PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), base) { bd ->
             bd.block = mat.createBlockData()
             val translation = Vector3f(offset.x.toFloat() - (scale.x / 2), offset.y.toFloat() - (scale.y / 2), offset.z.toFloat() - (scale.z / 2))
             bd.transformation = Transformation(translation, Quaternionf(), scale, Quaternionf())
@@ -206,7 +211,7 @@ class WitherStorm(private val plugin: Mistaken) {
             if (p.location.distanceSquared(beamStart) < 12.25) { // 3.5 bloques reales
                 plugin.combatManager.takeDamage(p)
                 p.playSound(p.location, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 0.5f)
-                p.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "anomalies.witherstorm.tractor-beam"))
+                p.sendMessage(PumpkingServiceManager.messages.getComponent(p, "anomalies.witherstorm.tractor-beam"))
             }
         }
     }
@@ -242,7 +247,7 @@ class WitherStorm(private val plugin: Mistaken) {
                     val push = p.location.toVector().subtract(pivot.toVector()).normalize().multiply(2.5).setY(0.6)
                     p.velocity = push
                     p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
-                    p.showTitle(Title.title(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "anomalies.witherstorm.title-roar"), pumpking.lib.service.PumpkingServiceManager.messages.getComponent(p, "anomalies.witherstorm.subtitle-roar")))
+                    p.showTitle(Title.title(PumpkingServiceManager.messages.getComponent(p, "anomalies.witherstorm.title-roar"), PumpkingServiceManager.messages.getComponent(p, "anomalies.witherstorm.subtitle-roar")))
                 }
             }
         }
@@ -278,7 +283,7 @@ class WitherStorm(private val plugin: Mistaken) {
         }
         parts.clear()
 
-        val deathMsg = pumpking.lib.color.ColorTranslator.translate("<green>¡La <dark_purple>Wither Storm<green> ha sido derrotada!")
+        val deathMsg = ColorTranslator.translate("<green>¡La <dark_purple>Wither Storm<green> ha sido derrotada!")
         assignedSession?.getPlayers()?.forEach { it.sendMessage(deathMsg) }
     }
 

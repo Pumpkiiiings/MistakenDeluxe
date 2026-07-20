@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
+import net.kyori.adventure.bossbar.BossBar
 
 /**
  * Interface for MessageService to be accessible from the API module.
@@ -23,7 +24,7 @@ interface IMessageService {
     fun send(player: Player, path: String, vararg extraTags: TagResolver)
     fun actionBar(player: Player, path: String, vararg extraTags: TagResolver)
     fun title(player: Player, titlePath: String, subtitlePath: String? = null, fadeIn: Int = 10, stay: Int = 70, fadeOut: Int = 20, vararg extraTags: TagResolver)
-    fun bossBar(player: Player, path: String, color: net.kyori.adventure.bossbar.BossBar.Color = net.kyori.adventure.bossbar.BossBar.Color.WHITE, overlay: net.kyori.adventure.bossbar.BossBar.Overlay = net.kyori.adventure.bossbar.BossBar.Overlay.PROGRESS, vararg extraTags: TagResolver): net.kyori.adventure.bossbar.BossBar
+    fun bossBar(player: Player, path: String, color: BossBar.Color = BossBar.Color.WHITE, overlay: BossBar.Overlay = BossBar.Overlay.PROGRESS, vararg extraTags: TagResolver): BossBar
 
     fun reload()
     fun loadAllLanguages()

@@ -14,17 +14,18 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.util.EulerAngle
 import kotlin.math.cos
 import kotlin.math.sin
+import pumpking.lib.color.ColorTranslator
 
 class PizzanoProfile : CinematicProfile {
     override val id: String = "pizzano"
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<red>LA CAZA COMIENZA"), pumpking.lib.color.ColorTranslator.translate("<gray>El Killer es: \$realName"))
+        return Pair(ColorTranslator.translate("<red>LA CAZA COMIENZA"), ColorTranslator.translate("<gray>El Killer es: \$realName"))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

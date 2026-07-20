@@ -7,10 +7,12 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * SurvivorManager: GestiÛn de clases humanas ultra-optimizada.
+ * SurvivorManager: Gesti√≥n de clases humanas ultra-optimizada.
  * OPTIMIZADO: Paper Schedulers Nativos (Sin Corrutinas).
  */
 class SurvivorManager(private val plugin: Mistaken) {
@@ -20,12 +22,12 @@ class SurvivorManager(private val plugin: Mistaken) {
     // Cache de supervivientes activos (Thread-Safe)
     private val activeSurvivors = ConcurrentHashMap<UUID, Survivor>()
 
-    // Cat·logo de clases registradas
+    // Cat√°logo de clases registradas
     private val availableClasses = ConcurrentHashMap<String, Survivor>()
 
     init {
         // Registro de Clases (Singletons)
-        // AquÌ agregas las dem·s clases cuando las tengas listas (Jesse, Petra, etc.)
+        // Aqu√≠ agregas las dem√°s clases cuando las tengas listas (Jesse, Petra, etc.)
         listOf(
             Civilian(),
             DeliveryMan(),
@@ -49,36 +51,36 @@ class SurvivorManager(private val plugin: Mistaken) {
     /**
      * ?? REGISTRO OPTIMIZADO (Paper 1.21.4+):
      * Usamos 'player.scheduler'. Si el jugador se desconecta antes de los 5 ticks,
-     * la tarea se cancela sola autom·ticamente.
+     * la tarea se cancela sola autom√°ticamente.
      */
     fun registrarSurvivor(player: Player, clase: Survivor) {
         val uuid = player.uniqueId
 
-        // 1. AsignaciÛn inmediata en RAM
+        // 1. Asignaci√≥n inmediata en RAM
         activeSurvivors[uuid] = clase
 
         // 2. Tarea diferida anclada a la entidad (Safe)
-        // Se ejecuta 5 ticks (250ms) despuÈs para asegurar que el inventario estÈ listo
+        // Se ejecuta 5 ticks (250ms) despu√©s para asegurar que el inventario est√© listo
         player.scheduler.runDelayed(plugin, { task ->
-            // Verificamos si sigue siendo la misma clase (por si spameÛ clicks)
+            // Verificamos si sigue siendo la misma clase (por si spame√≥ clicks)
             if (activeSurvivors[uuid] == clase) {
                 clase.equip(player)
                 player.updateInventory()
 
-                plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate(
+                plugin.componentLogger.info(ColorTranslator.translate(
                     "<gray>[Survivor]</gray> <white>${player.name}</white> <green>equipado como ${clase.nombre}</green>"
                 ))
 
                 // Feedback al jugador
-                player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "game.class-selected",
-                    Placeholder.component("class", pumpking.lib.color.ColorTranslator.translate(clase.nombre))))
+                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "game.class-selected",
+                    Placeholder.component("class", ColorTranslator.translate(clase.nombre))))
             }
         }, null, 5L)
     }
 
     /**
      * Remueve al superviviente.
-     * Detecta si el jugador est· online para usar su Scheduler, o limpia solo la RAM si est· offline.
+     * Detecta si el jugador est√° online para usar su Scheduler, o limpia solo la RAM si est√° offline.
      */
     fun removerSurvivor(player: Player) {
         removeLogic(player.uniqueId, player)
@@ -95,10 +97,10 @@ class SurvivorManager(private val plugin: Mistaken) {
         if (player != null && player.isOnline) {
             // ?? FOLIA FIX: Modificar inventario/efectos DEBE hacerse en el hilo de la entidad
             player.scheduler.run(plugin, { _ ->
-                // 1. Limpieza lÛgica de la clase
+                // 1. Limpieza l√≥gica de la clase
                 clase.cleanup(player)
 
-                // 2. Limpieza fÌsica
+                // 2. Limpieza f√≠sica
                 player.inventory.clear()
                 player.inventory.armorContents = arrayOfNulls(4)
 
@@ -111,7 +113,7 @@ class SurvivorManager(private val plugin: Mistaken) {
                 player.walkSpeed = 0.2f
             }, null)
         } else {
-            // Si est· offline, solo limpiamos la lÛgica interna de la clase (si aplica)
+            // Si est√° offline, solo limpiamos la l√≥gica interna de la clase (si aplica)
             clase.cleanup(null)
         }
     }
@@ -124,14 +126,14 @@ class SurvivorManager(private val plugin: Mistaken) {
         val iterador = activeSurvivors.keys.iterator()
         while (iterador.hasNext()) {
             val uuid = iterador.next()
-            // Llamamos a la lÛgica de remociÛn (Bukkit.getPlayer maneja si es null)
+            // Llamamos a la l√≥gica de remoci√≥n (Bukkit.getPlayer maneja si es null)
             removerSurvivor(uuid)
             iterador.remove()
         }
 
         activeSurvivors.clear()
 
-        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[INFO] [Manager] Survivor cleanup completed."))
+        plugin.componentLogger.info(ColorTranslator.translate("[INFO] [Manager] Survivor cleanup completed."))
     }
 
     // --- GETTERS ---

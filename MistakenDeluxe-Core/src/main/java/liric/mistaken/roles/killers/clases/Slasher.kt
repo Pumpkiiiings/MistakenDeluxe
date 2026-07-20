@@ -34,15 +34,20 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualDisplay
+import org.bukkit.plugin.java.JavaPlugin
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 class Slasher : CoreKiller(
     "slasher",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.slasher.nombre", "killers_info")
+    PumpkingServiceManager.messages.getStrictString(null, "asesinos.slasher.nombre", "killers_info")
 ), Listener {
 
     private val pathBase = "asesinos.slasher"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
-    private val temporaryEntities = ConcurrentHashMap.newKeySet<liric.mistaken.packet.fake.VirtualDisplay>()
+    private val temporaryEntities = ConcurrentHashMap.newKeySet<VirtualDisplay>()
 
     // 🔥 Sistema de sonidos sin repetición
     private val attackSoundsQueue = ConcurrentHashMap<UUID, MutableList<Int>>()
@@ -88,7 +93,7 @@ class Slasher : CoreKiller(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -106,7 +111,7 @@ class Slasher : CoreKiller(
             else "asesinos.${this.id}.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -164,7 +169,7 @@ class Slasher : CoreKiller(
         val macheteItem = itemKitCache["weapon"]?.clone() ?: ItemStack(Material.IRON_SWORD)
         val spawnLoc = player.eyeLocation.clone()
 
-        val machete = liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), spawnLoc) { id ->
+        val machete = PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), spawnLoc) { id ->
             id.setItemStack(macheteItem)
             id.transformation = Transformation(JomlVector3f(), Quaternionf().rotateX(Math.toRadians(90.0).toFloat()), JomlVector3f(0.7f, 0.7f, 0.7f), Quaternionf())
             id.interpolationDuration = 1; id.teleportDuration = 1

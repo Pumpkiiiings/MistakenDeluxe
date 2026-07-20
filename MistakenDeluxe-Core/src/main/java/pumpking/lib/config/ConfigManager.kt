@@ -6,6 +6,12 @@ import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import liric.mistaken.Mistaken
+import org.bukkit.configuration.file.FileConfiguration
+import liric.mistaken.config.sync.CharacterMigrator
+import pumpking.lib.config.sync.ConfigSynchronizer
+import pumpking.lib.service.PumpkingServiceManager
+import pumpking.lib.task.PumpkingTask
 
 /**
  * [PUMPKING LIB]
@@ -28,7 +34,7 @@ object ConfigManager : IConfigManager {
     fun get(fileName: String): ConfigProvider {
         return genericCache.getOrPut(fileName) {
             val file = File(plugin.dataFolder, fileName)
-            pumpking.lib.config.sync.ConfigSynchronizer.sync(plugin, fileName, file)
+            ConfigSynchronizer.sync(plugin, fileName, file)
             YamlConfigProvider(file).apply { load() }
         }
     }
@@ -36,7 +42,7 @@ object ConfigManager : IConfigManager {
     fun init(plugin: JavaPlugin) {
         this.plugin = plugin
 
-        pumpking.lib.config.sync.CharacterMigrator.migrate(plugin)
+        CharacterMigrator.migrate(plugin)
         loadAllConfigs()
         ConfigWatcher.init(plugin)
     }
@@ -63,7 +69,7 @@ object ConfigManager : IConfigManager {
         }
     }
 
-    override fun getKillerConfig(id: String): org.bukkit.configuration.file.FileConfiguration {
+    override fun getKillerConfig(id: String): FileConfiguration {
         val provider = killersCache.getOrPut(id.lowercase()) {
             val file = File(plugin.dataFolder, "characters/killers/$id.yml")
             YamlConfigProvider(file).apply { load() }
@@ -71,7 +77,7 @@ object ConfigManager : IConfigManager {
         return (provider as YamlConfigProvider).getRaw()
     }
 
-    override fun getSurvivorConfig(id: String): org.bukkit.configuration.file.FileConfiguration {
+    override fun getSurvivorConfig(id: String): FileConfiguration {
         val provider = survivorsCache.getOrPut(id.lowercase()) {
             val file = File(plugin.dataFolder, "characters/survivors/$id.yml")
             YamlConfigProvider(file).apply { load() }
@@ -79,10 +85,10 @@ object ConfigManager : IConfigManager {
         return (provider as YamlConfigProvider).getRaw()
     }
 
-    override fun getMenuConfig(fileName: String): org.bukkit.configuration.file.FileConfiguration {
+    override fun getMenuConfig(fileName: String): FileConfiguration {
         val provider = menusCache.getOrPut(fileName) {
             val menuFile = File(plugin.dataFolder, "menus/$fileName.yml")
-            pumpking.lib.config.sync.ConfigSynchronizer.sync(plugin, "menus/$fileName.yml", menuFile)
+            ConfigSynchronizer.sync(plugin, "menus/$fileName.yml", menuFile)
             YamlConfigProvider(menuFile).apply { load() }
         }
         return (provider as YamlConfigProvider).getRaw()
@@ -93,10 +99,10 @@ object ConfigManager : IConfigManager {
     }
 
     override fun getAssassinName(player: Player?, assassinId: String): String {
-        // FIX #6: Removed the useless `val mistaken = plugin as liric.mistaken.Mistaken` cast.
+        // FIX #6: Removed the useless `val mistaken = plugin as Mistaken` cast.
         // The variable was never used after the cast, and having a library class depend on
         // a concrete plugin implementation violates layer separation (SRP/DIP).
-        return pumpking.lib.service.PumpkingServiceManager.messages.getRawString(
+        return PumpkingServiceManager.messages.getRawString(
             player = player,
             fileName = "killers_info",
             path = "asesinos.$assassinId.nombre",
@@ -110,7 +116,7 @@ object ConfigManager : IConfigManager {
     }
 
     private fun saveConfigAsync(config: ConfigProvider, name: String) {
-        pumpking.lib.task.PumpkingTask.ioScope.launch {
+        PumpkingTask.ioScope.launch {
             try {
                 config.save()
             } catch (e: Exception) {

@@ -29,6 +29,8 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
@@ -161,7 +163,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
                     if (foundSomeone) {
                         val realDist = Math.sqrt(minDistanceSq)
-                        killer.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<yellow>Escuchas el latido de alguien.."))
+                        killer.sendActionBar(ColorTranslator.translate("<yellow>Escuchas el latido de alguien.."))
 
 
                         val (vol, pitch) = when {
@@ -245,7 +247,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             if (now - lastHit < KILLER_COOLDOWN) {
                 val remaining = (KILLER_COOLDOWN - (now - lastHit)) / 1000.0
-                attacker.sendActionBar(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(attacker, "combat.cooldown", Placeholder.parsed("time", String.Companion.format(
+                attacker.sendActionBar(PumpkingServiceManager.messages.getComponent(attacker, "combat.cooldown", Placeholder.parsed("time", String.Companion.format(
                     Locale.US, "%.1f", remaining))))
                 event.isCancelled = true
                 return
@@ -270,7 +272,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             if (now - lastHit < SURVIVOR_COOLDOWN) {
                 val remaining = (SURVIVOR_COOLDOWN - (now - lastHit)) / 1000.0
-                attacker.sendActionBar(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(attacker, "combat.cooldown", Placeholder.parsed("time", String.Companion.format(
+                attacker.sendActionBar(PumpkingServiceManager.messages.getComponent(attacker, "combat.cooldown", Placeholder.parsed("time", String.Companion.format(
                     Locale.US, "%.1f", remaining))))
                 event.isCancelled = true
                 return
@@ -302,8 +304,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             if (isSurvivor && nextHP <= 4.0 && nextHP > 0.0) {
                 if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {
-                    val msg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(victim, "combat.critical-wound", "<red><bold>�HERIDA CRÍTICA!</bold>")
-                    victim.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
+                    val msg = PumpkingServiceManager.messages.getRawString(victim, "combat.critical-wound", "<red><bold>�HERIDA CRÍTICA!</bold>")
+                    victim.sendMessage(ColorTranslator.translate(msg))
                     victim.addPotionEffect(
                         PotionEffect(
                             PotionEffectType.DARKNESS,
@@ -409,8 +411,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             val timeFormatted = String.Companion.format(Locale.US, "%d:%02d", timeLeft / 60, timeLeft % 60)
             victim.showTitle(
                 Title.title(
-                    pumpking.lib.service.PumpkingServiceManager.messages.getComponent(victim, "game.freeze-title"),
-                    pumpking.lib.service.PumpkingServiceManager.messages.getComponent(
+                    PumpkingServiceManager.messages.getComponent(victim, "game.freeze-title"),
+                    PumpkingServiceManager.messages.getComponent(
                         victim,
                         "game.freeze-subtitle",
                         Placeholder.parsed("time", timeFormatted)

@@ -6,6 +6,9 @@ import liric.mistaken.api.managers.IConfigManager
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.plugin.Plugin
 import java.util.logging.Logger
+import liric.mistaken.api.managers.IPlayerDataManager
+import org.bukkit.entity.Player
+import pumpking.lib.messages.IMessageService
 
 /**
  * [MistakenDeluxe]
@@ -16,11 +19,11 @@ interface MistakenAPI {
     val asesinoManager: IKillerManager
     val sessionManager: ISessionManager
     val configManager: IConfigManager
-    val playerDataManager: liric.mistaken.api.managers.IPlayerDataManager
-    val messages: pumpking.lib.messages.IMessageService
+    val playerDataManager: IPlayerDataManager
+    val messages: IMessageService
     val mm: MiniMessage
     val logger: Logger
 
-    fun isIgnored(player: org.bukkit.entity.Player): Boolean
+    fun isIgnored(player: Player): Boolean
 }
 

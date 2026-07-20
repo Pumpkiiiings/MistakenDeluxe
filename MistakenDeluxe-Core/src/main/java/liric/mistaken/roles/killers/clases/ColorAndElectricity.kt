@@ -29,15 +29,20 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import org.bukkit.Bukkit
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 class ColorAndElectricity : CoreKiller(
     "colorandelectricity",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.colorandelectricity.nombre", "killers_info")
+    PumpkingServiceManager.messages.getStrictString(null, "asesinos.colorandelectricity.nombre", "killers_info")
 ) {
 
     private val path = "asesinos.colorandelectricity"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
-    private val orbitadores = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualBlockDisplay>>()
+    private val orbitadores = ConcurrentHashMap<UUID, MutableList<VirtualBlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
 
     private val orbitMaterials = listOf(
@@ -86,7 +91,7 @@ class ColorAndElectricity : CoreKiller(
         inv.armorContents = arrayOfNulls(4)
 
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val id = if (isArmor) configMecanica.getString("armor.$key")
@@ -104,7 +109,7 @@ class ColorAndElectricity : CoreKiller(
             else "asesinos.colorandelectricity.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -169,7 +174,7 @@ class ColorAndElectricity : CoreKiller(
             if (isValidTarget(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
-                victim.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(victim, "roles.killer.abilities.color_and_electricity.dame_tus_colores"))
+                victim.sendMessage(PumpkingServiceManager.messages.getComponent(victim, "roles.killer.abilities.color_and_electricity.dame_tus_colores"))
             }
         }
     }
@@ -208,7 +213,7 @@ class ColorAndElectricity : CoreKiller(
             player.teleportAsync(t.location).thenAccept {
                 player.scheduler.run(plugin, Consumer { _ ->
                     player.world.spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, player.location, 30, 0.5, 1.0, 0.5, 0.5)
-                    t.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><b>[!] SOBRECARGA CROM�TICA</b></red>"))
+                    t.sendMessage(ColorTranslator.translate("<red><b>[!] SOBRECARGA CROM�TICA</b></red>"))
                     t.velocity = Vector(0.0, 1.2, 0.0)
                 }, null)
             }
@@ -248,8 +253,8 @@ class ColorAndElectricity : CoreKiller(
         angulos[uuid] = anguloBase + 0.15
     }
 
-    private fun crearBloqueOrbitante(loc: Location, mat: Material): liric.mistaken.packet.fake.VirtualBlockDisplay {
-        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) { bd ->
+    private fun crearBloqueOrbitante(loc: Location, mat: Material): VirtualBlockDisplay {
+        return PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(JomlVector3f(-0.125f, -0.125f, -0.125f), Quaternionf(), JomlVector3f(0.25f, 0.25f, 0.25f), Quaternionf())
             bd.teleportDuration = 3; bd.interpolationDuration = 3

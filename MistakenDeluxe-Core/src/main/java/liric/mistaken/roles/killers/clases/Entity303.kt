@@ -31,6 +31,12 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import org.bukkit.entity.Display
+import org.bukkit.plugin.java.JavaPlugin
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  *[LIRIC-MISTAKEN 2.0]
@@ -39,12 +45,12 @@ import kotlin.math.sin
  */
 class Entity303 : CoreKiller(
     "entity303",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.entity303.nombre", "killers_info")
+    PumpkingServiceManager.messages.getStrictString(null, "asesinos.entity303.nombre", "killers_info")
 ), Listener { // 🔥 Agregado Listener para Finishers
 
     private val path = "asesinos.entity303"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
-    private val orbitadores = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualBlockDisplay>>()
+    private val orbitadores = ConcurrentHashMap<UUID, MutableList<VirtualBlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
 
     // Anti-spam para los efectos de muerte
@@ -209,7 +215,7 @@ class Entity303 : CoreKiller(
     }
 
     private fun habilidadInfeccionSistema(player: Player) {
-        val star = liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.eyeLocation) {
+        val star = PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.eyeLocation) {
             it.setItemStack(ItemStack(Material.NETHER_STAR))
             it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
         }
@@ -264,7 +270,7 @@ class Entity303 : CoreKiller(
             if (isValidTarget(player, online) && online.location.distanceSquared(player.location) < 1600) {
                 online.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
                 online.playSound(online.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.1f)
-                online.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><bold>SYSTEM ERROR: 303 FOUND"))
+                online.sendMessage(ColorTranslator.translate("<red><bold>SYSTEM ERROR: 303 FOUND"))
             }
         }
     }
@@ -277,7 +283,7 @@ class Entity303 : CoreKiller(
         player.getAttribute(Attribute.SCALE)?.baseValue = 1.1
 
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val id = if (isArmor) configMecanica.getString("$path.armor.$key")
@@ -304,7 +310,7 @@ class Entity303 : CoreKiller(
             else "asesinos.entity303.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -363,8 +369,8 @@ class Entity303 : CoreKiller(
         angulos[uuid] = anguloActual
     }
 
-    private fun crearBloqueOrbitante(player: Player, loc: Location, mat: Material): liric.mistaken.packet.fake.VirtualBlockDisplay {
-        return liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { bd ->
+    private fun crearBloqueOrbitante(player: Player, loc: Location, mat: Material): VirtualBlockDisplay {
+        return PacketFactory.displays.buildBlockDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(
                 JomlVector3f(-0.125f, -0.125f, -0.125f),
@@ -375,7 +381,7 @@ class Entity303 : CoreKiller(
             bd.teleportDuration = 3
             bd.interpolationDuration = 3
             if (mat == Material.MAGMA_BLOCK || mat == Material.REDSTONE_BLOCK) {
-                bd.brightness = org.bukkit.entity.Display.Brightness(15, 15)
+                bd.brightness = Display.Brightness(15, 15)
             }
         }
     }

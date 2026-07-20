@@ -9,13 +9,17 @@ import org.bukkit.entity.Player
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
+import liric.mistaken.api.managers.IKillerManager
+import org.bukkit.Material
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 /**
  *[LIRIC-MISTAKEN 2.0]
  * KillerManager: El mero jefe de los malos.
  * FIX: Memory Leaks parchados (Soporte EntityScheduler nativo sin Corrutinas).
  */
-class KillerManager(private val plugin: Mistaken) : liric.mistaken.api.managers.IKillerManager {
+class KillerManager(private val plugin: Mistaken) : IKillerManager {
 
     private val mm = plugin.mm
 
@@ -46,7 +50,7 @@ class KillerManager(private val plugin: Mistaken) : liric.mistaken.api.managers.
         // ?? FIX: Ejecutamos el cleanup de forma segura en el hilo del jugador (Entity Scheduler)
         player.scheduler.run(plugin, Consumer { _ ->
             clase.cleanup(player)
-            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("[INFO] [Manager] ${player.name} synchronized with ${clase.nombre}"))
+            plugin.componentLogger.info(ColorTranslator.translate("[INFO] [Manager] ${player.name} synchronized with ${clase.nombre}"))
         }, null)
     }
 
@@ -59,8 +63,8 @@ class KillerManager(private val plugin: Mistaken) : liric.mistaken.api.managers.
         activeKillers[uuid] = asesino
 
         // Feedback
-        player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "killer.transform",
-            Placeholder.component("name", pumpking.lib.color.ColorTranslator.translate(asesino.nombre))))
+        player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "killer.transform",
+            Placeholder.component("name", ColorTranslator.translate(asesino.nombre))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
         // 2. ?? FIX: EntityScheduler de Paper con runDelayed y Consumer expl�cito
@@ -84,7 +88,7 @@ class KillerManager(private val plugin: Mistaken) : liric.mistaken.api.managers.
                 for (i in 1..4) {
                     val targetSlot = config.getInt("items.skill${i}_slot", i)
                     val item = currentItems[i]
-                    if (item != null && item.type != org.bukkit.Material.AIR) {
+                    if (item != null && item.type != Material.AIR) {
                         player.inventory.setItem(targetSlot, item)
                     }
                 }
@@ -134,7 +138,7 @@ class KillerManager(private val plugin: Mistaken) : liric.mistaken.api.managers.
                 removeKiller(player)
             } else {
                 activeKillers[uuid]?.let {
-                    plugin.componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("[WARN] [Manager] Cleaning ghost data of disconnected assassin: $uuid"))
+                    plugin.componentLogger.warn(ColorTranslator.translate("[WARN] [Manager] Cleaning ghost data of disconnected assassin: $uuid"))
                 }
             }
             iterador.remove()

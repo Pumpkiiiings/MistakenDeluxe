@@ -6,8 +6,10 @@ import liric.mistaken.utils.proxy.BungeeUtils
 import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import liric.mistaken.api.managers.ISessionManager
+import org.bukkit.GameMode
 
-class SessionManager(private val plugin: Mistaken) : liric.mistaken.api.managers.ISessionManager {
+class SessionManager(private val plugin: Mistaken) : ISessionManager {
 
     val activeSessions = ConcurrentHashMap<String, GameSession>()
     val playerSessions = ConcurrentHashMap<UUID, String>()
@@ -44,7 +46,7 @@ class SessionManager(private val plugin: Mistaken) : liric.mistaken.api.managers
         // 🔥 FIX: Al salir de la sesión, aseguramos que el jugador se limpie completamente
         // del modo espectador y se vuelva a modo supervivencia (vital para Multiarena)
         plugin.spectatorManager.removeCustomSpectator(player)
-        player.gameMode = org.bukkit.GameMode.SURVIVAL
+        player.gameMode = GameMode.SURVIVAL
 
         val serverMode = plugin.serverMode
 

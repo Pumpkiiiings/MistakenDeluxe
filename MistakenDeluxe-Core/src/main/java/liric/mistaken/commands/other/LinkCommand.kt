@@ -7,6 +7,7 @@ import liric.mistaken.Mistaken
 import org.bukkit.entity.Player
 import java.sql.SQLException
 import java.util.concurrent.ThreadLocalRandom
+import pumpking.lib.color.ColorTranslator
 
 /**
  *[LIRIC-MISTAKEN 2.0]
@@ -44,7 +45,7 @@ object LinkCommand {
                                 if (rs.next()) {
                                     val discordId = rs.getString("discord_id")
                                     if (!discordId.isNullOrBlank()) {
-                                        player.sendMessage(pumpking.lib.color.ColorTranslator.translate("""
+                                        player.sendMessage(ColorTranslator.translate("""
                                             <newline><red><bold>❌ ¡ERROR DE VINCULACIÓN!</bold></red>
                                             <gray>Tu cuenta de Minecraft ya está enlazada a un Discord.
                                             <dark_gray><i>Si perdiste acceso a tu cuenta, contacta al Staff.</i><newline>
@@ -74,7 +75,7 @@ object LinkCommand {
                             }
 
                             // 4. Feedback chulo con MiniMessage
-                            player.sendMessage(pumpking.lib.color.ColorTranslator.translate("""
+                            player.sendMessage(ColorTranslator.translate("""
                                 <newline><gradient:#55ffff:#55ff55><bold>VINCULACIÓN</bold></gradient>
                                 <gray>Tu código secreto es: <yellow><bold>$code</bold>
                                 <gray>Escríbelo en Discord: <click:copy_to_clipboard:'+verificar $code'><hover:show_text:'<green>¡Click para copiar!'><aqua>+verificar $code</aqua></hover></click>
@@ -82,7 +83,7 @@ object LinkCommand {
                             """.trimIndent()))
                         }
                     } catch (e: SQLException) {
-                        player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><bold>[!]</bold> Error de conexión con Clever Cloud."))
+                        player.sendMessage(ColorTranslator.translate("<red><bold>[!]</bold> Error de conexión con Clever Cloud."))
                         plugin.componentLogger.error("[ERROR] [Command] LinkCommand SQL failure: ${e.message}")
                     }
                 }

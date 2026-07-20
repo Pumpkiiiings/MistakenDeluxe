@@ -8,6 +8,7 @@ import io.papermc.paper.command.brigadier.Commands
 import liric.mistaken.Mistaken
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
+import pumpking.lib.color.ColorTranslator
 
 object GameCommand {
 
@@ -32,7 +33,7 @@ object GameCommand {
 
                                 val session = plugin.sessionManager.activeSessions[id]
                                 if (session == null) {
-                                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No existe ninguna partida con el ID: $id"))
+                                    player.sendMessage(ColorTranslator.translate("<red>No existe ninguna partida con el ID: $id"))
                                     return@executes 0
                                 }
 
@@ -49,9 +50,9 @@ object GameCommand {
 
                                 if (spawn != null) {
                                     player.teleportAsync(spawn)
-                                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Teletransportado a la partida <yellow>$id</yellow> (<white>${session.currentMapName}</white>)"))
+                                    player.sendMessage(ColorTranslator.translate("<green>Teletransportado a la partida <yellow>$id</yellow> (<white>${session.currentMapName}</white>)"))
                                 } else {
-                                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<yellow>Te uniste a la sesión, pero el mapa aún no tiene spawns configurados."))
+                                    player.sendMessage(ColorTranslator.translate("<yellow>Te uniste a la sesión, pero el mapa aún no tiene spawns configurados."))
                                 }
 
                                 Command.SINGLE_SUCCESS

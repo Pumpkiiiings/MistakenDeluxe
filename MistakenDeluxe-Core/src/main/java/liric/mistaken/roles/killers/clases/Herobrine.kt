@@ -35,17 +35,27 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualBlockDisplay
+import liric.mistaken.packet.fake.VirtualDisplay
+import liric.mistaken.packet.fake.VirtualItemDisplay
+import org.bukkit.Bukkit
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 class Herobrine : CoreKiller(
     "herobrine",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.herobrine.nombre", "killers_info")
+    PumpkingServiceManager.messages.getStrictString(null, "asesinos.herobrine.nombre", "killers_info")
 ), Listener { // 🔥 Listener añadido para los Finishers
 
     private val pathBase = "asesinos.herobrine"
-    private var blockDisplay: liric.mistaken.packet.fake.VirtualBlockDisplay? = null
-    private var itemDisplay: liric.mistaken.packet.fake.VirtualItemDisplay? = null
-    private val blockOrbiters = ConcurrentHashMap<UUID, liric.mistaken.packet.fake.VirtualBlockDisplay>()
-    private val itemOrbiters = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualDisplay>>()
+    private var blockDisplay: VirtualBlockDisplay? = null
+    private var itemDisplay: VirtualItemDisplay? = null
+    private val blockOrbiters = ConcurrentHashMap<UUID, VirtualBlockDisplay>()
+    private val itemOrbiters = ConcurrentHashMap<UUID, MutableList<VirtualDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
 
@@ -142,7 +152,7 @@ class Herobrine : CoreKiller(
                 // EFECTO 2: ASCENSIÓN FALSA (RAYO BEACON + MURCIÉLAGOS)
                 world.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 2f, 1f)
 
-                val beacon = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) {
+                val beacon = PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) {
                     it.block = Material.BEACON.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-0.5f, 0f, -0.5f), Quaternionf(), JomlVector3f(1f, 10f, 1f), Quaternionf())
                     it.isGlowing = true
@@ -151,14 +161,14 @@ class Herobrine : CoreKiller(
                 val pm = PacketEvents.getAPI().playerManager
                 for(i in 1..5) {
                     val fakeId = ThreadLocalRandom.current().nextInt(500000, 600000)
-                    val spawnPacket = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity(
-                        fakeId, Optional.of(UUID.randomUUID()), com.github.retrooper.packetevents.protocol.entity.type.EntityTypes.BAT,
+                    val spawnPacket = WrapperPlayServerSpawnEntity(
+                        fakeId, Optional.of(UUID.randomUUID()), EntityTypes.BAT,
                         Vector3d(loc.x, loc.y + 2.0, loc.z), loc.pitch, loc.yaw, loc.yaw, 0, Optional.empty()
                     )
                     world.players.forEach { pm.sendPacket(it, spawnPacket) }
 
                     plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
-                        world.players.forEach { pm.sendPacket(it, com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities(fakeId)) }
+                        world.players.forEach { pm.sendPacket(it, WrapperPlayServerDestroyEntities(fakeId)) }
                     }, 25L)
                 }
 
@@ -171,7 +181,7 @@ class Herobrine : CoreKiller(
             2 -> {
                 // EFECTO 3: TEMPLO DEL VACÍO (MARCO DE PIEDRA Y ANTORCHAS)
                 world.playSound(loc, Sound.BLOCK_STONE_PLACE, 1f, 0.1f)
-                val altar = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), loc) {
+                val altar = PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) {
                     it.block = Material.MOSSY_COBBLESTONE.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-1.5f, -0.5f, -1.5f), Quaternionf(), JomlVector3f(3f, 1f, 3f), Quaternionf())
                 }
@@ -212,7 +222,7 @@ class Herobrine : CoreKiller(
 
             val eyeLoc = player.eyeLocation.add(dir.clone().multiply(0.8))
             if (eyeLoc.block.type.isSolid) {
-                player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><b>[!]</b> ¡Te estampaste contra el muro!"))
+                player.sendMessage(ColorTranslator.translate("<red><b>[!]</b> ¡Te estampaste contra el muro!"))
                 repeat(3) { plugin.combatManager.takeDamage(player) }
                 player.playSound(player.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
                 task.cancel()
@@ -224,7 +234,7 @@ class Herobrine : CoreKiller(
                     hitted.add(victim.uniqueId)
                     repeat(3) { plugin.combatManager.takeDamage(player) }
                     victim.playSound(victim.location, Sound.ENTITY_WITHER_BREAK_BLOCK, 1f, 0.8f)
-                    victim.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red><b>[!]</b> Herobrine te ha embestido con el poder del Vacío."))
+                    victim.sendMessage(ColorTranslator.translate("<red><b>[!]</b> Herobrine te ha embestido con el poder del Vacío."))
                 }
             }
             ticks++
@@ -305,7 +315,7 @@ class Herobrine : CoreKiller(
         if (itemKitCache.isEmpty()) preLoadKit()
 
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val id = if (isArmor) configMecanica.getString("armor.$key")
@@ -323,7 +333,7 @@ class Herobrine : CoreKiller(
             else "asesinos.herobrine.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
             }
 
             if (isArmor) {
@@ -353,7 +363,7 @@ class Herobrine : CoreKiller(
         if (blockOrbiters[uuid]?.world != player.world) limpiarVisuales(uuid)
 
         if (!blockOrbiters.containsKey(uuid)) {
-            val bMain = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), player.location) { bd ->
+            val bMain = PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), player.location) { bd ->
                 bd.block = Material.NETHERRACK.createBlockData()
                 bd.transformation = Transformation(JomlVector3f(-0.15f, -0.15f, -0.15f), Quaternionf(), JomlVector3f(0.3f, 0.3f, 0.3f), Quaternionf())
                 bd.teleportDuration = 3
@@ -361,14 +371,14 @@ class Herobrine : CoreKiller(
             }
             blockOrbiters[uuid] = bMain
 
-            val extras = mutableListOf<liric.mistaken.packet.fake.VirtualDisplay>().apply {
-                add(liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), player.location) { id ->
+            val extras = mutableListOf<VirtualDisplay>().apply {
+                add(PacketFactory.displays.buildItemDisplay(Bukkit.getOnlinePlayers().toList(), player.location) { id ->
                     id.setItemStack(ItemStack(Material.NETHER_STAR))
                     id.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
                     id.teleportDuration = 3
                     id.interpolationDuration = 3
                 })
-                add(liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(org.bukkit.Bukkit.getOnlinePlayers().toList(), player.location) { bd ->
+                add(PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), player.location) { bd ->
                     bd.block = Material.GOLD_BLOCK.createBlockData()
                     bd.transformation = Transformation(JomlVector3f(-0.15f), Quaternionf(), JomlVector3f(0.3f, 0.3f, 0.3f), Quaternionf())
                     bd.teleportDuration = 3

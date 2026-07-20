@@ -14,17 +14,18 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.EulerAngle
 import java.util.function.Consumer
+import pumpking.lib.color.ColorTranslator
 
 class NullProfile : CinematicProfile {
     override val id: String = "null" // Or nullasesino
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<red>LA CAZA COMIENZA"), pumpking.lib.color.ColorTranslator.translate("<gray>El Killer es: \$realName"))
+        return Pair(ColorTranslator.translate("<red>LA CAZA COMIENZA"), ColorTranslator.translate("<gray>El Killer es: \$realName"))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(pumpking.lib.color.ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), pumpking.lib.color.ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

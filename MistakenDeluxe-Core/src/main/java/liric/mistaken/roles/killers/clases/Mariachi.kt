@@ -25,10 +25,15 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
+import liric.mistaken.packet.PacketFactory
+import liric.mistaken.packet.fake.VirtualItemDisplay
+import org.bukkit.plugin.java.JavaPlugin
+import pumpking.lib.color.ColorTranslator
+import pumpking.lib.service.PumpkingServiceManager
 
 class Mariachi : CoreKiller(
     "mariachi",
-    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(null, "asesinos.mariachi.nombre", "killers_info")
+    PumpkingServiceManager.messages.getStrictString(null, "asesinos.mariachi.nombre", "killers_info")
 ) {
 
     private val pathBase = "asesinos.mariachi"
@@ -36,7 +41,7 @@ class Mariachi : CoreKiller(
     private val sonidoMúsicaId = defaultMusic!!
 
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
-    private val skullsOrbit = ConcurrentHashMap<UUID, MutableList<liric.mistaken.packet.fake.VirtualItemDisplay>>()
+    private val skullsOrbit = ConcurrentHashMap<UUID, MutableList<VirtualItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
 
     init {
@@ -80,13 +85,13 @@ class Mariachi : CoreKiller(
         inv.armorContents = arrayOfNulls(4)
 
         if (itemKitCache.isEmpty()) preLoadKit()
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val item = itemKitCache[key]?.clone() ?: return
             val namePath = if (key == "weapon") "asesinos.mariachi.skill_names.weapon" else "asesinos.mariachi.skill_names.$key"
 
-            langInfo.getString(namePath)?.let { item.editMeta { m -> m.displayName(pumpking.lib.color.ColorTranslator.translate(it)) } }
+            langInfo.getString(namePath)?.let { item.editMeta { m -> m.displayName(ColorTranslator.translate(it)) } }
 
             if (isArmor) {
                 when(key) {
@@ -112,7 +117,7 @@ class Mariachi : CoreKiller(
             if (isValidTarget(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
-                victim.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>¡El grito del Mariachi ha corrompido tus oídos!</red>"))
+                victim.sendMessage(ColorTranslator.translate("<red>¡El grito del Mariachi ha corrompido tus oídos!</red>"))
                 victim.playSound(victim.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.8f)
             }
         }
@@ -120,7 +125,7 @@ class Mariachi : CoreKiller(
 
     private fun habilidadJarabe(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 120, 3))
-        player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<gold>¡A zapatear! Velocidad aumentada.</gold>"))
+        player.sendMessage(ColorTranslator.translate("<gold>¡A zapatear! Velocidad aumentada.</gold>"))
     }
 
     private fun habilidadGuitarrazo(player: Player) {
@@ -137,7 +142,7 @@ class Mariachi : CoreKiller(
     private fun habilidadTequila(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 120, 4))
         player.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 160, 0))
-        player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>¡Salud! Eres inmune al dolor por 6 segundos.</green>"))
+        player.sendMessage(ColorTranslator.translate("<green>¡Salud! Eres inmune al dolor por 6 segundos.</green>"))
     }
 
     override fun showPhysicalTrail(player: Player) {
@@ -146,9 +151,9 @@ class Mariachi : CoreKiller(
         if (skullsOrbit[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
 
         val skulls = skullsOrbit.getOrPut(uuid) {
-            mutableListOf<liric.mistaken.packet.fake.VirtualItemDisplay>().apply {
+            mutableListOf<VirtualItemDisplay>().apply {
                 repeat(3) {
-                    add(liric.mistaken.packet.PacketFactory.displays.buildItemDisplay(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { id ->
+                    add(PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { id ->
                         id.setItemStack(ItemStack(Material.PLAYER_HEAD))
                         id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf(), JomlVector3f(0.6f, 0.6f, 0.6f), Quaternionf())
                         id.teleportDuration = 2; id.interpolationDuration = 2
