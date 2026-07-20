@@ -70,4 +70,13 @@ function processYamlFile(filePath, objectName) {
 console.log("Generating Kotlin config keys...");
 processYamlFile(CONFIG_FILE, 'Config');
 processYamlFile(MESSAGES_FILE, 'Messages');
+
+const KILLERS_INFO_FILE = path.join(CORE_DIR, 'resources', 'langs', 'es', 'killers_info.yml');
+const SURVIVORS_INFO_FILE = path.join(CORE_DIR, 'resources', 'langs', 'es', 'survivors_info.yml');
+const MUSIC_FILE = path.join(CORE_DIR, 'resources', 'music.yml');
+
+processYamlFile(KILLERS_INFO_FILE, 'KillersInfo');
+processYamlFile(SURVIVORS_INFO_FILE, 'SurvivorsInfo');
+processYamlFile(MUSIC_FILE, 'Music');
+
 console.log("Done!");
