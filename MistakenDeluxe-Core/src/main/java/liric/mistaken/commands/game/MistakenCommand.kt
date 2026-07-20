@@ -1,4 +1,4 @@
-﻿package liric.mistaken.commands.game
+package liric.mistaken.commands.game
 
 import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -257,7 +257,9 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     val target = Bukkit.getPlayer(args[1])
                     if (target != null) {
                         plugin.asesinoManager.removeKiller(target)
-                        sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Killer removido: ${target.name}"))
+                        val msg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "admin.removekiller-success", "<green>Killer removido: {player}", "messages")
+                            .replace("{player}", target.name)
+                        sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
                     }
                 }
             }
@@ -265,24 +267,27 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "forcekiller" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (args.size < 2) {
-                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Uso: /mistaken forcekiller <jugador>"))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "admin.forcekiller-usage", "<red>Uso: /mistaken forcekiller <jugador>", "messages")))
                     return
                 }
                 val target = Bukkit.getPlayer(args[1])
                 if (target == null) {
-                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Ese jugador no está conectado."))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "errors.player-not-found", "<red>Jugador desconectado.", "messages")))
                     return
                 }
                 if (gm == null) {
-                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Debes estar en una partida para forzar un asesino."))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "admin.forcekiller-not-in-game", "<red>Debes estar en una partida para forzar un asesino.", "messages")))
                     return
                 }
                 if (gm.currentState == GameState.INGAME || gm.currentState == GameState.ENDING || gm.currentState == GameState.STARTING) {
-                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>No puedes forzar el rol porque la partida ya inició."))
+                    sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "admin.forcekiller-already-started", "<red>No puedes forzar el rol porque la partida ya inició.", "messages")))
                     return
                 }
                 gm.forcedKillerUUID = target.uniqueId
-                sender.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>Has forzado a <white>${target.name}</white> a ser el asesino en la siguiente partida de <aqua>${gm.id}</aqua>."))
+                val successMsg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(player, "admin.forcekiller-success", "<green>Has forzado a <white>{player}</white> a ser el asesino en la siguiente partida de <aqua>{arena}</aqua>.", "messages")
+                    .replace("{player}", target.name)
+                    .replace("{arena}", gm.id)
+                sender.sendMessage(pumpking.lib.color.ColorTranslator.translate(successMsg))
             }
 
             else -> sender.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(player, "errors.unknown-command"))
