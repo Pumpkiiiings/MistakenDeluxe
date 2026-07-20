@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.gameplay
+Ôªøpackage liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.HealthAPI
@@ -65,7 +65,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                     var foundSomeone = false
                     var ghostName = ""
 
-                    // Obtenemos los jugadores de ESTA sesiÛn para no escanear a todo el servidor
+                    // Obtenemos los jugadores de ESTA sesiÔøΩn para no escanear a todo el servidor
                     for (target in session.getPlayers()) {
                         if (target == killer || target.world != killerLoc.world) continue
 
@@ -221,12 +221,13 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             return
         }
 
-        // ?? MULTIARENA: Obtenemos la sesiÛn donde ocurre la pelea
+        // ?? MULTIARENA: Obtenemos la sesiÔøΩn donde ocurre la pelea
         val session = plugin.sessionManager.getSession(victim) ?: return
         if (session.currentState != GameState.INGAME) return
 
         val isAttackerKiller = session.isKiller(attacker.uniqueId)
         val isVictimKiller = session.isKiller(victim.uniqueId)
+        if (isFrozen(attacker)) { event.isCancelled = true; return }
         val isAssassinPvpMode = session.currentMode == MistakenMode.DOUBLE_KILLER
         if (isAttackerKiller == isVictimKiller) {
             if (!isAttackerKiller && session.currentMode == MistakenMode.FREEZE_TAG && isFrozen(victim)) {
@@ -301,7 +302,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             if (isSurvivor && nextHP <= 4.0 && nextHP > 0.0) {
                 if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {
-                    val msg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(victim, "combat.critical-wound", "<red><bold>°HERIDA CR√çTICA!</bold>")
+                    val msg = pumpking.lib.service.PumpkingServiceManager.messages.getRawString(victim, "combat.critical-wound", "<red><bold>ÔøΩHERIDA CR√çTICA!</bold>")
                     victim.sendMessage(pumpking.lib.color.ColorTranslator.translate(msg))
                     victim.addPotionEffect(
                         PotionEffect(

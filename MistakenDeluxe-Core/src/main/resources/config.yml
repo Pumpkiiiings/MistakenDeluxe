@@ -4,9 +4,6 @@
 config-version: 1
 
 # --- NÚCLEO DEL SISTEMA ---
-database:
-  type: "h2"
-
 core:
   language: "es"
   min-players: 2

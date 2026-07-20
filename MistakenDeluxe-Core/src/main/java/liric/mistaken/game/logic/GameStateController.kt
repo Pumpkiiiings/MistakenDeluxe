@@ -1,4 +1,4 @@
-package liric.mistaken.game.logic
+﻿package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -184,8 +184,9 @@ class GameStateController(private val game: GameSession) {
             var selected = when {
                 chance <= 50 -> MistakenMode.CLASSIC
                 chance <= 65 -> MistakenMode.ONE_BOUNCE
-                chance <= 80 -> MistakenMode.DOUBLE_KILLER
-                chance <= 90 -> MistakenMode.INFECTION
+                chance <= 70 -> MistakenMode.DOUBLE_KILLER
+                chance <= 80 -> MistakenMode.INFECTION
+                chance <= 90 -> MistakenMode.FREEZE_TAG
                 else -> MistakenMode.INITIALIZES // 🔥 10% de probabilidad
             }
             if (selected == MistakenMode.DOUBLE_KILLER && onlineCount < 4) selected = MistakenMode.CLASSIC
