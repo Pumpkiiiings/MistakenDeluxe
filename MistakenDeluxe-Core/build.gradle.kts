@@ -55,7 +55,7 @@ dependencies {
     // Dependencia al modulo API
     implementation(project(":MistakenDeluxe-API"))
 
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.74-stable")
     compileOnly("io.github.revxrsal:zapper.api:1.0.3")
 
     zap(kotlin("stdlib"))
