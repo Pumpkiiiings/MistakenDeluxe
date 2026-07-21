@@ -64,7 +64,7 @@ dependencies {
     zap("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
     zap("com.zaxxer:HikariCP:5.1.0")
-    zap("fr.skytasul:glowingentities:1.4.11")
+    zap("fr.skytasul:glowingentities:2.0.0")
     zap("com.mysql:mysql-connector-j:9.7.0")
     zap("org.postgresql:postgresql:42.7.13")
     zap("com.h2database:h2:2.2.224")
