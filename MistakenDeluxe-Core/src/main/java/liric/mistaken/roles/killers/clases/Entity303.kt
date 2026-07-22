@@ -140,7 +140,7 @@ class Entity303 : CoreKiller(
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     world.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1f, 2f)
-                    ParticleShapesUtils.drawStar(loc, ParticleTypes.WHITE_ASH)
+                    ParticleShapesUtils.drawStar(loc, org.bukkit.Particle.WHITE_ASH)
                 }, 30L)
             }
             1 -> {
@@ -157,7 +157,7 @@ class Entity303 : CoreKiller(
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     world.playSound(loc, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
-                    ParticleShapesUtils.drawTornado(loc, ParticleTypes.CRIT)
+                    ParticleShapesUtils.drawTornado(loc, org.bukkit.Particle.CRIT)
                     barrier.remove()
                 }, 40L)
             }
@@ -236,7 +236,7 @@ class Entity303 : CoreKiller(
             val hit = star.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { isValidTarget(player, it) }
 
             if (hit != null || star.location.block.type.isSolid) {
-                ParticleShapesUtils.drawShockwave(star.location, ParticleTypes.EXPLOSION)
+                ParticleShapesUtils.drawShockwave(star.location, org.bukkit.Particle.EXPLOSION)
                 hit?.let {
                     plugin.combatManager.takeDamage(it)
                     it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
@@ -369,7 +369,7 @@ class Entity303 : CoreKiller(
         angulos[uuid] = anguloActual
         
         // Agregar alas temporales
-        ParticleShapesUtils.drawWings(player, ParticleTypes.FLAME)
+        ParticleShapesUtils.drawWings(player, org.bukkit.Particle.FLAME)
     }
 
     private fun crearBloqueOrbitante(player: Player, loc: Location, mat: Material): VirtualBlockDisplay {

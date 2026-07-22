@@ -50,7 +50,40 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
                 RuleEditorMenu(plugin, session).abrir(player)
             }
         
-        gui.setItem(15, rulesItem)
+        gui.setItem(13, rulesItem)
+
+        // Boton Mapa
+        val mapItem = ItemBuilder.from(Material.MAP)
+            .name(ColorTranslator.translate("<!italic><gold><bold>Selector de Mapa"))
+            .lore(ColorTranslator.translate("<!italic><gray>Elige el mapa a jugar."))
+            .asGuiItem {
+                gui.close(player)
+                MapSelectorMenu(plugin, session).abrir(player)
+            }
+        
+        gui.setItem(15, mapItem)
+
+        // Boton Modo
+        val modeItem = ItemBuilder.from(Material.DIAMOND_SWORD)
+            .name(ColorTranslator.translate("<!italic><gold><bold>Selector de Modo"))
+            .lore(ColorTranslator.translate("<!italic><gray>Elige el modo de juego."))
+            .asGuiItem {
+                gui.close(player)
+                ModeSelectorMenu(plugin, session).abrir(player)
+            }
+        
+        gui.setItem(17, modeItem)
+
+        // Boton Jugadores
+        val playersItem = ItemBuilder.from(Material.PLAYER_HEAD)
+            .name(ColorTranslator.translate("<!italic><gold><bold>Selector de Jugadores"))
+            .lore(ColorTranslator.translate("<!italic><gray>Elige roles de jugadores."))
+            .asGuiItem {
+                gui.close(player)
+                PlayerSelectorMenu(plugin, session).abrir(player)
+            }
+        
+        gui.setItem(19, playersItem)
 
         gui.open(player)
     }

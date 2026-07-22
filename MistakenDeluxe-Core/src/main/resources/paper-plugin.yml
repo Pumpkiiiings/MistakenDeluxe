@@ -29,3 +29,6 @@ dependencies:
     ObserverPaper:
       load: BEFORE
       required: false
+    LodestoneParties:
+      load: BEFORE
+      required: false

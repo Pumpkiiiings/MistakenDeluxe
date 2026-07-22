@@ -139,7 +139,7 @@ class Herobrine : CoreKiller(
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     world.playSound(loc, Sound.ENTITY_WITHER_SPAWN, 1f, 0.1f)
-                    ParticleShapesUtils.drawDnaHelix(loc, ParticleTypes.SOUL_FIRE_FLAME)
+                    ParticleShapesUtils.drawDnaHelix(loc, org.bukkit.Particle.SOUL_FIRE_FLAME)
                 }, 10L)
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
@@ -175,7 +175,7 @@ class Herobrine : CoreKiller(
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     world.playSound(loc, Sound.ENTITY_ENDER_DRAGON_FLAP, 2f, 0.5f)
-                    ParticleShapesUtils.drawTornado(loc, ParticleTypes.CLOUD)
+                    ParticleShapesUtils.drawTornado(loc, org.bukkit.Particle.CLOUD)
                     beacon.remove()
                 }, 25L)
             }
@@ -195,7 +195,7 @@ class Herobrine : CoreKiller(
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     // 🔥 FIX: SMOKE_LARGE -> LARGE_SMOKE
-                    ParticleShapesUtils.drawShockwave(loc, ParticleTypes.LARGE_SMOKE)
+                    ParticleShapesUtils.drawShockwave(loc, org.bukkit.Particle.LARGE_SMOKE)
                     world.playSound(loc, Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1f, 0.5f)
                     altar.remove()
                 }, 20L)
@@ -245,12 +245,12 @@ class Herobrine : CoreKiller(
     private fun habilidadSaltoDimensional(player: Player) {
         val gens = plugin.generatorManager.getGeneratorLocations()
         if (gens.isEmpty()) return
-        ParticleShapesUtils.drawVortex(player.location, ParticleTypes.REVERSE_PORTAL)
+        ParticleShapesUtils.drawVortex(player.location, org.bukkit.Particle.REVERSE_PORTAL)
         player.playSound(player.location, Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1f, 0.5f)
         val target = gens.random().clone().add(0.5, 1.1, 0.5)
 
         player.teleportAsync(target).thenAccept {
-            ParticleShapesUtils.drawWings(player, ParticleTypes.DRAGON_BREATH)
+            ParticleShapesUtils.drawWings(player, org.bukkit.Particle.DRAGON_BREATH)
             player.playSound(player.location, Sound.BLOCK_PORTAL_TRAVEL, 0.6f, 1.8f)
         }
     }
@@ -413,7 +413,7 @@ class Herobrine : CoreKiller(
         angulos[uuid] = anguloBase
         
         // Agregar alas estáticas como rastro periódico
-        ParticleShapesUtils.drawWings(player, ParticleTypes.SOUL_FIRE_FLAME)
+        ParticleShapesUtils.drawWings(player, org.bukkit.Particle.SOUL_FIRE_FLAME)
     }
 
     override fun showTrail(player: Player) {

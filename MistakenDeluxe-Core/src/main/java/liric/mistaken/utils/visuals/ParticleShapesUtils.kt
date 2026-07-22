@@ -1,12 +1,6 @@
 package liric.mistaken.utils.visuals
 
-import com.github.retrooper.packetevents.PacketEvents
-import com.github.retrooper.packetevents.protocol.particle.Particle
-import com.github.retrooper.packetevents.protocol.particle.type.ParticleType
-import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
-import com.github.retrooper.packetevents.util.Vector3d
-import com.github.retrooper.packetevents.util.Vector3f
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
+import org.bukkit.Particle
 import org.bukkit.Location
 import org.bukkit.plugin.java.JavaPlugin
 import liric.mistaken.Mistaken
@@ -22,13 +16,10 @@ object ParticleShapesUtils {
      * Envía un paquete de partículas a todos los jugadores en un radio de 50 bloques.
      * Ideal para efectos visuales sin sobrecargar el servidor (Bukkit API bypass).
      */
-    fun broadcastParticle(loc: Location, type: ParticleType<*>, offsetX: Float = 0f, offsetY: Float = 0f, offsetZ: Float = 0f, count: Int = 1, speed: Float = 0f) {
-        val pos = Vector3d(loc.x, loc.y, loc.z)
-        val packet = WrapperPlayServerParticle(Particle(type), false, pos, Vector3f(offsetX, offsetY, offsetZ), speed, count)
-        
+    fun broadcastParticle(loc: Location, type: Particle, offsetX: Float = 0f, offsetY: Float = 0f, offsetZ: Float = 0f, count: Int = 1, speed: Float = 0f) {
         loc.world?.players?.forEach { viewer ->
             if (viewer.location.distanceSquared(loc) < 2500.0) { // 50 bloques
-                PacketEvents.getAPI().playerManager.sendPacket(viewer, packet)
+                viewer.spawnParticle(type, loc, count, offsetX.toDouble(), offsetY.toDouble(), offsetZ.toDouble(), speed.toDouble())
             }
         }
     }
@@ -36,7 +27,7 @@ object ParticleShapesUtils {
     /**
      * Dibuja una hélice doble (ADN) de partículas ascendentes.
      */
-    fun drawDnaHelix(center: Location, type: ParticleType<*> = ParticleTypes.SOUL_FIRE_FLAME, radius: Double = 1.0, height: Double = 3.0) {
+    fun drawDnaHelix(center: Location, type: Particle = Particle.SOUL_FIRE_FLAME, radius: Double = 1.0, height: Double = 3.0) {
         plugin.server.regionScheduler.run(plugin, center, Consumer { _ ->
             val steps = 40
             for (i in 0..steps) {
@@ -56,7 +47,7 @@ object ParticleShapesUtils {
     /**
      * Dibuja un anillo (Onda Expansiva) de partículas que se agranda dinámicamente.
      */
-    fun drawShockwave(center: Location, type: ParticleType<*> = ParticleTypes.SONIC_BOOM, maxRadius: Double = 5.0) {
+    fun drawShockwave(center: Location, type: Particle = Particle.SONIC_BOOM, maxRadius: Double = 5.0) {
         var radius = 0.0
         val centerClone = center.clone().add(0.0, 0.1, 0.0)
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
@@ -78,7 +69,7 @@ object ParticleShapesUtils {
     /**
      * Dibuja un vórtice (Agujero Negro) que absorbe partículas desde afuera hacia el centro.
      */
-    fun drawVortex(center: Location, type: ParticleType<*> = ParticleTypes.PORTAL, radius: Double = 5.0, height: Double = 3.0) {
+    fun drawVortex(center: Location, type: Particle = Particle.PORTAL, radius: Double = 5.0, height: Double = 3.0) {
         var currentRadius = radius
         var currentHeight = height
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
@@ -101,7 +92,7 @@ object ParticleShapesUtils {
     /**
      * Dibuja el símbolo de infinito matemático (Curva de Lissajous).
      */
-    fun drawInfinityMark(center: Location, type: ParticleType<*> = ParticleTypes.ENCHANT, size: Double = 2.0) {
+    fun drawInfinityMark(center: Location, type: Particle = Particle.ENCHANT, size: Double = 2.0) {
         plugin.server.regionScheduler.run(plugin, center, Consumer { _ ->
             val steps = 60
             for (i in 0..steps) {
@@ -116,7 +107,7 @@ object ParticleShapesUtils {
     /**
      * Dibuja una esfera hueca tridimensional alrededor de un centro.
      */
-    fun drawSphere(center: Location, type: ParticleType<*> = ParticleTypes.END_ROD, radius: Double = 2.0, density: Int = 10) {
+    fun drawSphere(center: Location, type: Particle = Particle.END_ROD, radius: Double = 2.0, density: Int = 10) {
         plugin.server.regionScheduler.run(plugin, center, Consumer { _ ->
             for (i in 0..density) {
                 val phi = Math.PI * i / density
@@ -134,7 +125,7 @@ object ParticleShapesUtils {
     /**
      * Dibuja un corazón en 3D usando curvas paramétricas.
      */
-    fun drawHeart(center: Location, type: ParticleType<*> = ParticleTypes.HEART, size: Double = 1.0) {
+    fun drawHeart(center: Location, type: Particle = Particle.HEART, size: Double = 1.0) {
         plugin.server.regionScheduler.run(plugin, center, Consumer { _ ->
             val steps = 50
             for (i in 0..steps) {
@@ -149,7 +140,7 @@ object ParticleShapesUtils {
     /**
      * Dibuja una estrella plana de N puntas.
      */
-    fun drawStar(center: Location, type: ParticleType<*> = ParticleTypes.FIREWORK, radius: Double = 2.0, points: Int = 5) {
+    fun drawStar(center: Location, type: Particle = Particle.FIREWORK, radius: Double = 2.0, points: Int = 5) {
         plugin.server.regionScheduler.run(plugin, center, Consumer { _ ->
             for (i in 0 until points) {
                 val a1 = Math.toRadians((i * 360.0 / points) - 90)
@@ -175,7 +166,7 @@ object ParticleShapesUtils {
     /**
      * Dibuja un tornado ascendente expansivo.
      */
-    fun drawTornado(center: Location, type: ParticleType<*> = ParticleTypes.CAMPFIRE_COSY_SMOKE, height: Double = 5.0, maxRadius: Double = 3.0) {
+    fun drawTornado(center: Location, type: Particle = Particle.CAMPFIRE_COSY_SMOKE, height: Double = 5.0, maxRadius: Double = 3.0) {
         var currentY = 0.0
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
             if (currentY > height) {
@@ -197,7 +188,7 @@ object ParticleShapesUtils {
     /**
      * Dibuja alas angélicas o demoníacas estáticas detrás del jugador, alineadas a su mirada.
      */
-    fun drawWings(player: org.bukkit.entity.Player, type: ParticleType<*> = ParticleTypes.FLAME) {
+    fun drawWings(player: org.bukkit.entity.Player, type: Particle = Particle.FLAME) {
         val loc = player.location
         val yaw = Math.toRadians(loc.yaw.toDouble() + 90) // +90 para que estén a la espalda
         
