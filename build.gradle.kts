@@ -1,4 +1,4 @@
-﻿import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget // ðŸ”¥ IMPORTANTE: Necesario para el nuevo compilerOptions
 
 buildscript {
@@ -7,7 +7,6 @@ buildscript {
     }
     dependencies {
         classpath("org.ow2.asm:asm:9.10.1")
-        classpath("org.ow2.asm:asm-commons:9.10.1")
     }
 }
 
@@ -15,7 +14,6 @@ plugins {
     java
     kotlin("jvm") version "2.3.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("io.github.revxrsal.zapper") version "1.0.3"
     id("maven-publish")
 }
 
@@ -46,38 +44,22 @@ repositories {
     }
 }
 
-zapper {
-    libsFolder = "libraries-v2"
-    relocationPrefix = "liric.mistaken.libs"
-
-    repositories {
-        includeProjectRepositories()
-    }
-
-    relocate("dev.triumphteam.gui", "gui")
-    relocate("fr.skytasul.glowingentities", "glowing")
-    relocate("com.zaxxer.hikari", "hikari")
-    relocate("org.slf4j", "slf4j")
-    relocate("kotlin", "kotlin")
-    relocate("kotlinx", "kotlinx")
-}
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    compileOnly("io.github.revxrsal:zapper.api:1.0.3")
     
-    zap(kotlin("stdlib"))
-    zap("com.mojang:brigadier:1.2.9")
-    // LibrerÃ­as que se incluirÃ¡n en el JAR (Shadow)
-    zap("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+    compileOnly(kotlin("stdlib"))
+    compileOnly("com.mojang:brigadier:1.2.9")
+    // Librerías que se incluirán en el JAR (Shadow)
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
-    zap("com.zaxxer:HikariCP:5.1.0")
-    zap("fr.skytasul:glowingentities:1.4.11")
-    zap("com.mysql:mysql-connector-j:9.7.0")
-    zap("org.postgresql:postgresql:42.7.13")
-    zap("org.xerial:sqlite-jdbc:3.53.2.0")
-    zap("dev.triumphteam:triumph-gui:3.1.13")
-    zap("org.slf4j:slf4j-simple:2.0.18")
+    compileOnly("com.zaxxer:HikariCP:5.1.0")
+    compileOnly("fr.skytasul:glowingentities:1.4.11")
+    compileOnly("com.mysql:mysql-connector-j:9.7.0")
+    compileOnly("org.postgresql:postgresql:42.7.13")
+    compileOnly("org.xerial:sqlite-jdbc:3.53.2.0")
+    compileOnly("dev.triumphteam:triumph-gui:3.1.13")
+    compileOnly("org.slf4j:slf4j-simple:2.0.18")
     implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
 
     // APIs Externas (Solo para compilar)

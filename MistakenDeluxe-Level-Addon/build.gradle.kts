@@ -1,11 +1,10 @@
-﻿import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     java
     kotlin("jvm")
     id("com.github.johnrengelman.shadow")
-    id("io.github.revxrsal.zapper")
 }
 
 group = "liric.mistaken.level"
@@ -25,21 +24,10 @@ repositories {
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
 }
 
-zapper {
-    libsFolder = "libraries-addon-level"
-    relocationPrefix = "liric.mistaken.libs"
 
-    repositories {
-        includeProjectRepositories()
-    }
-
-    relocate("dev.triumphteam.gui", "gui")
-    relocate("com.zaxxer.hikari", "hikari")
-}
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-    compileOnly("io.github.revxrsal:zapper.api:1.0.3")
     compileOnly("me.clip:placeholderapi:2.12.3")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     
@@ -48,11 +36,11 @@ dependencies {
     // Required to reuse pumpking.lib database infrastructure at compile time
     compileOnly(project(":MistakenDeluxe-Core"))
 
-    // Addon specific Zapper dependencies
-    zap("com.zaxxer:HikariCP:5.1.0")
-    zap("com.mysql:mysql-connector-j:9.7.0")
-    zap("org.xerial:sqlite-jdbc:3.53.2.0")
-    zap("dev.triumphteam:triumph-gui:3.1.13")
+    // Addon specific dependencies (provided by bootstrapper)
+    compileOnly("com.zaxxer:HikariCP:5.1.0")
+    compileOnly("com.mysql:mysql-connector-j:9.7.0")
+    compileOnly("org.xerial:sqlite-jdbc:3.53.2.0")
+    compileOnly("dev.triumphteam:triumph-gui:3.1.13")
 
     // compileOnly("com.frengor:ultimateadvancementapi:2.8.0")
 }
