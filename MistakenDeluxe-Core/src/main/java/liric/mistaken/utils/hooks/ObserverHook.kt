@@ -56,4 +56,64 @@ object ObserverHook {
             ObserverAPI.removeComponent(player, id)
         } catch (e: Exception) {}
     }
+
+    fun playSound(player: Player, soundId: String, volume: Float = 1.0f, pitch: Float = 1.0f) {
+        if (!hasObserverPlugin) return
+        try {
+            val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
+            val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
+            val key = net.kyori.adventure.key.Key.key(namespace, id)
+            val sound = net.kyori.adventure.sound.Sound.sound(key, net.kyori.adventure.sound.Sound.Source.RECORD, volume, pitch)
+            player.playSound(sound)
+        } catch (e: Exception) {
+            player.playSound(player.location, soundId, org.bukkit.SoundCategory.RECORDS, volume, pitch)
+        }
+    }
+
+    fun playSpatialSound(player: Player, soundId: String, x: Double, y: Double, z: Double, volume: Float = 1.0f, pitch: Float = 1.0f) {
+        if (!hasObserverPlugin) return
+        try {
+            val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
+            val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
+            val key = net.kyori.adventure.key.Key.key(namespace, id)
+            val sound = net.kyori.adventure.sound.Sound.sound(key, net.kyori.adventure.sound.Sound.Source.RECORD, volume, pitch)
+            player.playSound(sound, x, y, z)
+        } catch (e: Exception) {
+            player.playSound(org.bukkit.Location(player.world, x, y, z), soundId, org.bukkit.SoundCategory.RECORDS, volume, pitch)
+        }
+    }
+
+    fun playEntitySound(player: Player, soundId: String, emitter: org.bukkit.entity.Entity, volume: Float = 1.0f, pitch: Float = 1.0f) {
+        if (!hasObserverPlugin) return
+        try {
+            val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
+            val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
+            val key = net.kyori.adventure.key.Key.key(namespace, id)
+            val sound = net.kyori.adventure.sound.Sound.sound(key, net.kyori.adventure.sound.Sound.Source.RECORD, volume, pitch)
+            player.playSound(sound, emitter)
+        } catch (e: Exception) {
+            player.playSound(emitter.location, soundId, org.bukkit.SoundCategory.RECORDS, volume, pitch)
+        }
+    }
+
+    fun stopSound(player: Player, soundId: String) {
+        if (!hasObserverPlugin) return
+        try {
+            val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
+            val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
+            val key = net.kyori.adventure.key.Key.key(namespace, id)
+            player.stopSound(net.kyori.adventure.sound.SoundStop.named(key))
+        } catch (e: Exception) {
+            player.stopSound(soundId, org.bukkit.SoundCategory.RECORDS)
+        }
+    }
+
+    fun stopAllSounds(player: Player) {
+        if (!hasObserverPlugin) return
+        try {
+            player.stopSound(net.kyori.adventure.sound.SoundStop.source(net.kyori.adventure.sound.Sound.Source.RECORD))
+        } catch (e: Exception) {
+            player.stopAllSounds()
+        }
+    }
 }

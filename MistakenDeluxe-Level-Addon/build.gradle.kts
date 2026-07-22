@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     java
     kotlin("jvm")
-    id("com.github.johnrengelman.shadow")
+    id("io.github.goooler.shadow")
 }
 
 group = "liric.mistaken.level"

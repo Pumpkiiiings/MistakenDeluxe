@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -11,6 +11,7 @@ import liric.mistaken.Mistaken
 import liric.mistaken.roles.killers.Killer
 import liric.mistaken.roles.killers.CoreKiller
 import liric.mistaken.utils.hooks.CraftEngine
+import liric.mistaken.utils.hooks.ObserverHook
 import liric.mistaken.utils.misc.HitboxVisualizer
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -142,12 +143,13 @@ class CharlieInferno : CoreKiller(
         val task = player.scheduler.runAtFixedRate(plugin, Consumer { t ->
             if (!player.isOnline || !plugin.asesinoManager.isKiller(player)) {
                 detenerMusica(uuid)
+                t.cancel()
                 return@Consumer
             }
             Bukkit.getOnlinePlayers().forEach { p ->
-                p.stopSound(sonidoId, SoundCategory.RECORDS)
+                ObserverHook.stopSound(p, sonidoId)
+                ObserverHook.playEntitySound(p, sonidoId, player, 2.0f, 1.0f)
             }
-            player.world.playSound(player, sonidoId, SoundCategory.RECORDS, 2.0f, 1.0f)
         }, null, 1L, 1480L)
 
         if (task != null) {
@@ -157,7 +159,7 @@ class CharlieInferno : CoreKiller(
 
     private fun detenerMusica(uuid: UUID) {
         musicTasks.remove(uuid)?.cancel()
-        Bukkit.getOnlinePlayers().forEach { it.stopSound(sonidoId, SoundCategory.RECORDS) }
+        Bukkit.getOnlinePlayers().forEach { ObserverHook.stopSound(it, sonidoId) }
     }
 
     // --- 🔥 HABILIDADES ---

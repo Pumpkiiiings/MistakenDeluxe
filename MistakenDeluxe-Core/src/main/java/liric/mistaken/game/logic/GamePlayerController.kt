@@ -32,15 +32,11 @@ class GamePlayerController(private val game: GameSession) {
         if (sessionPlayers.isEmpty()) return
 
         game.asesinosUUIDs.clear()
+        val recentConfig = pumpking.lib.config.ConfigManager.get("recent_killers.yml")
+        val recentList = recentConfig.getStringList("recent").toMutableList()
 
-
-        // --- 2. MODOS CLÃSICOS ---
-        val candidatos = sessionPlayers.filter { !game.yaJugaronAsesino.contains(it.uniqueId) }.toMutableList()
-        if (candidatos.isEmpty()) {
-            game.yaJugaronAsesino.clear()
-            candidatos.addAll(sessionPlayers)
-        }
-        candidatos.shuffle()
+        // --- 2. MODOS CLÁSICOS ---
+        val candidatos = sessionPlayers.filter { !recentList.contains(it.uniqueId.toString()) }.toMutableList()
 
         val killersToSelect = when (game.currentMode) {
             MistakenMode.DOUBLE_KILLER -> if (sessionPlayers.size >= 4) 2 else 1
@@ -54,18 +50,54 @@ class GamePlayerController(private val game: GameSession) {
         game.forcedKillerUUID?.let { forcedUuid ->
             if (sessionPlayers.any { it.uniqueId == forcedUuid }) {
                 game.asesinosUUIDs.add(forcedUuid)
-                game.yaJugaronAsesino.add(forcedUuid)
                 candidatos.removeAll { it.uniqueId == forcedUuid }
                 selectedCount++
                 game.forcedKillerUUID = null // Solo sirve para 1 partida
             }
         }
 
+        // Asignar killers de la partida privada
+        game.settings?.let { rules ->
+            rules.allowedKillers.forEach { killerName ->
+                val p = sessionPlayers.find { it.name.equals(killerName, ignoreCase = true) }
+                if (p != null && selectedCount < killersToSelect && !game.asesinosUUIDs.contains(p.uniqueId)) {
+                    game.asesinosUUIDs.add(p.uniqueId)
+                    candidatos.removeAll { it.uniqueId == p.uniqueId }
+                    selectedCount++
+                }
+            }
+            rules.allowedSurvivors.forEach { survName ->
+                val p = sessionPlayers.find { it.name.equals(survName, ignoreCase = true) }
+                if (p != null) {
+                    candidatos.removeAll { it.uniqueId == p.uniqueId }
+                }
+            }
+        }
+
+        // Si todos los disponibles ya jugaron, reseteamos el historial reciente
+        if (candidatos.isEmpty() && selectedCount < killersToSelect) {
+            val backup = sessionPlayers.filter { p -> 
+                !game.asesinosUUIDs.contains(p.uniqueId) && 
+                !(game.settings?.allowedSurvivors?.any { it.equals(p.name, true) } ?: false)
+            }
+            candidatos.addAll(backup)
+            recentConfig.set("recent", emptyList<String>())
+            recentConfig.save()
+            recentList.clear()
+        }
+
+        candidatos.shuffle()
+
         for (i in 0 until min(killersToSelect - selectedCount, candidatos.size)) {
             val uuid = candidatos[i].uniqueId
             game.asesinosUUIDs.add(uuid)
-            game.yaJugaronAsesino.add(uuid)
+            recentList.add(uuid.toString())
         }
+        
+        while(recentList.size > 50) recentList.removeAt(0)
+        recentConfig.set("recent", recentList)
+        recentConfig.save()
+
         game.currentKillerUUID = game.asesinosUUIDs.firstOrNull()
 
         var survivorIndex = 0

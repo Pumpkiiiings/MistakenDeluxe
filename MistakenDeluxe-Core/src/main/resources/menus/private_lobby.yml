@@ -1,42 +1,68 @@
-title: "<dark_gray>Configuración de Partida Privada"
-items:
-  start:
-    name: "<green><bold>Iniciar Partida"
-    lore:
-      - "<gray>Inicia la partida forzosamente."
-  rules:
-    name: "<gold><bold>Reglas de Juego"
-    lore:
-      - "<gray>Modifica las reglas de la partida."
-  map:
-    name: "<gold><bold>Selector de Mapa"
-    lore:
-      - "<gray>Elige el mapa a jugar."
-  mode:
-    name: "<gold><bold>Selector de Modo"
-    lore:
-      - "<gray>Elige el modo de juego."
-  players:
-    name: "<gold><bold>Selector de Jugadores"
-    lore:
-      - "<gray>Elige roles de jugadores."
-  back:
-    name: "<red>Volver"
-
 menus:
+  private_lobby:
+    title: "<dark_gray>Configuración de Partida Privada"
+    rows: 5
+    filler_material: "BLACK_STAINED_GLASS_PANE"
+    slots:
+      start: 22
+      rules: 20
+      map: 23
+      mode: 24
+      players: 21
+    items:
+      start:
+        name: "<green><bold>Iniciar Partida"
+        lore:
+          - "<gray>Inicia la partida forzosamente."
+      rules:
+        name: "<gold><bold>Reglas de Juego"
+        lore:
+          - "<gray>Modifica las reglas de la partida."
+      map:
+        name: "<gold><bold>Selector de Mapa"
+        lore:
+          - "<gray>Elige el mapa a jugar."
+      mode:
+        name: "<gold><bold>Selector de Modo"
+        lore:
+          - "<gray>Elige el modo de juego."
+      players:
+        name: "<gold><bold>Selector de Jugadores"
+        lore:
+          - "<gray>Elige roles de jugadores."
+      back:
+        name: "<red>Volver"
+
   map_selector:
     title: "<dark_gray>Seleccionar Mapa"
+    rows: 5
+    filler_material: "BLACK_STAINED_GLASS_PANE"
+    start_slot: 19
+    max_slots: 34
+    back_slot: 40
     items:
       map:
         lore_id: "<gray>ID: {map}"
         lore_click: "<e>Click para seleccionar"
+
   mode_selector:
     title: "<dark_gray>Seleccionar Modo"
+    rows: 5
+    filler_material: "BLACK_STAINED_GLASS_PANE"
+    start_slot: 20
+    max_slots: 24
+    back_slot: 40
     items:
       mode:
         lore_click: "<e>Click para seleccionar"
+
   player_selector:
     title: "<dark_gray>Selector de Jugadores"
+    rows: 5
+    filler_material: "BLACK_STAINED_GLASS_PANE"
+    start_slot: 19
+    max_slots: 34
+    back_slot: 40
     items:
       player:
         lore_role: "<gray>Rol: {role}"
@@ -46,8 +72,21 @@ menus:
           random: "<gray>Aleatorio"
           killer: "<red><bold>Asesino"
           survivor: "<green><bold>Superviviente"
+
   rule_editor:
     title: "<dark_gray>Editor de Reglas"
+    rows: 5
+    filler_material: "BLACK_STAINED_GLASS_PANE"
+    slots:
+      glowing: 19
+      heartbeats: 20
+      speed: 21
+      jump: 22
+      blindness: 23
+      khealth: 24
+      shealth: 25
+      duration: 26
+      back: 40
     items:
       glowing:
         name: "<gold><bold>Glowing Constante"
@@ -70,3 +109,6 @@ menus:
       shealth:
         name: "<gold><bold>Vida Superviviente"
         lore_hearts: "<gray>Corazones: <red>{hearts}"
+      duration:
+        name: "<gold><bold>Duración de Partida"
+        lore_time: "<gray>Tiempo: <yellow>{time}"

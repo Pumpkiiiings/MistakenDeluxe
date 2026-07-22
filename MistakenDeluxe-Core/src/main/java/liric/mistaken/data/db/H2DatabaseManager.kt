@@ -1,4 +1,4 @@
-﻿package liric.mistaken.data.db
+package liric.mistaken.data.db
 
 import com.zaxxer.hikari.HikariConfig
 import liric.mistaken.Mistaken
@@ -17,8 +17,8 @@ class H2DatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(plugin) {
         }
 
         // MODE=PostgreSQL to allow ON CONFLICT syntax
-        hikariConfig.jdbcUrl = "jdbc:h2:;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH"
-        hikariConfig.driverClassName = "Driver"
+        hikariConfig.jdbcUrl = "jdbc:h2:file:${dbFile.absolutePath};MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH"
+        hikariConfig.driverClassName = "org.h2.Driver"
 
         hikariConfig.maximumPoolSize = 10
         hikariConfig.connectionTestQuery = "SELECT 1"
@@ -26,20 +26,13 @@ class H2DatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(plugin) {
         return hikariConfig
     }
 
-    override val insertIgnoreStatsQuery = "INSERT INTO stats (uuid, username) VALUES (?, ?) ON CONFLICT DO NOTHING"
+    override val insertIgnoreStatsQuery = "MERGE INTO stats (uuid, username) KEY(uuid) VALUES (?, ?)"
 
     override val upsertPlayerDataQuery = """
-        INSERT INTO mistaken_player_data
+        MERGE INTO mistaken_player_data
         (uuid, lang, killers_owned, killer_selected, survivors_owned, survivor_selected, nick, skin_source)
+        KEY (uuid)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT (uuid) DO UPDATE SET
-        lang = EXCLUDED.lang,
-        killers_owned = EXCLUDED.killers_owned,
-        killer_selected = EXCLUDED.killer_selected,
-        survivors_owned = EXCLUDED.survivors_owned,
-        survivor_selected = EXCLUDED.survivor_selected,
-        nick = EXCLUDED.nick,
-        skin_source = EXCLUDED.skin_source
     """.trimIndent()
 
     override fun bindUpsertVariables(ps: PreparedStatement, uuid: String, lang: String, killersOwned: String, killerSelected: String, survOwned: String, survSelected: String, nick: String, skin: String) {

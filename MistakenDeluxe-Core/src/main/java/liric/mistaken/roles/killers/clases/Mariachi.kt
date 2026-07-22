@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -10,6 +10,7 @@ import liric.mistaken.Mistaken
 import liric.mistaken.roles.killers.Killer
 import liric.mistaken.roles.killers.CoreKiller
 import liric.mistaken.utils.hooks.CraftEngine
+import liric.mistaken.utils.hooks.ObserverHook
 import org.bukkit.*
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
@@ -208,8 +209,8 @@ class Mariachi : CoreKiller(
             }
             player.world.players.forEach { p ->
                 if (p.location.distanceSquared(player.location) < 1600) {
-                    p.stopSound(sonidoMúsicaId, SoundCategory.RECORDS)
-                    p.playSound(player.location, sonidoMúsicaId, SoundCategory.RECORDS, 1.5f, 1.0f)
+                    ObserverHook.stopSound(p, sonidoMúsicaId)
+                    ObserverHook.playEntitySound(p, sonidoMúsicaId, player, 1.5f, 1.0f)
                 }
             }
         }, null, 1L, 1480L)
@@ -221,7 +222,7 @@ class Mariachi : CoreKiller(
     }
 
     private fun detenerMusica(uuid: UUID) {
-        Bukkit.getOnlinePlayers().forEach { it.stopSound(sonidoMúsicaId, SoundCategory.RECORDS) }
+        Bukkit.getOnlinePlayers().forEach { ObserverHook.stopSound(it, sonidoMúsicaId) }
     }
 
     override fun cleanup(player: Player?) {

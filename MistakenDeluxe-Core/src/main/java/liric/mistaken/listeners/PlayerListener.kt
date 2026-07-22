@@ -1,4 +1,4 @@
-﻿package liric.mistaken.listeners
+package liric.mistaken.listeners
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -130,6 +130,11 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
         player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
         player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun onPlayerItemDamage(event: org.bukkit.event.player.PlayerItemDamageEvent) {
+        event.isCancelled = true
     }
 }
 

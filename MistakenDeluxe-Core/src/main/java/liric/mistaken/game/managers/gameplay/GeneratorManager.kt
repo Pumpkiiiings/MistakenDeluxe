@@ -151,6 +151,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
                 display.billboard = Display.Billboard.CENTER
                 display.brightness = Display.Brightness(15, 15)
                 display.backgroundColor = Color.fromARGB(0, 0, 0, 0)
+                display.isShadowed = true
                 display.isPersistent = false
                 display.transformation =
                     Transformation(Vector3f(), Quaternionf(), Vector3f(1.1f, 1.1f, 1.1f), Quaternionf())

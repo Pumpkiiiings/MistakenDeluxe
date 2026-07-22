@@ -31,65 +31,87 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
         val playersName = config.getString("items.players.name", "<gold><bold>Selector de Jugadores") ?: "<gold><bold>Selector de Jugadores"
         val playersLoreRaw = config.getStringList("items.players.lore").ifEmpty { listOf("<gray>Elige roles de jugadores.") }
 
+        val rows = config.getInt("menus.private_lobby.rows", 5)
+        val fillerMatStr = config.getString("menus.private_lobby.filler_material", "BLACK_STAINED_GLASS_PANE") ?: "BLACK_STAINED_GLASS_PANE"
+        val fillerMat = runCatching { Material.valueOf(fillerMatStr.uppercase()) }.getOrDefault(Material.BLACK_STAINED_GLASS_PANE)
+
+        val startSlot = config.getInt("menus.private_lobby.slots.start", 22)
+        val rulesSlot = config.getInt("menus.private_lobby.slots.rules", 20)
+        val mapSlot = config.getInt("menus.private_lobby.slots.map", 23)
+        val modeSlot = config.getInt("menus.private_lobby.slots.mode", 24)
+        val playersSlot = config.getInt("menus.private_lobby.slots.players", 21)
+
         val gui = Gui.gui()
             .title(ColorTranslator.translate("<!italic>$titleText"))
-            .rows(3)
+            .rows(rows)
             .disableAllInteractions()
             .create()
+
+        if (fillerMat != Material.AIR) {
+            val fillerItem = ItemBuilder.from(fillerMat)
+                .name(ColorTranslator.translate(" "))
+                .asGuiItem()
+            gui.filler.fill(fillerItem)
+        }
 
         // Boton Iniciar
         val startItem = ItemBuilder.from(Material.EMERALD_BLOCK)
             .name(ColorTranslator.translate("<!italic>$startName"))
             .lore(startLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
+                player.playSound(player.location, org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
                 gui.close(player)
                 if (session.isPrivate) {
                     session.forceStart = true
-                    player.sendMessage("§aIniciando partida privada...")
+                    player.sendMessage(ColorTranslator.translate("<green><bold>¡Iniciando partida privada!"))
                 }
             }
         
-        gui.setItem(11, startItem)
+        gui.setItem(startSlot, startItem)
 
         // Boton Reglas
         val rulesItem = ItemBuilder.from(Material.COMPARATOR)
             .name(ColorTranslator.translate("<!italic>$rulesName"))
             .lore(rulesLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
+                player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
                 RuleEditorMenu(plugin, session).abrir(player)
             }
         
-        gui.setItem(13, rulesItem)
+        gui.setItem(rulesSlot, rulesItem)
 
         // Boton Mapa
         val mapItem = ItemBuilder.from(Material.MAP)
             .name(ColorTranslator.translate("<!italic>$mapName"))
             .lore(mapLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
+                player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
                 MapSelectorMenu(plugin, session).abrir(player)
             }
         
-        gui.setItem(15, mapItem)
+        gui.setItem(mapSlot, mapItem)
 
         // Boton Modo
         val modeItem = ItemBuilder.from(Material.DIAMOND_SWORD)
             .name(ColorTranslator.translate("<!italic>$modeName"))
             .lore(modeLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
+                player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
                 ModeSelectorMenu(plugin, session).abrir(player)
             }
         
-        gui.setItem(17, modeItem)
+        gui.setItem(modeSlot, modeItem)
 
         // Boton Jugadores
         val playersItem = ItemBuilder.from(Material.PLAYER_HEAD)
             .name(ColorTranslator.translate("<!italic>$playersName"))
             .lore(playersLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
+                player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
                 PlayerSelectorMenu(plugin, session).abrir(player)
             }
         
-        gui.setItem(19, playersItem)
+        gui.setItem(playersSlot, playersItem)
 
         gui.open(player)
     }

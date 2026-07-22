@@ -45,6 +45,22 @@ open class VirtualBaseDisplay(
             list.add(EntityData(13, EntityDataTypes.QUATERNION, Quaternion4f(it.leftRotation.x, it.leftRotation.y, it.leftRotation.z, it.leftRotation.w)))
             list.add(EntityData(14, EntityDataTypes.QUATERNION, Quaternion4f(it.rightRotation.x, it.rightRotation.y, it.rightRotation.z, it.rightRotation.w)))
         }
+        
+        billboard?.let {
+            val typeId = when (it) {
+                Display.Billboard.FIXED -> 0
+                Display.Billboard.VERTICAL -> 1
+                Display.Billboard.HORIZONTAL -> 2
+                Display.Billboard.CENTER -> 3
+            }.toByte()
+            list.add(EntityData(15, EntityDataTypes.BYTE, typeId))
+        }
+
+        brightness?.let {
+            // Brightness is packed into a single int: blockLight | (skyLight << 16)
+            val packed = it.blockLight or (it.skyLight shl 16)
+            list.add(EntityData(16, EntityDataTypes.INT, packed))
+        }
 
         return list
     }
@@ -84,12 +100,25 @@ class VirtualBlockDisplay(location: Location, viewers: List<Player>) : VirtualBa
 class VirtualTextDisplay(location: Location, viewers: List<Player>) : VirtualBaseDisplay(location, viewers, EntityTypes.TEXT_DISPLAY) {
     var text: Component? = null
     var backgroundColor: Color? = null
+    var isShadowed: Boolean = false
 
     override fun buildMetadata(): List<EntityData<*>> {
         val list = super.buildMetadata().toMutableList()
         text?.let {
             list.add(EntityData(23, EntityDataTypes.ADV_COMPONENT, it))
         }
+        backgroundColor?.let {
+            // ARGB
+            val packed = (it.alpha shl 24) or (it.red shl 16) or (it.green shl 8) or it.blue
+            list.add(EntityData(25, EntityDataTypes.INT, packed))
+        }
+        
+        var textFlags = 0.toByte()
+        if (isShadowed) textFlags = (textFlags.toInt() or 0x01).toByte()
+        if (textFlags > 0) {
+            list.add(EntityData(27, EntityDataTypes.BYTE, textFlags))
+        }
+        
         return list
     }
 }

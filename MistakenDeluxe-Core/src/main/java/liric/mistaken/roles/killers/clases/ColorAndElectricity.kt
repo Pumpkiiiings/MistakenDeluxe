@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -11,7 +11,9 @@ import liric.mistaken.Mistaken
 import liric.mistaken.roles.killers.Killer
 import liric.mistaken.roles.killers.CoreKiller
 import liric.mistaken.utils.hooks.CraftEngine
+import liric.mistaken.utils.hooks.ObserverHook
 import liric.mistaken.utils.misc.HitboxVisualizer
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -41,9 +43,13 @@ class ColorAndElectricity : CoreKiller(
 ) {
 
     private val path = "asesinos.colorandelectricity"
+    override val defaultMusic = "mistaken:colorsito"
+    private val sonidoMusicaId = defaultMusic
+    
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<VirtualBlockDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
+    private val musicTasks = ConcurrentHashMap<UUID, ScheduledTask>()
 
     private val orbitMaterials = listOf(
         Material.PURPLE_WOOL, Material.BLUE_WOOL, Material.LIGHT_BLUE_WOOL,
@@ -130,6 +136,33 @@ class ColorAndElectricity : CoreKiller(
 
         player.inventory.heldItemSlot = 8
         player.updateInventory()
+        iniciarMusica(player)
+    }
+
+    private fun iniciarMusica(player: Player) {
+        val uuid = player.uniqueId
+        detenerMusica(uuid)
+
+        val task = player.scheduler.runAtFixedRate(plugin, Consumer { t ->
+            if (!player.isOnline || !plugin.asesinoManager.isKiller(player)) {
+                detenerMusica(uuid)
+                t.cancel()
+                return@Consumer
+            }
+            Bukkit.getOnlinePlayers().forEach { p ->
+                ObserverHook.stopSound(p, sonidoMusicaId)
+                ObserverHook.playEntitySound(p, sonidoMusicaId, player, 2.0f, 1.0f)
+            }
+        }, null, 1L, 1480L)
+
+        if (task != null) {
+            musicTasks[uuid] = task
+        }
+    }
+
+    private fun detenerMusica(uuid: UUID) {
+        musicTasks.remove(uuid)?.cancel()
+        Bukkit.getOnlinePlayers().forEach { ObserverHook.stopSound(it, sonidoMusicaId) }
     }
 
     private fun habilidadVividTrace(player: Player) {
@@ -276,7 +309,10 @@ class ColorAndElectricity : CoreKiller(
 
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        player?.let { limpiarEntidades(it.uniqueId) }
+        player?.let { 
+            limpiarEntidades(it.uniqueId) 
+            detenerMusica(it.uniqueId)
+        }
     }
 }
 

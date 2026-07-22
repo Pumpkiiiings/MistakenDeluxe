@@ -210,7 +210,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
         player.health = maxHP
         player.removePotionEffect(PotionEffectType.DARKNESS)
-        player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 1.0
+        player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
 
         if (plugin.isReady) plugin.scoreboardManager.updatePlayer(player)
     }
