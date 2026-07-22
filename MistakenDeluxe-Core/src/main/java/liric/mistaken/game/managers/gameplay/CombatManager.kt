@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.gameplay
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.HealthAPI
@@ -201,7 +201,11 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     fun resetHealth(player: Player) = runOnMain {
         val session = plugin.sessionManager.getSession(player)
         val isKiller = session?.isKiller(player.uniqueId) ?: false
-        val maxHP = if (isKiller) 160.0 else 20.0
+        val maxHP = if (isKiller) {
+            session?.settings?.killerHealth ?: 160.0
+        } else {
+            session?.settings?.survivorHealth ?: 20.0
+        }
 
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
         player.health = maxHP

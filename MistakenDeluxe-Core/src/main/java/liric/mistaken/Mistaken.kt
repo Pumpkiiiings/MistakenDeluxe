@@ -296,6 +296,16 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(antiBlockListener, this)
         pm.registerEvents(SurvivorHabilidadListener(this), this)
         pm.registerEvents(GeneratorListener(this), this)
+        pm.registerEvents(liric.mistaken.listeners.PrivateGameInteractListener(this), this)
+
+        if (pm.isPluginEnabled("Parties")) {
+            pm.registerEvents(liric.mistaken.utils.hooks.AlessioPartiesHook(this), this)
+            componentLogger.info(ColorTranslator.translate("[INFO] Hooked into Parties (AlessioDP)!"))
+        }
+        if (pm.isPluginEnabled("LodestoneParties")) {
+            pm.registerEvents(liric.mistaken.utils.hooks.LodestonePartiesHook(this), this)
+            componentLogger.info(ColorTranslator.translate("[INFO] Hooked into LodestoneParties!"))
+        }
     }
 
     private fun iniciarMotorDeParticulas() {

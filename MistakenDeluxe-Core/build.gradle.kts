@@ -1,4 +1,4 @@
-﻿import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -29,6 +29,9 @@ repositories {
     maven("https://repo.infernalsuite.com/repository/maven-snapshots/")
     maven("https://maven.blamejared.com/")
     maven("https://maven.nucleoid.xyz/")
+    maven("https://repo.alessiodp.com/releases/")
+    maven("https://simonsator.de/repo/")
+    mavenLocal()
 
     flatDir {
         dirs("../libs")
@@ -84,6 +87,10 @@ dependencies {
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
     compileOnly(files("../libs/observer-paper.jar"))
+
+    // Integraciones de Parties (Addon Migrado)
+    compileOnly("com.alessiodp.parties:parties-api:3.2.16")
+    compileOnly(files("../../LodestoneParties/LodestoneParties-API/build/libs/LodestoneParties-API-1.0.0-SNAPSHOT.jar"))
 
     // Paper ya incluye Adventure y MiniMessage nativamente
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")

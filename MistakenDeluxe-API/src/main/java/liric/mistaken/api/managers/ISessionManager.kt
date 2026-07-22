@@ -6,4 +6,6 @@ import java.util.UUID
 interface ISessionManager {
     fun getSession(player: Player): ISession?
     fun getSession(uuid: UUID): ISession?
+    fun joinSession(player: Player, sessionId: String)
+    fun leaveSession(player: Player)
 }

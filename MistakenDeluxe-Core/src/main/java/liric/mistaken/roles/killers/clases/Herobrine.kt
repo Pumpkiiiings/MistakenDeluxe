@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
@@ -45,6 +45,7 @@ import liric.mistaken.packet.fake.VirtualItemDisplay
 import org.bukkit.Bukkit
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.visuals.ParticleShapesUtils
 
 class Herobrine : CoreKiller(
     "herobrine",
@@ -138,7 +139,7 @@ class Herobrine : CoreKiller(
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     world.playSound(loc, Sound.ENTITY_WITHER_SPAWN, 1f, 0.1f)
-                    world.spawnParticle(org.bukkit.Particle.SOUL_FIRE_FLAME, loc.clone().add(0.0, 2.0, 0.0), 100, 1.0, 3.0, 1.0, 0.1)
+                    ParticleShapesUtils.drawDnaHelix(loc, ParticleTypes.SOUL_FIRE_FLAME)
                 }, 10L)
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
@@ -174,7 +175,7 @@ class Herobrine : CoreKiller(
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     world.playSound(loc, Sound.ENTITY_ENDER_DRAGON_FLAP, 2f, 0.5f)
-                    world.spawnParticle(org.bukkit.Particle.CLOUD, loc, 100, 1.0, 3.0, 1.0, 0.1)
+                    ParticleShapesUtils.drawTornado(loc, ParticleTypes.CLOUD)
                     beacon.remove()
                 }, 25L)
             }
@@ -194,7 +195,7 @@ class Herobrine : CoreKiller(
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     // 🔥 FIX: SMOKE_LARGE -> LARGE_SMOKE
-                    world.spawnParticle(org.bukkit.Particle.LARGE_SMOKE, loc, 100, 1.5, 0.5, 1.5, 0.1)
+                    ParticleShapesUtils.drawShockwave(loc, ParticleTypes.LARGE_SMOKE)
                     world.playSound(loc, Sound.ENTITY_GENERIC_EXTINGUISH_FIRE, 1f, 0.5f)
                     altar.remove()
                 }, 20L)
@@ -244,12 +245,12 @@ class Herobrine : CoreKiller(
     private fun habilidadSaltoDimensional(player: Player) {
         val gens = plugin.generatorManager.getGeneratorLocations()
         if (gens.isEmpty()) return
-        player.world.spawnParticle(org.bukkit.Particle.REVERSE_PORTAL, player.location.add(0.0, 1.0, 0.0), 30, 0.5, 1.0, 0.5, 0.1)
+        ParticleShapesUtils.drawVortex(player.location, ParticleTypes.REVERSE_PORTAL)
         player.playSound(player.location, Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1f, 0.5f)
         val target = gens.random().clone().add(0.5, 1.1, 0.5)
 
         player.teleportAsync(target).thenAccept {
-            player.world.spawnParticle(org.bukkit.Particle.DRAGON_BREATH, player.location.add(0.0, 1.0, 0.0), 25, 0.4, 0.8, 0.4, 0.05)
+            ParticleShapesUtils.drawWings(player, ParticleTypes.DRAGON_BREATH)
             player.playSound(player.location, Sound.BLOCK_PORTAL_TRAVEL, 0.6f, 1.8f)
         }
     }
@@ -410,6 +411,9 @@ class Herobrine : CoreKiller(
         extras[1].teleport(loc3)
 
         angulos[uuid] = anguloBase
+        
+        // Agregar alas estáticas como rastro periódico
+        ParticleShapesUtils.drawWings(player, ParticleTypes.SOUL_FIRE_FLAME)
     }
 
     override fun showTrail(player: Player) {

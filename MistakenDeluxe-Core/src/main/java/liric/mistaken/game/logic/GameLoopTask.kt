@@ -27,26 +27,35 @@ class GameLoopTask(private val game: GameSession) {
 
                     val validCount = onlinePlayers.count { !game.plugin.isIgnored(it) }
 
+                    val minPlayers = game.settings?.minPlayers ?: game.plugin.config.getInt("settings.min-players", 4)
+
                     // Actualizar BossBars
                     onlinePlayers.forEach { p -> game.uiController.updatePersonalBar(p, onlinePlayers.size) }
 
                     when (game.currentState) {
                         GameState.LOBBY -> {
-                            // 🔥 FIX: Aumentado el default a 4 jugadores
-                            if (validCount >= game.plugin.config.getInt("settings.min-players", 4) || game.forceStart) {
-                                game.stateController.startBreakProcess()
+                            if (game.isPrivate) {
+                                if (game.forceStart) game.stateController.startBreakProcess()
+                            } else {
+                                if (validCount >= minPlayers || game.forceStart) {
+                                    game.stateController.startBreakProcess()
+                                }
                             }
                         }
                         GameState.BREAK -> {
-                            // Si alguien se sale y ya no hay 4 personas, abortar misión
-                            if (validCount < game.plugin.config.getInt("settings.min-players", 4) && !game.forceStart) {
+                            // Si alguien se sale y ya no hay suficientes personas, abortar misión
+                            if (validCount < minPlayers && !game.forceStart) {
                                 game.stateController.resetToLobby("voting.not-enough-players")
                             } else if (game.timer <= 0) {
-                                game.stateController.startVotingProcess()
+                                if (game.settings?.forcedMap != null) {
+                                    game.stateController.startInGame()
+                                } else {
+                                    game.stateController.startVotingProcess()
+                                }
                             }
                         }
                         GameState.VOTING -> {
-                            if (validCount < game.plugin.config.getInt("settings.min-players", 4) && !game.forceStart) {
+                            if (validCount < minPlayers && !game.forceStart) {
                                 game.stateController.resetToLobby("voting.not-enough-players")
                             } else if (game.timer <= 0) {
                                 game.stateController.startInGame()

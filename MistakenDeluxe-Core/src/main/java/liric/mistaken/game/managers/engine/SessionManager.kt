@@ -1,6 +1,8 @@
 package liric.mistaken.game.managers.engine
 
 import liric.mistaken.Mistaken
+import liric.mistaken.api.events.MistakenPlayerJoinSessionEvent
+import liric.mistaken.api.events.MistakenPlayerLeaveSessionEvent
 import liric.mistaken.game.GameSession
 import liric.mistaken.utils.proxy.BungeeUtils
 import org.bukkit.entity.Player
@@ -23,25 +25,36 @@ class SessionManager(private val plugin: Mistaken) : ISessionManager {
         return id
     }
 
-    fun createSession(mapName: String): GameSession {
-        val id = generateShortId()
-        val session = GameSession(plugin, id, mapName)
+    fun createSession(mapName: String, isPrivate: Boolean = false): GameSession {
+        var id = generateShortId()
+        if (isPrivate) id += "-P"
+        val session = GameSession(plugin, id, mapName, isPrivate)
         activeSessions[id] = session
         return session
     }
 
-    fun joinSession(player: Player, sessionId: String) {
+    override fun joinSession(player: Player, sessionId: String) {
         val session = activeSessions[sessionId] ?: return
         leaveSession(player)
         playerSessions[player.uniqueId] = sessionId
         session.addPlayer(player)
         plugin.isolationManager.updateVisibility(player)
+
+        // 🔥 Disparar evento a la API
+        val event = MistakenPlayerJoinSessionEvent(player, session)
+        org.bukkit.Bukkit.getPluginManager().callEvent(event)
     }
 
-    fun leaveSession(player: Player) {
+    override fun leaveSession(player: Player) {
         val sessionId = playerSessions.remove(player.uniqueId) ?: return
         val session = activeSessions[sessionId]
         session?.removePlayer(player)
+
+        // 🔥 Disparar evento a la API
+        if (session != null) {
+            val event = MistakenPlayerLeaveSessionEvent(player, session)
+            org.bukkit.Bukkit.getPluginManager().callEvent(event)
+        }
 
         // 🔥 FIX: Al salir de la sesión, aseguramos que el jugador se limpie completamente
         // del modo espectador y se vuelva a modo supervivencia (vital para Multiarena)

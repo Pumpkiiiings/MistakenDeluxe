@@ -83,7 +83,7 @@ class AmbientManager(private val plugin: Mistaken) {
 
         // 1. Heartbeat & Oscuridad
         // 24 bloques = 576.0
-        if (distSq < 576.0) {
+        if (distSq < 576.0 && session.settings?.heartbeatsEnabled != false) {
             val currentTick = Bukkit.getCurrentTick()
 
             val rate = when {

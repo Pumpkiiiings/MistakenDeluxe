@@ -95,7 +95,7 @@ class GameStateController(private val game: GameSession) {
             }
             0 -> {
                 game.currentState = GameState.INGAME
-                game.timer = game.plugin.config.getInt("settings.game-duration", 300)
+                game.timer = game.settings?.gameDuration ?: game.plugin.config.getInt("settings.game-duration", 300)
                 game.broadcastLocalized("game.hunt-start")
 
                 // 🔥 RESTAURAR VISTAS
@@ -148,7 +148,7 @@ class GameStateController(private val game: GameSession) {
 
     fun startInGame() {
         val arenas = game.plugin.arenaManager.getArenas()
-        val winner = game.voteManager.getWinningMap(arenas) ?: run { resetToLobby(null); return }
+        val winner = game.settings?.forcedMap ?: game.voteManager.getWinningMap(arenas) ?: run { resetToLobby(null); return }
         val arena = game.plugin.arenaManager.getArena(winner) ?: run { resetToLobby(null); return }
 
         game.currentState = GameState.STARTING
@@ -177,6 +177,10 @@ class GameStateController(private val game: GameSession) {
     }
 
     private fun determineGameMode() {
+        if (game.settings?.forcedMode != null) {
+            game.currentMode = game.settings!!.forcedMode!!
+            return
+        }
         if (game.modeForced) return
         val onlineCount = game.plugin.server.onlinePlayers.count { !game.plugin.isIgnored(it) }
 

@@ -126,6 +126,22 @@ class GamePlayerController(private val game: GameSession) {
 
             game.uiController.playRoleTitle(p, isKiller)
             game.plugin.observerHUDManager.updatePlayerRole(p)
+
+            // --- APLICAR REGLAS PRIVADAS ---
+            game.settings?.let { rules ->
+                rules.speedMultiplier?.let { lvl ->
+                    p.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, lvl, false, false, false))
+                }
+                rules.jumpMultiplier?.let { lvl ->
+                    p.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, Int.MAX_VALUE, lvl, false, false, false))
+                }
+                if ((rules.blindnessRole == "KILLER" && isKiller) || (rules.blindnessRole == "SURVIVOR" && !isKiller)) {
+                    p.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, Int.MAX_VALUE, 0, false, false, false))
+                }
+                if (rules.glowingEnabled) {
+                    p.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, Int.MAX_VALUE, 0, false, false, false))
+                }
+            }
         }
 
         game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->

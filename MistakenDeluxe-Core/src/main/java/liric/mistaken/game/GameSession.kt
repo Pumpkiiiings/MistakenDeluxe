@@ -22,8 +22,11 @@ import pumpking.lib.service.PumpkingServiceManager
 class GameSession(
     val plugin: Mistaken,
     override val id: String,
-    val mapName: String = "Esperando..."
+    val mapName: String = "Esperando...",
+    val isPrivate: Boolean = false
 ) : ISession {
+
+    var settings: PrivateGameSettings? = if (isPrivate) PrivateGameSettings() else null
 
     // --- JUGADORES AISLADOS DE ESTA SESIÓN ---
     val players = ConcurrentHashMap.newKeySet<UUID>()

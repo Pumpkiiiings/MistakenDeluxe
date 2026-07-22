@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -37,6 +37,7 @@ import org.bukkit.entity.Display
 import org.bukkit.plugin.java.JavaPlugin
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.visuals.ParticleShapesUtils
 
 /**
  *[LIRIC-MISTAKEN 2.0]
@@ -139,8 +140,7 @@ class Entity303 : CoreKiller(
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     world.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1f, 2f)
-                    world.spawnParticle(org.bukkit.Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 5, 0.0, 0.0, 0.0, 0.0)
-                    world.spawnParticle(org.bukkit.Particle.WHITE_ASH, loc.clone().add(0.0, 1.0, 0.0), 100, 1.0, 1.0, 1.0, 0.5)
+                    ParticleShapesUtils.drawStar(loc, ParticleTypes.WHITE_ASH)
                 }, 30L)
             }
             1 -> {
@@ -157,7 +157,7 @@ class Entity303 : CoreKiller(
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     world.playSound(loc, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
-                    world.spawnParticle(org.bukkit.Particle.BLOCK, loc, 50, 0.5, 0.5, 0.5, Material.REDSTONE_BLOCK.createBlockData())
+                    ParticleShapesUtils.drawTornado(loc, ParticleTypes.CRIT)
                     barrier.remove()
                 }, 40L)
             }
@@ -236,7 +236,7 @@ class Entity303 : CoreKiller(
             val hit = star.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { isValidTarget(player, it) }
 
             if (hit != null || star.location.block.type.isSolid) {
-                star.world.spawnParticle(org.bukkit.Particle.EXPLOSION, star.location, 1)
+                ParticleShapesUtils.drawShockwave(star.location, ParticleTypes.EXPLOSION)
                 hit?.let {
                     plugin.combatManager.takeDamage(it)
                     it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
@@ -367,6 +367,9 @@ class Entity303 : CoreKiller(
             }
         }
         angulos[uuid] = anguloActual
+        
+        // Agregar alas temporales
+        ParticleShapesUtils.drawWings(player, ParticleTypes.FLAME)
     }
 
     private fun crearBloqueOrbitante(player: Player, loc: Location, mat: Material): VirtualBlockDisplay {
