@@ -296,6 +296,8 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(antiBlockListener, this)
         pm.registerEvents(SurvivorHabilidadListener(this), this)
         pm.registerEvents(GeneratorListener(this), this)
+        pm.registerEvents(liric.mistaken.listeners.HackTerminalListener(this), this)
+        pm.registerEvents(liric.mistaken.listeners.KeypadListener(this), this)
         pm.registerEvents(liric.mistaken.listeners.PrivateGameInteractListener(this), this)
 
         if (pm.isPluginEnabled("Parties")) {

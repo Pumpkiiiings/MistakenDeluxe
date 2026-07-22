@@ -53,7 +53,7 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         if (event.action != Action.RIGHT_CLICK_BLOCK) return
 
         val block = event.clickedBlock ?: return
-        if (block.type != genBlock) return
+        if (block.type != Material.RAW_IRON_BLOCK) return
 
         val player = event.player
         val session = plugin.sessionManager.getSession(player) ?: return

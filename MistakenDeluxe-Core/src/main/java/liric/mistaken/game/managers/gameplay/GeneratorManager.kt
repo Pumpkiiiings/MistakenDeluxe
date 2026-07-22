@@ -22,6 +22,7 @@ import org.bukkit.Bukkit
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.config.ConfigManager
 import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.game.objectives.ObjectiveType
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -47,7 +48,8 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val originalMaterial: Material,
         var progress: Int,
         var completed: Boolean,
-        var displayEntity: VirtualTextDisplay? = null
+        var displayEntity: VirtualTextDisplay? = null,
+        var type: ObjectiveType = ObjectiveType.CLASSIC_GENERATOR
     )
 
     init {
@@ -68,12 +70,11 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         nameCache.clear()
     }
 
-    private fun getFriendlyName(material: Material): String {
-        return nameCache.getOrPut(material) {
-            val langConfig = PumpkingServiceManager.messages.getSpecificFile(null, "messages")
-            langConfig.getString("generators.names.${material.name}")
-                ?: material.name.lowercase().replace("_", " ").split(" ")
-                    .joinToString(" ") { it.replaceFirstChar { char -> char.uppercase() } }
+    private fun getFriendlyName(type: ObjectiveType): String {
+        return when (type) {
+            ObjectiveType.CLASSIC_GENERATOR -> "Generador"
+            ObjectiveType.HACK_TERMINAL -> "Terminal de Hackeo"
+            ObjectiveType.KEYPAD_CODE -> "Panel de Código"
         }
     }
 
@@ -91,6 +92,18 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
                 dataConfig = configProvider.getRaw()
             }
 
+            // --- REPARTO DINÁMICO DE OBJETIVOS ---
+            val shuffled = locations.shuffled()
+            val total = shuffled.size
+            val genCount = Math.ceil(total * 0.60).toInt()
+            val hackCount = Math.floor(total * 0.30).toInt()
+            val codeCount = total - genCount - hackCount
+
+            val assignments = mutableMapOf<Location, ObjectiveType>()
+            shuffled.take(genCount).forEach { assignments[it] = ObjectiveType.CLASSIC_GENERATOR }
+            shuffled.drop(genCount).take(hackCount).forEach { assignments[it] = ObjectiveType.HACK_TERMINAL }
+            shuffled.drop(genCount + hackCount).forEach { assignments[it] = ObjectiveType.KEYPAD_CODE }
+
             locations.forEach { loc ->
                 val blockLoc = loc.block.location
                 plugin.server.regionScheduler.execute(plugin, blockLoc, Runnable {
@@ -98,18 +111,32 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
                     var savedProgress = 0
                     var isDone = false
-                    var original = Material.RAW_IRON_BLOCK
+                    var objTypeStr = ""
 
                     synchronized(fileLock) {
                         savedProgress = dataConfig.getInt("session.$coordKey.progress", 0)
                         isDone = dataConfig.getBoolean("session.$coordKey.completed", false)
-                        original = Material.getMaterial(dataConfig.getString("session.$coordKey.original_material", "RAW_IRON_BLOCK")!!) ?: Material.RAW_IRON_BLOCK
+                        objTypeStr = dataConfig.getString("session.$coordKey.type", "") ?: ""
                     }
 
-                    val state = GeneratorState(original, savedProgress, isDone)
+                    val objType = if (objTypeStr.isNotEmpty()) {
+                        ObjectiveType.valueOf(objTypeStr)
+                    } else {
+                        assignments[loc] ?: ObjectiveType.CLASSIC_GENERATOR
+                    }
+
+                    val requiredMaterial = when (objType) {
+                        ObjectiveType.CLASSIC_GENERATOR -> Material.RAW_IRON_BLOCK
+                        ObjectiveType.HACK_TERMINAL -> Material.OBSERVER
+                        ObjectiveType.KEYPAD_CODE -> Material.AMETHYST_BLOCK
+                    }
+
+                    val state = GeneratorState(requiredMaterial, savedProgress, isDone, type = objType)
                     generators[blockLoc] = state
 
+                    blockLoc.block.setType(requiredMaterial, false)
                     if (isDone) blockLoc.block.setType(Material.SEA_LANTERN, false)
+
                     spawnHologram(blockLoc, state)
                 })
             }
@@ -164,7 +191,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val entity = directEntity ?: state.displayEntity ?: return
         if (entity?.isValid == false) return
 
-        val typeName = getFriendlyName(state.originalMaterial)
+        val typeName = getFriendlyName(state.type)
         val lines = if (state.completed) completedLines else idleLines
 
         val text = lines.joinToString("<newline><reset>") { line ->
@@ -179,7 +206,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
             synchronized(fileLock) {
                 dataConfig.set("$key.progress", state.progress)
                 dataConfig.set("$key.completed", state.completed)
-                dataConfig.set("$key.original_material", state.originalMaterial.name)
+                dataConfig.set("$key.type", state.type.name)
                 try { configProvider.save() } catch (e: Exception) { }
             }
         }
