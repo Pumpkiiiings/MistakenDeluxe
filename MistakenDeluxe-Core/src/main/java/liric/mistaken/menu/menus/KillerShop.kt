@@ -1,4 +1,4 @@
-﻿package liric.mistaken.menu.menus
+package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -42,13 +42,14 @@ class KillerShop : MenuBase("killers_shop") {
         val labelComprar = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-comprar")
         val labelHabilidades = PumpkingServiceManager.messages.getComponent(player, "tienda.habilidades-titulo")
 
-        val asesinosCatalogo = plugin.asesinoManager.getAvailableClasses().keys
+        val asesinosCatalogo = plugin.asesinoManager.catalogo.keys
 
         for (killerId in asesinosCatalogo) {
-            val permisoRequerido = globalMecanicas.getString("asesinos.$killerId.permiso")
+            val killerConfig = plugin.configManager.getKillerConfig(killerId)
+            val permisoRequerido = killerConfig.getString("permiso")
             if (permisoRequerido != null && !player.hasPermission(permisoRequerido)) continue
 
-            // ðŸ”¥ NUEVO: DetecciÃ³n de slot fijo
+            // 🔥 NUEVO: Detección de slot fijo
             val targetSlot = if (fixedSlots.containsKey(killerId)) {
                 fixedSlots[killerId]!!
             } else if (preferredSlots.isNotEmpty()) {
@@ -63,8 +64,8 @@ class KillerShop : MenuBase("killers_shop") {
             val descripcion = PumpkingServiceManager.messages.getStrictStringList(player, "asesinos.$killerId.descripcion", "killers_info")
             val loreTienda = PumpkingServiceManager.messages.getStrictStringList(player, "asesinos.$killerId.lore_tienda", "killers_info")
 
-            val precio = globalMecanicas.getInt("asesinos.$killerId.precio", 0)
-            val matStr = globalMecanicas.getString("asesinos.$killerId.icono_material", "STONE")!!
+            val precio = killerConfig.getInt("precio", 0)
+            val matStr = killerConfig.getString("icono_material", "STONE")!!
             val iconoMat = Material.matchMaterial(matStr.uppercase()) ?: Material.STONE
 
             val fullLore = mutableListOf<Component>()

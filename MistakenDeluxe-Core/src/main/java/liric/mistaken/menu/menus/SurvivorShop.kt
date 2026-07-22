@@ -1,4 +1,4 @@
-﻿package liric.mistaken.menu.menus
+package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -45,24 +45,25 @@ class SurvivorTienda : MenuBase("survivors_shop") {
 
         var slotIndex = 0
 
-        for (survivorId in plugin.supervivienteManager.getAvailableClasses().keys) {
+        for (survivorId in plugin.supervivienteManager.catalogo.keys) {
             if (slotIndex >= slots.size) break
 
-            val permisoRequerido = globalMecanicas.getString("supervivientes.$survivorId.permiso")
+            val survivorConfig = plugin.configManager.getSurvivorConfig(survivorId)
+            val permisoRequerido = survivorConfig.getString("permiso")
             if (permisoRequerido != null && !player.hasPermission(permisoRequerido)) continue
 
-            // --- ðŸŽ¨ DATOS VISUALES (Desde survivors_info.yml) ---
+            // --- 🎨 DATOS VISUALES (Desde survivors_info.yml) ---
             // Ruta: supervivientes.<id>.nombre
             val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "supervivientes.$survivorId.nombre", "survivors_info")
             // Ruta: supervivientes.<id>.lore_tienda
             val loreTienda = PumpkingServiceManager.messages.getStrictStringList(player, "supervivientes.$survivorId.lore_tienda", "survivors_info")
 
-            // --- âš™ï¸ DATOS MECÃNICOS (Desde supervivientes.yml) ---
+            // --- ⚙️ DATOS MECÁNICOS (Desde supervivientes.yml) ---
             // Ruta: supervivientes.<id>.precio
-            val precio = globalMecanicas.getInt("supervivientes.$survivorId.precio", 0)
+            val precio = survivorConfig.getInt("precio", 0)
             // Ruta: supervivientes.<id>.icono_material
-            val matStr = globalMecanicas.getString("supervivientes.$survivorId.icono_material", "IRON_CHESTPLATE")!!
-            val iconoMat = Material.matchMaterial(matStr) ?: Material.IRON_CHESTPLATE
+            val matStr = survivorConfig.getString("icono_material", "IRON_CHESTPLATE")!!
+            val iconoMat = Material.matchMaterial(matStr.uppercase()) ?: Material.IRON_CHESTPLATE
 
             // --- ðŸ”¨ CONSTRUCCIÃ“N DEL LORE ---
             val fullLore = mutableListOf<Component>().apply {
