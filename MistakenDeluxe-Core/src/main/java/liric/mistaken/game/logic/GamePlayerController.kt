@@ -123,7 +123,11 @@ class GamePlayerController(private val game: GameSession) {
                             p.removePotionEffect(PotionEffectType.DARKNESS)
                         }, null)
 
-                        val claseID = game.plugin.playerDataManager.getSelectedKiller(p.uniqueId)
+                        var claseID = game.plugin.playerDataManager.getSelectedKiller(p.uniqueId)
+                        if (game.settings?.disabledClasses?.contains(claseID.lowercase()) == true) {
+                            claseID = "slasher"
+                            p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Slasher."))
+                        }
                         game.plugin.asesinoManager.equipKiller(p, claseID)
                     }
                 }
@@ -141,8 +145,12 @@ class GamePlayerController(private val game: GameSession) {
                     Consumer { _ ->
                         p.teleportAsync(spawnLoc).thenAccept { success ->
                             if (success && p.isOnline) {
-                                val idElegido = game.plugin.playerDataManager.getSelectedSurvivor(p.uniqueId)
-                                val clase = game.plugin.supervivienteManager.getClassById(idElegido) ?: Civilian()
+                                var idElegido = game.plugin.playerDataManager.getSelectedSurvivor(p.uniqueId)
+                                if (game.settings?.disabledClasses?.contains(idElegido.lowercase()) == true) {
+                                    idElegido = "civilian"
+                                    p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Civilian."))
+                                }
+                                val clase = game.plugin.supervivienteManager.getClassById(idElegido) ?: liric.mistaken.roles.survivors.clases.Civilian()
                                 game.plugin.supervivienteManager.registrarSurvivor(p, clase)
 
                                 if (game.currentMode == MistakenMode.ONE_BOUNCE) {

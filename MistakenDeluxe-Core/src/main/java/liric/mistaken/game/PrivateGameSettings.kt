@@ -16,5 +16,6 @@ data class PrivateGameSettings(
     var survivorHealth: Double? = null,
     var glowingEnabled: Boolean = false,
     val allowedKillers: MutableList<String> = mutableListOf(),
-    val allowedSurvivors: MutableList<String> = mutableListOf()
+    val allowedSurvivors: MutableList<String> = mutableListOf(),
+    val disabledClasses: MutableSet<String> = mutableSetOf()
 )

@@ -24,6 +24,7 @@ class SurvivorManager(private val plugin: Mistaken) {
 
     // Catálogo de clases registradas
     private val availableClasses = ConcurrentHashMap<String, Survivor>()
+    val catalogo: Map<String, Survivor> get() = availableClasses
 
     init {
         // Registro de Clases (Singletons)

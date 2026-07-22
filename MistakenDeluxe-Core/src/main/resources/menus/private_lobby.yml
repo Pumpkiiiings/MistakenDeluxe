@@ -86,6 +86,7 @@ menus:
       khealth: 24
       shealth: 25
       duration: 26
+      characters: 27
       back: 40
     items:
       glowing:
@@ -110,5 +111,25 @@ menus:
         name: "<gold><bold>Vida Superviviente"
         lore_hearts: "<gray>Corazones: <red>{hearts}"
       duration:
-        name: "<gold><bold>Duración de Partida"
+        name: "<gold><bold>Duración de la Partida"
         lore_time: "<gray>Tiempo: <yellow>{time}"
+      characters:
+        name: "<gold><bold>Clases Permitidas"
+        lore:
+          - "<gray>Selecciona qué asesinos y"
+          - "<gray>supervivientes se pueden usar."
+
+  character_selector:
+    title: "<dark_gray>Clases Permitidas"
+    rows: 6
+    filler_material: "BLACK_STAINED_GLASS_PANE"
+    start_slot: 10
+    max_slots: 43
+    back_slot: 49
+    items:
+      character:
+        lore_state: "<gray>Estado: {color}{state}"
+        lore_click: "<e>Click para alternar"
+        states:
+          enabled: "<green>Permitido"
+          disabled: "<red>Bloqueado"

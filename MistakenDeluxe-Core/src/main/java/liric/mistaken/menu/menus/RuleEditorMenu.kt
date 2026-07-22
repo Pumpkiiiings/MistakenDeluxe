@@ -30,6 +30,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
         val khealthSlot = config.getInt("menus.rule_editor.slots.khealth", 24)
         val shealthSlot = config.getInt("menus.rule_editor.slots.shealth", 25)
         val durationSlot = config.getInt("menus.rule_editor.slots.duration", 26)
+        val charactersSlot = config.getInt("menus.rule_editor.slots.characters", 27)
         val backSlot = config.getInt("menus.rule_editor.slots.back", 40)
 
         val gui = Gui.gui()
@@ -181,6 +182,22 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 val newFormatted = String.format("%02d Minutos, %02d Segundos", newMins, newSecs)
                 player.sendActionBar(ColorTranslator.translate("<yellow>Duración ajustada a: $newFormatted"))
                 abrir(player)
+            })
+
+        // Character Selector
+        val charactersName = config.getString("menus.rule_editor.items.characters.name", "<gold><bold>Clases Permitidas") ?: "<gold><bold>Clases Permitidas"
+        val charactersLoreList = config.getStringList("menus.rule_editor.items.characters.lore")
+        val charactersLore = if (charactersLoreList.isNotEmpty()) {
+            charactersLoreList.map { ColorTranslator.translate("<!italic>$it") }
+        } else {
+            listOf(ColorTranslator.translate("<!italic><gray>Selecciona qué asesinos y"), ColorTranslator.translate("<!italic><gray>supervivientes se pueden usar."))
+        }
+        gui.setItem(charactersSlot, ItemBuilder.from(Material.ZOMBIE_HEAD)
+            .name(ColorTranslator.translate("<!italic>$charactersName"))
+            .lore(charactersLore)
+            .asGuiItem {
+                player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
+                CharacterSelectorMenu(plugin, session).abrir(player)
             })
 
         // Back button
