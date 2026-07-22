@@ -85,7 +85,9 @@ tasks {
         archiveClassifier.set("")
         isZip64 = true
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        from(project(":MistakenDeluxe-API").extensions.getByType<JavaPluginExtension>().sourceSets["main"].output)
+        dependencies {
+            include(project(":MistakenDeluxe-API"))
+        }
     }
 
     withType<JavaCompile> {
