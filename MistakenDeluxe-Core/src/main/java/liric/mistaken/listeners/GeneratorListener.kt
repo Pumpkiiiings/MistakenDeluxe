@@ -1,4 +1,4 @@
-﻿package liric.mistaken.listeners
+package liric.mistaken.listeners
 
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.Component
@@ -95,7 +95,8 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         val session = plugin.sessionManager.getSession(player) ?: return
 
         val meta = clicked.itemMeta
-        val isCorrect = meta != null && meta.hasDisplayName() && mm.serialize(meta.displayName()!!).contains("yellow")
+        val repairKey = org.bukkit.NamespacedKey(plugin, "generator_repair_item")
+        val isCorrect = meta != null && meta.persistentDataContainer.has(repairKey, org.bukkit.persistence.PersistentDataType.BYTE)
 
         if (isCorrect) {
             plugin.generatorManager.addProgress(loc, 10)
@@ -177,6 +178,9 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
                 ColorTranslator.translate(loreLine),
                 Component.empty()
             ))
+            
+            val repairKey = org.bukkit.NamespacedKey(plugin, "generator_repair_item")
+            meta.persistentDataContainer.set(repairKey, org.bukkit.persistence.PersistentDataType.BYTE, 1.toByte())
         }
         return item
     }

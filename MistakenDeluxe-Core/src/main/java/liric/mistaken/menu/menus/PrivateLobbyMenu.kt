@@ -14,12 +14,22 @@ import pumpking.lib.color.ColorTranslator
 class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSession) {
 
     fun abrir(player: Player) {
-        val titleText = PumpkingServiceManager.messages.getRawString(player, Messages.MENUS_PRIVATE_LOBBY_TITLE, "<dark_gray>Configuración de Partida Privada", "messages")
-        val startName = PumpkingServiceManager.messages.getRawString(player, Messages.MENUS_PRIVATE_LOBBY_START_NAME, "<green><bold>Iniciar Partida", "messages")
-        val startLoreRaw = PumpkingServiceManager.messages.getStrictStringList(player, Messages.MENUS_PRIVATE_LOBBY_START_LORE, "messages").ifEmpty { listOf("<gray>Inicia la partida forzosamente.") }
+        val config = pumpking.lib.config.ConfigManager.getMenuConfig("private_lobby")
+        val titleText = config.getString("title", "<dark_gray>Configuración de Partida Privada") ?: "<dark_gray>Configuración de Partida Privada"
+        val startName = config.getString("items.start.name", "<green><bold>Iniciar Partida") ?: "<green><bold>Iniciar Partida"
+        val startLoreRaw = config.getStringList("items.start.lore").ifEmpty { listOf("<gray>Inicia la partida forzosamente.") }
         
-        val rulesName = PumpkingServiceManager.messages.getRawString(player, Messages.MENUS_PRIVATE_LOBBY_RULES_NAME, "<gold><bold>Reglas de Juego", "messages")
-        val rulesLoreRaw = PumpkingServiceManager.messages.getStrictStringList(player, Messages.MENUS_PRIVATE_LOBBY_RULES_LORE, "messages").ifEmpty { listOf("<gray>Modifica las reglas de la partida.") }
+        val rulesName = config.getString("items.rules.name", "<gold><bold>Reglas de Juego") ?: "<gold><bold>Reglas de Juego"
+        val rulesLoreRaw = config.getStringList("items.rules.lore").ifEmpty { listOf("<gray>Modifica las reglas de la partida.") }
+
+        val mapName = config.getString("items.map.name", "<gold><bold>Selector de Mapa") ?: "<gold><bold>Selector de Mapa"
+        val mapLoreRaw = config.getStringList("items.map.lore").ifEmpty { listOf("<gray>Elige el mapa a jugar.") }
+
+        val modeName = config.getString("items.mode.name", "<gold><bold>Selector de Modo") ?: "<gold><bold>Selector de Modo"
+        val modeLoreRaw = config.getStringList("items.mode.lore").ifEmpty { listOf("<gray>Elige el modo de juego.") }
+
+        val playersName = config.getString("items.players.name", "<gold><bold>Selector de Jugadores") ?: "<gold><bold>Selector de Jugadores"
+        val playersLoreRaw = config.getStringList("items.players.lore").ifEmpty { listOf("<gray>Elige roles de jugadores.") }
 
         val gui = Gui.gui()
             .title(ColorTranslator.translate("<!italic>$titleText"))
@@ -46,7 +56,6 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
             .name(ColorTranslator.translate("<!italic>$rulesName"))
             .lore(rulesLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
-                gui.close(player)
                 RuleEditorMenu(plugin, session).abrir(player)
             }
         
@@ -54,10 +63,9 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
 
         // Boton Mapa
         val mapItem = ItemBuilder.from(Material.MAP)
-            .name(ColorTranslator.translate("<!italic><gold><bold>Selector de Mapa"))
-            .lore(ColorTranslator.translate("<!italic><gray>Elige el mapa a jugar."))
+            .name(ColorTranslator.translate("<!italic>$mapName"))
+            .lore(mapLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
-                gui.close(player)
                 MapSelectorMenu(plugin, session).abrir(player)
             }
         
@@ -65,10 +73,9 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
 
         // Boton Modo
         val modeItem = ItemBuilder.from(Material.DIAMOND_SWORD)
-            .name(ColorTranslator.translate("<!italic><gold><bold>Selector de Modo"))
-            .lore(ColorTranslator.translate("<!italic><gray>Elige el modo de juego."))
+            .name(ColorTranslator.translate("<!italic>$modeName"))
+            .lore(modeLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
-                gui.close(player)
                 ModeSelectorMenu(plugin, session).abrir(player)
             }
         
@@ -76,10 +83,9 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
 
         // Boton Jugadores
         val playersItem = ItemBuilder.from(Material.PLAYER_HEAD)
-            .name(ColorTranslator.translate("<!italic><gold><bold>Selector de Jugadores"))
-            .lore(ColorTranslator.translate("<!italic><gray>Elige roles de jugadores."))
+            .name(ColorTranslator.translate("<!italic>$playersName"))
+            .lore(playersLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
-                gui.close(player)
                 PlayerSelectorMenu(plugin, session).abrir(player)
             }
         

@@ -12,8 +12,18 @@ import pumpking.lib.color.ColorTranslator
 class PlayerSelectorMenu(private val plugin: Mistaken, private val session: GameSession) {
 
     fun abrir(player: Player) {
+        val config = pumpking.lib.config.ConfigManager.getMenuConfig("private_lobby")
+        val title = config.getString("menus.player_selector.title", "<dark_gray>Selector de Jugadores") ?: "<dark_gray>Selector de Jugadores"
+        val loreRole = config.getString("menus.player_selector.items.player.lore_role", "<gray>Rol: {role}") ?: "<gray>Rol: {role}"
+        val loreLeft = config.getString("menus.player_selector.items.player.lore_left", "<e>Click Izq: Toggle Asesino") ?: "<e>Click Izq: Toggle Asesino"
+        val loreRight = config.getString("menus.player_selector.items.player.lore_right", "<e>Click Der: Toggle Superviviente") ?: "<e>Click Der: Toggle Superviviente"
+        val roleRandom = config.getString("menus.player_selector.items.player.roles.random", "<gray>Aleatorio") ?: "<gray>Aleatorio"
+        val roleKiller = config.getString("menus.player_selector.items.player.roles.killer", "<red><bold>Asesino") ?: "<red><bold>Asesino"
+        val roleSurvivor = config.getString("menus.player_selector.items.player.roles.survivor", "<green><bold>Superviviente") ?: "<green><bold>Superviviente"
+        val backName = config.getString("items.back.name", "<red>Volver") ?: "<red>Volver"
+
         val gui = Gui.gui()
-            .title(ColorTranslator.translate("<!italic><dark_gray>Selector de Jugadores"))
+            .title(ColorTranslator.translate("<!italic>$title"))
             .rows(4)
             .disableAllInteractions()
             .create()
@@ -27,24 +37,24 @@ class PlayerSelectorMenu(private val plugin: Mistaken, private val session: Game
             val isKiller = settings.allowedKillers.contains(name)
             val isSurvivor = settings.allowedSurvivors.contains(name)
             
-            var roleText = "<gray>Aleatorio"
+            var roleText = roleRandom
             var mat = Material.PLAYER_HEAD
             
             if (isKiller) {
-                roleText = "<red><bold>Asesino"
+                roleText = roleKiller
                 mat = Material.ZOMBIE_HEAD
             } else if (isSurvivor) {
-                roleText = "<green><bold>Superviviente"
+                roleText = roleSurvivor
                 mat = Material.APPLE
             }
 
             val item = ItemBuilder.from(mat)
                 .name(ColorTranslator.translate("<!italic><yellow>$name"))
                 .lore(
-                    ColorTranslator.translate("<!italic><gray>Rol: $roleText"),
+                    ColorTranslator.translate("<!italic>${loreRole.replace("{role}", roleText)}"),
                     net.kyori.adventure.text.Component.empty(),
-                    ColorTranslator.translate("<!italic><e>Click Izq: Toggle Asesino"),
-                    ColorTranslator.translate("<!italic><e>Click Der: Toggle Superviviente")
+                    ColorTranslator.translate("<!italic>$loreLeft"),
+                    ColorTranslator.translate("<!italic>$loreRight")
                 )
                 .asGuiItem { event ->
                     if (event.isLeftClick) {
@@ -72,9 +82,8 @@ class PlayerSelectorMenu(private val plugin: Mistaken, private val session: Game
         }
 
         gui.setItem(31, ItemBuilder.from(Material.ARROW)
-            .name(ColorTranslator.translate("<!italic><red>Volver"))
+            .name(ColorTranslator.translate("<!italic>$backName"))
             .asGuiItem {
-                gui.close(player)
                 PrivateLobbyMenu(plugin, session).abrir(player)
             })
 
