@@ -118,7 +118,7 @@ class Mistaken : JavaPlugin() {
     lateinit var asesinoTienda: KillerShop
     lateinit var supervivienteTienda: SurvivorTienda
     lateinit var shopSelector: ShopSelector
-    lateinit var glowingAPI: GlowingEntities
+    lateinit var glowingAPI: liric.mistaken.utils.misc.SafeGlowingManager
 
     override fun onLoad() {
         instance = this
@@ -178,7 +178,7 @@ class Mistaken : JavaPlugin() {
         val apiImpl = MistakenAPIImpl(this)
         MistakenProvider.register(apiImpl)
 
-        glowingAPI = GlowingEntities(this)
+        glowingAPI = liric.mistaken.utils.misc.SafeGlowingManager(this)
         combatManager = CombatManager(this)
         antiBlockListener = AntiBlockListener(this)
         voteManager = VoteManager()
