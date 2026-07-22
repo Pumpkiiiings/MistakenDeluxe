@@ -37,7 +37,10 @@ class KillerManager(private val plugin: Mistaken) : IKillerManager {
     }
 
     override fun registerClass(asesino: Killer) {
-        availableClasses[asesino.id.lowercase()] = asesino
+        val config = plugin.configManager.getKillerConfig(asesino.id)
+        if (config.getBoolean("enabled", true)) {
+            availableClasses[asesino.id.lowercase()] = asesino
+        }
     }
 
     fun updateKiller(player: Player, claseId: String) {

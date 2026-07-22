@@ -1,4 +1,5 @@
-id: "civil"
+id: "civilian"
+enabled: true
 precio: 0
 icono_material: "LEATHER_CHESTPLATE"
 armor:

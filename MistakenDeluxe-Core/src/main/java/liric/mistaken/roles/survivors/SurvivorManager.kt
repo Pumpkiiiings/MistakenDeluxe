@@ -41,7 +41,10 @@ class SurvivorManager(private val plugin: Mistaken) {
     }
 
     private fun registerClass(superviviente: Survivor) {
-        availableClasses[superviviente.id.lowercase()] = superviviente
+        val config = plugin.configManager.getSurvivorConfig(superviviente.id)
+        if (config.getBoolean("enabled", true)) {
+            availableClasses[superviviente.id.lowercase()] = superviviente
+        }
     }
 
     fun getClassById(id: String?): Survivor? {
