@@ -173,6 +173,9 @@ class CharlieInferno : CoreKiller(
                 target.fireTicks = 100
                 plugin.combatManager.takeDamage(target)
                 target.playSound(target.location, Sound.ITEM_FIRECHARGE_USE, 1f, 1f)
+                // Screen Effects: red flash + screenshake on fire explosion
+                ObserverHook.playScreenshake(target, 0.6f, 15)
+                ObserverHook.playScreenTint(target, 255, 50, 0, 0.4f, 20)
             }
         }
         player.world.spawnParticle(org.bukkit.Particle.FLAME, player.location, 50, 2.0, 0.5, 2.0, 0.1)
@@ -232,6 +235,8 @@ class CharlieInferno : CoreKiller(
                     it.freezeTicks = 140
                     it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
                     hitbox?.block = Material.RED_STAINED_GLASS.createBlockData() // Feedback visual de hit
+                    // Screen Effects: blue tint on ice hit
+                    ObserverHook.playScreenTint(it, 100, 180, 255, 0.35f, 30)
                 }
                 ice.remove()
 

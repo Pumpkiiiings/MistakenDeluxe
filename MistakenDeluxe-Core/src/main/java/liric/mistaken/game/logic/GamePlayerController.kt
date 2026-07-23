@@ -227,6 +227,16 @@ class GamePlayerController(private val game: GameSession) {
             if (ticks % 5 == 0 && p.passengers.isNotEmpty() && p.isSprinting) {
                 game.plugin.playerDataManager.consumeStamina(p.uniqueId, 0.4)
             }
+
+            // --- Bloody Screen Effect for Low Health ---
+            if (ticks % 10 == 0) {
+                val health = p.health
+                if (health <= 10.0) { // 5 hearts or less
+                    // Alpha ranges from ~0.15 (at 10 health) to ~0.8 (at 1 health)
+                    val alpha = (1.0f - (health.toFloat() / 10.0f)) * 0.7f + 0.15f
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, alpha, 20)
+                }
+            }
         }
 
         if (ticks % 20 == 0) {

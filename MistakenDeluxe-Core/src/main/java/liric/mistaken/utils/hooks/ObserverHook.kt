@@ -58,7 +58,6 @@ object ObserverHook {
     }
 
     fun playSound(player: Player, soundId: String, volume: Float = 1.0f, pitch: Float = 1.0f) {
-        if (!hasObserverPlugin) return
         try {
             val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
             val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
@@ -71,7 +70,6 @@ object ObserverHook {
     }
 
     fun playSpatialSound(player: Player, soundId: String, x: Double, y: Double, z: Double, volume: Float = 1.0f, pitch: Float = 1.0f) {
-        if (!hasObserverPlugin) return
         try {
             val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
             val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
@@ -84,7 +82,6 @@ object ObserverHook {
     }
 
     fun playEntitySound(player: Player, soundId: String, emitter: org.bukkit.entity.Entity, volume: Float = 1.0f, pitch: Float = 1.0f) {
-        if (!hasObserverPlugin) return
         try {
             val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
             val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
@@ -97,7 +94,6 @@ object ObserverHook {
     }
 
     fun stopSound(player: Player, soundId: String) {
-        if (!hasObserverPlugin) return
         try {
             val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
             val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
@@ -109,11 +105,26 @@ object ObserverHook {
     }
 
     fun stopAllSounds(player: Player) {
-        if (!hasObserverPlugin) return
         try {
             player.stopSound(net.kyori.adventure.sound.SoundStop.source(net.kyori.adventure.sound.Sound.Source.RECORD))
         } catch (e: Exception) {
             player.stopAllSounds()
         }
+    }
+
+    // --- Screen Effects ---
+
+    fun playScreenshake(player: Player, intensity: Float, durationTicks: Int) {
+        if (!hasObserverPlugin) return
+        try {
+            com.observer.paper.api.PaperObserverScreenAPI.playScreenshake(player, intensity, durationTicks)
+        } catch (e: Exception) {}
+    }
+
+    fun playScreenTint(player: Player, r: Int, g: Int, b: Int, alpha: Float, durationTicks: Int) {
+        if (!hasObserverPlugin) return
+        try {
+            com.observer.paper.api.PaperObserverScreenAPI.playScreenTint(player, r, g, b, alpha, durationTicks)
+        } catch (e: Exception) {}
     }
 }
