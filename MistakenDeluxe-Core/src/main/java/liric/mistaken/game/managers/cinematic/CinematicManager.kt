@@ -13,6 +13,8 @@ import java.util.UUID
 import java.util.function.Consumer
 import pumpking.lib.color.ColorTranslator
 import liric.mistaken.game.managers.cinematic.CameraStyle
+import liric.mistaken.utils.hooks.ObserverHook
+import org.bukkit.Sound
 
 class CinematicManager(private val plugin: Mistaken) {
 
@@ -92,6 +94,13 @@ class CinematicManager(private val plugin: Mistaken) {
         // Play visual effects
         profile.playEffects(plugin, fxLoc, visualDummy, isIntro = true, displayManager)
 
+        // Híbrido: Efectos globales de Cinemática
+        viewers.forEach { p ->
+            ObserverHook.playScreenTint(p, 0, 0, 0, 0.7f, 60)
+            ObserverHook.playScreenshake(p, 1.0f, 40)
+            p.playSound(p.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 0.5f, 0.5f)
+        }
+
         // Start cinematic orbit and dialogs
         val dialogos = profile.getDialogs(isIntro = true)
         var ticks = 0
@@ -154,6 +163,13 @@ class CinematicManager(private val plugin: Mistaken) {
 
         // Play visual effects
         profile.playEffects(plugin, centerLoc, visualDummy, isIntro = false, displayManager)
+
+        // Híbrido: Efectos globales de Outro
+        viewers.forEach { p ->
+            ObserverHook.playScreenTint(p, 100, 0, 0, 0.6f, 80) // Rojo oscuro trágico
+            ObserverHook.playScreenshake(p, 0.8f, 30)
+            p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 0.5f, 0.8f)
+        }
 
         // Start cinematic orbit and dialogs
         val dialogos = profile.getDialogs(isIntro = false)
@@ -238,8 +254,18 @@ class CinematicManager(private val plugin: Mistaken) {
             }
         }
 
-        val camX = centerLoc.x + radius * kotlin.math.cos(angle)
-        val camZ = centerLoc.z + radius * kotlin.math.sin(angle)
+        val forward = centerLoc.direction.setY(0.0)
+        if (forward.lengthSquared() < 0.01) {
+            forward.setX(1.0).setZ(0.0)
+        }
+        forward.normalize()
+        
+        // Rotate the forward vector by `angle` radians
+        val rx = forward.x * kotlin.math.cos(angle) - forward.z * kotlin.math.sin(angle)
+        val rz = forward.x * kotlin.math.sin(angle) + forward.z * kotlin.math.cos(angle)
+
+        val camX = centerLoc.x + rx * radius
+        val camZ = centerLoc.z + rz * radius
         val camY = centerLoc.y + yOffsetCam
         
         val camLoc = Location(centerLoc.world, camX, camY, camZ)
