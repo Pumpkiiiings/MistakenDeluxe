@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.cinematic.profiles
+package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -20,6 +20,8 @@ import pumpking.lib.color.ColorTranslator
 class SowoulProfile : CinematicProfile {
     override val id: String = "sowoul"
     override val isFloating: Boolean = false
+    override val introCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.ZIG_ZAG_GLITCH
+    override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.ZIG_ZAG_GLITCH
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
         return Pair(ColorTranslator.translate("<dark_purple>EL MAGO HA LLEGADO"), ColorTranslator.translate("<light_purple>Que comience el espectáculo..."))

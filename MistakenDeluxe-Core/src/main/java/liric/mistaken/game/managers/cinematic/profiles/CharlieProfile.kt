@@ -19,6 +19,8 @@ import pumpking.lib.color.ColorTranslator
 class CharlieProfile : CinematicProfile {
     override val id: String = "charlie" // Or charlieinferno
     override val isFloating: Boolean = false
+    override val introCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.DRONE_SPIRAL
+    override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.DRONE_SPIRAL
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
         return Pair(ColorTranslator.translate("<gold>CAÍDO DEL CIELO"), ColorTranslator.translate("<red>Bienvenido a mi infierno."))

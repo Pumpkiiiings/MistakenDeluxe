@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.cinematic.profiles
+package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -18,6 +18,8 @@ import pumpking.lib.color.ColorTranslator
 class SlasherProfile : CinematicProfile {
     override val id: String = "slasher"
     override val isFloating: Boolean = false
+    override val introCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.PAN_UP_REVEAL
+    override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.PAN_UP_REVEAL
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
         return Pair(ColorTranslator.translate("<dark_red>LA EJECUCIÓN"), ColorTranslator.translate("<red>Nadie escapa de White Pumpkin."))

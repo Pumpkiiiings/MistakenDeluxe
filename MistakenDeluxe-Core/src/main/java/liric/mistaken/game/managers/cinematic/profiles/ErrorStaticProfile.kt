@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.cinematic.profiles
+package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -21,6 +21,8 @@ import pumpking.lib.color.ColorTranslator
 class ErrorStaticProfile : CinematicProfile {
     override val id: String = "error_estatico"
     override val isFloating: Boolean = false
+    override val introCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.ZIG_ZAG_GLITCH
+    override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.ZIG_ZAG_GLITCH
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
         return Pair(ColorTranslator.translate("<white><obfuscated>||</obfuscated> ERROR <obfuscated>||</obfuscated>"), ColorTranslator.translate("<gray>S1st3m4 C0rrupt0..."))

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.cinematic.profiles
+package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -19,6 +19,8 @@ import pumpking.lib.color.ColorTranslator
 class RomeoProfile : CinematicProfile {
     override val id: String = "romeo" // Or romeodebuff
     override val isFloating: Boolean = true
+    override val introCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.PAN_UP_REVEAL
+    override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.PAN_UP_REVEAL
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
         return Pair(ColorTranslator.translate("<dark_red>EL ADMINISTRADOR"), ColorTranslator.translate("<red>Este mundo me pertenece."))

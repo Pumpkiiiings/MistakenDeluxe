@@ -9,6 +9,8 @@ import liric.mistaken.Mistaken
 interface CinematicProfile {
     val id: String
     val isFloating: Boolean
+    val introCameraStyle: CameraStyle get() = CameraStyle.ORBIT_ZOOM_IN
+    val outroCameraStyle: CameraStyle get() = CameraStyle.ORBIT_ZOOM_IN
 
     fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component>
     fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component>

@@ -12,6 +12,7 @@ import java.time.Duration
 import java.util.UUID
 import java.util.function.Consumer
 import pumpking.lib.color.ColorTranslator
+import liric.mistaken.game.managers.cinematic.CameraStyle
 
 class CinematicManager(private val plugin: Mistaken) {
 
@@ -112,22 +113,9 @@ class CinematicManager(private val plugin: Mistaken) {
                 }
             }
 
-            // Cinematic Epic Orbit - Starts far and orbits while getting closer
+            // Cinematic Dynamic Camera
             val progress = ticks.toDouble() / duracionTicks.toDouble()
-            val angle = progress * Math.PI * 2.0 // One full rotation
-            val radius = 5.0 - (progress * 2.5) // Radius shrinks from 5.0 to 2.5 blocks
-            val yOffsetCam = 0.5 + (progress * 2.0) // Camera rises from +0.5 to +2.5
-            
-            val camX = centerLoc.x + radius * kotlin.math.cos(angle)
-            val camZ = centerLoc.z + radius * kotlin.math.sin(angle)
-            val camY = centerLoc.y + yOffsetCam
-            
-            val camLoc = Location(centerLoc.world, camX, camY, camZ)
-            
-            // Look directly at the center of the entity (Y + 1.2 approx)
-            val lookAt = centerLoc.clone().add(0.0, 1.2, 0.0)
-            camLoc.direction = lookAt.toVector().subtract(camLoc.toVector())
-            
+            val camLoc = getCameraLocation(profile.introCameraStyle, centerLoc, progress, true)
             cameras.forEach { it.updatePosition(camLoc) }
 
             ticks++
@@ -188,25 +176,82 @@ class CinematicManager(private val plugin: Mistaken) {
                 }
             }
 
-            // Cinematic Epic Outro - Starts close and zooms out slowly while panning up
+            // Cinematic Dynamic Camera
             val progress = ticks.toDouble() / duracionTicks.toDouble()
-            val angle = progress * Math.PI // Half rotation
-            val radius = 2.5 + (progress * 6.0) // Radius expands from 2.5 to 8.5 blocks
-            val yOffsetCam = 1.0 + (progress * 4.0) // Camera rises from +1.0 to +5.0
-            
-            val camX = centerLoc.x + radius * kotlin.math.cos(angle)
-            val camZ = centerLoc.z + radius * kotlin.math.sin(angle)
-            val camY = centerLoc.y + yOffsetCam
-            
-            val camLoc = Location(centerLoc.world, camX, camY, camZ)
-            
-            // Look directly at the center of the entity (Y + 1.2 approx)
-            val lookAt = centerLoc.clone().add(0.0, 1.2, 0.0)
-            camLoc.direction = lookAt.toVector().subtract(camLoc.toVector())
-            
+            val camLoc = getCameraLocation(profile.outroCameraStyle, centerLoc, progress, false)
             cameras.forEach { it.updatePosition(camLoc) }
 
             ticks++
         }, 1L, 1L)
+    }
+
+    private fun getCameraLocation(style: CameraStyle, centerLoc: Location, progress: Double, isIntro: Boolean): Location {
+        var radius = 0.0
+        var yOffsetCam = 0.0
+        var angle = 0.0
+        var lookAtY = 1.2
+
+        val effectiveProgress = if (isIntro) progress else (1.0 - progress * 0.7)
+
+        when (style) {
+            CameraStyle.ORBIT_ZOOM_IN -> {
+                angle = progress * Math.PI * (if (isIntro) 2.0 else 1.0)
+                radius = if (isIntro) 5.0 - (progress * 2.5) else 2.5 + (progress * 6.0)
+                yOffsetCam = if (isIntro) 0.5 + (progress * 2.0) else 1.0 + (progress * 4.0)
+            }
+            CameraStyle.PAN_UP_REVEAL -> {
+                angle = if (effectiveProgress < 0.7) 0.0 else (effectiveProgress - 0.7) * Math.PI * 1.5
+                radius = 3.0 + (if (!isIntro) progress * 2.0 else 0.0)
+                yOffsetCam = 0.1 + (effectiveProgress * 1.5)
+                lookAtY = 0.5 + (effectiveProgress * 1.0)
+            }
+            CameraStyle.JUMPSCARE_RUSH -> {
+                angle = if (isIntro) 0.0 else progress * Math.PI
+                if (isIntro) {
+                    if (progress < 0.8) {
+                        radius = 8.0 - (progress * 3.0)
+                    } else {
+                        radius = 1.0 + ((1.0 - progress) * 20.0)
+                    }
+                } else {
+                    radius = 2.0 + (progress * 8.0)
+                }
+                yOffsetCam = 1.5
+                lookAtY = 1.5
+            }
+            CameraStyle.DRONE_SPIRAL -> {
+                angle = effectiveProgress * Math.PI * 4.0
+                radius = 8.0 * (1.0 - effectiveProgress) + 1.5
+                yOffsetCam = 8.0 * (1.0 - effectiveProgress) + 1.0
+                lookAtY = 1.2
+            }
+            CameraStyle.ZIG_ZAG_GLITCH -> {
+                val step = (effectiveProgress * 5).toInt()
+                angle = step * Math.PI / 2.0 + (effectiveProgress * 0.5)
+                radius = 5.0 - (step * 0.7) + (if (!isIntro) progress * 3.0 else 0.0)
+                yOffsetCam = 1.0 + (step * 0.2)
+                
+                if (Math.random() > 0.8) {
+                    angle += (Math.random() - 0.5) * 0.2
+                    yOffsetCam += (Math.random() - 0.5) * 0.3
+                }
+            }
+        }
+
+        val camX = centerLoc.x + radius * kotlin.math.cos(angle)
+        val camZ = centerLoc.z + radius * kotlin.math.sin(angle)
+        val camY = centerLoc.y + yOffsetCam
+        
+        val camLoc = Location(centerLoc.world, camX, camY, camZ)
+        val lookAt = centerLoc.clone().add(0.0, lookAtY, 0.0)
+        
+        if (style == CameraStyle.ZIG_ZAG_GLITCH && Math.random() > 0.9) {
+            lookAt.add((Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5))
+        }
+
+        if (camLoc.distanceSquared(lookAt) > 0.001) {
+            camLoc.direction = lookAt.toVector().subtract(camLoc.toVector())
+        }
+        return camLoc
     }
 }

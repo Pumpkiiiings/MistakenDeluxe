@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.cinematic.profiles
+package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -20,6 +20,8 @@ import pumpking.lib.color.ColorTranslator
 class Entity303Profile : CinematicProfile {
     override val id: String = "entity303"
     override val isFloating: Boolean = true
+    override val introCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.JUMPSCARE_RUSH
+    override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.JUMPSCARE_RUSH
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
         return Pair(ColorTranslator.translate("<red><bold>ERROR CRÍTICO</bold>"), ColorTranslator.translate("<dark_red>SYSTEM ERROR: 303 FOUND"))
