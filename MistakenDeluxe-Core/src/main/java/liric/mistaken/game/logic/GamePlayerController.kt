@@ -298,11 +298,7 @@ class GamePlayerController(private val game: GameSession) {
 
         val freeSurvivors = allSurvivors.count { !game.combatManager.isFrozen(it) }
         if (freeSurvivors == 0) {
-            if (game.currentMode == MistakenMode.FREEZE_TAG && allSurvivors.size > 1) {
-                game.stateController.endGame("game.victory-killer", true)
-            } else if (game.currentMode != MistakenMode.FREEZE_TAG) {
-                game.stateController.endGame("game.victory-killer", true)
-            }
+            game.stateController.endGame("game.victory-killer", true)
         }
     }
 
