@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -169,6 +169,8 @@ class Sowoul : CoreKiller(
 
             if (ticks < 5) player.velocity = dir.clone().multiply(1.0 - (ticks * 0.1))
             player.world.spawnParticle(org.bukkit.Particle.REVERSE_PORTAL, player.location, 25, 0.5, 0.5, 0.5, 0.2)
+            player.world.spawnParticle(org.bukkit.Particle.DRAGON_BREATH, player.location, 5, 0.5, 0.5, 0.5, 0.05)
+            player.world.spawnParticle(org.bukkit.Particle.SPELL_WITCH, player.location, 10, 0.5, 0.5, 0.5, 0.05)
 
             player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
                 if (isValidTarget(player, victim) && hitted.add(victim.uniqueId)) {
@@ -176,6 +178,12 @@ class Sowoul : CoreKiller(
                     victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
                     victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 2))
                     victim.playSound(victim.location, Sound.ENTITY_ILLUSIONER_MIRROR_MOVE, 1f, 1f)
+                    
+                    // Epic 200% Hit Visuals
+                    victim.world.spawnParticle(org.bukkit.Particle.SONIC_BOOM, victim.location.add(0.0, 1.0, 0.0), 1)
+                    victim.world.spawnParticle(org.bukkit.Particle.FLASH, victim.location.add(0.0, 1.0, 0.0), 1)
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenTint(victim, 128, 0, 128, 0.8f, 40)
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenshake(victim, 1.5f, 20)
                 }
             }
             ticks++
@@ -202,10 +210,11 @@ class Sowoul : CoreKiller(
 
             carta.teleport(carta.location.add(dir))
             val t = carta.transformation
-            t!!.leftRotation.rotateY(0.8f).rotateZ(0.8f)
+            t!!.leftRotation.rotateY(1.8f).rotateZ(1.8f)
             carta.transformation = t
 
-            carta.world.spawnParticle(org.bukkit.Particle.ENCHANT, carta.location, 3, 0.1, 0.1, 0.1, 0.0)
+            carta.world.spawnParticle(org.bukkit.Particle.ENCHANT, carta.location, 5, 0.1, 0.1, 0.1, 0.0)
+            carta.world.spawnParticle(org.bukkit.Particle.CRIT_MAGIC, carta.location, 10, 0.2, 0.2, 0.2, 0.05)
 
             val hit = carta.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { isValidTarget(player, it) }
 
@@ -214,8 +223,11 @@ class Sowoul : CoreKiller(
                     plugin.combatManager.takeDamage(it)
                     it.addPotionEffect(PotionEffect(PotionEffectType.POISON, 60, 0))
                     it.playSound(it.location, Sound.ENTITY_PLAYER_HURT_SWEET_BERRY_BUSH, 1f, 1.2f)
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenTint(it, 0, 255, 0, 0.5f, 20)
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenshake(it, 0.8f, 15)
                 }
-                carta.world.spawnParticle(org.bukkit.Particle.FIREWORK, carta.location, 15, 0.3, 0.3, 0.3, 0.1)
+                carta.world.spawnParticle(org.bukkit.Particle.FIREWORK, carta.location, 30, 0.5, 0.5, 0.5, 0.1)
+                carta.world.spawnParticle(org.bukkit.Particle.SPELL_MOB, carta.location, 30, 0.5, 0.5, 0.5, 0.1) // Verde/Tóxico
                 carta.remove()
                 fakeEntities.remove(carta)
                 task.cancel()
@@ -255,6 +267,15 @@ class Sowoul : CoreKiller(
                     if (!locToSpawn.block.type.isSolid) {
                         world.spawn(locToSpawn, EvokerFangs::class.java) { fangs ->
                             fangs.owner = player
+                        }
+                        world.spawnParticle(org.bukkit.Particle.SOUL_FIRE_FLAME, locToSpawn, 15, 0.2, 0.5, 0.2, 0.05)
+                        world.spawnParticle(org.bukkit.Particle.ASH, locToSpawn, 15, 0.2, 0.5, 0.2, 0.05)
+                        
+                        locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
+                            if (isValidTarget(player, victim)) {
+                                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(victim, 10, 0, 15, 0.6f, 15) // Morado oscurisimo
+                                liric.mistaken.utils.hooks.ObserverHook.playScreenshake(victim, 1.0f, 15)
+                            }
                         }
                     }
                 }, (i * 2).toLong())
@@ -297,15 +318,24 @@ class Sowoul : CoreKiller(
             target.velocity = pullDir.setY(0.2)
 
             manoDisplay.teleport(target.location.clone().add(0.0, 1.0, 0.0))
-            manoDisplay.world.spawnParticle(org.bukkit.Particle.PORTAL, manoDisplay.location, 20, 1.0, 1.0, 1.0, 0.5)
+            manoDisplay.world.spawnParticle(org.bukkit.Particle.PORTAL, manoDisplay.location, 40, 1.5, 1.5, 1.5, 0.8)
+            manoDisplay.world.spawnParticle(org.bukkit.Particle.ENCHANT, manoDisplay.location, 20, 1.5, 1.5, 1.5, 0.8)
+            
+            if (ticks % 5 == 0) {
+                liric.mistaken.utils.hooks.ObserverHook.playScreenshake(target, 0.5f, 10)
+            }
 
             if (target.location.distanceSquared(player.location) < 4.0) {
                 plugin.combatManager.takeDamage(target)
                 target.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
                 target.playSound(target.location, Sound.ENTITY_IRON_GOLEM_HURT, 1f, 0.5f)
 
-                manoDisplay.world.spawnParticle(org.bukkit.Particle.EXPLOSION, manoDisplay.location, 2)
-                manoDisplay.world.playSound(manoDisplay.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1.5f)
+                manoDisplay.world.spawnParticle(org.bukkit.Particle.EXPLOSION_EMITTER, manoDisplay.location, 3)
+                manoDisplay.world.spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, manoDisplay.location, 150, 1.0, 2.0, 1.0, 0.5)
+                manoDisplay.world.playSound(manoDisplay.location, Sound.ENTITY_GENERIC_EXPLODE, 2f, 1.5f)
+                
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(target, 255, 255, 255, 1.0f, 20)
+                liric.mistaken.utils.hooks.ObserverHook.playScreenshake(target, 2.0f, 30)
 
                 manoDisplay.remove()
                 task.cancel()
