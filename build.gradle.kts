@@ -69,7 +69,7 @@ dependencies {
         exclude(group = "org.bukkit", module = "bukkit")
     }
     compileOnly("net.momirealms:craft-engine-core:0.0.67.11")
-    compileOnly("net.momirealms:craft-engine-bukkit:0.0.67.11")
+    compileOnly("net.momirealms:craft-engine-bukkit:26.7.4")
     compileOnly(files("libs/CraftEngine.jar"))
     compileOnly(files("C:/Users/L900m/OneDrive/Desktop/PkCinematic/build/libs/PkCinematics-1.2-FIX-dev-all.jar"))
     compileOnly("net.luckperms:api:5.5")
