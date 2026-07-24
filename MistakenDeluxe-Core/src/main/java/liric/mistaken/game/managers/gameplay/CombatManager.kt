@@ -357,8 +357,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         if (!frozenPlayers.remove(victim.uniqueId)) return
         runOnMain {
             victim.removePotionEffect(PotionEffectType.DARKNESS)
-            victim.removePotionEffect(PotionEffectType.SLOWNESS)
-            victim.removePotionEffect(PotionEffectType.JUMP_BOOST)
 
             victim.clearTitle()
             victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
@@ -401,8 +399,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.0
             victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.0
             victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, false))
-            victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, Int.MAX_VALUE, 255, false, false, false))
-            victim.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, Int.MAX_VALUE, 250, false, false, false))
             victim.world.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
 
             startFreezeTimer(victim, session)
@@ -452,8 +448,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             if (frozenPlayers.contains(uuid)) {
                 target.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
                 target.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
-                target.removePotionEffect(PotionEffectType.SLOWNESS)
-                target.removePotionEffect(PotionEffectType.JUMP_BOOST)
                 target.clearTitle()
             }
 
