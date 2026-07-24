@@ -61,8 +61,20 @@ class ColorAndElectricityProfile : CinematicProfile {
         else dummy.setItem(EquipmentSlot.HAND, inv.itemInMainHand)
     }
 
-    override fun playEffects(plugin: Mistaken, loc: Location, dummy: ArmorStand, isIntro: Boolean, displayManager: DisplayManager) {
+    override fun playEffects(plugin: Mistaken, loc: Location, dummy: ArmorStand, isIntro: Boolean, displayManager: DisplayManager, viewers: List<Player>) {
         val world = loc.world ?: return
+
+        viewers.forEach { p ->
+            if (isIntro) {
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 255, 0, 0.6f, 60)
+                liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.0f, 40)
+                p.playSound(loc, org.bukkit.Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1f, 1.0f)
+            } else {
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 0, 255, 255, 0.7f, 80)
+                liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.0f, 30)
+                p.playSound(loc, org.bukkit.Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1f, 1.0f)
+            }
+        }
         world.spawnParticle(Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 3)
 
         if (isIntro) {

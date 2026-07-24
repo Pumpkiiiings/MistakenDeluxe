@@ -92,14 +92,7 @@ class CinematicManager(private val plugin: Mistaken) {
         val fxLoc = centerLoc.clone(); fxLoc.y -= yOffset
         
         // Play visual effects
-        profile.playEffects(plugin, fxLoc, visualDummy, isIntro = true, displayManager)
-
-        // Híbrido: Efectos globales de Cinemática
-        viewers.forEach { p ->
-            ObserverHook.playScreenTint(p, 0, 0, 0, 0.7f, 60)
-            ObserverHook.playScreenshake(p, 1.0f, 40)
-            p.playSound(p.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 0.5f, 0.5f)
-        }
+        profile.playEffects(plugin, fxLoc, visualDummy, true, displayManager, viewers)
 
         // Start cinematic orbit and dialogs
         val dialogos = profile.getDialogs(isIntro = true)
@@ -162,14 +155,7 @@ class CinematicManager(private val plugin: Mistaken) {
         }
 
         // Play visual effects
-        profile.playEffects(plugin, centerLoc, visualDummy, isIntro = false, displayManager)
-
-        // Híbrido: Efectos globales de Outro
-        viewers.forEach { p ->
-            ObserverHook.playScreenTint(p, 100, 0, 0, 0.6f, 80) // Rojo oscuro trágico
-            ObserverHook.playScreenshake(p, 0.8f, 30)
-            p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 0.5f, 0.8f)
-        }
+        profile.playEffects(plugin, centerLoc, visualDummy, false, displayManager, viewers)
 
         // Start cinematic orbit and dialogs
         val dialogos = profile.getDialogs(isIntro = false)
@@ -258,7 +244,7 @@ class CinematicManager(private val plugin: Mistaken) {
         if (forward.lengthSquared() < 0.01) {
             forward.setX(1.0).setZ(0.0)
         }
-        forward.normalize()
+        forward.multiply(-1.0).normalize()
         
         // Rotate the forward vector by `angle` radians
         val rx = forward.x * kotlin.math.cos(angle) - forward.z * kotlin.math.sin(angle)

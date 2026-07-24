@@ -19,5 +19,5 @@ interface CinematicProfile {
     fun applyPose(dummy: ArmorStand, isIntro: Boolean)
     fun applyEquipment(killer: Player, dummy: ArmorStand, isIntro: Boolean)
     
-    fun playEffects(plugin: Mistaken, loc: Location, dummy: ArmorStand, isIntro: Boolean, displayManager: DisplayManager)
+    fun playEffects(plugin: Mistaken, loc: Location, dummy: ArmorStand, isIntro: Boolean, displayManager: DisplayManager, viewers: List<Player>)
 }

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.cinematic.profiles
+package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile
@@ -49,8 +49,20 @@ class TetoProfile : CinematicProfile {
         dummy.setItem(EquipmentSlot.HAND, ItemStack(Material.BREAD))
     }
 
-    override fun playEffects(plugin: Mistaken, loc: Location, dummy: ArmorStand, isIntro: Boolean, displayManager: DisplayManager) {
+    override fun playEffects(plugin: Mistaken, loc: Location, dummy: ArmorStand, isIntro: Boolean, displayManager: DisplayManager, viewers: List<Player>) {
         val world = loc.world ?: return
+
+        viewers.forEach { p ->
+            if (isIntro) {
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 0, 0, 0, 0.7f, 60)
+                liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.0f, 40)
+                p.playSound(loc, org.bukkit.Sound.ENTITY_ENDER_DRAGON_GROWL, 0.5f, 0.5f)
+            } else {
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 100, 0, 0, 0.6f, 80)
+                liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 0.8f, 30)
+                p.playSound(loc, org.bukkit.Sound.ENTITY_WITHER_SPAWN, 0.5f, 0.8f)
+            }
+        }
         world.spawnParticle(Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 3)
 
         world.playSound(loc, Sound.ENTITY_GHAST_SCREAM, 0.5f, 2f)
