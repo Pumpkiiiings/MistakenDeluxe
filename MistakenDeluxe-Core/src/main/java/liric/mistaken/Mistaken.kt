@@ -308,6 +308,11 @@ class Mistaken : JavaPlugin() {
             pm.registerEvents(liric.mistaken.utils.hooks.LodestonePartiesHook(this), this)
             componentLogger.info(ColorTranslator.translate("[INFO] Hooked into LodestoneParties!"))
         }
+
+        if (pm.isPluginEnabled("ObserverPaper")) {
+            pm.registerEvents(liric.mistaken.utils.hooks.ObserverHook, this)
+            componentLogger.info(ColorTranslator.translate("[INFO] Hooked into ObserverPaper!"))
+        }
     }
 
     private fun iniciarMotorDeParticulas() {

@@ -129,6 +129,29 @@ class GamePlayerController(private val game: GameSession) {
                             p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Slasher."))
                         }
                         game.plugin.asesinoManager.equipKiller(p, claseID)
+
+                        if (game.currentMode == MistakenMode.HIDE_AND_SEEK) {
+                            p.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 1200, 0, false, false, false))
+                            p.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 1200, 255, false, false, false))
+                            p.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, 1200, 250, false, false, false))
+                            p.addPotionEffect(PotionEffect(PotionEffectType.MINING_FATIGUE, 1200, 255, false, false, false))
+                            
+                            p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>¡Espera 1 minuto mientras los supervivientes se esconden!"))
+                            
+                            p.scheduler.runDelayed(game.plugin, Consumer { _ ->
+                                if (p.isOnline && game.currentState == GameState.INGAME) {
+                                    p.removePotionEffect(PotionEffectType.BLINDNESS)
+                                    p.removePotionEffect(PotionEffectType.SLOWNESS)
+                                    p.removePotionEffect(PotionEffectType.JUMP_BOOST)
+                                    p.removePotionEffect(PotionEffectType.MINING_FATIGUE)
+                                    p.playSound(p.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 1f)
+                                    p.showTitle(Title.title(
+                                        PumpkingServiceManager.messages.getComponent(p, "game.killer-released-title"),
+                                        PumpkingServiceManager.messages.getComponent(p, "game.killer-released-subtitle")
+                                    ))
+                                }
+                            }, null, 1200L)
+                        }
                     }
                 }
             } else {
@@ -155,6 +178,17 @@ class GamePlayerController(private val game: GameSession) {
 
                                 if (game.currentMode == MistakenMode.ONE_BOUNCE) {
                                     p.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, 0, false, false, false))
+                                } else if (game.currentMode == MistakenMode.HIDE_AND_SEEK) {
+                                    p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>¡Tienes 1 minuto para esconderte antes de que el asesino sea liberado!"))
+                                    p.scheduler.runDelayed(game.plugin, Consumer { _ ->
+                                        if (p.isOnline && game.currentState == GameState.INGAME) {
+                                            p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 0.5f, 0.8f)
+                                            p.showTitle(Title.title(
+                                                PumpkingServiceManager.messages.getComponent(p, "game.killer-released-title"),
+                                                PumpkingServiceManager.messages.getComponent(p, "game.killer-released-subtitle")
+                                            ))
+                                        }
+                                    }, null, 1200L)
                                 }
                             }
                         }
@@ -207,7 +241,7 @@ class GamePlayerController(private val game: GameSession) {
                 game.uiController.playAmbientForPlayer(p, killersOnline)
             }
 
-            if (ticks % 10 == 0 && killersOnline.isNotEmpty()) {
+            if (ticks % 10 == 0 && killersOnline.isNotEmpty() && game.currentMode != MistakenMode.HIDE_AND_SEEK) {
                 val closestKiller = killersOnline[0]
                 game.uiController.checkHeartbeat(p, closestKiller)
 

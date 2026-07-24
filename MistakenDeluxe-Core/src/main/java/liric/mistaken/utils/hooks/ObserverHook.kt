@@ -6,7 +6,7 @@ import com.observer.api.model.ComponentAlignment
 import com.observer.api.model.TextAlignment
 import com.observer.paper.api.ObserverAPI
 
-object ObserverHook {
+object ObserverHook : org.bukkit.event.Listener {
 
     private val hasObserverPlugin: Boolean
         get() = Bukkit.getPluginManager().isPluginEnabled("ObserverPaper")
@@ -125,6 +125,48 @@ object ObserverHook {
         if (!hasObserverPlugin) return
         try {
             com.observer.paper.api.PaperObserverScreenAPI.playScreenTint(player, r, g, b, alpha, durationTicks)
+        } catch (e: Exception) {}
+    }
+
+    // --- Animations ---
+
+    @org.bukkit.event.EventHandler
+    fun onLeftClick(event: com.observer.paper.api.events.ObserverPlayerLeftClickEvent) {
+        if (!hasObserverPlugin) return
+        try {
+            com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, "ataque")
+        } catch (e: Exception) {}
+    }
+
+    @org.bukkit.event.EventHandler
+    fun onSprint(event: com.observer.paper.api.events.ObserverPlayerSprintEvent) {
+        if (!hasObserverPlugin) return
+        try {
+            if (event.isSprinting) {
+                com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, "run")
+            } else {
+                com.observer.paper.api.PaperObserverAnimationAPI.stopAnimation(event.player)
+            }
+        } catch (e: Exception) {}
+    }
+
+    @org.bukkit.event.EventHandler
+    fun onWalk(event: com.observer.paper.api.events.ObserverPlayerWalkEvent) {
+        if (!hasObserverPlugin) return
+        try {
+            if (event.isWalking) {
+                com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, "walk")
+            } else {
+                com.observer.paper.api.PaperObserverAnimationAPI.stopAnimation(event.player)
+            }
+        } catch (e: Exception) {}
+    }
+
+    @org.bukkit.event.EventHandler
+    fun onJump(event: com.observer.paper.api.events.ObserverPlayerJumpEvent) {
+        if (!hasObserverPlugin) return
+        try {
+            com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, "jump")
         } catch (e: Exception) {}
     }
 }

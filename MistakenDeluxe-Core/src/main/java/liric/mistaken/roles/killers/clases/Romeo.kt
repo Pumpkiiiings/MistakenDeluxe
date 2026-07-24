@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
@@ -231,13 +231,16 @@ class Romeo : CoreKiller(
             NamedTextColor.WHITE, WrapperPlayServerTeams.OptionData.NONE
         )
 
-        player.world.getNearbyPlayers(player.location, 100.0).forEach { victim ->
-            if (isValidTarget(player, victim)) {
-                val createTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, listOf(victim.name))
-                PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
-                val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x40.toByte()))
-                PacketEvents.getAPI().playerManager.sendPacket(player, WrapperPlayServerEntityMetadata(victim.entityId, metadata))
-            }
+        val targets = player.world.getNearbyPlayers(player.location, 100.0).filter { isValidTarget(player, it) }
+        if (targets.isEmpty()) return
+
+        val targetNames = targets.map { it.name }
+        val createTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, targetNames)
+        PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
+
+        targets.forEach { victim ->
+            val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x40.toByte()))
+            PacketEvents.getAPI().playerManager.sendPacket(player, WrapperPlayServerEntityMetadata(victim.entityId, metadata))
         }
 
         player.scheduler.runDelayed(plugin, Consumer { _ ->

@@ -57,6 +57,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             for (session in sessions) {
                 if (session.currentState != GameState.INGAME) continue
+                if (session.currentMode == MistakenMode.HIDE_AND_SEEK) continue
 
                 val killersOnline = session.asesinosUUIDs.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
                 if (killersOnline.isEmpty()) continue
@@ -234,13 +235,19 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         val isAttackerKiller = session.isKiller(attacker.uniqueId)
         val isVictimKiller = session.isKiller(victim.uniqueId)
         if (isFrozen(attacker)) { event.isCancelled = true; return }
-        val isAssassinPvpMode = session.currentMode == MistakenMode.DOUBLE_KILLER
-        if (isAttackerKiller == isVictimKiller) {
-            if (!isAttackerKiller && session.currentMode == MistakenMode.FREEZE_TAG && isFrozen(victim)) {
+        
+        if (isFrozen(victim)) {
+            if (!isAttackerKiller && !isVictimKiller && session.currentMode == MistakenMode.FREEZE_TAG) {
                 event.isCancelled = true
                 unfreeze(victim, attacker)
                 return
             }
+            event.isCancelled = true
+            return
+        }
+
+        val isAssassinPvpMode = session.currentMode == MistakenMode.DOUBLE_KILLER
+        if (isAttackerKiller == isVictimKiller) {
             event.isCancelled = true
             return
         }
@@ -389,8 +396,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         if (!frozenPlayers.add(victim.uniqueId)) return
         runOnMain {
             victim.inventory.helmet = ItemStack(Material.ICE)
-            victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.0
-            victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.0
+            victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.02
+            victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.1
             victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, false))
             victim.world.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
 

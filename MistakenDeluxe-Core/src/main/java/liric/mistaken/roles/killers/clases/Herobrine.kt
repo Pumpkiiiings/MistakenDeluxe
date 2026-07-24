@@ -243,7 +243,7 @@ class Herobrine : CoreKiller(
     }
 
     private fun habilidadSaltoDimensional(player: Player) {
-        val gens = plugin.generatorManager.getGeneratorLocations()
+        val gens = plugin.generatorManager.getGeneratorLocations().filter { it.world == player.world }
         if (gens.isEmpty()) return
         ParticleShapesUtils.drawVortex(player.location, org.bukkit.Particle.REVERSE_PORTAL)
         player.playSound(player.location, Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1f, 0.5f)
@@ -287,11 +287,15 @@ class Herobrine : CoreKiller(
             NamedTextColor.DARK_PURPLE, WrapperPlayServerTeams.OptionData.NONE
         )
 
-        plugin.server.onlinePlayers.forEach { online ->
-            if (!isValidTarget(player, online)) return@forEach
+        val targets = plugin.server.onlinePlayers.filter { isValidTarget(player, it) && it.world == player.world }
+        if (targets.isEmpty()) return
 
-            val createTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, listOf(online.name))
-            PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
+        val targetNames = targets.map { it.name }
+        
+        val createTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, targetNames)
+        PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
+
+        targets.forEach { online ->
             val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x40.toByte()))
             PacketEvents.getAPI().playerManager.sendPacket(player, WrapperPlayServerEntityMetadata(online.entityId, metadata))
             online.playSound(online.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.5f)

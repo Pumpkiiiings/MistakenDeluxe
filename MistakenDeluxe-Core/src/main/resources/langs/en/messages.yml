@@ -337,6 +337,9 @@ modes:
   assassin_pvp:
     title: "&#AA0000&lASSASSIN VS ASSASSIN"
     subtitle: "&#CCCCCCTrust no one! Last man standing wins."
+  hide_and_seek:
+    title: "&#42F56C&lHIDE AND SEEK"
+    subtitle: "&#FFFFFFYou have 1 minute to hide."
   initializes:
     title: "&#AA0000&lINITIALIZES"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
@@ -362,6 +365,8 @@ game:
   survivor-subtitle: "&#FFFFFFYou managed to escape alive."
   survivor-defeat-title: "&#FF3344&lDEFEAT!"
   survivor-defeat-subtitle: "&#FFFFFFThe killer massacred everyone."
+  killer-released-title: "&#FF3344&lKILLER RELEASED!"
+  killer-released-subtitle: "&#FFFFFFThe killer can now move and see."
   join-as-spectator: "<prefix>&#CCCCCCThe match has already started. You are spectating."
   rejoin-msg: "<prefix>&#FF3344Welcome back, killer. Continue the massacre."
   infection-hit: "<prefix>&#FF3344CORRUPT SYSTEM! The Error Star infected you."

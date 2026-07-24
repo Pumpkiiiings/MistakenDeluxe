@@ -186,9 +186,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
 
         if (plugin.combatManager.isFrozen(player)) {
-            if (event.cause in listOf(EntityDamageEvent.DamageCause.FREEZE, EntityDamageEvent.DamageCause.SUFFOCATION, EntityDamageEvent.DamageCause.DROWNING)) {
-                event.isCancelled = true
-            }
+            event.isCancelled = true
         }
     }
 

@@ -194,7 +194,8 @@ class GameStateController(private val game: GameSession) {
                 chance <= 70 -> MistakenMode.DOUBLE_KILLER
                 chance <= 80 -> MistakenMode.INFECTION
                 chance <= 90 -> MistakenMode.FREEZE_TAG
-                else -> MistakenMode.INITIALIZES // 🔥 10% de probabilidad
+                chance <= 95 -> MistakenMode.HIDE_AND_SEEK
+                else -> MistakenMode.INITIALIZES // 🔥 5% de probabilidad
             }
             if (selected == MistakenMode.DOUBLE_KILLER && onlineCount < 4) selected = MistakenMode.CLASSIC
             game.currentMode = selected
