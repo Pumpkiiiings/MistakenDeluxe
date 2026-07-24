@@ -203,7 +203,7 @@ class Slasher : CoreKiller(
             val hit = machete.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { isValidTarget(player, it) }
 
             if (hit != null || machete.location.block.type.isSolid) {
-                machete.world.spawnParticle(org.bukkit.Particle.BLOCK_CRACK, machete.location, 50, 0.5, 0.5, 0.5, Material.REDSTONE_BLOCK.createBlockData())
+                machete.world.spawnParticle(org.bukkit.Particle.BLOCK, machete.location, 50, 0.5, 0.5, 0.5, Material.REDSTONE_BLOCK.createBlockData())
                 
                 hit?.let {
                     plugin.combatManager.takeDamage(it)

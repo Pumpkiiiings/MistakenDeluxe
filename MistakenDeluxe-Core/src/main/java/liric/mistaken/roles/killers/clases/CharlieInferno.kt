@@ -237,7 +237,7 @@ class CharlieInferno : CoreKiller(
 
             if (hit != null || ice.location.block.type.isSolid) {
                 ice.world.spawnParticle(org.bukkit.Particle.SNOWFLAKE, ice.location, 50, 1.0, 1.0, 1.0, 0.1)
-                ice.world.spawnParticle(org.bukkit.Particle.BLOCK_CRACK, ice.location, 40, 0.5, 0.5, 0.5, Material.ICE.createBlockData())
+                ice.world.spawnParticle(org.bukkit.Particle.BLOCK, ice.location, 40, 0.5, 0.5, 0.5, Material.ICE.createBlockData())
                 ice.world.playSound(ice.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
                 hit?.let {
                     it.freezeTicks = 140
@@ -270,7 +270,7 @@ class CharlieInferno : CoreKiller(
             plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
                 locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
                 locToSpawn.world.spawnParticle(org.bukkit.Particle.FLAME, locToSpawn, 10, 0.2, 0.2, 0.2, 0.05)
-                locToSpawn.world.spawnParticle(org.bukkit.Particle.SMOKE_NORMAL, locToSpawn, 5, 0.2, 0.5, 0.2, 0.05)
+                locToSpawn.world.spawnParticle(org.bukkit.Particle.SMOKE, locToSpawn, 5, 0.2, 0.5, 0.2, 0.05)
 
                 // 🔥 HITBOX: Diente individual
                 HitboxVisualizer.drawInstantHitbox(plugin, locToSpawn, 1.5, 1.5, 1.5, 5L, Material.RED_STAINED_GLASS)
