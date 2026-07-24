@@ -85,9 +85,6 @@ tasks {
         archiveClassifier.set("")
         isZip64 = true
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        dependencies {
-            include(project(":MistakenDeluxe-API"))
-        }
     }
 
     withType<JavaCompile> {
