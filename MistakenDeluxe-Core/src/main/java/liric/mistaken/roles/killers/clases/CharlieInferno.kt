@@ -172,13 +172,15 @@ class CharlieInferno : CoreKiller(
             if (isValidTarget(player, target)) {
                 target.fireTicks = 100
                 plugin.combatManager.takeDamage(target)
-                target.playSound(target.location, Sound.ITEM_FIRECHARGE_USE, 1f, 1f)
-                // Screen Effects: red flash + screenshake on fire explosion
-                ObserverHook.playScreenshake(target, 0.6f, 15)
-                ObserverHook.playScreenTint(target, 255, 50, 0, 0.4f, 20)
+                target.playSound(target.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f)
+                // Híbrido:
+                target.world.spawnParticle(org.bukkit.Particle.LAVA, target.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
+                ObserverHook.playScreenshake(target, 1.0f, 20)
+                ObserverHook.playScreenTint(target, 255, 30, 0, 0.6f, 25)
             }
         }
-        player.world.spawnParticle(org.bukkit.Particle.FLAME, player.location, 50, 2.0, 0.5, 2.0, 0.1)
+        player.world.spawnParticle(org.bukkit.Particle.FLAME, player.location, 80, 3.0, 0.5, 3.0, 0.1)
+        player.world.spawnParticle(org.bukkit.Particle.CAMPFIRE_COSY_SMOKE, player.location, 50, 3.0, 1.0, 3.0, 0.05)
         player.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
         player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
     }
@@ -196,6 +198,10 @@ class CharlieInferno : CoreKiller(
                     target.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0))
                     target.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
                     target.playSound(target.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1f, 0.8f)
+                    
+                    // Visuales
+                    target.world.spawnParticle(org.bukkit.Particle.SOUL_FIRE_FLAME, target.location.add(0.0, 1.0, 0.0), 30, 0.5, 1.0, 0.5, 0.05)
+                    ObserverHook.playScreenTint(target, 0, 0, 0, 0.5f, 30)
                 }
             }, null, 60L)
         }
@@ -225,18 +231,22 @@ class CharlieInferno : CoreKiller(
 
             ice.teleport(ice.location.add(dir))
             hitbox?.teleport(ice.location)
+            ice.world.spawnParticle(org.bukkit.Particle.SNOWFLAKE, ice.location, 5, 0.2, 0.2, 0.2, 0.01)
 
             val hit = player.world.getNearbyPlayers(ice.location, 1.0).firstOrNull { isValidTarget(player, it) }
 
             if (hit != null || ice.location.block.type.isSolid) {
-                ice.world.spawnParticle(org.bukkit.Particle.SNOWFLAKE, ice.location, 30, 0.5, 0.5, 0.5, 0.1)
+                ice.world.spawnParticle(org.bukkit.Particle.SNOWFLAKE, ice.location, 50, 1.0, 1.0, 1.0, 0.1)
+                ice.world.spawnParticle(org.bukkit.Particle.BLOCK_CRACK, ice.location, 40, 0.5, 0.5, 0.5, Material.ICE.createBlockData())
                 ice.world.playSound(ice.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
                 hit?.let {
                     it.freezeTicks = 140
                     it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
-                    hitbox?.block = Material.RED_STAINED_GLASS.createBlockData() // Feedback visual de hit
-                    // Screen Effects: blue tint on ice hit
-                    ObserverHook.playScreenTint(it, 100, 180, 255, 0.35f, 30)
+                    hitbox?.block = Material.RED_STAINED_GLASS.createBlockData()
+                    
+                    // Mod
+                    ObserverHook.playScreenTint(it, 100, 180, 255, 0.45f, 40)
+                    ObserverHook.playScreenshake(it, 0.5f, 15)
                 }
                 ice.remove()
 
@@ -259,6 +269,8 @@ class CharlieInferno : CoreKiller(
 
             plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
                 locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
+                locToSpawn.world.spawnParticle(org.bukkit.Particle.FLAME, locToSpawn, 10, 0.2, 0.2, 0.2, 0.05)
+                locToSpawn.world.spawnParticle(org.bukkit.Particle.SMOKE_NORMAL, locToSpawn, 5, 0.2, 0.5, 0.2, 0.05)
 
                 // 🔥 HITBOX: Diente individual
                 HitboxVisualizer.drawInstantHitbox(plugin, locToSpawn, 1.5, 1.5, 1.5, 5L, Material.RED_STAINED_GLASS)
@@ -267,6 +279,7 @@ class CharlieInferno : CoreKiller(
                     if (isValidTarget(player, victim)) {
                         victim.fireTicks = 100
                         plugin.combatManager.takeDamage(victim)
+                        ObserverHook.playScreenTint(victim, 255, 0, 0, 0.4f, 10)
                     }
                 }
             }, (i * 2 + 1).toLong())

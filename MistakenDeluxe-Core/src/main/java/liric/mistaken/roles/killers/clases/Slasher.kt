@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.clases
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -157,6 +157,10 @@ class Slasher : CoreKiller(
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 160, 2))
         player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 160, 1))
         dibujarEstrella(player, Color.RED, 1.5, 5)
+        
+        // Híbrido
+        player.playSound(player.location, Sound.ENTITY_WOLF_GROWL, 1.5f, 0.5f)
+        liric.mistaken.utils.hooks.ObserverHook.playScreenTint(player, 255, 0, 0, 0.3f, 160) // Borde rojo frenesí
 
         player.scheduler.runDelayed(plugin, Consumer { _ ->
             if (player.isOnline && plugin.asesinoManager.isKiller(player)) {
@@ -192,14 +196,23 @@ class Slasher : CoreKiller(
 
             machete.teleport(machete.location.add(direction))
             hitbox?.teleport(machete.location) // Sigue al machete
+            
+            // Rastro de sangre
+            machete.world.spawnParticle(org.bukkit.Particle.DUST, machete.location, 3, org.bukkit.Particle.DustOptions(Color.RED, 1.0f))
 
             val hit = machete.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { isValidTarget(player, it) }
 
             if (hit != null || machete.location.block.type.isSolid) {
+                machete.world.spawnParticle(org.bukkit.Particle.BLOCK_CRACK, machete.location, 50, 0.5, 0.5, 0.5, Material.REDSTONE_BLOCK.createBlockData())
+                
                 hit?.let {
                     plugin.combatManager.takeDamage(it)
                     it.playSound(it.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.8f)
                     hitbox?.block = Material.RED_STAINED_GLASS.createBlockData() // Feedback visual
+                    
+                    // Mod
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenTint(it, 255, 0, 0, 0.6f, 20)
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenshake(it, 1.5f, 15)
                 }
                 machete.remove()
 
@@ -212,6 +225,7 @@ class Slasher : CoreKiller(
 
     private fun habilidadPresencia(player: Player) {
         player.playSound(player.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1.5f, 0.8f)
+        player.world.spawnParticle(org.bukkit.Particle.SCULK_SOUL, player.location, 50, 3.0, 1.0, 3.0, 0.05)
 
         // 🔥 HITBOX: Grito en área
         HitboxVisualizer.drawInstantHitbox(plugin, player.location, 8.0, 8.0, 8.0, 20L, Material.PURPLE_STAINED_GLASS)
@@ -220,6 +234,9 @@ class Slasher : CoreKiller(
             if (isValidTarget(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, 100, 1))
+                
+                // Mod: Pulso rítmico (simulado con un tint corto y oscuro)
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(victim, 0, 0, 0, 0.7f, 15)
             }
         }
     }
@@ -228,6 +245,10 @@ class Slasher : CoreKiller(
         player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 300, 3))
         player.addPotionEffect(PotionEffect(PotionEffectType.STRENGTH, 300, 2))
         dibujarEstrella(player, Color.MAROON, 2.5, 5)
+        
+        player.world.spawnParticle(org.bukkit.Particle.ASH, player.location, 300, 3.0, 3.0, 3.0, 0.05)
+        player.world.spawnParticle(org.bukkit.Particle.FALLING_LAVA, player.location, 50, 3.0, 3.0, 3.0, 0.05)
+        liric.mistaken.utils.hooks.ObserverHook.playScreenshake(player, 0.8f, 300) // Temblor apocalíptico continuo
 
         player.scheduler.runDelayed(plugin, Consumer { _ ->
             if (player.isOnline && plugin.asesinoManager.isKiller(player)) {

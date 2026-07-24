@@ -184,6 +184,7 @@ class ColorAndElectricity : CoreKiller(
             }
 
             hitbox?.teleport(player.location) // Actualiza visual
+            player.world.spawnParticle(org.bukkit.Particle.ELECTRIC_SPARK, player.location, 10, 0.5, 0.5, 0.5, 0.1)
 
             player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
                 if (isValidTarget(player, victim) && hitted.add(victim.uniqueId)) {
@@ -191,6 +192,8 @@ class ColorAndElectricity : CoreKiller(
                     victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
                     victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 1.5f)
                     hitbox?.block = Material.RED_STAINED_GLASS.createBlockData() // Feedback visual de hit
+                    
+                    ObserverHook.playScreenTint(victim, 0, 255, 255, 0.4f, 15)
                 }
             }
             count++
@@ -202,12 +205,16 @@ class ColorAndElectricity : CoreKiller(
 
         // ?? HITBOX: Caja Instant�nea
         HitboxVisualizer.drawInstantHitbox(plugin, player.location, 8.0, 8.0, 8.0, 15L, Material.PURPLE_STAINED_GLASS)
+        player.world.spawnParticle(org.bukkit.Particle.SQUID_INK, player.location, 100, 4.0, 1.0, 4.0, 0.1)
+        player.world.spawnParticle(org.bukkit.Particle.WITCH, player.location, 50, 4.0, 1.0, 4.0, 0.5)
 
         player.getNearbyEntities(8.0, 8.0, 8.0).filterIsInstance<Player>().forEach { victim ->
             if (isValidTarget(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
+                victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
                 victim.sendMessage(PumpkingServiceManager.messages.getComponent(victim, "roles.killer.abilities.color_and_electricity.dame_tus_colores"))
+                ObserverHook.playScreenTint(victim, 128, 128, 128, 0.6f, 100)
             }
         }
     }
@@ -231,6 +238,7 @@ class ColorAndElectricity : CoreKiller(
                 if (isValidTarget(player, victim)) {
                     plugin.combatManager.takeDamage(victim)
                     victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(0.8).setY(0.3)
+                    ObserverHook.playScreenTint(victim, 255, 255, 0, 0.4f, 5)
                 }
             }
             ticks++
@@ -245,8 +253,11 @@ class ColorAndElectricity : CoreKiller(
         target?.let { t ->
             player.teleportAsync(t.location).thenAccept {
                 player.scheduler.run(plugin, Consumer { _ ->
-                    player.world.spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, player.location, 30, 0.5, 1.0, 0.5, 0.5)
-                    t.sendMessage(ColorTranslator.translate("<red><b>[!] SOBRECARGA CROM�TICA</b></red>"))
+                    player.world.spawnParticle(org.bukkit.Particle.TOTEM_OF_UNDYING, player.location, 200, 2.0, 2.0, 2.0, 0.5)
+                    player.world.spawnParticle(org.bukkit.Particle.END_ROD, player.location, 100, 2.0, 2.0, 2.0, 0.1)
+                    ObserverHook.playScreenshake(t, 1.5f, 30)
+                    ObserverHook.playScreenTint(t, 255, 0, 255, 0.5f, 30)
+                    t.sendMessage(ColorTranslator.translate("<red><b>[!] SOBRECARGA CROMTICA</b></red>"))
                     t.velocity = Vector(0.0, 1.2, 0.0)
                 }, null)
             }

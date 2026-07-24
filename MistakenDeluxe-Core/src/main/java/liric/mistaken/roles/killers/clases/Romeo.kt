@@ -204,6 +204,9 @@ class Romeo : CoreKiller(
             }
             val dir = player.location.direction.normalize().multiply(1.4)
             player.velocity = dir
+            
+            player.world.spawnParticle(Particle.ELECTRIC_SPARK, player.location, 5, 0.2, 0.5, 0.2, 0.05)
+            player.world.spawnParticle(Particle.GLOW, player.location, 3, 0.2, 0.5, 0.2, 0.05)
 
             val checkLoc = player.location.clone().add(dir.clone().multiply(0.8))
             if (checkLoc.block.type.isSolid) {
@@ -217,6 +220,11 @@ class Romeo : CoreKiller(
                 plugin.combatManager.takeDamage(victim)
                 victim.velocity = player.location.direction.normalize().multiply(1.5).setY(0.4)
                 player.playSound(player.location, Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.2f, 0.8f)
+                
+                // Híbrido: Glitch effect
+                victim.playSound(victim.location, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 0.1f)
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(victim, 0, 255, 100, 0.4f, 15)
+                liric.mistaken.utils.hooks.ObserverHook.playScreenshake(victim, 1.0f, 10)
                 duration = 0
             }
             duration--
@@ -237,10 +245,14 @@ class Romeo : CoreKiller(
         val targetNames = targets.map { it.name }
         val createTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, targetNames)
         PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
+        
+        // Efecto visual para Romeo (Verde)
+        liric.mistaken.utils.hooks.ObserverHook.playScreenTint(player, 0, 255, 0, 0.2f, 20)
 
         targets.forEach { victim ->
             val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x40.toByte()))
             PacketEvents.getAPI().playerManager.sendPacket(player, WrapperPlayServerEntityMetadata(victim.entityId, metadata))
+            victim.world.spawnParticle(Particle.SONIC_BOOM, victim.location.add(0.0, 1.0, 0.0), 1)
         }
 
         player.scheduler.runDelayed(plugin, Consumer { _ ->
@@ -265,11 +277,15 @@ class Romeo : CoreKiller(
                 plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
                     if (!locToSpawn.block.type.isSolid) {
                         locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
+                        locToSpawn.world.spawnParticle(Particle.PORTAL, locToSpawn, 15, 0.2, 0.5, 0.2, 0.5)
+                        
                         locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
                             if (isValidTarget(player, victim)) {
                                 plugin.combatManager.takeDamage(victim)
                                 victim.velocity = Vector(0.0, 0.5, 0.0)
                                 victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
+                                
+                                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(victim, 0, 0, 0, 0.8f, 20) // Pantalla rota
                             }
                         }
                     }
@@ -294,12 +310,18 @@ class Romeo : CoreKiller(
                 return@Consumer
             }
             star.teleport(star.location.add(direction))
+            star.world.spawnParticle(Particle.END_ROD, star.location, 3, 0.1, 0.1, 0.1, 0.02)
 
             val hit = player.world.getNearbyPlayers(star.location, 1.5).firstOrNull { isValidTarget(player, it) }
 
             if (hit != null || star.location.block.type.isSolid) {
-                star.world.spawnParticle(Particle.EXPLOSION_EMITTER, star.location, 1)
-                hit?.let { plugin.combatManager.takeDamage(it) }
+                star.world.spawnParticle(Particle.EXPLOSION_EMITTER, star.location, 2)
+                star.world.spawnParticle(Particle.FIREWORK, star.location, 50, 1.0, 1.0, 1.0, 0.1)
+                star.world.playSound(star.location, Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.5f)
+                hit?.let { 
+                    plugin.combatManager.takeDamage(it) 
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenshake(it, 1.2f, 25)
+                }
                 star.remove()
                 task.cancel()
             }
