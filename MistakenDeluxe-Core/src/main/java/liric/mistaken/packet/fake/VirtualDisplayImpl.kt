@@ -57,8 +57,8 @@ open class VirtualBaseDisplay(
         }
 
         brightness?.let {
-            // Brightness is packed into a single int: blockLight | (skyLight << 16)
-            val packed = it.blockLight or (it.skyLight shl 16)
+            // Brightness is packed into a single int: (blockLight << 4) | (skyLight << 20)
+            val packed = (it.blockLight shl 4) or (it.skyLight shl 20)
             list.add(EntityData(16, EntityDataTypes.INT, packed))
         }
 
@@ -115,6 +115,8 @@ class VirtualTextDisplay(location: Location, viewers: List<Player>) : VirtualBas
         
         var textFlags = 0.toByte()
         if (isShadowed) textFlags = (textFlags.toInt() or 0x01).toByte()
+        if (backgroundColor == null) textFlags = (textFlags.toInt() or 0x04).toByte() // Use default background
+
         if (textFlags > 0) {
             list.add(EntityData(27, EntityDataTypes.BYTE, textFlags))
         }

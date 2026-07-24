@@ -201,7 +201,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         if (type == InventoryType.PLAYER || type == InventoryType.CRAFTING) return
 
         val title = plain.serialize(event.view.title())
-        val allowed = listOf("Reparando", "Skill Check", "ENTES", "Tienda", "Selecciona", "Espectear")
+        val allowed = listOf("Reparando", "Skill Check", "ENTES", "Tienda", "Selecciona", "Espectear", "Terminal", "Hackeo", "Código", "Panel")
         if (allowed.any { title.contains(it, ignoreCase = true) }) return
 
         event.isCancelled = true
