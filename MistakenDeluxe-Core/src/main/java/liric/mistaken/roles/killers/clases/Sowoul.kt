@@ -170,7 +170,7 @@ class Sowoul : CoreKiller(
             if (ticks < 5) player.velocity = dir.clone().multiply(1.0 - (ticks * 0.1))
             player.world.spawnParticle(org.bukkit.Particle.REVERSE_PORTAL, player.location, 25, 0.5, 0.5, 0.5, 0.2)
             player.world.spawnParticle(org.bukkit.Particle.DRAGON_BREATH, player.location, 5, 0.5, 0.5, 0.5, 0.05)
-            player.world.spawnParticle(org.bukkit.Particle.SPELL_WITCH, player.location, 10, 0.5, 0.5, 0.5, 0.05)
+            player.world.spawnParticle(org.bukkit.Particle.WITCH, player.location, 10, 0.5, 0.5, 0.5, 0.05)
 
             player.getNearbyEntities(2.5, 2.5, 2.5).filterIsInstance<Player>().forEach { victim ->
                 if (isValidTarget(player, victim) && hitted.add(victim.uniqueId)) {
@@ -214,7 +214,7 @@ class Sowoul : CoreKiller(
             carta.transformation = t
 
             carta.world.spawnParticle(org.bukkit.Particle.ENCHANT, carta.location, 5, 0.1, 0.1, 0.1, 0.0)
-            carta.world.spawnParticle(org.bukkit.Particle.CRIT_MAGIC, carta.location, 10, 0.2, 0.2, 0.2, 0.05)
+            carta.world.spawnParticle(org.bukkit.Particle.ENCHANTED_HIT, carta.location, 10, 0.2, 0.2, 0.2, 0.05)
 
             val hit = carta.getNearbyEntities(1.2, 1.2, 1.2).filterIsInstance<Player>().firstOrNull { isValidTarget(player, it) }
 
@@ -227,7 +227,7 @@ class Sowoul : CoreKiller(
                     liric.mistaken.utils.hooks.ObserverHook.playScreenshake(it, 0.8f, 15)
                 }
                 carta.world.spawnParticle(org.bukkit.Particle.FIREWORK, carta.location, 30, 0.5, 0.5, 0.5, 0.1)
-                carta.world.spawnParticle(org.bukkit.Particle.SPELL_MOB, carta.location, 30, 0.5, 0.5, 0.5, 0.1) // Verde/Tóxico
+                carta.world.spawnParticle(org.bukkit.Particle.ENTITY_EFFECT, carta.location, 30, 0.5, 0.5, 0.5, 0.1) // Verde/Tóxico
                 carta.remove()
                 fakeEntities.remove(carta)
                 task.cancel()
