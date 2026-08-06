@@ -1,0 +1,31 @@
+id: "tinkywinky"
+stats:
+  health: 160.0
+  damage: 3.0
+precio: 900000
+permiso: "mistaken.skins.free"
+icono_material: "SLIME_BALL"
+armor:
+  helmet: "none"
+  chestplate: "none"
+  leggings: "none"
+  boots: "none"
+items:
+  weapon: "STICK"
+  weapon_slot: 8
+  skill1: "SLIME_BALL"
+  skill1_slot: 1
+  skill1_cooldown: 12
+  skill1_sound: "ENTITY_ENDERMAN_STARE"
+  skill2: "PURPLE_DYE"
+  skill2_slot: 2
+  skill2_cooldown: 18
+  skill2_sound: "ENTITY_ENDERMAN_TELEPORT"
+  skill3: "MUSIC_DISC_CAT"
+  skill3_slot: 3
+  skill3_cooldown: 20
+  skill3_sound: "BLOCK_BEACON_AMBIENT"
+  skill4: "WITHER_SKELETON_SKULL"
+  skill4_slot: 4
+  skill4_cooldown: 55
+  skill4_sound: "ENTITY_WARDEN_SONIC_BOOM"

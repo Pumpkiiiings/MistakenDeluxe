@@ -66,8 +66,6 @@ class GameLoopTask(private val game: GameSession) {
                         }
                         GameState.INGAME -> {
                             game.stateController.checkGeoffreySpawn()
-
-
                         }
                         GameState.ENDING -> {
                             if (game.timer <= 0) {

@@ -1,4 +1,7 @@
 id: "minty"
+stats:
+  health: 22.0
+  damage: 4.2
 precio: 2000000
 icono_material: "LIME_DYE"
 armor:

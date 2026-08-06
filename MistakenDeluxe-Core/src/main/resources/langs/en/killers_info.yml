@@ -79,22 +79,6 @@
       skill3: "<aqua><b>Glacier Spikes</b>"
       skill4: "<dark_red><b>Underworld Fangs</b>"
 
-  devesto:
-    nombre: "<gradient:#4b0082:#000000><b>DEVESTO</b></gradient> <white>[F3X]</white>"
-    descripcion:
-      - "<gray>The corrupt code architect."
-      - "<gray>Manipulates the map at will."
-      - "<dark_purple>Mechanic:</gradient> <white>//set 0 and restoration."
-    lore_tienda:
-      - "<gray>\"Control-Alt-Delete to your existence.\""
-      - "<white>Difficulty: <red>Impossible"
-    skill_names:
-      weapon: "<gradient:#4b0082:#000000>Architect's Axe</gradient>"
-      skill1: "<blue>[F3X]</blue> <white>Move Tool"
-      skill2: "<blue>[F3X]</blue> <white>Paint Tool"
-      skill3: "<blue>[F3X]</blue> <white>Resize Tool"
-      skill4: "<red><bold>//SET 0 (DELETE)</bold>"
-
   mariachi:
     nombre: "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>"
     descripcion:
@@ -111,37 +95,22 @@
       skill3: "<white>Accurate Guitar Strike"
       skill4: "<green><bold>TEQUILA SHOT</bold>"
 
-  teto:
-    nombre: "<gradient:#ff66cc:#ff0000><b>KASANE TETO</b></gradient>"
+  charliejazz:
+    nombre: "<gradient:#e0b0ff:#ffd700><b>CHARLIE INFERNO. VER. JAZZ</b></gradient>"
     descripcion:
-      - "<gray>The UTAU chimera has arrived in Mistaken."
-      - "<gray>Specialist in distortion and tactical attacks."
-      - "<red>Mechanic: <white>Powerful skills with auto-debuffs."
+      - "<gray>El heraldo del fuego estelar y el oro."
+      - "<gray>Domina el campo con ataques deslumbrantes."
+      - "<gradient:#e0b0ff:#ffd700>Mecánica:</gradient> <white>Poder devastador vs Agotamiento."
     lore_tienda:
-      - "<gray>\"You're such a fool! (Baka!)\""
-      - "<white>Difficulty: <red>Hard"
+      - "<gray>\"You can run from your demons until you are exhausted...\""
+      - "<white>Dificultad: <red>Experto"
     skill_names:
-      weapon: "<gradient:#ff66cc:#ff0000>Chimera's Microphone</gradient>"
-      skill1: "<gradient:#7d7d7d:#ff0000>Chimeric Drill</gradient>"
-      skill2: "<gradient:#ffcc99:#e6ac00>Iron Baguette</gradient>"
-      skill3: "<gradient:#ff0000:#ffffff>April Fools' Joke</gradient>"
-      skill4: "<dark_red><bold>TERRITORY (0401)</bold>"
+      weapon: "<gradient:#e0b0ff:#ffd700>Filo Dorado</gradient>"
+      skill1: "<light_purple><b>¡INFIERNO ESTELAR!</b>"
+      skill2: "<gradient:#e0b0ff:#000000><b>Demon's Run</b></gradient>"
+      skill3: "<gold><b>Cubo de Oro</b>"
+      skill4: "<dark_purple><b>Colmillos Mágicos</b>"
 
-  miku:
-    nombre: "<gradient:#00ffcc:#0099ff><b>HATSUNE MIKU</b></gradient>"
-    descripcion:
-      - "<gray>The ultimate virtual idol has arrived."
-      - "<gray>Specialist in crowd control and lasers."
-      - "<aqua>Mechanic: <white>Light projections and massive damage."
-    lore_tienda:
-      - "<gray>\"The world is mine!\""
-      - "<white>Difficulty: <yellow>Medium"
-    skill_names:
-      weapon: "<gradient:#00ffcc:#0099ff>Negi-Saber</gradient>"
-      skill1: "<aqua>Projection 39"
-      skill2: "<gradient:#00ffcc:#ffffff>WORLD DOMINATION</gradient>"
-      skill3: "<gradient:#ff00cc:#00ffcc><b>MIKU MIKU BEAMMMM</b></gradient>"
-      skill4: "<gradient:#00ffcc:#0099ff><bold>FINAL CONCERT</bold></gradient>"
 
   romeo:
     nombre: "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient> <white>[ADMIN]</white>"
@@ -160,7 +129,7 @@
       skill4: "<gold><b>Star of the End</b>"
 
   colorandelectricity:
-    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>SHIKISAI DENKI</b></gradient>"
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>Colorsito</b></gradient>"
     descripcion:
       - "<gray>A bodiless being made of pure static."
       - "<gray>Specialist in vision theft and speed."
@@ -171,53 +140,6 @@
     skill_names:
       weapon: "<gradient:#ff0080:#00ffff>High Voltage Blade</gradient>"
       skill1: "<gradient:#ff0080:#ffffff>Vivid Trace (Dash)</gradient>"
-      skill2: "<gradient:#00ffff:#ffffff>Color Drain</gradient>"
-      skill3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
-      skill4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
-
-  coolkid:
-    nombre: "<gradient:#00ff00:#004400><b>COOLKID</b></gradient> <gray>[DEV]</gray>"
-    descripcion:
-      - "<gray>Test killer v4.1 (DEV Branch)."
-      - "<gray>Specialist in network attacks and glitches."
-      - "<green>Mechanic: <white>Packet loss and critical errors."
-    lore_tienda:
-      - "<dark_gray>\"127.0.0.1: Connection Terminated.\""
-      - "<white>Difficulty: <green>Test"
-    skill_names:
-      weapon: "<green>Force Op Stick"
-      skill1: "<green>Force Login (Dash)"
-      skill2: "<green>Packet Loss (Clones)"
-      skill3: "<red>System Shutdown"
-      skill4: "<dark_red><bold>CRITICAL ERROR</bold>"
-
-  bendy:
-    nombre: "<gradient:#000000:#333333><b>BENDY</b></gradient> <white>[INK]</white>"
-    descripcion:
-      - "<gray>The ink demon has escaped the studio."
-      - "<gray>Specialist in mobility and blindness."
-      - "<black>Mechanic: <white>Ink tunnels and Beast form."
-    lore_tienda:
-      - "<gray>\"Inky.\""
-      - "<white>Difficulty: <red>HARD"
-    skill_names:
-      weapon: "<black>Ink-Stained Axe"
-      skill1: "<dark_gray><b>Ink Tunnel</b>"
-      skill2: "<black><b>Overflow</b>"
-      skill3: "<dark_gray><b>Corrosive Puddle</b>"
-      skill4: "<black><bold>THE INK DEMON</bold>"
-
-  colorsito:
-    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>COLORSITO</b></gradient>"
-    descripcion:
-      - "<grayUna version mas pequeña de Color And Electricity."
-      - "<gray>Hecha por: MarAgridulce."
-    lore_tienda:
-      - "<gray>\"Es electrico y colorido.\""
-      - "<white>Dificultad: <yellow>Media"
-    skill_names:
-      weapon: "<gradient:#ff0080:#00ffff>Colorsito Blade</gradient>"
-      skill1: "<gradient:#ff0080:#ffffff>Vivid Trace</gradient>"
       skill2: "<gradient:#00ffff:#ffffff>Color Drain</gradient>"
       skill3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
       skill4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"

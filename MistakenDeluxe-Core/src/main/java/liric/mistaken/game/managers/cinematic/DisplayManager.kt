@@ -1,5 +1,6 @@
 package liric.mistaken.game.managers.cinematic
 
+import liric.mistaken.utils.worldViewers
 import liric.mistaken.Mistaken
 import liric.mistaken.packet.PacketFactory
 import liric.mistaken.packet.fake.VirtualBlockDisplay
@@ -26,7 +27,7 @@ class DisplayManager(private val plugin: Mistaken) {
     }
 
     fun spawnStaticBlock(loc: Location, mat: Material, scale: Float): VirtualBlockDisplay {
-        val display = PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) { bd ->
+        val display = PacketFactory.displays.buildBlockDisplay(loc.worldViewers(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(
                 Vector3f(-scale / 2, 0f, -scale / 2),
@@ -40,7 +41,7 @@ class DisplayManager(private val plugin: Mistaken) {
     }
 
     fun spawnOrbitingBlock(center: Location, mat: Material, scale: Float, radius: Double, speed: Double, yOffset: Double) {
-        val display = PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), center) { bd ->
+        val display = PacketFactory.displays.buildBlockDisplay(center.worldViewers(), center) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(
                 Vector3f(-scale / 2, 0f, -scale / 2),
@@ -63,7 +64,7 @@ class DisplayManager(private val plugin: Mistaken) {
     }
 
     fun spawnRotatingItem(loc: Location, mat: Material, scale: Float) {
-        val display = PacketFactory.displays.buildItemDisplay(Bukkit.getOnlinePlayers().toList(), loc.clone().add(0.0, 1.2, 0.0)) { id ->
+        val display = PacketFactory.displays.buildItemDisplay(loc.worldViewers(), loc.clone().add(0.0, 1.2, 0.0)) { id ->
             id.setItemStack(ItemStack(mat))
             id.transformation = Transformation(Vector3f(), Quaternionf(), Vector3f(scale, scale, scale), Quaternionf())
         }
@@ -77,7 +78,7 @@ class DisplayManager(private val plugin: Mistaken) {
     }
 
     fun spawnFallingItem(loc: Location, mat: Material) {
-        val display = PacketFactory.displays.buildItemDisplay(Bukkit.getOnlinePlayers().toList(), loc) { id ->
+        val display = PacketFactory.displays.buildItemDisplay(loc.worldViewers(), loc) { id ->
             id.setItemStack(ItemStack(mat))
             id.transformation = Transformation(Vector3f(), Quaternionf(), Vector3f(0.8f, 0.8f, 0.8f), Quaternionf())
         }
@@ -94,7 +95,7 @@ class DisplayManager(private val plugin: Mistaken) {
     }
 
     fun spawnGlitchBlock(loc: Location, mat: Material) {
-        val display = PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc.clone().add(0.0, 1.2, 0.0)) { bd ->
+        val display = PacketFactory.displays.buildBlockDisplay(loc.worldViewers(), loc.clone().add(0.0, 1.2, 0.0)) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(Vector3f(-0.5f, 0f, -0.5f), Quaternionf(), Vector3f(1.0f, 1.0f, 1.0f), Quaternionf())
         }

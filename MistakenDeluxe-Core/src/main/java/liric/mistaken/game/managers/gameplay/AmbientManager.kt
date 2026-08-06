@@ -15,7 +15,6 @@ import org.bukkit.util.Vector
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
-import java.util.concurrent.TimeUnit
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -27,12 +26,20 @@ class AmbientManager(private val plugin: Mistaken) {
     private val trackedSurvivors = ConcurrentHashMap.newKeySet<UUID>()
     private val darknessEffect = PotionEffect(PotionEffectType.DARKNESS, 40, 0, false, false, false)
 
+    /** Decide cuándo puede pasar algo. Ver [TensionDirector]. */
+    val director = TensionDirector(plugin)
+
     init {
         startGlobalTask()
     }
 
     private fun startGlobalTask() {
-        plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
+        // globalRegionScheduler, no asyncScheduler: aquí se lee estado de Bukkit
+        // (posición del asesino, mundo, línea de visión) y esas llamadas no son
+        // thread-safe fuera del hilo principal. Mismo criterio que el motor de
+        // partículas en Mistaken.iniciarMotorDeParticulas().
+        // 2 ticks = 100 ms, el intervalo original.
+        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, { _ ->
             if (!plugin.isReady) return@runAtFixedRate
 
             // 🔥 MULTIARENA: Evaluamos cada sesión independiente
@@ -42,31 +49,44 @@ class AmbientManager(private val plugin: Mistaken) {
                 val killer = session.getCurrentAsesino() ?: continue
                 if (!killer.isOnline) continue
 
-                // Iteramos sobre todos los supervivientes trackeados globalmente
+                // Foto inmutable de la sesión, una vez por tick: los supervivientes
+                // no vuelven a tocar el objeto Player del asesino, y los datos
+                // compartidos no se recalculan por jugador.
+                val world = killer.world
+                val snapshot = TensionDirector.KillerSnapshot(
+                    location = killer.location.clone(),
+                    lookDirection = killer.location.direction,
+                    worldUid = world.uid,
+                    aliveSurvivors = director.countAliveSurvivors(session),
+                    generatorsLeft = plugin.generatorManager.getTotalGeneratorsInWorld(world) -
+                            plugin.generatorManager.getCompletedCountInWorld(world)
+                )
+
                 trackedSurvivors.forEach { uuid ->
                     val survivor = Bukkit.getPlayer(uuid)
-
-                    // Si el superviviente está online y pertenece a ESTA sesión
-                    if (survivor != null && survivor.isOnline && plugin.sessionManager.getSession(survivor) == session) {
-                        survivor.scheduler.execute(plugin, {
-                            processSurvivorLogic(survivor, killer, session)
-                        }, null, 0L)
-                    } else if (survivor == null) {
+                    if (survivor == null) {
                         trackedSurvivors.remove(uuid)
+                        director.clear(uuid)
+                        return@forEach
+                    }
+                    if (survivor.isOnline && plugin.sessionManager.getSession(survivor) == session) {
+                        processSurvivorLogic(survivor, snapshot, session)
                     }
                 }
             }
-        }, 1L, 100L, TimeUnit.MILLISECONDS)
+        }, 1L, 2L)
     }
 
     /**
-     * Lógica individual por superviviente (Ejecutada en el hilo seguro del jugador)
+     * Lógica individual por superviviente. El asesino llega como [snapshot]:
+     * nunca se lee su objeto Player desde aquí.
      */
-    private fun processSurvivorLogic(survivor: Player, killer: Player, session: GameSession) {
+    private fun processSurvivorLogic(survivor: Player, snapshot: TensionDirector.KillerSnapshot, session: GameSession) {
 
         // Si este "superviviente" en realidad fue elegido como el Killer en esta ronda
         if (session.isKiller(survivor.uniqueId)) {
             trackedSurvivors.remove(survivor.uniqueId)
+            director.clear(survivor.uniqueId)
             survivor.removePotionEffect(PotionEffectType.DARKNESS)
             return
         }
@@ -75,48 +95,63 @@ class AmbientManager(private val plugin: Mistaken) {
             return
         }
 
-        if (survivor.world != killer.world) return
+        if (survivor.world.uid != snapshot.worldUid) return
 
-        val killerLoc = killer.location
-        val survivorLoc = survivor.location
-        val distSq = survivorLoc.distanceSquared(killerLoc)
+        val state = director.evaluate(survivor, snapshot)
+        val distSq = survivor.location.distanceSquared(snapshot.location)
 
-        // 1. Heartbeat & Oscuridad
-        // 24 bloques = 576.0
-        if (distSq < 576.0 && session.settings?.heartbeatsEnabled != false) {
-            val currentTick = Bukkit.getCurrentTick()
+        // 1. Latido y oscuridad — continuos, escalan con el estado
+        applyHeartbeat(survivor, session, state, distSq)
 
-            val rate = when {
-                distSq < 49.0 -> 4   // Muy cerca
-                distSq < 144.0 -> 10 // Cerca
-                else -> 20           // Lejos
-            }
+        // 2. Sustos puntuales — solo si el director da permiso.
+        //    El presupuesto (silencio obligatorio tras cada evento) vive en requestEvent.
+        if (director.requestEvent(survivor.uniqueId)) {
+            fireEventFor(survivor, state)
+        }
+    }
 
-            if (currentTick % rate == 0) {
-                val isVeryClose = distSq < 64.0
-                val volume = if (isVeryClose) 1.2f else 0.6f
-                val pitch = if (isVeryClose) 1.1f else 0.7f
-                survivor.playSound(survivorLoc, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, volume, pitch)
-            }
+    private fun applyHeartbeat(survivor: Player, session: GameSession, state: TensionDirector.State, distSq: Double) {
+        if (session.settings?.heartbeatsEnabled == false) return
+        if (state == TensionDirector.State.CALMA) return
+        if (distSq >= 576.0) return // 24 bloques
 
-            // Aplicar oscuridad si está muy cerca (< 10 bloques)
-            if (distSq < 100.0) {
-                survivor.addPotionEffect(darknessEffect)
-            }
+        // OJO: esta tarea corre cada 2 ticks, así que currentTick siempre es par.
+        // Un rate impar solo coincidiría en los múltiplos de 2*rate — el latido
+        // saldría a un tercio de la velocidad prevista. Todos los valores pares.
+        val rate = when (state) {
+            TensionDirector.State.CAZA -> 4
+            TensionDirector.State.ACECHO -> 6
+            else -> if (distSq < 144.0) 10 else 20
         }
 
-        // 2. Paranoia y Sonidos (Probabilidad aleatoria)
-        val dice = ThreadLocalRandom.current().nextFloat()
+        if (Bukkit.getCurrentTick() % rate == 0) {
+            val isVeryClose = distSq < 64.0
+            val volume = if (isVeryClose) 1.2f else 0.6f
+            val pitch = if (isVeryClose) 1.1f else 0.7f
+            survivor.playSound(survivor.location, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, volume, pitch)
+        }
 
-        if (dice < 0.005f) { // 0.5%
-            val dist = Math.sqrt(distSq)
-            if (dist in 15.0..35.0) {
+        if (distSq < 100.0) {
+            survivor.addPotionEffect(darknessEffect)
+        }
+    }
+
+    /** Qué susto toca según el estado. El CUÁNDO ya lo decidió el director. */
+    private fun fireEventFor(survivor: Player, state: TensionDirector.State) {
+        when (state) {
+            TensionDirector.State.CALMA -> return
+
+            // Lejano y sonoro: algo se mueve, no sabes dónde.
+            TensionDirector.State.INQUIETUD -> playDistortedSound(survivor)
+
+            // Presencia visual en la periferia.
+            TensionDirector.State.ACECHO -> triggerParanoia(survivor)
+
+            // Encima: visual + físico a la vez.
+            TensionDirector.State.CAZA -> {
                 triggerParanoia(survivor)
+                packetFactory.sendFakeHit(survivor)
             }
-        }
-
-        if (dice > 0.998f) { // 0.2%
-            playDistortedSound(survivor)
         }
     }
 
@@ -165,9 +200,11 @@ class AmbientManager(private val plugin: Mistaken) {
 
     fun stopAmbience(p: Player) {
         trackedSurvivors.remove(p.uniqueId)
+        director.clear(p.uniqueId)
     }
 
     fun stopAll() {
         trackedSurvivors.clear()
+        director.clearAll()
     }
 }

@@ -37,6 +37,9 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
             return
         }
 
+        // ?? FIX: Espectadores no pueden usar el keypad
+        if (plugin.spectatorManager.isSpectator(player)) return
+
         val loc = block.location
 
         if (plugin.generatorManager.isCompleted(loc)) {

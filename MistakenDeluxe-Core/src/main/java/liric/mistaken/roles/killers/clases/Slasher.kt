@@ -1,5 +1,6 @@
 package liric.mistaken.roles.killers.clases
 
+import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
 import com.github.retrooper.packetevents.protocol.particle.data.ParticleDustData
@@ -173,7 +174,7 @@ class Slasher : CoreKiller(
         val macheteItem = itemKitCache["weapon"]?.clone() ?: ItemStack(Material.IRON_SWORD)
         val spawnLoc = player.eyeLocation.clone()
 
-        val machete = PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), spawnLoc) { id ->
+        val machete = PacketFactory.displays.buildItemDisplay(player.sessionViewers(), spawnLoc) { id ->
             id.setItemStack(macheteItem)
             id.transformation = Transformation(JomlVector3f(), Quaternionf().rotateX(Math.toRadians(90.0).toFloat()), JomlVector3f(0.7f, 0.7f, 0.7f), Quaternionf())
             id.interpolationDuration = 1; id.teleportDuration = 1

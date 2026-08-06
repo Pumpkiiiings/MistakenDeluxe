@@ -1,5 +1,6 @@
 package liric.mistaken.game.managers.gameplay
 
+import liric.mistaken.utils.worldViewers
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Color
@@ -174,7 +175,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         val holoLoc = loc.clone().add(0.5, 1.3, 0.5)
         plugin.server.regionScheduler.execute(plugin, holoLoc, Runnable {
             state.displayEntity?.remove()
-            state.displayEntity = PacketFactory.displays.buildTextDisplay(Bukkit.getOnlinePlayers().toList(), holoLoc) { display ->
+            state.displayEntity = PacketFactory.displays.buildTextDisplay(holoLoc.worldViewers(), holoLoc) { display ->
                 display.billboard = Display.Billboard.CENTER
                 display.brightness = Display.Brightness(15, 15)
                 display.backgroundColor = Color.fromARGB(0, 0, 0, 0)

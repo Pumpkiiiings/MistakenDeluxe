@@ -1,5 +1,6 @@
 package liric.mistaken.roles.killers.clases
 
+import liric.mistaken.utils.worldViewers
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
@@ -176,7 +177,7 @@ class NullAsesino : CoreKiller(
                     val x = 2.0 * cos(angle)
                     val z = 2.0 * sin(angle)
 
-                    displays.add(PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc.clone().add(x, 2.0, z)) { bd ->
+                    displays.add(PacketFactory.displays.buildBlockDisplay(loc.worldViewers(), loc.clone().add(x, 2.0, z)) { bd ->
                         bd.block = Material.BEACON.createBlockData()
                         bd.transformation = Transformation(JomlVector3f(-0.5f, -0.5f, -0.5f), Quaternionf(), JomlVector3f(1f, 1f, 1f), Quaternionf())
                     })
@@ -365,7 +366,7 @@ class NullAsesino : CoreKiller(
     }
 
     private fun crearItemOrbitante(loc: Location, mat: Material): VirtualItemDisplay {
-        return PacketFactory.displays.buildItemDisplay(Bukkit.getOnlinePlayers().toList(), loc) { id ->
+        return PacketFactory.displays.buildItemDisplay(loc.worldViewers(), loc) { id ->
             id.setItemStack(ItemStack(mat))
             id.transformation = Transformation(
                 JomlVector3f(0f, 0f, 0f),

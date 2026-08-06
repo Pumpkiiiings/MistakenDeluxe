@@ -58,6 +58,9 @@ class HackTerminalListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val session = plugin.sessionManager.getSession(player) ?: return
 
+        // ?? FIX: Espectadores no pueden hackear terminales
+        if (plugin.spectatorManager.isSpectator(player)) return
+
         if (session.isKiller(player.uniqueId)) {
             player.sendMessage(ColorTranslator.translate("<red>¡Los asesinos no pueden hackear terminales!"))
             return

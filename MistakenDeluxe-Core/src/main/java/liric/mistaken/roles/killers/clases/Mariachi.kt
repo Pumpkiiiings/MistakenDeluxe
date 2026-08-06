@@ -1,5 +1,6 @@
 package liric.mistaken.roles.killers.clases
 
+import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
@@ -154,7 +155,7 @@ class Mariachi : CoreKiller(
         val skulls = skullsOrbit.getOrPut(uuid) {
             mutableListOf<VirtualItemDisplay>().apply {
                 repeat(3) {
-                    add(PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { id ->
+                    add(PacketFactory.displays.buildItemDisplay(player.sessionViewers(), player.location) { id ->
                         id.setItemStack(ItemStack(Material.PLAYER_HEAD))
                         id.transformation = Transformation(JomlVector3f(0f, 0f, 0f), Quaternionf(), JomlVector3f(0.6f, 0.6f, 0.6f), Quaternionf())
                         id.teleportDuration = 2; id.interpolationDuration = 2

@@ -35,19 +35,10 @@ object ConfigSynchronizer {
 
         var isUpdated = false
         var pathsAdded = 0
-        var migratedFrom = localConfig.getInt("config-version", 1)
+        val migratedFrom = localConfig.getInt("config-version", 1)
         val targetVersion = defaultConfig.getInt("config-version", 1)
 
-        // 1. Run migrations if necessary
-        if (migratedFrom < targetVersion) {
-            val migrated = ConfigVersionManager.migrate(fileName, localConfig, migratedFrom, targetVersion)
-            if (migrated) {
-                isUpdated = true
-                migratedFrom = targetVersion
-            }
-        }
-
-        // 2. Scan and inject missing paths
+        // 1. Scan and inject missing paths
         val defaultKeys = defaultConfig.getKeys(true)
         for (key in defaultKeys) {
             // Ignore if it's just a section parent without actual value if Bukkit returns them
@@ -70,7 +61,7 @@ object ConfigSynchronizer {
             }
         }
 
-        // 3. Save if updated
+        // 2. Save if updated
         if (isUpdated) {
             localConfig.save()
             PumpkingLib.log(PumpkingLib.LogCategory.CONFIG, "Synchronization completed successfully for $fileName")

@@ -1,4 +1,7 @@
 id: "mariachi"
+stats:
+  health: 155.0
+  damage: 3.2
 precio: 12000
 icono_material: "GOLDEN_SWORD"
 armor:

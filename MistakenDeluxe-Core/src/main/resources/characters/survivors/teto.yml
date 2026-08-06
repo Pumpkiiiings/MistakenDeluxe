@@ -1,4 +1,7 @@
 id: "teto"
+stats:
+  health: 22.0
+  damage: 4.2
 precio: 4500
 icono_material: "BREAD"
 armor:

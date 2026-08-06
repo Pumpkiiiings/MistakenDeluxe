@@ -93,6 +93,9 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val isVictimKiller = session.isKiller(victim.uniqueId)
 
         if (!isDamagerKiller && isVictimKiller) {
+            // ?? FIX: Espectadores no deben recibir sonidos ni actionbars de golpe
+            if (plugin.spectatorManager.isSpectator(damager)) return
+
             val killerHealth = plugin.combatManager.getHealth(victim)
             damager.sendActionBar(PumpkingServiceManager.messages.getComponent(damager, "game.killer-hit-actionbar",
                 Placeholder.parsed("health", killerHealth.toString())))

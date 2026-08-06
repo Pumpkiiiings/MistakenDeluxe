@@ -1,5 +1,6 @@
 ﻿package liric.mistaken.utils.misc
 
+import liric.mistaken.utils.worldViewers
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.entity.BlockDisplay
@@ -42,7 +43,7 @@ object HitboxVisualizer {
     fun createHitbox(loc: Location, x: Double, y: Double, z: Double, mat: Material = Material.LIME_STAINED_GLASS): VirtualBlockDisplay? {
         if (!isEnabled) return null
 
-        return PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) { display ->
+        return PacketFactory.displays.buildBlockDisplay(loc.worldViewers(), loc) { display ->
             display.block = mat.createBlockData()
             display.isPersistent = false
             display.setGravity(false)

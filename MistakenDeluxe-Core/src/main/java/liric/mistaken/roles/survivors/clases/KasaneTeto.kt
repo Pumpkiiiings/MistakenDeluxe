@@ -1,5 +1,6 @@
 package liric.mistaken.roles.survivors.clases
 
+import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
@@ -208,7 +209,7 @@ class KasaneTeto : Survivor(
 
         // Helper para crear un bloque con la escala centrada en -50% (Para que rote desde el medio de sí mismo)
         fun spawnBlock(mat: Material, scale: JomlVector3f): VirtualBlockDisplay {
-            return PacketFactory.displays.buildBlockDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), startLoc) { bd ->
+            return PacketFactory.displays.buildBlockDisplay(player.sessionViewers(), startLoc) { bd ->
                 bd.block = mat.createBlockData()
                 bd.transformation = Transformation(JomlVector3f(-scale.x/2, -scale.y/2, -scale.z/2), Quaternionf(), scale, Quaternionf())
                 bd.teleportDuration = 1

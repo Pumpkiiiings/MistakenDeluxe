@@ -1,5 +1,6 @@
 package liric.mistaken.roles.killers.clases
 
+import liric.mistaken.utils.worldViewers
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
 import com.github.retrooper.packetevents.protocol.particle.data.ParticleDustData
@@ -298,7 +299,7 @@ class ColorAndElectricity : CoreKiller(
     }
 
     private fun crearBloqueOrbitante(loc: Location, mat: Material): VirtualBlockDisplay {
-        return PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) { bd ->
+        return PacketFactory.displays.buildBlockDisplay(loc.worldViewers(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(JomlVector3f(-0.125f, -0.125f, -0.125f), Quaternionf(), JomlVector3f(0.25f, 0.25f, 0.25f), Quaternionf())
             bd.teleportDuration = 3; bd.interpolationDuration = 3

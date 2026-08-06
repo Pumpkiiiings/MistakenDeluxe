@@ -69,6 +69,7 @@ class SurvivorManager(private val plugin: Mistaken) {
             // Verificamos si sigue siendo la misma clase (por si spameó clicks)
             if (activeSurvivors[uuid] == clase) {
                 clase.equip(player)
+
                 player.updateInventory()
 
                 plugin.componentLogger.info(ColorTranslator.translate(

@@ -8,11 +8,11 @@ import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3i
 import com.github.retrooper.packetevents.wrapper.play.server.*
 import liric.mistaken.Mistaken
+import liric.mistaken.packet.PacketFactory
 import org.bukkit.Location
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import java.util.*
-import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 
 /**
@@ -28,7 +28,11 @@ class Vortex(private val plugin: Mistaken) {
     fun spawnShadowEntity(victim: Player, loc: Location, ticks: Int) {
         if (!victim.isOnline) return
 
-        val fakeId = ThreadLocalRandom.current().nextInt(1_000_000, 2_000_000)
+        // Los IDs de entidad reales de Bukkit son secuenciales desde 0 y en un servidor
+        // con uptime largo alcanzan el rango de millones. Un ID aleatorio ahí colisiona
+        // con una entidad real y el DestroyEntities de más abajo la borra en el cliente.
+        // PacketFactory reserva un rango alto para las falsas.
+        val fakeId = PacketFactory.generateEntityId()
         val uuid = UUID.randomUUID()
 
         // 1. Construcción del Paquete (Skeleton para la forma)
@@ -105,29 +109,39 @@ class Vortex(private val plugin: Mistaken) {
         if (!victim.isOnline) return
 
         val center = victim.location
-        val affected = ArrayList<Location>()
-        val pm = PacketEvents.getAPI().playerManager
+        val world = center.world
+        val y = center.blockY - 1 // Solo el suelo bajo sus pies
 
-        // Generar ráfaga de paquetes (Cálculo matemático ligero)
-        for (x in -radius..radius) {
-            for (z in -radius..radius) {
-                // Solo afectamos el suelo debajo de ellos (-1)
-                val target = center.clone().add(x.toDouble(), -1.0, z.toDouble())
-                affected.add(target)
+        // Agrupamos por sección de chunk (16x16x16). Un BlockChange por bloque son
+        // (2r+1)^2 paquetes en un tick — con radio 10 eso es 441 a un solo jugador.
+        // MultiBlockChange manda una sección entera en un paquete: ~6 en total.
+        val bySection = HashMap<Vector3i, MutableList<WrapperPlayServerMultiBlockChange.EncodedBlock>>()
+        val affected = ArrayList<Location>((2 * radius + 1) * (2 * radius + 1))
 
-                val pos = Vector3i(target.blockX, target.blockY, target.blockZ)
-                pm.sendPacket(victim, WrapperPlayServerBlockChange(pos, 0))
+        for (dx in -radius..radius) {
+            for (dz in -radius..radius) {
+                val bx = center.blockX + dx
+                val bz = center.blockZ + dz
+                affected.add(Location(world, bx.toDouble(), y.toDouble(), bz.toDouble()))
+
+                val section = Vector3i(bx shr 4, y shr 4, bz shr 4)
+                // Coordenadas relativas a la sección (0-15)
+                bySection.getOrPut(section) { mutableListOf() }
+                    .add(WrapperPlayServerMultiBlockChange.EncodedBlock(0, bx and 15, y and 15, bz and 15))
             }
         }
 
-        // Restauración optimizada (15 ticks = 750ms)
-        victim.scheduler.runDelayed(plugin, Consumer { _ ->
-            // Restauramos en masa usando Bukkit
-            affected.forEach { loc ->
-                if (victim.isOnline) {
-                    victim.sendBlockChange(loc, loc.block.blockData)
-                }
-            }
-        }, null, 15L)
+        val pm = PacketEvents.getAPI().playerManager
+        bySection.forEach { (section, blocks) ->
+            pm.sendPacket(victim, WrapperPlayServerMultiBlockChange(section, true, blocks.toTypedArray()))
+        }
+
+        // Restauración: leemos el estado real en el scheduler de la REGIÓN de cada bloque.
+        // victim.scheduler pertenece a la región del jugador; tocar loc.block de una
+        // región distinta revienta en Folia.
+        plugin.server.regionScheduler.runDelayed(plugin, center, Consumer { _ ->
+            if (!victim.isOnline) return@Consumer
+            affected.forEach { loc -> victim.sendBlockChange(loc, loc.block.blockData) }
+        }, 15L)
     }
 }

@@ -58,6 +58,9 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val session = plugin.sessionManager.getSession(player) ?: return
 
+        // ?? FIX: Espectadores no pueden interactuar con generadores
+        if (plugin.spectatorManager.isSpectator(player)) return
+
         if (session.isKiller(player.uniqueId)) {
             player.sendMessage(killerError)
             return
@@ -91,6 +94,9 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
 
         val player = event.whoClicked as Player
         val loc = holder.loc
+
+        // ?? FIX: Espectadores no pueden clickear dentro del generador
+        if (plugin.spectatorManager.isSpectator(player)) { event.isCancelled = true; return }
 
         val session = plugin.sessionManager.getSession(player) ?: return
 

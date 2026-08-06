@@ -1,4 +1,7 @@
 id: "null"
+stats:
+  health: 170.0
+  damage: 3.5
 precio: 5000
 icono_material: "COAL_BLOCK"
 armor:

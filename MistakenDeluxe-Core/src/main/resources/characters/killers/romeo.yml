@@ -1,4 +1,7 @@
 id: "romeo"
+stats:
+  health: 155.0
+  damage: 3.2
 precio: 30000
 permiso: "mistaken.skins.dev"
 icono_material: "COMMAND_BLOCK"

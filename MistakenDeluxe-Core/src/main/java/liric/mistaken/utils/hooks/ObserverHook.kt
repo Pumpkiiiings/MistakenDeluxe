@@ -6,9 +6,9 @@ import com.observer.api.model.ComponentAlignment
 import com.observer.api.model.TextAlignment
 import com.observer.paper.api.ObserverAPI
 
-object ObserverHook : org.bukkit.event.Listener {
+object ObserverHook {
 
-    private val hasObserverPlugin: Boolean
+    val hasObserverPlugin: Boolean
         get() = Bukkit.getPluginManager().isPluginEnabled("ObserverPaper")
 
     fun hasObserver(player: Player): Boolean {
@@ -130,20 +130,62 @@ object ObserverHook : org.bukkit.event.Listener {
 
     // --- Animations ---
 
+    private val plugin: liric.mistaken.Mistaken
+        get() = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+
+    fun getAnimation(player: Player, key: String, default: String): String {
+        val config = plugin.config
+        val session = plugin.sessionManager.getSession(player)
+        
+        val category: String
+        val roleId: String
+        
+        if (session != null && session.isKiller(player.uniqueId)) {
+            category = "killer"
+            roleId = plugin.playerDataManager.getSelectedKiller(player.uniqueId)
+        } else {
+            category = "survivor"
+            roleId = plugin.playerDataManager.getSelectedSurvivor(player.uniqueId)
+        }
+        
+        // Specific class override (e.g. animations.slasher.run)
+        var anim = config.getString("animations.$roleId.$key")
+        if (anim != null && anim.isNotEmpty()) {
+            return anim
+        }
+        
+        // Category fallback (e.g. animations.killer.run)
+        anim = config.getString("animations.$category.$key")
+        if (anim != null && anim.isNotEmpty()) {
+            return anim
+        }
+        
+        // Legacy/Global fallback just in case
+        anim = config.getString("animations.global.$key")
+        if (anim != null && anim.isNotEmpty()) {
+            return anim
+        }
+
+        return default
+    }
+
+}
+
+object ObserverEventListener : org.bukkit.event.Listener {
     @org.bukkit.event.EventHandler
     fun onLeftClick(event: com.observer.paper.api.events.ObserverPlayerLeftClickEvent) {
-        if (!hasObserverPlugin) return
+        if (!ObserverHook.hasObserverPlugin) return
         try {
-            com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, "ataque")
+            com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, ObserverHook.getAnimation(event.player, "ataque", "ataque"))
         } catch (e: Exception) {}
     }
 
     @org.bukkit.event.EventHandler
     fun onSprint(event: com.observer.paper.api.events.ObserverPlayerSprintEvent) {
-        if (!hasObserverPlugin) return
+        if (!ObserverHook.hasObserverPlugin) return
         try {
             if (event.isSprinting) {
-                com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, "run")
+                com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, ObserverHook.getAnimation(event.player, "run", "run"))
             } else {
                 com.observer.paper.api.PaperObserverAnimationAPI.stopAnimation(event.player)
             }
@@ -152,10 +194,10 @@ object ObserverHook : org.bukkit.event.Listener {
 
     @org.bukkit.event.EventHandler
     fun onWalk(event: com.observer.paper.api.events.ObserverPlayerWalkEvent) {
-        if (!hasObserverPlugin) return
+        if (!ObserverHook.hasObserverPlugin) return
         try {
             if (event.isWalking) {
-                com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, "walk")
+                com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, ObserverHook.getAnimation(event.player, "walk", "walk"))
             } else {
                 com.observer.paper.api.PaperObserverAnimationAPI.stopAnimation(event.player)
             }
@@ -164,9 +206,21 @@ object ObserverHook : org.bukkit.event.Listener {
 
     @org.bukkit.event.EventHandler
     fun onJump(event: com.observer.paper.api.events.ObserverPlayerJumpEvent) {
-        if (!hasObserverPlugin) return
+        if (!ObserverHook.hasObserverPlugin) return
         try {
-            com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, "jump")
+            com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, ObserverHook.getAnimation(event.player, "jump", "jump"))
+        } catch (e: Exception) {}
+    }
+
+    @org.bukkit.event.EventHandler
+    fun onIdle(event: com.observer.paper.api.events.ObserverPlayerIdleEvent) {
+        if (!ObserverHook.hasObserverPlugin) return
+        try {
+            if (event.isIdle) {
+                com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(event.player, ObserverHook.getAnimation(event.player, "idle", "estiramiento"))
+            } else {
+                com.observer.paper.api.PaperObserverAnimationAPI.stopAnimation(event.player)
+            }
         } catch (e: Exception) {}
     }
 }

@@ -21,8 +21,8 @@ class GameStateController(private val game: GameSession) {
     // Cache local para el resultado de la partida
     private var lastKillerWon = false
 
-    // Referencia a Geoffrey para poder eliminarlo cuando acaba la partida
-    private var geoffreyEntity: GeoffreyEXE? = null
+    // Referencia a Geoffrey (anomalía del modo INITIALIZES)
+    internal var geoffreyEntity: GeoffreyEXE? = null
 
     fun startBreakProcess() {
         val venimosDePartida = game.currentState == GameState.ENDING
@@ -111,11 +111,11 @@ class GameStateController(private val game: GameSession) {
 
     // 🔥 NUEVA FUNCIÓN: Invocación Programada de Geoffrey
     fun checkGeoffreySpawn() {
-        // Solo ocurre en el modo INITIALIZES y exactamente a los 290 segundos (10s después del inicio)
+        // Modo clásico INITIALIZES: spawnea exactamente a los 290 segundos
         if (game.currentMode == MistakenMode.INITIALIZES && game.timer == 290) {
 
             // 1. Títulos de Terror a todos los jugadores (Incluyendo el Killer)
-            val title = ColorTranslator.translate("<dark_red><bold><obfuscated>||</obfuscated> ¡GEOFFREY ESTÃ  AQUÃ ! <obfuscated>||</obfuscated>")
+            val title = ColorTranslator.translate("<dark_red><bold><obfuscated>||</obfuscated> ¡GEOFFREY ESTÃ AQUÃ! <obfuscated>||</obfuscated>")
             val subtitle = ColorTranslator.translate("<dark_gray>Nadie sobrevivirá...")
             val times = Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(4), Duration.ofMillis(500))
 
@@ -129,18 +129,15 @@ class GameStateController(private val game: GameSession) {
                 p.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1, false, false, false))
             }
 
-            // 2. Invocar la entidad en el centro (Spawn de Survivors o del Killer)
+            // 2. Invocar la entidad en el centro
             val spawnLoc = game.getCurrentAsesino()?.location ?: game.plugin.server.onlinePlayers.firstOrNull()?.location
 
             if (spawnLoc != null) {
-                // Hacemos que spawnee en el aire para que baje volando/cazando
                 val geoffreyLoc = spawnLoc.clone().add(0.0, 15.0, 0.0)
-
-                // Efecto de aparición en el cielo
                 geoffreyLoc.world.spawnParticle(Particle.EXPLOSION_EMITTER, geoffreyLoc, 2)
                 geoffreyLoc.world.playSound(geoffreyLoc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 2f, 0.5f)
 
-                geoffreyEntity = GeoffreyEXE(game.plugin)
+                geoffreyEntity = GeoffreyEXE(game.plugin).apply { assignedSession = game }
                 geoffreyEntity?.spawn(geoffreyLoc)
             }
         }
@@ -191,11 +188,11 @@ class GameStateController(private val game: GameSession) {
             var selected = when {
                 chance <= 50 -> MistakenMode.CLASSIC
                 chance <= 65 -> MistakenMode.ONE_BOUNCE
-                chance <= 70 -> MistakenMode.DOUBLE_KILLER
-                chance <= 80 -> MistakenMode.INFECTION
-                chance <= 90 -> MistakenMode.FREEZE_TAG
-                chance <= 95 -> MistakenMode.HIDE_AND_SEEK
-                else -> MistakenMode.INITIALIZES // 🔥 5% de probabilidad
+                chance <= 73 -> MistakenMode.DOUBLE_KILLER
+                chance <= 83 -> MistakenMode.INFECTION
+                chance <= 92 -> MistakenMode.FREEZE_TAG
+                chance <= 98 -> MistakenMode.HIDE_AND_SEEK
+                else         -> MistakenMode.INITIALIZES    // 💀 2% de probabilidad
             }
             if (selected == MistakenMode.DOUBLE_KILLER && onlineCount < 4) selected = MistakenMode.CLASSIC
             game.currentMode = selected

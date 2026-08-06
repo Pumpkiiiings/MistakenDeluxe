@@ -1,5 +1,7 @@
 package liric.mistaken.roles.killers.clases
 
+import liric.mistaken.utils.worldViewers
+import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes
@@ -153,7 +155,7 @@ class Herobrine : CoreKiller(
                 // EFECTO 2: ASCENSIÓN FALSA (RAYO BEACON + MURCIÉLAGOS)
                 world.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 2f, 1f)
 
-                val beacon = PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) {
+                val beacon = PacketFactory.displays.buildBlockDisplay(loc.worldViewers(), loc) {
                     it.block = Material.BEACON.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-0.5f, 0f, -0.5f), Quaternionf(), JomlVector3f(1f, 10f, 1f), Quaternionf())
                     it.isGlowing = true
@@ -182,7 +184,7 @@ class Herobrine : CoreKiller(
             2 -> {
                 // EFECTO 3: TEMPLO DEL VACÍO (MARCO DE PIEDRA Y ANTORCHAS)
                 world.playSound(loc, Sound.BLOCK_STONE_PLACE, 1f, 0.1f)
-                val altar = PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) {
+                val altar = PacketFactory.displays.buildBlockDisplay(loc.worldViewers(), loc) {
                     it.block = Material.MOSSY_COBBLESTONE.createBlockData()
                     it.transformation = Transformation(JomlVector3f(-1.5f, -0.5f, -1.5f), Quaternionf(), JomlVector3f(3f, 1f, 3f), Quaternionf())
                 }
@@ -368,7 +370,7 @@ class Herobrine : CoreKiller(
         if (blockOrbiters[uuid]?.world != player.world) limpiarVisuales(uuid)
 
         if (!blockOrbiters.containsKey(uuid)) {
-            val bMain = PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), player.location) { bd ->
+            val bMain = PacketFactory.displays.buildBlockDisplay(player.sessionViewers(), player.location) { bd ->
                 bd.block = Material.NETHERRACK.createBlockData()
                 bd.transformation = Transformation(JomlVector3f(-0.15f, -0.15f, -0.15f), Quaternionf(), JomlVector3f(0.3f, 0.3f, 0.3f), Quaternionf())
                 bd.teleportDuration = 3
@@ -377,13 +379,13 @@ class Herobrine : CoreKiller(
             blockOrbiters[uuid] = bMain
 
             val extras = mutableListOf<VirtualDisplay>().apply {
-                add(PacketFactory.displays.buildItemDisplay(Bukkit.getOnlinePlayers().toList(), player.location) { id ->
+                add(PacketFactory.displays.buildItemDisplay(player.sessionViewers(), player.location) { id ->
                     id.setItemStack(ItemStack(Material.NETHER_STAR))
                     id.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
                     id.teleportDuration = 3
                     id.interpolationDuration = 3
                 })
-                add(PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), player.location) { bd ->
+                add(PacketFactory.displays.buildBlockDisplay(player.sessionViewers(), player.location) { bd ->
                     bd.block = Material.GOLD_BLOCK.createBlockData()
                     bd.transformation = Transformation(JomlVector3f(-0.15f), Quaternionf(), JomlVector3f(0.3f, 0.3f, 0.3f), Quaternionf())
                     bd.teleportDuration = 3

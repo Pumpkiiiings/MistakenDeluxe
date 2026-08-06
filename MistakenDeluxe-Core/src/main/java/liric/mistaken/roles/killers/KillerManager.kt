@@ -6,7 +6,8 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
-import java.util.*
+import java.util.UUID
+import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import liric.mistaken.api.managers.IKillerManager
@@ -24,15 +25,15 @@ class KillerManager(private val plugin: Mistaken) : IKillerManager {
     private val mm = plugin.mm
 
     val activeKillers = ConcurrentHashMap<UUID, Killer>()
-    private val availableClasses = ConcurrentHashMap<String, Killer>()
+    private val availableClasses: MutableMap<String, Killer> = Collections.synchronizedMap(LinkedHashMap())
 
     override val catalogo: Map<String, Killer> get() = availableClasses
 
     init {
         listOf(
             Slasher(), Herobrine(), Entity303(), NullAsesino(),
-            ColorAndElectricity(), CharlieInferno(), Romeo(), Mariachi(),
-            Sowoul ()
+            ColorAndElectricity(), CharlieInferno(), CharlieJazz(), Romeo(), Mariachi(),
+            Sowoul(), TinkyWinky()
         ).forEach { registerClass(it) }
     }
 

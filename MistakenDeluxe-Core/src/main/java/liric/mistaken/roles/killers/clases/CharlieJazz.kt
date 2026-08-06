@@ -39,13 +39,13 @@ import org.bukkit.plugin.java.JavaPlugin
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-class CharlieInferno : CoreKiller(
-    "charlie",
-    PumpkingServiceManager.messages.getStrictString(null, "asesinos.charlie.nombre", "killers_info")
+class CharlieJazz : CoreKiller(
+    "charliejazz",
+    PumpkingServiceManager.messages.getStrictString(null, "asesinos.charliejazz.nombre", "killers_info")
 ) {
 
-    private val pathBase = "asesinos.charlie"
-    override val defaultMusic = "mistaken:charlieinferno"
+    private val pathBase = "asesinos.charliejazz"
+    override val defaultMusic = "mistaken:charliejazz"
     private val sonidoId = defaultMusic!!
 
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
@@ -53,7 +53,7 @@ class CharlieInferno : CoreKiller(
     private val angulos = ConcurrentHashMap<UUID, Double>()
 
     private val musicTasks = ConcurrentHashMap<UUID, ScheduledTask>()
-    private val orbitMaterials = listOf(Material.MAGMA_BLOCK, Material.PACKED_ICE)
+    private val orbitMaterials = listOf(Material.AMETHYST_BLOCK, Material.GOLD_BLOCK)
 
     init { preLoadKit() }
 
@@ -167,7 +167,7 @@ class CharlieInferno : CoreKiller(
 
     private fun habilidadInfierno(player: Player) {
         // 🔥 HITBOX: Explosión de Fuego
-        HitboxVisualizer.drawInstantHitbox(plugin, player.location, 7.5, 7.5, 7.5, 10L, Material.ORANGE_STAINED_GLASS)
+        HitboxVisualizer.drawInstantHitbox(plugin, player.location, 7.5, 7.5, 7.5, 10L, Material.PURPLE_STAINED_GLASS)
 
         player.world.getNearbyPlayers(player.location, 7.5).forEach { target ->
             if (isValidTarget(player, target)) {
@@ -175,20 +175,20 @@ class CharlieInferno : CoreKiller(
                 plugin.combatManager.takeDamage(target)
                 target.playSound(target.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f)
                 // Híbrido:
-                target.world.spawnParticle(org.bukkit.Particle.LAVA, target.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
+                target.world.spawnParticle(org.bukkit.Particle.FIREWORK, target.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
                 ObserverHook.playScreenshake(target, 1.0f, 20)
-                ObserverHook.playScreenTint(target, 255, 30, 0, 0.6f, 25)
+                ObserverHook.playScreenTint(target, 150, 0, 255, 0.6f, 25)
             }
         }
-        player.world.spawnParticle(org.bukkit.Particle.FLAME, player.location, 80, 3.0, 0.5, 3.0, 0.1)
-        player.world.spawnParticle(org.bukkit.Particle.CAMPFIRE_COSY_SMOKE, player.location, 50, 3.0, 1.0, 3.0, 0.05)
+        player.world.spawnParticle(org.bukkit.Particle.END_ROD, player.location, 80, 3.0, 0.5, 3.0, 0.1)
+        player.world.spawnParticle(org.bukkit.Particle.PORTAL, player.location, 50, 3.0, 1.0, 3.0, 0.05)
         player.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 40, 0))
         player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
     }
 
     private fun habilidadDemonRun(player: Player) {
         // 🔥 HITBOX: Rango de Marcado
-        HitboxVisualizer.drawInstantHitbox(plugin, player.location, 10.0, 10.0, 10.0, 20L, Material.GRAY_STAINED_GLASS)
+        HitboxVisualizer.drawInstantHitbox(plugin, player.location, 10.0, 10.0, 10.0, 20L, Material.YELLOW_STAINED_GLASS)
 
         val targets = player.world.getNearbyPlayers(player.location, 10.0).toMutableList()
         targets.forEach { it.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 60, 0)) }
@@ -201,8 +201,8 @@ class CharlieInferno : CoreKiller(
                     target.playSound(target.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1f, 0.8f)
                     
                     // Visuales
-                    target.world.spawnParticle(org.bukkit.Particle.SOUL_FIRE_FLAME, target.location.add(0.0, 1.0, 0.0), 30, 0.5, 1.0, 0.5, 0.05)
-                    ObserverHook.playScreenTint(target, 0, 0, 0, 0.5f, 30)
+                    target.world.spawnParticle(org.bukkit.Particle.WAX_ON, target.location.add(0.0, 1.0, 0.0), 30, 0.5, 1.0, 0.5, 0.05)
+                    ObserverHook.playScreenTint(target, 200, 150, 0, 0.5f, 30)
                 }
             }, null, 60L)
         }
@@ -210,13 +210,13 @@ class CharlieInferno : CoreKiller(
 
     private fun habilidadBloqueHielo(player: Player) {
         val ice = PacketFactory.displays.buildItemDisplay(player.sessionViewers(), player.eyeLocation) {
-            it.setItemStack(ItemStack(Material.PACKED_ICE))
+            it.setItemStack(ItemStack(Material.AMETHYST_BLOCK))
             it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.6f, 0.6f, 0.6f), Quaternionf())
         }
         val dir = player.location.direction.multiply(1.2)
 
         // 🔥 HITBOX: Proyectil
-        val hitbox = HitboxVisualizer.createHitbox(player.eyeLocation, 1.0, 1.0, 1.0, Material.LIGHT_BLUE_STAINED_GLASS)
+        val hitbox = HitboxVisualizer.createHitbox(player.eyeLocation, 1.0, 1.0, 1.0, Material.PURPLE_STAINED_GLASS)
 
         var ticks = 0
         ice.scheduler.runAtFixedRate(plugin, Consumer { task ->
@@ -232,14 +232,14 @@ class CharlieInferno : CoreKiller(
 
             ice.teleport(ice.location.add(dir))
             hitbox?.teleport(ice.location)
-            ice.world.spawnParticle(org.bukkit.Particle.SNOWFLAKE, ice.location, 5, 0.2, 0.2, 0.2, 0.01)
+            ice.world.spawnParticle(org.bukkit.Particle.END_ROD, ice.location, 5, 0.2, 0.2, 0.2, 0.01)
 
             val hit = player.world.getNearbyPlayers(ice.location, 1.0).firstOrNull { isValidTarget(player, it) }
 
             if (hit != null || ice.location.block.type.isSolid) {
-                ice.world.spawnParticle(org.bukkit.Particle.SNOWFLAKE, ice.location, 50, 1.0, 1.0, 1.0, 0.1)
-                ice.world.spawnParticle(org.bukkit.Particle.BLOCK, ice.location, 40, 0.5, 0.5, 0.5, Material.ICE.createBlockData())
-                ice.world.playSound(ice.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
+                ice.world.spawnParticle(org.bukkit.Particle.END_ROD, ice.location, 50, 1.0, 1.0, 1.0, 0.1)
+                ice.world.spawnParticle(org.bukkit.Particle.BLOCK, ice.location, 40, 0.5, 0.5, 0.5, Material.AMETHYST_BLOCK.createBlockData())
+                ice.world.playSound(ice.location, Sound.BLOCK_AMETHYST_BLOCK_BREAK, 1f, 0.5f)
                 hit?.let {
                     it.freezeTicks = 140
                     it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
@@ -270,11 +270,11 @@ class CharlieInferno : CoreKiller(
 
             plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
                 locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
-                locToSpawn.world.spawnParticle(org.bukkit.Particle.FLAME, locToSpawn, 10, 0.2, 0.2, 0.2, 0.05)
-                locToSpawn.world.spawnParticle(org.bukkit.Particle.SMOKE, locToSpawn, 5, 0.2, 0.5, 0.2, 0.05)
+                locToSpawn.world.spawnParticle(org.bukkit.Particle.END_ROD, locToSpawn, 10, 0.2, 0.2, 0.2, 0.05)
+                locToSpawn.world.spawnParticle(org.bukkit.Particle.END_ROD, locToSpawn, 5, 0.2, 0.5, 0.2, 0.05)
 
                 // 🔥 HITBOX: Diente individual
-                HitboxVisualizer.drawInstantHitbox(plugin, locToSpawn, 1.5, 1.5, 1.5, 5L, Material.RED_STAINED_GLASS)
+                HitboxVisualizer.drawInstantHitbox(plugin, locToSpawn, 1.5, 1.5, 1.5, 5L, Material.MAGENTA_STAINED_GLASS)
 
                 locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
                     if (isValidTarget(player, victim)) {
@@ -317,7 +317,7 @@ class CharlieInferno : CoreKiller(
 
     override fun showTrail(player: Player) {
         val loc = player.location
-        val packet = WrapperPlayServerParticle(Particle(ParticleTypes.FLAME), false, Vector3d(loc.x, loc.y + 1.0, loc.z), Vector3f(0.15f, 0.15f, 0.15f), 0.02f, 2)
+        val packet = WrapperPlayServerParticle(Particle(ParticleTypes.END_ROD), false, Vector3d(loc.x, loc.y + 1.0, loc.z), Vector3f(0.15f, 0.15f, 0.15f), 0.02f, 2)
         loc.world.players.forEach {
             if (it != player && it.location.distanceSquared(loc) < 400.0) {
                 PacketEvents.getAPI().playerManager.sendPacket(it, packet)

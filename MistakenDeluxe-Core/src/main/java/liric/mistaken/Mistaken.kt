@@ -310,8 +310,16 @@ class Mistaken : JavaPlugin() {
         }
 
         if (pm.isPluginEnabled("ObserverPaper")) {
-            pm.registerEvents(liric.mistaken.utils.hooks.ObserverHook, this)
-            componentLogger.info(ColorTranslator.translate("[INFO] Hooked into ObserverPaper!"))
+            try {
+                // Verificamos si existe la clase del evento (si tienen un JAR actualizado)
+                Class.forName("com.observer.paper.api.events.ObserverPlayerIdleEvent")
+                pm.registerEvents(liric.mistaken.utils.hooks.ObserverEventListener, this)
+                componentLogger.info(ColorTranslator.translate("[INFO] Hooked into ObserverPaper!"))
+            } catch (e: ClassNotFoundException) {
+                componentLogger.warn(ColorTranslator.translate("[WARN] ObserverPaper found, but it is an older version. Update Observer to enable animation events."))
+            } catch (e: Throwable) {
+                componentLogger.warn(ColorTranslator.translate("[WARN] Could not register ObserverPaper events: ${e.message}"))
+            }
         }
     }
 

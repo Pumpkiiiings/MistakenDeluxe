@@ -1,4 +1,4 @@
-﻿asesinos:
+asesinos:
   slasher:
     nombre: "<white><b>PUMPKIN WHITE</b>"
     descripcion:
@@ -79,22 +79,6 @@
       skill3: "<aqua><b>Púas de Glaciar</b>"
       skill4: "<dark_red><b>Colmillos del Inframundo</b>"
 
-  devesto:
-    nombre: "<gradient:#4b0082:#000000><b>DEVESTO</b></gradient> <white>[F3X]</white>"
-    descripcion:
-      - "<gray>El arquitecto corrupto del código."
-      - "<gray>Manipula el mapa a su voluntad."
-      - "<dark_purple>Mecánica:</gradient> <white>//set 0 y restauración."
-    lore_tienda:
-      - "<gray>\"Control-Alt-Delete a tu existencia.\""
-      - "<white>Dificultad: <red>Imposible"
-    skill_names:
-      weapon: "<gradient:#4b0082:#000000>Hacha del Arquitecto</gradient>"
-      skill1: "<blue>[F3X]</blue> <white>Move Tool"
-      skill2: "<blue>[F3X]</blue> <white>Paint Tool"
-      skill3: "<blue>[F3X]</blue> <white>Resize Tool"
-      skill4: "<red><bold>//SET 0 (DELETE)</bold>"
-
   mariachi:
     nombre: "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>"
     descripcion:
@@ -111,37 +95,22 @@
       skill3: "<white>Guitarrazo Certero"
       skill4: "<green><bold>TRAGO DE TEQUILA</bold>"
 
-  teto:
-    nombre: "<gradient:#ff66cc:#ff0000><b>KASANE TETO</b></gradient>"
+  charliejazz:
+    nombre: "<gradient:#e0b0ff:#ffd700><b>CHARLIE INFERNO. VER. JAZZ</b></gradient>"
     descripcion:
-      - "<gray>La quimera UTAU ha llegado a Mistaken."
-      - "<gray>Especialista en distorsión y ataques tácticos."
-      - "<red>Mecánica: <white>Habilidades potentes con auto-debuffs."
+      - "<gray>El heraldo del fuego estelar y el oro."
+      - "<gray>Domina el campo con ataques deslumbrantes."
+      - "<gradient:#e0b0ff:#ffd700>Mecánica:</gradient> <white>Poder devastador vs Agotamiento."
     lore_tienda:
-      - "<gray>\"¡Eres tan tonto! (Baka!)\""
-      - "<white>Dificultad: <red>Difícil"
+      - "<gray>\"You can run from your demons until you are exhausted...\""
+      - "<white>Dificultad: <red>Experto"
     skill_names:
-      weapon: "<gradient:#ff66cc:#ff0000>Microfono de la Quimera</gradient>"
-      skill1: "<gradient:#7d7d7d:#ff0000>Taladro Quimérico</gradient>"
-      skill2: "<gradient:#ffcc99:#e6ac00>Baguette de Hierro</gradient>"
-      skill3: "<gradient:#ff0000:#ffffff>Broma del 1 de Abril</gradient>"
-      skill4: "<dark_red><bold>TERRITORY (0401)</bold>"
+      weapon: "<gradient:#e0b0ff:#ffd700>Filo Dorado</gradient>"
+      skill1: "<light_purple><b>¡INFIERNO ESTELAR!</b>"
+      skill2: "<gradient:#e0b0ff:#000000><b>Demon's Run</b></gradient>"
+      skill3: "<gold><b>Cubo de Oro</b>"
+      skill4: "<dark_purple><b>Colmillos Mágicos</b>"
 
-  miku:
-    nombre: "<gradient:#00ffcc:#0099ff><b>HATSUNE MIKU</b></gradient>"
-    descripcion:
-      - "<gray>La ídolo virtual definitiva ha llegado."
-      - "<gray>Especialista en control de masas y láseres."
-      - "<aqua>Mecánica: <white>Proyecciones de luz y daño masivo."
-    lore_tienda:
-      - "<gray>\"¡El mundo es mío!\""
-      - "<white>Dificultad: <yellow>Media"
-    skill_names:
-      weapon: "<gradient:#00ffcc:#0099ff>Negi-Saber</gradient>"
-      skill1: "<aqua>Proyección 39"
-      skill2: "<gradient:#00ffcc:#ffffff>DOMINACIÓN MUNDIAL</gradient>"
-      skill3: "<gradient:#ff00cc:#00ffcc><b>MIKU MIKU BEAMMMM</b></gradient>"
-      skill4: "<gradient:#00ffcc:#0099ff><bold>CONCIERTO FINAL</bold></gradient>"
 
   romeo:
     nombre: "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient> <white>[ADMIN]</white>"
@@ -160,7 +129,7 @@
       skill4: "<gold><b>Estrella del Fin</b>"
 
   colorandelectricity:
-    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>è‰²å½©é›»æ°—</b></gradient>"
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>Colorsito</b></gradient>"
     descripcion:
       - "<gray>Un ser sin cuerpo hecho de pura estática."
       - "<gray>Especialista en robo de visión y velocidad."
@@ -171,53 +140,6 @@
     skill_names:
       weapon: "<gradient:#ff0080:#00ffff>Cuchilla de Alto Voltaje</gradient>"
       skill1: "<gradient:#ff0080:#ffffff>Vivid Trace (Dash)</gradient>"
-      skill2: "<gradient:#00ffff:#ffffff>Color Drain</gradient>"
-      skill3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
-      skill4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
-
-  coolkid:
-    nombre: "<gradient:#00ff00:#004400><b>COOLKID</b></gradient> <gray>[DEV]</gray>"
-    descripcion:
-      - "<gray>Killer de pruebas v4.1 (Rama DEV)."
-      - "<gray>Especialista en ataques de red y glitches."
-      - "<green>Mecánica: <white>Packet loss y errores críticos."
-    lore_tienda:
-      - "<dark_gray>\"127.0.0.1: Connection Terminated.\""
-      - "<white>Dificultad: <green>Prueba"
-    skill_names:
-      weapon: "<green>Force Op Stick"
-      skill1: "<green>Force Login (Dash)"
-      skill2: "<green>Packet Loss (Clones)"
-      skill3: "<red>System Shutdown"
-      skill4: "<dark_red><bold>CRITICAL ERROR</bold>"
-
-  bendy:
-    nombre: "<gradient:#000000:#333333><b>BENDY</b></gradient> <white>[INK]</white>"
-    descripcion:
-      - "<gray>El demonio de tinta ha escapado del estudio."
-      - "<gray>Especialista en movilidad y ceguera."
-      - "<black>Mecánica: <white>Túneles de tinta y forma de Bestia."
-    lore_tienda:
-      - "<gray>\"tintoso.\""
-      - "<white>Dificultad: <red>DIFÃ� CIL"
-    skill_names:
-      weapon: "<black>Hacha Manchada de Tinta"
-      skill1: "<dark_gray><b>Túnel de Tinta</b>"
-      skill2: "<black><b>Desbordamiento</b>"
-      skill3: "<dark_gray><b>Charco Corrosivo</b>"
-      skill4: "<black><bold>EL DEMONIO DE TINTA</bold>"
-
-  colorsito:
-    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>COLORSITO</b></gradient>"
-    descripcion:
-      - "<gray>Una version mas pequeña de Color And Electricity."
-      - "<yellow>Hecha por: MarAgridulce."
-    lore_tienda:
-      - "<gray>\"Es electrico y colorido.\""
-      - "<white>Dificultad: <yellow>Media"
-    skill_names:
-      weapon: "<gradient:#ff0080:#00ffff>Colorsito Blade</gradient>"
-      skill1: "<gradient:#ff0080:#ffffff>Vivid Trace</gradient>"
       skill2: "<gradient:#00ffff:#ffffff>Color Drain</gradient>"
       skill3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
       skill4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
@@ -237,71 +159,17 @@
       skill3: "<dark_aqua>Fauces de Evocador</dark_aqua>"
       skill4: "<dark_red><bold>INVENCIÓN: GEOFFREY 3.0</bold></dark_red>"
 
-  pizzano:
-    nombre: "<gradient:#ff4500:#ff8c00><b>PIZZANO</b></gradient>"
+  tinkywinky:
+    nombre: "<gradient:#6b00b5:#cc00ff><b>TINKY WINKY</b></gradient>"
     descripcion:
-      - "<gray>Un loco hiperactivo impulsado por"
-      - "<gray>una sobredosis de azúcar y caos."
+      - "<gray>Una criatura perturbadora que ronda"
+      - "<gray>los generadores con su bolsa mágica."
     lore_tienda:
-      - "<gray>\"¡No puedo parar! ¡NO PUEDO PARAR!\""
-      - "<white>Dificultad: <green>Fácil"
+      - "<dark_purple>\"Eh-oh... ¿dónde estás?\""
+      - "<white>Dificultad: <red>Alta"
     skill_names:
-      weapon: "<red>Cortador Frenético</red>"
-      skill1: "<blue>Embestida de Regaliz</blue>"
-      skill2: "<yellow>Tornado de Espiral</yellow>"
-      skill3: "<dark_red><bold>ESCAPE FRENÉTICO</bold></dark_red>"
-      skill4: "<gray>Subidón de Azúcar (Pasiva)</gray>"
-
-  error_estatico:
-    nombre: "<gradient:#00ffff:#ff00ff><b>ERROR ESTÃTICO</b></gradient>"
-    descripcion:
-      - "<gray>Un ente digital corrupto que tomó"
-      - "<gray>la forma de una idol virtual."
-    lore_tienda:
-      - "<gray>\"This is how it should be...\""
-      - "<white>Dificultad: <dark_purple>Extrema"
-    skill_names:
-      weapon: "<aqua>Micrófono Corrupto</aqua>"
-      skill1: "<light_purple>Salto de Cuadro</light_purple>"
-      skill2: "<blue>Sintonía Forzada</blue>"
-      skill3: "<dark_red><bold>PANTALLAZO AZUL</bold></dark_red>"
-      skill4: "<gray>Frecuencia Distorsionada (Pasiva)</gray>"
-
-  romeodebuff:
-    nombre: "<gradient:#ff5555:#ffff55><b>ROMEO (NERF)</b></gradient> <white>[ADMIN]</white>"
-    descripcion:
-      - "<red>El Administrador del Mundo ha regresado."
-      - "<gray>Controla el campo con el poder del código (Balanceado)."
-      - "<gold>Mecánica: <white>Dash destructor y visión limitada."
-    lore_tienda:
-      - "<gray>\"¡Yo hago las reglas aquí! (O eso creo)\""
-      - "<white>Dificultad: <dark_red>Difícil"
-    skill_names:
-      weapon: "<gradient:#ff5555:#ffff55>Pico del Administrador</gradient>"
-      skill1: "<red><b>Admin Dash Corto</b>"
-      skill2: "<white><b>Visión Reducida</b>"
-      skill3: "<dark_purple><b>Colmillo Simple</b>"
-      skill4: "<gold><b>Estrella Menor</b>"
-
-  caine:
-    nombre: "<gradient:#ff0000:#ffffff><b>CAINE</b></gradient> <gray>[CIRCO]</gray>"
-    descripcion:
-      - "<gray>El inestable maestro de ceremonias"
-      - "<gray>del Asombroso Circo Digital."
-      - "<white>Mecánica: <red>Humillación cómica y"
-      - "<red>control de masas caótico."
-    lore_tienda:
-      - "<gray>\"¡Soy Caine, vuestro humilde"
-      - "<gray>maestro de ceremonias!\""
-      - "<white>Dificultad: <dark_purple>EXTREMA"
-    skill_names:
-      weapon: "<red>Batuta de Ceremonias</red>"
-      skill1: "<red><bold>¡MAZO CHILLÓN!</bold></red>"
-      skill2: "<aqua>Dash Estrepitoso</aqua>"
-      skill3: "<light_purple>Danza Obligatoria</light_purple>"
-      skill4: "<white>Ojo Explorador</white>"
-    habilidades_mensajes:
-      skill1: "<red>¡ZAS! ¡Aplastado como un insecto!"
-      skill2: "<aqua>¡FWOOSH! ¡Abran paso al maestro!"
-      skill3: "<light_purple>¡Todos a bailar, es una orden!"
-      skill4: "<white>¡No me pierdo de ningún detalle!"
+      weapon: "<dark_purple>Bolsa Mágica</dark_purple>"
+      skill1: "<light_purple>Lanzamiento de Bolsa</light_purple>"
+      skill2: "<gray>Paso Silencioso</gray>"
+      skill3: "<dark_aqua>Señal de TV</dark_aqua>"
+      skill4: "<dark_red><bold>LA ÚLTIMA CANCIÓN</bold></dark_red>"

@@ -1,5 +1,8 @@
-id: "civilian"
+id: "civil"
 enabled: true
+stats:
+  health: 25.0
+  damage: 4.5
 precio: 0
 icono_material: "LEATHER_CHESTPLATE"
 armor:

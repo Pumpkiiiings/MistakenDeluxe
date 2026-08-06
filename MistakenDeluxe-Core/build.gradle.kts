@@ -85,6 +85,10 @@ tasks {
         archiveClassifier.set("")
         isZip64 = true
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+        // ?? FIX: Extraer el contenido del jar del API e incluirlo en el shadowJar
+        val apiJar = project(":MistakenDeluxe-API").tasks.named<org.gradle.jvm.tasks.Jar>("jar")
+        from(apiJar.map { zipTree(it.archiveFile) })
     }
 
     withType<JavaCompile> {

@@ -40,6 +40,7 @@ class CinematicManager(private val plugin: Mistaken) {
         registerProfile(BendyProfile())
         registerProfile(NullProfile())
         registerProfile(HerobrineProfile())
+        registerProfile(CharlieJazzProfile())
         
         // Register aliases
         profiles["charlieinferno"] = CharlieProfile()
@@ -78,8 +79,16 @@ class CinematicManager(private val plugin: Mistaken) {
         val titlePair = profile.getIntroTexts(plugin, asesino.nombre)
         val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(6), Duration.ofMillis(1000))
 
+        val originalLocations = mutableMapOf<Player, Location>()
+        val originalGameModes = mutableMapOf<Player, GameMode>()
+
         val cameras = mutableListOf<VirtualCamera>()
         viewers.forEach { p ->
+            originalLocations[p] = p.location
+            originalGameModes[p] = p.gameMode
+            p.gameMode = GameMode.SPECTATOR
+            p.teleportAsync(centerLoc)
+
             p.showTitle(Title.title(titlePair.first, titlePair.second, times))
             if (p == killer) p.isInvisible = true
             
@@ -103,6 +112,16 @@ class CinematicManager(private val plugin: Mistaken) {
                 visualDummy.remove()
                 killer.isInvisible = false
                 cameras.forEach { it.stopSpectating() }
+                viewers.forEach { p ->
+                    originalGameModes[p]?.let { gm -> p.gameMode = gm }
+                    originalLocations[p]?.let { loc ->
+                        // Delay the teleport by 5 ticks to prevent Sodium chunk render crash
+                        // This allows the client to process the stopSpectating packet before teleporting
+                        plugin.server.globalRegionScheduler.runDelayed(plugin, { _ ->
+                            p.teleportAsync(loc)
+                        }, 5L)
+                    }
+                }
                 return@Consumer
             }
             
@@ -144,8 +163,16 @@ class CinematicManager(private val plugin: Mistaken) {
         val titlePair = profile.getOutroTexts(plugin, asesino.nombre)
         val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(8), Duration.ofMillis(1000))
 
+        val originalLocations = mutableMapOf<Player, Location>()
+        val originalGameModes = mutableMapOf<Player, GameMode>()
+
         val cameras = mutableListOf<VirtualCamera>()
         viewers.forEach { p ->
+            originalLocations[p] = p.location
+            originalGameModes[p] = p.gameMode
+            p.gameMode = GameMode.SPECTATOR
+            p.teleportAsync(centerLoc)
+
             p.showTitle(Title.title(titlePair.first, titlePair.second, times))
             if (p == killer) p.isInvisible = true
             
@@ -166,6 +193,16 @@ class CinematicManager(private val plugin: Mistaken) {
                 visualDummy.remove()
                 killer.isInvisible = false
                 cameras.forEach { it.stopSpectating() }
+                viewers.forEach { p ->
+                    originalGameModes[p]?.let { gm -> p.gameMode = gm }
+                    originalLocations[p]?.let { loc ->
+                        // Delay the teleport by 5 ticks to prevent Sodium chunk render crash
+                        // This allows the client to process the stopSpectating packet before teleporting
+                        plugin.server.globalRegionScheduler.runDelayed(plugin, { _ ->
+                            p.teleportAsync(loc)
+                        }, 5L)
+                    }
+                }
                 return@Consumer
             }
             

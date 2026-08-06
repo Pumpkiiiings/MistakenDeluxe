@@ -1,4 +1,7 @@
 id: "herobrine"
+stats:
+  health: 170.0
+  damage: 3.5
 precio: 2500
 icono_material: "NETHER_STAR"
 armor:

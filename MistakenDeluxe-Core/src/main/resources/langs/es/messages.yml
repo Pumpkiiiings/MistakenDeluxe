@@ -26,7 +26,6 @@ bossbar:
   starting: "&#FF3344&l¡PREPÁRATE! &#FFFFFFEmpezamos en &#FFE300{time}s"
   ingame: "&#FFFFFFMapa: &#FFE300{map} &#888888| &#FFFFFFModo: &#33CCFF{mode} &#888888| &#FFFFFFTiempo: &#42F56C{time}"
   ending: "&#FF3344&l¡PARTIDA TERMINADA!"
-  assassin_pvp: "&#FF3344⚔ &#FFFFFFASESINOS RESTANTES: &#FF3344<online> &#888888| &#FF3344<time>"
   colors:
     lobby: "YELLOW"
     break: "YELLOW"
@@ -34,7 +33,6 @@ bossbar:
     starting: "PURPLE"
     ingame: "RED"
     ending: "PINK"
-    assassin_pvp: "RED"
 
 words:
   lobby: "Lobby Principal"
@@ -168,6 +166,19 @@ scoreboard:
     - " &#FF4141🗡 &#FFFFFFKiller:"
     - "  %killers%"
     - ""
+  ingame_hide_and_seek:
+    - ""
+    - " &#FFD031🛡 &#FFFFFFID Partida: &#FFD031%id%"
+    - ""
+    - " &#FF9B00✎ &#FFFFFFMapa: &#42F56C%map%"
+    - " &#ABC9FF⌚ &#FFFFFFTiempo: &#FFE300%timer%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFFGens: &#42F56C%completed%/%total%"
+    - " &#FF4141🗡 &#FFFFFFBuscador:"
+    - "  %killers%"
+    - ""
+    - " &#FF3344❤ &#FFFFFFVidas: &#FF3344%lives%"
+    - ""
   ingame_infection:
     - ""
     - " &#FFD031🛡 &#FFFFFFID Partida: &#FFD031%id%"
@@ -180,16 +191,6 @@ scoreboard:
     - "  %killers%"
     - ""
     - " &#FF3344❤ &#FFFFFFVidas: &#FF3344%lives%"
-    - ""
-  ingame_assassin_pvp:
-    - ""
-    - " &#FFD031🛡 &#FFFFFFID Partida: &#FFD031%id%"
-    - ""
-    - " &#FF9B00✎ &#FFFFFFMapa: &#42F56C%map%"
-    - " &#ABC9FF⌚ &#FFFFFFTiempo: &#FFE300%timer%"
-    - ""
-    - " &#FFE300Todos son asesinos,"
-    - " &#FFE300el mejor asesino gana."
     - ""
   ingame_initializes:
     - ""
@@ -334,9 +335,9 @@ modes:
   freeze_tag:
     title: "&#33CCFF&lFREEZE TAG"
     subtitle: "&#FFFFFFLas entidades te congelarán. ¡Rescata a tus compañeros!"
-  assassin_pvp:
-    title: "&#AA0000&lASESINO VS ASESINO"
-    subtitle: "&#CCCCCC¡No confíes en nadie! Último en pie gana."
+  infection:
+    title: "&#42F56C&lINFECCIÓN"
+    subtitle: "&#FFFFFFCada superviviente que caiga se unirá a los asesinos."
   hide_and_seek:
     title: "&#42F56C&lESCONDITE"
     subtitle: "&#FFFFFFTienes 1 minuto para esconderte."
@@ -444,41 +445,12 @@ stamina:
 
 # --- ANOMALÍAS ---
 anomalies:
-  amongus:
-    title-detect: "&#FF3344&lIMPOSTOR DETECTADO"
-    subtitle-detect: "&#CCCCCC¡Corre por tu vida!"
-    rage: "&#AA0000&l[!] EL IMPOSTOR ESTÁ FURIOSO"
-    death: "<prefix>&#FFFFFF{player} &#FF3344fue eliminado por el impostor."
-  axolotl:
-    title-hungry: "&#FF55FF&lAJOLOTE HAMBRIENTO"
-    subtitle-hungry: "&#CCCCCC¡Va a morder!"
-    rage: "&#AA0000&l[!] EL AJOLOTE SE HA VUELTO AGRESIVO"
-    death: "<prefix>&#FFFFFF{player} &#FF3344fue devorado por el ajolote."
-  eyedrooms:
-    title-infect: "&#00AA00&lINFECCIÓN OCULAR"
-    subtitle-infect: "&#42F56CLa plaga se expande..."
-    death: "<prefix>&#FFFFFF{player} &#FF3344fue consumido por la infección ocular."
   geoffrey:
     spawn: "&#FF3344&l[!] &#AA0000ANOMALÍA DETECTADA: &lEL ABISMO HA DESPERTADO."
     title-comes: "&#AA0000&l!!! VIENE !!!"
     subtitle-comes: "&#FF3344¡corre!!!!"
     rage: "&#AA0000&l!!! GEOFFREY ESTÁ FURIOSO !!!"
     death: "<prefix>&#FFFFFF{player} &#FF3344fue destrozado por Geoffrey."
-  observant:
-    title-look-up: "&#AA0000MIRA ARRIBA"
-    subtitle-look-up: ""
-    rage: "&#AA0000&l[!] THE OBSERVANT TE ESTÁ CAZANDO"
-    death: "<prefix>&#FFFFFF{player} &#FF3344fue aniquilado por The Observant."
-  pou:
-    title-attack: "&#FFAA00&l¡SPLAT!"
-    subtitle-attack: "&#FFE300Pou saltó sobre ti"
-    rage: "&#AA0000&l[!] POU SE HA VUELTO SALVAJE"
-    death: "<prefix>&#FFFFFF{player} &#FF3344fue aplastado por Pou."
-  witherstorm:
-    tractor-beam: "&#9933FF&oEL RAYO TRACTOR TE ESTÁ CONSUMIENDO..."
-    title-roar: "&#9933FF&l¡RUUUUAAARRR!"
-    subtitle-roar: "&#CCCCCCLa tormenta brama..."
-    death: "<prefix>&#FFFFFF{player} &#FF3344fue absorbido por la Wither Storm."
 
 # ==========================================
 # --- TÍTULOS DE MENÚS ---

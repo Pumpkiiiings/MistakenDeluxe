@@ -1,4 +1,7 @@
 id: "notch"
+stats:
+  health: 24.0
+  damage: 4.0
 precio: 8000
 icono_material: "ENCHANTED_GOLDEN_APPLE"
 armor:

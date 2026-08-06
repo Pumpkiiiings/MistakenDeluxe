@@ -1,5 +1,6 @@
 package liric.mistaken.roles.killers.clases
 
+import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes
@@ -191,7 +192,7 @@ class Sowoul : CoreKiller(
     }
 
     private fun habilidadLanzarCartas(player: Player) {
-        val carta = PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.eyeLocation) { id ->
+        val carta = PacketFactory.displays.buildItemDisplay(player.sessionViewers(), player.eyeLocation) { id ->
             id.setItemStack(ItemStack(Material.PAPER))
             id.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
             id.teleportDuration = 1; id.interpolationDuration = 1
@@ -493,7 +494,7 @@ class Sowoul : CoreKiller(
         val entidades = orbitadores.getOrPut(uuid) {
             mutableListOf<VirtualItemDisplay>().apply {
                 repeat(4) {
-                    add(PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.location) { id ->
+                    add(PacketFactory.displays.buildItemDisplay(player.sessionViewers(), player.location) { id ->
                         id.setItemStack(ItemStack(Material.PAPER))
                         id.transformation = Transformation(
                             JomlVector3f(0f, 0f, 0f),

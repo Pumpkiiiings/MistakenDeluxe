@@ -1,5 +1,6 @@
 package liric.mistaken.roles.killers.clases
 
+import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
 import com.github.retrooper.packetevents.protocol.particle.data.ParticleDustData
@@ -215,7 +216,7 @@ class Entity303 : CoreKiller(
     }
 
     private fun habilidadInfeccionSistema(player: Player) {
-        val star = PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), player.eyeLocation) {
+        val star = PacketFactory.displays.buildItemDisplay(player.sessionViewers(), player.eyeLocation) {
             it.setItemStack(ItemStack(Material.NETHER_STAR))
             it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
         }
@@ -373,7 +374,7 @@ class Entity303 : CoreKiller(
     }
 
     private fun crearBloqueOrbitante(player: Player, loc: Location, mat: Material): VirtualBlockDisplay {
-        return PacketFactory.displays.buildBlockDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { bd ->
+        return PacketFactory.displays.buildBlockDisplay(player.sessionViewers(), loc) { bd ->
             bd.block = mat.createBlockData()
             bd.transformation = Transformation(
                 JomlVector3f(-0.125f, -0.125f, -0.125f),

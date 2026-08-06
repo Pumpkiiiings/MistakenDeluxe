@@ -18,7 +18,7 @@ import org.bukkit.entity.Display
 
 open class VirtualBaseDisplay(
     location: Location,
-    viewers: List<Player>,
+    viewers: Collection<Player>,
     entityType: EntityType
 ) : VirtualDisplay(location, viewers, entityType) {
     var interpolationDuration: Int = 0
@@ -66,7 +66,7 @@ open class VirtualBaseDisplay(
     }
 }
 
-class VirtualItemDisplay(location: Location, viewers: List<Player>) : VirtualBaseDisplay(location, viewers, EntityTypes.ITEM_DISPLAY) {
+class VirtualItemDisplay(location: Location, viewers: Collection<Player>) : VirtualBaseDisplay(location, viewers, EntityTypes.ITEM_DISPLAY) {
     private var itemStack: ItemStack? = null
 
     fun setItemStack(item: ItemStack) {
@@ -83,7 +83,7 @@ class VirtualItemDisplay(location: Location, viewers: List<Player>) : VirtualBas
     }
 }
 
-class VirtualBlockDisplay(location: Location, viewers: List<Player>) : VirtualBaseDisplay(location, viewers, EntityTypes.BLOCK_DISPLAY) {
+class VirtualBlockDisplay(location: Location, viewers: Collection<Player>) : VirtualBaseDisplay(location, viewers, EntityTypes.BLOCK_DISPLAY) {
     var block: BlockData? = null
     var glowColorOverride: Color? = null
 
@@ -97,7 +97,7 @@ class VirtualBlockDisplay(location: Location, viewers: List<Player>) : VirtualBa
     }
 }
 
-class VirtualTextDisplay(location: Location, viewers: List<Player>) : VirtualBaseDisplay(location, viewers, EntityTypes.TEXT_DISPLAY) {
+class VirtualTextDisplay(location: Location, viewers: Collection<Player>) : VirtualBaseDisplay(location, viewers, EntityTypes.TEXT_DISPLAY) {
     var text: Component? = null
     var backgroundColor: Color? = null
     var isShadowed: Boolean = false

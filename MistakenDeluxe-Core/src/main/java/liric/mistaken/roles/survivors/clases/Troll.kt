@@ -1,5 +1,6 @@
 package liric.mistaken.roles.survivors.clases
 
+import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes
@@ -218,7 +219,7 @@ class Troll : Survivor(
 
     private fun colocarCascaraPlatano(player: Player) {
         val loc = player.location.clone()
-        val platano = PacketFactory.displays.buildItemDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { id ->
+        val platano = PacketFactory.displays.buildItemDisplay(player.sessionViewers(), loc) { id ->
             id.setItemStack(ItemStack(Material.YELLOW_DYE))
             // Acostado en el piso
             id.transformation = Transformation(
@@ -264,7 +265,7 @@ class Troll : Survivor(
 
     private fun colocarCajaSorpresa(player: Player) {
         val loc = player.location.block.location.add(0.5, 0.0, 0.5)
-        val caja = PacketFactory.displays.buildBlockDisplay(JavaPlugin.getPlugin(Mistaken::class.java).sessionManager.getSession(player)?.getPlayers() ?: listOf(player), loc) { bd ->
+        val caja = PacketFactory.displays.buildBlockDisplay(player.sessionViewers(), loc) { bd ->
             bd.block = Material.CHEST.createBlockData()
             bd.transformation = Transformation(JomlVector3f(-0.5f, 0f, -0.5f), Quaternionf(), JomlVector3f(1f, 1f, 1f), Quaternionf())
         }

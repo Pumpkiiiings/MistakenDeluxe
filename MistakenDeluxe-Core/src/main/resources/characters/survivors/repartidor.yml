@@ -1,4 +1,7 @@
 id: "repartidor"
+stats:
+  health: 22.0
+  damage: 4.2
 precio: 750
 icono_material: "IRON_CHESTPLATE"
 armor:

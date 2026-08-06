@@ -1,5 +1,7 @@
-﻿package liric.mistaken.game.entities
+package liric.mistaken.game.entities
 
+import liric.mistaken.game.GameSession
+import liric.mistaken.utils.worldViewers
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.title.Title
@@ -41,6 +43,14 @@ class GeoffreyEXE(private val plugin: Mistaken) {
     private val teamWhite = "GeoffreyGlow"
     private val teamRed = "GeoffreyAngry"
     private var consecutiveMisses = 0
+
+    /**
+     * Sesión a la que pertenece esta anomalía. La fija [liric.mistaken.game.logic.GameStateController]
+     * al invocarla en partida. Queda null cuando se spawnea desde /mtest, y entonces
+     * el alcance cae al mundo. Sin esto los displays se envían a TODO el servidor,
+     * saltándose el aislamiento entre arenas.
+     */
+    var assignedSession: GameSession? = null
 
     // Constantes para la máquina de estados
     private enum class State { BUSCANDO, SALTANDO, MISIL, AEREO, FURIA }
@@ -99,8 +109,12 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         }
     }
 
+    /** Espectadores de la anomalía: la sesión si la tiene, si no el mundo donde aparece. */
+    private fun viewerScope(loc: Location): List<Player> =
+        assignedSession?.getPlayers() ?: loc.worldViewers()
+
     private fun createPart(loc: Location, mat: Material, scale: Vector3f, translation: Vector3f, rotZ: Float = 0f, rotX: Float = 0f): VirtualBlockDisplay {
-        return PacketFactory.displays.buildBlockDisplay(Bukkit.getOnlinePlayers().toList(), loc) { bd ->
+        return PacketFactory.displays.buildBlockDisplay(viewerScope(loc), loc) { bd ->
             bd.block = mat.createBlockData()
             val leftRotation = Quaternionf().rotateX(rotX).rotateZ(rotZ)
             bd.transformation = Transformation(translation, leftRotation, scale, Quaternionf())
@@ -126,12 +140,11 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         }
     }
 
-    // 🔥 FIX: Ahora persigue a TODOS los jugadores vivos, sin importar si son el Killer o no.
     private fun getClosestTarget(): Player? {
         if (parts.isEmpty()) return null
         val bodyLoc = parts[0].location
         val nearbyPlayers = bodyLoc.world.getNearbyPlayers(bodyLoc, 150.0)
-            .filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
+            .filter { p -> p.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(p) }
 
         return nearbyPlayers.filter { it.uniqueId != lastVictimUUID }
             .minByOrNull { it.location.distanceSquared(bodyLoc) }

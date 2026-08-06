@@ -1,9 +1,9 @@
-ï»¿# ======================================================
-#          MISTAKEN v3.1 - CONFIGURACIÃ“N GLOBAL
+# ======================================================
+#          MISTAKEN v3.1 - CONFIGURACIÓN GLOBAL
 # ======================================================
 config-version: 1
 
-# --- NÃšCLEO DEL SISTEMA ---
+# --- NÚCLEO DEL SISTEMA ---
 core:
   language: "es"
   min-players: 2
@@ -42,11 +42,11 @@ proxy-arena-server: "arenas"
 #         SISTEMA DE ESTAMINA (EXP)
 # ==========================================
 stamina:
-  # CuÃ¡nta estamina (en %) pierde un superviviente por cada 0.25s corriendo. (Por defecto 2.0 = 12.5 segs de sprint)
+  # Cuánta estamina (en %) pierde un superviviente por cada 0.25s corriendo. (Por defecto 2.0 = 12.5 segs de sprint)
   loss-survivor: 1.0
-  # CuÃ¡nta estamina pierde el asesino. (Por defecto 1.0 = 25 segs de sprint)
+  # Cuánta estamina pierde el asesino. (Por defecto 1.0 = 25 segs de sprint)
   loss-killer: 2.0
-  # CuÃ¡nta estamina se recupera por cada 0.25s caminando/quieto. (Por defecto 1.5)
+  # Cuánta estamina se recupera por cada 0.25s caminando/quieto. (Por defecto 1.5)
   recovery-rate: 1.5
   # Nivel del efecto de lentitud (Slowness) al cansarse al 0%. (1 = Lentitud I, 2 = Lentitud II)
   exhaustion-slowness-level: 1
@@ -61,7 +61,7 @@ gameplay:
     win-killer: 500.0
     win-survivor: 200.0
 
-# --- ESTÃ‰TICA & MUNDO ---
+# --- ESTÉTICA & MUNDO ---
 visuals:
   bossbar-style: "SOLID" # SOLID, SEGMENTED_6, 10, 12, 20
   vote-format: "<white>{map}</white> - <yellow>({votes})</yellow><newline>"
@@ -78,7 +78,7 @@ settings:
     pitch: 0.0
 
   # ==========================================
-  # ConfiguraciÃ³n de Mistaken-Gen
+  # Configuración de Mistaken-Gen
   # ==========================================
   generator-block: "RAW_IRON_BLOCK"
   repair-amount: 10
@@ -96,7 +96,29 @@ settings:
 
 messages:
   prefix: "<blue><bold>[Mistaken-Gen]</bold></blue> "
-  already-completed: "<green>Â¡Este generador ya estÃ¡ funcionando al 100%!"
-  no-killer: "<red><bold>[!]</bold> Los asesinos no pueden reparar, Â¡tu misiÃ³n es cazar!"
-  success: "<green><bold>[!]</bold> <white>Â¡Generador encendido exitosamente! Has recibido tus recompensas."
-  fail-click: "<red><bold>[!]</bold> <white>Â¡Ese lingote era falso! El progreso bajÃ³ un 10%."
+  already-completed: "<green>¡Este generador ya está funcionando al 100%!"
+  no-killer: "<red><bold>[!]</bold> Los asesinos no pueden reparar, ¡tu misión es cazar!"
+  success: "<green><bold>[!]</bold> <white>¡Generador encendido exitosamente! Has recibido tus recompensas."
+  fail-click: "<red><bold>[!]</bold> <white>¡Ese lingote era falso! El progreso bajó un 10%."
+
+animations:
+
+  killer:
+    ataque: "ataque"
+    run: "run"
+    walk: "walk"
+    jump: "jump"
+    idle: "estiramiento"
+  survivor:
+    ataque: "ataque"
+    run: "run"
+    walk: "walk"
+    jump: "jump"
+    idle: "estiramiento"
+  slasher:
+    ataque: "slasher_ataque"
+    run: "slasher_run"
+    walk: "slasher_walk"
+    jump: "slasher_jump"
+    idle: "slasher_idle"
+

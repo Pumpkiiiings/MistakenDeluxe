@@ -202,10 +202,15 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     fun resetHealth(player: Player) = runOnMain {
         val session = plugin.sessionManager.getSession(player)
         val isKiller = session?.isKiller(player.uniqueId) ?: false
-        val maxHP = if (isKiller) {
-            session?.settings?.killerHealth ?: 160.0
+        var maxHP = 20.0
+        if (isKiller) {
+            val killerClass = plugin.asesinoManager.getKillerOfPlayer(player)
+            val customHealth = killerClass?.let { plugin.configManager.getKillerConfig(it.id).getDouble("stats.health", 0.0) } ?: 0.0
+            maxHP = if (customHealth > 0.0) customHealth else session?.settings?.killerHealth ?: 160.0
         } else {
-            session?.settings?.survivorHealth ?: 20.0
+            val survivorClass = plugin.supervivienteManager.getSurvivorClass(player)
+            val customHealth = survivorClass?.let { plugin.configManager.getSurvivorConfig(it.id).getDouble("stats.health", 0.0) } ?: 0.0
+            maxHP = if (customHealth > 0.0) customHealth else session?.settings?.survivorHealth ?: 20.0
         }
 
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
@@ -273,7 +278,13 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 return
             }
 
-            val dmg = if (isAssassinPvpMode) 4.0 else 3.0
+            val killerClass = plugin.asesinoManager.getKillerOfPlayer(attacker)
+            val customDamage = killerClass?.let { plugin.configManager.getKillerConfig(it.id).getDouble("stats.damage", 0.0) } ?: 0.0
+            
+            var dmg = if (isAssassinPvpMode) 4.0 else 3.0
+            if (customDamage > 0.0) {
+                dmg = customDamage
+            }
             processTrueDamage(victim, attacker, dmg, session)
             return
         }
@@ -291,7 +302,11 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             survivorCooldowns[attacker.uniqueId] = now
             event.damage = 0.0
-            processTrueDamage(victim, attacker, 4.0, session)
+            val survivorClass = plugin.supervivienteManager.getSurvivorClass(attacker)
+            val customDamage = survivorClass?.let { plugin.configManager.getSurvivorConfig(it.id).getDouble("stats.damage", 0.0) } ?: 0.0
+            val dmg = if (customDamage > 0.0) customDamage else 4.0
+            
+            processTrueDamage(victim, attacker, dmg, session)
             victim.world.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1f, 1f)
             return
         }

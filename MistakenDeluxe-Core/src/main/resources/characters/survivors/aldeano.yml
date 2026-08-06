@@ -1,4 +1,7 @@
 id: "aldeano"
+stats:
+  health: 22.0
+  damage: 4.2
 precio: 3000
 icono_material: "EMERALD"
 armor:

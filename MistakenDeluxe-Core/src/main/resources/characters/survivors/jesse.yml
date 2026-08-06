@@ -1,4 +1,7 @@
 id: "jesse"
+stats:
+  health: 22.0
+  damage: 4.5
 precio: 5000
 icono_material: "IRON_SWORD"
 armor:
