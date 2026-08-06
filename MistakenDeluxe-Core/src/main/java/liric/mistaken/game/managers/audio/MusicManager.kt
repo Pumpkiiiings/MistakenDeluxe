@@ -48,7 +48,7 @@ class MusicManager(private val plugin: Mistaken) {
     }
 
     fun loadMusicConfig() {
-        val configProvider = ConfigManager.get("music.yml")
+        val configProvider = ConfigManager.get("config.yml")
         val config = configProvider.getRaw()
         playlist.clear()
 

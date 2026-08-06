@@ -258,8 +258,6 @@ class Mistaken : JavaPlugin() {
 
     private fun setupDatabase(): Boolean {
         return try {
-            val dbFile = File(dataFolder, "database.yml")
-            if (!dbFile.exists()) saveResource("database.yml", false)
 
             databaseManager = DatabaseFactory.create(this)
             databaseManager.setup()
@@ -384,13 +382,6 @@ class Mistaken : JavaPlugin() {
         val menusFolder = File(dataFolder, "menus")
         if (!menusFolder.exists()) menusFolder.mkdirs()
 
-        val baseFiles = listOf("database.yml", "music.yml")
-        baseFiles.forEach { fileName ->
-            val file = File(dataFolder, fileName)
-            if (!file.exists()) {
-                runCatching { saveResource(fileName, false) }
-            }
-        }
     }
 
 

@@ -6,7 +6,7 @@ import liric.mistaken.Mistaken
 class MySQLDatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(plugin) {
 
     override fun getHikariConfig(): HikariConfig {
-        val config = plugin.configManager.get("database.yml").getRaw()
+        val config = plugin.configManager.get("config.yml").getRaw()
         val hikariConfig = HikariConfig()
 
         val host = config.getString("database.mysql.host", "localhost")

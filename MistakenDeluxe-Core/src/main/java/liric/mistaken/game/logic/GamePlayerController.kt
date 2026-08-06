@@ -23,6 +23,10 @@ import pumpking.lib.service.PumpkingServiceManager
 
 class GamePlayerController(private val game: GameSession) {
 
+    companion object {
+        val globalRecentKillers = mutableListOf<String>()
+    }
+
     private var lmsActivado = false
     private var activeLmsMusic = "mistaken:lms"
 
@@ -32,11 +36,9 @@ class GamePlayerController(private val game: GameSession) {
         if (sessionPlayers.isEmpty()) return
 
         game.asesinosUUIDs.clear()
-        val recentConfig = pumpking.lib.config.ConfigManager.get("recent_killers.yml")
-        val recentList = recentConfig.getStringList("recent").toMutableList()
 
         // --- 2. MODOS CLÁSICOS ---
-        val candidatos = sessionPlayers.filter { !recentList.contains(it.uniqueId.toString()) }.toMutableList()
+        val candidatos = sessionPlayers.filter { !globalRecentKillers.contains(it.uniqueId.toString()) }.toMutableList()
 
         val killersToSelect = when (game.currentMode) {
             MistakenMode.DOUBLE_KILLER -> if (sessionPlayers.size >= 4) 2 else 1
@@ -81,9 +83,7 @@ class GamePlayerController(private val game: GameSession) {
                 !(game.settings?.allowedSurvivors?.any { it.equals(p.name, true) } ?: false)
             }
             candidatos.addAll(backup)
-            recentConfig.set("recent", emptyList<String>())
-            recentConfig.save()
-            recentList.clear()
+            globalRecentKillers.clear()
         }
 
         candidatos.shuffle()
@@ -91,12 +91,10 @@ class GamePlayerController(private val game: GameSession) {
         for (i in 0 until min(killersToSelect - selectedCount, candidatos.size)) {
             val uuid = candidatos[i].uniqueId
             game.asesinosUUIDs.add(uuid)
-            recentList.add(uuid.toString())
+            globalRecentKillers.add(uuid.toString())
         }
         
-        while(recentList.size > 50) recentList.removeAt(0)
-        recentConfig.set("recent", recentList)
-        recentConfig.save()
+        while(globalRecentKillers.size > 50) globalRecentKillers.removeAt(0)
 
         game.currentKillerUUID = game.asesinosUUIDs.firstOrNull()
 

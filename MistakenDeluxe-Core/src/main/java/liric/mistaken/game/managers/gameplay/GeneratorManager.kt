@@ -41,10 +41,6 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     private var idleLines: List<String> = emptyList()
     private var completedLines: List<String> = emptyList()
 
-    private val configProvider = ConfigManager.get("generator_data.yml")
-    private var dataConfig = configProvider.getRaw()
-    private val fileLock = Any()
-
     data class GeneratorState(
         val originalMaterial: Material,
         var progress: Int,
@@ -88,10 +84,6 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         }
 
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
-            synchronized(fileLock) {
-                configProvider.load()
-                dataConfig = configProvider.getRaw()
-            }
 
             // --- REPARTO DINÁMICO DE OBJETIVOS ---
             val shuffled = locations.shuffled()
@@ -110,21 +102,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
                 plugin.server.regionScheduler.execute(plugin, blockLoc, Runnable {
                     val coordKey = "${blockLoc.world.name}_${blockLoc.blockX}_${blockLoc.blockY}_${blockLoc.blockZ}"
 
-                    var savedProgress = 0
-                    var isDone = false
-                    var objTypeStr = ""
-
-                    synchronized(fileLock) {
-                        savedProgress = dataConfig.getInt("session.$coordKey.progress", 0)
-                        isDone = dataConfig.getBoolean("session.$coordKey.completed", false)
-                        objTypeStr = dataConfig.getString("session.$coordKey.type", "") ?: ""
-                    }
-
-                    val objType = if (objTypeStr.isNotEmpty()) {
-                        ObjectiveType.valueOf(objTypeStr)
-                    } else {
-                        assignments[loc] ?: ObjectiveType.CLASSIC_GENERATOR
-                    }
+                    val objType = assignments[loc] ?: ObjectiveType.CLASSIC_GENERATOR
 
                     val requiredMaterial = when (objType) {
                         ObjectiveType.CLASSIC_GENERATOR -> Material.RAW_IRON_BLOCK
@@ -132,11 +110,10 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
                         ObjectiveType.KEYPAD_CODE -> Material.AMETHYST_BLOCK
                     }
 
-                    val state = GeneratorState(requiredMaterial, savedProgress, isDone, type = objType)
+                    val state = GeneratorState(requiredMaterial, 0, false, type = objType)
                     generators[blockLoc] = state
 
                     blockLoc.block.setType(requiredMaterial, false)
-                    if (isDone) blockLoc.block.setType(Material.SEA_LANTERN, false)
 
                     spawnHologram(blockLoc, state)
                 })
@@ -161,7 +138,6 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         loc.block.setType(Material.SEA_LANTERN, false)
         loc.world.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 1f, 1.2f)
 
-        saveStateToConfigAsync(loc, state)
         updateHologramVisual(state)
 
         // Buscamos la sesi鏮 del mundo actual para el check de victoria
@@ -201,18 +177,6 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         entity.text = ColorTranslator.translate("<reset>$text")
     }
 
-    private fun saveStateToConfigAsync(loc: Location, state: GeneratorState) {
-        val key = "session.${loc.world.name}_${loc.blockX}_${loc.blockY}_${loc.blockZ}"
-        plugin.server.asyncScheduler.runNow(plugin) { _ ->
-            synchronized(fileLock) {
-                dataConfig.set("$key.progress", state.progress)
-                dataConfig.set("$key.completed", state.completed)
-                dataConfig.set("$key.type", state.type.name)
-                try { configProvider.save() } catch (e: Exception) { }
-            }
-        }
-    }
-
     fun clearGenerators() {
         generators.forEach { (_, state) -> state.displayEntity?.remove() }
         generators.clear()
@@ -239,12 +203,6 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
                 loc.block.setType(state.originalMaterial, false)
                 updateHologramVisual(state)
             })
-        }
-        plugin.server.asyncScheduler.runNow(plugin) { _ ->
-            synchronized(fileLock) {
-                dataConfig.set("session", null)
-                try { configProvider.save() } catch (e: Exception) { }
-            }
         }
     }
 

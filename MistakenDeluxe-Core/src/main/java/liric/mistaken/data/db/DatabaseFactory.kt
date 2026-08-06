@@ -5,7 +5,7 @@ import liric.mistaken.data.DatabaseManager
 
 object DatabaseFactory {
     fun create(plugin: Mistaken): DatabaseManager {
-        val dbConfig = plugin.configManager.get("database.yml").getRaw()
+        val dbConfig = plugin.configManager.get("config.yml").getRaw()
         val type = dbConfig.getString("database.type", "mysql")?.lowercase() ?: "mysql"
         return when (type) {
             "postgresql" -> PostgreSQLDatabaseManager(plugin)
