@@ -125,6 +125,15 @@ settings:
     yaw: 0.0
     pitch: 0.0
 
+  # Survivor flashlight (F key). Fake client-side LIGHT blocks along the look ray.
+  flashlight:
+    # Max beam length in blocks.
+    range: 8.0
+    # How many light blocks are placed along the beam.
+    points: 3
+    # Players within this radius also receive the light: the flashlight gives you away.
+    viewer-radius: 32.0
+
 # --- Animations ---
 animations:
   killer:

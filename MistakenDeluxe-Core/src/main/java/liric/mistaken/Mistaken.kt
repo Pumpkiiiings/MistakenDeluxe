@@ -23,7 +23,9 @@ import liric.mistaken.game.managers.engine.VoteManager
 import liric.mistaken.game.managers.engine.visibility.VisibilityManager
 import liric.mistaken.game.managers.engine.visibility.PacketVisibilityListener
 import liric.mistaken.game.managers.gameplay.AmbientManager
+import liric.mistaken.game.managers.gameplay.HorrorEnvironmentManager
 import liric.mistaken.game.managers.gameplay.CombatManager
+import liric.mistaken.game.managers.gameplay.FlashlightManager
 import liric.mistaken.game.managers.gameplay.GeneratorManager
 import liric.mistaken.game.managers.gameplay.SpectatorManager
 import liric.mistaken.game.managers.cinematic.CinematicManager
@@ -31,6 +33,7 @@ import liric.mistaken.game.managers.visual.ScoreboardManager
 import liric.mistaken.listeners.*
 import liric.mistaken.listeners.killers.KillerGeneralListener
 import liric.mistaken.listeners.killers.KillerSkillListener
+import liric.mistaken.listeners.survivors.FlashlightListener
 import liric.mistaken.listeners.survivors.SurvivorHabilidadListener
 import liric.mistaken.menu.menus.ShopSelector
 import liric.mistaken.roles.survivors.SurvivorManager
@@ -107,7 +110,9 @@ class Mistaken : JavaPlugin() {
     lateinit var mapManager: MapManager
     lateinit var scoreboardManager: ScoreboardManager
     lateinit var ambientManager: AmbientManager
+    lateinit var horrorEnvironmentManager: HorrorEnvironmentManager
     lateinit var combatManager: CombatManager
+    lateinit var flashlightManager: FlashlightManager
     lateinit var webHook: WebHook
     lateinit var cinematicManager: CinematicManager
     lateinit var observerHUDManager: ObserverHUDManager
@@ -183,7 +188,10 @@ class Mistaken : JavaPlugin() {
         antiBlockListener = AntiBlockListener(this)
         voteManager = VoteManager()
         ambientManager = AmbientManager(this)
+        horrorEnvironmentManager = HorrorEnvironmentManager(this)
         generatorManager = GeneratorManager(this)
+
+        flashlightManager = FlashlightManager(this)
 
         sessionManager = SessionManager(this)
         isolationManager = IsolationManager(this)
@@ -236,8 +244,12 @@ class Mistaken : JavaPlugin() {
     override fun onDisable() {
         isReady = false
 
+        // Antes de cerrar sesiones y de terminar PacketEvents: hay que devolver los bloques
+        // reales a los clientes o se quedan con la zona iluminada hasta el relog.
+        if (::flashlightManager.isInitialized) runCatching { flashlightManager.disableAll() }
         if (::sessionManager.isInitialized) sessionManager.activeSessions.values.forEach { it.shutdown() }
         if (::ambientManager.isInitialized) runCatching { ambientManager.stopAll() }
+        if (::horrorEnvironmentManager.isInitialized) runCatching { horrorEnvironmentManager.shutdown() }
         if (::musicManager.isInitialized) musicManager.shutdown()
         if (::generatorManager.isInitialized) runCatching { generatorManager.clearGenerators() }
         if (::scoreboardManager.isInitialized) runCatching { scoreboardManager.removeAll() }
@@ -293,6 +305,7 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(KillerGeneralListener(this), this)
         pm.registerEvents(antiBlockListener, this)
         pm.registerEvents(SurvivorHabilidadListener(this), this)
+        pm.registerEvents(FlashlightListener(this), this)
         pm.registerEvents(GeneratorListener(this), this)
         pm.registerEvents(liric.mistaken.listeners.HackTerminalListener(this), this)
         pm.registerEvents(liric.mistaken.listeners.KeypadListener(this), this)

@@ -1,0 +1,227 @@
+package liric.mistaken.game.managers.gameplay
+
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
+import liric.mistaken.Mistaken
+import liric.mistaken.game.enums.GameState
+import liric.mistaken.packet.PacketFactory
+import org.bukkit.Bukkit
+import org.bukkit.FluidCollisionMode
+import org.bukkit.GameMode
+import org.bukkit.Location
+import org.bukkit.Material
+import org.bukkit.Sound
+import org.bukkit.block.data.BlockData
+import org.bukkit.entity.Player
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
+import pumpking.lib.service.PumpkingServiceManager
+
+/**
+ * [LIRIC-MISTAKEN 2.0]
+ * FlashlightManager: linterna direccional para supervivientes.
+ *
+ * La tecla F (swap de segunda mano) se intercepta en FlashlightListener y en vez de
+ * intercambiar items enciende/apaga esta linterna. Sin bateria: toggle infinito.
+ *
+ * La luz son bloques Material.LIGHT falsos (client-side) colocados a lo largo del rayo
+ * de vision. El cliente recalcula su propio motor de luz al recibir un block update, asi
+ * que iluminan de verdad. LIGHT es invisible sin el item de luz en mano y no tiene
+ * colision, por lo que no deja artefactos visuales.
+ *
+ * Los bloques se envian a TODOS los jugadores cercanos de la sesion, no solo al portador:
+ * encender la linterna te delata ante el asesino. Ese es el tradeoff.
+ *
+ * REGLA CRITICA: solo se sobrescriben bloques de aire, y todo lo encendido se restaura
+ * al apagar / morir / desconectar / terminar la partida. Si no se restaura, la zona
+ * queda iluminada para el cliente hasta que haga relog.
+ */
+class FlashlightManager(private val plugin: Mistaken) {
+
+    private class FlashlightState {
+        var task: ScheduledTask? = null
+        /** Posiciones con un LIGHT falso enviado ahora mismo. */
+        var litBlocks: List<Location> = emptyList()
+        /** Bloque real de cada posicion, para poder revertir. */
+        var restoreData: Map<Location, BlockData> = emptyMap()
+        /** A quien se le envio el ultimo update. */
+        var viewers: Set<UUID> = emptySet()
+        var worldName: String = ""
+    }
+
+    private val states = ConcurrentHashMap<UUID, FlashlightState>()
+
+    private val range: Double get() = plugin.config.getDouble("settings.flashlight.range", 8.0)
+    private val points: Int get() = plugin.config.getInt("settings.flashlight.points", 3)
+    private val viewerRadius: Double get() = plugin.config.getDouble("settings.flashlight.viewer-radius", 32.0)
+
+    /** Distancia minima al ojo. Mas cerca la luz queda dentro de la cabeza del jugador. */
+    private val minDistance = 1.5
+
+    // --- API PUBLICA ---
+
+    fun isOn(player: Player): Boolean = states.containsKey(player.uniqueId)
+
+    /**
+     * Mismos requisitos que una habilidad de superviviente (ver SurvivorHabilidadListener).
+     * Si devuelve false, el evento de swap NO se cancela: asesinos y lobby conservan la
+     * segunda mano normal.
+     */
+    fun canUse(player: Player): Boolean {
+        val session = plugin.sessionManager.getSession(player) ?: return false
+        if (session.currentState != GameState.INGAME) return false
+        if (session.isKiller(player.uniqueId)) return false
+        if (!plugin.supervivienteManager.esSurvivorActivo(player)) return false
+        if (player.gameMode != GameMode.SURVIVAL) return false
+        if (plugin.combatManager.isFrozen(player)) return false
+        return true
+    }
+
+    fun toggle(player: Player) {
+        if (isOn(player)) {
+            disable(player)
+            player.playSound(player.location, Sound.BLOCK_LEVER_CLICK, 0.6f, 1.2f)
+            PumpkingServiceManager.messages.actionBar(player, "listeners.flashlight.disabled")
+        } else {
+            if (!canUse(player)) return
+            enable(player)
+            player.playSound(player.location, Sound.BLOCK_LEVER_CLICK, 0.6f, 1.6f)
+            PumpkingServiceManager.messages.actionBar(player, "listeners.flashlight.enabled")
+        }
+    }
+
+    private fun enable(player: Player) {
+        val uuid = player.uniqueId
+        if (states.containsKey(uuid)) return
+
+        val state = FlashlightState()
+        state.worldName = player.world.name
+        states[uuid] = state
+
+        // Scheduler de la entidad: es Folia-safe y se autocancela si el jugador se va.
+        // El callback 'retired' cubre el caso de que la entidad desaparezca sin quit event.
+        state.task = player.scheduler.runAtFixedRate(
+            plugin,
+            Consumer { _ -> tick(player) },
+            Runnable { clear(uuid) },
+            1L,
+            2L
+        )
+    }
+
+    /** Apaga y restaura. Seguro de llamar aunque no este encendida. */
+    fun disable(player: Player) {
+        val state = states.remove(player.uniqueId) ?: return
+        state.task?.cancel()
+        restore(state)
+    }
+
+    /**
+     * Version por UUID: sirve cuando el jugador ya se desconecto y no hay Player.
+     * Los bloques se restauran a los espectadores que sigan online.
+     */
+    fun clear(uuid: UUID) {
+        val state = states.remove(uuid) ?: return
+        state.task?.cancel()
+        restore(state)
+    }
+
+    fun disableAll() {
+        states.keys.toList().forEach { clear(it) }
+    }
+
+    // --- LOGICA INTERNA ---
+
+    private fun tick(player: Player) {
+        val state = states[player.uniqueId] ?: return
+
+        if (!canUse(player)) {
+            disable(player)
+            return
+        }
+
+        // Cambio de mundo: los viewers antiguos ya no estan viendo esos bloques,
+        // pero se les restaura igual por si siguen en el mundo viejo.
+        if (player.world.name != state.worldName) {
+            restore(state)
+            state.worldName = player.world.name
+        }
+
+        val targets = computeBeam(player)
+        val audience = audience(player)
+        val audienceIds = audience.map { it.uniqueId }.toSet()
+
+        // Quieto y sin cambios de publico: cero packets.
+        if (targets == state.litBlocks && audienceIds == state.viewers) return
+
+        restore(state)
+
+        if (targets.isEmpty()) return
+
+        val restoreData = HashMap<Location, BlockData>(targets.size)
+        targets.forEach { loc ->
+            restoreData[loc] = loc.block.blockData
+            audience.forEach { viewer ->
+                PacketFactory.blocks.sendBlockChange(viewer, loc, Material.LIGHT)
+            }
+        }
+
+        state.litBlocks = targets
+        state.restoreData = restoreData
+        state.viewers = audienceIds
+    }
+
+    /**
+     * Muestrea puntos a lo largo del rayo de vision y se queda solo con los que caen en aire.
+     * Sobrescribir un bloque solido lo taparia visualmente para todo el que reciba el packet.
+     */
+    private fun computeBeam(player: Player): List<Location> {
+        val eye = player.eyeLocation
+        val dir = eye.direction
+        val maxRange = range
+
+        val hit = player.world.rayTraceBlocks(eye, dir, maxRange, FluidCollisionMode.NEVER, true)
+        // 0.3 de margen para no meter la luz dentro del bloque golpeado.
+        val maxDist = hit?.hitPosition?.distance(eye.toVector())?.minus(0.3) ?: maxRange
+        if (maxDist < minDistance) return emptyList()
+
+        val total = points.coerceAtLeast(1)
+        val result = LinkedHashSet<Location>(total)
+
+        for (i in 1..total) {
+            // Reparte los puntos hasta el 90% del alcance util (0.3 / 0.6 / 0.9 con 3 puntos).
+            val fraction = (i.toDouble() / total) * 0.9
+            val distance = (maxDist * fraction).coerceAtLeast(minDistance)
+            if (distance > maxDist) continue
+
+            val block = eye.clone().add(dir.clone().multiply(distance)).block
+            if (block.type != Material.AIR && block.type != Material.CAVE_AIR) continue
+            result.add(block.location)
+        }
+
+        return result.toList()
+    }
+
+    /** Jugadores de la misma sesion dentro del radio. Incluye al asesino: la luz delata. */
+    private fun audience(player: Player): List<Player> {
+        val session = plugin.sessionManager.getSession(player) ?: return listOf(player)
+        return player.world.getNearbyPlayers(player.location, viewerRadius)
+            .filter { session.players.contains(it.uniqueId) }
+    }
+
+    /** Devuelve los bloques reales a los ultimos viewers y limpia el estado visual. */
+    private fun restore(state: FlashlightState) {
+        if (state.litBlocks.isNotEmpty()) {
+            state.viewers.forEach { viewerId ->
+                val viewer = Bukkit.getPlayer(viewerId) ?: return@forEach
+                if (!viewer.isOnline) return@forEach
+                state.restoreData.forEach { (loc, data) ->
+                    PacketFactory.blocks.sendBlockChange(viewer, loc, data)
+                }
+            }
+        }
+        state.litBlocks = emptyList()
+        state.restoreData = emptyMap()
+        state.viewers = emptySet()
+    }
+}

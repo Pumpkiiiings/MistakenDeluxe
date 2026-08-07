@@ -12,7 +12,8 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
-import pumpking.lib.color.ColorTranslator
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import pumpking.lib.service.PumpkingServiceManager
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -20,6 +21,9 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
 
     // Unique ID -> Pair<Location, AnswerCode>
     private val activeTyping = ConcurrentHashMap<UUID, Pair<Location, String>>()
+
+    private fun cancelWord(player: Player): String =
+        PumpkingServiceManager.messages.getRawString(player, "listeners.keypad.cancel_word", "cancelar", "messages")
 
     @EventHandler(priority = EventPriority.LOW)
     fun onInteract(event: PlayerInteractEvent) {
@@ -33,7 +37,7 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
         val session = plugin.sessionManager.getSession(player) ?: return
 
         if (session.isKiller(player.uniqueId)) {
-            player.sendMessage(ColorTranslator.translate("<red>¡Los asesinos no pueden usar los paneles de código!"))
+            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "listeners.keypad.killer_error"))
             return
         }
 
@@ -43,14 +47,17 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
         val loc = block.location
 
         if (plugin.generatorManager.isCompleted(loc)) {
-            player.sendMessage(ColorTranslator.translate("<red>Panel de código ya resuelto."))
+            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "listeners.keypad.already_solved"))
             return
         }
 
         event.isCancelled = true
 
         if (activeTyping.containsKey(player.uniqueId)) {
-            player.sendMessage(ColorTranslator.translate("<yellow>Ya estás intentando hackear un panel. Escribe el código en el chat o 'cancelar'."))
+            player.sendMessage(PumpkingServiceManager.messages.getComponent(
+                player, "listeners.keypad.already_typing",
+                Placeholder.parsed("cancel", cancelWord(player))
+            ))
             return
         }
 
@@ -61,16 +68,18 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
         val sortedDigits = if (isAscending) digits.sorted() else digits.sortedDescending()
         val answer = sortedDigits.joinToString("")
         
-        val modeText = if (isAscending) "MENOR a MAYOR" else "MAYOR a MENOR"
+        val modePath = if (isAscending) "listeners.keypad.mode_ascending" else "listeners.keypad.mode_descending"
+        val modeText = PumpkingServiceManager.messages.getRawString(player, modePath, "?", "messages")
         val puzzleText = digits.joinToString(", ")
 
         activeTyping[player.uniqueId] = Pair(loc, answer)
 
+        val messages = PumpkingServiceManager.messages
         player.playSound(player.location, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1f, 1f)
-        player.sendMessage(ColorTranslator.translate("<dark_aqua>--- PANEL DE SEGURIDAD ---"))
-        player.sendMessage(ColorTranslator.translate("<white>Para desbloquear el progreso, ordena estos números de <yellow><bold>$modeText<white>:"))
-        player.sendMessage(ColorTranslator.translate("<gray>[ $puzzleText ]"))
-        player.sendMessage(ColorTranslator.translate("<white>Escribe el código de 4 dígitos en el chat (Ej: 1234) o escribe 'cancelar'."))
+        player.sendMessage(messages.getComponent(player, "listeners.keypad.header"))
+        player.sendMessage(messages.getComponent(player, "listeners.keypad.instructions", Placeholder.parsed("mode", modeText)))
+        player.sendMessage(messages.getComponent(player, "listeners.keypad.digits", Placeholder.parsed("digits", puzzleText)))
+        player.sendMessage(messages.getComponent(player, "listeners.keypad.input_hint", Placeholder.parsed("cancel", cancelWord(player))))
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -84,9 +93,12 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
         val answer = typingData.second
         val input = event.message.trim()
 
-        if (input.equals("cancelar", ignoreCase = true)) {
+        // Se acepta la palabra del idioma del jugador y ademas los dos literales base,
+        // para que nadie se quede atrapado en el panel si cambia de idioma a mitad.
+        val cancels = setOf(cancelWord(player).lowercase(), "cancelar", "cancel")
+        if (input.lowercase() in cancels) {
             activeTyping.remove(player.uniqueId)
-            player.sendMessage(ColorTranslator.translate("<red>Has cancelado el hackeo del panel."))
+            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "listeners.keypad.cancelled"))
             return
         }
 
@@ -96,14 +108,14 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
             plugin.server.scheduler.runTask(plugin, Runnable {
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
                 plugin.generatorManager.addProgress(loc, 100) // Instantly complete this objective
-                player.sendMessage(ColorTranslator.translate("<green>¡Código correcto! Panel desbloqueado. (+100%)"))
+                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "listeners.keypad.success"))
             })
         } else {
             // Fail
             activeTyping.remove(player.uniqueId)
             plugin.server.scheduler.runTask(plugin, Runnable {
                 player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
-                player.sendMessage(ColorTranslator.translate("<red>Código incorrecto. El panel se ha bloqueado temporalmente."))
+                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "listeners.keypad.fail"))
             })
         }
     }

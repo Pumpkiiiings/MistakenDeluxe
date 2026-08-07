@@ -237,6 +237,37 @@ listeners:
     fake_item_name: "{color}&l¡CLIC RÁPIDO!"
     fake_item_lore: "&#CCCCCC¿De verdad quieres ayudar?"
     killer_error: "&#FF3344¡Eres el asesino! No puedes reparar generadores."
+  keypad:
+    killer_error: "&#FF3344¡Los asesinos no pueden usar los paneles de código!"
+    already_solved: "&#FF3344Panel de código ya resuelto."
+    already_typing: "&#FFE300Ya estás intentando hackear un panel. Escribe el código en el chat o '<cancel>'."
+    header: "&#00CED1--- PANEL DE SEGURIDAD ---"
+    instructions: "&#FFFFFFPara desbloquear el progreso, ordena estos números de &#FFE300&l<mode>&#FFFFFF:"
+    digits: "&#CCCCCC[ <digits> ]"
+    input_hint: "&#FFFFFFEscribe el código de 4 dígitos en el chat (Ej: 1234) o escribe '<cancel>'."
+    mode_ascending: "MENOR a MAYOR"
+    mode_descending: "MAYOR a MENOR"
+    cancel_word: "cancelar"
+    cancelled: "&#FF3344Has cancelado el hackeo del panel."
+    success: "&#42F56C¡Código correcto! Panel desbloqueado. (+100%)"
+    fail: "&#FF3344Código incorrecto. El panel se ha bloqueado temporalmente."
+  hack_terminal:
+    killer_error: "&#FF3344¡Los asesinos no pueden hackear terminales!"
+    already_hacked: "&#FF3344Terminal ya hackeada."
+    gui_title: "&#00CED1&lTerminal de Hackeo"
+    color_red: "&#FF3344Rojo"
+    color_green: "&#42F56CVerde"
+    color_blue: "&#5599FFAzul"
+    color_yellow: "&#FFE300Amarillo"
+    memorize: "&#FFFFFFMemoriza..."
+    waiting: "&#CCCCCC..."
+    enter_sequence: "&#42F56C&l¡INGRESA LA SECUENCIA!"
+    success: "&#42F56C¡Hackeo parcial exitoso! (+25%)"
+    fail: "&#FF3344Secuencia incorrecta. Conexión cerrada."
+  flashlight:
+    # OJO: no usar 'on'/'off' como claves, YAML 1.1 las convierte en booleanos.
+    enabled: "&#FFE300Linterna encendida"
+    disabled: "&#888888Linterna apagada"
 
 # --- ROLES ---
 roles:

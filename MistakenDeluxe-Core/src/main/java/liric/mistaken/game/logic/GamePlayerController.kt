@@ -331,6 +331,10 @@ class GamePlayerController(private val game: GameSession) {
     }
 
     fun handlePlayerDeath(player: Player) {
+        // Apagar la linterna antes que nada: si muere encendida, los bloques de luz falsos
+        // se quedan enviados a todos los que la estaban viendo.
+        game.plugin.flashlightManager.disable(player)
+
         if (game.currentState == GameState.ENDING || player.gameMode == GameMode.SPECTATOR || player.isInvisible) return
 
 
@@ -421,6 +425,7 @@ class GamePlayerController(private val game: GameSession) {
         // 🔥 FIX: Solo limpiamos a los jugadores de ESTA sesión
         game.getPlayers().forEach { p ->
             p.stopSound(activeLmsMusic, SoundCategory.RECORDS)
+            game.plugin.flashlightManager.disable(p)
 
             p.passengers.forEach { p.removePassenger(it) }
             p.vehicle?.removePassenger(p)
