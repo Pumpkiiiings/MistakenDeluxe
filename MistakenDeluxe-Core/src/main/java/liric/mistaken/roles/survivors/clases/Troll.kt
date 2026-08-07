@@ -11,6 +11,7 @@ import com.github.retrooper.packetevents.protocol.player.UserProfile
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.wrapper.play.server.*
 import liric.mistaken.Mistaken
+import liric.mistaken.api.util.Sounds
 import liric.mistaken.roles.survivors.Survivor
 import liric.mistaken.utils.hooks.CraftEngine
 import net.kyori.adventure.text.Component
@@ -75,7 +76,7 @@ class Troll : Survivor(
         val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) player.sendMessage(ColorTranslator.translate(msg))
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_BAT_TAKEOFF")
-        runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
+        Sounds.orNull(soundName)?.let { player.playSound(player.location, it, 1f, 1f) }
     }
 
     override fun equip(player: Player) {

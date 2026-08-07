@@ -38,7 +38,7 @@ public class MistakenPluginLoader implements PluginLoader {
         resolver.addDependency(new Dependency(new DefaultArtifact("fr.skytasul:glowingentities:1.4.11"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("com.mojang:brigadier:1.2.9"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("org.slf4j:slf4j-simple:2.0.18"), null));
-        resolver.addDependency(new Dependency(new DefaultArtifact("dev.wyck:wyck:3.2.0"), null));
+        resolver.addDependency(new Dependency(new DefaultArtifact("dev.wyck:wyck:3.3.0-1a0feb5"), null));
 
         classpathBuilder.addLibrary(resolver);
     }

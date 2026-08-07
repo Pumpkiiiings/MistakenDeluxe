@@ -46,7 +46,7 @@ repositories {
 
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     
     compileOnly(kotlin("stdlib"))
     compileOnly("com.mojang:brigadier:1.2.9")
@@ -60,11 +60,11 @@ dependencies {
     compileOnly("org.xerial:sqlite-jdbc:3.53.2.0")
     compileOnly("dev.triumphteam:triumph-gui:3.1.13")
     compileOnly("org.slf4j:slf4j-simple:2.0.18")
-    implementation("com.infernalsuite.asp:file-loader:4.0.0-SNAPSHOT")
+    implementation("com.infernalsuite.asp:file-loader:4.1.0-SNAPSHOT")
 
     // APIs Externas (Solo para compilar)
-    compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.0.0")
-    compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
+    compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.2.0")
+    compileOnly("com.infernalsuite.asp:api:4.1.0-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude(group = "org.bukkit", module = "bukkit")
     }

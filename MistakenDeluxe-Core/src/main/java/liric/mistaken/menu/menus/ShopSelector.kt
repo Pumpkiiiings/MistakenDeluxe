@@ -2,6 +2,7 @@ package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
+import liric.mistaken.api.util.Sounds
 import liric.mistaken.menu.MenuBase
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -20,7 +21,7 @@ class ShopSelector : MenuBase("tienda_principal") {
 
     override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
         val soundName = config.getString("ajustes.sonido-click", "BLOCK_NOTE_BLOCK_XYLOPHONE") ?: "BLOCK_NOTE_BLOCK_XYLOPHONE"
-        val clickSound = runCatching { Sound.valueOf(soundName.uppercase()) }.getOrDefault(Sound.BLOCK_NOTE_BLOCK_XYLOPHONE)
+        val clickSound = Sounds.of(soundName, Sound.BLOCK_NOTE_BLOCK_XYLOPHONE)
 
         // --- ITEM: ASESINOS ---
         // Nombre y lore desde messages.yml del jugador (menus.tienda_principal.items.asesinos.*)
