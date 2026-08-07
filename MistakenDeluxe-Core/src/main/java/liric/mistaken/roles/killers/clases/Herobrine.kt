@@ -210,7 +210,7 @@ class Herobrine : CoreKiller(
     private fun habilidadDashVacio(player: Player) {
         val dir = player.location.direction.normalize()
         player.velocity = dir.clone().multiply(2.5).setY(0.2)
-        player.world.spawnParticle(org.bukkit.Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 5, 0.2, 0.2, 0.2, 0.0)
+        player.world.spawnParticle(org.bukkit.Particle.FIREWORK, player.location.add(0.0, 1.0, 0.0), 5, 0.2, 0.2, 0.2, 0.0)
 
         var ticks = 0
         val hitted = mutableSetOf<UUID>()

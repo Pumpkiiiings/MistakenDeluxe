@@ -38,7 +38,10 @@ class GamePlayerController(private val game: GameSession) {
         game.asesinosUUIDs.clear()
 
         // --- 2. MODOS CLÁSICOS ---
-        val candidatos = sessionPlayers.filter { !globalRecentKillers.contains(it.uniqueId.toString()) }.toMutableList()
+        val candidatos = sessionPlayers.filter { 
+            !globalRecentKillers.contains(it.uniqueId.toString()) && 
+            !game.forcedSurvivorUUIDs.contains(it.uniqueId)
+        }.toMutableList()
 
         val killersToSelect = when (game.currentMode) {
             MistakenMode.DOUBLE_KILLER -> if (sessionPlayers.size >= 4) 2 else 1
@@ -80,7 +83,8 @@ class GamePlayerController(private val game: GameSession) {
         if (candidatos.isEmpty() && selectedCount < killersToSelect) {
             val backup = sessionPlayers.filter { p -> 
                 !game.asesinosUUIDs.contains(p.uniqueId) && 
-                !(game.settings?.allowedSurvivors?.any { it.equals(p.name, true) } ?: false)
+                !(game.settings?.allowedSurvivors?.any { it.equals(p.name, true) } ?: false) &&
+                !game.forcedSurvivorUUIDs.contains(p.uniqueId)
             }
             candidatos.addAll(backup)
             globalRecentKillers.clear()

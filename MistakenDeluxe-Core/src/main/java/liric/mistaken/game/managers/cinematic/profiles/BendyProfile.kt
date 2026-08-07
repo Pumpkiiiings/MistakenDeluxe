@@ -63,7 +63,7 @@ class BendyProfile : CinematicProfile {
                 p.playSound(loc, org.bukkit.Sound.ENTITY_SQUID_DEATH, 1f, 0.5f)
             }
         }
-        world.spawnParticle(Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 3)
+        world.spawnParticle(Particle.FIREWORK, loc.clone().add(0.0, 1.0, 0.0), 3)
 
         world.playSound(loc, Sound.ENTITY_SQUID_SQUIRT, 2f, 0.5f)
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->

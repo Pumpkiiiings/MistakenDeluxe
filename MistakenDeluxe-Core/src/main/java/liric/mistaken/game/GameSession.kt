@@ -39,6 +39,8 @@ class GameSession(
     var modeForced = false
     var forceStart = false
     var forcedKillerUUID: UUID? = null
+    val forcedSurvivorUUIDs = ConcurrentHashMap.newKeySet<UUID>()
+    var isDebugStart = false
 
     var currentKillerUUID: UUID? = null
     var lastKillerWon: Boolean = false

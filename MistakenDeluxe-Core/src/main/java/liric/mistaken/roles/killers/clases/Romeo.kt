@@ -137,7 +137,7 @@ class Romeo : CoreKiller(
 
                 plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
                     world.playSound(loc, Sound.ENTITY_ENDERMAN_TELEPORT, 2f, 2f)
-                    world.spawnParticle(Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 3, 0.5, 0.5, 0.5, 0.0)
+                    world.spawnParticle(Particle.FIREWORK, loc.clone().add(0.0, 1.0, 0.0), 3, 0.5, 0.5, 0.5, 0.0)
                     world.spawnParticle(Particle.WHITE_ASH, loc, 300, 1.0, 1.0, 1.0, 0.5)
                     jail.remove()
                 }, 20L) // 1 segundo

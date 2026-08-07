@@ -244,7 +244,7 @@ class TinkyWinky : CoreKiller(
         }
 
         // Efecto visual: flash + partículas eléctricas desde el killer
-        player.world.spawnParticle(org.bukkit.Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 3, 1.0, 1.0, 1.0, 0.0)
+        player.world.spawnParticle(org.bukkit.Particle.FIREWORK, player.location.add(0.0, 1.0, 0.0), 3, 1.0, 1.0, 1.0, 0.0)
         player.world.spawnParticle(org.bukkit.Particle.ELECTRIC_SPARK, player.location.add(0.0, 1.5, 0.0), 30, 1.5, 1.5, 1.5, 0.1)
         player.world.playSound(player.location, Sound.BLOCK_BEACON_AMBIENT, 2f, 0.1f)
 

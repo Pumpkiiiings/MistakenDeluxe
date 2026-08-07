@@ -243,7 +243,7 @@ class NullAsesino : CoreKiller(
 
     private fun habilidadErrorRender(player: Player) {
         player.world.playSound(player.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
-        player.world.spawnParticle(org.bukkit.Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 3, 0.5, 0.5, 0.5, 0.0)
+        player.world.spawnParticle(org.bukkit.Particle.FIREWORK, player.location.add(0.0, 1.0, 0.0), 3, 0.5, 0.5, 0.5, 0.0)
 
         player.world.getNearbyPlayers(player.location, 12.0).forEach { victim ->
             // ?? Uso de la funci�n centralizada

@@ -33,9 +33,9 @@ object CraftEngine {
         // 2. Intento por CraftEngine (usando la nueva API CraftEngineItems)
         if (property.contains(":") && isAvailable()) {
             try {
-                val itemDef = CraftEngineItems.byId(property)
+                val itemDef = CraftEngineItems.byId(net.momirealms.craftengine.core.util.Key.from(property))
                 if (itemDef != null) {
-                    return itemDef.buildBukkitItem()
+                    return itemDef.buildItemStack()
                 }
             } catch (e: Exception) {
                 Mistaken.Companion.instance.logger.warning("Fallo crítico al pedir ítem a CraftEngine: $property")

@@ -63,7 +63,7 @@ class RomeoProfile : CinematicProfile {
                 p.playSound(loc, org.bukkit.Sound.ENTITY_ENDER_DRAGON_DEATH, 1f, 0.5f)
             }
         }
-        world.spawnParticle(Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 3)
+        world.spawnParticle(Particle.FIREWORK, loc.clone().add(0.0, 1.0, 0.0), 3)
 
         world.playSound(loc, Sound.BLOCK_PORTAL_TRAVEL, 0.5f, 2f)
         displayManager.spawnOrbitingBlock(loc, Material.COMMAND_BLOCK, 2.0f, 4.0, 0.05, 1.0)

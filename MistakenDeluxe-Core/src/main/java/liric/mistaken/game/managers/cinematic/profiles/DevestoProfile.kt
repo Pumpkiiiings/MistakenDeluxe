@@ -61,7 +61,7 @@ class DevestoProfile : CinematicProfile {
                 p.playSound(loc, org.bukkit.Sound.ENTITY_WITHER_SPAWN, 0.5f, 0.8f)
             }
         }
-        world.spawnParticle(Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 3)
+        world.spawnParticle(Particle.FIREWORK, loc.clone().add(0.0, 1.0, 0.0), 3)
 
         world.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 1f, 2f)
         if (!isIntro) {

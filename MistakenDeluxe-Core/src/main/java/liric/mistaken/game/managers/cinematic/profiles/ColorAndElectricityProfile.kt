@@ -75,7 +75,7 @@ class ColorAndElectricityProfile : CinematicProfile {
                 p.playSound(loc, org.bukkit.Sound.ENTITY_LIGHTNING_BOLT_IMPACT, 1f, 1.0f)
             }
         }
-        world.spawnParticle(Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 3)
+        world.spawnParticle(Particle.FIREWORK, loc.clone().add(0.0, 1.0, 0.0), 3)
 
         if (isIntro) {
             world.playSound(loc, Sound.ENTITY_PLAYER_BURP, 2f, 1f)

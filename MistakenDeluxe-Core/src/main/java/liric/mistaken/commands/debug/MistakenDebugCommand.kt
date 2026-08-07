@@ -13,14 +13,14 @@ import java.util.concurrent.ConcurrentHashMap
 import liric.mistaken.game.enums.GameState
 import pumpking.lib.color.ColorTranslator
 
-object MistakenTestCommand {
+object MistakenDebugCommand {
 
     private val activeGeoffreys = ConcurrentHashMap<Int, GeoffreyEXE>()
 
     private var instanceCounter = 0
 
     fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {
-        val rootNode = Commands.literal("mistakentest")
+        val rootNode = Commands.literal("mistakendebug")
             .requires { it.sender.hasPermission("mistaken.admin") }
 
         // --- IGNORAR JUGADORES ---
@@ -82,6 +82,101 @@ object MistakenTestCommand {
                 }
                 session.forceStart = true
                 p.sendMessage("§a[!] §eInicio forzado activado. La partida comenzará ignorando el límite de jugadores.")
+                1
+            }
+        )
+
+        // --- DEBUG START ---
+        rootNode.then(
+            Commands.literal("debugstart")
+            .executes { ctx ->
+                val p = ctx.source.sender as? Player ?: return@executes 0
+                var session = plugin.sessionManager.getSession(p)
+                
+                if (session == null && plugin.serverMode == "MULTIARENA") {
+                    session = plugin.sessionManager.activeSessions.values.firstOrNull { 
+                        it.currentState == GameState.LOBBY || 
+                        it.currentState == GameState.VOTING || 
+                        it.currentState == GameState.BREAK 
+                    }
+                    if (session == null) {
+                        session = plugin.sessionManager.createSession("Votando...")
+                    }
+                    
+                    val playersToJoin = Bukkit.getOnlinePlayers().filter { plugin.sessionManager.getSession(it) == null }
+                    playersToJoin.forEach { plugin.sessionManager.joinSession(it, session!!.id) }
+                }
+
+                if (session == null) {
+                    p.sendMessage("§c[!] No estás en ninguna sesión, plebe.")
+                    return@executes 0
+                }
+                session.forceStart = true
+                session.isDebugStart = true
+                p.sendMessage("§a[!] §eModo debug activado. La partida no terminará sola hasta usar /mistakendebug endgame.")
+                1
+            }
+        )
+
+        // --- FORCE ROLE ---
+        rootNode.then(
+            Commands.literal("role")
+            .then(
+                Commands.argument("type", StringArgumentType.word())
+                .suggests { _, builder: SuggestionsBuilder ->
+                    builder.suggest("killer")
+                    builder.suggest("survivor")
+                    builder.buildFuture()
+                }
+                .executes { ctx ->
+                    val p = ctx.source.sender as? Player ?: return@executes 0
+                    val roleType = StringArgumentType.getString(ctx, "type").lowercase()
+                    val session = plugin.sessionManager.getSession(p)
+
+                    if (session == null) {
+                        p.sendMessage("§c[!] No estás en ninguna sesión, plebe.")
+                        return@executes 0
+                    }
+                    
+                    if (session.currentState != GameState.LOBBY && session.currentState != GameState.VOTING && session.currentState != GameState.BREAK) {
+                        p.sendMessage("§c[!] Solo puedes forzar tu rol antes de que inicie la partida.")
+                        return@executes 0
+                    }
+
+                    if (roleType == "killer") {
+                        session.forcedKillerUUID = p.uniqueId
+                        session.forcedSurvivorUUIDs.remove(p.uniqueId)
+                        p.sendMessage("§a[!] §eSerás el §cASESINO §een esta partida.")
+                    } else if (roleType == "survivor") {
+                        session.forcedSurvivorUUIDs.add(p.uniqueId)
+                        if (session.forcedKillerUUID == p.uniqueId) session.forcedKillerUUID = null
+                        p.sendMessage("§a[!] §eSerás §aSUPERVIVIENTE §een esta partida.")
+                    } else {
+                        p.sendMessage("§c[!] Rol inválido. Usa 'killer' o 'survivor'.")
+                    }
+                    1
+                }
+            )
+        )
+
+        // --- END GAME ---
+        rootNode.then(
+            Commands.literal("endgame")
+            .executes { ctx ->
+                val p = ctx.source.sender as? Player ?: return@executes 0
+                val session = plugin.sessionManager.getSession(p)
+
+                if (session == null) {
+                    p.sendMessage("§c[!] No estás en ninguna sesión, plebe.")
+                    return@executes 0
+                }
+                
+                if (session.currentState == GameState.INGAME) {
+                    session.stateController.endGame("game.victory-survivors", false, forceDebugEnd = true)
+                    p.sendMessage("§a[!] §ePartida terminada a la fuerza.")
+                } else {
+                    p.sendMessage("§c[!] La partida no está en curso.")
+                }
                 1
             }
         )

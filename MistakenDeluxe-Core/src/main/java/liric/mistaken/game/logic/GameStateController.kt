@@ -199,7 +199,8 @@ class GameStateController(private val game: GameSession) {
         }
     }
 
-    fun endGame(configPath: String, killerWon: Boolean) {
+    fun endGame(configPath: String, killerWon: Boolean, forceDebugEnd: Boolean = false) {
+        if (game.isDebugStart && !forceDebugEnd) return
         if (game.currentState == GameState.ENDING) return
         game.currentState = GameState.ENDING
 

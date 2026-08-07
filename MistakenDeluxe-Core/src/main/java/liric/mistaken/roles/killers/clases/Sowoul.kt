@@ -182,7 +182,7 @@ class Sowoul : CoreKiller(
                     
                     // Epic 200% Hit Visuals
                     victim.world.spawnParticle(org.bukkit.Particle.SONIC_BOOM, victim.location.add(0.0, 1.0, 0.0), 1)
-                    victim.world.spawnParticle(org.bukkit.Particle.FLASH, victim.location.add(0.0, 1.0, 0.0), 1)
+                    victim.world.spawnParticle(org.bukkit.Particle.FIREWORK, victim.location.add(0.0, 1.0, 0.0), 1)
                     liric.mistaken.utils.hooks.ObserverHook.playScreenTint(victim, 128, 0, 128, 0.8f, 40)
                     liric.mistaken.utils.hooks.ObserverHook.playScreenshake(victim, 1.5f, 20)
                 }

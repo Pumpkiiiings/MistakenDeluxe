@@ -182,7 +182,7 @@ class Notch : Survivor(
 
         // VFX: Explosión de Tótem + Flash
         player.world.spawnParticle(Particle.TOTEM_OF_UNDYING, player.location.add(0.0, 1.0, 0.0), 40, 0.5, 0.5, 0.5, 0.3)
-        player.world.spawnParticle(Particle.FLASH, player.location.add(0.0, 1.0, 0.0), 1)
+        player.world.spawnParticle(Particle.FIREWORK, player.location.add(0.0, 1.0, 0.0), 1)
 
         // Buffs Poderosos
         player.addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, 100, 2)) // Regen III por 5s

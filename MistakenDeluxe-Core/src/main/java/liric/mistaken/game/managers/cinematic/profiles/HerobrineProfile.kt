@@ -61,7 +61,7 @@ class HerobrineProfile : CinematicProfile {
                 p.playSound(loc, org.bukkit.Sound.ENTITY_ENDER_DRAGON_DEATH, 1f, 0.5f)
             }
         }
-        world.spawnParticle(Particle.FLASH, loc.clone().add(0.0, 1.0, 0.0), 3)
+        world.spawnParticle(Particle.FIREWORK, loc.clone().add(0.0, 1.0, 0.0), 3)
 
         world.playSound(loc, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f)
         world.strikeLightningEffect(loc)

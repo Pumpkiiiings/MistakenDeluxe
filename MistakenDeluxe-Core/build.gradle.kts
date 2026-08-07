@@ -67,8 +67,7 @@ dependencies {
         exclude(group = "org.bukkit", module = "bukkit")
     }
     compileOnly("net.momirealms:craft-engine-core:0.0.67.11")
-    compileOnly("net.momirealms:craft-engine-bukkit:0.0.67.11")
-    compileOnly(files("../libs/CraftEngine.jar"))
+    compileOnly(files("../libs/CraftEngine-0.0.67.jar"))
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
     compileOnly(files("../libs/observer-paper.jar"))
@@ -83,23 +82,33 @@ dependencies {
 }
 
 tasks {
+    register<Copy>("copyApiClasses") {
+        dependsOn(project(":MistakenDeluxe-API").tasks.named("classes"))
+        from("../MistakenDeluxe-API/build/classes/kotlin/main")
+        from("../MistakenDeluxe-API/build/classes/java/main")
+        into(layout.buildDirectory.dir("classes/kotlin/main"))
+    }
+
+    named<org.gradle.jvm.tasks.Jar>("jar") {
+        archiveClassifier.set("original")
+    }
+
     shadowJar {
+        dependsOn("copyApiClasses")
         archiveClassifier.set("")
         isZip64 = true
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
-        // ?? FIX: Extraer el contenido del jar del API e incluirlo en el shadowJar
-        val apiJar = project(":MistakenDeluxe-API").tasks.named<org.gradle.jvm.tasks.Jar>("jar")
-        from(apiJar.map { zipTree(it.archiveFile) })
     }
 
     withType<JavaCompile> {
+        dependsOn("copyApiClasses")
         options.encoding = "UTF-8"
         sourceCompatibility = "21"
         targetCompatibility = "21"
     }
 
     withType<KotlinCompile> {
+        dependsOn("copyApiClasses")
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
         }
