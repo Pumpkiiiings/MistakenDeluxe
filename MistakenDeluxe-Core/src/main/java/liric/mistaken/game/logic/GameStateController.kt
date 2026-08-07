@@ -203,6 +203,10 @@ class GameStateController(private val game: GameSession) {
         if (game.currentState == GameState.ENDING) return
         game.currentState = GameState.ENDING
 
+        // Linternas fuera: al terminar la partida los bloques de luz falsos deben volver
+        // a su estado real para todos los que los estaban recibiendo.
+        game.getPlayers().forEach { game.plugin.flashlightManager.disable(it) }
+
         // 🔥 Limpieza de Anomalía
         geoffreyEntity?.remove()
         geoffreyEntity = null

@@ -237,6 +237,37 @@ listeners:
     fake_item_name: "{color}&lQUICK CLICK!"
     fake_item_lore: "&#CCCCCCDo you really want to help?"
     killer_error: "&#FF3344You are the killer! You cannot repair generators."
+  keypad:
+    killer_error: "&#FF3344Killers cannot use the code panels!"
+    already_solved: "&#FF3344This code panel is already solved."
+    already_typing: "&#FFE300You are already hacking a panel. Type the code in chat or '<cancel>'."
+    header: "&#00CED1--- SECURITY PANEL ---"
+    instructions: "&#FFFFFFTo unlock the progress, sort these numbers from &#FFE300&l<mode>&#FFFFFF:"
+    digits: "&#CCCCCC[ <digits> ]"
+    input_hint: "&#FFFFFFType the 4-digit code in chat (e.g. 1234) or type '<cancel>'."
+    mode_ascending: "LOWEST to HIGHEST"
+    mode_descending: "HIGHEST to LOWEST"
+    cancel_word: "cancel"
+    cancelled: "&#FF3344You cancelled the panel hack."
+    success: "&#42F56CCorrect code! Panel unlocked. (+100%)"
+    fail: "&#FF3344Wrong code. The panel has been temporarily locked."
+  hack_terminal:
+    killer_error: "&#FF3344Killers cannot hack terminals!"
+    already_hacked: "&#FF3344This terminal is already hacked."
+    gui_title: "&#00CED1&lHacking Terminal"
+    color_red: "&#FF3344Red"
+    color_green: "&#42F56CGreen"
+    color_blue: "&#5599FFBlue"
+    color_yellow: "&#FFE300Yellow"
+    memorize: "&#FFFFFFMemorize..."
+    waiting: "&#CCCCCC..."
+    enter_sequence: "&#42F56C&lENTER THE SEQUENCE!"
+    success: "&#42F56CPartial hack successful! (+25%)"
+    fail: "&#FF3344Wrong sequence. Connection closed."
+  flashlight:
+    # NOTE: do not use 'on'/'off' as keys, YAML 1.1 turns them into booleans.
+    enabled: "&#FFE300Flashlight on"
+    disabled: "&#888888Flashlight off"
 
 # --- ROLES ---
 roles:
