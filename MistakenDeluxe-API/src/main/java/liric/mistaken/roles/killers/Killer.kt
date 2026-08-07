@@ -8,6 +8,7 @@ import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
 import liric.mistaken.api.MistakenProvider
+import liric.mistaken.api.util.Sounds
 import org.bukkit.GameMode
 import org.bukkit.NamespacedKey
 
@@ -80,10 +81,12 @@ abstract class Killer(val id: String, val nombre: String) {
         val config = api.configManager.getKillerConfig(this.id)
         val sonidoName = config.getString("items.habilidad${slot}_sound") ?: return
 
-        runCatching {
-            val sound = Sound.valueOf(sonidoName.uppercase())
+        // Si no es un sonido de vanilla se manda el string tal cual: puede ser
+        // un sonido custom del resource pack.
+        val sound = Sounds.orNull(sonidoName)
+        if (sound != null) {
             player.world.playSound(player.location, sound, 1.0f, 0.7f)
-        }.onFailure {
+        } else {
             player.playSound(player.location, sonidoName, 1.0f, 0.7f)
         }
     }

@@ -2,6 +2,7 @@ package liric.mistaken.roles.survivors.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
+import liric.mistaken.api.util.Sounds
 import liric.mistaken.roles.survivors.Survivor
 import liric.mistaken.utils.hooks.CraftEngine
 import org.bukkit.Material
@@ -105,7 +106,7 @@ class Villager : Survivor(
 
         // Sonido por defecto "Hrmm"
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_VILLAGER_YES")
-        runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
+        Sounds.orNull(soundName)?.let { player.playSound(player.location, it, 1f, 1f) }
     }
 
     override fun equip(player: Player) {

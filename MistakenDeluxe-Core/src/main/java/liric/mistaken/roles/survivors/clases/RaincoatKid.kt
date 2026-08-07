@@ -2,6 +2,7 @@ package liric.mistaken.roles.survivors.clases
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
+import liric.mistaken.api.util.Sounds
 import liric.mistaken.roles.survivors.Survivor
 import liric.mistaken.utils.hooks.CraftEngine
 import org.bukkit.Material
@@ -55,7 +56,7 @@ class RaincoatKid : Survivor(
             player.sendMessage(ColorTranslator.translate(msg))
         }
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_BAT_TAKEOFF")
-        runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
+        Sounds.orNull(soundName)?.let { player.playSound(player.location, it, 1f, 1f) }
     }
 
     // --- 🛠️ EQUIPAMIENTO (ESTILO SLASHER) ---

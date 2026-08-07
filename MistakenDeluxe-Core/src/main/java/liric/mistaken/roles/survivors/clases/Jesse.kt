@@ -7,6 +7,7 @@ import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
 import liric.mistaken.Mistaken
+import liric.mistaken.api.util.Sounds
 import liric.mistaken.roles.survivors.Survivor
 import liric.mistaken.utils.hooks.CraftEngine
 import org.bukkit.Material
@@ -58,7 +59,7 @@ class Jesse : Survivor(
         if (!msg.isNullOrEmpty()) player.sendMessage(ColorTranslator.translate(msg))
 
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_PLAYER_ATTACK_SWEEP")
-        runCatching { player.playSound(player.location, Sound.valueOf(soundName!!.uppercase()), 1f, 1f) }
+        Sounds.orNull(soundName)?.let { player.playSound(player.location, it, 1f, 1f) }
     }
 
     override fun equip(player: Player) {
