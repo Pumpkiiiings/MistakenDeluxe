@@ -51,7 +51,7 @@ class ObserverHUDManager(private val plugin: Mistaken) {
     }
 
     private fun startUpdateTask() {
-        updateTask = plugin.server.scheduler.runTaskTimerAsynchronously(plugin, Runnable {
+        updateTask = plugin.server.scheduler.runTaskTimer(plugin, Runnable {
             for (player in plugin.server.onlinePlayers) {
                 if (!ObserverHook.hasObserver(player)) continue
                 

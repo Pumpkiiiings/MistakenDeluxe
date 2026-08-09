@@ -26,7 +26,9 @@ object ObserverHook {
         if (!hasObserverPlugin) return
         try {
             ObserverAPI.createText(player, id, content, alignment, offsetX, offsetY, scale, textAlignment)
-        } catch (e: Exception) {}
+        } catch (e: Exception) {
+            org.bukkit.Bukkit.getLogger().warning("[ObserverHook] createText failed for ${player.name}: ${e.message}")
+        }
     }
 
     fun createItem(player: Player, id: String, material: String, amount: Int, alignment: ComponentAlignment, offsetX: Int, offsetY: Int, scale: Float, textAlignment: TextAlignment) {
