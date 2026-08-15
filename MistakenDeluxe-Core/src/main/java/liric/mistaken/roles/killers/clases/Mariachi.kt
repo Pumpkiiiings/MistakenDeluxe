@@ -119,7 +119,9 @@ class Mariachi : CoreKiller(
             if (isValidTarget(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
-                victim.sendMessage(ColorTranslator.translate("<red>¡El grito del Mariachi ha corrompido tus oídos!</red>"))
+                victim.sendMessage(ColorTranslator.translate(
+                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(victim, "asesinos.mariachi.habilidades.grito_corrompido", "killers_info")
+                ))
                 victim.playSound(victim.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.8f)
             }
         }
@@ -127,7 +129,9 @@ class Mariachi : CoreKiller(
 
     private fun habilidadJarabe(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 120, 3))
-        player.sendMessage(ColorTranslator.translate("<gold>¡A zapatear! Velocidad aumentada.</gold>"))
+        player.sendMessage(ColorTranslator.translate(
+            pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.mariachi.habilidades.a_zapatear", "killers_info")
+        ))
     }
 
     private fun habilidadGuitarrazo(player: Player) {
@@ -144,7 +148,9 @@ class Mariachi : CoreKiller(
     private fun habilidadTequila(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 120, 4))
         player.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 160, 0))
-        player.sendMessage(ColorTranslator.translate("<green>¡Salud! Eres inmune al dolor por 6 segundos.</green>"))
+        player.sendMessage(ColorTranslator.translate(
+            pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.mariachi.habilidades.salud_inmune", "killers_info")
+        ))
     }
 
     override fun showPhysicalTrail(player: Player) {

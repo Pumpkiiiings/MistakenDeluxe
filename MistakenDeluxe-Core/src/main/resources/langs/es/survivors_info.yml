@@ -71,6 +71,8 @@ supervivientes:
       skill1: "<yellow><b>¡CORRE!</b></yellow> <gray>Velocidad aumentada (Cansancio en 5s)."
       skill2: "<gold><b>¡HOP!</b></gold> <gray>Impulso rápido."
       skill3: "" # Sin mensaje, es un ítem de golpe
+    habilidades:
+      jadeo: "<red><i>*jadeo*</i></red>"
 
   teto:
     nombre: "<gradient:#ff66cc:#ff0000><b>KASANE TETO</b></gradient>"
@@ -88,6 +90,8 @@ supervivientes:
       skill1: "<light_purple><b>¡SALTO!</b></light_purple> <gray>Pero te mareaste..."
       skill2: "" # Es melee, no mensaje
       skill3: "<yellow><b>¡LANZAMIENTO!</b></yellow> <gray>Tu visión se nubla."
+    habilidades:
+      impacto_directo: "<green>¡Impacto directo! El asesino ha sido paralizado.</green>"
 
   jesse:
     nombre: "<gradient:#00aaff:#ffffff><b>JESSE</b></gradient>"
@@ -122,6 +126,8 @@ supervivientes:
       skill1: "<red><b>¡CORRE!</b></red> <gray>¡El asesino viene!</gray>"
       skill2: "<green><b>¡TOMA!</b></green> <gray>¡Déjame en paz!</gray>"
       skill3: "<gray><b>¡GOLEM!</b></gray> <white>¡Defiéndeme!</white>"
+    habilidades:
+      golem_rechazado: "<red><b>[!]</b> ¡El Golem te ha rechazado!</red>"
 
   notch:
     nombre: "<gradient:#ffff55:#ffaa00><bold>NOTCH</bold></gradient>"
@@ -139,6 +145,8 @@ supervivientes:
       skill1: "<white><b>¡VUELO!</b></white> <gray>Modo creativo temporal activado."
       skill2: "<dark_gray><b>¡DENEGADO!</b></dark_gray> <gray>El asesino ha sido rechazado."
       skill3: "<yellow><b>¡PODER!</b></yellow> <gray>Regeneración y fuerza sagrada."
+    habilidades:
+      denied: "<red><bold>DENIED!</bold> <gray>Acceso denegado por el administrador.</gray>"
 
   troll:
     nombre: "<green><b>EL TROLL</b></green>"
@@ -156,3 +164,6 @@ supervivientes:
       skill1: "<green><b>¡ENGAÑO!</b></green> <gray>Has dejado un holograma falso."
       skill2: "<yellow><b>¡TRAMPA!</b></yellow> <gray>Una trampa colocada."
       skill3: "<gold><b>¡SORPRESA!</b></gold> <gray>Caja lista para asustar."
+    habilidades:
+      resbalaste_platano: "<yellow>¡Te resbalaste con una cáscara de plátano!</yellow>"
+      boom_trampa: "<red><b>¡BOOM!</b> <gray>¡Era una trampa!</gray>"

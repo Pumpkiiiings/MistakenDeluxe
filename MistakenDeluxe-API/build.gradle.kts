@@ -1,11 +1,11 @@
-﻿plugins {
+plugins {
     java
     kotlin("jvm") version "2.3.0"
     id("maven-publish")
 }
 
 group = "liric.mistaken"
-version = "2.1.5-fix"
+version = "2.2.1"
 
 java {
     toolchain {

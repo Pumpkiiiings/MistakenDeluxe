@@ -108,7 +108,7 @@ class Notch : Survivor(
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
-            langConfig.getString("skill_names.$key")?.let {
+            langConfig.getString("$pathBase.skill_names.$key")?.let {
                 item.editMeta { m -> m.displayName(ColorTranslator.translate(it)) }
             }
             inv.setItem(slot, item)
@@ -168,7 +168,9 @@ class Notch : Survivor(
                 entity.velocity = push
 
                 // Efectos al asesino
-                entity.sendMessage(ColorTranslator.translate("<red><bold>DENIED!</bold> <gray>Acceso denegado por el administrador.</gray>"))
+                entity.sendMessage(ColorTranslator.translate(
+                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(entity, "supervivientes.notch.habilidades.denied", "survivors_info")
+                ))
                 entity.playSound(entity.location, Sound.ENTITY_VILLAGER_NO, 1f, 0.8f)
             }
         }

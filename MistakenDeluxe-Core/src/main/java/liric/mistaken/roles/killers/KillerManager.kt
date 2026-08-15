@@ -33,7 +33,7 @@ class KillerManager(private val plugin: Mistaken) : IKillerManager {
         listOf(
             Slasher(), Herobrine(), Entity303(), NullAsesino(),
             ColorAndElectricity(), CharlieInferno(), CharlieJazz(), Romeo(), Mariachi(),
-            Sowoul(), TinkyWinky()
+            Sowoul(), TinkyWinky(), StillLife()
         ).forEach { registerClass(it) }
     }
 

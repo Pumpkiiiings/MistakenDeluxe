@@ -170,7 +170,9 @@ class Villager : Survivor(
                 victim.velocity = knockback
 
                 victim.playSound(victim.location, Sound.ENTITY_IRON_GOLEM_HURT, 1f, 1f)
-                victim.sendMessage(ColorTranslator.translate("<red><b>[!]</b> ¡El Golem te ha rechazado!"))
+                victim.sendMessage(ColorTranslator.translate(
+                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(victim, "supervivientes.aldeano.habilidades.golem_rechazado", "survivors_info")
+                ))
             }
         }
     }

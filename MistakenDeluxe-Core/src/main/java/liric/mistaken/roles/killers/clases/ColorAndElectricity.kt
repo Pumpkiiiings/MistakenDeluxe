@@ -258,7 +258,9 @@ class ColorAndElectricity : CoreKiller(
                     player.world.spawnParticle(org.bukkit.Particle.END_ROD, player.location, 100, 2.0, 2.0, 2.0, 0.1)
                     ObserverHook.playScreenshake(t, 1.5f, 30)
                     ObserverHook.playScreenTint(t, 255, 0, 255, 0.5f, 30)
-                    t.sendMessage(ColorTranslator.translate("<red><b>[!] SOBRECARGA CROMTICA</b></red>"))
+                    t.sendMessage(ColorTranslator.translate(
+                        pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(t, "asesinos.colorandelectricity.habilidades.sobrecarga_cromatica", "killers_info")
+                    ))
                     t.velocity = Vector(0.0, 1.2, 0.0)
                 }, null)
             }

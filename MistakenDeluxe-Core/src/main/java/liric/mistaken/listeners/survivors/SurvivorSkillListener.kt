@@ -67,7 +67,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         if (session.currentState != GameState.INGAME) return
 
         // Seguridad: Solo en Survival e ignora congelados
-        if (player.gameMode != GameMode.SURVIVAL || player.isInvisible) return
+        if (player.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(player)) return
         if (plugin.combatManager.isFrozen(player)) return
 
         val slot = player.inventory.heldItemSlot
@@ -116,7 +116,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         if (session.isKiller(attacker.uniqueId)) return
         if (!session.isKiller(victim.uniqueId)) return
 
-        if (attacker.gameMode != GameMode.SURVIVAL || attacker.isInvisible || plugin.combatManager.isFrozen(attacker)) return
+        if (attacker.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(attacker) || plugin.combatManager.isFrozen(attacker)) return
 
         val item = attacker.inventory.itemInMainHand
         if (!item.hasItemMeta()) return
@@ -155,7 +155,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         // ?? MULTIARENA: Buscamos la sesi�n de la v�ctima para validar el rol
         val session = plugin.sessionManager.getSession(victim) ?: return
 
-        if (victim.gameMode != GameMode.SURVIVAL || victim.isInvisible) return
+        if (victim.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(victim)) return
 
         // 1. Roca (Civilian)
         if (pdc.has(ROCA_KEY, PersistentDataType.BYTE)) {
@@ -203,7 +203,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
 
-        if (player.gameMode != GameMode.SURVIVAL || player.isInvisible) return
+        if (player.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(player)) return
 
         val to = event.to ?: return
         val from = event.from

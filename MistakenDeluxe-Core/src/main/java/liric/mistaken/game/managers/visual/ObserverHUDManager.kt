@@ -53,10 +53,11 @@ class ObserverHUDManager(private val plugin: Mistaken) {
     private fun startUpdateTask() {
         updateTask = plugin.server.scheduler.runTaskTimer(plugin, Runnable {
             for (player in plugin.server.onlinePlayers) {
-                if (!ObserverHook.hasObserver(player)) continue
+                val hasObs = ObserverHook.hasObserver(player)
+                // if (!hasObs) continue
                 
-                if (loggedObserverPlayers.add(player.uniqueId)) {
-                    plugin.componentLogger.info(ColorTranslator.translate("[<green>ObserverHook</green>] <white>¡El jugador <yellow>${player.name}</yellow> se ha detectado con el mod instalado!</white>"))
+                if (hasObs && loggedObserverPlayers.add(player.uniqueId)) {
+                    plugin.componentLogger.info(ColorTranslator.translate("[<green>ObserverHook</green>] <white>¡El jugador <yellow>${player.name}</yellow> ha sido detectado por ObserverHook!</white>"))
                 }
 
                 handlePlayerState(player)

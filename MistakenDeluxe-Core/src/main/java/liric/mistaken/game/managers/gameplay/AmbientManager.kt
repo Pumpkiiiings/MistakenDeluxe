@@ -59,7 +59,8 @@ class AmbientManager(private val plugin: Mistaken) {
                     worldUid = world.uid,
                     aliveSurvivors = director.countAliveSurvivors(session),
                     generatorsLeft = plugin.generatorManager.getTotalGeneratorsInWorld(world) -
-                            plugin.generatorManager.getCompletedCountInWorld(world)
+                            plugin.generatorManager.getCompletedCountInWorld(world),
+                    isDisguised = killer.isCustomNameVisible
                 )
 
                 trackedSurvivors.forEach { uuid ->
@@ -91,7 +92,7 @@ class AmbientManager(private val plugin: Mistaken) {
             return
         }
 
-        if (survivor.gameMode != GameMode.SURVIVAL || survivor.isInvisible || plugin.isIgnored(survivor)) {
+        if (survivor.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(survivor) || plugin.isIgnored(survivor)) {
             return
         }
 

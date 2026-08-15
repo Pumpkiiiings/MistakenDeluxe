@@ -12,6 +12,7 @@ import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
 import liric.mistaken.game.enums.GameState
 import pumpking.lib.color.ColorTranslator
+import java.util.function.Consumer
 
 object MistakenDebugCommand {
 
@@ -179,6 +180,37 @@ object MistakenDebugCommand {
                 }
                 1
             }
+        )
+
+        // --- LMS DEBUG ---
+        rootNode.then(
+            Commands.literal("lms")
+            .then(Commands.literal("start").executes { ctx ->
+                val p = ctx.source.sender as? Player ?: return@executes 0
+                
+                // Flash blanco inicial y vibración
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 255, 255, 0.9f, 30)
+                liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.5f, 40)
+                
+                // Música (asume default)
+                p.playSound(p.location, "mistaken:lms", org.bukkit.SoundCategory.RECORDS, 1f, 1f)
+                
+                // Aplicar el filtro rojo constante después del flash blanco
+                p.scheduler.runDelayed(plugin, Consumer { _ ->
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) // 1 minuto
+                }, null, 30L)
+                
+                p.sendMessage("§a[!] Efectos y música de LMS iniciados (Duración prueba: 1 min).")
+                1
+            })
+            .then(Commands.literal("end").executes { ctx ->
+                val p = ctx.source.sender as? Player ?: return@executes 0
+                
+                p.stopSound("mistaken:lms", org.bukkit.SoundCategory.RECORDS)
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 0, 0, 0, 0f, 1) // Limpiar filtro
+                p.sendMessage("§c[!] Efectos de LMS detenidos.")
+                1
+            })
         )
 
         // --- GEOFFREY ---

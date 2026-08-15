@@ -30,6 +30,9 @@ asesinos:
       skill2: "<aqua>Salto Dimensional"
       skill3: "<dark_gray>Pulso de Terror"
       skill4: "<red><bold>ERROR DE MUNDO</bold>"
+    habilidades:
+      estampaste: "<red><b>[!]</b> ¡Te estampaste contra el muro!</red>"
+      embestido: "<red><b>[!]</b> Herobrine te ha embestido con el poder del Vacío.</red>"
 
   entity303:
     nombre: "<red><b>ENTITY 303</b>"
@@ -46,6 +49,8 @@ asesinos:
       skill2: "<red>Estrella del Error"
       skill3: "<red>Protocolo de Vuelo"
       skill4: "<dark_red><bold>CRASH DE SISTEMA</bold>"
+    habilidades:
+      system_error: "<red><bold>SYSTEM ERROR: 303 FOUND</bold></red>"
 
   null:
     nombre: "<dark_gray><b>NULL</b>"
@@ -94,6 +99,10 @@ asesinos:
       skill2: "<gold>Jarabe Tapatío (Zapateado)"
       skill3: "<white>Guitarrazo Certero"
       skill4: "<green><bold>TRAGO DE TEQUILA</bold>"
+    habilidades:
+      grito_corrompido: "<red>¡El grito del Mariachi ha corrompido tus oídos!</red>"
+      a_zapatear: "<gold>¡A zapatear! Velocidad aumentada.</gold>"
+      salud_inmune: "<green>¡Salud! Eres inmune al dolor por 6 segundos.</green>"
 
   charliejazz:
     nombre: "<gradient:#e0b0ff:#ffd700><b>CHARLIE INFERNO. VER. JAZZ</b></gradient>"
@@ -143,6 +152,8 @@ asesinos:
       skill2: "<gradient:#00ffff:#ffffff>Color Drain</gradient>"
       skill3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
       skill4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
+    habilidades:
+      sobrecarga_cromatica: "<red><b>[!] SOBRECARGA CROMÁTICA</b></red>"
 
   sowoul:
     nombre: "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>"
@@ -158,6 +169,9 @@ asesinos:
       skill2: "<white>Lluvia de Cartas</white>"
       skill3: "<dark_aqua>Fauces de Evocador</dark_aqua>"
       skill4: "<dark_red><bold>INVENCIÓN: GEOFFREY 3.0</bold></dark_red>"
+    habilidades:
+      nadie_rango: "<red>Nadie en tu rango de visión. Se gastó la habilidad.</red>"
+      mano_magica: "<dark_purple><b>¡UNA MANO MÁGICA TE HA ATRAPADO!</b></dark_purple>"
 
   tinkywinky:
     nombre: "<gradient:#6b00b5:#cc00ff><b>TINKY WINKY</b></gradient>"
@@ -173,3 +187,17 @@ asesinos:
       skill2: "<gray>Paso Silencioso</gray>"
       skill3: "<dark_aqua>Señal de TV</dark_aqua>"
       skill4: "<dark_red><bold>LA ÚLTIMA CANCIÓN</bold></dark_red>"
+    habilidades:
+      bolsa_marcado: "<dark_purple><b>[!]</b> La Bolsa Mágica de TinkyWinky te ha marcado...</dark_purple>"
+      senal_distorsiona: "<dark_purple><b>[!]</b> La señal de TinkyWinky distorsiona tu mente...</dark_purple>"
+      nadie_cerca: "<gray>[!] No hay nadie cerca para afectar.</gray>"
+
+  still_life:
+    nombre: "<yellow><b>STILL LIFE</b></yellow>"
+    habilidades:
+      generador_colocado: "<green>Generador falso colocado.</green>"
+      generador_interactuado: "<red>¡Un superviviente interactuó con tu generador falso!</red>"
+      asesinado: "<green>Has asesinado a %victim%. Presiona F para disfrazarte de él.</green>"
+      disfraz_quitado: "<red>Te has quitado el disfraz.</red>"
+      disfrazado: "<green>Te has disfrazado de %last%.</green>"
+      chat_disfraz: "<gray>%disguisename%: <white>%message%</white></gray>"

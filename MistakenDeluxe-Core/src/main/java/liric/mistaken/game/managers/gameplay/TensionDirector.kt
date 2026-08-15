@@ -43,7 +43,8 @@ class TensionDirector(private val plugin: Mistaken) {
         val lookDirection: org.bukkit.util.Vector,
         val worldUid: UUID,
         val aliveSurvivors: Int,
-        val generatorsLeft: Int
+        val generatorsLeft: Int,
+        val isDisguised: Boolean = false
     )
 
     private class Tension {
@@ -78,6 +79,10 @@ class TensionDirector(private val plugin: Mistaken) {
 
         // Otro mundo = fuera de juego para efectos de tensión.
         if (survivor.world.uid != snapshot.worldUid) {
+            return applyState(tension, State.CALMA)
+        }
+
+        if (snapshot.isDisguised) {
             return applyState(tension, State.CALMA)
         }
 

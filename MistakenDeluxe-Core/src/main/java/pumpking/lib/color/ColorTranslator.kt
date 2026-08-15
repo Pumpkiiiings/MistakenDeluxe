@@ -22,7 +22,7 @@ object ColorTranslator {
     fun translate(input: String, vararg tags: TagResolver): Component {
         // If there are tags, skip the cache to prevent stale placeholder values
         if (tags.isNotEmpty()) {
-            val normalized = ColorNormalizer.normalizeToMiniMessage(input)
+            val normalized = "<!italic>" + ColorNormalizer.normalizeToMiniMessage(input)
             return mm.deserialize(normalized, *tags)
         }
 
@@ -31,7 +31,7 @@ object ColorTranslator {
         // number of concurrent inserting threads — negligible for this use case.
         if (cache.size >= 1000) cache.clear()
         return cache.computeIfAbsent(input) { k ->
-            mm.deserialize(ColorNormalizer.normalizeToMiniMessage(k))
+            mm.deserialize("<!italic>" + ColorNormalizer.normalizeToMiniMessage(k))
         }
     }
 

@@ -288,13 +288,17 @@ class Sowoul : CoreKiller(
         val target = player.world.getNearbyPlayers(player.location, 25.0).firstOrNull { isValidTarget(player, it) }
 
         if (target == null) {
-            player.sendActionBar(ColorTranslator.translate("<red>Nadie en tu rango de visión. Se gastó la habilidad."))
+            player.sendActionBar(ColorTranslator.translate(
+                pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.sowoul.habilidades.nadie_rango", "killers_info")
+            ))
             return
         }
 
         player.playSound(player.location, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1.5f, 0.5f)
         target.playSound(target.location, Sound.ENTITY_ENDERMAN_STARE, 1.5f, 0.1f)
-        target.sendActionBar(ColorTranslator.translate("<dark_purple><b>¡UNA MANO MÁGICA TE HA ATRAPADO!</b>"))
+        target.sendActionBar(ColorTranslator.translate(
+            pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(target, "asesinos.sowoul.habilidades.mano_magica", "killers_info")
+        ))
 
         val manoDisplay = target.world.spawn(target.location.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) { bd ->
             bd.block = Material.PURPUR_PILLAR.createBlockData()

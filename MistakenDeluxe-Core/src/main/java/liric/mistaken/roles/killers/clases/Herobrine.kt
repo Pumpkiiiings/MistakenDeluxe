@@ -225,7 +225,9 @@ class Herobrine : CoreKiller(
 
             val eyeLoc = player.eyeLocation.add(dir.clone().multiply(0.8))
             if (eyeLoc.block.type.isSolid) {
-                player.sendMessage(ColorTranslator.translate("<red><b>[!]</b> ¡Te estampaste contra el muro!"))
+                player.sendMessage(ColorTranslator.translate(
+                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.herobrine.habilidades.estampaste", "killers_info")
+                ))
                 repeat(3) { plugin.combatManager.takeDamage(player) }
                 player.playSound(player.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1f, 0.5f)
                 task.cancel()
@@ -237,7 +239,9 @@ class Herobrine : CoreKiller(
                     hitted.add(victim.uniqueId)
                     repeat(3) { plugin.combatManager.takeDamage(player) }
                     victim.playSound(victim.location, Sound.ENTITY_WITHER_BREAK_BLOCK, 1f, 0.8f)
-                    victim.sendMessage(ColorTranslator.translate("<red><b>[!]</b> Herobrine te ha embestido con el poder del Vacío."))
+                    victim.sendMessage(ColorTranslator.translate(
+                        pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(victim, "asesinos.herobrine.habilidades.embestido", "killers_info")
+                    ))
                 }
             }
             ticks++

@@ -15,9 +15,9 @@ object ObserverHook {
         if (!hasObserverPlugin) return false
         return try {
             ObserverAPI.isObserverPlayer(player)
-        } catch (e: NoClassDefFoundError) {
-            false
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
+            org.bukkit.Bukkit.getLogger().warning("[ObserverHook] Error in hasObserver:")
+            e.printStackTrace()
             false
         }
     }

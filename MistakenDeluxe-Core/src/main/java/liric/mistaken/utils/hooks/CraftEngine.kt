@@ -35,7 +35,7 @@ object CraftEngine {
             try {
                 val itemDef = CraftEngineItems.byId(net.momirealms.craftengine.core.util.Key.from(property))
                 if (itemDef != null) {
-                    return itemDef.buildItemStack()
+                    return itemDef.buildBukkitItem()
                 }
             } catch (e: Exception) {
                 Mistaken.Companion.instance.logger.warning("Fallo crítico al pedir ítem a CraftEngine: $property")

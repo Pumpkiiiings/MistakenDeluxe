@@ -271,7 +271,9 @@ class Entity303 : CoreKiller(
             if (isValidTarget(player, online) && online.location.distanceSquared(player.location) < 1600) {
                 online.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
                 online.playSound(online.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.1f)
-                online.sendMessage(ColorTranslator.translate("<red><bold>SYSTEM ERROR: 303 FOUND"))
+                online.sendMessage(ColorTranslator.translate(
+                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(online, "asesinos.entity303.habilidades.system_error", "killers_info")
+                ))
             }
         }
     }

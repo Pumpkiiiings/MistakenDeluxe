@@ -34,7 +34,7 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
             "session_id" -> session?.id ?: "NONE"
             
             // --- OBSERVER PLACEHOLDERS ---
-            "vivos" -> session?.getPlayers()?.count { !session.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible }?.toString() ?: "0"
+            "vivos" -> session?.getPlayers()?.count { !session.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !plugin.spectatorManager.isSpectator(it) }?.toString() ?: "0"
             "id" -> session?.id ?: "NONE"
             "tiempo" -> session?.timer?.toString() ?: "0"
             "modo" -> session?.currentMode?.name ?: "N/A"

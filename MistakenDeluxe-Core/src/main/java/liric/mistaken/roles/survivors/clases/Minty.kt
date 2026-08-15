@@ -142,7 +142,7 @@ class Minty : Survivor(
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
-            langConfig.getString("skill_names.$key")?.let {
+            langConfig.getString("$pathBase.skill_names.$key")?.let {
                 item.editMeta { m -> m.displayName(ColorTranslator.translate(it)) }
             }
             inv.setItem(slot, item)

@@ -237,7 +237,7 @@ class GamePlayerController(private val game: GameSession) {
         val killersOnline = game.asesinosUUIDs.mapNotNull { game.plugin.server.getPlayer(it) }.filter { it.isOnline }
 
         for (p in players) {
-            if (game.plugin.isIgnored(p) || game.isKiller(p.uniqueId) || p.gameMode == GameMode.SPECTATOR || p.isInvisible) continue
+            if (game.plugin.isIgnored(p) || game.isKiller(p.uniqueId) || p.gameMode == GameMode.SPECTATOR || game.plugin.spectatorManager.isSpectator(p)) continue
 
             if ((ticks + (p.uniqueId.hashCode() and 0xFFFF)) % 5 == 0) {
                 game.uiController.playAmbientForPlayer(p, killersOnline)
@@ -264,13 +264,15 @@ class GamePlayerController(private val game: GameSession) {
                 game.plugin.playerDataManager.consumeStamina(p.uniqueId, 0.4)
             }
 
-            // --- Bloody Screen Effect for Low Health ---
+            // --- Bloody Screen Effect for Low Health and LMS ---
             if (ticks % 10 == 0) {
                 val health = p.health
                 if (health <= 10.0) { // 5 hearts or less
                     // Alpha ranges from ~0.15 (at 10 health) to ~0.8 (at 1 health)
                     val alpha = (1.0f - (health.toFloat() / 10.0f)) * 0.7f + 0.15f
                     liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, alpha, 20)
+                } else if (lmsActivado) {
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 20) // Filtro ligero rojo por LMS
                 }
             }
         }
@@ -291,7 +293,7 @@ class GamePlayerController(private val game: GameSession) {
         val sessionPlayers = game.getPlayers()
 
 
-        val allSurvivors = sessionPlayers.filter { !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible }
+        val allSurvivors = sessionPlayers.filter { !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !game.plugin.spectatorManager.isSpectator(it) }
 
         if (allSurvivors.isEmpty()) {
             game.stateController.endGame("game.victory-killer", true)
@@ -309,7 +311,7 @@ class GamePlayerController(private val game: GameSession) {
 
         // 🔥 FIX: Solo evaluamos en esta sesión
         val supervivientesVivos = game.getPlayers().filter {
-            !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !it.isInvisible
+            !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !game.plugin.spectatorManager.isSpectator(it)
         }
 
         if (supervivientesVivos.size == 1 && game.currentMode != MistakenMode.FREEZE_TAG) {
@@ -329,6 +331,11 @@ class GamePlayerController(private val game: GameSession) {
 
         game.uiController.broadcastLMS(player, activeLmsMusic)
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 20 * 60, 0))
+
+        // Efecto visual LMS: Flash blanco inicial y vibración
+        liric.mistaken.utils.hooks.ObserverHook.playScreenTint(player, 255, 255, 255, 0.9f, 30)
+        liric.mistaken.utils.hooks.ObserverHook.playScreenshake(player, 1.5f, 40)
+
         if (game.timer > 90) {
             game.timer = 90
         }
@@ -339,7 +346,7 @@ class GamePlayerController(private val game: GameSession) {
         // se quedan enviados a todos los que la estaban viendo.
         game.plugin.flashlightManager.disable(player)
 
-        if (game.currentState == GameState.ENDING || player.gameMode == GameMode.SPECTATOR || player.isInvisible) return
+        if (game.currentState == GameState.ENDING || player.gameMode == GameMode.SPECTATOR || game.plugin.spectatorManager.isSpectator(player)) return
 
 
         if (game.isKiller(player.uniqueId)) {
@@ -446,7 +453,7 @@ class GamePlayerController(private val game: GameSession) {
 
             game.combatManager.removePlayerData(p.uniqueId)
 
-            if (p.isInvisible) {
+            if (p.isInvisible || game.plugin.spectatorManager.isSpectator(p)) {
                 p.isInvisible = false
                 p.isCollidable = true
                 p.isInvulnerable = false

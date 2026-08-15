@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "liric.mistaken" // Actualizado a tu nuevo package
-version = "2.1.5-fix"
+version = "2.2.1"
 
 java {
     toolchain {
@@ -64,7 +64,7 @@ dependencies {
 
     // APIs Externas (Solo para compilar)
     compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.2.0")
-    compileOnly("com.infernalsuite.asp:api:4.1.0-SNAPSHOT")
+    compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude(group = "org.bukkit", module = "bukkit")
     }

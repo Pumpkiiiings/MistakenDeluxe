@@ -129,7 +129,9 @@ class RaincoatKid : Survivor(
             if (player.isOnline) {
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 0))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_BREATH, 1f, 0.8f)
-                player.sendActionBar(ColorTranslator.translate("<red><i>*jadeo*</i>"))
+                player.sendActionBar(ColorTranslator.translate(
+                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "supervivientes.raincoatkid.habilidades.jadeo", "survivors_info")
+                ))
             }
         }, null, 100L)
 

@@ -185,7 +185,9 @@ class TinkyWinky : CoreKiller(
 
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 0))
                 victim.playSound(victim.location, Sound.ENTITY_ENDERMAN_STARE, 1f, 0.3f)
-                victim.sendMessage(ColorTranslator.translate("<dark_purple><b>[!]</b> La Bolsa Mágica de TinkyWinky te ha marcado..."))
+                victim.sendMessage(ColorTranslator.translate(
+                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(victim, "asesinos.tinkywinky.habilidades.bolsa_marcado", "killers_info")
+                ))
 
                 snowball.world.spawnParticle(org.bukkit.Particle.WITCH, victim.location.add(0.0, 1.0, 0.0), 30, 0.5, 0.5, 0.5, 0.1)
                 snowball.remove()
@@ -238,7 +240,9 @@ class TinkyWinky : CoreKiller(
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 80, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 80, 0))
                 victim.playSound(victim.location, Sound.BLOCK_NOTE_BLOCK_BASS, 2f, 0.1f)
-                victim.sendMessage(ColorTranslator.translate("<dark_purple><b>[!]</b> La señal de TinkyWinky distorsiona tu mente..."))
+                victim.sendMessage(ColorTranslator.translate(
+                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(victim, "asesinos.tinkywinky.habilidades.senal_distorsiona", "killers_info")
+                ))
                 afectados++
             }
         }
@@ -249,7 +253,9 @@ class TinkyWinky : CoreKiller(
         player.world.playSound(player.location, Sound.BLOCK_BEACON_AMBIENT, 2f, 0.1f)
 
         if (afectados == 0) {
-            player.sendMessage(ColorTranslator.translate("<gray>[!] No hay nadie cerca para afectar."))
+            player.sendMessage(ColorTranslator.translate(
+                pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.tinkywinky.habilidades.nadie_cerca", "killers_info")
+            ))
         }
     }
 

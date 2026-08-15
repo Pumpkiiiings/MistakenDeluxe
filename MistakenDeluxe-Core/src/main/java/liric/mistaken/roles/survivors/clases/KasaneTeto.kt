@@ -153,7 +153,9 @@ class KasaneTeto : Survivor(
             hitEntity.addPotionEffect(PotionEffect(PotionEffectType.WEAKNESS, 60, 4))
             hitEntity.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3))
 
-            player.sendMessage(ColorTranslator.translate("<green>¡Impacto directo! El asesino ha sido paralizado."))
+            player.sendMessage(ColorTranslator.translate(
+                pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "supervivientes.teto.habilidades.impacto_directo", "survivors_info")
+            ))
         }
     }
 

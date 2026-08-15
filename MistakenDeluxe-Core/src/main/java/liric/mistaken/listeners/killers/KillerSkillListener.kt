@@ -45,7 +45,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         if (session.currentState != GameState.INGAME) return
 
         // Seguridad: Bloqueamos si el asesino est� muerto/especteando o en vanish
-        if (player.gameMode != GameMode.SURVIVAL || player.isInvisible) return
+        if (player.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(player)) return
 
         val slot = player.inventory.heldItemSlot
         if (!session.isKiller(player.uniqueId)) return
@@ -107,7 +107,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
             if (session.isKiller(victim.uniqueId)) return
 
             // Verificamos que la v�ctima sea un superviviente v�lido en esa arena
-            if (victim.gameMode != GameMode.SURVIVAL || victim.isInvisible) return
+            if (victim.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(victim)) return
 
             victim.apply {
                 addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 1))

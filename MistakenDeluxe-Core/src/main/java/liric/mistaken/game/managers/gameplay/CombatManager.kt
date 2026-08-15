@@ -108,7 +108,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
                         val isValidSurvivor = target.gameMode == GameMode.SURVIVAL &&
                                 !isNPC &&
-                                !target.isInvisible &&
+                                !plugin.spectatorManager.isSpectator(target) &&
                                 killer.canSee(target) &&
                                 !plugin.isIgnored(target) &&
                                 !plugin.spectatorManager.isSpectator(target)
@@ -228,7 +228,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         val victim = event.entity as? Player ?: return
         val attacker = event.damager as? Player ?: return
 
-        if (victim.isInvisible || attacker.isInvisible || victim.gameMode == GameMode.ADVENTURE) {
+        if (plugin.spectatorManager.isSpectator(victim) || plugin.spectatorManager.isSpectator(attacker) || victim.gameMode == GameMode.ADVENTURE) {
             event.isCancelled = true
             return
         }
@@ -317,7 +317,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         val currentSession = session ?: plugin.sessionManager.getSession(victim) ?: return
 
         runOnMain {
-            if (victim.gameMode == GameMode.SPECTATOR || victim.isInvisible || victim.gameMode == GameMode.ADVENTURE) return@runOnMain
+            if (victim.gameMode == GameMode.SPECTATOR || plugin.spectatorManager.isSpectator(victim) || victim.gameMode == GameMode.ADVENTURE) return@runOnMain
 
             val isSurvivor = !currentSession.isKiller(victim.uniqueId)
             if (isSurvivor && currentSession.currentMode == MistakenMode.FREEZE_TAG) {
