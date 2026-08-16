@@ -51,11 +51,9 @@ class NameTagManager(private val plugin: Mistaken) {
         val tag = VirtualNametag(entityId)
         nametags[player.uniqueId] = tag
 
-        // Spawn the virtual TextDisplay to all viewers
+        // Spawn the virtual TextDisplay to all viewers (including self for F5 view)
         Bukkit.getOnlinePlayers().forEach { viewer ->
-            if (viewer.uniqueId != player.uniqueId) {
-                spawnForViewer(player, viewer, tag)
-            }
+            spawnForViewer(player, viewer, tag)
         }
     }
 
@@ -161,13 +159,11 @@ class NameTagManager(private val plugin: Mistaken) {
             // Re-apply packet-level team hiding continuously in case Observer overrides the scoreboard
             sendTeamHidePacket(viewer, player.name, isAdd = true)
             
-            if (viewer.uniqueId != player.uniqueId) {
-                if (!tag.confirmedViewers.contains(viewer.uniqueId)) {
-                    spawnForViewer(player, viewer, tag)
-                }
-                PacketEvents.getAPI().playerManager.sendPacket(viewer, metadataPacket)
-                PacketEvents.getAPI().playerManager.sendPacket(viewer, teleportPacket)
+            if (!tag.confirmedViewers.contains(viewer.uniqueId)) {
+                spawnForViewer(player, viewer, tag)
             }
+            PacketEvents.getAPI().playerManager.sendPacket(viewer, metadataPacket)
+            PacketEvents.getAPI().playerManager.sendPacket(viewer, teleportPacket)
         }
     }
 
