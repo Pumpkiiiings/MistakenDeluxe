@@ -78,7 +78,7 @@ ingame:
       material: "minecraft:clock"
       alignment: TOP_CENTER
       text_alignment: LEFT
-      offset_x: -120
+      offset_x: -112
       offset_y: 5
       scale: 1.0
       amount: 1
@@ -89,13 +89,13 @@ ingame:
       offset_x: -100
       offset_y: 9
       scale: 1.0
-      content: "<white>Tiempo: %mistaken_timer%</white>"
+      content: "<white>Tiempo: <yellow>%mistaken_timer%</yellow></white>"
     player_icon:
       type: ITEM
       material: "minecraft:player_head"
       alignment: TOP_CENTER
       text_alignment: LEFT
-      offset_x: -20
+      offset_x: -12
       offset_y: 5
       scale: 1.0
       amount: 1
@@ -106,13 +106,13 @@ ingame:
       offset_x: 0
       offset_y: 9
       scale: 1.0
-      content: "<white>Vivos: %mistaken_vivos%</white>"
+      content: "<white>Vivos: <green>%mistaken_vivos%</green></white>"
     gens_icon:
       type: ITEM
       material: "minecraft:redstone_torch"
       alignment: TOP_CENTER
       text_alignment: LEFT
-      offset_x: 80
+      offset_x: 88
       offset_y: 5
       scale: 1.0
       amount: 1
@@ -123,7 +123,7 @@ ingame:
       offset_x: 100
       offset_y: 9
       scale: 1.0
-      content: "<white>Gens: %mistaken_gens_reparados%/%mistaken_gens_total%</white>"
+      content: "<white>Gens: <red>%mistaken_gens_reparados%</red>/<red>%mistaken_gens_total%</red></white>"
 
 roles:
   survivor:
