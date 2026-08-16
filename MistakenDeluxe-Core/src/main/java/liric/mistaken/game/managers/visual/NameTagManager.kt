@@ -90,15 +90,30 @@ class NameTagManager(private val plugin: Mistaken) {
         val lines = plugin.config.getStringList("$configPath.lines")
         val size = plugin.config.getDouble("$configPath.size", 1.0).toFloat()
         val shadow = plugin.config.getBoolean("$configPath.shadow", false)
-        val bgColorStr = plugin.config.getString("$configPath.background-color", "0,0,0,0") ?: "0,0,0,0"
+        val bgColorStr = plugin.config.getString("$configPath.background-color", "transparent")?.lowercase() ?: "transparent"
 
-        val bgParts = bgColorStr.split(",").map { it.trim().toIntOrNull() ?: 0 }
-        val bgColor = org.bukkit.Color.fromARGB(
-            if (bgParts.isNotEmpty()) bgParts[0] else 0,
-            if (bgParts.size > 1) bgParts[1] else 0,
-            if (bgParts.size > 2) bgParts[2] else 0,
-            if (bgParts.size > 3) bgParts[3] else 0
-        )
+        val bgColor = if (bgColorStr == "transparent") {
+            org.bukkit.Color.fromARGB(0, 0, 0, 0)
+        } else if (bgColorStr.startsWith("#")) {
+            try {
+                val hex = bgColorStr.removePrefix("#")
+                when (hex.length) {
+                    6 -> {
+                        val rgb = hex.toInt(16)
+                        org.bukkit.Color.fromARGB(255, (rgb shr 16) and 0xFF, (rgb shr 8) and 0xFF, rgb and 0xFF)
+                    }
+                    8 -> {
+                        val argb = hex.toLong(16)
+                        org.bukkit.Color.fromARGB(((argb shr 24) and 0xFF).toInt(), ((argb shr 16) and 0xFF).toInt(), ((argb shr 8) and 0xFF).toInt(), (argb and 0xFF).toInt())
+                    }
+                    else -> org.bukkit.Color.fromARGB(0, 0, 0, 0)
+                }
+            } catch (e: Exception) {
+                org.bukkit.Color.fromARGB(0, 0, 0, 0)
+            }
+        } else {
+            org.bukkit.Color.fromARGB(0, 0, 0, 0)
+        }
 
         val colorStr = if (isIngame) {
             if (session!!.isKiller(player.uniqueId)) "<red>" else "<green>"

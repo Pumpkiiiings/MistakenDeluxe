@@ -115,19 +115,25 @@ settings:
     range: 8.0
     points: 3
     viewer-radius: 32.0
+# --- Dynamic Nametags ---
+# You can customize the nametags for ingame and global players here.
+# Variables available: %name%, %color%, %health%
+# Placeholders from PlaceholderAPI are also supported.
+# For background-color, use hex codes like #RRGGBB or #AARRGGBB (A = Alpha/Transparency)
+# Or use 'transparent' for a completely transparent background.
 nametags:
   ingame:
     lines:
     - "%color%%name%"
     - "<red>HP: %health%"
     size: 1.0
-    background-color: "0,0,0,0"
+    background-color: "transparent"
     shadow: true
   global:
     lines:
     - "<gray>%name%"
     size: 1.0
-    background-color: "0,0,0,0"
+    background-color: "transparent"
     shadow: false
 animations:
   killer:
