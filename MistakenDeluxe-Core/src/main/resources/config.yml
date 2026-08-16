@@ -1,14 +1,23 @@
+# ==========================================
+# MISTAKEN DELUXE - MAIN CONFIGURATION
+# ==========================================
 config-version: 1
+
+# --- Core System ---
 core:
   language: es
   min-players: 2
   persistence-key: selected_assassin
   debug: false
+
+# --- Game Timers (Seconds) ---
 timers:
   voting: 30
   starting: 15
   ingame: 300
   ending: 15
+
+# --- Integrations ---
 discord:
   webhooks:
     game-tracker: URL_AQUI
@@ -30,14 +39,23 @@ discord:
       winner-field: 🏆 Ganador
       survived-field: 🚪 Sobrevivieron
       footer: Mistaken Tracking • Sesión finalizada
+
+# --- Server Architecture ---
+# NETWORK_LOBBY: Only for purchases and stats (No gameplay).
+# GAME_SERVER: Slave server dedicated to gameplay.
+# MULTIARENA: All-in-one server (Lobby + isolated gameplay arenas).
 server-mode: MULTIARENA
 proxy-lobby-server: lobby
 proxy-arena-server: arenas
+
+# --- Stamina System (EXP) ---
 stamina:
-  loss-survivor: 1.0
+  loss-survivor: 1.0 # Loss per 0.25s running
   loss-killer: 2.0
-  recovery-rate: 1.5
-  exhaustion-slowness-level: 1
+  recovery-rate: 1.5 # Recovery per 0.25s walking/idle
+  exhaustion-slowness-level: 1 # Slowness level at 0% stamina
+
+# --- Combat & Gameplay Balance ---
 gameplay:
   killer:
     damage: 2.9
@@ -46,11 +64,15 @@ gameplay:
     kill: 50.0
     win-killer: 500.0
     win-survivor: 200.0
+
+# --- Visuals & Aesthetics ---
 visuals:
-  bossbar-style: SOLID
+  bossbar-style: SOLID # SOLID, SEGMENTED_6, 10, 12, 20
   vote-format: <white>{map}</white> - <yellow>({votes})</yellow><newline>
+
+# --- Database ---
 database:
-  type: h2
+  type: h2 # Options: mysql, postgresql, h2
   mysql:
     host: localhost
     port: 3306
@@ -66,12 +88,16 @@ database:
   pool:
     maximum-pool-size: 10
     minimum-idle: 2
-    max-lifetime: 1800000
+    max-lifetime: 1800000 # 30 mins
     connection-timeout: 30000
+
+# --- Dynamic Music Engine ---
 music:
   enabled: true
   volume: 0.3
   pitch: 1.0
+  # Shared playlist for Lobby and Voting phases
+  # id: Sound name (Minecraft or Custom) | duration: Length in seconds
   playlist:
   - id: mistaken:charliehere
     duration: 149
@@ -85,6 +111,8 @@ music:
     duration: 182
   - id: mistaken:candy
     duration: 150
+
+# --- Generator Settings (Mistaken-Gen) ---
 generator-block: RAW_IRON_BLOCK
 repair-amount: 10
 rewards:
@@ -100,9 +128,10 @@ messages:
   prefix: '<blue><bold>[Mistaken-Gen]</bold></blue> '
   already-completed: <green>This generator is already at 100%!
   no-killer: <red><bold>[!]</bold> Killers cannot repair, your mission is to hunt!
-  success: <green><bold>[!]</bold> <white>Generator successfully powered! You received
-    your rewards.
+  success: <green><bold>[!]</bold> <white>Generator successfully powered! You received your rewards.
   fail-click: <red><bold>[!]</bold> <white>Fake ingot! Progress dropped by 10%.
+
+# --- General Settings & Locations ---
 settings:
   lobby:
     world: Mistaken
@@ -111,10 +140,15 @@ settings:
     z: 153.5797921360857
     yaw: 2.069739
     pitch: 4.7378817
+  # Survivor flashlight (F key). Fake client-side LIGHT blocks along the look ray.
   flashlight:
+    # Max beam length in blocks.
     range: 8.0
+    # How many light blocks are placed along the beam.
     points: 3
+    # Players within this radius also receive the light: the flashlight gives you away.
     viewer-radius: 32.0
+
 # --- Dynamic Nametags ---
 # You can customize the nametags for ingame and global players here.
 # Variables available: %name%, %color%, %health%
@@ -135,6 +169,8 @@ nametags:
     size: 1.0
     background-color: "transparent"
     shadow: false
+
+# --- Animations Engine ---
 animations:
   killer:
     ataque: ataque
