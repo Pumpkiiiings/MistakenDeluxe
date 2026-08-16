@@ -87,7 +87,7 @@ class FlashlightManager(private val plugin: Mistaken) {
             Consumer { _ -> tick(player) },
             Runnable { clear(uuid) },
             1L,
-            2L
+            1L // 1 tick para máxima fluidez
         )
     }
 
