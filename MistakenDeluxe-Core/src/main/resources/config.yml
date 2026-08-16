@@ -1,61 +1,43 @@
-# ==========================================
-# MISTAKEN DELUXE - MAIN CONFIGURATION
-# ==========================================
 config-version: 1
-
-# --- Core System ---
 core:
-  language: "es"
+  language: es
   min-players: 2
-  persistence-key: "selected_assassin"
+  persistence-key: selected_assassin
   debug: false
-
-# --- Game Timers (Seconds) ---
 timers:
   voting: 30
   starting: 15
   ingame: 300
   ending: 15
-
-# --- Integrations ---
 discord:
   webhooks:
-    game-tracker: "URL_AQUI"
-    alerts: "URL_AQUI"
+    game-tracker: URL_AQUI
+    alerts: URL_AQUI
   messages:
-    waiting-players: "Esperando jugadores..."
-    nobody-escaped: "Nadie escapó..."
+    waiting-players: Esperando jugadores...
+    nobody-escaped: Nadie escapó...
     start:
-      title: "🎮 ¡JUEGO INICIADO!"
-      map-field: "🗺️ Mapa"
-      mode-field: "🕹️ Modo"
-      killer-field: "🩸 Killer"
-      survivors-field: "👥 Survivors"
-      footer: "Mistaken Tracking • LIRIC-MISTAKEN 2.0"
+      title: 🎮 ¡JUEGO INICIADO!
+      map-field: 🗺️ Mapa
+      mode-field: 🕹️ Modo
+      killer-field: 🩸 Killer
+      survivors-field: 👥 Survivors
+      footer: Mistaken Tracking • LIRIC-MISTAKEN 2.0
     end:
-      title: "🏁 ¡PARTIDA TERMINADA!"
-      result-text: "Resultado:"
-      map-field: "🗺️ Mapa"
-      winner-field: "🏆 Ganador"
-      survived-field: "🚪 Sobrevivieron"
-      footer: "Mistaken Tracking • Sesión finalizada"
-
-# --- Server Architecture ---
-# NETWORK_LOBBY: Only for purchases and stats (No gameplay).
-# GAME_SERVER: Slave server dedicated to gameplay.
-# MULTIARENA: All-in-one server (Lobby + isolated gameplay arenas).
-server-mode: "MULTIARENA"
-proxy-lobby-server: "lobby" # Only used if server-mode is "VELOCITY"
-proxy-arena-server: "arenas" 
-
-# --- Stamina System (EXP) ---
+      title: 🏁 ¡PARTIDA TERMINADA!
+      result-text: 'Resultado:'
+      map-field: 🗺️ Mapa
+      winner-field: 🏆 Ganador
+      survived-field: 🚪 Sobrevivieron
+      footer: Mistaken Tracking • Sesión finalizada
+server-mode: MULTIARENA
+proxy-lobby-server: lobby
+proxy-arena-server: arenas
 stamina:
-  loss-survivor: 1.0 # Loss per 0.25s running
+  loss-survivor: 1.0
   loss-killer: 2.0
-  recovery-rate: 1.5 # Recovery per 0.25s walking/idle
-  exhaustion-slowness-level: 1 # Slowness level at 0% stamina
-
-# --- Combat & Gameplay Balance ---
+  recovery-rate: 1.5
+  exhaustion-slowness-level: 1
 gameplay:
   killer:
     damage: 2.9
@@ -64,113 +46,115 @@ gameplay:
     kill: 50.0
     win-killer: 500.0
     win-survivor: 200.0
-
-# --- Visuals & Aesthetics ---
 visuals:
-  bossbar-style: "SOLID" # SOLID, SEGMENTED_6, 10, 12, 20
-  vote-format: "<white>{map}</white> - <yellow>({votes})</yellow><newline>"
-
-# --- Database ---
+  bossbar-style: SOLID
+  vote-format: <white>{map}</white> - <yellow>({votes})</yellow><newline>
 database:
-  type: "h2" # Options: mysql, postgresql, h2
+  type: h2
   mysql:
-    host: "localhost"
+    host: localhost
     port: 3306
-    database: "mistaken"
-    username: "root"
-    password: ""
+    database: mistaken
+    username: root
+    password: ''
   postgresql:
-    host: "localhost"
+    host: localhost
     port: 5432
-    database: "mistaken"
-    username: "postgres"
-    password: ""
+    database: mistaken
+    username: postgres
+    password: ''
   pool:
     maximum-pool-size: 10
     minimum-idle: 2
-    max-lifetime: 1800000 # 30 mins
+    max-lifetime: 1800000
     connection-timeout: 30000
-
-# --- Dynamic Music Engine ---
 music:
   enabled: true
   volume: 0.3
   pitch: 1.0
-  # Shared playlist for Lobby and Voting phases
-  # id: Sound name (Minecraft or Custom) | duration: Length in seconds
   playlist:
-    - id: "mistaken:charliehere"
-      duration: 149
-    - id: "mistaken:1"
-      duration: 125
-    - id: "mistaken:2"
-      duration: 123
-    - id: "mistaken:apple"
-      duration: 155
-    - id: "mistaken:you"
-      duration: 182
-    - id: "mistaken:candy"
-      duration: 150
-
-# --- Generator Settings (Mistaken-Gen) ---
-generator-block: "RAW_IRON_BLOCK"
+  - id: mistaken:charliehere
+    duration: 149
+  - id: mistaken:1
+    duration: 125
+  - id: mistaken:2
+    duration: 123
+  - id: mistaken:apple
+    duration: 155
+  - id: mistaken:you
+    duration: 182
+  - id: mistaken:candy
+    duration: 150
+generator-block: RAW_IRON_BLOCK
 repair-amount: 10
 rewards:
   commands:
-    - "eco give %player% 500"
-    - "msg %player% &a&l[!] &fHas recibido &6500 monedas &fpor tu trabajo."
+  - eco give %player% 500
+  - msg %player% &a&l[!] &fHas recibido &6500 monedas &fpor tu trabajo.
 sounds:
-  repair: "BLOCK_ANVIL_USE"
-  complete: "UI_TOAST_CHALLENGE_COMPLETE"
-  memory-show: "BLOCK_NOTE_BLOCK_HARP"
-  memory-hide: "BLOCK_NOTE_BLOCK_CHIME"
-
+  repair: BLOCK_ANVIL_USE
+  complete: UI_TOAST_CHALLENGE_COMPLETE
+  memory-show: BLOCK_NOTE_BLOCK_HARP
+  memory-hide: BLOCK_NOTE_BLOCK_CHIME
 messages:
-  prefix: "<blue><bold>[Mistaken-Gen]</bold></blue> "
-  already-completed: "<green>This generator is already at 100%!"
-  no-killer: "<red><bold>[!]</bold> Killers cannot repair, your mission is to hunt!"
-  success: "<green><bold>[!]</bold> <white>Generator successfully powered! You received your rewards."
-  fail-click: "<red><bold>[!]</bold> <white>Fake ingot! Progress dropped by 10%."
-
-# --- Persistence ---
+  prefix: '<blue><bold>[Mistaken-Gen]</bold></blue> '
+  already-completed: <green>This generator is already at 100%!
+  no-killer: <red><bold>[!]</bold> Killers cannot repair, your mission is to hunt!
+  success: <green><bold>[!]</bold> <white>Generator successfully powered! You received
+    your rewards.
+  fail-click: <red><bold>[!]</bold> <white>Fake ingot! Progress dropped by 10%.
 settings:
   lobby:
-    world: "world"
-    x: 0.0
-    y: 64.0
-    z: 0.0
-    yaw: 0.0
-    pitch: 0.0
-
-  # Survivor flashlight (F key). Fake client-side LIGHT blocks along the look ray.
+    world: Mistaken
+    x: 317.49091333512126
+    y: 54.0
+    z: 153.5797921360857
+    yaw: 2.069739
+    pitch: 4.7378817
   flashlight:
-    # Max beam length in blocks.
     range: 8.0
-    # How many light blocks are placed along the beam.
     points: 3
-    # Players within this radius also receive the light: the flashlight gives you away.
     viewer-radius: 32.0
-
-# --- Animations ---
+nametags:
+  ingame:
+    lines:
+    - "%color%%name%"
+    - "<red>HP: %health%"
+    size: 1.0
+    background-color: "0,0,0,0"
+    shadow: true
+  global:
+    lines:
+    - "<gray>%name%"
+    size: 1.0
+    background-color: "0,0,0,0"
+    shadow: false
 animations:
   killer:
-    ataque: "ataque"
-    run: "run"
-    walk: "walk"
-    jump: "jump"
-    idle: "estiramiento"
-    stun: "stun"
+    ataque: ataque
+    run: run
+    walk: walk
+    jump: jump
+    idle: estiramiento
+    stun: stun
   survivor:
-    ataque: "ataque"
-    run: "run"
-    walk: "walk"
-    jump: "jump"
-    idle: "estiramiento"
-    stun: "stun"
+    ataque: ataque
+    run: run
+    walk: walk
+    jump: jump
+    idle: estiramiento
+    stun: stun
   slasher:
-    ataque: "slasher_ataque"
-    run: "slasher_run"
-    walk: "slasher_walk"
-    jump: "slasher_jump"
-    idle: "slasher_idle"
-    stun: "slasher_stun"
+    ataque: slasher_ataque
+    run: slasher_run
+    walk: slasher_walk
+    jump: slasher_jump
+    idle: slasher_idle
+    stun: stun
+  colorandelectricity:
+    ataque: ataque_asesino_3
+    run: crawl
+    walk: killer_walk_default
+    jump: slasher_jump
+    idle: slasher_idle
+    stun: stun

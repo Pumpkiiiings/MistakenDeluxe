@@ -16,6 +16,7 @@ import java.util.UUID
 class NameTagManager(private val plugin: Mistaken) {
 
     private val displays = HashMap<UUID, TextDisplay>()
+    private val hasPAPI by lazy { Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null }
 
     init {
         setupGlobalTeam()
@@ -43,19 +44,11 @@ class NameTagManager(private val plugin: Mistaken) {
         }
 
         val display = player.world.spawn(player.location, TextDisplay::class.java) { entity ->
-            entity.isSeeThrough = false // No se ve a través de las paredes
-            entity.billboard = Billboard.CENTER // Siempre mira a la cámara
+            entity.isSeeThrough = false
+            entity.billboard = Billboard.CENTER
             entity.isDefaultBackground = false
             entity.backgroundColor = org.bukkit.Color.fromARGB(0, 0, 0, 0)
-            entity.text(ColorTranslator.translate("<gray>${player.name}"))
-            
-            // Subir el texto aprox 2.3 bloques
-            entity.transformation = Transformation(
-                Vector3f(0f, 2.3f, 0f),
-                AxisAngle4f(0f, 0f, 0f, 1f),
-                Vector3f(1f, 1f, 1f),
-                AxisAngle4f(0f, 0f, 0f, 1f)
-            )
+            entity.text(net.kyori.adventure.text.Component.empty())
         }
         
         player.addPassenger(display)
@@ -90,18 +83,51 @@ class NameTagManager(private val plugin: Mistaken) {
         }
 
         val session = plugin.sessionManager.getSession(player)
-        var color = "<white>"
-        
-        if (session != null) {
-            if (session.isKiller(player.uniqueId)) {
-                color = "<red>"
-            } else {
-                color = "<green>"
-            }
+        val isIngame = session != null
+
+        val configPath = if (isIngame) "nametags.ingame" else "nametags.global"
+
+        val lines = plugin.config.getStringList("$configPath.lines")
+        val size = plugin.config.getDouble("$configPath.size", 1.0).toFloat()
+        val shadow = plugin.config.getBoolean("$configPath.shadow", false)
+        val bgColorStr = plugin.config.getString("$configPath.background-color", "0,0,0,0") ?: "0,0,0,0"
+
+        val bgParts = bgColorStr.split(",").map { it.trim().toIntOrNull() ?: 0 }
+        val bgColor = org.bukkit.Color.fromARGB(
+            if (bgParts.isNotEmpty()) bgParts[0] else 0,
+            if (bgParts.size > 1) bgParts[1] else 0,
+            if (bgParts.size > 2) bgParts[2] else 0,
+            if (bgParts.size > 3) bgParts[3] else 0
+        )
+
+        val colorStr = if (isIngame) {
+            if (session!!.isKiller(player.uniqueId)) "<red>" else "<green>"
         } else {
-            color = "<gray>"
+            "<gray>"
         }
 
-        display.text(ColorTranslator.translate("$color${player.name}"))
+        val health = String.format(java.util.Locale.US, "%.1f", player.health)
+
+        val processedLines = lines.map { line ->
+            var currentLine = line
+                .replace("%name%", player.name)
+                .replace("%color%", colorStr)
+                .replace("%health%", health)
+            
+            if (hasPAPI) {
+                currentLine = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, currentLine)
+            }
+            currentLine
+        }.joinToString("<br>")
+
+        display.text(ColorTranslator.translate(processedLines))
+        display.backgroundColor = bgColor
+        display.isShadowed = shadow
+        display.transformation = Transformation(
+            Vector3f(0f, 2.3f, 0f),
+            AxisAngle4f(0f, 0f, 0f, 1f),
+            Vector3f(size, size, size),
+            AxisAngle4f(0f, 0f, 0f, 1f)
+        )
     }
 }
