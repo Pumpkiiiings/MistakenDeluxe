@@ -145,13 +145,6 @@ object ScoreboardManager {
                 objective.numberFormat(NumberFormat.blank())
             } catch (ignored: Throwable) {}
 
-            var hideTeam = scoreboard.getTeam("mistaken_hide")
-            if (hideTeam == null) {
-                hideTeam = scoreboard.registerNewTeam("mistaken_hide")
-                hideTeam.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, org.bukkit.scoreboard.Team.OptionStatus.NEVER)
-            }
-            Bukkit.getOnlinePlayers().forEach { hideTeam.addEntry(it.name) }
-
             val ctx = ScoreboardContext(scoreboard, objective)
             player.scoreboard = scoreboard
             ctx
