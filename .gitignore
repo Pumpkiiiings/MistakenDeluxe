@@ -11,10 +11,7 @@ DOCS_EN/
 DOCS_ES/
 
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -48,7 +45,9 @@ bin/
 .DS_Store
 
 ### Scripts, Reports & Backups ###
+comment_cleaner.py
 comment_cleanup.py
 COMMENT_CLEANUP_REPORT.md
 REFACTOR_REPORT.md
 .cleanup-backup/
+Test.kt
