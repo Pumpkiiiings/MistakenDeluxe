@@ -372,14 +372,28 @@ class Mistaken : JavaPlugin() {
     }
 
     private fun loadLobbyLocation() {
-        val section = config.getConfigurationSection("settings.lobby") ?: return
+        val section = config.getConfigurationSection("settings.lobby")
+        if (section == null) {
+            lobbyLocation = server.worlds[0].spawnLocation
+            return
+        }
+
         val worldName = section.getString("world", "world") ?: "world"
-        val world = server.getWorld(worldName) ?: return
+        val world = server.getWorld(worldName)
+        
+        if (world == null) {
+            componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("[WARN] El mundo del lobby ('$worldName') no existe. Usando el spawn del mundo por defecto."))
+            lobbyLocation = server.worlds[0].spawnLocation
+            return
+        }
 
         lobbyLocation = Location(
             world,
-            section.getDouble("x"), section.getDouble("y"), section.getDouble("z"),
-            section.getDouble("yaw").toFloat(), section.getDouble("pitch").toFloat()
+            section.getDouble("x", world.spawnLocation.x),
+            section.getDouble("y", world.spawnLocation.y),
+            section.getDouble("z", world.spawnLocation.z),
+            section.getDouble("yaw", world.spawnLocation.yaw.toDouble()).toFloat(),
+            section.getDouble("pitch", world.spawnLocation.pitch.toDouble()).toFloat()
         )
     }
 
