@@ -62,9 +62,11 @@ class NameTagManager(private val plugin: Mistaken) {
 
         // Destroy the virtual entity for all viewers
         val destroyPacket = WrapperPlayServerDestroyEntities(tag.entityId)
+        val teamRemovePacket = WrapperPlayServerTeams(TEAM_NAME, WrapperPlayServerTeams.TeamMode.REMOVE_ENTITIES, null as WrapperPlayServerTeams.ScoreBoardTeamInfo?, player.name)
+        
         Bukkit.getOnlinePlayers().forEach { viewer ->
             PacketEvents.getAPI().playerManager.sendPacket(viewer, destroyPacket)
-            sendTeamHidePacket(viewer, player.name, isAdd = false)
+            PacketEvents.getAPI().playerManager.sendPacket(viewer, teamRemovePacket)
         }
 
         // Remove from hide team on all scoreboards
@@ -148,13 +150,24 @@ class NameTagManager(private val plugin: Mistaken) {
 
         val metadataPacket = WrapperPlayServerEntityMetadata(tag.entityId, metadata)
         
-        // Use SetPassengers for 100% smooth movement (no teleport interpolation lag)
+        // Use SetPassengers for 100% smooth movement
         val passengerIds = player.passengers.map { it.entityId }.toIntArray() + tag.entityId
         val passengerPacket = WrapperPlayServerSetPassengers(player.entityId, passengerIds)
 
+        // Pre-create team packets to avoid N*N allocations
+        val teamInfo = WrapperPlayServerTeams.ScoreBoardTeamInfo(
+            net.kyori.adventure.text.Component.empty(), null, null,
+            WrapperPlayServerTeams.NameTagVisibility.NEVER,
+            WrapperPlayServerTeams.CollisionRule.ALWAYS, null,
+            WrapperPlayServerTeams.OptionData.NONE
+        )
+        val teamCreatePacket = WrapperPlayServerTeams(TEAM_NAME, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, player.name)
+        val teamAddPacket = WrapperPlayServerTeams(TEAM_NAME, WrapperPlayServerTeams.TeamMode.ADD_ENTITIES, null as WrapperPlayServerTeams.ScoreBoardTeamInfo?, player.name)
+
         Bukkit.getOnlinePlayers().forEach { viewer ->
-            // Re-apply packet-level team hiding continuously in case Observer overrides the scoreboard
-            sendTeamHidePacket(viewer, player.name, isAdd = true)
+            // Send team hide packets continuously in case Observer overrides the scoreboard
+            PacketEvents.getAPI().playerManager.sendPacket(viewer, teamCreatePacket)
+            PacketEvents.getAPI().playerManager.sendPacket(viewer, teamAddPacket)
             
             if (!tag.confirmedViewers.contains(viewer.uniqueId)) {
                 spawnForViewer(player, viewer, tag)
@@ -203,33 +216,7 @@ class NameTagManager(private val plugin: Mistaken) {
         tag.confirmedViewers.add(viewer.uniqueId)
     }
 
-    /**
-     * Send a packet-level team to a viewer that hides the vanilla nametag for [targetName].
-     * This bypasses all Bukkit scoreboard conflicts and Observer modifications.
-     */
-    private fun sendTeamHidePacket(viewer: Player, targetName: String, isAdd: Boolean) {
-        if (isAdd) {
-            val teamInfo = WrapperPlayServerTeams.ScoreBoardTeamInfo(
-                net.kyori.adventure.text.Component.empty(),
-                null,
-                null,
-                WrapperPlayServerTeams.NameTagVisibility.NEVER,
-                WrapperPlayServerTeams.CollisionRule.ALWAYS,
-                null,
-                WrapperPlayServerTeams.OptionData.NONE
-            )
-            val createPacket = WrapperPlayServerTeams(TEAM_NAME, WrapperPlayServerTeams.TeamMode.ADD_ENTITIES, null as WrapperPlayServerTeams.ScoreBoardTeamInfo?, targetName)
-            val infoPacket = WrapperPlayServerTeams(TEAM_NAME, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, targetName)
-            try {
-                PacketEvents.getAPI().playerManager.sendPacket(viewer, infoPacket)
-            } catch (_: Exception) {
-                PacketEvents.getAPI().playerManager.sendPacket(viewer, createPacket)
-            }
-        } else {
-            val removePacket = WrapperPlayServerTeams(TEAM_NAME, WrapperPlayServerTeams.TeamMode.REMOVE_ENTITIES, null as WrapperPlayServerTeams.ScoreBoardTeamInfo?, targetName)
-            PacketEvents.getAPI().playerManager.sendPacket(viewer, removePacket)
-        }
-    }
+
 
     private fun parseBackgroundColor(str: String): Int {
         if (str == "transparent") return 0
