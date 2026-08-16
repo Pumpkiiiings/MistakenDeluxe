@@ -8,7 +8,6 @@ import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.*
 import liric.mistaken.Mistaken
-import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import pumpking.lib.color.ColorTranslator
@@ -67,6 +66,7 @@ class NameTagManager(private val plugin: Mistaken) {
         val destroyPacket = WrapperPlayServerDestroyEntities(tag.entityId)
         Bukkit.getOnlinePlayers().forEach { viewer ->
             PacketEvents.getAPI().playerManager.sendPacket(viewer, destroyPacket)
+            sendTeamHidePacket(viewer, player.name, isAdd = false)
         }
 
         // Remove from hide team on all scoreboards
@@ -107,8 +107,8 @@ class NameTagManager(private val plugin: Mistaken) {
 
         val bgColorInt = parseBackgroundColor(bgColorStr)
 
-        val textComponent: Component = if (isHidden) {
-            Component.empty()
+        val textComponent: net.kyori.adventure.text.Component = if (isHidden) {
+            net.kyori.adventure.text.Component.empty()
         } else {
             val colorStr = if (isIngame) {
                 if (session!!.isKiller(player.uniqueId)) "<red>" else "<green>"
@@ -149,14 +149,24 @@ class NameTagManager(private val plugin: Mistaken) {
         metadata.add(EntityData(17, EntityDataTypes.FLOAT, 1.0f))
 
         val metadataPacket = WrapperPlayServerEntityMetadata(tag.entityId, metadata)
+        
+        val loc = player.location
+        val teleportPacket = WrapperPlayServerEntityTeleport(
+            tag.entityId,
+            com.github.retrooper.packetevents.protocol.world.Location(loc.x, loc.y, loc.z, 0f, 0f),
+            false
+        )
 
         Bukkit.getOnlinePlayers().forEach { viewer ->
+            // Re-apply packet-level team hiding continuously in case Observer overrides the scoreboard
+            sendTeamHidePacket(viewer, player.name, isAdd = true)
+            
             if (viewer.uniqueId != player.uniqueId) {
-                // Ensure passenger chain is intact
                 if (!tag.confirmedViewers.contains(viewer.uniqueId)) {
                     spawnForViewer(player, viewer, tag)
                 }
                 PacketEvents.getAPI().playerManager.sendPacket(viewer, metadataPacket)
+                PacketEvents.getAPI().playerManager.sendPacket(viewer, teleportPacket)
             }
         }
     }
@@ -169,7 +179,7 @@ class NameTagManager(private val plugin: Mistaken) {
             tag.entityId,
             UUID.randomUUID(),
             EntityTypes.TEXT_DISPLAY,
-            com.github.retrooper.packetevents.protocol.world.Location(loc.x, loc.y + 1.8, loc.z, 0f, 0f),
+            com.github.retrooper.packetevents.protocol.world.Location(loc.x, loc.y, loc.z, 0f, 0f),
             0f,
             0,
             Vector3d(0.0, 0.0, 0.0)
@@ -180,38 +190,47 @@ class NameTagManager(private val plugin: Mistaken) {
         // Index 15: Display entity flags — 0x03 = Billboard CENTER
         metadata.add(EntityData(15, EntityDataTypes.BYTE, 0x03.toByte()))
         // Index 23: Text
-        metadata.add(EntityData(23, EntityDataTypes.ADV_COMPONENT, Component.empty()))
+        metadata.add(EntityData(23, EntityDataTypes.ADV_COMPONENT, net.kyori.adventure.text.Component.empty()))
         // Index 25: Background transparent
         metadata.add(EntityData(25, EntityDataTypes.INT, 0))
         // Index 11: Translation
-        metadata.add(EntityData(11, EntityDataTypes.VECTOR3F, Vector3f(0f, 0.3f, 0f)))
+        metadata.add(EntityData(11, EntityDataTypes.VECTOR3F, Vector3f(0f, 2.1f, 0f)))
         // Index 17: View range
         metadata.add(EntityData(17, EntityDataTypes.FLOAT, 1.0f))
 
         val metadataPacket = WrapperPlayServerEntityMetadata(tag.entityId, metadata)
 
-        // Mount as passenger of the owner
-        val passengerPacket = WrapperPlayServerSetPassengers(owner.entityId, intArrayOf(tag.entityId))
-
         PacketEvents.getAPI().playerManager.sendPacket(viewer, spawnPacket)
         PacketEvents.getAPI().playerManager.sendPacket(viewer, metadataPacket)
-        PacketEvents.getAPI().playerManager.sendPacket(viewer, passengerPacket)
 
         tag.confirmedViewers.add(viewer.uniqueId)
     }
 
     /**
-     * Ensure a "mistaken_hide" team with NAME_TAG_VISIBILITY=NEVER exists on [scoreboard]
-     * and add [playerName] to it.
+     * Send a packet-level team to a viewer that hides the vanilla nametag for [targetName].
+     * This bypasses all Bukkit scoreboard conflicts and Observer modifications.
      */
-    private fun addToHideTeam(scoreboard: org.bukkit.scoreboard.Scoreboard, playerName: String) {
-        var team = scoreboard.getTeam("mistaken_hide")
-        if (team == null) {
-            team = scoreboard.registerNewTeam("mistaken_hide")
-            team.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, org.bukkit.scoreboard.Team.OptionStatus.NEVER)
-        }
-        if (!team.hasEntry(playerName)) {
-            team.addEntry(playerName)
+    private fun sendTeamHidePacket(viewer: Player, targetName: String, isAdd: Boolean) {
+        if (isAdd) {
+            val teamInfo = WrapperPlayServerTeams.ScoreBoardTeamInfo(
+                net.kyori.adventure.text.Component.empty(),
+                null,
+                null,
+                WrapperPlayServerTeams.NameTagVisibility.NEVER,
+                WrapperPlayServerTeams.CollisionRule.ALWAYS,
+                null,
+                WrapperPlayServerTeams.OptionData.NONE
+            )
+            val createPacket = WrapperPlayServerTeams(TEAM_NAME, WrapperPlayServerTeams.TeamMode.ADD_ENTITIES, null as WrapperPlayServerTeams.ScoreBoardTeamInfo?, targetName)
+            val infoPacket = WrapperPlayServerTeams(TEAM_NAME, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, targetName)
+            try {
+                PacketEvents.getAPI().playerManager.sendPacket(viewer, infoPacket)
+            } catch (_: Exception) {
+                PacketEvents.getAPI().playerManager.sendPacket(viewer, createPacket)
+            }
+        } else {
+            val removePacket = WrapperPlayServerTeams(TEAM_NAME, WrapperPlayServerTeams.TeamMode.REMOVE_ENTITIES, null as WrapperPlayServerTeams.ScoreBoardTeamInfo?, targetName)
+            PacketEvents.getAPI().playerManager.sendPacket(viewer, removePacket)
         }
     }
 
@@ -232,4 +251,19 @@ class NameTagManager(private val plugin: Mistaken) {
         val entityId: Int,
         val confirmedViewers: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
     )
+
+    /**
+     * Ensure a "mistaken_hide" team with NAME_TAG_VISIBILITY=NEVER exists on [scoreboard]
+     * and add [playerName] to it.
+     */
+    private fun addToHideTeam(scoreboard: org.bukkit.scoreboard.Scoreboard, playerName: String) {
+        var team = scoreboard.getTeam("mistaken_hide")
+        if (team == null) {
+            team = scoreboard.registerNewTeam("mistaken_hide")
+            team.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, org.bukkit.scoreboard.Team.OptionStatus.NEVER)
+        }
+        if (!team.hasEntry(playerName)) {
+            team.addEntry(playerName)
+        }
+    }
 }
