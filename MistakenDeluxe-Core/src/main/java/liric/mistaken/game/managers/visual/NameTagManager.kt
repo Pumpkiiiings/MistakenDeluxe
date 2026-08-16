@@ -126,7 +126,7 @@ class NameTagManager(private val plugin: Mistaken) {
                     currentLine = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, currentLine)
                 }
                 currentLine
-            }.joinToString("<br>")
+            }.joinToString("\n")
 
             ColorTranslator.translate(processedLines)
         }
@@ -138,13 +138,15 @@ class NameTagManager(private val plugin: Mistaken) {
         metadata.add(EntityData(23, EntityDataTypes.ADV_COMPONENT, textComponent))
         // Index 25: Background color (INT) — ARGB packed
         metadata.add(EntityData(25, EntityDataTypes.INT, bgColorInt))
-        // Index 27: Text opacity/flags — bit 0x08 = shadow
+        // Index 27: Text flags — bit 0x01 = shadow
         val textFlags: Byte = if (shadow) 0x01.toByte() else 0x00.toByte()
         metadata.add(EntityData(27, EntityDataTypes.BYTE, textFlags))
         // Index 11: Translation (VECTOR3F) — Y offset above head
         metadata.add(EntityData(11, EntityDataTypes.VECTOR3F, Vector3f(0f, 0.3f, 0f)))
         // Index 12: Scale (VECTOR3F)
         metadata.add(EntityData(12, EntityDataTypes.VECTOR3F, Vector3f(size, size, size)))
+        // Index 17: View range (FLOAT) — 1.0 = ~64 blocks default
+        metadata.add(EntityData(17, EntityDataTypes.FLOAT, 1.0f))
 
         val metadataPacket = WrapperPlayServerEntityMetadata(tag.entityId, metadata)
 
@@ -183,6 +185,8 @@ class NameTagManager(private val plugin: Mistaken) {
         metadata.add(EntityData(25, EntityDataTypes.INT, 0))
         // Index 11: Translation
         metadata.add(EntityData(11, EntityDataTypes.VECTOR3F, Vector3f(0f, 0.3f, 0f)))
+        // Index 17: View range
+        metadata.add(EntityData(17, EntityDataTypes.FLOAT, 1.0f))
 
         val metadataPacket = WrapperPlayServerEntityMetadata(tag.entityId, metadata)
 

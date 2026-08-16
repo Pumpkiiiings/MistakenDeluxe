@@ -130,6 +130,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
             player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
             player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
             player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
+            player.getAttribute(Attribute.SCALE)?.baseValue = 1.0
 
             liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(player, false)
         }
