@@ -47,7 +47,7 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
                 val arenas = plugin.arenaManager.getArenas()
                 if (arenas.isEmpty()) "No hay mapas configurados"
                 else {
-                    val format = plugin.config.getString("visuals.vote-format", "<white>{map}</white> - <yellow>({votes})</yellow><newline>") ?: "<white>{map}</white> - <yellow>({votes})</yellow><newline>"
+                    val format = plugin.config.getString("visuals.vote-format", "<gray>-</gray> <white>{map}</white> <yellow>({votes})</yellow><newline>") ?: "<gray>-</gray> <white>{map}</white> <yellow>({votes})</yellow><newline>"
                     val builder = StringBuilder()
                     arenas.keys.forEach { mapName ->
                         val votes = session?.voteManager?.getVotesForMap(mapName) ?: 0

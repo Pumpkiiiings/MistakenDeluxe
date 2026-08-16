@@ -46,30 +46,14 @@ global:
 
 prelobby:
   components:
-    waiting_players:
-      type: TEXT
-      alignment: MIDDLE_CENTER
-      text_alignment: CENTER
-      offset_x: 0
-      offset_y: -40
-      scale: 1.0
-      content: "<white>Esperando jugadores...</white>"
-    vote:
-      type: TEXT
-      alignment: MIDDLE_CENTER
-      text_alignment: CENTER
-      offset_x: 0
-      offset_y: -20
-      scale: 1.0
-      content: "<white>Usa /vote</white>"
     vote_maps:
       type: TEXT
-      alignment: MIDDLE_CENTER
-      text_alignment: CENTER
-      offset_x: 0
-      offset_y: 10
+      alignment: MIDDLE_LEFT
+      text_alignment: LEFT
+      offset_x: 20
+      offset_y: -40
       scale: 1.0
-      content: "<white>%mistaken_votes%</white>"
+      content: "<gold><bold>Votación</bold></gold>\n<gray>Usa /votar para elegir el mapa.</gray>\n\n<white>%mistaken_votes%</white>"
 
 ingame:
   components:
