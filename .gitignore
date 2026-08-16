@@ -1,6 +1,5 @@
 .gradle
 build/
-!gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 .kotlin
@@ -51,3 +50,4 @@ COMMENT_CLEANUP_REPORT.md
 REFACTOR_REPORT.md
 .cleanup-backup/
 Test.kt
+gradle/wrapper/
