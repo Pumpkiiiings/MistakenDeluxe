@@ -4,6 +4,7 @@ import liric.mistaken.level.LevelAddonPlugin
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import org.bukkit.plugin.Plugin
 import java.lang.reflect.Method
 
 class UltimateAdvancementHook(private val plugin: LevelAddonPlugin) {
@@ -34,7 +35,7 @@ class UltimateAdvancementHook(private val plugin: LevelAddonPlugin) {
 
     private fun setupReflection() {
         val uaaClass = Class.forName("com.frengor.ultimateadvancementapi.UltimateAdvancementAPI")
-        val getInstanceMethod = uaaClass.getMethod("getInstance", org.bukkit.plugin.Plugin::class.java)
+        val getInstanceMethod = uaaClass.getMethod("getInstance", Plugin::class.java)
         uaaInstance = getInstanceMethod.invoke(null, plugin)
 
         createTabMethod = uaaClass.getMethod("createAdvancementTab", String::class.java)

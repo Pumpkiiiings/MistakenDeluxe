@@ -14,7 +14,9 @@ class LevelCommand(private val plugin: LevelAddonPlugin) : BasicCommand {
     override fun execute(stack: CommandSourceStack, args: Array<String>) {
         val sender = stack.sender
         if (sender !is Player) {
-            sender.sendMessage(mm.deserialize("<red>This command is for players only.</red>"))
+            val prefix = plugin.messagesConfig.getString("prefix", "<gradient:#8e2de2:#4a00e0>[Level]</gradient> ")!!
+            val msg = plugin.messagesConfig.getString("messages.only-players", "<red>This command is for players only.</red>")!!.replace("<prefix>", prefix)
+            sender.sendMessage(mm.deserialize(msg))
             return
         }
 

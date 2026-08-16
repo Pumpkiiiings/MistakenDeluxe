@@ -26,6 +26,8 @@ import org.bukkit.Bukkit
 import java.io.File
 import liric.mistaken.level.config.MenuConfig
 import liric.mistaken.level.config.XpSourcesConfig
+import liric.mistaken.level.menu.ProgressionMenu
+import org.bukkit.configuration.file.YamlConfiguration
 
 class LevelAddonPlugin : JavaPlugin() {
 
@@ -50,6 +52,9 @@ class LevelAddonPlugin : JavaPlugin() {
     lateinit var menuConfig: MenuConfig
         private set
 
+    lateinit var messagesConfig: YamlConfiguration
+        private set
+
     private lateinit var databaseProvider: HikariDatabaseManager
 
     override fun onEnable() {
@@ -70,6 +75,12 @@ class LevelAddonPlugin : JavaPlugin() {
 
         menuConfig = MenuConfig(this)
         menuConfig.load()
+
+        val file = File(dataFolder, "messages.yml")
+        if (!file.exists()) {
+            saveResource("messages.yml", false)
+        }
+        messagesConfig = YamlConfiguration.loadConfiguration(file)
 
         // Init Database
         // For simplicity we will assume SQLite if config is SQLITE

@@ -43,7 +43,7 @@ class GameLoopTask(private val game: GameSession) {
                             }
                         }
                         GameState.BREAK -> {
-                            // Si alguien se sale y ya no hay suficientes personas, abortar misión
+                            
                             if (validCount < minPlayers && !game.forceStart) {
                                 game.stateController.resetToLobby("voting.not-enough-players")
                             } else if (game.timer <= 0) {

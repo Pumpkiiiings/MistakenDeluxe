@@ -185,24 +185,42 @@ object MistakenDebugCommand {
         // --- LMS DEBUG ---
         rootNode.then(
             Commands.literal("lms")
-            .then(Commands.literal("start").executes { ctx ->
-                val p = ctx.source.sender as? Player ?: return@executes 0
-                
-                // Flash blanco inicial y vibración
-                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 255, 255, 0.9f, 30)
-                liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.5f, 40)
-                
-                // Música (asume default)
-                p.playSound(p.location, "mistaken:lms", org.bukkit.SoundCategory.RECORDS, 1f, 1f)
-                
-                // Aplicar el filtro rojo constante después del flash blanco
-                p.scheduler.runDelayed(plugin, Consumer { _ ->
-                    liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) // 1 minuto
-                }, null, 30L)
-                
-                p.sendMessage("§a[!] Efectos y música de LMS iniciados (Duración prueba: 1 min).")
-                1
-            })
+            .then(
+                Commands.literal("start").executes { ctx ->
+                    val p = ctx.source.sender as? Player ?: return@executes 0
+                    
+                    // Flash blanco inicial y vibración
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 255, 255, 0.9f, 30)
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.5f, 40)
+                    
+                    // Música (asume default)
+                    p.playSound(p.location, "mistaken:lms", org.bukkit.SoundCategory.RECORDS, 1f, 1f)
+                    
+                    // Aplicar el filtro rojo constante después del flash blanco
+                    p.scheduler.runDelayed(plugin, Consumer { _ ->
+                        liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) // 1 minuto
+                    }, null, 30L)
+                    
+                    p.sendMessage("§a[!] Efectos y música de LMS iniciados (Duración prueba: 1 min).")
+                    1
+                }
+                .then(Commands.literal("all").executes { ctx ->
+                    val sender = ctx.source.sender
+                    Bukkit.getOnlinePlayers().forEach { p ->
+                        p.stopAllSounds()
+                        p.scheduler.runDelayed(plugin, Consumer { _ ->
+                            liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 255, 255, 0.9f, 30)
+                            liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.5f, 40)
+                            p.playSound(p.location, "mistaken:lms", org.bukkit.SoundCategory.RECORDS, 1f, 1f)
+                            p.scheduler.runDelayed(plugin, Consumer { _ ->
+                                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) // 1 minuto
+                            }, null, 30L)
+                        }, null, 20L)
+                    }
+                    sender.sendMessage("§a[!] Efectos y música de LMS iniciados para todos.")
+                    1
+                })
+            )
             .then(Commands.literal("end").executes { ctx ->
                 val p = ctx.source.sender as? Player ?: return@executes 0
                 

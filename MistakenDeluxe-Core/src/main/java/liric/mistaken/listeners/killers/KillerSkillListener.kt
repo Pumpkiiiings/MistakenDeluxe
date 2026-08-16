@@ -20,11 +20,7 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import pumpking.lib.color.ColorTranslator
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * KillerSkillListener: Gesti�n de disparadores adaptada a MULTIARENA.
- * FIX: Ahora detecta la sesi�n individual del asesino para activar habilidades.
- */
+
 class KillerSkillListener(private val plugin: Mistaken) : Listener {
 
     private val mm = plugin.mm
@@ -44,7 +40,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
 
-        // Seguridad: Bloqueamos si el asesino est� muerto/especteando o en vanish
+        
         if (player.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(player)) return
 
         val slot = player.inventory.heldItemSlot
@@ -69,13 +65,14 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         if (item.type == Material.AIR) return
 
         event.isCancelled = true
+        plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
 
-        // Ejecutar habilidad mapeada din�micamente
+        // Ejecutar habilidad mapeada dinmicamente
         asesino.useSkill(player, habilidadEjecutada)
     }
 
     /**
-     * L�gica de impacto: Habilidades basadas en proyectiles (Ej: Entity 303).
+     * Lgica de impacto: Habilidades basadas en proyectiles (Ej: Entity 303).
      */
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun onProjectileHit(event: ProjectileHitEvent) {

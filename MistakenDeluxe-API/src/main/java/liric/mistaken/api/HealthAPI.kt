@@ -2,12 +2,7 @@ package liric.mistaken.api
 
 import org.bukkit.entity.Player
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * HealthAPI: Contrato maestro para la gestión de vidas y estados de congelación.
- * Esta interfaz permite que las habilidades de asesinos y supervivientes interactúen
- * con el sistema de salud personalizado sin acoplamiento fuerte.
- */
+
 interface HealthAPI {
 
     /**

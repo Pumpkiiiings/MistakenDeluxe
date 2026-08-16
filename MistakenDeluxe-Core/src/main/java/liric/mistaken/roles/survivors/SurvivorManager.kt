@@ -10,21 +10,10 @@ import java.util.concurrent.ConcurrentHashMap
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * SurvivorManager: Gestión de clases humanas ultra-optimizada.
- * OPTIMIZADO: Paper Schedulers Nativos (Sin Corrutinas).
- */
-class SurvivorManager(private val plugin: Mistaken) {
+import liric.mistaken.roles.shared.AbstractRoleManager
 
-    private val mm = plugin.mm
 
-    // Cache de supervivientes activos (Thread-Safe)
-    private val activeSurvivors = ConcurrentHashMap<UUID, Survivor>()
-
-    // Catálogo de clases registradas
-    private val availableClasses = ConcurrentHashMap<String, Survivor>()
-    val catalogo: Map<String, Survivor> get() = availableClasses
+class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) {
 
     init {
         // Registro de Clases (Singletons)
@@ -41,15 +30,11 @@ class SurvivorManager(private val plugin: Mistaken) {
         ).forEach { registerClass(it) }
     }
 
-    private fun registerClass(superviviente: Survivor) {
+    override fun registerClass(superviviente: Survivor) {
         val config = plugin.configManager.getSurvivorConfig(superviviente.id)
         if (config.getBoolean("enabled", true)) {
             availableClasses[superviviente.id.lowercase()] = superviviente
         }
-    }
-
-    fun getClassById(id: String?): Survivor? {
-        return id?.lowercase()?.let { availableClasses[it] }
     }
 
     /**
@@ -61,13 +46,13 @@ class SurvivorManager(private val plugin: Mistaken) {
         val uuid = player.uniqueId
 
         // 1. Asignación inmediata en RAM
-        activeSurvivors[uuid] = clase
+        activeRoles[uuid] = clase
 
         // 2. Tarea diferida anclada a la entidad (Safe)
         // Se ejecuta 5 ticks (250ms) después para asegurar que el inventario esté listo
         player.scheduler.runDelayed(plugin, { task ->
-            // Verificamos si sigue siendo la misma clase (por si spameó clicks)
-            if (activeSurvivors[uuid] == clase) {
+            
+            if (activeRoles[uuid] == clase) {
                 clase.equip(player)
 
                 player.updateInventory()
@@ -85,19 +70,18 @@ class SurvivorManager(private val plugin: Mistaken) {
 
     /**
      * Remueve al superviviente.
-     * Detecta si el jugador está online para usar su Scheduler, o limpia solo la RAM si está offline.
      */
     fun removerSurvivor(player: Player) {
-        removeLogic(player.uniqueId, player)
+        removeRoleLogic(player.uniqueId, player)
     }
 
     fun removerSurvivor(uuid: UUID) {
         val player = Bukkit.getPlayer(uuid)
-        removeLogic(uuid, player)
+        removeRoleLogic(uuid, player)
     }
 
-    private fun removeLogic(uuid: UUID, player: Player?) {
-        val clase = activeSurvivors.remove(uuid) ?: return
+    override fun removeRoleLogic(uuid: UUID, player: Player?) {
+        val clase = activeRoles.remove(uuid) ?: return
 
         if (player != null && player.isOnline) {
             // ?? FOLIA FIX: Modificar inventario/efectos DEBE hacerse en el hilo de la entidad
@@ -123,31 +107,14 @@ class SurvivorManager(private val plugin: Mistaken) {
         }
     }
 
-    /**
-     * Limpieza total al terminar la partida.
-     */
-    fun cleanAll() {
-        // 1. Limpiamos a los jugadores individuales
-        val iterador = activeSurvivors.keys.iterator()
-        while (iterador.hasNext()) {
-            val uuid = iterador.next()
-            // Llamamos a la lógica de remoción (Bukkit.getPlayer maneja si es null)
-            removerSurvivor(uuid)
-            iterador.remove()
-        }
-
-        activeSurvivors.clear()
-
+    override fun cleanAll() {
+        super.cleanAll()
         plugin.componentLogger.info(ColorTranslator.translate("[INFO] [Manager] Survivor cleanup completed."))
     }
 
     // --- GETTERS ---
-    fun esSurvivorActivo(player: Player?): Boolean = player?.let { activeSurvivors.containsKey(it.uniqueId) } ?: false
-    fun getSurvivorClass(player: Player?): Survivor? = player?.let { activeSurvivors[it.uniqueId] }
+    fun esSurvivorActivo(player: Player?): Boolean = player?.let { activeRoles.containsKey(it.uniqueId) } ?: false
+    fun getSurvivorClass(player: Player?): Survivor? = player?.let { activeRoles[it.uniqueId] }
     fun getAvailableClasses(): Map<String, Survivor> = availableClasses
-
-    fun shutdown() {
-        cleanAll()
-    }
 }
 

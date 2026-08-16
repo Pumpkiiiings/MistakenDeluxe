@@ -15,19 +15,10 @@ import org.bukkit.Material
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * KillerManager: El mero jefe de los malos.
- * FIX: Memory Leaks parchados (Soporte EntityScheduler nativo sin Corrutinas).
- */
-class KillerManager(private val plugin: Mistaken) : IKillerManager {
+import liric.mistaken.roles.shared.AbstractRoleManager
 
-    private val mm = plugin.mm
 
-    val activeKillers = ConcurrentHashMap<UUID, Killer>()
-    private val availableClasses: MutableMap<String, Killer> = Collections.synchronizedMap(LinkedHashMap())
-
-    override val catalogo: Map<String, Killer> get() = availableClasses
+class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKillerManager {
 
     init {
         listOf(
@@ -64,7 +55,7 @@ class KillerManager(private val plugin: Mistaken) : IKillerManager {
         // 1. Limpieza total inmediata (Hilo Principal)
         player.inventory.clear()
         player.inventory.armorContents = arrayOfNulls(4)
-        activeKillers[uuid] = asesino
+        activeRoles[uuid] = asesino
 
         // Feedback
         player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "killer.transform",
@@ -75,7 +66,7 @@ class KillerManager(private val plugin: Mistaken) : IKillerManager {
         player.scheduler.runDelayed(
             plugin,
             Consumer { _ ->
-                if (!player.isOnline || !activeKillers.containsKey(uuid)) return@Consumer
+                if (!player.isOnline || !activeRoles.containsKey(uuid)) return@Consumer
 
                 asesino.equip(player)
 
@@ -118,54 +109,40 @@ class KillerManager(private val plugin: Mistaken) : IKillerManager {
     }
 
     fun removeKiller(player: Player) {
-        val asesino = activeKillers.remove(player.uniqueId)
+        removeRoleLogic(player.uniqueId, player)
+    }
+
+    override fun removeRoleLogic(uuid: UUID, player: Player?) {
+        val asesino = activeRoles.remove(uuid) ?: return
 
         // Limpiamos los datos del Killer
-        asesino?.cleanup(player) ?: availableClasses.values.forEach { it.cleanup(player) }
+        asesino.cleanup(player)
 
-        // Reset total de los fierros del jugador (Directo y r�pido)
-        player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
-        player.health = 20.0
-        player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
-        player.isGlowing = false
-        player.isSwimming = false
+        if (player != null && player.isOnline) {
+            
+            player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
+            player.health = 20.0
+            player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
+            player.isGlowing = false
+            player.isSwimming = false
+        }
     }
 
     fun removeAllKillers() {
-        val iterador = activeKillers.keys.iterator()
-
-        while (iterador.hasNext()) {
-            val uuid = iterador.next()
-            val player = plugin.server.getPlayer(uuid)
-
-            if (player != null && player.isOnline) {
-                removeKiller(player)
-            } else {
-                activeKillers[uuid]?.let {
-                    plugin.componentLogger.warn(ColorTranslator.translate("[WARN] [Manager] Cleaning ghost data of disconnected assassin: $uuid"))
-                }
-            }
-            iterador.remove()
-        }
-
-        activeKillers.clear()
-
-        // Le decimos a todos los asesinos que vac�en su memoria RAM interna
+        cleanAll()
+        // Le decimos a todos los asesinos que vacíen su memoria RAM interna
         availableClasses.values.forEach { asesino ->
             asesino.clearGlobalData()
         }
     }
 
     // --- GETTERS ---
-    override fun getClassById(id: String?): Killer? = id?.lowercase()?.let { availableClasses[it] }
-    fun getKillerOfPlayer(player: Player?): Killer? = player?.let { activeKillers[it.uniqueId] }
-    fun getCurrentKiller(): Player? = activeKillers.keys.firstOrNull()?.let { plugin.server.getPlayer(it) }?.takeIf { it.isOnline }
-    fun isKiller(player: Player?): Boolean = player?.let { activeKillers.containsKey(it.uniqueId) } ?: false
-    fun getAvailableClasses(): Map<String, Killer> = catalogo
+    fun getKillerOfPlayer(player: Player?): Killer? = player?.let { activeRoles[it.uniqueId] }
+    fun isKiller(player: Player?): Boolean = player?.let { activeRoles.containsKey(it.uniqueId) } ?: false
+    fun getAvailableClasses(): Map<String, Killer> = availableClasses
 
-    fun shutdown() {
+    override fun shutdown() {
         removeAllKillers()
     }
 }
-
 

@@ -9,6 +9,8 @@ import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import liric.mistaken.api.managers.ISessionManager
+import liric.mistaken.listeners.PlayerListener
+import org.bukkit.Bukkit
 import org.bukkit.GameMode
 
 class SessionManager(private val plugin: Mistaken) : ISessionManager {
@@ -42,7 +44,7 @@ class SessionManager(private val plugin: Mistaken) : ISessionManager {
 
         // 🔥 Disparar evento a la API
         val event = MistakenPlayerJoinSessionEvent(player, session)
-        org.bukkit.Bukkit.getPluginManager().callEvent(event)
+        Bukkit.getPluginManager().callEvent(event)
     }
 
     override fun leaveSession(player: Player) {
@@ -53,13 +55,13 @@ class SessionManager(private val plugin: Mistaken) : ISessionManager {
         // 🔥 Disparar evento a la API
         if (session != null) {
             val event = MistakenPlayerLeaveSessionEvent(player, session)
-            org.bukkit.Bukkit.getPluginManager().callEvent(event)
+            Bukkit.getPluginManager().callEvent(event)
         }
 
         // 🔥 FIX: Al salir de la sesión, aseguramos que el jugador se limpie completamente
         // del modo espectador y se vuelva a modo supervivencia (vital para Multiarena)
         plugin.spectatorManager.removeCustomSpectator(player)
-        player.gameMode = GameMode.SURVIVAL
+        PlayerListener.resetPlayerStatus(player)
 
         val serverMode = plugin.serverMode
 

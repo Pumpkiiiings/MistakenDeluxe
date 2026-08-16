@@ -41,7 +41,7 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                             
                             Bukkit.getScheduler().runTask(plugin, Runnable {
                                 MistakenProvider.get().sessionManager.joinSession(memberPlayer, sessionId)
-                                memberPlayer.sendMessage("§aTu party te ha metido a la partida.")
+                                pumpking.lib.service.PumpkingServiceManager.messages.send(memberPlayer, liric.mistaken.config.Messages.HOOK_PARTY_ENTER)
                                 
                                 Bukkit.getScheduler().runTaskLater(plugin, Runnable {
                                     recentlyPulled.remove(member.uniqueId)
@@ -80,7 +80,7 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                             
                             Bukkit.getScheduler().runTask(plugin, Runnable {
                                 MistakenProvider.get().sessionManager.leaveSession(memberPlayer)
-                                memberPlayer.sendMessage("§cTu party ha salido de la partida, sacando a todos...")
+                                pumpking.lib.service.PumpkingServiceManager.messages.send(memberPlayer, liric.mistaken.config.Messages.HOOK_PARTY_LEAVE)
                                 
                                 Bukkit.getScheduler().runTaskLater(plugin, Runnable {
                                     recentlyPulled.remove(member.uniqueId)
@@ -116,7 +116,7 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                         // Create Private Session
                         val arenas = plugin.arenaManager.getArenas()
                         if (arenas.isEmpty()) {
-                            player.sendMessage("§cNo hay mapas configurados para iniciar la partida.")
+                            pumpking.lib.service.PumpkingServiceManager.messages.send(player, liric.mistaken.config.Messages.HOOK_PARTY_NO_MAPS)
                             return
                         }
                         
@@ -129,7 +129,7 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                                 
                                 Bukkit.getScheduler().runTask(plugin, Runnable {
                                     MistakenProvider.get().sessionManager.joinSession(memberPlayer, session.id)
-                                    memberPlayer.sendMessage("§aTu party te ha metido a la partida privada.")
+                                    pumpking.lib.service.PumpkingServiceManager.messages.send(memberPlayer, liric.mistaken.config.Messages.HOOK_PARTY_ENTER_PRIVATE)
                                     
                                     if (member.uniqueId == player.uniqueId) {
                                         val panelItem = org.bukkit.inventory.ItemStack(org.bukkit.Material.COMMAND_BLOCK)
@@ -146,13 +146,13 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                             }
                         }
                         
-                        player.sendMessage("§e¡Has creado una partida privada! Usa el panel para configurarla.")
+                        pumpking.lib.service.PumpkingServiceManager.messages.send(player, liric.mistaken.config.Messages.HOOK_PARTY_CREATED_PRIVATE)
                         
                     } else {
-                        player.sendMessage("§cSolo el líder de la party puede crear partidas privadas.")
+                        pumpking.lib.service.PumpkingServiceManager.messages.send(player, liric.mistaken.config.Messages.HOOK_PARTY_ONLY_LEADER)
                     }
                 } else {
-                    player.sendMessage("§cNo estás en una party.")
+                    pumpking.lib.service.PumpkingServiceManager.messages.send(player, liric.mistaken.config.Messages.HOOK_PARTY_NOT_IN)
                 }
             } catch (e: Exception) {
                  plugin.logger.warning("Error al procesar /party private: \${e.message}")

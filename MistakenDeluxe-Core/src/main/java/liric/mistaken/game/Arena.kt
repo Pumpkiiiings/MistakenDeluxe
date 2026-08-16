@@ -2,11 +2,7 @@ package liric.mistaken.game
 
 import org.bukkit.Location
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * MÓDULO: Arena
- * DESCRIPCIÓN: Modelo de datos optimizado para las arenas.
- */
+
 class Arena(val name: String) {
 
     var slimeWorldName: String? = null

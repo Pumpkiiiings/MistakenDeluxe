@@ -40,11 +40,7 @@ import org.bukkit.Particle
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * Romeo: El Administrador del Mundo.
- * FIX: Finishers Aleatorios de Admin agregados.
- */
+
 class Romeo : CoreKiller(
     "romeo",
     PumpkingServiceManager.messages.getStrictString(null, "asesinos.romeo.nombre", "killers_info")

@@ -13,14 +13,7 @@ import java.io.File
 import java.util.concurrent.CompletableFuture
 import pumpking.lib.color.ColorTranslator
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * MapManager: Gestión de mundos dinámicos con AdvancedSlimePaper (ASP).
- *
- * ACTUALIZACIONES:
- * - Agregado GameRule.FALL_DAMAGE = false nativo.
- * - Threading 100% Paper-Safe (Cero crashes al cargar el mundo).
- */
+
 class MapManager(private val plugin: Mistaken) {
 
     private val asp = AdvancedSlimePaperAPI.instance()

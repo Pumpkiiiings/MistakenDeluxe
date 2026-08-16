@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.logic
+package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -153,6 +153,7 @@ class GameUIController(private val game: GameSession) {
     }
 
     fun checkHeartbeat(p: Player, killer: Player) {
+        if (p.hasPotionEffect(org.bukkit.potion.PotionEffectType.INVISIBILITY)) return
         if (p.world != killer.world) return
         val d2 = p.location.distanceSquared(killer.location)
         if (d2 <= 225.0) {

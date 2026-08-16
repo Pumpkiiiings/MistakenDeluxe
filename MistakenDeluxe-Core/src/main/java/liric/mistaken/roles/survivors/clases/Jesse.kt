@@ -24,11 +24,7 @@ import org.bukkit.configuration.file.FileConfiguration
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * Jesse (MCSM): El Héroe Protector.
- * FIX: Corrutinas eliminadas, Schedulers nativos aplicados.
- */
+
 class Jesse : Survivor(
     "jesse",
     PumpkingServiceManager.messages.getStrictString(null, "supervivientes.jesse.nombre", "survivors_info")

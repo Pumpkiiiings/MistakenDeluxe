@@ -25,35 +25,24 @@ class ScoreboardManager(private val plugin: Mistaken) {
     private val mm = plugin.mm
     private val legacy = LegacyComponentSerializer.legacySection()
 
-    private var updateTask: BukkitTask? = null
+    fun updatePlayer(player: Player) {
+        if (ObserverHook.hasObserver(player)) {
+            PumpkingScoreboardManager.removeScoreboard(player)
+            return
+        }
 
-    init {
-        startUpdateTask()
-    }
+        val config = PumpkingServiceManager.messages.getSpecificFile(player, "messages")
+        val title = config.getString("scoreboard.title") ?: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN"
+        val lines = buildLines(player)
 
-    private fun startUpdateTask() {
-        val interval = if (PumpkingScoreboardManager.supportsAnimations()) 2L else 10L
-        updateTask = plugin.server.scheduler.runTaskTimerAsynchronously(plugin, Runnable {
-            for (player in plugin.server.onlinePlayers) {
-                if (ObserverHook.hasObserver(player)) {
-                    PumpkingScoreboardManager.removeScoreboard(player)
-                    continue
-                }
+        val template = ScoreboardTemplate(
+            id = player.name,
+            title = title,
+            lines = lines,
+            animatedTitle = false
+        )
 
-                val config = PumpkingServiceManager.messages.getSpecificFile(player, "messages")
-                val title = config.getString("scoreboard.title") ?: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN"
-                val lines = buildLines(player)
-
-                val template = ScoreboardTemplate(
-                    id = player.name,
-                    title = title,
-                    lines = lines,
-                    animatedTitle = false
-                )
-
-                PumpkingScoreboardManager.registerTemplate(template)
-            }
-        }, 20L, interval)
+        PumpkingScoreboardManager.registerTemplate(template)
     }
 
     private fun buildLines(player: Player): List<String> {
@@ -147,11 +136,6 @@ class ScoreboardManager(private val plugin: Mistaken) {
         PumpkingScoreboardManager.removeScoreboard(player)
     }
 
-    /** Called when game state changes to force a re-render on the next tick. */
-    fun updatePlayer(player: Player) {
-        // PumpkingLib updates on every tick automatically.
-        // This call is kept for API compatibility but nothing additional needs to happen.
-    }
 
     fun removeAll() {
         for (player in plugin.server.onlinePlayers) {

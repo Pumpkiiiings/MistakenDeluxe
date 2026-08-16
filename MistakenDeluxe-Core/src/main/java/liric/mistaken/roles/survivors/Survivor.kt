@@ -6,12 +6,10 @@ import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
 import pumpking.lib.color.ColorTranslator
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * Survivor: Clase base para los humanos del juego.
- * Optimizada para soportar habilidades secundarias y tareas asíncronas ligeras.
- */
-abstract class Survivor(val id: String, val nombre: String) {
+import liric.mistaken.api.roles.GameRole
+
+
+abstract class Survivor(override val id: String, override val nombre: String) : GameRole {
 
     protected val plugin = Mistaken.instance
     protected val mm = plugin.mm
@@ -60,10 +58,7 @@ abstract class Survivor(val id: String, val nombre: String) {
         job.invokeOnCompletion { activeJobs.remove(job) }
     }
 
-    /**
-     * Limpieza total de estados, tareas e inventario del superviviente.
-     */
-    open fun cleanup(player: Player?) {
+    open override fun cleanup(player: Player?) {
         // 1. Detener todas las corrutinas de la clase (rastreos, partículas, etc.)
         activeJobs.forEach { it.cancel() }
         activeJobs.clear()
@@ -89,6 +84,6 @@ abstract class Survivor(val id: String, val nombre: String) {
 
     // --- MÉTODOS ABSTRACTOS ---
 
-    abstract fun equip(player: Player)
+    abstract override fun equip(player: Player)
     abstract fun useSkill(player: Player, slot: Int)
 }

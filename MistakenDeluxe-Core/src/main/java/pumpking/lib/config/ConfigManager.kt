@@ -27,7 +27,7 @@ object ConfigManager : IConfigManager {
 
     private val menusCache = ConcurrentHashMap<String, ConfigProvider>()
     // FIX #19: genericCache can grow indefinitely if callers use dynamic file names.
-    // Current usage is bounded to a known set of config files, so growth is acceptable.
+    
     // If this changes, replace with a Caffeine cache with maximumSize().
     private val genericCache = ConcurrentHashMap<String, ConfigProvider>()
 

@@ -9,11 +9,7 @@ import java.sql.SQLException
 import java.util.concurrent.ThreadLocalRandom
 import pumpking.lib.color.ColorTranslator
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * LinkCommand: Sistema de vinculación con Discord (Versión Nodo).
- * Optimización: JDBC asíncrono y permisos nativos.
- */
+
 object LinkCommand {
 
     fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {

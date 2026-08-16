@@ -21,11 +21,7 @@ import kotlin.collections.get
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.config.ConfigManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * MusicManager: Motor musical adaptado a MULTIARENA / VELOCITY.
- * FIX: Aislamiento por jugador y sincronización con sesiones individuales.
- */
+
 class MusicManager(private val plugin: Mistaken) {
 
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -33,6 +29,7 @@ class MusicManager(private val plugin: Mistaken) {
 
     private val playlist = mutableListOf<Track>()
     private var currentLobbyTrack: Track? = null
+    private var trackStartTime: Long = 0
 
     // Registro de qué canción está escuchando cada jugador (para no solapar)
     private val playersPlaying = ConcurrentHashMap.newKeySet<UUID>()
@@ -73,6 +70,7 @@ class MusicManager(private val plugin: Mistaken) {
                 // 1. Decidir la canción actual para los que están en "espera" (Lobby/Votación/Break)
                 if (currentLobbyTrack == null && playlist.isNotEmpty()) {
                     currentLobbyTrack = playlist.random()
+                    trackStartTime = System.currentTimeMillis()
                 }
 
                 // 2. Evaluar a cada jugador individualmente
@@ -88,20 +86,26 @@ class MusicManager(private val plugin: Mistaken) {
                             playTrackForPlayer(player, currentLobbyTrack)
                         }
                     } else {
-                        // Si entró a INGAME o STARTING, apagamos su música
+                        
                         if (playersPlaying.contains(player.uniqueId)) {
                             stopMusicForPlayer(player)
                         }
                     }
                 }
 
-                // 3. Manejar el tiempo de la canción actual
-                currentLobbyTrack?.let {
-                    delay(1000L)
-                    // Aquí podrías implementar un contador si quieres que la canción cambie para todos a la vez,
-                    // pero para Multiarena lo más eficiente es dejar que Kyori maneje el fin del sonido
-                    // y nosotros solo verificamos estados.
-                } ?: delay(1000L)
+                // 3. Manejar el tiempo de la canción actual (Global)
+                currentLobbyTrack?.let { track ->
+                    val elapsed = (System.currentTimeMillis() - trackStartTime) / 1000
+                    if (elapsed >= track.duration) {
+                        // Cambiar la canción para todos
+                        currentLobbyTrack = playlist.random()
+                        trackStartTime = System.currentTimeMillis()
+                        // Vaciamos el set para que en el siguiente tick todos empiecen a escuchar la nueva
+                        playersPlaying.clear()
+                    }
+                }
+                
+                delay(1000L)
 
                 // Limpiar rastro de jugadores desconectados
                 playersPlaying.removeIf { plugin.server.getPlayer(it) == null }
@@ -117,16 +121,12 @@ class MusicManager(private val plugin: Mistaken) {
 
         player.playSound(soundPacket)
 
-        // Programamos que se quite del set cuando la canción termine (aproximadamente)
-        scope.launch {
-            delay(track.duration * 1000L)
-            if (currentLobbyTrack == track) {
-                playersPlaying.remove(player.uniqueId)
-            }
-        }
+        // Ya no removemos al jugador de playersPlaying asincrónicamente aquí,
+        // ya que el bucle principal se encarga de reiniciar todo el set 
+        // cuando la canción global termina.
     }
 
-    private fun stopMusicForPlayer(player: Player) {
+    fun stopMusicForPlayer(player: Player) {
         playersPlaying.remove(player.uniqueId)
 
         // Kyori detiene todos los sonidos de la categoría RECORD para este jugador
@@ -150,7 +150,8 @@ class MusicManager(private val plugin: Mistaken) {
      */
     fun skipTrack() {
         val oldTrack = currentLobbyTrack
-        currentLobbyTrack = playlist.random()
+        currentLobbyTrack = null
+        playersPlaying.clear()
 
         plugin.server.onlinePlayers.forEach { p ->
             if (playersPlaying.contains(p.uniqueId)) {

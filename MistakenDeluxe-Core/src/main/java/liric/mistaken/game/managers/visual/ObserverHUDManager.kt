@@ -17,10 +17,7 @@ import java.util.UUID
 import org.bukkit.scheduler.BukkitTask
 import pumpking.lib.color.ColorTranslator
 
-/**
- * LIRIC-MISTAKEN 2.0
- * ObserverHUDManager: Maneja el dibujado de componentes en la pantalla del jugador mediante ObserverAPI.
- */
+
 class ObserverHUDManager(private val plugin: Mistaken) {
 
     private val configFile: File = File(plugin.dataFolder, "observer-hud.yml")
@@ -40,7 +37,6 @@ class ObserverHUDManager(private val plugin: Mistaken) {
 
     init {
         loadConfig()
-        startUpdateTask()
     }
 
     fun loadConfig() {
@@ -50,20 +46,15 @@ class ObserverHUDManager(private val plugin: Mistaken) {
         config = YamlConfiguration.loadConfiguration(configFile)
     }
 
-    private fun startUpdateTask() {
-        updateTask = plugin.server.scheduler.runTaskTimer(plugin, Runnable {
-            for (player in plugin.server.onlinePlayers) {
-                val hasObs = ObserverHook.hasObserver(player)
-                // if (!hasObs) continue
-                
-                if (hasObs && loggedObserverPlayers.add(player.uniqueId)) {
-                    plugin.componentLogger.info(ColorTranslator.translate("[<green>ObserverHook</green>] <white>¡El jugador <yellow>${player.name}</yellow> ha sido detectado por ObserverHook!</white>"))
-                }
+    fun updatePlayer(player: Player) {
+        val hasObs = ObserverHook.hasObserver(player)
+        
+        if (hasObs && loggedObserverPlayers.add(player.uniqueId)) {
+            plugin.componentLogger.info(ColorTranslator.translate("[<green>ObserverHook</green>] <white>¡El jugador <yellow>${player.name}</yellow> ha sido detectado por ObserverHook!</white>"))
+        }
 
-                handlePlayerState(player)
-                updateDynamicComponents(player)
-            }
-        }, 20L, 20L) // 1 segundo
+        handlePlayerState(player)
+        updateDynamicComponents(player)
     }
 
     fun handlePlayerState(player: Player) {
@@ -89,7 +80,7 @@ class ObserverHUDManager(private val plugin: Mistaken) {
                 drawComponents(player, stateName, false)
             }
             
-            // Si entra a ingame, tratar de dibujar el rol
+            
             if (stateName == "ingame" && gm != null) {
                 val role = if (gm.isKiller(player.uniqueId)) "killer" else "survivor"
                 drawComponents(player, "roles.$role", false)

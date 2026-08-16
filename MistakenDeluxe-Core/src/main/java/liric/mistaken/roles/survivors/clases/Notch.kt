@@ -17,14 +17,7 @@ import org.bukkit.configuration.file.FileConfiguration
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * Notch: El Creador.
- * MECÁNICAS:
- * - Movilidad vertical (Vuelo falso).
- * - Control de área (Empuje de Bedrock).
- * - Supervivencia (Manzana de Notch).
- */
+
 class Notch : Survivor(
     "notch",
     PumpkingServiceManager.messages.getStrictString(null, "supervivientes.notch.nombre", "survivors_info")

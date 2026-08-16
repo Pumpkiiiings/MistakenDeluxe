@@ -28,11 +28,7 @@ import org.bukkit.Location
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * SurvivorHabilidadListener: Adaptado para MULTIARENA / VELOCITY.
- * FIX: Ahora detecta la sesi�n individual de cada jugador para procesar sus habilidades.
- */
+
 class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
 
     companion object {
@@ -86,16 +82,19 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
                 if (clase is Jesse && slot == 1) return
 
                 event.isCancelled = true
+                plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
                 clase.useSkill(player, slot)
             }
             Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> {
-                // Comandante Teto dispara su Rev�lver con Click Izquierdo en el Slot 0
+                // Comandante Teto dispara su Revlver con Click Izquierdo en el Slot 0
                 if (clase is KasaneTeto && slot == 0) {
                     event.isCancelled = true
+                    plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
                     clase.useSkill(player, slot)
                 } else if (slot == 1) {
                     // Otros supervivientes usan rastreador en slot 1
                     event.isCancelled = true
+                    plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
                     clase.trackearHeridos(player)
                 }
             }

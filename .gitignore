@@ -45,4 +45,10 @@ bin/
 .vscode/
 
 ### Mac OS ###
-.DS_Storescripts/
+.DS_Store
+
+### Scripts, Reports & Backups ###
+comment_cleanup.py
+COMMENT_CLEANUP_REPORT.md
+REFACTOR_REPORT.md
+.cleanup-backup/

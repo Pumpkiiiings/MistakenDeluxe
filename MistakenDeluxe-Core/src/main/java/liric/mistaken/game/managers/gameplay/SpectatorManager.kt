@@ -44,6 +44,9 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     fun setCustomSpectator(player: Player) {
         activeSpectators.add(player.uniqueId)
 
+        // Limpiar TrueDarkness si era un superviviente
+        liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(player, false)
+
         // 🔥 FIX VUELO: Usamos SURVIVAL (no ADVENTURE) porque el modo ADVENTURE no soporta vuelo en Minecraft.
         // El jugador es invisible e invulnerable, lo que lo protege como un espectador real.
         player.gameMode = GameMode.SURVIVAL
@@ -140,12 +143,12 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         // 🔥 MULTIARENA: Buscamos la sesión a la que acaba de entrar el jugador
         val session = plugin.sessionManager.getSession(player)
 
-        // Si la sesión existe y ya están jugando
+        
         if (session != null && session.currentState == GameState.INGAME) {
             activeSpectators.forEach { specUUID ->
                 val spectator = Bukkit.getPlayer(specUUID)
                 if (spectator != null && spectator.isOnline) {
-                    // 🔥 Solo ocultamos al espectador si pertenece a la MISMA arena que el que entra
+                    
                     if (plugin.sessionManager.getSession(spectator) == session) {
                         plugin.visibilityManager.hidePlayer(spectator, player)
                     }

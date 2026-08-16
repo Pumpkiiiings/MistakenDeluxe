@@ -353,6 +353,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 victim.health = 20.0
                 victim.removePotionEffect(PotionEffectType.DARKNESS)
                 victim.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
+                victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
+                victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
                 frozenPlayers.remove(victim.uniqueId)
 
                 currentSession.getCurrentAsesino()?.let { killer ->
@@ -402,7 +404,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     }
 
     fun soltarPasajero(vehicle: Player) {
-        vehicle.passengers.forEach {
+        vehicle.passengers.filter { !liric.mistaken.utils.misc.EntityUtils.isHUDEntity(it) }.forEach {
             vehicle.removePassenger(it)
         }
     }
@@ -460,11 +462,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         p?.let { target ->
             target.removePotionEffect(PotionEffectType.DARKNESS)
 
-            if (frozenPlayers.contains(uuid)) {
-                target.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
-                target.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
-                target.clearTitle()
-            }
+            target.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
+            target.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
+            target.clearTitle()
 
             target.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
 

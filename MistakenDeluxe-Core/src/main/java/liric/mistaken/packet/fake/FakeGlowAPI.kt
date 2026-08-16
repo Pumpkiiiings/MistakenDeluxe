@@ -21,7 +21,7 @@ class FakeGlowAPI {
         // Bitmask para glowing es 0x40.
         // Nota: Para una integración perfecta sin borrar otros flags (como sprint),
         // idealmente deberíamos leer el estado actual. Sin embargo, para forzar el brillo
-        // enviamos el flag básico (0x40) y si está apagado enviamos 0x00.
+        
         
         val flagValue: Byte = if (isGlowing) 0x40 else 0x00
         

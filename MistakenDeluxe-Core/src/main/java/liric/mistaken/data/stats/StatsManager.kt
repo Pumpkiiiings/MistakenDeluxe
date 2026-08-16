@@ -1,29 +1,17 @@
 package liric.mistaken.data.stats
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
 import java.sql.SQLException
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * StatsManager: Gestión de estadísticas con caché reactivo.
- * Optimizado para minimizar las llamadas a la base de datos y eliminar el lag de red.
- */
+
 class StatsManager(private val plugin: Mistaken) {
 
     private val cache = ConcurrentHashMap<UUID, PlayerStats>()
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private var autoSaveJob: Job? = null
+    private var autoSaveTask: ScheduledTask? = null
 
     init {
         startAutoSave()
@@ -34,7 +22,7 @@ class StatsManager(private val plugin: Mistaken) {
      * Se ejecuta de forma asíncrona al entrar al servidor.
      */
     fun loadStats(uuid: UUID, name: String) {
-        scope.launch {
+        plugin.server.asyncScheduler.runNow(plugin) { _ ->
             val stats = plugin.databaseManager.loadStats(uuid.toString(), name)
             if (stats != null) {
                 cache[uuid] = stats
@@ -56,8 +44,8 @@ class StatsManager(private val plugin: Mistaken) {
      * Guarda y elimina al jugador de la RAM (QuitEvent).
      */
     fun unloadPlayer(uuid: UUID) {
-        scope.launch {
-            saveToDatabase(uuid)
+        plugin.server.asyncScheduler.runNow(plugin) { _ ->
+            saveToDatabaseSync(uuid)
             cache.remove(uuid)
         }
     }
@@ -66,7 +54,7 @@ class StatsManager(private val plugin: Mistaken) {
      * Guarda un jugador específico en la DB.
      * Consolida todos los cambios de una sola vez.
      */
-    private suspend fun saveToDatabase(uuid: UUID) {
+    private fun saveToDatabaseSync(uuid: UUID) {
         val stats = cache[uuid] ?: return
         plugin.databaseManager.saveStats(uuid.toString(), stats)
     }
@@ -76,24 +64,29 @@ class StatsManager(private val plugin: Mistaken) {
      * Se suspende sin bloquear hilos.
      */
     private fun startAutoSave() {
-        autoSaveJob = scope.launch {
-            while (isActive) {
-                delay(300_000L) // 5 minutos exactos
-                if (cache.isNotEmpty()) {
-                    plugin.logger.info("Sincronizando estadísticas de ${cache.size} jugadores con MySQL...")
-                    saveAllToDatabase()
-                }
+        autoSaveTask = plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
+            if (cache.isNotEmpty()) {
+                plugin.logger.info("Sincronizando estadísticas de ${cache.size} jugadores con MySQL...")
+                saveAllToDatabaseAsync()
             }
-        }
+        }, 5L, 5L, TimeUnit.MINUTES)
     }
 
     /**
      * Guarda a todos los jugadores en caché.
      */
-    fun saveAllToDatabase() {
-        // En Kotlin, el scope.launch dentro de un loop es sumamente ligero
+    fun saveAllToDatabaseAsync() {
+        plugin.server.asyncScheduler.runNow(plugin) { _ ->
+            saveConfigSync()
+        }
+    }
+
+    /**
+     * Guardado síncrono para el apagado del servidor.
+     */
+    fun saveConfigSync() {
         cache.keys.forEach { uuid ->
-            scope.launch { saveToDatabase(uuid) }
+            saveToDatabaseSync(uuid)
         }
     }
 
@@ -115,11 +108,7 @@ class StatsManager(private val plugin: Mistaken) {
      * Cierre del manager.
      */
     fun shutdown() {
-        autoSaveJob?.cancel()
-        // Intentar un último guardado síncrono antes de apagar
-        runBlocking {
-            cache.keys.forEach { saveToDatabase(it) }
-        }
-        scope.cancel()
+        autoSaveTask?.cancel()
+        saveConfigSync()
     }
 }

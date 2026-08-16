@@ -511,4 +511,17 @@ menus:
           - "&#CCCCCCAdquiere clases con perks únicos"
           - "&#CCCCCCpara burlar a la muerte."
           - ""
-          - "&#33CCFF» Click para entrar"
+          - "&#33CCFF Click para entrar"
+
+hook:
+  party:
+    enter: "<green>Tu party te ha metido a la partida."
+    leave: "<red>Tu party ha salido de la partida, sacando a todos..."
+    enter-private: "<green>Tu party te ha metido a la partida privada."
+    created-private: "<yellow>¡Has creado una partida privada! Usa el panel para configurarla."
+    only-leader: "<red>Solo el líder de la party puede crear partidas privadas."
+    not-in: "<red>No estás en una party."
+    no-maps: "<red>No hay mapas configurados para iniciar la partida."
+  alessio:
+    enter: "<green>Tu líder de party te ha metido a la partida."
+    leave: "<red>Tu líder de party ha salido de la partida, sacando a todos..."

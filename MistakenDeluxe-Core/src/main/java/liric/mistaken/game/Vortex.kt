@@ -15,11 +15,7 @@ import org.bukkit.entity.Player
 import java.util.*
 import java.util.function.Consumer
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * TerrorPacketFactory: Inyección de terror vía paquetes.
- * FIX: Reemplazo de Corrutinas por EntityScheduler (Paper) para evitar tareas zombie y crashes.
- */
+
 class Vortex(private val plugin: Mistaken) {
 
     /**

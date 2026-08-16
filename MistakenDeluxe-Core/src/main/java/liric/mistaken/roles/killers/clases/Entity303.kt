@@ -40,11 +40,7 @@ import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 import liric.mistaken.utils.visuals.ParticleShapesUtils
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * Entity 303: El Hacker de la Realidad.
- * FIX: Animación Ultra-Fluida, Escala 1.1 y Finishers (Efectos de muerte) añadidos.
- */
+
 class Entity303 : CoreKiller(
     "entity303",
     PumpkingServiceManager.messages.getStrictString(null, "asesinos.entity303.nombre", "killers_info")

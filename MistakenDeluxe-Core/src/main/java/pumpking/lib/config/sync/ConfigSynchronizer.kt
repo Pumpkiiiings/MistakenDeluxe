@@ -1,4 +1,4 @@
-﻿package pumpking.lib.config.sync
+package pumpking.lib.config.sync
 
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
@@ -26,7 +26,7 @@ object ConfigSynchronizer {
         }
 
         // Load local file
-        val localConfig = YamlConfigProvider(localFile)
+        val localConfig = YamlConfigProvider(localFile).apply { load() }
 
         // Load default from JAR
         val resourceStream = plugin.getResource(fileName) ?: return ConfigMigrationResult(fileName, 0, 0, 0, false)

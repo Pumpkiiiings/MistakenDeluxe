@@ -9,6 +9,7 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import liric.mistaken.api.events.MistakenDeathEvent
+import net.kyori.adventure.text.minimessage.MiniMessage
 
 class ExperienceListener(private val plugin: LevelAddonPlugin) : Listener {
 
@@ -37,7 +38,10 @@ class ExperienceListener(private val plugin: LevelAddonPlugin) : Listener {
         val xp = plugin.xpSourcesConfig.getXpForSource("kill")
         if (xp > 0) {
             plugin.manager.addExperience(event.killer.uniqueId, xp)
-            event.killer.sendMessage(plugin.logger.name + " gained $xp XP for a kill!") // This can be localized
+            val prefix = plugin.messagesConfig.getString("prefix", "<gradient:#8e2de2:#4a00e0>[Level]</gradient> ")!!
+            val msgRaw = plugin.messagesConfig.getString("messages.xp-gain", "<prefix><green>+ %amount% XP")!!
+            val msg = msgRaw.replace("<prefix>", prefix).replace("%amount%", xp.toString())
+            event.killer.sendMessage(MiniMessage.miniMessage().deserialize(msg))
         }
     }
 }

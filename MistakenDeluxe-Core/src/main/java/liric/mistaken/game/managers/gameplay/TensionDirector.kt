@@ -7,19 +7,7 @@ import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * TensionDirector: decide CUÁNDO puede pasar algo, no QUÉ pasa.
- *
- * Antes los sustos salían de un dado plano cada 100 ms, idéntico en el segundo 10
- * que en el 290, con el asesino encima o al otro lado del mapa. Un ritmo constante
- * se convierte en ruido de fondo: el jugador modela la distribución y deja de
- * reaccionar.
- *
- * Aquí el ritmo sale del estado real de la partida y está limitado por un
- * presupuesto: tras cada evento hay un silencio obligatorio. Menos sustos totales,
- * más efecto por susto.
- */
+
 class TensionDirector(private val plugin: Mistaken) {
 
     enum class State {

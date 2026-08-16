@@ -37,11 +37,7 @@ import org.bukkit.Bukkit
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * NullAsesino: El Ente del Glitch.
- * MEJORAS: Escala 1.1, F�sicas mejoradas y Finishers del Abismo agregados.
- */
+
 class NullAsesino : CoreKiller(
     "null",
     PumpkingServiceManager.messages.getStrictString(null, "asesinos.null.nombre", "killers_info")

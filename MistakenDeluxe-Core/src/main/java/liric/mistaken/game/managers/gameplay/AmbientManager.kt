@@ -16,10 +16,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * AmbientManager: Motor de atmósfera de terror adaptado a Multiarena.
- */
+
 class AmbientManager(private val plugin: Mistaken) {
 
     private val packetFactory = Vortex(plugin)
@@ -84,7 +81,7 @@ class AmbientManager(private val plugin: Mistaken) {
      */
     private fun processSurvivorLogic(survivor: Player, snapshot: TensionDirector.KillerSnapshot, session: GameSession) {
 
-        // Si este "superviviente" en realidad fue elegido como el Killer en esta ronda
+        
         if (session.isKiller(survivor.uniqueId)) {
             trackedSurvivors.remove(survivor.uniqueId)
             director.clear(survivor.uniqueId)
@@ -104,7 +101,7 @@ class AmbientManager(private val plugin: Mistaken) {
         // 1. Latido y oscuridad — continuos, escalan con el estado
         applyHeartbeat(survivor, session, state, distSq)
 
-        // 2. Sustos puntuales — solo si el director da permiso.
+        
         //    El presupuesto (silencio obligatorio tras cada evento) vive en requestEvent.
         if (director.requestEvent(survivor.uniqueId)) {
             fireEventFor(survivor, state)
@@ -113,6 +110,7 @@ class AmbientManager(private val plugin: Mistaken) {
 
     private fun applyHeartbeat(survivor: Player, session: GameSession, state: TensionDirector.State, distSq: Double) {
         if (session.settings?.heartbeatsEnabled == false) return
+        if (survivor.hasPotionEffect(PotionEffectType.INVISIBILITY)) return
         if (state == TensionDirector.State.CALMA) return
         if (distSq >= 576.0) return // 24 bloques
 

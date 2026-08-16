@@ -13,17 +13,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Instant
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * WebHook: Integración Webhook para Discord.
- *
- * FIX #3: The original used a CoroutineScope that was never cancelled via Mistaken.onDisable(),
- * and HttpClient was never closed — both leaking resources on shutdown.
- * Now uses a dedicated SupervisorJob so shutdown() can cancel precisely this scope.
- *
- * FIX #16: JSON was built via string interpolation. escape() is now more thorough,
- * covering all JSON control characters (U+0000–U+001F) in addition to \, ", \n, \r.
- */
+
 class WebHook(private val plugin: Mistaken) {
 
     // FIX #3: Use a dedicated job so shutdown() can cancel only WebHook coroutines
@@ -44,21 +34,21 @@ class WebHook(private val plugin: Mistaken) {
         val webhookUrl = getWebhookUrl() ?: return
 
         val survivorsText = if (survivors.isEmpty()) {
-            "Esperando jugadores..."
+            plugin.config.getString("discord.messages.waiting-players", "Esperando jugadores...")!!
         } else {
             survivors.joinToString("\\n") { it.name }
         }
 
         val json = buildJsonPayload(
-            title = "🎮 ¡JUEGO INICIADO!",
+            title = plugin.config.getString("discord.messages.start.title", "🎮 ¡JUEGO INICIADO!")!!,
             color = 65280,
             fields = listOf(
-                jsonField("🗺️ Mapa", mapa, inline = true),
-                jsonField("🕹️ Modo", modo, inline = true),
-                jsonField("🩸 Killer", "**${killer.name.escape()}**", inline = false),
-                jsonField("👥 Survivors (${survivors.size})", "```\\n${survivorsText.escape()}\\n```", inline = false)
+                jsonField(plugin.config.getString("discord.messages.start.map-field", "🗺️ Mapa")!!, mapa, inline = true),
+                jsonField(plugin.config.getString("discord.messages.start.mode-field", "🕹️ Modo")!!, modo, inline = true),
+                jsonField(plugin.config.getString("discord.messages.start.killer-field", "🩸 Killer")!!, "**${killer.name.escape()}**", inline = false),
+                jsonField(plugin.config.getString("discord.messages.start.survivors-field", "👥 Survivors")!! + " (${survivors.size})", "```\\n${survivorsText.escape()}\\n```", inline = false)
             ),
-            footer = "Mistaken Tracking • LIRIC-MISTAKEN 2.0"
+            footer = plugin.config.getString("discord.messages.start.footer", "Mistaken Tracking • LIRIC-MISTAKEN 2.0")!!
         )
 
         dispatch(webhookUrl, json)
@@ -71,21 +61,21 @@ class WebHook(private val plugin: Mistaken) {
         val webhookUrl = getWebhookUrl() ?: return
 
         val survivorsText = if (survivorsNames.isEmpty()) {
-            "Nadie escapó..."
+            plugin.config.getString("discord.messages.nobody-escaped", "Nadie escapó...")!!
         } else {
             survivorsNames.joinToString("\\n")
         }
 
         val json = buildJsonPayload(
-            title = "🏁 ¡PARTIDA TERMINADA!",
-            description = "**Resultado:** ${razon.escape()}",
+            title = plugin.config.getString("discord.messages.end.title", "🏁 ¡PARTIDA TERMINADA!")!!,
+            description = "**${plugin.config.getString("discord.messages.end.result-text", "Resultado:")}** ${razon.escape()}",
             color = 16711680,
             fields = listOf(
-                jsonField("🗺️ Mapa", mapa, inline = true),
-                jsonField("🏆 Ganador", "**${ganador.escape()}**", inline = true),
-                jsonField("🚪 Sobrevivieron", "```\\n${survivorsText.escape()}\\n```", inline = false)
+                jsonField(plugin.config.getString("discord.messages.end.map-field", "🗺️ Mapa")!!, mapa, inline = true),
+                jsonField(plugin.config.getString("discord.messages.end.winner-field", "🏆 Ganador")!!, "**${ganador.escape()}**", inline = true),
+                jsonField(plugin.config.getString("discord.messages.end.survived-field", "🚪 Sobrevivieron")!!, "```\\n${survivorsText.escape()}\\n```", inline = false)
             ),
-            footer = "Mistaken Tracking • Sesión finalizada"
+            footer = plugin.config.getString("discord.messages.end.footer", "Mistaken Tracking • Sesión finalizada")!!
         )
 
         dispatch(webhookUrl, json)

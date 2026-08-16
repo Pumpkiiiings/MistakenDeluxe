@@ -33,7 +33,7 @@ class VirtualCamera(private val player: Player) {
         )
         PacketEvents.getAPI().playerManager.sendPacket(player, spawnPacket)
 
-        // 2. Set metadata (Invisible, index 0, bitmask 0x20)
+        
         val metadataPacket = WrapperPlayServerEntityMetadata(
             entityId,
             listOf(EntityData(0, EntityDataTypes.BYTE, 0x20.toByte()))

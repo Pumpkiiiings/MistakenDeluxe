@@ -10,17 +10,13 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import org.bukkit.Bukkit
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * VisibilityManager: Manejador de visibilidad vía PacketEvents.
- * Reemplaza la inestabilidad de Bukkit enviando/destruyendo entidades directamente a nivel de red.
- */
+
 class VisibilityManager(private val plugin: Mistaken) {
 
-    // Target UUID -> Set of Viewers UUIDs who CANNOT see them
+    
     private val hiddenFrom = ConcurrentHashMap<UUID, MutableSet<UUID>>()
     
-    // Target UUID -> Set of Viewers UUIDs who CAN see them (if empty, applies to no one, if used, HIDES from everyone else)
+    
     private val visibleOnlyTo = ConcurrentHashMap<UUID, MutableSet<UUID>>()
 
     /**
@@ -31,7 +27,7 @@ class VisibilityManager(private val plugin: Mistaken) {
 
         hiddenFrom.computeIfAbsent(target.uniqueId) { ConcurrentHashMap.newKeySet() }.add(viewer.uniqueId)
         
-        // Si el target es jugador, remover del TAB también
+        
         if (target is Player) {
             val infoRemove = WrapperPlayServerPlayerInfoRemove(target.uniqueId)
             PacketEvents.getAPI().playerManager.sendPacket(viewer, infoRemove)
@@ -85,9 +81,13 @@ class VisibilityManager(private val plugin: Mistaken) {
             onlyViewers.add(viewer.uniqueId)
         }
 
-        // Forzar re-envío con Bukkit
+        // Forzar re-envo con Bukkit
         viewer.hidePlayer(plugin, target)
-        viewer.showPlayer(plugin, target)
+        plugin.server.scheduler.runTask(plugin, Runnable {
+            if (viewer.isOnline && target.isOnline) {
+                viewer.showPlayer(plugin, target)
+            }
+        })
     }
 
     /**

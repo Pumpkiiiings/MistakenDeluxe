@@ -79,7 +79,7 @@ class GamePlayerController(private val game: GameSession) {
             }
         }
 
-        // Si todos los disponibles ya jugaron, reseteamos el historial reciente
+        
         if (candidatos.isEmpty() && selectedCount < killersToSelect) {
             val backup = sessionPlayers.filter { p -> 
                 !game.asesinosUUIDs.contains(p.uniqueId) && 
@@ -239,6 +239,16 @@ class GamePlayerController(private val game: GameSession) {
         for (p in players) {
             if (game.plugin.isIgnored(p) || game.isKiller(p.uniqueId) || p.gameMode == GameMode.SPECTATOR || game.plugin.spectatorManager.isSpectator(p)) continue
 
+            if (p.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
+                if (p.hasPotionEffect(PotionEffectType.GLOWING)) {
+                    p.removePotionEffect(PotionEffectType.GLOWING)
+                }
+            } else if (game.settings?.glowingEnabled == true) {
+                if (!p.hasPotionEffect(PotionEffectType.GLOWING)) {
+                    p.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, Int.MAX_VALUE, 0, false, false, false))
+                }
+            }
+
             if ((ticks + (p.uniqueId.hashCode() and 0xFFFF)) % 5 == 0) {
                 game.uiController.playAmbientForPlayer(p, killersOnline)
             }
@@ -260,7 +270,7 @@ class GamePlayerController(private val game: GameSession) {
                 }
             }
 
-            if (ticks % 5 == 0 && p.passengers.isNotEmpty() && p.isSprinting) {
+            if (ticks % 5 == 0 && p.passengers.any { !liric.mistaken.utils.misc.EntityUtils.isHUDEntity(it) } && p.isSprinting) {
                 game.plugin.playerDataManager.consumeStamina(p.uniqueId, 0.4)
             }
 
@@ -366,6 +376,9 @@ class GamePlayerController(private val game: GameSession) {
             game.ambientManager.stopAmbience(player)
             game.combatManager.resetHealth(player)
 
+            // Limpiar TrueDarkness porque ahora es asesino
+            liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(player, false)
+
             game.uiController.setLuckPermsPrefix(player, "<red>")
 
             game.plugin.lobbyLocation?.let { loc ->
@@ -438,8 +451,8 @@ class GamePlayerController(private val game: GameSession) {
             p.stopSound(activeLmsMusic, SoundCategory.RECORDS)
             game.plugin.flashlightManager.disable(p)
 
-            p.passengers.forEach { p.removePassenger(it) }
-            p.vehicle?.removePassenger(p)
+            p.passengers.filter { !liric.mistaken.utils.misc.EntityUtils.isHUDEntity(it) }.forEach { p.removePassenger(it) }
+            if (!liric.mistaken.utils.misc.EntityUtils.isHUDEntity(p.vehicle)) p.vehicle?.removePassenger(p)
             p.fireTicks = 0
             p.inventory.clear()
             p.inventory.armorContents = arrayOfNulls(4)

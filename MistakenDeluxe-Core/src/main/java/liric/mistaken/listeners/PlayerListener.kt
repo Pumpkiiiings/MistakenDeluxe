@@ -11,12 +11,9 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import pumpking.lib.service.PumpkingServiceManager
+import org.bukkit.event.player.PlayerResourcePackStatusEvent
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * PlayerListener: Gestión de ciclo de vida adaptada a Sesiones (Multiarena / Pre-Lobbys).
- * FIX: Chat silencioso para inmersión total en Network/Multiarena.
- */
+
 class PlayerListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -38,6 +35,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
             plugin.server.globalRegionScheduler.execute(plugin) {
                 if (player.isOnline) {
                     plugin.scoreboardManager.addPlayer(player)
+                    plugin.nameTagManager.setupPlayer(player)
                 }
             }
         }
@@ -101,40 +99,61 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
         // 🔥 Ocultamos el mensaje por defecto de Minecraft al salir
         event.quitMessage(null)
 
+        plugin.nameTagManager.removePlayer(event.player)
         plugin.sessionManager.leaveSession(event.player)
         plugin.scoreboardManager.removePlayer(event.player)
     }
 
-    private fun resetPlayerStatus(player: Player) {
-        player.gameMode = GameMode.SURVIVAL
-        player.health = 20.0
-        player.foodLevel = 20
-        player.saturation = 20f
-        player.exp = 0f
-        player.level = 0
-        player.isGlowing = false
-        player.isSwimming = false
-        player.isVisualFire = false
-        player.walkSpeed = 0.2f
-        player.flySpeed = 0.1f
+    companion object {
+        fun resetPlayerStatus(player: Player) {
+            player.gameMode = GameMode.SURVIVAL
+            player.health = 20.0
+            player.foodLevel = 20
+            player.saturation = 20f
+            player.exp = 0f
+            player.level = 0
+            player.isGlowing = false
+            player.isSwimming = false
+            player.isVisualFire = false
+            player.walkSpeed = 0.2f
+            player.flySpeed = 0.1f
 
-        if (player.gameMode == GameMode.SPECTATOR) player.spectatorTarget = null
+            if (player.gameMode == GameMode.SPECTATOR) player.spectatorTarget = null
 
-        player.inventory.clear()
-        player.inventory.armorContents = arrayOfNulls(4)
+            player.inventory.clear()
+            player.inventory.armorContents = arrayOfNulls(4)
 
-        player.activePotionEffects.forEach { effect ->
-            player.removePotionEffect(effect.type)
+            player.activePotionEffects.forEach { effect ->
+                player.removePotionEffect(effect.type)
+            }
+
+            player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
+            player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
+            player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
+
+            liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(player, false)
         }
-
-        player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
-        player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
-        player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = 4.0
     }
+
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onPlayerItemDamage(event: org.bukkit.event.player.PlayerItemDamageEvent) {
         event.isCancelled = true
+    }
+
+    @EventHandler
+    fun onResourcePackStatus(event: PlayerResourcePackStatusEvent) {
+        val status = event.status
+        if (status == PlayerResourcePackStatusEvent.Status.SUCCESSFULLY_LOADED ||
+            status == PlayerResourcePackStatusEvent.Status.DECLINED ||
+            status == PlayerResourcePackStatusEvent.Status.FAILED_DOWNLOAD) {
+            
+            // Fix: Cuando el resource pack se carga (o falla), la música se corta.
+            // Limpiamos al jugador para que el MusicManager se la vuelva a poner.
+            plugin.server.scheduler.runTaskLater(plugin, Runnable {
+                plugin.musicManager.stopMusicForPlayer(event.player)
+            }, 20L) // 1 seg extra para asegurar que el cliente terminó
+        }
     }
 }
 

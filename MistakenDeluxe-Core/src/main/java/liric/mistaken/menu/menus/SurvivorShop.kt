@@ -16,11 +16,7 @@ import org.bukkit.persistence.PersistentDataType
 import liric.mistaken.api.requirements.RequirementEngine
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * SurvivorTienda: MenÃº de selecciÃ³n de humanos.
- * OPTIMIZADO: Lectura hÃ­brida (MecÃ¡nicas Globales + Info Localizada).
- */
+
 class SurvivorTienda : MenuBase("survivors_shop") {
 
     private val survivorKey by lazy { NamespacedKey(plugin, "selected_survivor") }
@@ -55,7 +51,7 @@ class SurvivorTienda : MenuBase("survivors_shop") {
             // --- 🎨 DATOS VISUALES (Desde survivors_info.yml) ---
             // Ruta: supervivientes.<id>.nombre
             val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "supervivientes.$survivorId.nombre", "survivors_info")
-            // Ruta: supervivientes.<id>.lore_tienda
+            
             val loreTienda = PumpkingServiceManager.messages.getStrictStringList(player, "supervivientes.$survivorId.lore_tienda", "survivors_info")
 
             // --- ⚙️ DATOS MECÁNICOS (Desde supervivientes.yml) ---

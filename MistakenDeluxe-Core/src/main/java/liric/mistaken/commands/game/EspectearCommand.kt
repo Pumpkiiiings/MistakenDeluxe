@@ -8,11 +8,7 @@ import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import pumpking.lib.color.ColorTranslator
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * EspectearCommand: Permite a los jugadores muertos recuperar sus ítems de espectador.
- * Adaptado para MULTIARENA.
- */
+
 class EspectearCommand(private val plugin: Mistaken) : BasicCommand {
 
     override fun execute(stack: CommandSourceStack, args: Array<String>) {

@@ -511,4 +511,17 @@ menus:
           - "&#CCCCCCAcquire classes with unique perks"
           - "&#CCCCCCto cheat death."
           - ""
-          - "&#33CCFF» Click to enter"
+          - "&#33CCFF Click to enter"
+
+hook:
+  party:
+    enter: "<green>Your party has pulled you into the game."
+    leave: "<red>Your party left the game, pulling everyone out..."
+    enter-private: "<green>Your party has pulled you into the private game."
+    created-private: "<yellow>You created a private game! Use the panel to configure it."
+    only-leader: "<red>Only the party leader can create private games."
+    not-in: "<red>You are not in a party."
+    no-maps: "<red>No maps configured to start the game."
+  alessio:
+    enter: "<green>Your party leader has pulled you into the game."
+    leave: "<red>Your party leader left the game, pulling everyone out..."

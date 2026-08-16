@@ -18,11 +18,7 @@ import kotlin.collections.forEach
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.config.ConfigManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * ArenaManager: Gestión de persistencia ultra-eficiente.
- * FIX: Eliminación de Memory Leaks de Mundos y Guardado Thread-Safe.
- */
+
 class ArenaManager(private val plugin: Mistaken) {
 
     private val arenas = ConcurrentHashMap<String, Arena>()
@@ -146,7 +142,7 @@ class ArenaManager(private val plugin: Mistaken) {
     }
 
     private fun loadSafeLocation(path: String): Location? {
-        // Si no tiene X, es que el path está vacío
+        
         if (!config.contains("$path.x")) return null
 
         // 🔥 LA MAGIA ANTI-LEAKS: Retornamos la Location con World en NULL.

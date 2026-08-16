@@ -14,11 +14,7 @@ import org.bukkit.Material
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * GameSession: Una instancia aislada de una partida.
- * Soporta modo Multiarena y Velocity.
- */
+
 class GameSession(
     val plugin: Mistaken,
     override val id: String,

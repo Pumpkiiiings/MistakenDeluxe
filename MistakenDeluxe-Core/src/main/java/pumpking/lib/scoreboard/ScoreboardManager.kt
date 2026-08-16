@@ -151,7 +151,7 @@ object ScoreboardManager {
         }
     }
 
-    // --- Internal ---
+    
 
     internal fun getContext(uuid: UUID): ScoreboardContext? = contexts[uuid]
 

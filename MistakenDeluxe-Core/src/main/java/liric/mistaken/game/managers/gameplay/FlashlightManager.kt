@@ -17,25 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * FlashlightManager: linterna direccional para supervivientes.
- *
- * La tecla F (swap de segunda mano) se intercepta en FlashlightListener y en vez de
- * intercambiar items enciende/apaga esta linterna. Sin bateria: toggle infinito.
- *
- * La luz son bloques Material.LIGHT falsos (client-side) colocados a lo largo del rayo
- * de vision. El cliente recalcula su propio motor de luz al recibir un block update, asi
- * que iluminan de verdad. LIGHT es invisible sin el item de luz en mano y no tiene
- * colision, por lo que no deja artefactos visuales.
- *
- * Los bloques se envian a TODOS los jugadores cercanos de la sesion, no solo al portador:
- * encender la linterna te delata ante el asesino. Ese es el tradeoff.
- *
- * REGLA CRITICA: solo se sobrescriben bloques de aire, y todo lo encendido se restaura
- * al apagar / morir / desconectar / terminar la partida. Si no se restaura, la zona
- * queda iluminada para el cliente hasta que haga relog.
- */
+
 class FlashlightManager(private val plugin: Mistaken) {
 
     private class FlashlightState {
@@ -141,7 +123,7 @@ class FlashlightManager(private val plugin: Mistaken) {
         }
 
         // Cambio de mundo: los viewers antiguos ya no estan viendo esos bloques,
-        // pero se les restaura igual por si siguen en el mundo viejo.
+        
         if (player.world.name != state.worldName) {
             restore(state)
             state.worldName = player.world.name
@@ -151,7 +133,26 @@ class FlashlightManager(private val plugin: Mistaken) {
         val audience = audience(player)
         val audienceIds = audience.map { it.uniqueId }.toSet()
 
-        // Quieto y sin cambios de publico: cero packets.
+        // --- EFECTO VISUAL DE HAZ DE LUZ (PARTICULAS VOLUMETRICAS) ---
+        val eye = player.eyeLocation
+        val dir = eye.direction
+        // Hacer las partículas muy sutiles para no estorbar la visión
+        var currentDist = 1.0
+        val maxParticleDist = targets.lastOrNull()?.distance(eye) ?: range
+        // Color más tenue y tamaño muy pequeño (0.2f en lugar de 0.6f)
+        val dustOptions = org.bukkit.Particle.DustOptions(org.bukkit.Color.fromRGB(120, 120, 100), 0.2f)
+        
+        while (currentDist <= maxParticleDist) {
+            val point = eye.clone().add(dir.clone().multiply(currentDist))
+            // Enviar la partícula solo a la audiencia
+            audience.forEach { viewer ->
+                viewer.spawnParticle(org.bukkit.Particle.DUST, point, 1, 0.02, 0.02, 0.02, 0.0, dustOptions)
+            }
+            // Espaciado más amplio para que no se vea una línea sólida densa
+            currentDist += 1.0
+        }
+
+        // Quieto y sin cambios de publico: cero packets de bloques.
         if (targets == state.litBlocks && audienceIds == state.viewers) return
 
         restore(state)
@@ -159,10 +160,15 @@ class FlashlightManager(private val plugin: Mistaken) {
         if (targets.isEmpty()) return
 
         val restoreData = HashMap<Location, BlockData>(targets.size)
+        val lightData = Bukkit.createBlockData(Material.LIGHT)
+        if (lightData is org.bukkit.block.data.type.Light) {
+            lightData.level = 15
+        }
+        
         targets.forEach { loc ->
             restoreData[loc] = loc.block.blockData
             audience.forEach { viewer ->
-                PacketFactory.blocks.sendBlockChange(viewer, loc, Material.LIGHT)
+                PacketFactory.blocks.sendBlockChange(viewer, loc, lightData)
             }
         }
 

@@ -98,11 +98,16 @@ class GameStateController(private val game: GameSession) {
                 game.timer = game.settings?.gameDuration ?: game.plugin.config.getInt("settings.game-duration", 300)
                 game.broadcastLocalized("game.hunt-start")
 
-                // 🔥 RESTAURAR VISTAS
+                // 🔥 RESTAURAR VISTAS Y APLICAR OSCURIDAD A SUPERVIVIENTES
                 online.forEach { p ->
                     if (p.gameMode == GameMode.SPECTATOR && !game.plugin.spectatorManager.isSpectator(p)) {
                         p.spectatorTarget = null // Limpiamos primero en modo SPECTATOR
                         p.gameMode = GameMode.SURVIVAL // Y luego lo pasamos a SURVIVAL
+                    }
+
+                    // A los supervivientes se les aplica True Darkness de Observer
+                    if (!game.isKiller(p.uniqueId) && !game.plugin.spectatorManager.isSpectator(p)) {
+                        liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(p, true)
                     }
                 }
             }

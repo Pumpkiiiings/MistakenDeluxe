@@ -20,14 +20,7 @@ import org.bukkit.configuration.file.FileConfiguration
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * Villager: Clase de evasión y distracción.
- * MECÁNICAS:
- * - Pánico (Velocidad).
- * - Soborno (Proyectil aturdidor).
- * - Golem (Empuje en área).
- */
+
 class Villager : Survivor(
     "aldeano",
     PumpkingServiceManager.messages.getStrictString(null, "supervivientes.aldeano.nombre", "survivors_info")

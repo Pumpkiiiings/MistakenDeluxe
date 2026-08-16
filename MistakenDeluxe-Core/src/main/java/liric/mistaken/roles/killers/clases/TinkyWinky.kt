@@ -32,12 +32,7 @@ import kotlin.math.sin
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * TinkyWinky: El Horror de los Teletubbies.
- * Inspirado en el antagonista principal de Slendytubbies.
- * Estilo de juego: Sigilo, terror psicológico y trampas de área.
- */
+
 class TinkyWinky : CoreKiller(
     "tinkywinky",
     PumpkingServiceManager.messages.getStrictString(null, "asesinos.tinkywinky.nombre", "killers_info")
@@ -447,7 +442,7 @@ class TinkyWinky : CoreKiller(
         val uuid = player.uniqueId
         if (!plugin.asesinoManager.isKiller(player)) { limpiarVisuales(uuid); return }
 
-        // Si cambió de mundo, recrear orbitadores
+        
         if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {

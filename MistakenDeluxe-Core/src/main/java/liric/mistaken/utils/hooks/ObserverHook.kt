@@ -1,10 +1,21 @@
 package liric.mistaken.utils.hooks
 
-import org.bukkit.Bukkit
+import io.netty.buffer.Unpooled
+import net.kyori.adventure.key.Key
+import net.kyori.adventure.sound.Sound
+import net.kyori.adventure.sound.SoundStop
+import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
+import org.bukkit.Location
+import org.bukkit.SoundCategory
+import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.event.Listener
+import org.bukkit.event.EventHandler
+import org.bukkit.Bukkit
 import com.observer.api.model.ComponentAlignment
 import com.observer.api.model.TextAlignment
 import com.observer.paper.api.ObserverAPI
+import liric.mistaken.Mistaken
 
 object ObserverHook {
 
@@ -79,19 +90,19 @@ object ObserverHook {
             val sound = net.kyori.adventure.sound.Sound.sound(key, net.kyori.adventure.sound.Sound.Source.RECORD, volume, pitch)
             player.playSound(sound, x, y, z)
         } catch (e: Exception) {
-            player.playSound(org.bukkit.Location(player.world, x, y, z), soundId, org.bukkit.SoundCategory.RECORDS, volume, pitch)
+            player.playSound(Location(player.world, x, y, z), soundId, SoundCategory.RECORDS, volume, pitch)
         }
     }
 
-    fun playEntitySound(player: Player, soundId: String, emitter: org.bukkit.entity.Entity, volume: Float = 1.0f, pitch: Float = 1.0f) {
+    fun playEntitySound(player: Player, soundId: String, emitter: Entity, volume: Float = 1.0f, pitch: Float = 1.0f) {
         try {
             val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
             val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
-            val key = net.kyori.adventure.key.Key.key(namespace, id)
-            val sound = net.kyori.adventure.sound.Sound.sound(key, net.kyori.adventure.sound.Sound.Source.RECORD, volume, pitch)
+            val key = Key.key(namespace, id)
+            val sound = Sound.sound(key, Sound.Source.RECORD, volume, pitch)
             player.playSound(sound, emitter)
         } catch (e: Exception) {
-            player.playSound(emitter.location, soundId, org.bukkit.SoundCategory.RECORDS, volume, pitch)
+            player.playSound(emitter.location, soundId, SoundCategory.RECORDS, volume, pitch)
         }
     }
 
@@ -99,16 +110,16 @@ object ObserverHook {
         try {
             val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
             val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
-            val key = net.kyori.adventure.key.Key.key(namespace, id)
-            player.stopSound(net.kyori.adventure.sound.SoundStop.named(key))
+            val key = Key.key(namespace, id)
+            player.stopSound(SoundStop.named(key))
         } catch (e: Exception) {
-            player.stopSound(soundId, org.bukkit.SoundCategory.RECORDS)
+            player.stopSound(soundId, SoundCategory.RECORDS)
         }
     }
 
     fun stopAllSounds(player: Player) {
         try {
-            player.stopSound(net.kyori.adventure.sound.SoundStop.source(net.kyori.adventure.sound.Sound.Source.RECORD))
+            player.stopSound(SoundStop.source(Sound.Source.RECORD))
         } catch (e: Exception) {
             player.stopAllSounds()
         }
@@ -132,8 +143,8 @@ object ObserverHook {
 
     // --- Animations ---
 
-    private val plugin: liric.mistaken.Mistaken
-        get() = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+    private val plugin: Mistaken
+        get() = JavaPlugin.getPlugin(Mistaken::class.java)
 
     fun getAnimation(player: Player, key: String, default: String): String {
         val config = plugin.config
@@ -171,10 +182,18 @@ object ObserverHook {
         return default
     }
 
+    fun setTrueDarkness(player: Player, enabled: Boolean) {
+        if (!hasObserverPlugin) return
+        try {
+            com.observer.paper.ObserverPaper.getInstance().environmentManager.setTrueDarkness(player, enabled)
+        } catch (e: Exception) {
+            // Ignore if Observer doesn't support environment manager yet
+        }
+    }
 }
 
-object ObserverEventListener : org.bukkit.event.Listener {
-    @org.bukkit.event.EventHandler
+object ObserverEventListener : Listener {
+    @EventHandler
     fun onLeftClick(event: com.observer.paper.api.events.ObserverPlayerLeftClickEvent) {
         if (!ObserverHook.hasObserverPlugin) return
         try {
@@ -182,7 +201,7 @@ object ObserverEventListener : org.bukkit.event.Listener {
         } catch (e: Exception) {}
     }
 
-    @org.bukkit.event.EventHandler
+    @EventHandler
     fun onSprint(event: com.observer.paper.api.events.ObserverPlayerSprintEvent) {
         if (!ObserverHook.hasObserverPlugin) return
         try {
@@ -194,7 +213,7 @@ object ObserverEventListener : org.bukkit.event.Listener {
         } catch (e: Exception) {}
     }
 
-    @org.bukkit.event.EventHandler
+    @EventHandler
     fun onWalk(event: com.observer.paper.api.events.ObserverPlayerWalkEvent) {
         if (!ObserverHook.hasObserverPlugin) return
         try {
@@ -206,7 +225,7 @@ object ObserverEventListener : org.bukkit.event.Listener {
         } catch (e: Exception) {}
     }
 
-    @org.bukkit.event.EventHandler
+    @EventHandler
     fun onJump(event: com.observer.paper.api.events.ObserverPlayerJumpEvent) {
         if (!ObserverHook.hasObserverPlugin) return
         try {
@@ -214,7 +233,7 @@ object ObserverEventListener : org.bukkit.event.Listener {
         } catch (e: Exception) {}
     }
 
-    @org.bukkit.event.EventHandler
+    @EventHandler
     fun onIdle(event: com.observer.paper.api.events.ObserverPlayerIdleEvent) {
         if (!ObserverHook.hasObserverPlugin) return
         try {

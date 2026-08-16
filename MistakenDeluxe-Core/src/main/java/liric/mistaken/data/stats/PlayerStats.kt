@@ -3,11 +3,7 @@ package liric.mistaken.data.stats
 import java.text.DecimalFormat
 import java.util.concurrent.atomic.AtomicInteger
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * PlayerStats: Contenedor de estadísticas ultra-optimizado.
- * Usa AtomicIntegers para permitir actualizaciones desde hilos asíncronos sin bloqueos (Lock-free).
- */
+
 class PlayerStats {
 
     // Contadores atómicos para alto rendimiento y seguridad entre hilos

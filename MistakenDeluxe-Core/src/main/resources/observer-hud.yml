@@ -78,7 +78,7 @@ ingame:
       material: "minecraft:clock"
       alignment: TOP_CENTER
       text_alignment: LEFT
-      offset_x: -70
+      offset_x: -120
       offset_y: 5
       scale: 1.0
       amount: 1
@@ -86,16 +86,16 @@ ingame:
       type: TEXT
       alignment: TOP_CENTER
       text_alignment: LEFT
-      offset_x: -50
+      offset_x: -100
       offset_y: 9
       scale: 1.0
-      content: "<gold><bold>%mistaken_timer%</bold></gold>"
+      content: "<white>Tiempo: %mistaken_timer%</white>"
     player_icon:
       type: ITEM
       material: "minecraft:player_head"
       alignment: TOP_CENTER
       text_alignment: LEFT
-      offset_x: 10
+      offset_x: -20
       offset_y: 5
       scale: 1.0
       amount: 1
@@ -103,16 +103,16 @@ ingame:
       type: TEXT
       alignment: TOP_CENTER
       text_alignment: LEFT
-      offset_x: 30
+      offset_x: 0
       offset_y: 9
       scale: 1.0
-      content: "<green><bold>%mistaken_vivos%</bold> Vivos</green>"
+      content: "<white>Vivos: %mistaken_vivos%</white>"
     gens_icon:
       type: ITEM
       material: "minecraft:redstone_torch"
       alignment: TOP_CENTER
       text_alignment: LEFT
-      offset_x: 90
+      offset_x: 80
       offset_y: 5
       scale: 1.0
       amount: 1
@@ -120,10 +120,10 @@ ingame:
       type: TEXT
       alignment: TOP_CENTER
       text_alignment: LEFT
-      offset_x: 110
+      offset_x: 100
       offset_y: 9
       scale: 1.0
-      content: "<red><bold>%mistaken_gens_reparados%/%mistaken_gens_total%</bold> Gens</red>"
+      content: "<white>Gens: %mistaken_gens_reparados%/%mistaken_gens_total%</white>"
 
 roles:
   survivor:
@@ -134,16 +134,24 @@ roles:
         text_alignment: LEFT
         offset_x: 10
         offset_y: 10
-        scale: 1.2
+        scale: 2
         content: "<green><bold>SUPERVIVIENTE</bold></green>"
       desc:
         type: TEXT
         alignment: TOP_LEFT
         text_alignment: LEFT
         offset_x: 10
-        offset_y: 25
+        offset_y: 35
         scale: 1.0
-        content: "<white>Repara los generadores y sobrevive.</white>"
+        content: "<gray>Trabaja en equipo, repara los</gray>"
+      desc2:
+        type: TEXT
+        alignment: TOP_LEFT
+        text_alignment: LEFT
+        offset_x: 10
+        offset_y: 45
+        scale: 1.0
+        content: "<gray>generadores y escapa con vida.</gray>"
   killer:
     components:
       title:
@@ -152,13 +160,21 @@ roles:
         text_alignment: LEFT
         offset_x: 10
         offset_y: 10
-        scale: 1.2
+        scale: 2
         content: "<red><bold>ASESINO</bold></red>"
       desc:
         type: TEXT
         alignment: TOP_LEFT
         text_alignment: LEFT
         offset_x: 10
-        offset_y: 25
+        offset_y: 35
         scale: 1.0
-        content: "<white>Elimina a todos los supervivientes.</white>"
+        content: "<gray>Caza a los supervivientes y evita</gray>"
+      desc2:
+        type: TEXT
+        alignment: TOP_LEFT
+        text_alignment: LEFT
+        offset_x: 10
+        offset_y: 45
+        scale: 1.0
+        content: "<gray>que reparen los generadores.</gray>"

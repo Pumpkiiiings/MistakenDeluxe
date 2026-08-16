@@ -78,6 +78,7 @@ class StillLife : CoreKiller(
         inv.setItem(1, org.bukkit.inventory.ItemStack(Material.FIRE_CHARGE))
         inv.setItem(2, org.bukkit.inventory.ItemStack(Material.IRON_SWORD))
         inv.setItem(3, org.bukkit.inventory.ItemStack(Material.RAW_IRON_BLOCK))
+        inv.setItem(4, org.bukkit.inventory.ItemStack(Material.ZOMBIE_HEAD))
     }
 
     override fun useSkill(player: Player, slot: Int) {
@@ -128,6 +129,55 @@ class StillLife : CoreKiller(
                         pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.still_life.habilidades.generador_colocado", "killers_info")
                     ))
                     playSkillEffects(player, 3)
+                }
+            }
+            4 -> {
+                if (!checkCooldown(player, 4)) {
+                    // Spawn clones (Null armor)
+                    val loc = player.location
+                    val session = plugin.sessionManager.getSession(player)
+                    for (i in 1..4) {
+                        val cloneLoc = loc.clone().add((Math.random() - 0.5) * 4, 0.0, (Math.random() - 0.5) * 4)
+                        val zombie = loc.world.spawn(cloneLoc, org.bukkit.entity.Zombie::class.java)
+                        
+                        zombie.setAdult()
+                        
+                        val equip = zombie.equipment
+                        if (equip != null) {
+                            val helmet = org.bukkit.inventory.ItemStack(Material.LEATHER_HELMET).also { val m = it.itemMeta as org.bukkit.inventory.meta.LeatherArmorMeta; m.setColor(org.bukkit.Color.BLACK); it.itemMeta = m }
+                            val chest = org.bukkit.inventory.ItemStack(Material.LEATHER_CHESTPLATE).also { val m = it.itemMeta as org.bukkit.inventory.meta.LeatherArmorMeta; m.setColor(org.bukkit.Color.BLACK); it.itemMeta = m }
+                            val legs = org.bukkit.inventory.ItemStack(Material.LEATHER_LEGGINGS).also { val m = it.itemMeta as org.bukkit.inventory.meta.LeatherArmorMeta; m.setColor(org.bukkit.Color.BLACK); it.itemMeta = m }
+                            val boots = org.bukkit.inventory.ItemStack(Material.LEATHER_BOOTS).also { val m = it.itemMeta as org.bukkit.inventory.meta.LeatherArmorMeta; m.setColor(org.bukkit.Color.BLACK); it.itemMeta = m }
+                            
+                            equip.helmet = helmet
+                            equip.chestplate = chest
+                            equip.leggings = legs
+                            equip.boots = boots
+                        }
+                        
+                        zombie.isCustomNameVisible = true
+                        zombie.customName(pumpking.lib.color.ColorTranslator.translate("<dark_gray>Null"))
+                        
+                        // Seek survivor
+                        if (session != null) {
+                            val closest = loc.world.getNearbyEntities(loc, 30.0, 10.0, 30.0).filterIsInstance<Player>().firstOrNull {
+                                !session.isKiller(it.uniqueId) && !plugin.spectatorManager.isSpectator(it)
+                            }
+                            if (closest != null) {
+                                zombie.target = closest
+                            }
+                        }
+                        
+                        // Kill after 15 seconds
+                        Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+                            if (!zombie.isDead) {
+                                zombie.health = 0.0
+                            }
+                        }, 20L * 15L)
+                    }
+                    
+                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>¡Clones invocados!"))
+                    playSkillEffects(player, 4)
                 }
             }
         }

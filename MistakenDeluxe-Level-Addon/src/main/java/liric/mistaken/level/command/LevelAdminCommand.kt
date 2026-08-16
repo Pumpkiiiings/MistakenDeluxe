@@ -2,6 +2,8 @@ package liric.mistaken.level.command
 
 import liric.mistaken.level.LevelAddonPlugin
 import org.bukkit.Bukkit
+import org.bukkit.command.CommandSender
+import org.bukkit.entity.Player
 import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -12,15 +14,24 @@ class LevelAdminCommand(private val plugin: LevelAddonPlugin) : BasicCommand {
 
     private val mm = MiniMessage.miniMessage()
 
+    private fun sendMsg(sender: CommandSender, path: String, defaultMsg: String, vararg replacements: Pair<String, String>) {
+        val prefix = plugin.messagesConfig.getString("prefix", "<gradient:#8e2de2:#4a00e0>[Level]</gradient> ")!!
+        var msg = plugin.messagesConfig.getString(path, defaultMsg)!!.replace("<prefix>", prefix)
+        for ((key, value) in replacements) {
+            msg = msg.replace(key, value)
+        }
+        sender.sendMessage(mm.deserialize(msg))
+    }
+
     override fun execute(stack: CommandSourceStack, args: Array<String>) {
         val sender = stack.sender
         if (!sender.hasPermission("mistaken.level.admin")) {
-            sender.sendMessage(mm.deserialize("<red>You do not have permission to use this command."))
+            sendMsg(sender, "messages.no-permission", "<red>You do not have permission to use this command.")
             return
         }
 
         if (args.size < 3) {
-            sender.sendMessage(mm.deserialize("<red>Usage: /leveladmin <addxp|setlevel|addkills|addwins_survivor|addwins_killer|addgenerators> <player> <amount>"))
+            sendMsg(sender, "messages.admin-usage", "<red>Usage: /leveladmin <addxp|setlevel|addkills|addwins_survivor|addwins_killer|addgenerators> <player> <amount>")
             return
         }
 
@@ -30,48 +41,48 @@ class LevelAdminCommand(private val plugin: LevelAddonPlugin) : BasicCommand {
 
         val target = Bukkit.getPlayer(targetName)
         if (target == null) {
-            sender.sendMessage(mm.deserialize("<red>Player not found."))
+            sendMsg(sender, "messages.player-not-found", "<red>Player not found.")
             return
         }
 
         when (action) {
             "addxp" -> {
                 plugin.manager.addExperience(target.uniqueId, amount, PlayerExperienceGainEvent.GainReason.COMMAND)
-                sender.sendMessage(mm.deserialize("<green>Added <gold>$amount XP</gold> to <yellow>${target.name}</yellow>."))
+                sendMsg(sender, "messages.admin-add-xp", "<prefix><green>Added <gold>%amount% XP</gold> to <yellow>%player%</yellow>.", "%amount%" to amount.toString(), "%player%" to target.name)
             }
             "setlevel" -> {
                 plugin.manager.setLevel(target.uniqueId, amount.toInt())
-                sender.sendMessage(mm.deserialize("<green>Set <yellow>${target.name}</yellow>'s level to <gold>$amount</gold>."))
+                sendMsg(sender, "messages.admin-set-level", "<prefix><green>Set <yellow>%player%</yellow>'s level to <gold>%level%</gold>.", "%level%" to amount.toString(), "%player%" to target.name)
             }
             "addkills", "addwins_survivor", "addwins_killer", "addgenerators" -> {
                 val mistakenCore = Bukkit.getPluginManager().getPlugin("Mistaken") as? Mistaken
                 if (mistakenCore == null) {
-                    sender.sendMessage(mm.deserialize("<red>Core plugin not found!"))
+                    sendMsg(sender, "messages.core-not-found", "<red>Core plugin not found!")
                     return
                 }
                 val stats = mistakenCore.statsManager.getStats(target.uniqueId)
                 when (action) {
                     "addkills" -> {
                         stats.kills.addAndGet(amount.toInt())
-                        sender.sendMessage(mm.deserialize("<green>Added <gold>$amount Kills</gold> to <yellow>${target.name}</yellow>."))
+                        sendMsg(sender, "messages.admin-add-kills", "<prefix><green>Added <gold>%amount% Kills</gold> to <yellow>%player%</yellow>.", "%amount%" to amount.toString(), "%player%" to target.name)
                     }
                     "addwins_survivor" -> {
                         stats.winsSurvivor.addAndGet(amount.toInt())
-                        sender.sendMessage(mm.deserialize("<green>Added <gold>$amount Survivor Wins</gold> to <yellow>${target.name}</yellow>."))
+                        sendMsg(sender, "messages.admin-add-wins-survivor", "<prefix><green>Added <gold>%amount% Survivor Wins</gold> to <yellow>%player%</yellow>.", "%amount%" to amount.toString(), "%player%" to target.name)
                     }
                     "addwins_killer" -> {
                         stats.winsAssassin.addAndGet(amount.toInt())
-                        sender.sendMessage(mm.deserialize("<green>Added <gold>$amount Killer Wins</gold> to <yellow>${target.name}</yellow>."))
+                        sendMsg(sender, "messages.admin-add-wins-killer", "<prefix><green>Added <gold>%amount% Killer Wins</gold> to <yellow>%player%</yellow>.", "%amount%" to amount.toString(), "%player%" to target.name)
                     }
                     "addgenerators" -> {
                         stats.generatorsRepaired.addAndGet(amount.toInt())
-                        sender.sendMessage(mm.deserialize("<green>Added <gold>$amount Generators</gold> to <yellow>${target.name}</yellow>."))
+                        sendMsg(sender, "messages.admin-add-generators", "<prefix><green>Added <gold>%amount% Generators</gold> to <yellow>%player%</yellow>.", "%amount%" to amount.toString(), "%player%" to target.name)
                     }
                 }
                 plugin.manager.checkLevelUp(target.uniqueId)
             }
             else -> {
-                sender.sendMessage(mm.deserialize("<red>Unknown action."))
+                sendMsg(sender, "messages.unknown-action", "<red>Unknown action.")
             }
         }
     }

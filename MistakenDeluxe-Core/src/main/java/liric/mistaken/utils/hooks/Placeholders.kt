@@ -5,10 +5,7 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion
 import org.bukkit.OfflinePlayer
 import org.bukkit.GameMode
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * MistakenExpansion: Integración con PlaceholderAPI adaptada a MULTIARENA.
- */
+
 class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
 
     override fun getIdentifier(): String = "mistaken"
@@ -22,6 +19,14 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
         val p = player.player // Jugador online (puede ser null)
         val param = params.lowercase()
 
+        fun formatTime(seconds: Int): String {
+            val h = seconds / 3600
+            val m = (seconds % 3600) / 60
+            val s = seconds % 60
+            return if (h > 0) String.format("%02d:%02d:%02d", h, m, s)
+            else String.format("%02d:%02d", m, s)
+        }
+
         // 1. BUSCAR SESIÓN (Solo si el jugador está online)
         val session = p?.let { plugin.sessionManager.getSession(it) }
 
@@ -29,14 +34,14 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
             // --- ESTADO DE LA PARTIDA ACTUAL (Contextual) ---
             "game_state" -> session?.currentState?.name ?: "LOBBY"
             "mode" -> session?.currentMode?.name ?: "N/A"
-            "timer" -> session?.timer?.toString() ?: "0"
+            "timer" -> session?.timer?.let { formatTime(it) } ?: "00:00"
             "map" -> session?.currentMapName ?: "Lobby"
             "session_id" -> session?.id ?: "NONE"
             
             // --- OBSERVER PLACEHOLDERS ---
             "vivos" -> session?.getPlayers()?.count { !session.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !plugin.spectatorManager.isSpectator(it) }?.toString() ?: "0"
             "id" -> session?.id ?: "NONE"
-            "tiempo" -> session?.timer?.toString() ?: "0"
+            "tiempo" -> session?.timer?.let { formatTime(it) } ?: "00:00"
             "modo" -> session?.currentMode?.name ?: "N/A"
             "votes" -> {
                 val arenas = plugin.arenaManager.getArenas()

@@ -10,11 +10,7 @@ import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import pumpking.lib.color.ColorTranslator
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * LeaveCommand: Permite salir de la partida actual.
- * FIX: Maneja correctamente el abandono en medio del juego (Victoria/Derrota automática).
- */
+
 object LeaveCommand {
 
     fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {
@@ -38,7 +34,7 @@ object LeaveCommand {
 
                 player.sendMessage(ColorTranslator.translate("<yellow>Saliendo de la partida..."))
 
-                // 2. LÓGICA DE ABANDONO (Si la partida ya empezó)
+                
                 if (session.currentState == GameState.INGAME) {
                     if (session.isKiller(player.uniqueId)) {
                         // Si el asesino se rinde

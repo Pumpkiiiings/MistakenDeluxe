@@ -37,7 +37,7 @@ class AlessioPartiesHook(private val plugin: Mistaken) : Listener {
                             
                             Bukkit.getScheduler().runTask(plugin, Runnable {
                                 MistakenProvider.get().sessionManager.joinSession(memberPlayer, sessionId)
-                                memberPlayer.sendMessage("§aTu líder de party te ha metido a la partida.")
+                                pumpking.lib.service.PumpkingServiceManager.messages.send(memberPlayer, liric.mistaken.config.Messages.HOOK_ALESSIO_ENTER)
                                 
                                 Bukkit.getScheduler().runTaskLater(plugin, Runnable {
                                     recentlyPulled.remove(memberUuid)
@@ -72,7 +72,7 @@ class AlessioPartiesHook(private val plugin: Mistaken) : Listener {
                             
                             Bukkit.getScheduler().runTask(plugin, Runnable {
                                 MistakenProvider.get().sessionManager.leaveSession(memberPlayer)
-                                memberPlayer.sendMessage("§cTu líder de party ha salido de la partida, sacando a todos...")
+                                pumpking.lib.service.PumpkingServiceManager.messages.send(memberPlayer, liric.mistaken.config.Messages.HOOK_ALESSIO_LEAVE)
                                 
                                 Bukkit.getScheduler().runTaskLater(plugin, Runnable {
                                     recentlyPulled.remove(memberUuid)

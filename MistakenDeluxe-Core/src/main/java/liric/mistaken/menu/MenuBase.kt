@@ -15,25 +15,7 @@ import pumpking.lib.color.ColorTranslator
 import pumpking.lib.config.ConfigManager
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- * [LIRIC-MISTAKEN 2.1]
- * MenuBase: Motor de menús globalizado.
- *
- * --- DISEÑO ---
- * Los YAMLs de menú son ahora GLOBALES (menus/<nombre>.yml), uno solo para
- * todos los idiomas. El título y los textos de items dinámicos se resuelven
- * desde el messages.yml del idioma del jugador usando la token %menu_title%:
- *
- *   menus/<nombre>.yml          → layout, slots, decoraciones (sin duplicar por idioma)
- *   langs/<lang>/messages.yml  → menus.<nombre>.titulo  (texto internacionalizado)
- *
- * Esto elimina por completo la carpeta langs/<lang>/menus/ y centraliza
- * toda la traducción en un único archivo messages.yml por idioma.
- *
- * --- CACHÉ ---
- * Las decoraciones se cachean por IDIOMA (no por jugador) porque el título
- * varía según el idioma pero el layout es idéntico para todos.
- */
+
 abstract class MenuBase(
     /** Nombre del archivo YAML sin extensión, ej: "killers_shop" */
     private val menuName: String
@@ -64,9 +46,9 @@ abstract class MenuBase(
     // Config global del menú (cargada una sola vez desde menus/<nombre>.yml)
     private var globalConfig: FileConfiguration? = null
 
-    // =========================================================================
+    
     // API PÚBLICA — para subclases y acceso externo
-    // =========================================================================
+    
 
     /**
      * Obtiene la configuración global del menú (layout, slots, decoraciones).
@@ -137,9 +119,9 @@ abstract class MenuBase(
         globalConfig = null
     }
 
-    // =========================================================================
+    
     // INTERNOS
-    // =========================================================================
+    
 
     private data class MenuBakedData(
         val resolvedTitle: String,

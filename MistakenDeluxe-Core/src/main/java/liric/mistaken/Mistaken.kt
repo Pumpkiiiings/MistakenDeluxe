@@ -109,6 +109,8 @@ class Mistaken : JavaPlugin() {
     lateinit var generatorManager: GeneratorManager
     lateinit var mapManager: MapManager
     lateinit var scoreboardManager: ScoreboardManager
+    lateinit var visualUpdateService: liric.mistaken.game.managers.visual.VisualUpdateService
+    lateinit var nameTagManager: liric.mistaken.game.managers.visual.NameTagManager
     lateinit var ambientManager: AmbientManager
     lateinit var horrorEnvironmentManager: HorrorEnvironmentManager
     lateinit var combatManager: CombatManager
@@ -201,6 +203,9 @@ class Mistaken : JavaPlugin() {
         PacketEvents.getAPI().eventManager.registerListener(PacketInteractListener())
 
         mapManager = MapManager(this)
+        scoreboardManager = ScoreboardManager(this)
+        nameTagManager = liric.mistaken.game.managers.visual.NameTagManager(this)
+        ambientManager = AmbientManager(this)
         arenaManager = ArenaManager(this)
         asesinoManager = KillerManager(this)
         supervivienteManager = SurvivorManager(this)
@@ -216,6 +221,9 @@ class Mistaken : JavaPlugin() {
         shopSelector = ShopSelector()
         scoreboardManager = ScoreboardManager(this)
         observerHUDManager = ObserverHUDManager(this)
+        
+        visualUpdateService = liric.mistaken.game.managers.visual.VisualUpdateService(this)
+        visualUpdateService.start()
 
         server.servicesManager.register(HealthAPI::class.java, combatManager, this, ServicePriority.Normal)
 
@@ -253,10 +261,12 @@ class Mistaken : JavaPlugin() {
         if (::musicManager.isInitialized) musicManager.shutdown()
         if (::generatorManager.isInitialized) runCatching { generatorManager.clearGenerators() }
         if (::scoreboardManager.isInitialized) runCatching { scoreboardManager.removeAll() }
+        if (::nameTagManager.isInitialized) runCatching { nameTagManager.removeAll() }
         PumpkingLib.shutdown()
         if (::asesinoManager.isInitialized) runCatching { asesinoManager.shutdown() }
         if (::supervivienteManager.isInitialized) runCatching { supervivienteManager.shutdown() }
         if (::observerHUDManager.isInitialized) runCatching { observerHUDManager.shutdown() }
+        if (::visualUpdateService.isInitialized) runCatching { visualUpdateService.stop() }
         if (::glowingAPI.isInitialized) runCatching { glowingAPI.disable() }
         if (::databaseManager.isInitialized) runCatching { databaseManager.close() }
         // FIX #3: webHook.shutdown() was missing from onDisable — the CoroutineScope and

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers
+package liric.mistaken.roles.killers
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 
@@ -12,12 +12,10 @@ import liric.mistaken.api.util.Sounds
 import org.bukkit.GameMode
 import org.bukkit.NamespacedKey
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * Killer: Clase base polimÃƒ³rfica ultra-optimizada.
- * FIX: Adaptada a MULTIARENA y Schedulers Nativos de Paper (Folia-Ready).
- */
-abstract class Killer(val id: String, val nombre: String) {
+import liric.mistaken.api.roles.GameRole
+
+
+abstract class Killer(override val id: String, override val nombre: String) : GameRole {
 
     open val defaultMusic: String? = null
 
@@ -96,7 +94,7 @@ abstract class Killer(val id: String, val nombre: String) {
      */
     open fun clearGlobalData() {}
 
-    open fun cleanup(player: Player?) {
+    open override fun cleanup(player: Player?) {
         // Cancelamos las tareas programadas de Paper
         activeTasks.forEach {
             if (!it.isCancelled) it.cancel()
@@ -111,7 +109,7 @@ abstract class Killer(val id: String, val nombre: String) {
                 // Limpieza de pociones segura
                 p.activePotionEffects.toList().forEach { p.removePotionEffect(it.type) }
 
-                // Reset de estados fÃƒ­sicos
+                
                 p.isSwimming = false
                 p.isGliding = false
                 p.isGlowing = false
@@ -119,7 +117,7 @@ abstract class Killer(val id: String, val nombre: String) {
                 // Aseguramos que vuelva al slot principal
                 p.inventory.heldItemSlot = 0
 
-                // Ã°Å¸â€™¡ FIX ESPECTADOR: Solo apagar vuelo si no es espectador
+                
                 if (p.gameMode != GameMode.SPECTATOR) {
                     p.allowFlight = false
                     p.isFlying = false
@@ -176,14 +174,14 @@ abstract class Killer(val id: String, val nombre: String) {
         // 3. RevisiÃƒ³n de Fuego Amigo basada en la sesiÃƒ³n del jugador atacado
         val session = api.sessionManager.getSession(victima) ?: return false
 
-        // Si el atacante no estÃƒ¡ en la misma sesiÃƒ³n, se deniega (Cruces entre arenas)
+        
         if (api.sessionManager.getSession(atacante) != session) return false
 
         val atacanteEsAsesino = session.isKiller(atacante.uniqueId)
         val victimaEsAsesino = session.isKiller(victima.uniqueId)
 
 
-        // Si es el modo normal y ambos son asesinos, no hay fuego amigo
+        
         if (atacanteEsAsesino && victimaEsAsesino) {
             return false
         }
@@ -193,7 +191,7 @@ abstract class Killer(val id: String, val nombre: String) {
     }
 
     // --- MÃƒâ€°TODOS ABSTRACTOS ---
-    abstract fun equip(player: Player)
+    abstract override fun equip(player: Player)
     abstract fun useSkill(player: Player, slot: Int)
     abstract fun showTrail(player: Player)
     open fun showPhysicalTrail(player: Player) {}

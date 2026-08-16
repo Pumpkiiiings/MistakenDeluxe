@@ -4,6 +4,8 @@ import org.bukkit.Particle
 import org.bukkit.Location
 import org.bukkit.plugin.java.JavaPlugin
 import liric.mistaken.Mistaken
+import org.bukkit.util.Vector
+import org.bukkit.entity.Player
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
@@ -188,18 +190,18 @@ object ParticleShapesUtils {
     /**
      * Dibuja alas angélicas o demoníacas estáticas detrás del jugador, alineadas a su mirada.
      */
-    fun drawWings(player: org.bukkit.entity.Player, type: Particle = Particle.FLAME) {
+    fun drawWings(player: Player, type: Particle = Particle.FLAME) {
         val loc = player.location
         val yaw = Math.toRadians(loc.yaw.toDouble() + 90) // +90 para que estén a la espalda
         
-        // Offset detrás del jugador
+        
         val backOffset = 0.3
         val backX = cos(yaw) * backOffset
         val backZ = sin(yaw) * backOffset
         
         val center = loc.clone().add(-backX, 1.2, -backZ)
         val vectorYaw = center.direction.normalize()
-        val vectorRight = vectorYaw.clone().crossProduct(org.bukkit.util.Vector(0, 1, 0)).normalize()
+        val vectorRight = vectorYaw.clone().crossProduct(Vector(0, 1, 0)).normalize()
         
         plugin.server.regionScheduler.run(plugin, center, Consumer { _ ->
             // Patrón básico de ala (V shape con puntos)

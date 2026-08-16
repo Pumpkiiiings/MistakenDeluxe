@@ -39,11 +39,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- *[LIRIC-MISTAKEN 2.0]
- * Troll: El maestro del engaño.
- * FIX: Actualizado al constructor moderno de PlayerInfo de PacketEvents.
- */
+
 class Troll : Survivor(
     "troll",
     PumpkingServiceManager.messages.getStrictString(null, "supervivientes.troll.nombre", "survivors_info")
@@ -243,7 +239,7 @@ class Troll : Survivor(
                 val session = plugin.sessionManager.getSession(viewer)
                 if (session != null && session.isKiller(viewer.uniqueId) && viewer.world == currentLoc.world) {
                     val dist = viewer.location.distanceSquared(currentLoc)
-                    if (dist < 6.25) { // Aprox 2.5 bloques. Si el asesino está muy cerca (golpeado)
+                    if (dist < 6.25) { 
                         val destroyPacket = WrapperPlayServerDestroyEntities(fakeId)
                         plugin.server.onlinePlayers.forEach { pm.sendPacket(it, destroyPacket) }
                         
@@ -285,7 +281,7 @@ class Troll : Survivor(
             val isOnGround = currentLoc.clone().subtract(0.0, 0.1, 0.0).block.type.isSolid || currentLoc.y <= Math.floor(currentLoc.y) + 0.1
 
             if (isOnGround && ticks - lastJumpTick > 15) {
-                val jumpChance = if (isFleeing) 0.40 else 0.85 // Salta más fácil si huye
+                val jumpChance = if (isFleeing) 0.40 else 0.85 
                 if (Math.random() > jumpChance) { 
                     velocityY = 0.42
                     lastJumpTick = ticks
@@ -301,7 +297,7 @@ class Troll : Survivor(
                 while (dist < 4.0) {
                     val b = eyeLoc.clone().add(dirVector.clone().multiply(dist)).block
                     
-                    // Si encontramos una puerta cerrada cerca, la abrimos para poder pasar
+                    
                     if (dist < 1.5 && b.blockData is org.bukkit.block.data.Openable) {
                         val openable = b.blockData as org.bukkit.block.data.Openable
                         if (!openable.isOpen) {
@@ -336,7 +332,7 @@ class Troll : Survivor(
                     targetYaw += 60f
                 }
                 
-                // Si está MUY cerca de la pared, intentar saltarla si es escalón
+                
                 if (frontDist < 0.8 && isOnGround) {
                     val footBlock = currentLoc.clone().add(direction.clone().multiply(0.8)).block
                     val headBlock = footBlock.getRelative(0, 1, 0)
@@ -345,7 +341,7 @@ class Troll : Survivor(
                     }
                 }
             } else {
-                // Si el frente está libre, centrarse en los pasillos (repulsión de paredes laterales)
+                
                 if (leftDist < 1.2) targetYaw += 20f // Aléjate de la izquierda
                 if (rightDist < 1.2) targetYaw -= 20f // Aléjate de la derecha
             }
@@ -425,7 +421,7 @@ class Troll : Survivor(
 
         var ticks = 0
         platano.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (ticks >= 300 || !platano.isValid) { // Desaparece en 15s si nadie la pisa
+            if (ticks >= 300 || !platano.isValid) { 
                 if (platano.isValid) platano.remove()
                 task.cancel()
                 return@Consumer

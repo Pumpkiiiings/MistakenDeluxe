@@ -28,16 +28,13 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
+import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.event.player.PlayerRespawnEvent
 import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
-/**
- * [LIRIC-MISTAKEN 2.0]
- * GameListener: Adaptado para MULTIARENA / VELOCITY.
- * Gestiona la l�gica de juego bas�ndose en la sesi�n individual de cada jugador.
- */
+
 class GameListener(private val plugin: Mistaken) : Listener {
 
     private val mm = plugin.mm
@@ -161,8 +158,24 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
     private fun applyStunToKiller(killer: Player, damager: Player) {
         killer.removePotionEffect(PotionEffectType.SPEED)
-        killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
-        killer.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3))
+        killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
+        killer.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
+        killer.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 4)) 
+        killer.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, 100, 200)) // Disables jump
+
+        if (liric.mistaken.utils.hooks.ObserverHook.hasObserverPlugin) {
+            val anim = liric.mistaken.utils.hooks.ObserverHook.getAnimation(killer, "stun", "")
+            if (anim.isNotEmpty()) {
+                com.observer.paper.api.PaperObserverAnimationAPI.playAnimation(killer, anim)
+            }
+            
+            liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(killer, true)
+            plugin.server.scheduler.runTaskLater(plugin, Runnable {
+                if (killer.isOnline) {
+                    liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(killer, false)
+                }
+            }, 100L)
+        }
 
         killer.playSound(killer.location, Sound.ENTITY_ZOMBIE_VILLAGER_CONVERTED, 1f, 0.5f)
         killer.world.spawnParticle(Particle.ENCHANTED_HIT, killer.location.add(0.0, 2.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
@@ -221,31 +234,131 @@ class GameListener(private val plugin: Mistaken) : Listener {
         }
     }
 
-    // --- PROTECCIONES AISLADAS POR SESI�N ---
+    private val healCooldowns = ConcurrentHashMap<UUID, Long>()
+    private val isHealing = ConcurrentHashMap<UUID, Boolean>()
+
+    // --- PROTECCIONES AISLADAS POR SESIN ---
     @EventHandler fun onDrop(e: PlayerDropItemEvent) {
-        val session = plugin.sessionManager.getSession(e.player)
-        if (session?.currentState == GameState.INGAME) e.isCancelled = true
+        val player = e.player
+        val session = plugin.sessionManager.getSession(player)
+        
+        if (session?.currentState == GameState.INGAME || session?.currentState == GameState.STARTING) {
+            e.isCancelled = true
+            
+            // Fix visual desync where client thinks the item dropped
+            plugin.server.scheduler.runTask(plugin, Runnable {
+                player.updateInventory()
+            })
+            
+            // Curacin de supervivientes
+            if (!session.isKiller(player.uniqueId) && !plugin.spectatorManager.isSpectator(player)) {
+                val uuid = player.uniqueId
+                val now = System.currentTimeMillis()
+                
+                if (plugin.combatManager.getHealth(player) >= 20.0) {
+                    player.sendActionBar(ColorTranslator.translate("<red>Ya tienes la vida al mximo!"))
+                    return
+                }
+                
+                if (isHealing[uuid] == true) return
+                
+                val lastHeal = healCooldowns[uuid] ?: 0L
+                if (now - lastHeal < 30_000L) {
+                    val remaining = (30_000L - (now - lastHeal)) / 1000L
+                    player.sendActionBar(ColorTranslator.translate("<red>Debes esperar $remaining s para volver a curarte."))
+                    return
+                }
+                
+                isHealing[uuid] = true
+                val totalTicks = 60 // 3 segundos de curacin
+                player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, totalTicks, 1, false, false))
+                
+                object : org.bukkit.scheduler.BukkitRunnable() {
+                    var ticks = 0
+                    override fun run() {
+                        if (!player.isOnline || session.currentState != GameState.INGAME || plugin.spectatorManager.isSpectator(player)) {
+                            isHealing[uuid] = false
+                            cancel()
+                            return
+                        }
+                        
+                        ticks += 5
+                        val remainingSecs = (totalTicks - ticks) / 20.0
+                        
+                        if (ticks >= totalTicks) {
+                            val heartsToHeal = ThreadLocalRandom.current().nextInt(2, 8)
+                            val healthToHeal = heartsToHeal * 2
+                            
+                            val currentHealth = plugin.combatManager.getHealth(player)
+                            if (currentHealth < 20) {
+                                val newHealth = (currentHealth + healthToHeal).coerceAtMost(20)
+                                plugin.combatManager.setHealth(player, newHealth)
+                            }
+                            
+                            val times = net.kyori.adventure.title.Title.Times.times(java.time.Duration.ofMillis(250), java.time.Duration.ofMillis(1000), java.time.Duration.ofMillis(250))
+                            player.showTitle(net.kyori.adventure.title.Title.title(
+                                ColorTranslator.translate("<green>Curado!"),
+                                ColorTranslator.translate("<gray>+$heartsToHeal corazones"),
+                                times
+                            ))
+                            player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f)
+                            
+                            isHealing[uuid] = false
+                            healCooldowns[uuid] = System.currentTimeMillis()
+                            cancel()
+                        } else {
+                            val times = net.kyori.adventure.title.Title.Times.times(java.time.Duration.ZERO, java.time.Duration.ofMillis(500), java.time.Duration.ZERO)
+                            player.showTitle(net.kyori.adventure.title.Title.title(
+                                ColorTranslator.translate("<yellow>Curandose..."),
+                                ColorTranslator.translate("<gray>${String.format(java.util.Locale.US, "%.1f", remainingSecs)}s"),
+                                times
+                            ))
+                            if (ticks % 10 == 0) {
+                                player.playSound(player.location, Sound.ENTITY_GENERIC_DRINK, 0.5f, 1.0f)
+                            }
+                        }
+                    }
+                }.runTaskTimer(plugin, 0L, 5L)
+            }
+        }
     }
 
     @EventHandler fun onCraft(e: CraftItemEvent) {
         val session = plugin.sessionManager.getSession(e.whoClicked as Player)
-        if (session?.currentState == GameState.INGAME) e.isCancelled = true
+        if (session?.currentState == GameState.INGAME || session?.currentState == GameState.STARTING) e.isCancelled = true
     }
 
     @EventHandler fun onBreak(e: BlockBreakEvent) {
         val session = plugin.sessionManager.getSession(e.player)
-        if (session?.currentState == GameState.INGAME && !e.player.hasPermission("mistaken.admin")) e.isCancelled = true
+        if ((session?.currentState == GameState.INGAME || session?.currentState == GameState.STARTING) && !e.player.hasPermission("mistaken.admin")) e.isCancelled = true
     }
 
     @EventHandler fun onPlace(e: BlockPlaceEvent) {
         val session = plugin.sessionManager.getSession(e.player)
-        if (session?.currentState == GameState.INGAME && !e.player.hasPermission("mistaken.admin")) e.isCancelled = true
+        if ((session?.currentState == GameState.INGAME || session?.currentState == GameState.STARTING) && !e.player.hasPermission("mistaken.admin")) e.isCancelled = true
+    }
+
+    @EventHandler fun onInventoryClick(e: org.bukkit.event.inventory.InventoryClickEvent) {
+        val player = e.whoClicked as? Player ?: return
+        if (player.hasPermission("mistaken.admin") && player.gameMode == GameMode.CREATIVE) return
+        val session = plugin.sessionManager.getSession(player) ?: return
+        
+        if (session.currentState == GameState.STARTING) {
+            e.isCancelled = true
+            return
+        }
+        
+        if (session.currentState == GameState.INGAME) {
+            if (e.slotType == org.bukkit.event.inventory.InventoryType.SlotType.ARMOR || e.rawSlot == 45) {
+                e.isCancelled = true
+            }
+        }
     }
 
     @EventHandler
     fun onPlayerDismount(event: PlayerToggleSneakEvent) {
         val player = event.player
-        if (event.isSneaking && player.passengers.isNotEmpty()) {
+        if (event.isSneaking && player.passengers.any { !liric.mistaken.utils.misc.EntityUtils.isHUDEntity(it) }) {
             plugin.combatManager.soltarPasajero(player)
         }
     }
