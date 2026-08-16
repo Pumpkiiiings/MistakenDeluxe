@@ -148,12 +148,9 @@ class NameTagManager(private val plugin: Mistaken) {
 
         val metadataPacket = WrapperPlayServerEntityMetadata(tag.entityId, metadata)
         
-        val loc = player.location
-        val teleportPacket = WrapperPlayServerEntityTeleport(
-            tag.entityId,
-            com.github.retrooper.packetevents.protocol.world.Location(loc.x, loc.y, loc.z, 0f, 0f),
-            false
-        )
+        // Use SetPassengers for 100% smooth movement (no teleport interpolation lag)
+        val passengerIds = player.passengers.map { it.entityId }.toIntArray() + tag.entityId
+        val passengerPacket = WrapperPlayServerSetPassengers(player.entityId, passengerIds)
 
         Bukkit.getOnlinePlayers().forEach { viewer ->
             // Re-apply packet-level team hiding continuously in case Observer overrides the scoreboard
@@ -163,7 +160,7 @@ class NameTagManager(private val plugin: Mistaken) {
                 spawnForViewer(player, viewer, tag)
             }
             PacketEvents.getAPI().playerManager.sendPacket(viewer, metadataPacket)
-            PacketEvents.getAPI().playerManager.sendPacket(viewer, teleportPacket)
+            PacketEvents.getAPI().playerManager.sendPacket(viewer, passengerPacket)
         }
     }
 
@@ -190,14 +187,18 @@ class NameTagManager(private val plugin: Mistaken) {
         // Index 25: Background transparent
         metadata.add(EntityData(25, EntityDataTypes.INT, 0))
         // Index 11: Translation
-        metadata.add(EntityData(11, EntityDataTypes.VECTOR3F, Vector3f(0f, 2.1f, 0f)))
+        metadata.add(EntityData(11, EntityDataTypes.VECTOR3F, Vector3f(0f, 0.3f, 0f)))
         // Index 17: View range
         metadata.add(EntityData(17, EntityDataTypes.FLOAT, 1.0f))
 
         val metadataPacket = WrapperPlayServerEntityMetadata(tag.entityId, metadata)
+        
+        val passengerIds = owner.passengers.map { it.entityId }.toIntArray() + tag.entityId
+        val passengerPacket = WrapperPlayServerSetPassengers(owner.entityId, passengerIds)
 
         PacketEvents.getAPI().playerManager.sendPacket(viewer, spawnPacket)
         PacketEvents.getAPI().playerManager.sendPacket(viewer, metadataPacket)
+        PacketEvents.getAPI().playerManager.sendPacket(viewer, passengerPacket)
 
         tag.confirmedViewers.add(viewer.uniqueId)
     }
