@@ -12,7 +12,7 @@
 
 In Mistaken, players are divided into two teams: **The Survivors**, who must repair generators, outsmart their hunter, and escape to survive; and **The Killer**, an unstoppable entity whose sole objective is to hunt down the survivors before they can escape.
 
-The plugin was originally built in Kotlin and Java taking inspiration from [MurderRun](https://github.com/PulseBeat02/MurderRun) by **PulseBeat02** for version **1.21.10**, and has since evolved into a highly optimized, feature-rich modern minigame framework for Minecraft 1.21.4+.
+The plugin is built as a highly optimized, feature-rich modern minigame framework for Minecraft 1.21.4+.
 
 ---
 
