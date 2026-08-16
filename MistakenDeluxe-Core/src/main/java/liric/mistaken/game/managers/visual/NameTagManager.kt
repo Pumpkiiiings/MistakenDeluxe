@@ -23,6 +23,7 @@ class NameTagManager(private val plugin: Mistaken) {
     }
 
     private fun setupGlobalTeam() {
+        // En caso de que se use el mainScoreboard
         val board = Bukkit.getScoreboardManager().mainScoreboard
         var team = board.getTeam("mistaken_hide")
         if (team == null) {
@@ -30,14 +31,22 @@ class NameTagManager(private val plugin: Mistaken) {
         }
         team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER)
         
-        // Agregar a los que ya estén online
         Bukkit.getOnlinePlayers().forEach { team.addEntry(it.name) }
     }
 
     fun setupPlayer(player: Player) {
-        val board = Bukkit.getScoreboardManager().mainScoreboard
-        val team = board.getTeam("mistaken_hide")
-        team?.addEntry(player.name)
+        // Añadir este jugador a los scoreboards personales de TODOS los jugadores online
+        Bukkit.getOnlinePlayers().forEach { online ->
+            val board = online.scoreboard
+            var team = board.getTeam("mistaken_hide")
+            if (team == null) {
+                team = board.registerNewTeam("mistaken_hide")
+                team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER)
+            }
+            if (!team.hasEntry(player.name)) {
+                team.addEntry(player.name)
+            }
+        }
 
         if (displays.containsKey(player.uniqueId)) {
             removePlayer(player)
@@ -56,8 +65,10 @@ class NameTagManager(private val plugin: Mistaken) {
     }
 
     fun removePlayer(player: Player) {
-        val board = Bukkit.getScoreboardManager().mainScoreboard
-        board.getTeam("mistaken_hide")?.removeEntry(player.name)
+        Bukkit.getOnlinePlayers().forEach { online ->
+            val board = online.scoreboard
+            board.getTeam("mistaken_hide")?.removeEntry(player.name)
+        }
 
         displays.remove(player.uniqueId)?.remove()
     }
@@ -139,7 +150,7 @@ class NameTagManager(private val plugin: Mistaken) {
         display.backgroundColor = bgColor
         display.isShadowed = shadow
         display.transformation = Transformation(
-            Vector3f(0f, 2.3f, 0f),
+            Vector3f(0f, 0.4f, 0f),
             AxisAngle4f(0f, 0f, 0f, 1f),
             Vector3f(size, size, size),
             AxisAngle4f(0f, 0f, 0f, 1f)
