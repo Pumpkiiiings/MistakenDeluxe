@@ -54,12 +54,5 @@ class ScoreboardUpdateTask : BukkitRunnable() {
                 )
             }
         }
-
-        tickCount++
-        if (tickCount >= 400) { // Every ~20 seconds
-            ScoreboardProfiler.printReport()
-            ScoreboardProfiler.reset()
-            tickCount = 0
-        }
     }
 }
