@@ -7,7 +7,6 @@ import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes
 import com.github.retrooper.packetevents.util.Vector3d
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.*
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams.ScoreBoardTeamInfo
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -38,15 +37,15 @@ class NameTagManager(private val plugin: Mistaken) {
     fun setupPlayer(player: Player) {
         removePlayer(player)
 
-        // Hide the vanilla nametag for this player on ALL viewers
+        // Add this player to the hide team on every online player's personal scoreboard
         Bukkit.getOnlinePlayers().forEach { viewer ->
-            sendTeamHidePacket(viewer, player.name, isAdd = true)
+            addToHideTeam(viewer.scoreboard, player.name)
         }
 
-        // Also ensure new player sees all existing players' vanilla tags hidden
+        // Also ensure this new player's own scoreboard hides all existing players
         nametags.keys.forEach { ownerUUID ->
             val owner = Bukkit.getPlayer(ownerUUID) ?: return@forEach
-            sendTeamHidePacket(player, owner.name, isAdd = true)
+            addToHideTeam(player.scoreboard, owner.name)
         }
 
         val entityId = entityIdCounter.decrementAndGet()
@@ -70,9 +69,9 @@ class NameTagManager(private val plugin: Mistaken) {
             PacketEvents.getAPI().playerManager.sendPacket(viewer, destroyPacket)
         }
 
-        // Unhide vanilla nametag
+        // Remove from hide team on all scoreboards
         Bukkit.getOnlinePlayers().forEach { viewer ->
-            sendTeamHidePacket(viewer, player.name, isAdd = false)
+            viewer.scoreboard.getTeam("mistaken_hide")?.removeEntry(player.name)
         }
     }
 
@@ -198,50 +197,17 @@ class NameTagManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Send a packet-level team to a viewer that hides the vanilla nametag for [targetName].
-     * This bypasses all Bukkit scoreboard conflicts.
+     * Ensure a "mistaken_hide" team with NAME_TAG_VISIBILITY=NEVER exists on [scoreboard]
+     * and add [playerName] to it.
      */
-    private fun sendTeamHidePacket(viewer: Player, targetName: String, isAdd: Boolean) {
-        if (isAdd) {
-            // Create team + add member in one packet
-            val teamInfo = ScoreBoardTeamInfo(
-                Component.empty(),         // displayName
-                null,                       // prefix
-                null,                       // suffix
-                WrapperPlayServerTeams.NameTagVisibility.NEVER,
-                WrapperPlayServerTeams.CollisionRule.ALWAYS,
-                null,                       // color
-                WrapperPlayServerTeams.OptionData.NONE
-            )
-            // First send CREATE with the member
-            val createPacket = WrapperPlayServerTeams(
-                TEAM_NAME,
-                WrapperPlayServerTeams.TeamMode.ADD_ENTITIES,
-                null as ScoreBoardTeamInfo?,
-                targetName
-            )
-            // Also send the team info if the viewer doesn't have it yet
-            val infoPacket = WrapperPlayServerTeams(
-                TEAM_NAME,
-                WrapperPlayServerTeams.TeamMode.CREATE,
-                teamInfo,
-                targetName
-            )
-            // Send CREATE (idempotent for the team, adds member)
-            try {
-                PacketEvents.getAPI().playerManager.sendPacket(viewer, infoPacket)
-            } catch (_: Exception) {
-                // Team already exists for this viewer, just add the entity
-                PacketEvents.getAPI().playerManager.sendPacket(viewer, createPacket)
-            }
-        } else {
-            val removePacket = WrapperPlayServerTeams(
-                TEAM_NAME,
-                WrapperPlayServerTeams.TeamMode.REMOVE_ENTITIES,
-                null as ScoreBoardTeamInfo?,
-                targetName
-            )
-            PacketEvents.getAPI().playerManager.sendPacket(viewer, removePacket)
+    private fun addToHideTeam(scoreboard: org.bukkit.scoreboard.Scoreboard, playerName: String) {
+        var team = scoreboard.getTeam("mistaken_hide")
+        if (team == null) {
+            team = scoreboard.registerNewTeam("mistaken_hide")
+            team.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, org.bukkit.scoreboard.Team.OptionStatus.NEVER)
+        }
+        if (!team.hasEntry(playerName)) {
+            team.addEntry(playerName)
         }
     }
 

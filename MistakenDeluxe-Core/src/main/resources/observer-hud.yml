@@ -143,7 +143,7 @@ roles:
         offset_x: 10
         offset_y: 35
         scale: 1.0
-        content: "<gray>Trabaja en equipo, repara los</gray>"
+        content: "<white>Trabaja en equipo, repara los</white>"
       desc2:
         type: TEXT
         alignment: TOP_LEFT
@@ -151,7 +151,7 @@ roles:
         offset_x: 10
         offset_y: 45
         scale: 1.0
-        content: "<gray>generadores y escapa con vida.</gray>"
+        content: "<white>generadores y escapa con vida.</white>"
   killer:
     components:
       title:
@@ -169,7 +169,7 @@ roles:
         offset_x: 10
         offset_y: 35
         scale: 1.0
-        content: "<gray>Caza a los supervivientes y evita</gray>"
+        content: "<white>Caza a los supervivientes y evita</white>"
       desc2:
         type: TEXT
         alignment: TOP_LEFT
@@ -177,4 +177,4 @@ roles:
         offset_x: 10
         offset_y: 45
         scale: 1.0
-        content: "<gray>que reparen los generadores.</gray>"
+        content: "<white>que reparen los generadores.</white>"
