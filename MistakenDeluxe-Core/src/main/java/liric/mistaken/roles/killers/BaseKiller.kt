@@ -24,7 +24,7 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
     // Registra los characters activos de cada jugador usando este asesino
     protected val activeCharacters = ConcurrentHashMap<UUID, Character>()
 
-    override fun equip(player: Player) {
+    open override fun equip(player: Player) {
         val character = Character(player)
         activeCharacters[player.uniqueId] = character
 

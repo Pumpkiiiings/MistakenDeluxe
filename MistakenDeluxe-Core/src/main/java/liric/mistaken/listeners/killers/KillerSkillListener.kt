@@ -26,6 +26,8 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
     private val mm = plugin.mm
     private val plain = PlainTextComponentSerializer.plainText()
 
+    private val lastAttackMap = java.util.concurrent.ConcurrentHashMap<java.util.UUID, Long>()
+
     /**
      * Trigger: Ataque básico (Click Izquierdo).
      */
@@ -39,11 +41,25 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         if (session.currentState != GameState.INGAME) return
         if (!session.isKiller(player.uniqueId)) return
 
+        // Anti-spam para evitar que spamee transiciones si el jugador mantiene presionado el click izquierdo
+        val now = System.currentTimeMillis()
+        val lastHit = lastAttackMap.getOrDefault(player.uniqueId, 0L)
+        if (now - lastHit < 500L) { // Medio segundo de cooldown para la animación
+            return
+        }
+        lastAttackMap[player.uniqueId] = now
+
         val asesino = plugin.asesinoManager.getKillerOfPlayer(player) ?: return
         if (asesino is liric.mistaken.roles.killers.BaseKiller) {
             val character = asesino.getCharacter(player) ?: return
-            character.getComponent(liric.mistaken.characters.components.StateComponent::class.java)
-                ?.transitionTo(liric.mistaken.characters.states.AttackState, force = true)
+            
+            val combatComp = character.getComponent(liric.mistaken.characters.components.CombatComponent::class.java)
+            if (combatComp != null) {
+                combatComp.performAttack("basic")
+            } else {
+                character.getComponent(liric.mistaken.characters.components.StateComponent::class.java)
+                    ?.transitionTo(liric.mistaken.characters.states.AttackState, force = true)
+            }
         }
     }
 
@@ -60,8 +76,14 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         val asesino = plugin.asesinoManager.getKillerOfPlayer(player) ?: return
         if (asesino is liric.mistaken.roles.killers.BaseKiller) {
             val character = asesino.getCharacter(player) ?: return
-            character.getComponent(liric.mistaken.characters.components.StateComponent::class.java)
-                ?.transitionTo(liric.mistaken.characters.states.AttackState, force = true)
+            
+            val combatComp = character.getComponent(liric.mistaken.characters.components.CombatComponent::class.java)
+            if (combatComp != null) {
+                combatComp.performAttack("entity")
+            } else {
+                character.getComponent(liric.mistaken.characters.components.StateComponent::class.java)
+                    ?.transitionTo(liric.mistaken.characters.states.AttackState, force = true)
+            }
         }
     }
 

@@ -53,8 +53,6 @@ class StandardStateComponent : StateComponent {
         // Cambiar estado
         _currentState = newState
 
-        org.bukkit.Bukkit.broadcastMessage("§e[DEBUG] State changed: ${oldState.id} -> ${newState.id}")
-
         // Entrar al nuevo estado
         _currentState.onEnter(character)
 
@@ -65,13 +63,35 @@ class StandardStateComponent : StateComponent {
     }
 
     private fun playStateAnimation(state: CharacterState) {
-        val animationName = state.defaultAnimation ?: return
+        val animationName = state.defaultAnimation
+        if (animationName == null) {
+            // Si el estado no tiene animación por defecto, y no loopea, deberíamos volver a Idle.
+            // Pero por defecto, si no hay animación, quizás no queremos volver instantáneamente.
+            // Para estados como Attack, si no hay animación, volvemos a Idle inmediatamente
+            if (state.priority >= 30) {
+                if (_currentState.id == state.id) {
+                    returnToIdle()
+                }
+            }
+            return
+        }
+
         val animationComponent = character.getComponent(AnimationComponent::class.java)
         
         // Si la prioridad es >= 30 (ej. Ataque, Habilidad), no loopea y vuelve a Idle al terminar
         val loop = state.priority < 30 
         
-        animationComponent?.play(
+        if (animationComponent == null) {
+            // Si no hay componente de animación, y es un estado de un solo uso (no loop), volvemos a Idle.
+            if (!loop) {
+                if (_currentState.id == state.id) {
+                    returnToIdle()
+                }
+            }
+            return
+        }
+
+        animationComponent.play(
             animationName = animationName,
             loop = loop,
             priority = state.priority,

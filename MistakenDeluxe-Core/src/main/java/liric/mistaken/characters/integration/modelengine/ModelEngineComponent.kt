@@ -20,6 +20,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
     private var dummy: Dummy<Player>? = null
     private var taskId: Int = -1
     private var lastLocation: Location? = null
+    private var modelAdded: Boolean = false
 
     override fun onEnable(character: Character) {
         this.character = character
@@ -46,6 +47,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         dummy?.xHeadRot = player.location.pitch
         dummy?.yBodyRot = player.location.yaw
         dummy?.setForceViewing(player, true)
+        dummy?.isDetectingPlayers = false // FIX SLABS: Evitar que el Dummy detecte o colisione con jugadores
 
         modeledEntity = ModelEngineAPI.createModeledEntity(dummy)
         
@@ -54,9 +56,12 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         
         activeModel = ModelEngineAPI.createActiveModel(blueprint)
         if (activeModel != null) {
-            activeModel!!.isHitboxVisible = false // FIX SLABS: Elimina las colisiones del modelo para evitar rubberbanding en losas y nieve
-            modeledEntity?.addModel(activeModel!!, true)
+            activeModel!!.isHitboxVisible = false // Esto solo lo oculta visualmente
+            activeModel!!.setHitboxScale(0.0) // FIX SLABS: Elimina físicamente el hitbox reduciéndolo a 0
+            // FIX CINEMATIC: No añadimos el modelo aquí. Lo añadiremos en syncDummy cuando estemos INGAME.
         }
+        
+        modeledEntity?.base?.setMaxStepHeight(1.5)
 
         // Esconder al jugador real para que no se sobreponga
         player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, Int.MAX_VALUE, 0, false, false))
@@ -71,6 +76,23 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         val currentDummy = dummy ?: return
         val loc = player.location
         val lastLoc = lastLocation ?: loc
+
+        // FIX VISIBILIDAD: Asegurar que el jugador siga invisible aunque otro plugin limpie los efectos
+        if (!player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
+            player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, Int.MAX_VALUE, 0, false, false))
+        }
+
+        // FIX CINEMATIC: Solo mostrar el modelo si el juego ya empezó (o si no hay sesión activa)
+        val session = liric.mistaken.Mistaken.instance.sessionManager.getSession(player)
+        val shouldShow = session == null || session.currentState == liric.mistaken.game.enums.GameState.INGAME
+
+        if (shouldShow && !modelAdded) {
+            activeModel?.let { modeledEntity?.addModel(it, true) }
+            modelAdded = true
+        } else if (!shouldShow && modelAdded) {
+            activeModel?.let { modeledEntity?.removeModel(it.blueprint.name) }
+            modelAdded = false
+        }
 
         // Detectar si se movió para la animación 'walk' por defecto de ModelEngine
         val moved = loc.x != lastLoc.x || loc.z != lastLoc.z || loc.y != lastLoc.y
@@ -101,6 +123,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
             modeledEntity = null
             activeModel = null
             dummy = null
+            modelAdded = false
         }
     }
 

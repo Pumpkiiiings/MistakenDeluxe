@@ -12,6 +12,9 @@ interface CinematicProfile {
     val introCameraStyle: CameraStyle get() = CameraStyle.ORBIT_ZOOM_IN
     val outroCameraStyle: CameraStyle get() = CameraStyle.ORBIT_ZOOM_IN
 
+    val introDuration: Int get() = 160
+    val outroDuration: Int get() = 200
+
     fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component>
     fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component>
     fun getDialogs(isIntro: Boolean): List<String>

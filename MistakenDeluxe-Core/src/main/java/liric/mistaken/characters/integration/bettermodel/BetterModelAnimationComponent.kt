@@ -31,7 +31,11 @@ class BetterModelAnimationComponent : AnimationComponent {
         priority: Int,
         onComplete: (() -> Unit)?
     ) {
-        val tracker = getTracker() ?: return
+        val tracker = getTracker()
+        if (tracker == null) {
+            onComplete?.invoke()
+            return
+        }
 
         val modifier = AnimationModifier.builder()
             .type(if (loop) AnimationIterator.Type.LOOP else AnimationIterator.Type.PLAY_ONCE)

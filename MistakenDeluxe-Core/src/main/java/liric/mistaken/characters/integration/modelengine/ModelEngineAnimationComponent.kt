@@ -36,14 +36,20 @@ class ModelEngineAnimationComponent : AnimationComponent {
             // ModelEngine playAnimation: (String animation, double lerpIn, double lerpOut, double speed, boolean force)
             val property = handler.playAnimation(animationName, 0.0, 0.0, speed.toDouble(), true)
             
-            if (property != null && onComplete != null) {
-                val lengthInSeconds = property.blueprintAnimation.length
-                val delayTicks = (lengthInSeconds * 20.0 / speed).toLong().coerceAtLeast(1L)
-                
-                Bukkit.getScheduler().runTaskLater(liric.mistaken.Mistaken.instance, Runnable {
-                    onComplete()
-                }, delayTicks)
+            if (property != null) {
+                if (onComplete != null) {
+                    val lengthInSeconds = property.blueprintAnimation.length
+                    val delayTicks = (lengthInSeconds * 20.0 / speed).toLong().coerceAtLeast(1L)
+                    
+                    Bukkit.getScheduler().runTaskLater(liric.mistaken.Mistaken.instance, Runnable {
+                        onComplete()
+                    }, delayTicks)
+                }
+            } else {
+                onComplete?.invoke()
             }
+        } else {
+            onComplete?.invoke()
         }
     }
 

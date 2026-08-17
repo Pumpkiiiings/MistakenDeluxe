@@ -41,6 +41,7 @@ class CinematicManager(private val plugin: Mistaken) {
         registerProfile(NullProfile())
         registerProfile(HerobrineProfile())
         registerProfile(CharlieJazzProfile())
+        registerProfile(WardenProfile())
         
         // Register aliases
         profiles["charlieinferno"] = CharlieProfile()
@@ -61,7 +62,7 @@ class CinematicManager(private val plugin: Mistaken) {
     fun playKillerIntro(killer: Player, asesino: Killer, viewers: List<Player>) {
         val id = asesino.id.lowercase()
         val profile = getProfile(id)
-        val duracionTicks = 160
+        val duracionTicks = profile.introDuration
         
         val yOffset = if (id == "charlie") 15.0 else if (profile.isFloating) 2.5 else 0.0
         val centerLoc = killer.location.clone().add(0.0, yOffset, 0.0)
@@ -101,7 +102,11 @@ class CinematicManager(private val plugin: Mistaken) {
         val fxLoc = centerLoc.clone(); fxLoc.y -= yOffset
         
         // Play visual effects
-        profile.playEffects(plugin, fxLoc, visualDummy, true, displayManager, viewers)
+        try {
+            profile.playEffects(plugin, fxLoc, visualDummy, true, displayManager, viewers)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
         // Start cinematic orbit and dialogs
         val dialogos = profile.getDialogs(isIntro = true)
@@ -146,7 +151,7 @@ class CinematicManager(private val plugin: Mistaken) {
     fun playKillerOutro(killer: Player, asesino: Killer, viewers: List<Player>) {
         val id = asesino.id.lowercase()
         val profile = getProfile(id)
-        val duracionTicks = 200
+        val duracionTicks = profile.outroDuration
         
         val centerLoc = killer.location.clone().add(0.0, if (profile.isFloating) 2.5 else 0.0, 0.0)
 
@@ -182,7 +187,11 @@ class CinematicManager(private val plugin: Mistaken) {
         }
 
         // Play visual effects
-        profile.playEffects(plugin, centerLoc, visualDummy, false, displayManager, viewers)
+        try {
+            profile.playEffects(plugin, centerLoc, visualDummy, false, displayManager, viewers)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
         // Start cinematic orbit and dialogs
         val dialogos = profile.getDialogs(isIntro = false)
