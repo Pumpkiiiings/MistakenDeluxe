@@ -6,16 +6,25 @@ package liric.mistaken.characters.states
 object IdleState : CharacterState {
     override val id = "idle"
     override val priority = 0
+    override fun canInterrupt(currentState: CharacterState): Boolean {
+        return super.canInterrupt(currentState) || currentState == FallState
+    }
 }
 
 object WalkState : CharacterState {
     override val id = "walk"
     override val priority = 10
+    override fun canInterrupt(currentState: CharacterState): Boolean {
+        return super.canInterrupt(currentState) || currentState == FallState
+    }
 }
 
 object RunState : CharacterState {
     override val id = "run"
     override val priority = 20
+    override fun canInterrupt(currentState: CharacterState): Boolean {
+        return super.canInterrupt(currentState) || currentState == FallState
+    }
 }
 
 object FallState : CharacterState {
