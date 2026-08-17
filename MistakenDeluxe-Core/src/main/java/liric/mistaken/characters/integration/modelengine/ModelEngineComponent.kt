@@ -54,6 +54,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         
         activeModel = ModelEngineAPI.createActiveModel(blueprint)
         if (activeModel != null) {
+            activeModel!!.isHitboxVisible = false // FIX SLABS: Elimina las colisiones del modelo para evitar rubberbanding en losas y nieve
             modeledEntity?.addModel(activeModel!!, true)
         }
 

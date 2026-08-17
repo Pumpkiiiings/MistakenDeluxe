@@ -40,8 +40,15 @@ class StandardStateComponent : StateComponent {
             return false
         }
 
+        val oldState = _currentState
+        
         // Salir del estado actual
         _currentState.onExit(character)
+
+        // Detener la animación del estado anterior
+        oldState.defaultAnimation?.let {
+            character.getComponent(AnimationComponent::class.java)?.stop(it)
+        }
 
         // Cambiar estado
         _currentState = newState
