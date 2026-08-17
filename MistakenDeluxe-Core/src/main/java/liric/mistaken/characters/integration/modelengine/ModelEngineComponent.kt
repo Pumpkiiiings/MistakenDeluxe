@@ -41,6 +41,10 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         // SOLUCIÓN PARA F5: Usamos un Dummy en lugar del Player directamente.
         // Esto permite forzar que el propio jugador vea el modelo.
         dummy = Dummy(player)
+        dummy?.setLocation(player.location)
+        dummy?.yHeadRot = player.location.yaw
+        dummy?.xHeadRot = player.location.pitch
+        dummy?.yBodyRot = player.location.yaw
         dummy?.setForceViewing(player, true)
 
         modeledEntity = ModelEngineAPI.createModeledEntity(dummy)
