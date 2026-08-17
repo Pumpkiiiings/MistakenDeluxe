@@ -34,8 +34,16 @@ class ModelEngineAnimationComponent : AnimationComponent {
             val handler = activeModel.animationHandler
             
             // ModelEngine playAnimation: (String animation, double lerpIn, double lerpOut, double speed, boolean force)
-            handler.playAnimation(animationName, 0.0, 0.0, speed.toDouble(), true)
-            // No hay manera sencilla de registrar el onComplete sin escuchar eventos de ModelEngine, lo omitiremos por simplicidad
+            val property = handler.playAnimation(animationName, 0.0, 0.0, speed.toDouble(), true)
+            
+            if (property != null && onComplete != null) {
+                val lengthInSeconds = property.blueprintAnimation.length
+                val delayTicks = (lengthInSeconds * 20.0 / speed).toLong().coerceAtLeast(1L)
+                
+                Bukkit.getScheduler().runTaskLater(liric.mistaken.Mistaken.instance, Runnable {
+                    onComplete()
+                }, delayTicks)
+            }
         }
     }
 
