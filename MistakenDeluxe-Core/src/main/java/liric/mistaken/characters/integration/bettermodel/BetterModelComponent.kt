@@ -26,30 +26,41 @@ class BetterModelComponent(override val modelId: String) : ModelComponent {
     override fun spawn() {
         if (tracker != null && !tracker!!.isClosed) return
 
-        val renderer = BetterModel.modelOrNull(modelId)
+        val renderer = kr.toxicity.model.api.BetterModel.modelOrNull(modelId)
         if (renderer == null) {
-            val keys = BetterModel.modelKeys().joinToString(", ")
+            val keys = kr.toxicity.model.api.BetterModel.modelKeys().joinToString(", ")
             org.bukkit.Bukkit.getLogger().warning("[BetterModelComponent] No se pudo encontrar el modelo '$modelId'. Modelos disponibles: $keys")
             return
         }
         
-        val baseEntity = BukkitAdapter.adapt(character.entity)
+        val platformEntity = BukkitAdapter.adapt(character.entity)
+        val baseEntity = kr.toxicity.model.api.entity.BaseEntity.of(platformEntity)
 
         // Usar modifier custom (desactivamos animación de daño automática si la controlaremos nosotros)
         val modifier = TrackerModifier.builder()
             .damageAnimation(false) 
             .build()
 
-        tracker = renderer.create(baseEntity, modifier) { t ->
+        val registry = kr.toxicity.model.api.tracker.EntityTrackerRegistry.getOrCreate(baseEntity)
+        
+        tracker = registry.getOrCreate("mistaken_model") { reg -> 
+            val t = renderer.create(platformEntity, modifier)
             t.hideOption(kr.toxicity.model.api.tracker.EntityHideOption.DEFAULT)
+            t
         }
         
         org.bukkit.Bukkit.getLogger().info("[BetterModelComponent] Tracker creado para $modelId. Scheduled: ${tracker?.isScheduled()}")
     }
 
     override fun despawn() {
-        tracker?.close()
-        tracker = null
+        if (tracker != null) {
+            val platformEntity = BukkitAdapter.adapt(character.entity)
+            val baseEntity = kr.toxicity.model.api.entity.BaseEntity.of(platformEntity)
+            val registry = kr.toxicity.model.api.BetterModel.registryOrNull(baseEntity)
+            registry?.remove("mistaken_model")
+            tracker?.close()
+            tracker = null
+        }
     }
 
     override fun setScale(scale: Float) {
