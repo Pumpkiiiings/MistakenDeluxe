@@ -49,6 +49,9 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
 
         modeledEntity = ModelEngineAPI.createModeledEntity(dummy)
         
+        // FIX RUBBERBAND: Evitar que el jugador colisione con el hitbox de su propio modelo
+        modeledEntity?.base?.setCollidableWith(player, false)
+        
         activeModel = ModelEngineAPI.createActiveModel(blueprint)
         if (activeModel != null) {
             modeledEntity?.addModel(activeModel!!, true)
