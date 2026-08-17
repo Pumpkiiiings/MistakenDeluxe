@@ -41,9 +41,10 @@ class BetterModelComponent(override val modelId: String) : ModelComponent {
             .build()
 
         tracker = renderer.create(baseEntity, modifier) { t ->
-            // Pre-update config (e.g. hitboxes)
+            t.hideOption(kr.toxicity.model.api.tracker.EntityHideOption.DEFAULT)
         }
-        org.bukkit.Bukkit.getLogger().info("[BetterModelComponent] Tracker creado para el modelo $modelId en la entidad ${character.entity.name}")
+        
+        org.bukkit.Bukkit.getLogger().info("[BetterModelComponent] Tracker creado para $modelId. Scheduled: ${tracker?.isScheduled()}")
     }
 
     override fun despawn() {
