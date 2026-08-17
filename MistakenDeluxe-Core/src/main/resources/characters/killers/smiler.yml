@@ -1,0 +1,18 @@
+id: "smiler"
+stats:
+  health: 150.0
+  damage: 3.5
+precio: 5000
+icono_material: "SKELETON_SKULL"
+armor:
+  helmet: "none"
+  chestplate: "none"
+  leggings: "none"
+  boots: "none"
+items:
+  weapon: "BONE"
+  weapon_slot: 8
+  skill1: "none"
+  skill2: "none"
+  skill3: "none"
+  skill4: "none"

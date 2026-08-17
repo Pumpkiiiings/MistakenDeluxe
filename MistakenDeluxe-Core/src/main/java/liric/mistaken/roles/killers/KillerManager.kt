@@ -24,14 +24,14 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         listOf(
             Slasher(), Herobrine(), Entity303(), NullAsesino(),
             ColorAndElectricity(), CharlieInferno(), CharlieJazz(), Romeo(), Mariachi(),
-            Sowoul(), TinkyWinky(), StillLife(), WardenKiller()
+            Sowoul(), TinkyWinky(), StillLife(), WardenKiller(), SmilerKiller()
         ).forEach { registerClass(it) }
     }
 
-    override fun registerClass(asesino: Killer) {
-        val config = plugin.configManager.getKillerConfig(asesino.id)
+    override fun registerClass(role: Killer) {
+        val config = plugin.configManager.getKillerConfig(role.id)
         if (config.getBoolean("enabled", true)) {
-            availableClasses[asesino.id.lowercase()] = asesino
+            availableClasses[role.id.lowercase()] = role
         }
     }
 
@@ -124,7 +124,6 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             player.health = 20.0
             player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
             player.isGlowing = false
-            player.isSwimming = false
         }
     }
 

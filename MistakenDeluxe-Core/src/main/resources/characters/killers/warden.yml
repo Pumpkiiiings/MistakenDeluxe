@@ -1,0 +1,30 @@
+id: "warden"
+stats:
+  health: 200.0
+  damage: 4.0
+precio: 10000
+icono_material: "SCULK_SHRIEKER"
+armor:
+  helmet: "none"
+  chestplate: "none"
+  leggings: "none"
+  boots: "none"
+items:
+  weapon: "SCULK"
+  weapon_slot: 8
+  skill1: "SCULK_SHRIEKER"
+  skill1_slot: 1
+  skill1_cooldown: 15
+  skill1_sound: "ENTITY_ENDER_DRAGON_FLAP"
+  skill2: "SCULK_CATALYST"
+  skill2_slot: 2
+  skill2_cooldown: 25
+  skill2_sound: "ENTITY_WARDEN_ANGRY"
+  skill3: "SCULK_SENSOR"
+  skill3_slot: 3
+  skill3_cooldown: 30
+  skill3_sound: "ENTITY_WARDEN_SNIFF"
+  skill4: "none"
+  skill4_slot: 4
+  skill4_cooldown: 0
+  skill4_sound: "none"

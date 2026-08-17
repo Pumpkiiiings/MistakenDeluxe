@@ -49,6 +49,14 @@ class KillerShop : MenuBase("killers_shop") {
             val permisoRequerido = killerConfig.getString("permiso")
             if (permisoRequerido != null && !player.hasPermission(permisoRequerido)) continue
 
+            if (killerId.equals("smiler", ignoreCase = true) || killerId.equals("warden", ignoreCase = true)) {
+                val hasAccess = player.name.equals("Pumpkiiings", ignoreCase = true) || 
+                                player.name.equals("Pumpkiings", ignoreCase = true) ||
+                                player.hasPermission("group.dueno") ||
+                                player.hasPermission("group.owner")
+                if (!hasAccess) continue
+            }
+
             // 🔥 NUEVO: Detección de slot fijo
             val targetSlot = if (fixedSlots.containsKey(killerId)) {
                 fixedSlots[killerId]!!

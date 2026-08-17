@@ -1,0 +1,63 @@
+package liric.mistaken.roles.killers.clases
+
+import liric.mistaken.characters.components.CombatComponent
+import liric.mistaken.characters.core.Character
+import liric.mistaken.characters.states.CharacterState
+import liric.mistaken.roles.killers.BaseKiller
+import org.bukkit.entity.Player
+
+object SmilerAttackState : CharacterState {
+    override val id = "attack"
+    override val priority = 50
+}
+
+class SmilerKiller : BaseKiller("smiler", "Smiler") {
+    
+    override fun getModelId(): String = "smiler"
+
+    override fun equip(player: Player) {
+        super.equip(player)
+        
+        val inv = player.inventory
+        val configMecanica = liric.mistaken.Mistaken.instance.configManager.getKillerConfig(this.id)
+
+        val id = configMecanica.getString("items.weapon")
+        if (id != null && id != "none") {
+            val matName = id.replace(".*:".toRegex(), "").uppercase()
+            val mat = org.bukkit.Material.matchMaterial(matName)
+            if (mat != null) {
+                val item = org.bukkit.inventory.ItemStack(mat)
+                item.editMeta { meta -> meta.displayName(net.kyori.adventure.text.Component.text("§cArma Smiler")) }
+                inv.setItem(8, item)
+            }
+        }
+    }
+
+    override fun setupAdditionalComponents(character: Character) {
+        character.addComponent(CombatComponent::class.java, object : CombatComponent {
+            override fun onEnable(character: Character) {}
+            override fun onDisable() {}
+            
+            override fun performAttack(attackId: String) {
+                if (character.entity is Player) {
+                    val player = character.entity
+                    transitionTo(player, SmilerAttackState, force = true)
+                    
+                    org.bukkit.Bukkit.getScheduler().runTaskLater(liric.mistaken.Mistaken.instance, Runnable {
+                        if (player.isOnline && getCharacter(player)?.getComponent(liric.mistaken.characters.components.StateComponent::class.java)?.currentState == SmilerAttackState) {
+                            transitionTo(player, liric.mistaken.characters.states.IdleState, force = true)
+                        }
+                    }, 15L) // Assuming attack animation is ~0.75 seconds
+                }
+            }
+
+            override fun takeDamage(amount: Double, source: Any?): Boolean {
+                return true
+            }
+        })
+    }
+
+    override fun useSkill(player: Player, slot: Int) {
+        // No tiene habilidades por defecto
+    }
+}
