@@ -27,7 +27,46 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
     private val plain = PlainTextComponentSerializer.plainText()
 
     /**
-     * Trigger: Activaci�n de habilidades activas (Click Derecho).
+     * Trigger: Ataque básico (Click Izquierdo).
+     */
+    @EventHandler(priority = EventPriority.HIGH)
+    fun onBasicAttack(event: PlayerInteractEvent) {
+        if (event.hand != EquipmentSlot.HAND) return
+        if (!event.action.isLeftClick) return
+
+        val player = event.player
+        val session = plugin.sessionManager.getSession(player) ?: return
+        if (session.currentState != GameState.INGAME) return
+        if (!session.isKiller(player.uniqueId)) return
+
+        val asesino = plugin.asesinoManager.getKillerOfPlayer(player) ?: return
+        if (asesino is liric.mistaken.roles.killers.BaseKiller) {
+            val character = asesino.getCharacter(player) ?: return
+            character.getComponent(liric.mistaken.characters.components.StateComponent::class.java)
+                ?.transitionTo(liric.mistaken.characters.states.AttackState, force = true)
+        }
+    }
+
+    /**
+     * Trigger: Ataque a entidad (Daño cuerpo a cuerpo).
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    fun onEntityAttack(event: org.bukkit.event.entity.EntityDamageByEntityEvent) {
+        val player = event.damager as? Player ?: return
+        val session = plugin.sessionManager.getSession(player) ?: return
+        if (session.currentState != GameState.INGAME) return
+        if (!session.isKiller(player.uniqueId)) return
+
+        val asesino = plugin.asesinoManager.getKillerOfPlayer(player) ?: return
+        if (asesino is liric.mistaken.roles.killers.BaseKiller) {
+            val character = asesino.getCharacter(player) ?: return
+            character.getComponent(liric.mistaken.characters.components.StateComponent::class.java)
+                ?.transitionTo(liric.mistaken.characters.states.AttackState, force = true)
+        }
+    }
+
+    /**
+     * Trigger: Activacin de habilidades activas (Click Derecho).
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onUseAbility(event: PlayerInteractEvent) {

@@ -30,3 +30,8 @@ object DeathState : CharacterState {
     // Nadie puede interrumpir la muerte a menos que sea un estado de "Revive" especial
     override fun canInterrupt(currentState: CharacterState): Boolean = true 
 }
+
+object AttackState : CharacterState {
+    override val id = "attack"
+    override val priority = 50
+}

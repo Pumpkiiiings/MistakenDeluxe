@@ -369,6 +369,17 @@ class Mistaken : JavaPlugin() {
                 }
             }
         }, 1L, 2L) // 1 tick inicial, 2 ticks = 100 ms, on main thread
+
+        // ECS Character Tick (1 tick rate for smooth movement and animations)
+        server.globalRegionScheduler.runAtFixedRate(this, { _ ->
+            if (!isReady) return@runAtFixedRate
+            asesinoManager.getAvailableClasses().values.forEach { killer ->
+                if (killer is liric.mistaken.roles.killers.BaseKiller) {
+                    killer.tickAll()
+                }
+            }
+            // Add Survivor ticking here if they also use BaseSurvivor with ECS in the future
+        }, 1L, 1L)
     }
 
     private fun loadLobbyLocation() {

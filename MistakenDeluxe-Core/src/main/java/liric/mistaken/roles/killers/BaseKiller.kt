@@ -66,6 +66,15 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
         return activeCharacters[player.uniqueId]
     }
 
+    /**
+     * Llama al tick de todos los characters activos.
+     */
+    fun tickAll() {
+        for (character in activeCharacters.values) {
+            character.tick()
+        }
+    }
+
     override fun cleanup(player: Player?) {
         super.cleanup(player)
         player?.let {
