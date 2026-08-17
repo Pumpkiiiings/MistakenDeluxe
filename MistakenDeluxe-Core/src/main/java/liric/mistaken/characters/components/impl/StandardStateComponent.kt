@@ -53,6 +53,8 @@ class StandardStateComponent : StateComponent {
         // Cambiar estado
         _currentState = newState
 
+        org.bukkit.Bukkit.broadcastMessage("§e[DEBUG] State changed: ${oldState.id} -> ${newState.id}")
+
         // Entrar al nuevo estado
         _currentState.onEnter(character)
 
