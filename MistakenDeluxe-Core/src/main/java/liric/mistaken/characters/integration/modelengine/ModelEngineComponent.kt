@@ -1,20 +1,25 @@
 package liric.mistaken.characters.integration.modelengine
 
 import com.ticxo.modelengine.api.ModelEngineAPI
+import com.ticxo.modelengine.api.entity.Dummy
 import com.ticxo.modelengine.api.model.ActiveModel
 import com.ticxo.modelengine.api.model.ModeledEntity
 import liric.mistaken.characters.components.ModelComponent
 import liric.mistaken.characters.core.Character
 import org.bukkit.Bukkit
+import org.bukkit.Location
+import org.bukkit.entity.Player
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 
-/**
- * Implementación de ModelComponent utilizando ModelEngine 4.1.0.
- */
 class ModelEngineComponent(override val modelId: String) : ModelComponent {
 
     private lateinit var character: Character
     private var modeledEntity: ModeledEntity? = null
     private var activeModel: ActiveModel? = null
+    private var dummy: Dummy<Player>? = null
+    private var taskId: Int = -1
+    private var lastLocation: Location? = null
 
     override fun onEnable(character: Character) {
         this.character = character
@@ -25,7 +30,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
     }
 
     override fun spawn() {
-        if (modeledEntity != null && !modeledEntity!!.isDestroyed) return
+        val player = character.entity as? Player ?: return
 
         val blueprint = ModelEngineAPI.getBlueprint(modelId)
         if (blueprint == null) {
@@ -33,31 +38,61 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
             return
         }
 
-        val baseEntity = character.entity
+        // SOLUCIÓN PARA F5: Usamos un Dummy en lugar del Player directamente.
+        // Esto permite forzar que el propio jugador vea el modelo.
+        dummy = Dummy(player)
+        dummy?.setForceViewing(player, true)
 
-        // Crear ModeledEntity
-        modeledEntity = ModelEngineAPI.createModeledEntity(baseEntity)
-        modeledEntity?.setBaseEntityVisible(false) // Esconder al jugador base
-
-        // Crear y añadir ActiveModel
+        modeledEntity = ModelEngineAPI.createModeledEntity(dummy)
+        
         activeModel = ModelEngineAPI.createActiveModel(blueprint)
         if (activeModel != null) {
             modeledEntity?.addModel(activeModel!!, true)
         }
 
-        Bukkit.getLogger().info("[ModelEngineComponent] ModeledEntity creado para $modelId en la entidad ${baseEntity.name}.")
+        // Esconder al jugador real para que no se sobreponga
+        player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, Int.MAX_VALUE, 0, false, false))
+
+        // Sincronizar Dummy cada tick para animaciones y movimiento
+        taskId = Bukkit.getScheduler().runTaskTimer(liric.mistaken.Mistaken.instance, Runnable {
+            syncDummy(player)
+        }, 0L, 1L).taskId
+    }
+
+    private fun syncDummy(player: Player) {
+        val currentDummy = dummy ?: return
+        val loc = player.location
+        val lastLoc = lastLocation ?: loc
+
+        // Detectar si se movió para la animación 'walk' por defecto de ModelEngine
+        val moved = loc.x != lastLoc.x || loc.z != lastLoc.z || loc.y != lastLoc.y
+        currentDummy.isWalking = moved
+        currentDummy.isJumping = !player.isOnGround
+
+        // Actualizar posición
+        currentDummy.setLocation(loc)
+        currentDummy.yHeadRot = loc.yaw
+        currentDummy.yBodyRot = loc.yaw
+        currentDummy.xHeadRot = loc.pitch
+
+        lastLocation = loc.clone()
     }
 
     override fun despawn() {
+        if (taskId != -1) {
+            Bukkit.getScheduler().cancelTask(taskId)
+            taskId = -1
+        }
+        
+        val player = character.entity as? Player
+        player?.removePotionEffect(PotionEffectType.INVISIBILITY)
+
         if (modeledEntity != null) {
-            modeledEntity?.setBaseEntityVisible(true)
-            
-            // ModelEngine recomienda remover a través de API
-            ModelEngineAPI.removeModeledEntity(character.entity.uniqueId)
-            
+            dummy?.let { ModelEngineAPI.removeModeledEntity(it.uuid) }
             modeledEntity?.destroy()
             modeledEntity = null
             activeModel = null
+            dummy = null
         }
     }
 
@@ -66,12 +101,10 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
     }
 
     override fun setTint(rgb: Int?) {
-        if (rgb != null) {
-            val color = org.bukkit.Color.fromRGB(rgb)
-            activeModel?.setDefaultTint(color)
+        if (rgb == null) {
+            activeModel?.defaultTint = org.bukkit.Color.WHITE // Reset tint
         } else {
-            // No hay manera directa de limpiar el tint, se asume blanco puro o nulo
-            activeModel?.setDefaultTint(org.bukkit.Color.WHITE)
+            activeModel?.defaultTint = org.bukkit.Color.fromRGB(rgb)
         }
     }
 
