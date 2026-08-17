@@ -29,8 +29,8 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
         activeCharacters[player.uniqueId] = character
 
         // 1. Configurar infraestructura compartida (ECS)
-        character.addComponent(ModelComponent::class.java, liric.mistaken.characters.integration.modelengine.ModelEngineComponent(getModelId()))
-        character.addComponent(AnimationComponent::class.java, liric.mistaken.characters.integration.modelengine.ModelEngineAnimationComponent())
+        character.addComponent(ModelComponent::class.java, BetterModelComponent(getModelId()))
+        character.addComponent(AnimationComponent::class.java, BetterModelAnimationComponent())
         character.addComponent(StateComponent::class.java, StandardStateComponent())
         character.addComponent(MovementComponent::class.java, BukkitMovementComponent())
         
