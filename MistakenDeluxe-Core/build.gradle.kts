@@ -63,6 +63,7 @@ dependencies {
     // APIs Externas (Solo para compilar)
     compileOnly(files("../libs/bettermodel-api-3.4.1.jar"))
     compileOnly(files("../libs/bettermodel-bukkit-api-3.4.1.jar"))
+    compileOnly(files("../libs/modelengine-4.1.0.jar"))
     compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude(group = "org.bukkit", module = "bukkit")
