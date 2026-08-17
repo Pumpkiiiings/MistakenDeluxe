@@ -1,0 +1,27 @@
+package liric.mistaken.characters.components
+
+import liric.mistaken.characters.core.CharacterComponent
+
+/**
+ * Componente opcional para manejar lógicas de combate.
+ * Killers tendrán uno, Survivors probablemente no.
+ */
+interface CombatComponent : CharacterComponent {
+    
+    /**
+     * Inicia un ataque (por ejemplo, cuando el jugador hace clic izquierdo).
+     */
+    fun performAttack(attackId: String = "attack")
+
+    /**
+     * Aplica daño a este personaje.
+     * Retorna true si el daño fue procesado exitosamente (ej. no estaba en invulnerabilidad).
+     */
+    fun takeDamage(amount: Double, source: Any? = null): Boolean
+    
+    /**
+     * Callback para registrar listeners de hitboxes internos si el engine
+     * lo soporta (ej. BetterModel HitBoxes).
+     */
+    fun registerHitBoxListeners() {}
+}

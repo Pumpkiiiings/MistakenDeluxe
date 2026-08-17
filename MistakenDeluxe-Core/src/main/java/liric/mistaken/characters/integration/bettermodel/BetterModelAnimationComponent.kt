@@ -1,0 +1,75 @@
+package liric.mistaken.characters.integration.bettermodel
+
+import kr.toxicity.model.api.animation.AnimationIterator
+import kr.toxicity.model.api.animation.AnimationModifier
+import liric.mistaken.characters.components.AnimationComponent
+import liric.mistaken.characters.components.ModelComponent
+import liric.mistaken.characters.core.Character
+
+/**
+ * Implementación de AnimationComponent utilizando BetterModel.
+ */
+class BetterModelAnimationComponent : AnimationComponent {
+
+    private lateinit var character: Character
+    
+    // Almacena un mapa de animaciones que requieren detenerse de forma custom, etc.
+    // Opcionalmente podemos abstraerlo.
+
+    override fun onEnable(character: Character) {
+        this.character = character
+    }
+
+    override fun onDisable() {
+        stopAll()
+    }
+
+    override fun play(
+        animationName: String,
+        speed: Float,
+        loop: Boolean,
+        priority: Int,
+        onComplete: (() -> Unit)?
+    ) {
+        val tracker = getTracker() ?: return
+
+        val modifier = AnimationModifier.builder()
+            .type(if (loop) AnimationIterator.Type.LOOP else AnimationIterator.Type.PLAY_ONCE)
+            .speed(speed)
+            .build()
+
+        if (onComplete != null) {
+            tracker.animate(animationName, modifier) {
+                onComplete()
+            }
+        } else {
+            tracker.animate(animationName, modifier)
+        }
+    }
+
+    override fun stop(animationName: String) {
+        getTracker()?.stopAnimation(animationName)
+    }
+
+    override fun replace(oldAnimation: String, newAnimation: String, speed: Float, loop: Boolean) {
+        val tracker = getTracker() ?: return
+        
+        val modifier = AnimationModifier.builder()
+            .type(if (loop) AnimationIterator.Type.LOOP else AnimationIterator.Type.PLAY_ONCE)
+            .speed(speed)
+            .build()
+            
+        tracker.replace(oldAnimation, newAnimation, modifier)
+    }
+
+    override fun stopAll() {
+        // BetterModel no tiene un "stopAll" explícito en Tracker (a menos que se detenga por filtro).
+        // Una opción es iterar sobre animaciones activas si las almacenamos, 
+        // o usar el scriptProcessor subyacente. Por ahora se delega a parar animaciones conocidas.
+    }
+
+    private fun getTracker(): kr.toxicity.model.api.tracker.EntityTracker? {
+        val modelComp = character.getComponent(ModelComponent::class.java) as? BetterModelComponent
+        return modelComp?.getTracker()
+    }
+}
