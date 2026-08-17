@@ -36,17 +36,12 @@ class BetterModelComponent(override val modelId: String) : ModelComponent {
         val platformEntity = BukkitAdapter.adapt(character.entity)
         val baseEntity = kr.toxicity.model.api.entity.BaseEntity.of(platformEntity)
 
-        // Usar modifier custom (desactivamos animación de daño automática si la controlaremos nosotros)
         val modifier = TrackerModifier.builder()
             .damageAnimation(false) 
             .build()
 
-        val registry = kr.toxicity.model.api.tracker.EntityTrackerRegistry.getOrCreate(baseEntity)
-        
-        tracker = registry.getOrCreate("mistaken_model") { reg -> 
-            val t = renderer.create(platformEntity, modifier)
+        tracker = renderer.getOrCreate(baseEntity, modifier) { t ->
             t.hideOption(kr.toxicity.model.api.tracker.EntityHideOption.DEFAULT)
-            t
         }
         
         org.bukkit.Bukkit.getLogger().info("[BetterModelComponent] Tracker creado para $modelId. Scheduled: ${tracker?.isScheduled()}")
@@ -54,10 +49,6 @@ class BetterModelComponent(override val modelId: String) : ModelComponent {
 
     override fun despawn() {
         if (tracker != null) {
-            val platformEntity = BukkitAdapter.adapt(character.entity)
-            val baseEntity = kr.toxicity.model.api.entity.BaseEntity.of(platformEntity)
-            val registry = kr.toxicity.model.api.BetterModel.registryOrNull(baseEntity)
-            registry?.remove("mistaken_model")
             tracker?.close()
             tracker = null
         }
