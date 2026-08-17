@@ -26,7 +26,13 @@ class BetterModelComponent(override val modelId: String) : ModelComponent {
     override fun spawn() {
         if (tracker != null && !tracker!!.isClosed) return
 
-        val renderer = BetterModel.modelOrNull(modelId) ?: return
+        val renderer = BetterModel.modelOrNull(modelId)
+        if (renderer == null) {
+            val keys = BetterModel.modelKeys().joinToString(", ")
+            org.bukkit.Bukkit.getLogger().warning("[BetterModelComponent] No se pudo encontrar el modelo '$modelId'. Modelos disponibles: $keys")
+            return
+        }
+        
         val baseEntity = BukkitAdapter.adapt(character.entity)
 
         // Usar modifier custom (desactivamos animación de daño automática si la controlaremos nosotros)
@@ -37,6 +43,7 @@ class BetterModelComponent(override val modelId: String) : ModelComponent {
         tracker = renderer.create(baseEntity, modifier) { t ->
             // Pre-update config (e.g. hitboxes)
         }
+        org.bukkit.Bukkit.getLogger().info("[BetterModelComponent] Tracker creado para el modelo $modelId en la entidad ${character.entity.name}")
     }
 
     override fun despawn() {
