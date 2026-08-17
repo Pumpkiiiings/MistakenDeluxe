@@ -36,6 +36,9 @@ class BetterModelAnimationComponent : AnimationComponent {
         val modifier = AnimationModifier.builder()
             .type(if (loop) AnimationIterator.Type.LOOP else AnimationIterator.Type.PLAY_ONCE)
             .speed(speed)
+            .priority(priority)
+            .start(3)
+            .end(3)
             .build()
 
         if (onComplete != null) {
@@ -57,6 +60,8 @@ class BetterModelAnimationComponent : AnimationComponent {
         val modifier = AnimationModifier.builder()
             .type(if (loop) AnimationIterator.Type.LOOP else AnimationIterator.Type.PLAY_ONCE)
             .speed(speed)
+            .start(3)
+            .end(3)
             .build()
             
         tracker.replace(oldAnimation, newAnimation, modifier)

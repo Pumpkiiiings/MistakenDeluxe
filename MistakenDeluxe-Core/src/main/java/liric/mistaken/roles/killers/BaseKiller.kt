@@ -12,26 +12,30 @@ import liric.mistaken.characters.integration.bettermodel.BetterModelAnimationCom
 import liric.mistaken.characters.integration.bettermodel.BetterModelComponent
 import liric.mistaken.characters.states.CharacterState
 import org.bukkit.entity.Player
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Clase base para todos los Killers.
- * Ensambla los componentes genéricos del Character Framework y añade 
- * componentes específicos (como combate y habilidades) exclusivos del Killer.
+ * Clase base para todos los Killers basados en el nuevo ECS Framework.
+ * Al extender de CoreKiller, hereda el comportamiento Singleton que requiere el KillerManager.
  */
-abstract class BaseKiller(val player: Player) {
+abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
 
-    // El Character genérico subyacente
-    protected val character = Character(player)
+    // Registra los characters activos de cada jugador usando este asesino
+    protected val activeCharacters = ConcurrentHashMap<UUID, Character>()
 
-    init {
-        // 1. Configurar infraestructura compartida
+    override fun equip(player: Player) {
+        val character = Character(player)
+        activeCharacters[player.uniqueId] = character
+
+        // 1. Configurar infraestructura compartida (ECS)
         character.addComponent(ModelComponent::class.java, BetterModelComponent(getModelId()))
         character.addComponent(AnimationComponent::class.java, BetterModelAnimationComponent())
         character.addComponent(StateComponent::class.java, StandardStateComponent())
         character.addComponent(MovementComponent::class.java, BukkitMovementComponent())
         
-        // 2. Configurar componentes exclusivos de este rol
-        // character.addComponent(CombatComponent::class.java, KillerMeleeCombatComponent())
+        // 2. Componentes exclusivos del rol
+        setupAdditionalComponents(character)
         
         // 3. Inicializar modelo
         character.getComponent(ModelComponent::class.java)?.spawn()
@@ -43,16 +47,33 @@ abstract class BaseKiller(val player: Player) {
     abstract fun getModelId(): String
 
     /**
-     * Helper para transicionar de estado fácilmente.
+     * Permite inyectar componentes extra (ej. CombatComponent) al instanciar.
      */
-    protected fun transitionTo(state: CharacterState, force: Boolean = false) {
+    open fun setupAdditionalComponents(character: Character) {}
+
+    /**
+     * Helper para transicionar de estado fácilmente para un jugador específico.
+     */
+    protected fun transitionTo(player: Player, state: CharacterState, force: Boolean = false) {
+        val character = activeCharacters[player.uniqueId] ?: return
         character.getComponent(StateComponent::class.java)?.transitionTo(state, force)
     }
 
     /**
-     * Limpia los componentes cuando el Killer es destruido.
+     * Obtiene el Character (ECS) asociado a un jugador.
      */
-    open fun destroy() {
-        character.destroy()
+    fun getCharacter(player: Player): Character? {
+        return activeCharacters[player.uniqueId]
     }
+
+    override fun cleanup(player: Player?) {
+        super.cleanup(player)
+        player?.let {
+            activeCharacters.remove(it.uniqueId)?.destroy()
+        }
+    }
+    
+    // Stubs para cumplir con la interfaz abstracta heredada de CoreKiller/Killer
+    override fun showTrail(player: Player) {}
+    override fun useSkill(player: Player, slot: Int) {}
 }

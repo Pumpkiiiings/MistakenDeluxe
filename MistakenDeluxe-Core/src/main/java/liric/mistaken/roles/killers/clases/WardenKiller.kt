@@ -5,6 +5,8 @@ import liric.mistaken.characters.core.Character
 import liric.mistaken.characters.states.CharacterState
 import liric.mistaken.roles.killers.BaseKiller
 import org.bukkit.entity.Player
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 // --- Definición de Estados Exclusivos del Warden ---
 
@@ -26,30 +28,29 @@ object WardenSwipe3State : CharacterState {
 object WardenStunState : CharacterState {
     override val id = "stun"
     override val priority = 90
-    // Al tener prioridad >= 30, la animación se reproducirá UNA VEZ y el personaje
-    // volverá automáticamente a Idle. (Si quisieras que el stun durara más tiempo,
-    // tendrías que modificar el StandardStateComponent o manejar un loop custom).
 }
 
 // --- Implementación del Personaje ---
 
-class WardenKiller(player: Player) : BaseKiller(player) {
+class WardenKiller : BaseKiller("warden", "Warden") {
     
-    // BetterModel buscará el archivo "warden.bbmodel"
     override fun getModelId(): String = "warden"
 
-    private var comboStep = 0
-    private var lastAttackTime = 0L
+    // Registra en qué parte del combo está cada jugador y su último ataque
+    private val comboSteps = ConcurrentHashMap<UUID, Int>()
+    private val lastAttackTimes = ConcurrentHashMap<UUID, Long>()
 
-    init {
-        // Agregamos un componente de combate básico para que puedas
-        // llamar a performAttack() desde tus eventos (ej: PlayerInteractEvent)
+    override fun setupAdditionalComponents(character: Character) {
+        val uuid = character.entity.uniqueId
+        
         character.addComponent(CombatComponent::class.java, object : CombatComponent {
             override fun onEnable(character: Character) {}
             override fun onDisable() {}
             
             override fun performAttack(attackId: String) {
-                this@WardenKiller.attack()
+                if (character.entity is Player) {
+                    this@WardenKiller.attack(character.entity as Player)
+                }
             }
 
             override fun takeDamage(amount: Double, source: Any?): Boolean {
@@ -59,10 +60,14 @@ class WardenKiller(player: Player) : BaseKiller(player) {
     }
 
     /**
-     * Lógica de combo simple: Alterna entre swipe 1, 2 y 3.
+     * Lógica de combo simple por jugador: Alterna entre swipe 1, 2 y 3.
      */
-    fun attack() {
+    fun attack(player: Player) {
+        val uuid = player.uniqueId
         val now = System.currentTimeMillis()
+        val lastAttackTime = lastAttackTimes.getOrDefault(uuid, 0L)
+        
+        var comboStep = comboSteps.getOrDefault(uuid, 0)
         
         // Resetea el combo si pasó mucho tiempo (ej: más de 1.5 segundos) sin atacar
         if (now - lastAttackTime > 1500) {
@@ -76,18 +81,16 @@ class WardenKiller(player: Player) : BaseKiller(player) {
         }
 
         // Forzamos la transición al estado de ataque.
-        // El framework reproducirá la animación y al terminar volverá a IdleState.
-        transitionTo(state, force = true)
+        transitionTo(player, state, force = true)
         
-        lastAttackTime = now
-        comboStep = (comboStep + 1) % 3 // Cicla entre 0, 1 y 2
+        lastAttackTimes[uuid] = now
+        comboSteps[uuid] = (comboStep + 1) % 3 // Cicla entre 0, 1 y 2
     }
 
     /**
      * Aturde al Warden temporalmente.
-     * Puedes llamar a esto cuando alguien le tire un pallet, por ejemplo.
      */
-    fun applyStun() {
-        transitionTo(WardenStunState, force = true)
+    fun applyStun(player: Player) {
+        transitionTo(player, WardenStunState, force = true)
     }
 }
