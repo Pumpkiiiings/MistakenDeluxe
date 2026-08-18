@@ -90,8 +90,7 @@ class WardenProfile : CinematicProfile {
         // Destruir el modelo cuando la cinemática acabe
         org.bukkit.Bukkit.getScheduler().runTaskLater(plugin, Runnable {
             if (activeModel != null) {
-                ModelEngineAPI.removeModeledEntity(meDummy.uuid)
-                modeledEntity.destroy()
+                meDummy.isRemoved = true
             }
         }, introDuration.toLong())
     }
