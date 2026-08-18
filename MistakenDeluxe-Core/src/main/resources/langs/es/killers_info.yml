@@ -222,3 +222,17 @@ asesinos:
     lore_tienda:
       - "<gray>\"Escucha tus pasos...\""
       - "<white>Dificultad: <red>Difícil"
+
+  piglinbig:
+    nombre: "<gold><b>EL GRAN CERDO</b></gold>"
+    descripcion:
+      - "<gray>Una bestia del inframundo."
+      - "<gray>Especialista en levantar la tierra y lanzar hachas."
+      - "<gold>Mecánica: <white>Fuerza bruta y aturdimiento."
+    lore_tienda:
+      - "<gray>\"Oink...\""
+      - "<white>Dificultad: <red>Difícil"
+    skill_names:
+      weapon: "<gold>Hacha de Oro"
+      skill1: "<yellow>Terremoto de Aturdimiento"
+      skill2: "<gold>Lanzar Hacha"

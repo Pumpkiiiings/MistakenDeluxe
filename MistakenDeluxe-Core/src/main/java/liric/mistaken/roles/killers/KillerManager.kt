@@ -24,7 +24,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         listOf(
             Slasher(), Herobrine(), Entity303(), NullAsesino(),
             ColorAndElectricity(), CharlieInferno(), CharlieJazz(), Romeo(), Mariachi(),
-            Sowoul(), TinkyWinky(), StillLife(), WardenKiller(), SmilerKiller()
+            Sowoul(), TinkyWinky(), StillLife(), WardenKiller(), SmilerKiller(), PiglinBigKiller()
         ).forEach { registerClass(it) }
     }
 

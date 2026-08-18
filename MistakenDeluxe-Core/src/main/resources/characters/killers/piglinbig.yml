@@ -1,0 +1,10 @@
+enabled: true
+precio: 15000
+icono_material: "GOLD_BLOCK"
+items:
+  weapon_slot: 8
+  weapon: "minecraft:golden_axe"
+  skill1_slot: 1
+  skill1: "minecraft:dirt"
+  skill2_slot: 2
+  skill2: "minecraft:gold_ingot"
