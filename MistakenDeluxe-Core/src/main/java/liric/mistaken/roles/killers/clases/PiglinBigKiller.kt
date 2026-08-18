@@ -63,13 +63,6 @@ class PiglinBigKiller : BaseKiller("piglinbig", "PiglinBig") {
         // Ejecutar animación de spawn/cinemática
         transitionTo(player, PiglinBigCinematicState, force = true)
         
-        // Volver a Idle después de un tiempo (asumiendo que dura unos 2-3 segundos)
-        Bukkit.getScheduler().runTaskLater(Mistaken.instance, Runnable {
-            if (player.isOnline && getCharacter(player)?.getComponent(StateComponent::class.java)?.currentState == PiglinBigCinematicState) {
-                transitionTo(player, IdleState, force = true)
-            }
-        }, 60L) // 3 segundos
-        
         val inv = player.inventory
         val configMecanica = Mistaken.instance.configManager.getKillerConfig(this.id)
         val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
@@ -263,12 +256,5 @@ class PiglinBigKiller : BaseKiller("piglinbig", "PiglinBig") {
                 ticks++
             }
         }.runTaskTimer(Mistaken.instance, 1L, 1L)
-
-        // Restaurar a Idle después de la animación de lanzar
-        Bukkit.getScheduler().runTaskLater(Mistaken.instance, Runnable {
-            if (player.isOnline && getCharacter(player)?.getComponent(StateComponent::class.java)?.currentState == PiglinBigHookThrowState) {
-                transitionTo(player, IdleState, force = true)
-            }
-        }, 15L) // Asumiendo que la animación hook_throw dura ~15 ticks
     }
 }
