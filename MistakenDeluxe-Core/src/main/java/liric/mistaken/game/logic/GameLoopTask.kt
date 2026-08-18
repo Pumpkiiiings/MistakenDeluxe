@@ -66,6 +66,19 @@ class GameLoopTask(private val game: GameSession) {
                         }
                         GameState.INGAME -> {
                             game.stateController.checkGeoffreySpawn()
+
+                            val arena = game.plugin.arenaManager.getArena(game.currentMapName)
+                            if (arena != null && arena.timeMode == "dynamic") {
+                                val maxDuration = game.settings?.gameDuration ?: game.plugin.config.getInt("settings.game-duration", 300)
+                                val elapsed = maxDuration - game.timer
+                                if (maxDuration > 0) {
+                                    val targetTime = (18000.0 * elapsed / maxDuration).toLong()
+                                    val aspWorld = onlinePlayers.firstOrNull()?.world
+                                    if (aspWorld != null && targetTime <= 18000) {
+                                        aspWorld.time = targetTime
+                                    }
+                                }
+                            }
                         }
                         GameState.ENDING -> {
                             if (game.timer <= 0) {

@@ -194,6 +194,11 @@ asesinos:
 
   still_life:
     nombre: "<yellow><b>STILL LIFE</b></yellow>"
+    descripcion:
+      - "<gray>Mecánica de disfraz y engaño."
+    lore_tienda:
+      - "<gray>\"Alguien entre nosotros...\""
+      - "<white>Dificultad: <red>Alta"
     habilidades:
       generador_colocado: "<green>Generador falso colocado.</green>"
       generador_interactuado: "<red>¡Un superviviente interactuó con tu generador falso!</red>"
@@ -201,3 +206,19 @@ asesinos:
       disfraz_quitado: "<red>Te has quitado el disfraz.</red>"
       disfrazado: "<green>Te has disfrazado de %last%.</green>"
       chat_disfraz: "<gray>%disguisename%: <white>%message%</white></gray>"
+
+  smiler:
+    nombre: "<yellow><b>SMILER</b></yellow>"
+    descripcion:
+      - "<gray>La sonrisa en la oscuridad."
+    lore_tienda:
+      - "<gray>\"Siempre sonriendo...\""
+      - "<white>Dificultad: <yellow>Media"
+
+  warden:
+    nombre: "<dark_aqua><b>WARDEN</b></dark_aqua>"
+    descripcion:
+      - "<gray>El guardián de las profundidades."
+    lore_tienda:
+      - "<gray>\"Escucha tus pasos...\""
+      - "<white>Dificultad: <red>Difícil"

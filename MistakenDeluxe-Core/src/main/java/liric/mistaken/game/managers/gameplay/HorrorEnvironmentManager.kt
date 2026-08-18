@@ -15,8 +15,9 @@ class HorrorEnvironmentManager(private val plugin: Mistaken) {
     }
 
     private fun setupHorrorBiome() {
-        val customBiome = CustomBiome.builder()
-            .resourceKey(ResourceKey.of("mistaken", "horrorbiome"))
+        // Bioma para la noche estática (cielo forzado a negro)
+        val customBiomeNight = CustomBiome.builder()
+            .resourceKey(ResourceKey.of("mistaken", "horrorbiome_night"))
             .fogColor("#050505") 
             .foliageColor("#303030")
             .skyColor("#000000")
@@ -24,16 +25,40 @@ class HorrorEnvironmentManager(private val plugin: Mistaken) {
             .waterFogColor("#000000")
             .register()
 
-        val virtualBiome = VirtualBiome.builder()
-            .biome(customBiome)
+        // Bioma para el día, tarde, o dinámico (cielo natural para permitir transición de día a noche, pero conserva niebla densa)
+        val customBiomeDay = CustomBiome.builder()
+            .resourceKey(ResourceKey.of("mistaken", "horrorbiome_day"))
+            .fogColor("#050505") 
+            .foliageColor("#303030")
+            .register()
+
+        val virtualBiomeNight = VirtualBiome.builder()
+            .biome(customBiomeNight)
             .conditional { player, _ ->
-                plugin.sessionManager.getSession(player.uniqueId) != null
+                val session = plugin.sessionManager.getSession(player.uniqueId)
+                if (session != null) {
+                    val arena = plugin.arenaManager.getArena(session.currentMapName)
+                    arena?.timeMode == "night"
+                } else false
+            }
+            .priority(PacketHandler.Priority.HIGH)
+            .build()
+
+        val virtualBiomeDay = VirtualBiome.builder()
+            .biome(customBiomeDay)
+            .conditional { player, _ ->
+                val session = plugin.sessionManager.getSession(player.uniqueId)
+                if (session != null) {
+                    val arena = plugin.arenaManager.getArena(session.currentMapName)
+                    arena?.timeMode != "night"
+                } else false
             }
             .priority(PacketHandler.Priority.NORMAL)
             .build()
 
         packetHandler = PacketHandler.of(plugin)
-            .appendBiome(virtualBiome)
+            .appendBiome(virtualBiomeNight)
+            .appendBiome(virtualBiomeDay)
             .register()
     }
 

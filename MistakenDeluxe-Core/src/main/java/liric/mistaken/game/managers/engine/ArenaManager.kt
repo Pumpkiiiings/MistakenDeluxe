@@ -51,6 +51,7 @@ class ArenaManager(private val plugin: Mistaken) {
                 val path = "arenas.$key."
 
                 arena.slimeWorldName = config.getString("${path}slimeWorld", key)
+                arena.timeMode = config.getString("${path}timeMode", "dynamic") ?: "dynamic"
                 arena.asesinoSpawn = loadSafeLocation("${path}asesinoSpawn")
 
                 loadLocationList("${path}survivorSpawns").forEach { arena.addSurvivorSpawn(it) }
@@ -76,6 +77,7 @@ class ArenaManager(private val plugin: Mistaken) {
         synchronized(fileLock) {
             config.set("arenas.$name.name", name)
             config.set("arenas.$name.slimeWorld", name)
+            config.set("arenas.$name.timeMode", "dynamic")
         }
         saveAsync()
     }
@@ -125,6 +127,15 @@ class ArenaManager(private val plugin: Mistaken) {
             val cleanLoc = Location(null, loc.x, loc.y, loc.z, loc.yaw, loc.pitch)
             arena.generators.add(cleanLoc)
             saveSafeLocation("arenas.$name.generators.${UUID.randomUUID()}", loc)
+        }
+        saveAsync()
+    }
+
+    fun setTimeMode(name: String, timeMode: String) {
+        val arena = arenas[name] ?: return
+        arena.timeMode = timeMode
+        synchronized(fileLock) {
+            config.set("arenas.$name.timeMode", timeMode)
         }
         saveAsync()
     }

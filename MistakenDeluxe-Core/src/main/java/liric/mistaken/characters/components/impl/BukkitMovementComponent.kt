@@ -20,6 +20,7 @@ class BukkitMovementComponent : MovementComponent {
 
     private lateinit var character: Character
     private var lastLocation: Location? = null
+    private var ticksStationary = 0
     
     override var currentVelocity: Double = 0.0
         private set
@@ -58,7 +59,16 @@ class BukkitMovementComponent : MovementComponent {
         currentVelocity = sqrt(dx * dx + dz * dz)
         
         // Consideramos "movimiento" si la distancia horizontal supera un mínimo
-        isMoving = currentVelocity > 0.01
+        if (currentVelocity > 0.01) {
+            ticksStationary = 0
+            isMoving = true
+        } else {
+            ticksStationary++
+            if (ticksStationary > 2) { // Debounce de 2 ticks (100ms)
+                isMoving = false
+            }
+        }
+        
         isGrounded = entity.isOnGround
         
         lastLocation = currentLocation

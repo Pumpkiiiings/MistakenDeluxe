@@ -62,6 +62,21 @@ class StandardStateComponent : StateComponent {
         return true
     }
 
+    override fun returnToIdle() {
+        val movement = character.getComponent(liric.mistaken.characters.components.MovementComponent::class.java)
+        if (movement != null && movement.isMoving) {
+            val entity = character.entity
+            val newState = if (entity is org.bukkit.entity.Player && entity.isSprinting) {
+                liric.mistaken.characters.states.RunState
+            } else {
+                liric.mistaken.characters.states.WalkState
+            }
+            transitionTo(newState, force = true)
+        } else {
+            super.returnToIdle()
+        }
+    }
+
     private fun playStateAnimation(state: CharacterState) {
         val animationName = state.defaultAnimation
         if (animationName == null) {

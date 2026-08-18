@@ -21,6 +21,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
     private var taskId: Int = -1
     private var lastLocation: Location? = null
     private var modelAdded: Boolean = false
+    private var walkTicks: Int = 0
 
     override fun onEnable(character: Character) {
         this.character = character
@@ -47,7 +48,6 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         dummy?.xHeadRot = player.location.pitch
         dummy?.yBodyRot = player.location.yaw
         dummy?.setForceViewing(player, true)
-        dummy?.isDetectingPlayers = false // FIX SLABS: Evitar que el Dummy detecte o colisione con jugadores
 
         modeledEntity = ModelEngineAPI.createModeledEntity(dummy)
         
@@ -95,8 +95,17 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         }
 
         // Detectar si se movió para la animación 'walk' por defecto de ModelEngine
-        val moved = loc.x != lastLoc.x || loc.z != lastLoc.z || loc.y != lastLoc.y
-        currentDummy.isWalking = moved
+        val dx = loc.x - lastLoc.x
+        val dz = loc.z - lastLoc.z
+        val distSq = dx * dx + dz * dz
+
+        if (distSq > 0.0001) {
+            walkTicks = 3
+        } else if (walkTicks > 0) {
+            walkTicks--
+        }
+
+        currentDummy.isWalking = walkTicks > 0
         currentDummy.isJumping = !player.isOnGround
 
         // Actualizar posición

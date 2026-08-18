@@ -56,6 +56,7 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
         }
 
         // 3. LIMPIEZA GLOBAL DE MEMORIA
+        plugin.observerHUDManager.clearPlayer(player)
         plugin.flashlightManager.clear(uuid)
         plugin.combatManager.removePlayerData(uuid)
         plugin.scoreboardManager.removePlayer(player)

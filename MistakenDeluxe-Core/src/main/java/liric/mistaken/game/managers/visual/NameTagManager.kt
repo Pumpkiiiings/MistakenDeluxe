@@ -27,25 +27,16 @@ class NameTagManager(private val plugin: Mistaken) {
     private val entityIdCounter = AtomicInteger(Int.MAX_VALUE / 2)
     private val hasPAPI by lazy { Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null }
 
-    private companion object {
-        const val TEAM_NAME = "mist_hide_nt"
-    }
+
+
+
 
     // ── Setup / Teardown ──
 
     fun setupPlayer(player: Player) {
         removePlayer(player)
 
-        // Add this player to the hide team on every online player's personal scoreboard
-        Bukkit.getOnlinePlayers().forEach { viewer ->
-            addToHideTeam(viewer.scoreboard, player.name)
-        }
 
-        // Also ensure this new player's own scoreboard hides all existing players
-        nametags.keys.forEach { ownerUUID ->
-            val owner = Bukkit.getPlayer(ownerUUID) ?: return@forEach
-            addToHideTeam(player.scoreboard, owner.name)
-        }
 
         val entityId = entityIdCounter.decrementAndGet()
         val tag = VirtualNametag(entityId)
@@ -60,18 +51,10 @@ class NameTagManager(private val plugin: Mistaken) {
     fun removePlayer(player: Player) {
         val tag = nametags.remove(player.uniqueId) ?: return
 
-        // Destroy the virtual entity for all viewers
         val destroyPacket = WrapperPlayServerDestroyEntities(tag.entityId)
-        val teamRemovePacket = WrapperPlayServerTeams(TEAM_NAME, WrapperPlayServerTeams.TeamMode.REMOVE_ENTITIES, null as WrapperPlayServerTeams.ScoreBoardTeamInfo?, player.name)
         
         Bukkit.getOnlinePlayers().forEach { viewer ->
             PacketEvents.getAPI().playerManager.sendPacket(viewer, destroyPacket)
-            PacketEvents.getAPI().playerManager.sendPacket(viewer, teamRemovePacket)
-        }
-
-        // Remove from hide team on all scoreboards
-        Bukkit.getOnlinePlayers().forEach { viewer ->
-            viewer.scoreboard.getTeam("mistaken_hide")?.removeEntry(player.name)
         }
     }
 
@@ -154,21 +137,7 @@ class NameTagManager(private val plugin: Mistaken) {
         val passengerIds = player.passengers.map { it.entityId }.toIntArray() + tag.entityId
         val passengerPacket = WrapperPlayServerSetPassengers(player.entityId, passengerIds)
 
-        // Pre-create team packets to avoid N*N allocations
-        val teamInfo = WrapperPlayServerTeams.ScoreBoardTeamInfo(
-            net.kyori.adventure.text.Component.empty(), null, null,
-            WrapperPlayServerTeams.NameTagVisibility.NEVER,
-            WrapperPlayServerTeams.CollisionRule.ALWAYS, null,
-            WrapperPlayServerTeams.OptionData.NONE
-        )
-        val teamCreatePacket = WrapperPlayServerTeams(TEAM_NAME, WrapperPlayServerTeams.TeamMode.CREATE, teamInfo, player.name)
-        val teamAddPacket = WrapperPlayServerTeams(TEAM_NAME, WrapperPlayServerTeams.TeamMode.ADD_ENTITIES, null as WrapperPlayServerTeams.ScoreBoardTeamInfo?, player.name)
-
         Bukkit.getOnlinePlayers().forEach { viewer ->
-            // Send team hide packets continuously in case Observer overrides the scoreboard
-            PacketEvents.getAPI().playerManager.sendPacket(viewer, teamCreatePacket)
-            PacketEvents.getAPI().playerManager.sendPacket(viewer, teamAddPacket)
-            
             if (!tag.confirmedViewers.contains(viewer.uniqueId)) {
                 spawnForViewer(player, viewer, tag)
             }
@@ -235,19 +204,4 @@ class NameTagManager(private val plugin: Mistaken) {
         val entityId: Int,
         val confirmedViewers: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
     )
-
-    /**
-     * Ensure a "mistaken_hide" team with NAME_TAG_VISIBILITY=NEVER exists on [scoreboard]
-     * and add [playerName] to it.
-     */
-    private fun addToHideTeam(scoreboard: org.bukkit.scoreboard.Scoreboard, playerName: String) {
-        var team = scoreboard.getTeam("mistaken_hide")
-        if (team == null) {
-            team = scoreboard.registerNewTeam("mistaken_hide")
-            team.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, org.bukkit.scoreboard.Team.OptionStatus.NEVER)
-        }
-        if (!team.hasEntry(playerName)) {
-            team.addEntry(playerName)
-        }
-    }
 }

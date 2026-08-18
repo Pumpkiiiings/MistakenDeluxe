@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.engine.visibility
+package liric.mistaken.game.managers.engine.visibility
 
 import com.github.retrooper.packetevents.event.PacketListenerAbstract
 import com.github.retrooper.packetevents.event.PacketSendEvent
@@ -62,6 +62,17 @@ class PacketVisibilityListener(private val manager: VisibilityManager) : PacketL
                     // Update the packet if there are remaining valid entries
                     info.entries = newEntries
                 }
+            }
+        }
+
+        // 5. Interceptar Teams para ocultar Nametags
+        else if (packetType == PacketType.Play.Server.TEAMS) {
+            val teamsPacket = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams(event)
+            val infoOpt = teamsPacket.teamInfo
+            
+            if (infoOpt.isPresent) {
+                val info = infoOpt.get()
+                info.tagVisibility = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams.NameTagVisibility.NEVER
             }
         }
     }

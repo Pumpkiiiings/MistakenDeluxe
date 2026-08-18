@@ -166,6 +166,17 @@ class GameStateController(private val game: GameSession) {
                 game.timer = 15
                 determineGameMode()
 
+                val timeMode = arena.timeMode
+                aspWorld.setGameRule(org.bukkit.GameRule.DO_DAYLIGHT_CYCLE, false)
+                when (timeMode.lowercase()) {
+                    "day" -> aspWorld.time = 6000
+                    "night" -> aspWorld.time = 18000
+                    "afternoon" -> aspWorld.time = 12000
+                    "morning" -> aspWorld.time = 0
+                    "dynamic" -> aspWorld.time = 0
+                    else -> aspWorld.time = 0
+                }
+
                 arena.asesinoSpawn?.world = aspWorld
                 arena.survivorSpawns.forEach { it.world = aspWorld }
 

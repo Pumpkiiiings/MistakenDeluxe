@@ -140,13 +140,28 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
                     player.playSound(player.location, Sound.BLOCK_CHEST_OPEN, 1f, 1.5f)
                 }
             }
+            "settime" -> {
+                if (args.size < 3) {
+                    player.sendMessage(ColorTranslator.translate("<red>Uso: /arena settime <mapa> <day|night|afternoon|morning|dynamic>"))
+                    return
+                }
+                val mode = args[2].lowercase()
+                val validModes = listOf("day", "night", "afternoon", "morning", "dynamic")
+                if (mode in validModes) {
+                    plugin.arenaManager.setTimeMode(arenaName, mode)
+                    player.sendMessage(ColorTranslator.translate("<green>Tiempo de la arena <white>$arenaName</white> establecido a <yellow>$mode</yellow>."))
+                    player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
+                } else {
+                    player.sendMessage(ColorTranslator.translate("<red>Modo de tiempo inválido. Opciones: day, night, afternoon, morning, dynamic."))
+                }
+            }
             else -> sendHelp(player)
         }
     }
 
     private fun sendHelp(p: Player) {
         p.sendMessage(PumpkingServiceManager.messages.getComponent(p, "arena.help-header"))
-        listOf("create", "delete", "check", "setspawn", "setgenerator", "delgenerator").forEach { sub ->
+        listOf("create", "delete", "check", "setspawn", "setgenerator", "delgenerator", "settime").forEach { sub ->
             p.sendMessage(PumpkingServiceManager.messages.getComponent(p, "arena.help-line-$sub"))
         }
         p.playSound(p.location, Sound.BLOCK_NOTE_BLOCK_HAT, 1f, 1f)
@@ -159,12 +174,17 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
         if (!stack.sender.hasPermission("mistaken.admin")) return emptyList()
 
         return when (args.size) {
-            1 -> listOf("create", "delete", "check", "setspawn", "setgenerator", "delgenerator")
+            1 -> listOf("create", "delete", "check", "setspawn", "setgenerator", "delgenerator", "settime")
                 .filter { it.startsWith(args[0], true) }
             2 -> plugin.arenaManager.getArenas().keys
                 .filter { it.startsWith(args[1], true) }
-            3 -> if (args[0].equals("setspawn", true)) listOf("asesino", "survivor").filter { it.startsWith(args[2], true) }
-            else emptyList()
+            3 -> {
+                if (args[0].equals("setspawn", true)) {
+                    listOf("asesino", "survivor").filter { it.startsWith(args[2], true) }
+                } else if (args[0].equals("settime", true)) {
+                    listOf("day", "night", "afternoon", "morning", "dynamic").filter { it.startsWith(args[2], true) }
+                } else emptyList()
+            }
             else -> emptyList()
         }
     }

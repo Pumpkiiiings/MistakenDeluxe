@@ -1,4 +1,4 @@
-﻿asesinos:
+asesinos:
   slasher:
     nombre: "<white><b>PUMPKIN WHITE</b>"
     descripcion:
@@ -143,4 +143,23 @@
       skill2: "<gradient:#00ffff:#ffffff>Color Drain</gradient>"
       skill3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
       skill4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
+  smiler:
+    nombre: "<yellow><b>SMILER</b></yellow>"
+    descripcion:
+      - "<gray>The smile in the dark."
+    lore_tienda:
+      - "<gray>\"Always smiling...\""
 
+  warden:
+    nombre: "<dark_aqua><b>WARDEN</b></dark_aqua>"
+    descripcion:
+      - "<gray>The guardian of the depths."
+    lore_tienda:
+      - "<gray>\"Hears every step...\""
+
+  still_life:
+    nombre: "<yellow><b>STILL LIFE</b></yellow>"
+    descripcion:
+      - "<gray>Disguise and deception."
+    lore_tienda:
+      - "<gray>\"Someone among us...\""

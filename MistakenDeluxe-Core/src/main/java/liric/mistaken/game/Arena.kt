@@ -7,6 +7,7 @@ class Arena(val name: String) {
 
     var slimeWorldName: String? = null
     var asesinoSpawn: Location? = null
+    var timeMode: String = "dynamic"
 
     // Usamos MutableList de Kotlin (que compila a ArrayList en la JVM)
     // val asegura que la referencia a la lista no cambie, pero el contenido es mutable.

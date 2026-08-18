@@ -145,12 +145,7 @@ object ScoreboardManager {
                 objective.numberFormat(NumberFormat.blank())
             } catch (ignored: Throwable) {}
 
-            // Hide vanilla nametags on this personal scoreboard.
-            // When a new scoreboard is assigned, the client loses all previous teams,
-            // so the hide team MUST exist on every scoreboard instance.
-            val hideTeam = scoreboard.registerNewTeam("mistaken_hide")
-            hideTeam.setOption(org.bukkit.scoreboard.Team.Option.NAME_TAG_VISIBILITY, org.bukkit.scoreboard.Team.OptionStatus.NEVER)
-            Bukkit.getOnlinePlayers().forEach { hideTeam.addEntry(it.name) }
+
 
             val ctx = ScoreboardContext(scoreboard, objective)
             player.scoreboard = scoreboard

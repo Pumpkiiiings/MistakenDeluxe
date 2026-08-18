@@ -43,6 +43,14 @@ global:
       offset_y: -20
       scale: 1.0
       content: "<white>Modo: <green>%mistaken_mode%</white>"
+    dinero:
+      type: TEXT
+      alignment: BOTTOM_RIGHT
+      text_alignment: RIGHT
+      offset_x: -10
+      offset_y: -10
+      scale: 1.0
+      content: "<white>Dinero: <gold>$%vault_eco_balance%</gold></white>"
 
 prelobby:
   components:
