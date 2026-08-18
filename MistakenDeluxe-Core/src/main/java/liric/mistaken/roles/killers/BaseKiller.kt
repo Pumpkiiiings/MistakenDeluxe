@@ -29,8 +29,17 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
         activeCharacters[player.uniqueId] = character
 
         // 1. Configurar infraestructura compartida (ECS)
-        character.addComponent(ModelComponent::class.java, liric.mistaken.characters.integration.modelengine.ModelEngineComponent(getModelId()))
-        character.addComponent(AnimationComponent::class.java, liric.mistaken.characters.integration.modelengine.ModelEngineAnimationComponent())
+        val pluginManager = org.bukkit.Bukkit.getPluginManager()
+        if (pluginManager.isPluginEnabled("ModelEngine")) {
+            character.addComponent(ModelComponent::class.java, liric.mistaken.characters.integration.modelengine.ModelEngineComponent(getModelId()))
+            character.addComponent(AnimationComponent::class.java, liric.mistaken.characters.integration.modelengine.ModelEngineAnimationComponent())
+        } else if (pluginManager.isPluginEnabled("BetterModel")) {
+            character.addComponent(ModelComponent::class.java, BetterModelComponent(getModelId()))
+            character.addComponent(AnimationComponent::class.java, BetterModelAnimationComponent())
+        } else {
+            org.bukkit.Bukkit.getLogger().warning("Neither ModelEngine nor BetterModel is enabled! Cannot load models for killer.")
+        }
+        
         character.addComponent(StateComponent::class.java, StandardStateComponent())
         character.addComponent(MovementComponent::class.java, BukkitMovementComponent())
         
