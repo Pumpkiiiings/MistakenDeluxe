@@ -1,7 +1,7 @@
 id: "warden"
 stats:
-  health: 200.0
-  damage: 4.0
+  health: 300.0
+  damage: 5.5
 precio: 10000
 icono_material: "SCULK_SHRIEKER"
 armor:

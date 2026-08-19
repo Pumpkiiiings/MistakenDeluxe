@@ -1,7 +1,7 @@
 id: "charlie"
 stats:
-  health: 170.0
-  damage: 3.5
+  health: 160.0
+  damage: 4.0
 precio: 7500
 permiso: "mistaken.skins.dev"
 icono_material: "MAGMA_BLOCK"

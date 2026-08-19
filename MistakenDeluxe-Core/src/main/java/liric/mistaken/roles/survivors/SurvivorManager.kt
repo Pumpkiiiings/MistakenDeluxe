@@ -55,6 +55,12 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
             if (activeRoles[uuid] == clase) {
                 clase.equip(player)
 
+                // Aplicar vida máxima específica del superviviente
+                val config = plugin.configManager.getSurvivorConfig(clase.id)
+                val maxHealth = config.getDouble("stats.health", 20.0)
+                player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = maxHealth
+                player.health = maxHealth
+
                 player.updateInventory()
 
                 plugin.componentLogger.info(ColorTranslator.translate(
@@ -92,6 +98,9 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
                 // 2. Limpieza física
                 player.inventory.clear()
                 player.inventory.armorContents = arrayOfNulls(4)
+                
+                // Restaurar vida máxima por defecto (20.0 = 10 corazones)
+                player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = 20.0
 
                 // Limpieza de pociones eficiente
                 player.activePotionEffects.forEach { effect ->

@@ -1,7 +1,7 @@
 id: "entity303"
 stats:
-  health: 170.0
-  damage: 3.5
+  health: 250.0
+  damage: 4.5
 precio: 3000
 icono_material: "NETHERITE_UPGRADE_SMITHING_TEMPLATE"
 armor:

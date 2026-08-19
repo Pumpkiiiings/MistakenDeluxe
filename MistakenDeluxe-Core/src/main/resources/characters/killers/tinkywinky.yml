@@ -1,7 +1,7 @@
 id: "tinkywinky"
 stats:
-  health: 160.0
-  damage: 3.0
+  health: 180.0
+  damage: 3.5
 precio: 900000
 permiso: "mistaken.skins.free"
 icono_material: "SLIME_BALL"

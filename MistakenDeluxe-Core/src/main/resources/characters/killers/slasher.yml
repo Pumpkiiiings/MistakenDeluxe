@@ -1,8 +1,8 @@
 id: "slasher"
 enabled: true
 stats:
-  health: 180.0
-  damage: 3.5
+  health: 140.0
+  damage: 4.0
 precio: 0
 icono_material: "NETHERITE_SWORD"
 armor:

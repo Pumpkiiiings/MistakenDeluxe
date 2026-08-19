@@ -70,8 +70,14 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
                 asesino.equip(player)
 
-                // ?? Reorganizaci�n din�mica de slots basada en config
+                // Reorganización dinámica de slots basada en config
                 val config = plugin.configManager.getKillerConfig(asesino.id)
+                
+                // Aplicar vida máxima del asesino
+                val maxHealth = config.getDouble("stats.health", 40.0)
+                player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = maxHealth
+                player.health = maxHealth
+
                 val currentItems = (1..4).associateWith { player.inventory.getItem(it) }
 
                 for (i in 1..4) {

@@ -1,6 +1,6 @@
 id: "troll"
 stats:
-  health: 24.0
+  health: 26.0
   damage: 4.0
 precio: 300
 icono_material: "YELLOW_DYE"

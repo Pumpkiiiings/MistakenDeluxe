@@ -1,7 +1,7 @@
 id: "smiler"
 stats:
-  health: 150.0
-  damage: 3.5
+  health: 160.0
+  damage: 3.8
 precio: 5000
 icono_material: "SKELETON_SKULL"
 armor:

@@ -250,15 +250,10 @@ class GameListener(private val plugin: Mistaken) : Listener {
                 player.updateInventory()
             })
             
-            // Curacin de supervivientes
+            // Curación de supervivientes
             if (!session.isKiller(player.uniqueId) && !plugin.spectatorManager.isSpectator(player)) {
                 val uuid = player.uniqueId
                 val now = System.currentTimeMillis()
-                
-                if (plugin.combatManager.getHealth(player) >= 20.0) {
-                    player.sendActionBar(ColorTranslator.translate("<red>Ya tienes la vida al mximo!"))
-                    return
-                }
                 
                 if (isHealing[uuid] == true) return
                 
@@ -268,16 +263,55 @@ class GameListener(private val plugin: Mistaken) : Listener {
                     player.sendActionBar(ColorTranslator.translate("<red>Debes esperar $remaining s para volver a curarte."))
                     return
                 }
+
+                // RayTrace para buscar objetivo
+                val target = player.world.rayTraceEntities(player.eyeLocation, player.location.direction, 4.5) {
+                    it is Player && it != player && !session.isKiller(it.uniqueId) && !plugin.spectatorManager.isSpectator(it)
+                }?.hitEntity as? Player
+
+                val targetToHeal = target ?: player
+                val maxHealth = targetToHeal.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.value ?: 20.0
+
+                if (plugin.combatManager.getHealth(targetToHeal) >= maxHealth) {
+                    if (targetToHeal == player) {
+                        player.sendActionBar(ColorTranslator.translate("<red>¡Ya tienes la vida al máximo!"))
+                    } else {
+                        player.sendActionBar(ColorTranslator.translate("<red>¡El jugador ${targetToHeal.name} ya tiene la vida al máximo!"))
+                    }
+                    return
+                }
                 
                 isHealing[uuid] = true
-                val totalTicks = 60 // 3 segundos de curacin
+                val totalTicks = 60 // 3 segundos de curación
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, totalTicks, 1, false, false))
+                
+                if (targetToHeal != player) {
+                    targetToHeal.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, totalTicks, 1, false, false))
+                }
+
+                val initialPlayerLoc = player.location.clone()
+                val initialTargetLoc = targetToHeal.location.clone()
                 
                 object : org.bukkit.scheduler.BukkitRunnable() {
                     var ticks = 0
                     override fun run() {
-                        if (!player.isOnline || session.currentState != GameState.INGAME || plugin.spectatorManager.isSpectator(player)) {
+                        if (!player.isOnline || session.currentState != GameState.INGAME || plugin.spectatorManager.isSpectator(player) || !targetToHeal.isOnline) {
                             isHealing[uuid] = false
+                            cancel()
+                            return
+                        }
+
+                        // Verificar movimiento (Tolerancia 1 bloque, es decir distanceSquared > 1.0)
+                        if (player.location.distanceSquared(initialPlayerLoc) > 1.0 || 
+                            targetToHeal.location.distanceSquared(initialTargetLoc) > 1.0) {
+                            
+                            val cancelMsg = ColorTranslator.translate("<red>Curación cancelada por movimiento.")
+                            player.sendMessage(cancelMsg)
+                            if (targetToHeal != player) targetToHeal.sendMessage(cancelMsg)
+                            
+                            isHealing[uuid] = false
+                            // Penalización leve de cooldown por cancelar
+                            healCooldowns[uuid] = System.currentTimeMillis() - 25_000L // 5 segundos
                             cancel()
                             return
                         }
@@ -286,35 +320,84 @@ class GameListener(private val plugin: Mistaken) : Listener {
                         val remainingSecs = (totalTicks - ticks) / 20.0
                         
                         if (ticks >= totalTicks) {
-                            val heartsToHeal = ThreadLocalRandom.current().nextInt(2, 8)
-                            val healthToHeal = heartsToHeal * 2
+                            val heartsToHeal = java.util.concurrent.ThreadLocalRandom.current().nextInt(2, 8)
+                            val healthToHeal = heartsToHeal * 2.0
                             
-                            val currentHealth = plugin.combatManager.getHealth(player)
-                            if (currentHealth < 20) {
-                                val newHealth = (currentHealth + healthToHeal).coerceAtMost(20)
-                                plugin.combatManager.setHealth(player, newHealth)
+                            val currentHealth = plugin.combatManager.getHealth(targetToHeal).toDouble()
+                            if (currentHealth < maxHealth) {
+                                val newHealth = (currentHealth + healthToHeal).coerceAtMost(maxHealth)
+                                plugin.combatManager.setHealth(targetToHeal, newHealth.toInt())
                             }
                             
                             val times = net.kyori.adventure.title.Title.Times.times(java.time.Duration.ofMillis(250), java.time.Duration.ofMillis(1000), java.time.Duration.ofMillis(250))
-                            player.showTitle(net.kyori.adventure.title.Title.title(
-                                ColorTranslator.translate("<green>Curado!"),
-                                ColorTranslator.translate("<gray>+$heartsToHeal corazones"),
-                                times
-                            ))
-                            player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f)
+                            
+                            if (targetToHeal == player) {
+                                player.showTitle(net.kyori.adventure.title.Title.title(
+                                    ColorTranslator.translate("<green>¡Curado!"),
+                                    ColorTranslator.translate("<gray>+$heartsToHeal corazones"),
+                                    times
+                                ))
+                            } else {
+                                player.showTitle(net.kyori.adventure.title.Title.title(
+                                    ColorTranslator.translate("<green>¡Has curado a ${targetToHeal.name}!"),
+                                    ColorTranslator.translate("<gray>+$heartsToHeal corazones"),
+                                    times
+                                ))
+                                targetToHeal.showTitle(net.kyori.adventure.title.Title.title(
+                                    ColorTranslator.translate("<green>¡Has sido curado!"),
+                                    ColorTranslator.translate("<gray>Por ${player.name}"),
+                                    times
+                                ))
+                                
+                                // Recompensa
+                                liric.mistaken.Mistaken.economy?.depositPlayer(player, 100.0)
+                                player.sendMessage(ColorTranslator.translate("<green>+100 monedas por curar a un compañero."))
+                            }
+                            
+                            targetToHeal.playSound(targetToHeal.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f)
+                            if (targetToHeal != player) {
+                                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f)
+                            }
                             
                             isHealing[uuid] = false
                             healCooldowns[uuid] = System.currentTimeMillis()
+                            
+                            // Programar notificación de habilidad lista
+                            plugin.server.scheduler.runTaskLater(plugin, Runnable {
+                                if (player.isOnline && plugin.sessionManager.getSession(player)?.currentState == GameState.INGAME) {
+                                    player.sendActionBar(ColorTranslator.translate("<green>¡Tu habilidad de curación está lista!"))
+                                    player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
+                                }
+                            }, 30 * 20L)
+                            
                             cancel()
                         } else {
                             val times = net.kyori.adventure.title.Title.Times.times(java.time.Duration.ZERO, java.time.Duration.ofMillis(500), java.time.Duration.ZERO)
-                            player.showTitle(net.kyori.adventure.title.Title.title(
-                                ColorTranslator.translate("<yellow>Curandose..."),
-                                ColorTranslator.translate("<gray>${String.format(java.util.Locale.US, "%.1f", remainingSecs)}s"),
-                                times
-                            ))
+                            
+                            if (targetToHeal == player) {
+                                player.showTitle(net.kyori.adventure.title.Title.title(
+                                    ColorTranslator.translate("<yellow>Curándose..."),
+                                    ColorTranslator.translate("<gray>${String.format(java.util.Locale.US, "%.1f", remainingSecs)}s"),
+                                    times
+                                ))
+                            } else {
+                                player.showTitle(net.kyori.adventure.title.Title.title(
+                                    ColorTranslator.translate("<yellow>Estás curando a ${targetToHeal.name}"),
+                                    ColorTranslator.translate("<gray>Tiempo: ${String.format(java.util.Locale.US, "%.1f", remainingSecs)}s"),
+                                    times
+                                ))
+                                targetToHeal.showTitle(net.kyori.adventure.title.Title.title(
+                                    ColorTranslator.translate("<yellow>${player.name} te está curando..."),
+                                    ColorTranslator.translate("<gray>No te muevas. Tiempo: ${String.format(java.util.Locale.US, "%.1f", remainingSecs)}s"),
+                                    times
+                                ))
+                            }
+                            
                             if (ticks % 10 == 0) {
-                                player.playSound(player.location, Sound.ENTITY_GENERIC_DRINK, 0.5f, 1.0f)
+                                targetToHeal.playSound(targetToHeal.location, Sound.ENTITY_GENERIC_DRINK, 0.5f, 1.0f)
+                                if (targetToHeal != player) {
+                                    player.playSound(player.location, Sound.ENTITY_GENERIC_DRINK, 0.5f, 1.0f)
+                                }
                             }
                         }
                     }

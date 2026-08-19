@@ -1,7 +1,7 @@
 id: "colorandelectricity"
 stats:
-  health: 155.0
-  damage: 3.2
+  health: 140.0
+  damage: 3.0
 precio: 10500
 permiso: "mistaken.skins.exclusivo"
 icono_material: "LIGHTNING_ROD"

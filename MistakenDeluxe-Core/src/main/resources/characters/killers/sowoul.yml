@@ -1,7 +1,7 @@
 id: "sowoul"
 stats:
-  health: 155.0
-  damage: 3.2
+  health: 150.0
+  damage: 3.5
 precio: 850000
 permiso: "mistaken.skins.dev"
 icono_material: "ENCHANTED_BOOK"
