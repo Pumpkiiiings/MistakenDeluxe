@@ -22,32 +22,12 @@ class StillLife : CoreKiller(
 
     override val defaultMusic = "mistaken:still_life"
     
+    override fun useSkill(player: Player, slot: Int) {}
+    
     private val lastKilled = ConcurrentHashMap<UUID, String>()
     private val disguisedAs = ConcurrentHashMap<UUID, String>()
-    private val fakeGenerators = ConcurrentHashMap<Location, UUID>()
-    private var packetListener: com.github.retrooper.packetevents.event.PacketListenerAbstract? = null
-
     init {
         plugin.server.pluginManager.registerEvents(this, plugin)
-        
-        packetListener = object : com.github.retrooper.packetevents.event.PacketListenerAbstract() {
-            override fun onPacketReceive(event: com.github.retrooper.packetevents.event.PacketReceiveEvent) {
-                if (event.packetType == com.github.retrooper.packetevents.protocol.packettype.PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
-                    val packet = com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement(event)
-                    val pos = packet.blockPosition
-                    val p = event.getPlayer<Player>()
-                    val loc = Location(p.world, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
-                    
-                    if (fakeGenerators.containsKey(loc)) {
-                        event.isCancelled = true
-                        Bukkit.getScheduler().runTask(plugin, Runnable {
-                            handleFakeGeneratorTrap(p, loc)
-                        })
-                    }
-                }
-            }
-        }
-        com.github.retrooper.packetevents.PacketEvents.getAPI().eventManager.registerListener(packetListener!!)
 
         plugin.server.scheduler.runTaskTimer(plugin, Runnable {
             for (uuid in disguisedAs.keys) {
@@ -71,120 +51,126 @@ class StillLife : CoreKiller(
         }, 20L, 10L)
     }
 
-    override fun equip(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        // Items por defecto para skills (pueden ser overrideados por config si se arma el equip logic estandar)
-        inv.setItem(1, org.bukkit.inventory.ItemStack(Material.FIRE_CHARGE))
-        inv.setItem(2, org.bukkit.inventory.ItemStack(Material.IRON_SWORD))
-        inv.setItem(3, org.bukkit.inventory.ItemStack(Material.RAW_IRON_BLOCK))
-        inv.setItem(4, org.bukkit.inventory.ItemStack(Material.ZOMBIE_HEAD))
-    }
-
-    override fun useSkill(player: Player, slot: Int) {
-        when (slot) {
-            1 -> {
-                if (!checkCooldown(player, 1)) {
-                    // Smoke bomb
-                    val loc = player.location
-                    loc.world.spawnParticle(org.bukkit.Particle.CAMPFIRE_COSY_SMOKE, loc, 200, 4.0, 2.0, 4.0, 0.05)
-                    loc.world.getNearbyPlayers(loc, 6.0).forEach { p ->
-                        if (plugin.sessionManager.getSession(p)?.isKiller(p.uniqueId) != true) {
-                            p.addPotionEffect(org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS, 100, 0))
-                        }
+    override fun onTrigger(player: Player, triggerId: String) {
+        when (triggerId) {
+            "skill1" -> {
+                // Smoke bomb
+                val loc = player.location
+                loc.world.spawnParticle(org.bukkit.Particle.CAMPFIRE_COSY_SMOKE, loc, 200, 4.0, 2.0, 4.0, 0.05)
+                loc.world.getNearbyPlayers(loc, 6.0).forEach { p ->
+                    if (plugin.sessionManager.getSession(p)?.isKiller(p.uniqueId) != true) {
+                        p.addPotionEffect(org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS, 100, 0))
                     }
-                    playSkillEffects(player, 1)
                 }
+                playSkillEffects(player, 1)
             }
-            2 -> {
-                if (!checkCooldown(player, 2)) {
-                    // Spikes
-                    val dir = player.location.direction.setY(0.0).normalize()
-                    var current = player.location.clone()
-                    for (i in 1..8) {
-                        current.add(dir)
-                        val spawnLoc = current.clone()
-                        plugin.server.regionScheduler.runDelayed(plugin, spawnLoc, Consumer {
-                            spawnLoc.world.spawn(spawnLoc, org.bukkit.entity.EvokerFangs::class.java)
-                        }, (i * 2).toLong())
-                    }
-                    playSkillEffects(player, 2)
+            "skill2" -> {
+                // Spikes
+                val dir = player.location.direction.setY(0.0).normalize()
+                var current = player.location.clone()
+                for (i in 1..8) {
+                    current.add(dir)
+                    val spawnLoc = current.clone()
+                    plugin.server.regionScheduler.runDelayed(plugin, spawnLoc, Consumer {
+                        spawnLoc.world.spawn(spawnLoc, org.bukkit.entity.EvokerFangs::class.java)
+                    }, (i * 2).toLong())
                 }
+                playSkillEffects(player, 2)
             }
-            3 -> {
-                if (!checkCooldown(player, 3)) {
-                    // Fake Generator
-                    val targetLoc = player.location.add(player.location.direction.multiply(2.0)).block.location
-                    fakeGenerators[targetLoc] = player.uniqueId
+            "skill3" -> {
+                // Fake Generator
+                val targetLoc = player.location.add(player.location.direction.multiply(2.0)).block.location
+                
+                val trap = liric.mistaken.roles.killers.triggers.traps.TrapDefinition(
+                    ownerUuid = player.uniqueId,
+                    killerId = this.id,
+                    location = targetLoc
+                ) { survivor, trapLoc ->
+                    handleFakeGeneratorTrap(survivor, trapLoc, player.uniqueId)
+                }
+                liric.mistaken.roles.killers.triggers.traps.WorldTrapRegistry.registerTrap(trap)
+                
+                val blockState = io.github.retrooper.packetevents.util.SpigotConversionUtil.fromBukkitBlockData(Material.RAW_IRON_BLOCK.createBlockData())
+                val packet = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockChange(
+                    com.github.retrooper.packetevents.util.Vector3i(targetLoc.blockX, targetLoc.blockY, targetLoc.blockZ),
+                    blockState.globalId
+                )
+                Bukkit.getOnlinePlayers().forEach { p ->
+                    com.github.retrooper.packetevents.PacketEvents.getAPI().playerManager.sendPacket(p, packet)
+                }
+                player.sendMessage(pumpking.lib.color.ColorTranslator.translate(
+                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.still_life.habilidades.generador_colocado", "killers_info")
+                ))
+                playSkillEffects(player, 3)
+            }
+            "skill4" -> {
+                // Spawn clones (Null armor)
+                val loc = player.location
+                val session = plugin.sessionManager.getSession(player)
+                for (i in 1..4) {
+                    val cloneLoc = loc.clone().add((Math.random() - 0.5) * 4, 0.0, (Math.random() - 0.5) * 4)
+                    val zombie = loc.world.spawn(cloneLoc, org.bukkit.entity.Zombie::class.java)
                     
-                    val blockState = io.github.retrooper.packetevents.util.SpigotConversionUtil.fromBukkitBlockData(Material.RAW_IRON_BLOCK.createBlockData())
-                    val packet = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockChange(
-                        com.github.retrooper.packetevents.util.Vector3i(targetLoc.blockX, targetLoc.blockY, targetLoc.blockZ),
-                        blockState.globalId
-                    )
-                    Bukkit.getOnlinePlayers().forEach { p ->
-                        com.github.retrooper.packetevents.PacketEvents.getAPI().playerManager.sendPacket(p, packet)
-                    }
-                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate(
-                        pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.still_life.habilidades.generador_colocado", "killers_info")
-                    ))
-                    playSkillEffects(player, 3)
-                }
-            }
-            4 -> {
-                if (!checkCooldown(player, 4)) {
-                    // Spawn clones (Null armor)
-                    val loc = player.location
-                    val session = plugin.sessionManager.getSession(player)
-                    for (i in 1..4) {
-                        val cloneLoc = loc.clone().add((Math.random() - 0.5) * 4, 0.0, (Math.random() - 0.5) * 4)
-                        val zombie = loc.world.spawn(cloneLoc, org.bukkit.entity.Zombie::class.java)
+                    zombie.setAdult()
+                    
+                    val equip = zombie.equipment
+                    if (equip != null) {
+                        val helmet = org.bukkit.inventory.ItemStack(Material.LEATHER_HELMET).also { val m = it.itemMeta as org.bukkit.inventory.meta.LeatherArmorMeta; m.setColor(org.bukkit.Color.BLACK); it.itemMeta = m }
+                        val chest = org.bukkit.inventory.ItemStack(Material.LEATHER_CHESTPLATE).also { val m = it.itemMeta as org.bukkit.inventory.meta.LeatherArmorMeta; m.setColor(org.bukkit.Color.BLACK); it.itemMeta = m }
+                        val legs = org.bukkit.inventory.ItemStack(Material.LEATHER_LEGGINGS).also { val m = it.itemMeta as org.bukkit.inventory.meta.LeatherArmorMeta; m.setColor(org.bukkit.Color.BLACK); it.itemMeta = m }
+                        val boots = org.bukkit.inventory.ItemStack(Material.LEATHER_BOOTS).also { val m = it.itemMeta as org.bukkit.inventory.meta.LeatherArmorMeta; m.setColor(org.bukkit.Color.BLACK); it.itemMeta = m }
                         
-                        zombie.setAdult()
-                        
-                        val equip = zombie.equipment
-                        if (equip != null) {
-                            val helmet = org.bukkit.inventory.ItemStack(Material.LEATHER_HELMET).also { val m = it.itemMeta as org.bukkit.inventory.meta.LeatherArmorMeta; m.setColor(org.bukkit.Color.BLACK); it.itemMeta = m }
-                            val chest = org.bukkit.inventory.ItemStack(Material.LEATHER_CHESTPLATE).also { val m = it.itemMeta as org.bukkit.inventory.meta.LeatherArmorMeta; m.setColor(org.bukkit.Color.BLACK); it.itemMeta = m }
-                            val legs = org.bukkit.inventory.ItemStack(Material.LEATHER_LEGGINGS).also { val m = it.itemMeta as org.bukkit.inventory.meta.LeatherArmorMeta; m.setColor(org.bukkit.Color.BLACK); it.itemMeta = m }
-                            val boots = org.bukkit.inventory.ItemStack(Material.LEATHER_BOOTS).also { val m = it.itemMeta as org.bukkit.inventory.meta.LeatherArmorMeta; m.setColor(org.bukkit.Color.BLACK); it.itemMeta = m }
-                            
-                            equip.helmet = helmet
-                            equip.chestplate = chest
-                            equip.leggings = legs
-                            equip.boots = boots
-                        }
-                        
-                        zombie.isCustomNameVisible = true
-                        zombie.customName(pumpking.lib.color.ColorTranslator.translate("<dark_gray>Null"))
-                        
-                        // Seek survivor
-                        if (session != null) {
-                            val closest = loc.world.getNearbyEntities(loc, 30.0, 10.0, 30.0).filterIsInstance<Player>().firstOrNull {
-                                !session.isKiller(it.uniqueId) && !plugin.spectatorManager.isSpectator(it)
-                            }
-                            if (closest != null) {
-                                zombie.target = closest
-                            }
-                        }
-                        
-                        // Kill after 15 seconds
-                        Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-                            if (!zombie.isDead) {
-                                zombie.health = 0.0
-                            }
-                        }, 20L * 15L)
+                        equip.helmet = helmet
+                        equip.chestplate = chest
+                        equip.leggings = legs
+                        equip.boots = boots
                     }
                     
-                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>¡Clones invocados!"))
-                    playSkillEffects(player, 4)
+                    zombie.isCustomNameVisible = true
+                    zombie.customName(pumpking.lib.color.ColorTranslator.translate("<dark_gray>Null"))
+                    
+                    // Seek survivor
+                    if (session != null) {
+                        val closest = loc.world.getNearbyEntities(loc, 30.0, 10.0, 30.0).filterIsInstance<Player>().firstOrNull {
+                            !session.isKiller(it.uniqueId) && !plugin.spectatorManager.isSpectator(it)
+                        }
+                        if (closest != null) {
+                            zombie.target = closest
+                        }
+                    }
+                    
+                    // Kill after 15 seconds
+                    Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+                        if (!zombie.isDead) {
+                            zombie.health = 0.0
+                        }
+                    }, 20L * 15L)
+                }
+                
+                player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>¡Clones invocados!"))
+                playSkillEffects(player, 4)
+            }
+            "disguise_toggle" -> {
+                val last = lastKilled[player.uniqueId]
+                if (last != null) {
+                    if (disguisedAs.containsKey(player.uniqueId)) {
+                        removeDisguise(player)
+                    } else {
+                        disguisedAs[player.uniqueId] = last
+                        player.customName = last
+                        player.isCustomNameVisible = true
+                        player.sendMessage(pumpking.lib.color.ColorTranslator.translate(
+                            pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.still_life.habilidades.disfrazado", "killers_info")
+                                .replace("%last%", last)
+                        ))
+                    }
                 }
             }
         }
     }
 
-    private fun handleFakeGeneratorTrap(survivor: Player, loc: Location) {
-        val killerId = fakeGenerators.remove(loc)
+    private fun handleFakeGeneratorTrap(survivor: Player, loc: Location, killerUuid: UUID) {
+        liric.mistaken.roles.killers.triggers.traps.WorldTrapRegistry.unregisterTrap(loc)
         
         val airState = io.github.retrooper.packetevents.util.SpigotConversionUtil.fromBukkitBlockData(Material.AIR.createBlockData())
         val packet = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockChange(
@@ -198,9 +184,9 @@ class StillLife : CoreKiller(
         loc.world.createExplosion(loc, 2.0f, false, false)
         survivor.addPotionEffect(org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.GLOWING, 100, 0))
         
-        killerId?.let {
-            Bukkit.getPlayer(it)?.sendMessage(pumpking.lib.color.ColorTranslator.translate(
-                pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(Bukkit.getPlayer(it), "asesinos.still_life.habilidades.generador_interactuado", "killers_info")
+        Bukkit.getPlayer(killerUuid)?.let {
+            it.sendMessage(pumpking.lib.color.ColorTranslator.translate(
+                pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(it, "asesinos.still_life.habilidades.generador_interactuado", "killers_info")
             ))
         }
     }
@@ -229,45 +215,14 @@ class StillLife : CoreKiller(
         ))
     }
 
-    @EventHandler
-    fun onSwap(event: PlayerSwapHandItemsEvent) {
-        val player = event.player
-        val session = plugin.sessionManager.getSession(player) ?: return
-        if (session.isKiller(player.uniqueId) && plugin.playerDataManager.getSelectedKiller(player.uniqueId) == this.id) {
-            event.isCancelled = true
-            
-            val last = lastKilled[player.uniqueId]
-            if (last != null) {
-                if (disguisedAs.containsKey(player.uniqueId)) {
-                    removeDisguise(player)
-                } else {
-                    disguisedAs[player.uniqueId] = last
-                    player.customName = last
-                    player.isCustomNameVisible = true
-                    player.sendMessage(pumpking.lib.color.ColorTranslator.translate(
-                        pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.still_life.habilidades.disfrazado", "killers_info")
-                            .replace("%last%", last)
-                    ))
-                }
-            }
+    override fun onInterceptChat(player: Player, message: String): String? {
+        val disguiseName = disguisedAs[player.uniqueId]
+        if (disguiseName != null) {
+            return pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.still_life.habilidades.chat_disfraz", "killers_info")
+                .replace("%disguisename%", disguiseName)
+                .replace("%message%", message)
         }
-    }
-
-    @EventHandler
-    fun onChat(event: AsyncPlayerChatEvent) {
-        val player = event.player
-        val session = plugin.sessionManager.getSession(player) ?: return
-        if (session.isKiller(player.uniqueId) && plugin.playerDataManager.getSelectedKiller(player.uniqueId) == this.id) {
-            val disguiseName = disguisedAs[player.uniqueId]
-            if (disguiseName != null) {
-                event.isCancelled = true
-                Bukkit.broadcast(pumpking.lib.color.ColorTranslator.translate(
-                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.still_life.habilidades.chat_disfraz", "killers_info")
-                        .replace("%disguisename%", disguiseName)
-                        .replace("%message%", event.message)
-                ))
-            }
-        }
+        return null
     }
 
     override fun showTrail(player: Player) {}
@@ -277,6 +232,7 @@ class StillLife : CoreKiller(
         super.cleanup(player)
         player?.let {
             disguisedAs.remove(it.uniqueId)
+            lastKilled.remove(it.uniqueId)
             it.customName = null
             it.isCustomNameVisible = false
         }

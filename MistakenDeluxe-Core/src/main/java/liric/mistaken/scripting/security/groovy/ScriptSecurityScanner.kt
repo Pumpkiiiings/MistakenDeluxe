@@ -1,4 +1,4 @@
-package liric.mistaken.utils.scripting
+﻿package liric.mistaken.scripting.security.groovy
 
 import org.bukkit.Bukkit
 
@@ -18,15 +18,16 @@ object ScriptSecurityScanner {
 
     /**
      * Revisa el contenido de un script antes de compilarlo.
-     * Retorna true si es seguro, false si detecta código sospechoso.
+     * Retorna true si es seguro, false si detecta cÃ³digo sospechoso.
      */
     fun isSafe(scriptContent: String, scriptName: String): Boolean {
         for (pattern in BANNED_PATTERNS) {
             if (pattern.containsMatchIn(scriptContent)) {
-                Bukkit.getLogger().severe("[Mistaken Script Engine] ALERTA: Script '$scriptName' denegado. Contiene patrón prohibido: ${pattern.pattern}")
+                Bukkit.getLogger().severe("[Mistaken Script Engine] ALERTA: Script '$scriptName' denegado. Contiene patrÃ³n prohibido: ${pattern.pattern}")
                 return false
             }
         }
         return true
     }
 }
+

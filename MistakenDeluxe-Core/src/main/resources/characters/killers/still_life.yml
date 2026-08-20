@@ -1,0 +1,36 @@
+id: still_life
+display_name_key: "asesinos.still_life.nombre"
+default_music: "mistaken:still_life"
+
+armor:
+  helmet: none
+  chestplate: none
+  leggings: none
+  boots: none
+
+items:
+  weapon: "IRON_SWORD"
+  skill1: "FIRE_CHARGE"
+  skill2: "IRON_SWORD"
+  skill3: "RAW_IRON_BLOCK"
+  skill4: "ZOMBIE_HEAD"
+
+triggers:
+  skill1:
+    input: slot_1
+    cooldown: 20
+  skill2:
+    input: slot_2
+    cooldown: 15
+  skill3:
+    input: slot_3
+    cooldown: 25
+  skill4:
+    input: slot_4
+    cooldown: 60
+  disguise_toggle:
+    input: swap_hands
+    cooldown: 0
+  drop_action:
+    input: drop_item
+    cooldown: 0

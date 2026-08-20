@@ -64,6 +64,9 @@ dependencies {
     compileOnly("org.apache.groovy:groovy:5.0.6")
     compileOnly("org.apache.groovy:groovy-jsr223:5.0.6")
 
+    // Lua Scripting Engine
+    implementation("org.luaj:luaj-jse:3.0.1")
+
     // APIs Externas (Solo para compilar)
     compileOnly(files("../libs/bettermodel-api-3.4.1.jar"))
     compileOnly(files("../libs/bettermodel-bukkit-api-3.4.1.jar"))

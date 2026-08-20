@@ -1,7 +1,7 @@
 package liric.mistaken.roles.killers
 
 import liric.mistaken.Mistaken
-import liric.mistaken.utils.scripting.KillerScriptEngine
+import liric.mistaken.scripting.engine.groovy.KillerScriptEngine
 import liric.mistaken.roles.killers.clases.*
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Sound
@@ -22,6 +22,11 @@ import liric.mistaken.roles.shared.AbstractRoleManager
 class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKillerManager {
 
     init {
+        plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.event.LuaKillerEventDispatcher(plugin), plugin)
+        plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.effects.EffectLifecycleListener(plugin), plugin)
+        plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.effects.gameplay.FinisherEngine, plugin)
+        plugin.server.pluginManager.registerEvents(liric.mistaken.roles.killers.triggers.TriggerListener(plugin), plugin)
+        liric.mistaken.roles.killers.triggers.traps.WorldTrapRegistry.init(plugin)
         reloadAll()
     }
 
@@ -49,11 +54,11 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
         // Copiar scripts por defecto si no existen
         try {
-            if (!java.io.File(scriptsFolder, "slasher.groovy").exists()) {
-                plugin.saveResource("killers/slasher.groovy", false)
+            if (!java.io.File(scriptsFolder, "slasher.groovy").exists() && !java.io.File(scriptsFolder, "slasher.lua").exists()) {
+                plugin.saveResource("killers/slasher.lua", false)
             }
-            if (!java.io.File(scriptsFolder, "herobrine.groovy").exists()) {
-                plugin.saveResource("killers/herobrine.groovy", false)
+            if (!java.io.File(scriptsFolder, "herobrine.groovy").exists() && !java.io.File(scriptsFolder, "herobrine.lua").exists()) {
+                plugin.saveResource("killers/herobrine.lua", false)
             }
         } catch (e: Exception) {
             plugin.componentLogger.warn("No se pudieron copiar los scripts por defecto (slasher/herobrine).")
@@ -66,6 +71,19 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                 val killer = KillerScriptEngine.loadKillerScript(file)
                 if (killer != null) {
                     registerClass(killer)
+                    loadedCount++
+                }
+            } else if (file.name.endsWith(".lua")) {
+                val killerId = file.nameWithoutExtension.lowercase()
+                val scriptKiller = liric.mistaken.scripting.engine.lua.LuaScriptEngine.loadScript(file, killerId)
+                if (scriptKiller != null) {
+                    // Create the adapter
+                    val luaAdapter = liric.mistaken.scripting.adapter.LuaKillerAdapter(
+                        id = killerId,
+                        nombre = killerId.replaceFirstChar { it.uppercase() },
+                        scriptKiller = scriptKiller
+                    )
+                    registerClass(luaAdapter)
                     loadedCount++
                 }
             }
@@ -107,7 +125,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             Placeholder.component("name", ColorTranslator.translate(asesino.nombre))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
-        // 2. ?? FIX: EntityScheduler de Paper con runDelayed y Consumer expl�cito
+        // 2. ?? FIX: EntityScheduler de Paper con runDelayed y Consumer explï¿½cito
         player.scheduler.runDelayed(
             plugin,
             Consumer { _ ->
@@ -115,10 +133,10 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
                 asesino.equip(player)
 
-                // Reorganización dinámica de slots basada en config
+                // ReorganizaciÃ³n dinÃ¡mica de slots basada en config
                 val config = plugin.configManager.getKillerConfig(asesino.id)
                 
-                // Aplicar vida máxima del asesino
+                // Aplicar vida mÃ¡xima del asesino
                 val maxHealth = config.getDouble("stats.health", 40.0)
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = maxHealth
                 player.health = maxHealth
@@ -180,7 +198,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
     fun removeAllKillers() {
         cleanAll()
-        // Le decimos a todos los asesinos que vacíen su memoria RAM interna
+        // Le decimos a todos los asesinos que vacÃ­en su memoria RAM interna
         availableClasses.values.forEach { asesino ->
             asesino.dispose()
         }
@@ -199,10 +217,26 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         }
 
         val scriptsFolder = java.io.File(plugin.dataFolder, "killers")
-        val scriptFile = java.io.File(scriptsFolder, "$lowerId.groovy")
+        val groovyScript = java.io.File(scriptsFolder, "$lowerId.groovy")
+        val luaScript = java.io.File(scriptsFolder, "$lowerId.lua")
+        
+        val isLua = luaScript.exists()
+        val scriptFile = if (isLua) luaScript else groovyScript
         
         if (scriptFile.exists()) {
-            val newKiller = KillerScriptEngine.loadKillerScript(scriptFile)
+            val newKiller = if (isLua) {
+                val scriptKiller = liric.mistaken.scripting.engine.lua.LuaScriptEngine.loadScript(scriptFile, lowerId)
+                if (scriptKiller != null) {
+                    liric.mistaken.scripting.adapter.LuaKillerAdapter(
+                        id = lowerId,
+                        nombre = lowerId.replaceFirstChar { it.uppercase() },
+                        scriptKiller = scriptKiller
+                    )
+                } else null
+            } else {
+                KillerScriptEngine.loadKillerScript(scriptFile)
+            }
+
             if (newKiller != null) {
                 registerClass(newKiller)
                 
@@ -230,7 +264,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                 plugin.componentLogger.warn("Error recargando $lowerId. El asesino ha sido deshabilitado.")
             }
         } else {
-            plugin.componentLogger.warn("[INFO] [KillerManager] No se encontró el script $lowerId.groovy para recargar.")
+            plugin.componentLogger.warn("[INFO] [KillerManager] No se encontrÃ³ el script $lowerId.groovy o .lua para recargar.")
         }
     }
 
@@ -243,4 +277,5 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         removeAllKillers()
     }
 }
+
 

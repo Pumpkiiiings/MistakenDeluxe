@@ -1,0 +1,26 @@
+package liric.mistaken.scripting.api
+
+/**
+ * Contrato seguro para un Jugador.
+ * Hereda de ScriptEntity.
+ */
+interface ScriptPlayer : ScriptEntity {
+    fun is_online(): Boolean
+    
+    fun send_message(message: String)
+    fun play_sound(sound: String, volume: Float, pitch: Float)
+    fun play_particle(particle: String, amount: Int)
+    
+    fun health(): Double
+    fun set_health(amount: Double)
+    fun damage(amount: Double)
+    
+    fun has_permission(permission: String): Boolean
+    
+    fun set_scale(scale: Double)
+    fun reset_scale()
+    
+    fun get_nearby_players(radius: Double): List<ScriptPlayer>
+    fun ray_trace_player(distance: Double): ScriptPlayer?
+}
+

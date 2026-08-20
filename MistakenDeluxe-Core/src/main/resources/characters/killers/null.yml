@@ -28,3 +28,24 @@ items:
   skill4_slot: 4
   skill4_cooldown: 45
   skill4_sound: "ENTITY_EVOKER_PREPARE_ATTACK"
+
+triggers:
+  - id: "skill_1"
+    type: "ITEM_INTERACT"
+    item: "RECOVERY_COMPASS"
+    cooldown: 20
+  
+  - id: "skill_2"
+    type: "ITEM_INTERACT"
+    item: "BEACON"
+    cooldown: 30
+    
+  - id: "skill_3"
+    type: "ITEM_INTERACT"
+    item: "CHAIN"
+    cooldown: 25
+    
+  - id: "skill_4"
+    type: "ITEM_INTERACT"
+    item: "ECHO_SHARD"
+    cooldown: 45

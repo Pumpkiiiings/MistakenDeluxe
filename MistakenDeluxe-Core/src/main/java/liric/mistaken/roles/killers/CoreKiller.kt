@@ -1,6 +1,7 @@
 package liric.mistaken.roles.killers
 
 import liric.mistaken.Mistaken
+import liric.mistaken.roles.killers.triggers.TriggerRegistry
 
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -13,6 +14,33 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
     protected val plugin: Mistaken
         get() = Mistaken.instance
 
+    val triggerRegistry = TriggerRegistry(this.id)
+
+    open override fun cleanup(player: Player?) {
+        player?.let {
+            triggerRegistry.clearCooldowns(it.uniqueId)
+        }
+        if (player == null) {
+            dispose()
+        }
+    }
+
+    /**
+     * Nuevo sistema de Triggers. Los Killers nativos pueden hacer override de esto.
+     */
+    open fun onTrigger(player: Player, triggerId: String) {}
+
+    /**
+     * Interceptación de chat para Killers nativos. 
+     * Retorna un string para reescribir el broadcast, o null para no tocarlo.
+     */
+    open fun onInterceptChat(player: Player, message: String): String? { return null }
+
+    /**
+     * Se llama cuando el asesino mata a un jugador (lo pone en espectador).
+     */
+    open fun onKill(killer: Player, victim: Player) {}
+
     open override fun equip(player: Player) {
         val inv = player.inventory
         inv.clear()
@@ -20,6 +48,9 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
 
         val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
+        
+        // Cargar triggers desde YAML (si existe la sección)
+        triggerRegistry.loadFromConfig(configMecanica)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val itemId = configMecanica.getString("armor.$key") ?: configMecanica.getString("items.$key")
@@ -170,8 +201,12 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
         isDisposed = true
         super.dispose()
         
+        onDispose()
+        
         taskTracker.dispose()
         eventTracker.dispose()
         resourceTracker.dispose()
     }
+    
+    protected open fun onDispose() {}
 }

@@ -1,11 +1,13 @@
-package liric.mistaken.utils.scripting
+package liric.mistaken.scripting.engine.groovy
 
 import liric.mistaken.roles.killers.Killer
 import org.bukkit.Bukkit
+import pumpking.lib.color.ColorTranslator
 import java.io.File
 import javax.script.ScriptEngineManager
 import javax.script.ScriptException
 import org.codehaus.groovy.control.CompilerConfiguration
+import liric.mistaken.scripting.security.groovy.ScriptSecurityScanner
 
 object KillerScriptEngine {
 
@@ -21,12 +23,12 @@ object KillerScriptEngine {
 
         val content = file.readText(Charsets.UTF_8)
         
-        // 1. Escáner de seguridad
+        // 1. EscÃ¡ner de seguridad
         if (!ScriptSecurityScanner.isSafe(content, file.name)) {
             return null
         }
 
-        // 2. ClassLoader Aislado con Configuración Personalizada
+        // 2. ClassLoader Aislado con ConfiguraciÃ³n Personalizada
         val config = CompilerConfiguration()
         config.addCompilationCustomizers(GroovyBukkitCompatibilityCustomizer())
         val loader = groovy.lang.GroovyClassLoader(KillerScriptEngine::class.java.classLoader, config)
@@ -54,7 +56,7 @@ object KillerScriptEngine {
     }
     
     /**
-     * Limpia el ClassLoader asociado a un Killer específico.
+     * Limpia el ClassLoader asociado a un Killer especÃ­fico.
      */
     fun unloadKillerScript(id: String) {
         val loader = activeLoaders.remove(id)
@@ -69,3 +71,4 @@ object KillerScriptEngine {
         }
     }
 }
+

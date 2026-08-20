@@ -1,4 +1,4 @@
-package liric.mistaken.utils.scripting
+﻿package liric.mistaken.scripting.util
 
 import liric.mistaken.Mistaken
 import liric.mistaken.utils.hooks.ObserverHook
@@ -16,14 +16,14 @@ object SkillAPI {
     private val plugin = Mistaken.instance
 
     /**
-     * Ejecuta código después de X ticks (1 segundo = 20 ticks)
+     * Ejecuta cÃ³digo despuÃ©s de X ticks (1 segundo = 20 ticks)
      */
     fun delay(ticks: Long, action: () -> Unit) {
         plugin.server.scheduler.runTaskLater(plugin, Runnable { action() }, ticks)
     }
 
     /**
-     * Dibuja una estrella de partículas plana en el suelo
+     * Dibuja una estrella de partÃ­culas plana en el suelo
      */
     fun drawStar(player: Player, color: Color, radio: Double, puntas: Int) {
         val loc = player.location.add(0.0, 0.1, 0.0)
@@ -63,3 +63,4 @@ object SkillAPI {
         ObserverHook.playSound(player, customSoundId, volume, pitch)
     }
 }
+

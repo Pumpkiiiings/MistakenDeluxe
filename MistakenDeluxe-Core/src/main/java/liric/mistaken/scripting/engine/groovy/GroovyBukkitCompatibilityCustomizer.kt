@@ -1,4 +1,4 @@
-package liric.mistaken.utils.scripting
+﻿package liric.mistaken.scripting.engine.groovy
 
 import org.codehaus.groovy.ast.ClassCodeExpressionTransformer
 import org.codehaus.groovy.ast.ClassNode
@@ -13,14 +13,14 @@ import org.codehaus.groovy.control.customizers.CompilationCustomizer
 
 /**
  * Un CompilationCustomizer que transforma accesos a propiedades tipo "isXxxx" 
- * en invocaciones de método "isXxxx()".
+ * en invocaciones de mÃ©todo "isXxxx()".
  * 
  * Esto resuelve el problema donde Groovy lanza MissingPropertyException 
- * para `player.isOnline` o `entity.isDead` porque Bukkit define los métodos como `isOnline()`
+ * para `player.isOnline` o `entity.isDead` porque Bukkit define los mÃ©todos como `isOnline()`
  * y Groovy los expone como propiedades `online` (JavaBean spec).
  * 
- * Al hacer la transformación en tiempo de compilación (AST Transformation),
- * no hay sobrecarga en tiempo de ejecución ni fugas de memoria por MetaClasses globales.
+ * Al hacer la transformaciÃ³n en tiempo de compilaciÃ³n (AST Transformation),
+ * no hay sobrecarga en tiempo de ejecuciÃ³n ni fugas de memoria por MetaClasses globales.
  */
 class GroovyBukkitCompatibilityCustomizer : CompilationCustomizer(CompilePhase.SEMANTIC_ANALYSIS) {
 
@@ -35,7 +35,7 @@ class GroovyBukkitCompatibilityCustomizer : CompilationCustomizer(CompilePhase.S
                 if (exp is PropertyExpression) {
                     val propertyName = exp.propertyAsString
                     
-                    // Si la propiedad empieza con "is" seguido de una letra mayúscula (ej: isOnline, isOp)
+                    // Si la propiedad empieza con "is" seguido de una letra mayÃºscula (ej: isOnline, isOp)
                     if (propertyName != null && propertyName.startsWith("is") && propertyName.length > 2 && propertyName[2].isUpperCase()) {
                         
                         // Transformar: objeto.isPropiedad -> objeto.isPropiedad()
@@ -60,3 +60,4 @@ class GroovyBukkitCompatibilityCustomizer : CompilationCustomizer(CompilePhase.S
         transformer.visitClass(classNode)
     }
 }
+
