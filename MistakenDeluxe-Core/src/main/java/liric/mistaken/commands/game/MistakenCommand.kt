@@ -135,6 +135,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     plugin.musicManager.loadMusicConfig()
 
                     plugin.server.globalRegionScheduler.execute(plugin) {
+                        plugin.asesinoManager.reloadAll()
                         plugin.shopSelector.reload()
                         plugin.asesinoTienda.reload()
                         plugin.supervivienteTienda.reload()
@@ -266,6 +267,17 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     }
                 }
             }
+            
+            "reloadkiller" -> {
+                if (!sender.hasPermission("mistaken.admin")) return
+                if (args.size < 2) {
+                    sender.sendMessage(ColorTranslator.translate("<red>Uso: /mistaken reloadkiller <id>"))
+                    return
+                }
+                val id = args[1]
+                plugin.asesinoManager.reloadKiller(id)
+                sender.sendMessage(ColorTranslator.translate("<green>Comando enviado al manager para recargar el killer: <aqua>$id"))
+            }
 
             "forcekiller" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
@@ -312,7 +324,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
         val player = stack.sender as? Player
         stack.sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "help.header"))
 
-        val subs = listOf("shop", "langs", "stats", "afk", "edit", "start", "stop", "reload", "setstamina", "setasesino", "setsuperviviente", "removekiller", "setmode")
+        val subs = listOf("shop", "langs", "stats", "afk", "edit", "start", "stop", "reload", "setstamina", "setasesino", "setsuperviviente", "removekiller", "reloadkiller", "setmode")
         subs.forEach { sub ->
             if (sub in publicSubs || stack.sender.hasPermission("mistaken.admin")) {
                 stack.sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "help.$sub"))
@@ -326,14 +338,14 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
         return when (args.size) {
             1 -> {
-                val list = if (isAdmin) listOf("start", "stop", "stats", "setstamina", "setasesino", "setsuperviviente", "reload", "removekiller", "forcekiller", "shop", "langs", "setmode", "afk", "edit")
+                val list = if (isAdmin) listOf("start", "stop", "stats", "setstamina", "setasesino", "setsuperviviente", "reload", "removekiller", "reloadkiller", "forcekiller", "shop", "langs", "setmode", "afk", "edit")
                 else publicSubs.toList()
                 list.filter { it.startsWith(args[0], true) }
             }
             2 -> {
                 when (args[0].lowercase()) {
                     "setmode" -> if (isAdmin) MistakenMode.entries.map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
-                    "setasesino" -> if (isAdmin) plugin.asesinoManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
+                    "setasesino", "reloadkiller" -> if (isAdmin) plugin.asesinoManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "setsuperviviente" -> if (isAdmin) plugin.supervivienteManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "stats", "forcekiller", "removekiller" -> if (isAdmin) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
                     "langs", "language" -> PumpkingServiceManager.messages.getLoadedLanguages().toList()

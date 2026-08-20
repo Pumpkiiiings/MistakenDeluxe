@@ -113,7 +113,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
 
         var habilidadEjecutada = -1
         for (i in 1..4) {
-            val configSlot = config.getInt("items.habilidad${i}_slot", i)
+            val configSlot = config.getInt("items.skill${i}_slot", i)
             if (slot == configSlot) {
                 habilidadEjecutada = i
                 break

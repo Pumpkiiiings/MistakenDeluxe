@@ -59,6 +59,10 @@ dependencies {
     compileOnly("org.slf4j:slf4j-simple:2.0.18")
     compileOnly("dev.wyck:wyck:3.3.0-1a0feb5")
     implementation("com.infernalsuite.asp:file-loader:4.1.0-SNAPSHOT")
+    
+    // Groovy Scripting Engine
+    compileOnly("org.apache.groovy:groovy:5.0.6")
+    compileOnly("org.apache.groovy:groovy-jsr223:5.0.6")
 
     // APIs Externas (Solo para compilar)
     compileOnly(files("../libs/bettermodel-api-3.4.1.jar"))

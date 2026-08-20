@@ -17,6 +17,7 @@ object PacketFactory {
     val displays = VirtualDisplayAPI()
     val npcs = FakeNPCAPI()
     val glow = FakeGlowAPI()
+    val particles = FakeParticleAPI()
 
     /**
      * Retorna una ID de entidad segura y única para esta sesión de servidor.

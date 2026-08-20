@@ -1,6 +1,7 @@
 package liric.mistaken.roles.killers
 
 import liric.mistaken.Mistaken
+import liric.mistaken.utils.scripting.KillerScriptEngine
 import liric.mistaken.roles.killers.clases.*
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Sound
@@ -21,11 +22,55 @@ import liric.mistaken.roles.shared.AbstractRoleManager
 class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKillerManager {
 
     init {
+        reloadAll()
+    }
+
+    fun reloadAll() {
+        cleanAll()
+        availableClasses.clear()
+        loadHardcodedKillers()
+        loadScripts()
+    }
+
+    private fun loadHardcodedKillers() {
         listOf(
-            Slasher(), Herobrine(), Entity303(), NullAsesino(),
+            Entity303(), NullAsesino(),
             ColorAndElectricity(), CharlieInferno(), CharlieJazz(), Romeo(), Mariachi(),
             Sowoul(), TinkyWinky(), StillLife(), WardenKiller(), SmilerKiller(), PiglinBigKiller()
         ).forEach { registerClass(it) }
+        plugin.componentLogger.info(ColorTranslator.translate("[INFO] [KillerManager] Cargados asesinos nativos (Hardcodeados)."))
+    }
+
+    fun loadScripts() {
+        val scriptsFolder = java.io.File(plugin.dataFolder, "killers")
+        if (!scriptsFolder.exists()) {
+            scriptsFolder.mkdirs()
+        }
+
+        // Copiar scripts por defecto si no existen
+        try {
+            if (!java.io.File(scriptsFolder, "slasher.groovy").exists()) {
+                plugin.saveResource("killers/slasher.groovy", false)
+            }
+            if (!java.io.File(scriptsFolder, "herobrine.groovy").exists()) {
+                plugin.saveResource("killers/herobrine.groovy", false)
+            }
+        } catch (e: Exception) {
+            plugin.componentLogger.warn("No se pudieron copiar los scripts por defecto (slasher/herobrine).")
+        }
+
+        val files = scriptsFolder.listFiles() ?: return
+        var loadedCount = 0
+        for (file in files) {
+            if (file.name.endsWith(".groovy")) {
+                val killer = KillerScriptEngine.loadKillerScript(file)
+                if (killer != null) {
+                    registerClass(killer)
+                    loadedCount++
+                }
+            }
+        }
+        plugin.componentLogger.info(ColorTranslator.translate("[INFO] [KillerManager] Cargados $loadedCount asesinos desde scripts."))
     }
 
     override fun registerClass(role: Killer) {
@@ -137,7 +182,55 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         cleanAll()
         // Le decimos a todos los asesinos que vacíen su memoria RAM interna
         availableClasses.values.forEach { asesino ->
-            asesino.clearGlobalData()
+            asesino.dispose()
+        }
+    }
+
+    /**
+     * Hot-Reload individual para un asesino (Especialmente Scripts).
+     */
+    fun reloadKiller(id: String) {
+        val lowerId = id.lowercase()
+        val oldKiller = availableClasses[lowerId]
+
+        if (oldKiller != null) {
+            oldKiller.dispose()
+            KillerScriptEngine.unloadKillerScript(lowerId)
+        }
+
+        val scriptsFolder = java.io.File(plugin.dataFolder, "killers")
+        val scriptFile = java.io.File(scriptsFolder, "$lowerId.groovy")
+        
+        if (scriptFile.exists()) {
+            val newKiller = KillerScriptEngine.loadKillerScript(scriptFile)
+            if (newKiller != null) {
+                registerClass(newKiller)
+                
+                // Actualizar jugadores en vivo
+                val affectedPlayers = mutableListOf<Player>()
+                activeRoles.forEach { (uuid, activeKiller) ->
+                    if (activeKiller.id.equals(lowerId, ignoreCase = true)) {
+                        val player = org.bukkit.Bukkit.getPlayer(uuid)
+                        if (player != null && player.isOnline) {
+                            affectedPlayers.add(player)
+                        } else {
+                            activeRoles.remove(uuid)
+                        }
+                    }
+                }
+                
+                affectedPlayers.forEach { p ->
+                    oldKiller?.cleanup(p)
+                    equipKiller(p, lowerId)
+                }
+                
+                plugin.componentLogger.info(ColorTranslator.translate("[INFO] [KillerManager] Asesino $lowerId recargado exitosamente."))
+            } else {
+                availableClasses.remove(lowerId)
+                plugin.componentLogger.warn("Error recargando $lowerId. El asesino ha sido deshabilitado.")
+            }
+        } else {
+            plugin.componentLogger.warn("[INFO] [KillerManager] No se encontró el script $lowerId.groovy para recargar.")
         }
     }
 

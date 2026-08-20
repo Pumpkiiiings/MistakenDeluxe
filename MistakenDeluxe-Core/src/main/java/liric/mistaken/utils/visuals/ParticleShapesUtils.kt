@@ -18,6 +18,8 @@ object ParticleShapesUtils {
      * Envía un paquete de partículas a todos los jugadores en un radio de 50 bloques.
      * Ideal para efectos visuales sin sobrecargar el servidor (Bukkit API bypass).
      */
+    @JvmStatic
+    @JvmOverloads
     fun broadcastParticle(loc: Location, type: Particle, offsetX: Float = 0f, offsetY: Float = 0f, offsetZ: Float = 0f, count: Int = 1, speed: Float = 0f) {
         loc.world?.players?.forEach { viewer ->
             if (viewer.location.distanceSquared(loc) < 2500.0) { // 50 bloques
@@ -29,6 +31,8 @@ object ParticleShapesUtils {
     /**
      * Dibuja una hélice doble (ADN) de partículas ascendentes.
      */
+    @JvmStatic
+    @JvmOverloads
     fun drawDnaHelix(center: Location, type: Particle = Particle.SOUL_FIRE_FLAME, radius: Double = 1.0, height: Double = 3.0) {
         plugin.server.regionScheduler.run(plugin, center, Consumer { _ ->
             val steps = 40
@@ -49,6 +53,8 @@ object ParticleShapesUtils {
     /**
      * Dibuja un anillo (Onda Expansiva) de partículas que se agranda dinámicamente.
      */
+    @JvmStatic
+    @JvmOverloads
     fun drawShockwave(center: Location, type: Particle = Particle.SONIC_BOOM, maxRadius: Double = 5.0) {
         var radius = 0.0
         val centerClone = center.clone().add(0.0, 0.1, 0.0)
@@ -71,6 +77,8 @@ object ParticleShapesUtils {
     /**
      * Dibuja un vórtice (Agujero Negro) que absorbe partículas desde afuera hacia el centro.
      */
+    @JvmStatic
+    @JvmOverloads
     fun drawVortex(center: Location, type: Particle = Particle.PORTAL, radius: Double = 5.0, height: Double = 3.0) {
         var currentRadius = radius
         var currentHeight = height
@@ -94,6 +102,8 @@ object ParticleShapesUtils {
     /**
      * Dibuja el símbolo de infinito matemático (Curva de Lissajous).
      */
+    @JvmStatic
+    @JvmOverloads
     fun drawInfinityMark(center: Location, type: Particle = Particle.ENCHANT, size: Double = 2.0) {
         plugin.server.regionScheduler.run(plugin, center, Consumer { _ ->
             val steps = 60
@@ -109,6 +119,8 @@ object ParticleShapesUtils {
     /**
      * Dibuja una esfera hueca tridimensional alrededor de un centro.
      */
+    @JvmStatic
+    @JvmOverloads
     fun drawSphere(center: Location, type: Particle = Particle.END_ROD, radius: Double = 2.0, density: Int = 10) {
         plugin.server.regionScheduler.run(plugin, center, Consumer { _ ->
             for (i in 0..density) {
@@ -127,6 +139,8 @@ object ParticleShapesUtils {
     /**
      * Dibuja un corazón en 3D usando curvas paramétricas.
      */
+    @JvmStatic
+    @JvmOverloads
     fun drawHeart(center: Location, type: Particle = Particle.HEART, size: Double = 1.0) {
         plugin.server.regionScheduler.run(plugin, center, Consumer { _ ->
             val steps = 50
@@ -142,6 +156,8 @@ object ParticleShapesUtils {
     /**
      * Dibuja una estrella plana de N puntas.
      */
+    @JvmStatic
+    @JvmOverloads
     fun drawStar(center: Location, type: Particle = Particle.FIREWORK, radius: Double = 2.0, points: Int = 5) {
         plugin.server.regionScheduler.run(plugin, center, Consumer { _ ->
             for (i in 0 until points) {
@@ -168,6 +184,8 @@ object ParticleShapesUtils {
     /**
      * Dibuja un tornado ascendente expansivo.
      */
+    @JvmStatic
+    @JvmOverloads
     fun drawTornado(center: Location, type: Particle = Particle.CAMPFIRE_COSY_SMOKE, height: Double = 5.0, maxRadius: Double = 3.0) {
         var currentY = 0.0
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
@@ -190,6 +208,8 @@ object ParticleShapesUtils {
     /**
      * Dibuja alas angélicas o demoníacas estáticas detrás del jugador, alineadas a su mirada.
      */
+    @JvmStatic
+    @JvmOverloads
     fun drawWings(player: Player, type: Particle = Particle.FLAME) {
         val loc = player.location
         val yaw = Math.toRadians(loc.yaw.toDouble() + 90) // +90 para que estén a la espalda

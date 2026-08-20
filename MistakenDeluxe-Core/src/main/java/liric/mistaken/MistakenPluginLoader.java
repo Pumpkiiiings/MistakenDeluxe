@@ -22,9 +22,14 @@ public class MistakenPluginLoader implements PluginLoader {
         resolver.addRepository(new RemoteRepository.Builder("codemc", "default", "https://repo.codemc.io/repository/maven-public/").build());
         resolver.addRepository(new RemoteRepository.Builder("wyck", "default", "https://repo.wyck.dev/public/").build());
 
-        // Kotlin
+        // Groovy Scripting (Reemplaza a Kotlin por problemas de ClassLoader en Paper 1.19+, usa 5.0.6 para soporte de Java 25+)
+        resolver.addDependency(new Dependency(new DefaultArtifact("org.apache.groovy:groovy:5.0.6"), null));
+        resolver.addDependency(new Dependency(new DefaultArtifact("org.apache.groovy:groovy-jsr223:5.0.6"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("org.jetbrains.kotlin:kotlin-stdlib:2.3.0"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0"), null));
+
+
+
 
         // Bases de datos
         resolver.addDependency(new Dependency(new DefaultArtifact("com.zaxxer:HikariCP:5.1.0"), null));

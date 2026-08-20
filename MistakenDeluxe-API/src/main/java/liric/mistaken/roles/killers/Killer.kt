@@ -25,8 +25,6 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
     // Cooldowns: UUID_Slot -> Timestamp (ms)
     private val cooldowns = ConcurrentHashMap<String, Long>()
 
-    // Rastreros de tareas nativas de Paper para limpieza automÃƒ¡tica
-    protected val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
 
     /**
      * Verifica el cooldown buscando el tiempo en la raÃƒ­z y el nombre en el idioma del jugador.
@@ -65,19 +63,13 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
         return false
     }
 
-    /**
-     * Registra una tarea de Paper para limpieza.
-     */
-    protected fun trackTask(task: ScheduledTask) {
-        activeTasks.add(task)
-    }
 
     /**
      * Reproduce el sonido de la habilidad desde el archivo raÃƒ­z.
      */
     fun playSkillEffects(player: Player, slot: Int) {
         val config = api.configManager.getKillerConfig(this.id)
-        val sonidoName = config.getString("items.habilidad${slot}_sound") ?: return
+        val sonidoName = config.getString("items.skill${slot}_sound") ?: return
 
         // Si no es un sonido de vanilla se manda el string tal cual: puede ser
         // un sonido custom del resource pack.
@@ -93,13 +85,15 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
      * Limpieza profunda del asesino (Mantenido el fix de espectador).
      */
     open fun clearGlobalData() {}
+    
+    /**
+     * Limpia los recursos globales asociados a este asesino y previene su uso futuro.
+     */
+    open fun dispose() {
+        clearGlobalData()
+    }
 
     open override fun cleanup(player: Player?) {
-        // Cancelamos las tareas programadas de Paper
-        activeTasks.forEach {
-            if (!it.isCancelled) it.cancel()
-        }
-        activeTasks.clear()
 
         player?.let { p ->
             if (p.isOnline) {
