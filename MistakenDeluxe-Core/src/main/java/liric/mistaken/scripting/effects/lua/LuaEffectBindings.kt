@@ -1,5 +1,6 @@
 package liric.mistaken.scripting.effects.lua
 
+import liric.mistaken.scripting.api.HasLocation
 import liric.mistaken.scripting.adapter.BukkitPlayerAdapter
 import liric.mistaken.scripting.effects.EffectHandle
 import liric.mistaken.scripting.effects.EffectRegistry
@@ -26,6 +27,8 @@ import liric.mistaken.scripting.effects.gameplay.RevealTargetsEffect
 import liric.mistaken.scripting.adapter.BukkitLocationAdapter
 import liric.mistaken.utils.hooks.ObserverHook
 import liric.mistaken.utils.visuals.ParticleShapesUtils
+import liric.mistaken.scripting.services.SkillService
+import liric.mistaken.utils.misc.HitboxVisualizer
 import org.bukkit.Location
 import org.bukkit.Particle
 import org.bukkit.entity.Player
@@ -48,6 +51,19 @@ import org.luaj.vm2.lib.jse.CoerceJavaToLua
  *
  * FOLIA: Cada efecto posee su propio ScheduledTask. Los callbacks de on_hit
  * se ejecutan en el entity scheduler de la víctima.
+ *
+ * CONVENCIÓN DE BUILDERS:
+ * - Builders atados a jugador (orbit, trail, dash, projectile, line_spawn,
+ *   temp_fly, reveal_targets, ambient_music): reciben solo (player), porque
+ *   el efecto se mueve con el jugador y su lifecycle está atado al entity scheduler.
+ * - Builders de mundo (bait_trap, formation, sinking_block, spiral_particle,
+ *   place_trap, proximity_trap, sequence): reciben (player, loc) como los dos
+ *   primeros argumentos, para ownership — player provee scriptId/ownerUuid para
+ *   registrarse en EffectRegistry con cleanup automático (quit/death/reload),
+ *   y loc define la posición fija del efecto en el mundo.
+ * - Funciones globales de ubicación (sound, particle_burst): reciben cualquier
+ *   objeto que implemente HasLocation como primer argumento (player, location,
+ *   o cualquier wrapper futuro con sentido de ubicación).
  */
 object LuaEffectBindings {
 
@@ -122,6 +138,346 @@ object LuaEffectBindings {
             }
         })
 
+        // ──────────── screen_tint(player, r, g, b, alpha, duration) ────────────
+        globals.set("screen_tint", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
+                val r = args.checkint(2)
+                val g = args.checkint(3)
+                val b = args.checkint(4)
+                val alpha = args.checkdouble(5).toFloat()
+                val duration = args.checkint(6)
+                SkillService.playScreenTint(player, r, g, b, alpha, duration)
+                return LuaValue.NIL
+            }
+        })
+
+        // ──────────── screenshake(player, intensity, duration) ────────────
+        globals.set("screenshake", object : ThreeArgFunction() {
+            override fun call(playerArg: LuaValue, intensityArg: LuaValue, durationArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                val intensity = intensityArg.checkdouble().toFloat()
+                val duration = durationArg.checkint()
+                SkillService.playScreenshake(player, intensity, duration)
+                return LuaValue.NIL
+            }
+        })
+
+        // ──────────── draw_star(player, hex_color, radius, points) ────────────
+        globals.set("draw_star", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
+                val hex = args.checkjstring(2)
+                val radius = args.checkdouble(3)
+                val points = args.checkint(4)
+                
+                val rgb = Integer.parseInt(hex.replace("#", ""), 16)
+                val color = org.bukkit.Color.fromRGB(rgb)
+                
+                SkillService.drawStar(player, color, radius, points)
+                return LuaValue.NIL
+            }
+        })
+
+        // ──────────── visual_hitbox(player, x, y, z, ticks, material_name) ────────────
+        globals.set("visual_hitbox", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
+                val x = args.checkdouble(2)
+                val y = args.checkdouble(3)
+                val z = args.checkdouble(4)
+                val ticks = args.checkint(5).toLong()
+                val matName = args.checkjstring(6)
+                
+                val material = org.bukkit.Material.matchMaterial(matName.uppercase()) ?: org.bukkit.Material.RED_STAINED_GLASS
+                HitboxVisualizer.drawInstantHitbox(liric.mistaken.Mistaken.instance, player.location, x, y, z, ticks, material)
+                return LuaValue.NIL
+            }
+        })
+
+        // ──────────── draw_dna_helix(location, particle_type, radius, height) ────────────
+        globals.set("draw_dna_helix", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
+                val loc = locAdapter.getBukkitLocation()
+                val p = org.bukkit.Particle.valueOf(args.checkjstring(2).uppercase())
+                val radius = args.checkdouble(3)
+                val height = args.checkdouble(4)
+                liric.mistaken.utils.visuals.ParticleShapesUtils.drawDnaHelix(loc, p, radius, height)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── draw_shockwave(location, particle_type, max_radius) ────────────
+        globals.set("draw_shockwave", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
+                val loc = locAdapter.getBukkitLocation()
+                val p = org.bukkit.Particle.valueOf(args.checkjstring(2).uppercase())
+                val r = args.checkdouble(3)
+                liric.mistaken.utils.visuals.ParticleShapesUtils.drawShockwave(loc, p, r)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── draw_vortex(location, particle_type, radius, height) ────────────
+        globals.set("draw_vortex", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
+                val loc = locAdapter.getBukkitLocation()
+                val p = org.bukkit.Particle.valueOf(args.checkjstring(2).uppercase())
+                val r = args.checkdouble(3)
+                val h = args.checkdouble(4)
+                liric.mistaken.utils.visuals.ParticleShapesUtils.drawVortex(loc, p, r, h)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── draw_tornado(location, particle_type, height, max_radius) ────────────
+        globals.set("draw_tornado", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
+                val loc = locAdapter.getBukkitLocation()
+                val p = org.bukkit.Particle.valueOf(args.checkjstring(2).uppercase())
+                val h = args.checkdouble(3)
+                val r = args.checkdouble(4)
+                liric.mistaken.utils.visuals.ParticleShapesUtils.drawTornado(loc, p, h, r)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── draw_wings(player, particle_type) ────────────
+        globals.set("draw_wings", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, pArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                val p = org.bukkit.Particle.valueOf(pArg.checkjstring().uppercase())
+                liric.mistaken.utils.visuals.ParticleShapesUtils.drawWings(player, p)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── spawn_fake_swarm(location, count, duration) ────────────
+        globals.set("spawn_fake_swarm", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
+                val loc = locAdapter.getBukkitLocation()
+                val count = args.checkint(2)
+                val duration = args.checkint(3).toLong()
+                liric.mistaken.scripting.services.SkillService.spawnFakeSwarm(loc, count, duration)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── delay_ticks(ticks, callback) ────────────
+        globals.set("delay_ticks", object : TwoArgFunction() {
+            override fun call(ticksArg: LuaValue, funcArg: LuaValue): LuaValue {
+                val ticks = ticksArg.checklong()
+                val func = funcArg.checkfunction()
+                liric.mistaken.scripting.services.SkillService.delay(ticks) {
+                    func.call()
+                }
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── spawn_temp_item(location, material_name, scale_x, scale_y, scale_z, glow_color, duration_ticks) ────────────
+        globals.set("spawn_temp_item", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
+                val loc = locAdapter.getBukkitLocation()
+                val mat = org.bukkit.Material.matchMaterial(args.checkjstring(2).uppercase()) ?: return LuaValue.NIL
+                val sx = args.checkdouble(3).toFloat()
+                val sy = args.checkdouble(4).toFloat()
+                val sz = args.checkdouble(5).toFloat()
+                val glowColor = args.checkjstring(6)
+                val duration = args.checkint(7).toLong()
+                liric.mistaken.scripting.services.SkillService.spawnTempItemDisplay(loc, mat, sx, sy, sz, glowColor, duration)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── spawn_spinning_tnt(location, duration_ticks) ────────────
+        globals.set("spawn_spinning_tnt", object : TwoArgFunction() {
+            override fun call(locArg: LuaValue, durationArg: LuaValue): LuaValue {
+                val locAdapter = locArg.checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
+                val loc = locAdapter.getBukkitLocation()
+                val duration = durationArg.checkint().toLong()
+                liric.mistaken.scripting.services.SkillService.spawnSpinningTnt(loc, duration)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── spawn_evoker_fang(location) ────────────
+        globals.set("spawn_evoker_fang", object : OneArgFunction() {
+            override fun call(locArg: LuaValue): LuaValue {
+                val locAdapter = locArg.checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
+                val loc = locAdapter.getBukkitLocation()
+                liric.mistaken.scripting.services.SkillService.spawnEvokerFang(loc)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── spawn_blinking_ritual(location, material_name, count, radius, duration_ticks) ────────────
+        globals.set("spawn_blinking_ritual", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
+                val loc = locAdapter.getBukkitLocation()
+                val mat = org.bukkit.Material.matchMaterial(args.checkjstring(2).uppercase()) ?: return LuaValue.NIL
+                val count = args.checkint(3)
+                val radius = args.checkdouble(4)
+                val duration = args.checkint(5).toLong()
+                liric.mistaken.scripting.services.SkillService.spawnBlinkingRitual(loc, mat, count, radius, duration)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── play_entity_sound(player, sound_name, source_entity, volume, pitch) ────────────
+        globals.set("play_entity_sound", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val viewer = (args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).bukkitPlayer()
+                val sound = args.checkjstring(2)
+                val source = (args.arg(3).checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).bukkitPlayer()
+                val volume = args.checkdouble(4).toFloat()
+                val pitch = args.checkdouble(5).toFloat()
+                liric.mistaken.utils.hooks.ObserverHook.playEntitySound(viewer, sound, source, volume, pitch)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── stop_sound(player, sound_name) ────────────
+        globals.set("stop_sound", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, soundArg: LuaValue): LuaValue {
+                val viewer = (playerArg.checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).bukkitPlayer()
+                val sound = soundArg.checkjstring()
+                liric.mistaken.utils.hooks.ObserverHook.stopSound(viewer, sound)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── screen_tint(player, r, g, b, alpha, ticks) ────────────
+        globals.set("screen_tint", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val viewer = (args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).bukkitPlayer()
+                val r = args.checkint(2)
+                val g = args.checkint(3)
+                val b = args.checkint(4)
+                val alpha = args.checkdouble(5).toFloat()
+                val ticks = args.checkint(6)
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(viewer, r, g, b, alpha, ticks)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── draw_instant_hitbox(location, sx, sy, sz, duration, material) ────────────
+        globals.set("draw_instant_hitbox", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
+                val loc = locAdapter.getBukkitLocation()
+                val sx = args.checkdouble(2)
+                val sy = args.checkdouble(3)
+                val sz = args.checkdouble(4)
+                val duration = args.checkint(5).toLong()
+                val mat = org.bukkit.Material.matchMaterial(args.checkjstring(6).uppercase()) ?: org.bukkit.Material.RED_STAINED_GLASS
+                liric.mistaken.scripting.services.SkillService.drawInstantHitbox(loc, sx, sy, sz, duration, mat)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── spawn_tracking_hitbox(player, sx, sy, sz, material, duration) ────────────
+        globals.set("spawn_tracking_hitbox", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val player = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter
+                val sx = args.checkdouble(2)
+                val sy = args.checkdouble(3)
+                val sz = args.checkdouble(4)
+                val mat = org.bukkit.Material.matchMaterial(args.checkjstring(5).uppercase()) ?: org.bukkit.Material.RED_STAINED_GLASS
+                val duration = args.checkint(6).toLong()
+                liric.mistaken.scripting.services.SkillService.spawnTrackingHitbox(player, sx, sy, sz, mat, duration)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── spawn_temp_block(location, material, tx, ty, tz, sx, sy, sz, duration) ────────────
+        globals.set("spawn_temp_block", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
+                val loc = locAdapter.getBukkitLocation()
+                val mat = org.bukkit.Material.matchMaterial(args.checkjstring(2).uppercase()) ?: return LuaValue.NIL
+                val tx = args.checkdouble(3).toFloat()
+                val ty = args.checkdouble(4).toFloat()
+                val tz = args.checkdouble(5).toFloat()
+                val sx = args.checkdouble(6).toFloat()
+                val sy = args.checkdouble(7).toFloat()
+                val sz = args.checkdouble(8).toFloat()
+                val duration = args.checkint(9).toLong()
+                liric.mistaken.scripting.services.SkillService.spawnVirtualTempBlock(loc, mat, tx, ty, tz, sx, sy, sz, duration)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── apply_glowing_team(player, targets_table, color_hex, duration) ────────────
+        globals.set("apply_glowing_team", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
+                val targetsTable = args.checktable(2)
+                val colorHex = args.checkjstring(3)
+                val duration = args.checkint(4).toLong()
+                val targets = mutableListOf<Player>()
+                var i = 1
+                while (true) {
+                    val tArg = targetsTable.get(i)
+                    if (tArg.isnil()) break
+                    val t = unwrapPlayer(tArg)
+                    if (t != null) targets.add(t)
+                    i++
+                }
+                liric.mistaken.scripting.services.SkillService.applyGlowingTeam(player, targets, colorHex, duration)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── launch_wither_skull(player, yield, max_ticks, on_hit_callback) ────────────
+        globals.set("launch_wither_skull", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
+                val yield = args.checkdouble(2).toFloat()
+                val maxTicks = args.checkint(3)
+                val onHitCallback = if (args.narg() >= 4 && args.arg(4).isfunction()) args.arg(4).checkfunction() else null
+                
+                val skull = player.launchProjectile(org.bukkit.entity.WitherSkull::class.java)
+                skull.yield = yield
+                var life = 0
+                val plugin = liric.mistaken.Mistaken.instance
+                skull.scheduler.runAtFixedRate(plugin, Consumer { task ->
+                    if (life >= maxTicks || !skull.isValid) {
+                        task.cancel()
+                        return@Consumer
+                    }
+                    skull.world.spawnParticle(org.bukkit.Particle.WITCH, skull.location, 3, 0.05, 0.05, 0.05, 0.01)
+                    val hit = skull.world.getNearbyPlayers(skull.location, 1.2).firstOrNull { liric.mistaken.scripting.effects.gameplay.GameplayFunctions.isValidTarget(player, it) }
+                    if (hit != null) {
+                        if (onHitCallback != null) {
+                            hit.scheduler.run(plugin, Consumer { _ ->
+                                onHitCallback.call(org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce(liric.mistaken.scripting.adapter.BukkitPlayerAdapter(hit)))
+                            }, null)
+                        }
+                        skull.remove()
+                        task.cancel()
+                    }
+                    life++
+                }, null, 1L, 1L)
+                return LuaValue.NIL
+            }
+        })
+        
+        // ──────────── dash(player) ────────────
+        globals.set("dash", object : OneArgFunction() {
+            override fun call(playerArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                return buildDashTable(scriptId, player)
+            }
+        })
+
         // ──────────── place_trap(player, location) ────────────
         globals.set("place_trap", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
@@ -149,12 +505,12 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── sequence(location) ────────────
-        globals.set("sequence", object : OneArgFunction() {
-            override fun call(locArg: LuaValue): LuaValue {
-                val locAdapter = locArg.checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
-                val loc = locAdapter.getBukkitLocation()
-                return buildSequenceTable(scriptId, loc)
+        // ──────────── sequence(player, location) ────────────
+        globals.set("sequence", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                val loc = unwrapLocation(locArg) ?: return LuaValue.NIL
+                return buildSequenceTable(scriptId, player, loc)
             }
         })
 
@@ -244,15 +600,36 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── sound(player, id, volume, pitch) ────────────
+        // ──────────── sound(has_location, id, volume, pitch) ────────────
+        // Acepta cualquier objeto que implemente HasLocation (player, location, etc.)
         globals.set("sound", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
-                val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
+                val loc = unwrapHasLocation(args.arg(1)) ?: return LuaValue.NIL
                 val soundName = args.arg(2).checkjstring()
                 val vol = args.arg(3).optdouble(1.0).toFloat()
                 val pitch = args.arg(4).optdouble(1.0).toFloat()
-                GameplayFunctions.playSound(player, soundName, vol, pitch)
+                GameplayFunctions.playSoundAt(loc, soundName, vol, pitch)
                 return LuaValue.NIL
+            }
+        })
+
+        // ──────────── send_translated(player, key) ────────────
+        // Resuelve la key contra PumpkingServiceManager.messages.getComponent
+        globals.set("send_translated", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, keyArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                val key = keyArg.checkjstring()
+                GameplayFunctions.sendTranslated(player, key)
+                return LuaValue.NIL
+            }
+        })
+
+        // ──────────── particle_burst(has_location) ────────────
+        // Builder para explosión puntual de partículas. Acepta HasLocation.
+        globals.set("particle_burst", object : OneArgFunction() {
+            override fun call(locArg: LuaValue): LuaValue {
+                val loc = unwrapHasLocation(locArg) ?: return LuaValue.NIL
+                return buildParticleBurstTable(loc)
             }
         })
         // ──────────── ambient_music(player) ────────────
@@ -889,6 +1266,34 @@ object LuaEffectBindings {
         return t
     }
 
+    private fun buildParticleBurstTable(location: Location): LuaTable {
+        val t = LuaTable()
+        var particleName = "FIREWORK"
+        var count = 3
+        var offsetX = 0.5; var offsetY = 0.5; var offsetZ = 0.5
+        var speed = 0.0
+
+        t.set("type", TwoArg(t) { _, v -> particleName = v.checkjstring() })
+        t.set("count", TwoArg(t) { _, v -> count = v.checkint().coerceIn(1, 100) })
+        t.set("offset", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                offsetX = args.arg(2).optdouble(0.5).coerceIn(0.0, 10.0)
+                offsetY = args.arg(3).optdouble(0.5).coerceIn(0.0, 10.0)
+                offsetZ = args.arg(4).optdouble(0.5).coerceIn(0.0, 10.0)
+                return args.arg(1)
+            }
+        })
+        t.set("spread", TwoArg(t) { _, v -> speed = v.checkdouble().coerceIn(0.0, 5.0) })
+
+        t.set("show", object : OneArgFunction() {
+            override fun call(self: LuaValue): LuaValue {
+                GameplayFunctions.spawnParticleBurst(location, particleName, count, offsetX, offsetY, offsetZ, speed)
+                return LuaValue.NIL
+            }
+        })
+        return t
+    }
+
     /** Unwraps BukkitPlayerAdapter userdata → Player */
     private fun unwrapPlayer(luaVal: LuaValue): Player? {
         if (luaVal.isnil()) return null
@@ -904,6 +1309,19 @@ object LuaEffectBindings {
         return try {
             val adapter = luaVal.checkuserdata(BukkitLocationAdapter::class.java) as BukkitLocationAdapter
             adapter.getBukkitLocation()
+        } catch (_: Exception) { null }
+    }
+
+    /**
+     * Unwraps cualquier userdata que implemente HasLocation → Location.
+     * Funciona con BukkitPlayerAdapter, BukkitLocationAdapter, y cualquier
+     * wrapper futuro que implemente la interfaz.
+     */
+    private fun unwrapHasLocation(luaVal: LuaValue): Location? {
+        if (luaVal.isnil()) return null
+        return try {
+            val obj = luaVal.checkuserdata(HasLocation::class.java) as HasLocation
+            obj.bukkitLocation()
         } catch (_: Exception) { null }
     }
 
@@ -956,7 +1374,7 @@ object LuaEffectBindings {
         return t
     }
 
-    private fun buildSequenceTable(scriptId: String, location: org.bukkit.Location): LuaTable {
+    private fun buildSequenceTable(scriptId: String, player: Player, location: org.bukkit.Location): LuaTable {
         val t = LuaTable()
         val steps = mutableListOf<Pair<Long, () -> Unit>>()
 
@@ -971,7 +1389,7 @@ object LuaEffectBindings {
 
         t.set("play", object : OneArgFunction() {
             override fun call(self: LuaValue): LuaValue {
-                val effect = liric.mistaken.scripting.effects.gameplay.SequenceEffect(scriptId, java.util.UUID.randomUUID(), location, steps)
+                val effect = liric.mistaken.scripting.effects.gameplay.SequenceEffect(scriptId, player.uniqueId, location, steps)
                 effect.start()
                 EffectRegistry.register(effect)
                 return buildHandle(effect)
@@ -982,6 +1400,50 @@ object LuaEffectBindings {
 
     // Builder method helpers for ':' syntax
     // ═══════════════════════════════════════════════════════
+
+    private fun buildDashTable(scriptId: String, player: Player): LuaTable {
+        val t = LuaTable()
+        var speed = 1.0; var maxTicks = 20; var hitRadius = 1.5; var stopOnBlock = true
+        var trailParticleName: String? = null
+        var onHitCallback: ((Player) -> Unit)? = null
+        var onBlockHitCallback: (() -> Unit)? = null
+
+        t.set("speed", TwoArg(t) { _, v -> speed = v.checkdouble() })
+        t.set("max_ticks", TwoArg(t) { _, v -> maxTicks = v.checkint() })
+        t.set("hit_radius", TwoArg(t) { _, v -> hitRadius = v.checkdouble() })
+        t.set("stop_on_block", TwoArg(t) { _, v -> stopOnBlock = v.optboolean(true) })
+        t.set("trail_particle", TwoArg(t) { _, v -> trailParticleName = v.checkjstring() })
+        
+        t.set("on_hit", object : TwoArgFunction() {
+            override fun call(self: LuaValue, func: LuaValue): LuaValue {
+                val f = func.checkfunction()
+                onHitCallback = { victim ->
+                    f.call(org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce(liric.mistaken.scripting.adapter.BukkitPlayerAdapter(victim)))
+                }
+                return self
+            }
+        })
+        
+        t.set("on_block_hit", object : TwoArgFunction() {
+            override fun call(self: LuaValue, func: LuaValue): LuaValue {
+                val f = func.checkfunction()
+                onBlockHitCallback = { f.call() }
+                return self
+            }
+        })
+        
+        t.set("start", object : OneArgFunction() {
+            override fun call(self: LuaValue): LuaValue {
+                val effect = liric.mistaken.scripting.effects.dash.DashEffect(
+                    scriptId, player.uniqueId, player, speed, maxTicks, hitRadius, stopOnBlock, trailParticleName, onHitCallback, onBlockHitCallback
+                )
+                effect.start()
+                EffectRegistry.register(effect)
+                return buildHandle(effect)
+            }
+        })
+        return t
+    }
 
     /** Two-arg function that returns self (the builder table) */
     private class TwoArg(

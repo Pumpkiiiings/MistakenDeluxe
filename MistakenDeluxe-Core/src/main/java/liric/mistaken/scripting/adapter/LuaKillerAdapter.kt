@@ -33,7 +33,7 @@ class LuaKillerAdapter(
         scriptKiller.on_load(scriptContext)
     }
 
-    override fun getModelId(): String = scriptKiller.model_id()
+    override fun getModelId(): String? = scriptKiller.model_id()
 
     override fun equip(player: Player) {
         super.equip(player) // Configura ECS, modelo y utilidades del Core

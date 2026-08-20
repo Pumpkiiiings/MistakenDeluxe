@@ -1,13 +1,17 @@
 package liric.mistaken.scripting.adapter
 
+import liric.mistaken.scripting.api.HasLocation
 import liric.mistaken.scripting.api.ScriptPlayer
 import net.kyori.adventure.text.Component
+import org.bukkit.Location
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 
 class BukkitPlayerAdapter(
     private val player: Player
-) : BukkitEntityAdapter(player), ScriptPlayer {
+) : BukkitEntityAdapter(player), ScriptPlayer, HasLocation {
+
+    override fun bukkitLocation(): Location = player.location
 
     override fun is_online(): Boolean = player.isOnline
 

@@ -48,13 +48,9 @@ class LuaKillerWrapper(
 
     override fun id(): String = id
 
-    override fun model_id(): String {
-        val modelFunc = luaTable.get("model_id")
-        return if (modelFunc.isfunction()) {
-            modelFunc.invoke().tojstring()
-        } else {
-            id // Fallback al id si no existe la funciÃ³n
-        }
+    override fun model_id(): String? {
+        val modelField = luaTable.get("model")
+        return if (modelField.isstring()) modelField.tojstring() else null
     }
 
     override fun on_load(context: ScriptContext) {

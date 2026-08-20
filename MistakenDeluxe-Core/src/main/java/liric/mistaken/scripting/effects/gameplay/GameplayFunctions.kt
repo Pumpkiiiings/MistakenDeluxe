@@ -88,4 +88,40 @@ object GameplayFunctions {
             player.world.playSound(player.location, sound, volume.coerceIn(0f, 3f), pitch.coerceIn(0.1f, 2f))
         } catch (_: Exception) {}
     }
+
+    /**
+     * Reproduce un sonido en una ubicación arbitraria del mundo.
+     */
+    fun playSoundAt(location: org.bukkit.Location, soundName: String, volume: Float, pitch: Float) {
+        try {
+            val sound = Sound.valueOf(soundName.uppercase())
+            location.world?.playSound(location, sound, volume.coerceIn(0f, 3f), pitch.coerceIn(0.1f, 2f))
+        } catch (_: Exception) {}
+    }
+
+    /**
+     * Envía un mensaje traducido al jugador, resolviendo la key contra
+     * PumpkingServiceManager.messages — mismo sistema que usan los killers Kotlin.
+     */
+    fun sendTranslated(player: Player, key: String) {
+        player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, key))
+    }
+
+    /**
+     * Spawna una explosión puntual de partículas en una ubicación.
+     */
+    fun spawnParticleBurst(
+        location: org.bukkit.Location,
+        particleName: String,
+        count: Int,
+        offsetX: Double,
+        offsetY: Double,
+        offsetZ: Double,
+        speed: Double
+    ) {
+        try {
+            val particle = org.bukkit.Particle.valueOf(particleName.uppercase())
+            location.world?.spawnParticle(particle, location, count, offsetX, offsetY, offsetZ, speed)
+        } catch (_: Exception) {}
+    }
 }

@@ -8,7 +8,8 @@ enum class InputTrigger {
     SWAP_HANDS,
     DROP_ITEM,
     SNEAK_TOGGLE,
-    CHAT_MESSAGE;
+    CHAT_MESSAGE,
+    ATTACK;
 
     companion object {
         fun fromString(str: String): InputTrigger? {

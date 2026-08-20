@@ -1,11 +1,14 @@
-﻿package liric.mistaken.scripting.adapter
+package liric.mistaken.scripting.adapter
 
+import liric.mistaken.scripting.api.HasLocation
 import liric.mistaken.scripting.api.ScriptLocation
 import org.bukkit.Location
 
 class BukkitLocationAdapter(
     private val location: Location
-) : ScriptLocation {
+) : ScriptLocation, HasLocation {
+
+    override fun bukkitLocation(): Location = location
     
     override fun x(): Double = location.x
     override fun y(): Double = location.y

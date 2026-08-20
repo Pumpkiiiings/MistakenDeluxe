@@ -104,6 +104,20 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH)
+    fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
+        val attacker = event.damager as? Player ?: return
+        val victim = event.entity as? Player ?: return
+
+        val killer = getActiveKiller(attacker) ?: return
+        // Ensure the victim is a valid target before firing the attack trigger
+        if (liric.mistaken.scripting.effects.gameplay.GameplayFunctions.isValidTarget(attacker, victim)) {
+            handleInput(attacker, InputTrigger.ATTACK)
+            // No cancelamos el evento porque queremos que el golpe aplique daño normalmente
+        }
+    }
+
+
+    @EventHandler(priority = EventPriority.HIGH)
     fun onToggleSneak(event: PlayerToggleSneakEvent) {
         if (event.isSneaking) { // Only trigger on press, not release
             handleInput(event.player, InputTrigger.SNEAK_TOGGLE)

@@ -7,7 +7,7 @@ package liric.mistaken.scripting.api
  */
 interface ScriptKiller {
     fun id(): String
-    fun model_id(): String
+    fun model_id(): String?
     
     // Lifecycle
     fun on_load(context: ScriptContext)

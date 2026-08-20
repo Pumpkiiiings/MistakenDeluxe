@@ -1,4 +1,7 @@
 id: "warden"
+# Solo para killers con .bbmodel 3D vía el sistema ECS de Character.
+# Killers sin este campo conservan skin normal de Minecraft.
+model: "warden"
 stats:
   health: 300.0
   damage: 5.5

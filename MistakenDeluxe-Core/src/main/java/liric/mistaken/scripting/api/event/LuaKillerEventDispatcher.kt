@@ -1,4 +1,4 @@
-﻿package liric.mistaken.scripting.event
+package liric.mistaken.scripting.api.event
 
 import liric.mistaken.Mistaken
 import liric.mistaken.scripting.adapter.BukkitDamageEventAdapter

@@ -22,7 +22,7 @@ import liric.mistaken.roles.shared.AbstractRoleManager
 class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKillerManager {
 
     init {
-        plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.event.LuaKillerEventDispatcher(plugin), plugin)
+        plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.api.event.LuaKillerEventDispatcher(plugin), plugin)
         plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.effects.EffectLifecycleListener(plugin), plugin)
         plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.effects.gameplay.FinisherEngine, plugin)
         plugin.server.pluginManager.registerEvents(liric.mistaken.roles.killers.triggers.TriggerListener(plugin), plugin)
@@ -39,9 +39,8 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
     private fun loadHardcodedKillers() {
         listOf(
-            Entity303(), NullAsesino(),
-            ColorAndElectricity(), CharlieInferno(), CharlieJazz(), Romeo(), Mariachi(),
-            Sowoul(), TinkyWinky(), StillLife(), WardenKiller(), SmilerKiller(), PiglinBigKiller()
+            CharlieInferno(), CharlieJazz(), Romeo(), Mariachi(),
+            Sowoul(), StillLife(), WardenKiller(), SmilerKiller(), PiglinBigKiller()
         ).forEach { registerClass(it) }
         plugin.componentLogger.info(ColorTranslator.translate("[INFO] [KillerManager] Cargados asesinos nativos (Hardcodeados)."))
     }
