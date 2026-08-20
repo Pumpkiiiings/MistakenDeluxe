@@ -31,17 +31,20 @@ end
 
 -- ──────────── SKILL 1: Sed de Sangre ────────────
 local function on_skill_1(player)
-    player:apply_effect("SPEED", 2, 160)
-    player:apply_effect("INCREASE_DAMAGE", 1, 160)
+    apply_effect(player, "SPEED", 2, 160)
+    apply_effect(player, "INCREASE_DAMAGE", 1, 160)
     
     draw_star(player, "#FF0000", 1.5, 5)
     
     sound(player, "ENTITY_WOLF_GROWL", 1.5, 0.5)
-    screen_tint(player, 255, 0, 0, 0.3, 160)
+    screen_tint(player):color(255, 0, 0):alpha(0.3):duration(160):show()
     
-    delay_ticks(160, function()
-        player:apply_effect("SLOW", 1, 100)
-    end)
+    sequence(player, player:location())
+        :delay(160, function()
+            apply_effect(player, "SLOW", 1, 100)
+            apply_effect(player, "WEAKNESS", 1, 100)
+        end)
+        :play()
 end
 
 -- ──────────── SKILL 2: Machete Lanzable ────────────
@@ -55,8 +58,8 @@ local function on_skill_2(player)
         :on_hit(function(victim)
             victim:damage()
             sound(victim, "ENTITY_ZOMBIE_ATTACK_IRON_DOOR", 1.0, 0.8)
-            screen_tint(victim, 255, 0, 0, 0.6, 20)
-            screenshake(victim, 1.5, 15)
+            screen_tint(victim):color(255, 0, 0):alpha(0.6):duration(20):show()
+            screen_shake(victim):intensity(1.5):duration(15):show()
         end)
         :start()
 end
@@ -74,18 +77,18 @@ local function on_skill_3(player)
 
     visual_hitbox(player, 8.0, 8.0, 8.0, 20, "PURPLE_STAINED_GLASS")
 
-    local nearby = get_nearby_players(player, 8.0)
+    local nearby = nearby_players(player, 8.0)
     for _, victim in ipairs(nearby) do
-        victim:apply_effect("BLINDNESS", 0, 100)
-        victim:apply_effect("HUNGER", 1, 100)
-        screen_tint(victim, 0, 0, 0, 0.7, 15)
+        apply_effect(victim, "BLINDNESS", 0, 100)
+        apply_effect(victim, "HUNGER", 1, 100)
+        screen_tint(victim):color(0, 0, 0):alpha(0.7):duration(15):show()
     end
 end
 
 -- ──────────── SKILL 4: Ejecución ────────────
 local function on_skill_4(player)
-    player:apply_effect("DAMAGE_RESISTANCE", 3, 300)
-    player:apply_effect("INCREASE_DAMAGE", 2, 300)
+    apply_effect(player, "DAMAGE_RESISTANCE", 3, 300)
+    apply_effect(player, "INCREASE_DAMAGE", 2, 300)
     
     draw_star(player, "#800000", 2.5, 5)
     
@@ -103,11 +106,14 @@ local function on_skill_4(player)
         :speed(0.05)
         :spawn()
 
-    screenshake(player, 0.8, 300)
+    screen_shake(player):intensity(0.8):duration(300):show()
     
-    delay_ticks(300, function()
-        player:apply_effect("SLOW", 2, 80)
-    end)
+    sequence(player, player:location())
+        :delay(300, function()
+            apply_effect(player, "SLOW", 2, 80)
+            apply_effect(player, "WEAKNESS", 2, 80)
+        end)
+        :play()
 end
 
 -- ──────────── on_trigger ────────────

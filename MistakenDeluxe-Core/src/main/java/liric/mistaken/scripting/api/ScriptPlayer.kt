@@ -20,7 +20,5 @@ interface ScriptPlayer : ScriptEntity {
     fun set_scale(scale: Double)
     fun reset_scale()
     
-    fun get_nearby_players(radius: Double): List<ScriptPlayer>
-    fun ray_trace_player(distance: Double): ScriptPlayer?
 }
 

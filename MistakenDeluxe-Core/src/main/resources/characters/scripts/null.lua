@@ -35,10 +35,10 @@ function on_skill_1(player)
     local loc = player:location():add(0.0, 1.0, 0.0)
     particle_burst(loc):type("FIREWORK"):count(3):offset(0.5, 0.5, 0.5):spread(0.0):show()
 
-    local targets = player:nearby_valid_targets(12.0)
+    local targets = nearby_valid_targets(player, 12.0)
     for i, target in ipairs(targets) do
-        target:apply_effect("DARKNESS", 0, 200)
-        target:apply_effect("BLINDNESS", 0, 200)
+        apply_effect(target, "DARKNESS", 0, 200)
+        apply_effect(target, "BLINDNESS", 0, 200)
         send_translated(target, "roles.killer.abilities.null_asesino.sistema_corrupto")
     end
 end
@@ -61,24 +61,24 @@ end
 
 -- ──────────── Habilidad 3: Prisión del Vacío ────────────
 function on_skill_3(player)
-    local target = player:ray_trace_player(15.0)
+    local target = ray_trace_player(player, 15.0)
 
     if target then
-        target:apply_effect("SLOWNESS", 10, 100)
+        apply_effect(target, "SLOWNESS", 10, 100)
         sound(target, "BLOCK_CHAIN_PLACE", 1.0, 0.5)
     end
 end
 
 -- ──────────── Habilidad 4: Colmillos del Vacío ────────────
 function on_skill_4(player)
-    player:line_spawn()
+    line_spawn(player)
         :count(15)
         :spacing(1.0)
         :delay_ticks(1)
         :snap_to_ground(true)
         :on_hit(function(victim)
             victim:damage()
-            victim:apply_effect("DARKNESS", 0, 40)
+            apply_effect(victim, "DARKNESS", 0, 40)
         end)
         :start()
 end

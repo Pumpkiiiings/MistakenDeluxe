@@ -39,10 +39,9 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
             "session_id" -> session?.id ?: "NONE"
             
             // --- OBSERVER PLACEHOLDERS ---
-            "vivos" -> session?.getPlayers()?.count { !session.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !plugin.spectatorManager.isSpectator(it) }?.toString() ?: "0"
+            "alive_survivors" -> session?.getPlayers()?.count { !session.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !plugin.spectatorManager.isSpectator(it) }?.toString() ?: "0"
             "id" -> session?.id ?: "NONE"
-            "tiempo" -> session?.timer?.let { formatTime(it) } ?: "00:00"
-            "modo" -> session?.currentMode?.name ?: "N/A"
+            "time" -> session?.timer?.let { formatTime(it) } ?: "00:00"
             "votes" -> {
                 val arenas = plugin.arenaManager.getArenas()
                 if (arenas.isEmpty()) "No hay mapas configurados"
@@ -59,24 +58,24 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
 
             // --- GENERADORES (Contextuales a la arena del jugador) ---
             // Nota: Se asume que generatorManager puede filtrar por el mundo/sesión del jugador
-            "gens_reparados" -> {
+            "gens_repaired" -> {
                 if (p == null) "0"
                 else plugin.generatorManager.getCompletedCountInWorld(p.world).toString()
             }
-            "gens_total" -> {
+            "total_gens" -> {
                 if (p == null) "0"
                 else plugin.generatorManager.getTotalGeneratorsInWorld(p.world).toString()
             }
 
             // --- LÓGICA DE ROL ---
-            "is_asesino" -> if (session?.isKiller(player.uniqueId) == true) "Si" else "No"
+            "is_killer" -> if (session?.isKiller(player.uniqueId) == true) "Yes" else "No"
 
-            "asesino_name" -> {
+            "killer_name" -> {
                 if (p == null) return "N/A"
-                plugin.asesinoManager.getKillerOfPlayer(p)?.nombre ?: "Ninguno"
+                plugin.asesinoManager.getKillerOfPlayer(p)?.nombre ?: "None"
             }
 
-            "asesino_id" -> {
+            "killer_id" -> {
                 if (p == null) return "none"
                 plugin.asesinoManager.getKillerOfPlayer(p)?.id ?: "none"
             }
@@ -89,7 +88,7 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
                     "deaths" -> stats.deaths.get().toString()
                     "kdr" -> stats.formattedKDR
                     "wins_total" -> stats.totalWins.toString()
-                    "wins_asesino" -> stats.winsAssassin.get().toString()
+                    "wins_killer" -> stats.winsAssassin.get().toString()
                     "wins_survivor" -> stats.winsSurvivor.get().toString()
                     "losses_total" -> stats.totalLosses.toString()
                     "games_played" -> stats.gamesPlayed.toString()

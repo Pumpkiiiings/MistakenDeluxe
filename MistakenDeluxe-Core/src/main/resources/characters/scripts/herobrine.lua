@@ -94,7 +94,7 @@ function on_skill_4(player)
             victim:add_potion_effect("BLINDNESS", 1, 100)
             victim:add_potion_effect("SLOWNESS", 2, 100)
             sound(victim, "ENTITY_WARDEN_HEARTBEAT", 1.0, 0.5)
-            screenshake(victim, 0.05, 100)
+            screen_shake(victim):intensity(0.05):duration(100):show()
         end
     end
 end

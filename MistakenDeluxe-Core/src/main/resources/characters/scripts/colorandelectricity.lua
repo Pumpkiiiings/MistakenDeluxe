@@ -65,7 +65,7 @@ function on_skill_1(player)
             victim:damage()
             apply_knockback(player, victim, 1.5, 0.4)
             sound(victim, "ENTITY_ZOMBIE_ATTACK_IRON_DOOR", 1.0, 1.5)
-            screen_tint(victim, 0, 255, 255, 0.4, 15)
+            screen_tint(victim):color(0, 255, 255):alpha(0.4):duration(15):show()
         end)
         :start()
         
@@ -87,7 +87,7 @@ function on_skill_2(player)
             victim:add_potion_effect("BLINDNESS", 0, 100)
             victim:add_potion_effect("SLOWNESS", 2, 100)
             victim:send_message("<color:#aaaaaa>Dame tus colores...</color>")
-            screen_tint(victim, 128, 128, 128, 0.6, 100)
+            screen_tint(victim):color(128, 128, 128):alpha(0.6):duration(100):show()
         end
     end
 end
@@ -106,7 +106,7 @@ function on_skill_3(player)
             if victim:id() ~= player:id() and player:location():distance_squared(victim:location()) < 36 then
                 victim:damage()
                 apply_knockback(player, victim, 0.8, 0.3)
-                screen_tint(victim, 255, 255, 0, 0.4, 5)
+                screen_tint(victim):color(255, 255, 0):alpha(0.4):duration(5):show()
             end
         end
         
@@ -139,8 +139,8 @@ function on_skill_4(player)
             spawn_particle(player:location(), "TOTEM_OF_UNDYING", 2.0, 2.0, 2.0, 0.5, 200)
             spawn_particle(player:location(), "END_ROD", 2.0, 2.0, 2.0, 0.1, 100)
             
-            screenshake(target, 1.5, 30)
-            screen_tint(target, 255, 0, 255, 0.5, 30)
+            screen_shake(target):intensity(1.5):duration(30):show()
+            screen_tint(target):color(255, 0, 255):alpha(0.5):duration(30):show()
             
             target:send_message("<color:#ff00ff>¡SOBRECARGA CROMÁTICA!</color>")
             target:velocity_add(0, 1.2, 0)

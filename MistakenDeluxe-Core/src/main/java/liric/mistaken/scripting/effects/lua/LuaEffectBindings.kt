@@ -138,30 +138,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── screen_tint(player, r, g, b, alpha, duration) ────────────
-        globals.set("screen_tint", object : VarArgFunction() {
-            override fun invoke(args: Varargs): Varargs {
-                val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
-                val r = args.checkint(2)
-                val g = args.checkint(3)
-                val b = args.checkint(4)
-                val alpha = args.checkdouble(5).toFloat()
-                val duration = args.checkint(6)
-                SkillService.playScreenTint(player, r, g, b, alpha, duration)
-                return LuaValue.NIL
-            }
-        })
 
-        // ──────────── screenshake(player, intensity, duration) ────────────
-        globals.set("screenshake", object : ThreeArgFunction() {
-            override fun call(playerArg: LuaValue, intensityArg: LuaValue, durationArg: LuaValue): LuaValue {
-                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
-                val intensity = intensityArg.checkdouble().toFloat()
-                val duration = durationArg.checkint()
-                SkillService.playScreenshake(player, intensity, duration)
-                return LuaValue.NIL
-            }
-        })
 
         // ──────────── draw_star(player, hex_color, radius, points) ────────────
         globals.set("draw_star", object : VarArgFunction() {
@@ -268,18 +245,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── delay_ticks(ticks, callback) ────────────
-        globals.set("delay_ticks", object : TwoArgFunction() {
-            override fun call(ticksArg: LuaValue, funcArg: LuaValue): LuaValue {
-                val ticks = ticksArg.checklong()
-                val func = funcArg.checkfunction()
-                liric.mistaken.scripting.services.SkillService.delay(ticks) {
-                    func.call()
-                }
-                return LuaValue.NIL
-            }
-        })
-        
+
         // ──────────── spawn_temp_item(location, material_name, scale_x, scale_y, scale_z, glow_color, duration_ticks) ────────────
         globals.set("spawn_temp_item", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
@@ -354,20 +320,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── screen_tint(player, r, g, b, alpha, ticks) ────────────
-        globals.set("screen_tint", object : VarArgFunction() {
-            override fun invoke(args: Varargs): Varargs {
-                val viewer = (args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).bukkitPlayer()
-                val r = args.checkint(2)
-                val g = args.checkint(3)
-                val b = args.checkint(4)
-                val alpha = args.checkdouble(5).toFloat()
-                val ticks = args.checkint(6)
-                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(viewer, r, g, b, alpha, ticks)
-                return LuaValue.NIL
-            }
-        })
-        
+
         // ──────────── draw_instant_hitbox(location, sx, sy, sz, duration, material) ────────────
         globals.set("draw_instant_hitbox", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
@@ -609,6 +562,31 @@ object LuaEffectBindings {
                 val vol = args.arg(3).optdouble(1.0).toFloat()
                 val pitch = args.arg(4).optdouble(1.0).toFloat()
                 GameplayFunctions.playSoundAt(loc, soundName, vol, pitch)
+                return LuaValue.NIL
+            }
+        })
+
+        // ──────────── play_animation(player, animation_id, priority) ────────────
+        globals.set("play_animation", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
+                val animName = args.arg(2).optjstring("") ?: ""
+                if (animName.isEmpty()) return LuaValue.NIL
+                
+                val priority = args.arg(3).optint(80)
+                
+                val asesino = liric.mistaken.Mistaken.instance.asesinoManager.getKillerOfPlayer(player)
+                if (asesino is liric.mistaken.roles.killers.BaseKiller) {
+                    val character = asesino.getCharacter(player)
+                    if (character != null) {
+                        val state = object : liric.mistaken.characters.states.CharacterState {
+                            override val id = animName
+                            override val priority = priority
+                            override val defaultAnimation = animName
+                        }
+                        character.getComponent(liric.mistaken.characters.components.StateComponent::class.java)?.transitionTo(state, force = true)
+                    }
+                }
                 return LuaValue.NIL
             }
         })

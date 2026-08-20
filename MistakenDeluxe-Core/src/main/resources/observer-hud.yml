@@ -98,7 +98,7 @@ ingame:
       offset_x: 0
       offset_y: 9
       scale: 1.0
-      content: "<white>Vivos: <green>%mistaken_vivos%</green></white>"
+      content: "<white>Vivos: <green>%mistaken_alive_survivors%</green></white>"
     gens_icon:
       type: ITEM
       material: "minecraft:redstone_torch"
@@ -115,7 +115,7 @@ ingame:
       offset_x: 100
       offset_y: 9
       scale: 1.0
-      content: "<white>Gens: <red>%mistaken_gens_reparados%</red>/<red>%mistaken_gens_total%</red></white>"
+      content: "<white>Gens: <red>%mistaken_gens_repaired%</red>/<red>%mistaken_total_gens%</red></white>"
 
 roles:
   survivor:
