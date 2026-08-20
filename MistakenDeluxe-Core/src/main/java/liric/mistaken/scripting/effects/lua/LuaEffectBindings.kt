@@ -16,6 +16,11 @@ import liric.mistaken.scripting.effects.gameplay.ChatInterceptorRegistry
 import liric.mistaken.roles.killers.triggers.traps.WorldTrapRegistry
 import liric.mistaken.roles.killers.triggers.traps.TrapDefinition
 import liric.mistaken.scripting.effects.gameplay.LineSpawnEffect
+import liric.mistaken.scripting.effects.gameplay.SequenceEffect
+import liric.mistaken.scripting.effects.gameplay.BaitTrapEffect
+import liric.mistaken.scripting.effects.gameplay.FormationEffect
+import liric.mistaken.scripting.effects.gameplay.SinkingBlockEffect
+import liric.mistaken.scripting.effects.gameplay.SpiralParticleEffect
 import liric.mistaken.scripting.effects.gameplay.TempFlyEffect
 import liric.mistaken.scripting.effects.gameplay.RevealTargetsEffect
 import liric.mistaken.scripting.adapter.BukkitLocationAdapter
@@ -274,6 +279,42 @@ object LuaEffectBindings {
             }
         })
 
+        // ──────────── bait_trap(player, location) ────────────
+        globals.set("bait_trap", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                val loc = unwrapLocation(locArg) ?: return LuaValue.NIL
+                return buildBaitTrapTable(scriptId, player, loc)
+            }
+        })
+
+        // ──────────── formation(player, location) ────────────
+        globals.set("formation", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                val loc = unwrapLocation(locArg) ?: return LuaValue.NIL
+                return buildFormationTable(scriptId, player, loc)
+            }
+        })
+
+        // ──────────── sinking_block(player, location) ────────────
+        globals.set("sinking_block", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                val loc = unwrapLocation(locArg) ?: return LuaValue.NIL
+                return buildSinkingBlockTable(scriptId, player, loc)
+            }
+        })
+
+        // ──────────── spiral_particle(player, location) ────────────
+        globals.set("spiral_particle", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                val loc = unwrapLocation(locArg) ?: return LuaValue.NIL
+                return buildSpiralParticleTable(scriptId, player, loc)
+            }
+        })
+
         // ──────────── reveal_targets(player) ────────────
         globals.set("reveal_targets", object : OneArgFunction() {
             override fun call(playerArg: LuaValue): LuaValue {
@@ -512,11 +553,13 @@ object LuaEffectBindings {
         val t = LuaTable()
         var count = 10; var spacing = 1.0; var delayTicks = 1L
         val angles = mutableListOf<Double>(0.0)
+        var snapToGround = false
         var onHitLuaFunc: LuaValue = LuaValue.NIL
 
         t.set("count", TwoArg(t) { _, v -> count = v.checkint().coerceIn(1, 50) })
         t.set("spacing", TwoArg(t) { _, v -> spacing = v.checkdouble().coerceIn(0.1, 5.0) })
         t.set("delay_ticks", TwoArg(t) { _, v -> delayTicks = v.checklong().coerceIn(0L, 20L) })
+        t.set("snap_to_ground", TwoArg(t) { _, v -> snapToGround = v.checkboolean() })
         t.set("angles", TwoArg(t) { _, v ->
             if (v.istable()) {
                 angles.clear()
@@ -537,7 +580,7 @@ object LuaEffectBindings {
                     }
                 } else null
 
-                val effect = LineSpawnEffect(scriptId, player.uniqueId, player, count, spacing, delayTicks, angles, hitCallback)
+                val effect = LineSpawnEffect(scriptId, player.uniqueId, player, count, spacing, delayTicks, angles, snapToGround, hitCallback)
                 effect.start()
                 EffectRegistry.register(effect)
                 return buildHandle(effect)
@@ -718,12 +761,149 @@ object LuaEffectBindings {
         return h
     }
 
+
+
+    private fun buildBaitTrapTable(scriptId: String, player: Player, location: Location): LuaTable {
+        val t = LuaTable()
+        var markerItem: String? = null
+        var orbitParticle: String? = null
+        var triggerRadius = 3.5
+        var maxTicks = 400
+        var onTriggerLuaFunc: LuaValue = LuaValue.NIL
+
+        t.set("marker_item", TwoArg(t) { _, v -> markerItem = v.checkjstring() })
+        t.set("orbit_particle", TwoArg(t) { _, v -> orbitParticle = v.checkjstring() })
+        t.set("trigger_radius", TwoArg(t) { _, v -> triggerRadius = v.checkdouble().coerceIn(0.5, 10.0) })
+        t.set("max_ticks", TwoArg(t) { _, v -> maxTicks = v.checkint().coerceIn(20, 1200) })
+        t.set("on_trigger", TwoArg(t) { _, v -> onTriggerLuaFunc = v })
+
+        t.set("spawn", object : OneArgFunction() {
+            override fun call(self: LuaValue): LuaValue {
+                val triggerCallback: ((Player) -> Unit)? = if (onTriggerLuaFunc.isfunction()) {
+                    { victim: Player ->
+                        val adapter = BukkitPlayerAdapter(victim)
+                        onTriggerLuaFunc.call(CoerceJavaToLua.coerce(adapter))
+                    }
+                } else null
+
+                val effect = BaitTrapEffect(scriptId, player.uniqueId, player, location, markerItem, orbitParticle, triggerRadius, maxTicks, triggerCallback)
+                effect.start()
+                EffectRegistry.register(effect)
+                return buildHandle(effect)
+            }
+        })
+        return t
+    }
+
+    private fun buildFormationTable(scriptId: String, player: Player, location: Location): LuaTable {
+        val t = LuaTable()
+        var shape = "circle"
+        var count = 3
+        var material = "BEACON"
+        var radius = 2.0
+        var durationTicks = 30
+        var onExpireLuaFunc: LuaValue = LuaValue.NIL
+
+        t.set("shape", TwoArg(t) { _, v -> shape = v.checkjstring() })
+        t.set("count", TwoArg(t) { _, v -> count = v.checkint().coerceIn(1, 20) })
+        t.set("material", TwoArg(t) { _, v -> material = v.checkjstring() })
+        t.set("radius", TwoArg(t) { _, v -> radius = v.checkdouble().coerceIn(0.1, 10.0) })
+        t.set("duration", TwoArg(t) { _, v -> durationTicks = v.checkint().coerceIn(1, 6000) })
+        t.set("on_expire", TwoArg(t) { _, v -> onExpireLuaFunc = v })
+
+        t.set("show", object : OneArgFunction() {
+            override fun call(self: LuaValue): LuaValue {
+                val expireCallback: ((Location) -> Unit)? = if (onExpireLuaFunc.isfunction()) {
+                    { loc: Location ->
+                        val adapter = BukkitLocationAdapter(loc)
+                        onExpireLuaFunc.call(CoerceJavaToLua.coerce(adapter))
+                    }
+                } else null
+
+                val effect = FormationEffect(scriptId, player.uniqueId, location, shape, count, material, radius, durationTicks, expireCallback)
+                effect.start()
+                EffectRegistry.register(effect)
+                return buildHandle(effect)
+            }
+        })
+        return t
+    }
+
+    private fun buildSinkingBlockTable(scriptId: String, player: Player, location: Location): LuaTable {
+        val t = LuaTable()
+        var material = "OBSIDIAN"
+        var sinkTicks = 20
+        var durationTicks = 40
+        var onRemoveLuaFunc: LuaValue = LuaValue.NIL
+
+        t.set("material", TwoArg(t) { _, v -> material = v.checkjstring() })
+        t.set("sink_ticks", TwoArg(t) { _, v -> sinkTicks = v.checkint().coerceIn(1, 200) })
+        t.set("duration", TwoArg(t) { _, v -> durationTicks = v.checkint().coerceIn(1, 6000) })
+        t.set("on_remove", TwoArg(t) { _, v -> onRemoveLuaFunc = v })
+
+        t.set("show", object : OneArgFunction() {
+            override fun call(self: LuaValue): LuaValue {
+                val removeCallback: ((Location) -> Unit)? = if (onRemoveLuaFunc.isfunction()) {
+                    { loc: Location ->
+                        val adapter = BukkitLocationAdapter(loc)
+                        onRemoveLuaFunc.call(CoerceJavaToLua.coerce(adapter))
+                    }
+                } else null
+
+                val effect = SinkingBlockEffect(scriptId, player.uniqueId, location, material, sinkTicks, durationTicks, removeCallback)
+                effect.start()
+                EffectRegistry.register(effect)
+                return buildHandle(effect)
+            }
+        })
+        return t
+    }
+
+    private fun buildSpiralParticleTable(scriptId: String, player: Player, location: Location): LuaTable {
+        val t = LuaTable()
+        var particle1 = "SQUID_INK"
+        var particle2 = "SCULK_SOUL"
+        var maxTicks = 40
+        var onFinishLuaFunc: LuaValue = LuaValue.NIL
+
+        t.set("particle_1", TwoArg(t) { _, v -> particle1 = v.checkjstring() })
+        t.set("particle_2", TwoArg(t) { _, v -> particle2 = v.checkjstring() })
+        t.set("duration", TwoArg(t) { _, v -> maxTicks = v.checkint().coerceIn(1, 6000) })
+        t.set("on_finish", TwoArg(t) { _, v -> onFinishLuaFunc = v })
+
+        t.set("start", object : OneArgFunction() {
+            override fun call(self: LuaValue): LuaValue {
+                val finishCallback: ((Location) -> Unit)? = if (onFinishLuaFunc.isfunction()) {
+                    { loc: Location ->
+                        val adapter = BukkitLocationAdapter(loc)
+                        onFinishLuaFunc.call(CoerceJavaToLua.coerce(adapter))
+                    }
+                } else null
+
+                val effect = SpiralParticleEffect(scriptId, player.uniqueId, location, particle1, particle2, maxTicks, finishCallback)
+                effect.start()
+                EffectRegistry.register(effect)
+                return buildHandle(effect)
+            }
+        })
+        return t
+    }
+
     /** Unwraps BukkitPlayerAdapter userdata → Player */
     private fun unwrapPlayer(luaVal: LuaValue): Player? {
         if (luaVal.isnil()) return null
         return try {
             val adapter = luaVal.checkuserdata(BukkitPlayerAdapter::class.java) as BukkitPlayerAdapter
             adapter.getPlayer()
+        } catch (_: Exception) { null }
+    }
+
+    /** Unwraps BukkitLocationAdapter userdata → Location */
+    private fun unwrapLocation(luaVal: LuaValue): Location? {
+        if (luaVal.isnil()) return null
+        return try {
+            val adapter = luaVal.checkuserdata(BukkitLocationAdapter::class.java) as BukkitLocationAdapter
+            adapter.getBukkitLocation()
         } catch (_: Exception) { null }
     }
 

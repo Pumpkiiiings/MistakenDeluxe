@@ -2,126 +2,79 @@
 -- NullAsesino Script (LUA)
 -- ════════════════════════════════════════════════════════
 
--- Declaración del killer
 local killer = {
     id = "null",
     model = "mistaken:null_model"
 }
 
--- Estado interno (opcional)
-local orbes_activados = false
-local orbes_handle = nil
-
+-- ──────────── on_equip / on_unequip ────────────
 function on_equip(player)
-    player:log_info("Null equipado")
-    player:set_scale(1.2, 1.2)
+    player:set_scale(1.1)
 end
 
 function on_unequip(player)
     player:reset_scale()
-    if orbes_handle then
-        orbes_handle:stop()
-        orbes_handle = nil
-    end
 end
 
--- ──────────── Habilidad 1: Radar de Proximidad ────────────
+-- ──────────── Habilidad 1: Error Render ────────────
 function on_skill_1(player)
-    local players = player:nearby_valid_targets(30.0)
+    player:sound("BLOCK_GLASS_BREAK", 1.0, 0.5)
     
-    if #players == 0 then
-        player:send_message("§cNo hay jugadores cercanos.")
-        player:sound("BLOCK_NOTE_BLOCK_BASS", 1.0, 0.5)
-        return
-    end
-
-    player:send_message("§aSe detectaron " .. #players .. " jugadores.")
-    player:sound("BLOCK_NOTE_BLOCK_BELL", 1.0, 1.0)
+    -- Partículas FIREWORK (como no hay builder específico de firework expuesto, 
+    -- y particle(x) genérico desde LuaEffectBindings podría no estar, 
+    -- lo simulamos si no existe, pero en este caso el original usa world.spawnParticle)
+    -- Por simplicidad dejaremos que apply_effect marque el impacto, o se puede exponer shape("firework").
+    -- Asumimos que un trail corto o algo podría servir si no, pero la lógica central es el radio.
     
-    for i, target in ipairs(players) do
-        -- Marcar a los jugadores detectados (glowing o mensaje)
-        player:send_message("§7- " .. target:name())
-        target:apply_effect("GLOWING", 0, 100) -- 5 segundos
+    local targets = player:nearby_valid_targets(12.0)
+    for i, target in ipairs(targets) do
+        target:apply_effect("DARKNESS", 0, 200)
+        target:apply_effect("BLINDNESS", 0, 200)
+        -- Usamos el component en Lua sería enviar la traducción, 
+        -- o enviar el key directo si el cliente lo procesa. 
+        -- Enviaremos el ID que el plugin intercepta o mensaje local
+        target:send_message("roles.killer.abilities.null_asesino.sistema_corrupto")
     end
 end
 
--- ──────────── Habilidad 2: Orbes de Daño (Orbit) ────────────
+-- ──────────── Habilidad 2: Generador Bait ────────────
 function on_skill_2(player)
-    if orbes_activados then
-        player:send_message("§cLos orbes ya están activados.")
-        return
-    end
+    local loc = player:location()
     
-    orbes_activados = true
-    player:sound("ENTITY_ILLUSIONER_PREPARE_BLINDNESS", 1.0, 1.0)
-    player:send_message("§dOrbes de Vacío activados.")
-
-    orbes_handle = player:orbit()
-        :count(3)
-        :virtual_item("OBSIDIAN", "COAL_BLOCK", "CRYING_OBSIDIAN")
-        :radius(1.5)
-        :rotation_speed(0.2)
-        :wobble(0.3, 3.0)
-        :duration(200) -- 10 segundos
-        :show()
-        
-    -- Checkear daño cada segundo
-    player:scheduler():run_timer(20, 20, 10, function()
-        if not orbes_activados then return false end
-        
-        local targets = player:nearby_valid_targets(2.0)
-        for i, t in ipairs(targets) do
-            t:damage()
-            t:sound("ENTITY_PLAYER_HURT", 1.0, 1.0)
-        end
-        return true
-    end)
-    
-    player:scheduler():run_delayed(205, function()
-        orbes_activados = false
-        player:send_message("§cOrbes desactivados.")
-    end)
-end
-
--- ──────────── Habilidad 3: Atrape Oscuro (Line Spawn) ────────────
-function on_skill_3(player)
-    player:sound("ENTITY_EVOKER_CAST_SPELL", 1.0, 0.8)
-    
-    player:line_spawn()
-        :count(12)
-        :spacing(1.2)
-        :delay(1.5)
-        :angles(-15, 0, 15) -- Triple línea
-        :on_hit(function(victim)
-            victim:apply_effect("BLINDNESS", 0, 80)
-            victim:apply_effect("SLOWNESS", 2, 80)
-            player:sound("ENTITY_ZOMBIE_VILLAGER_CURE", 1.0, 2.0)
+    bait_trap(player, loc)
+        :marker_item("BEACON")
+        :orbit_particle("END_ROD")
+        :trigger_radius(3.5)
+        :max_ticks(400)
+        :on_trigger(function(victim)
+            victim:damage()
+            victim:sound("ENTITY_ENDERMAN_SCREAM", 1.0, 0.1)
         end)
-        :launch()
+        :spawn()
 end
 
--- ──────────── Habilidad 4: Rayo del Vacío (RayTrace) ────────────
-function on_skill_4(player)
-    local target = player:ray_trace_player(20.0)
+-- ──────────── Habilidad 3: Prisión del Vacío ────────────
+function on_skill_3(player)
+    local target = player:ray_trace_player(15.0)
     
     if target then
-        player:sound("ENTITY_ENDER_DRAGON_SHOOT", 1.0, 1.5)
-        target:damage()
-        target:apply_effect("WITHER", 1, 100)
-        
-        player:trail()
-            :particle("SQUID_INK")
-            :count(15)
-            :offset(0.2, 0.2, 0.2)
-            :duration(20)
-            :show()
-            
-        -- Line of particles to target (simplified via trail on target or teleporting)
-        -- Since we don't have a direct line particle yet, we just impact the target
-        target:sound("ENTITY_GENERIC_EXPLODE", 0.5, 2.0)
-    else
-        player:sound("BLOCK_FIRE_EXTINGUISH", 1.0, 1.0)
+        target:apply_effect("SLOWNESS", 10, 100)
+        target:sound("BLOCK_CHAIN_PLACE", 1.0, 0.5)
     end
+end
+
+-- ──────────── Habilidad 4: Colmillos del Vacío ────────────
+function on_skill_4(player)
+    player:line_spawn()
+        :count(15)
+        :spacing(1.0)
+        :delay_ticks(1)
+        :snap_to_ground(true)
+        :on_hit(function(victim)
+            victim:damage()
+            victim:apply_effect("DARKNESS", 0, 40)
+        end)
+        :start()
 end
 
 -- ──────────── on_trigger ────────────
@@ -139,11 +92,57 @@ end
 
 -- ──────────── on_kill ────────────
 function on_kill(player, victim)
-    player:send_message("§0El vacío consume a " .. victim:name())
     player:sound("ENTITY_WITHER_AMBIENT", 1.0, 0.5)
-    
-    -- Curar al Null cuando mata
     player:apply_effect("REGENERATION", 1, 60)
+end
+
+-- ──────────── on_finisher ────────────
+function on_finisher(player, victim)
+    local loc = victim:location()
+    local choice = math.random(0, 2)
+    
+    if choice == 0 then
+        -- Efecto 1: Drenaje de Alma
+        loc:sound("ENTITY_ENDERMAN_STARE", 1.5, 0.1)
+        
+        spiral_particle(player, loc)
+            :particle_1("SQUID_INK")
+            :particle_2("SCULK_SOUL")
+            :duration(40)
+            :on_finish(function(final_loc)
+                final_loc:sound("ENTITY_WARDEN_SONIC_BOOM", 1.0, 1.5)
+                -- Simular SONIC BOOM si es necesario
+            end)
+            :start()
+            
+    elseif choice == 1 then
+        -- Efecto 2: Prisión de Obsidiana Llorosa
+        loc:sound("BLOCK_RESPAWN_ANCHOR_SET_SPAWN", 1.5, 0.5)
+        
+        sinking_block(player, loc)
+            :material("CRYING_OBSIDIAN")
+            :sink_ticks(20)
+            :duration(30)
+            :on_remove(function(final_loc)
+                final_loc:sound("BLOCK_GLASS_BREAK", 2.0, 0.1)
+            end)
+            :show()
+            
+    elseif choice == 2 then
+        -- Efecto 3: Mirada del Vacío
+        loc:sound("AMBIENT_CAVE", 2.0, 0.5)
+        
+        formation(player, loc)
+            :shape("triangle")
+            :count(3)
+            :material("BEACON")
+            :radius(2.0)
+            :duration(30)
+            :on_expire(function(final_loc)
+                final_loc:sound("ENTITY_WITHER_DEATH", 1.0, 1.0)
+            end)
+            :show()
+    end
 end
 
 return killer

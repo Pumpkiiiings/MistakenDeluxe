@@ -23,6 +23,7 @@ class LineSpawnEffect(
     private val spacing: Double,
     private val delayTicks: Long,
     private val angles: List<Double>,
+    private val snapToGround: Boolean,
     private val onHitCallback: ((Player) -> Unit)?
 ) : EffectHandle {
 
@@ -54,12 +55,26 @@ class LineSpawnEffect(
                 val task = plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
                     if (!alive.get()) return@Consumer
 
-                    if (!locToSpawn.block.type.isSolid) {
-                        val fangs = locToSpawn.world.spawn(locToSpawn, EvokerFangs::class.java)
+                    var spawnY = locToSpawn.y
+                    if (snapToGround) {
+                        val world = locToSpawn.world
+                        var y = locToSpawn.blockY
+                        while (y > locToSpawn.blockY - 3 && !world.getBlockAt(locToSpawn.blockX, y - 1, locToSpawn.blockZ).type.isSolid) {
+                            y--
+                        }
+                        while (y < locToSpawn.blockY + 3 && world.getBlockAt(locToSpawn.blockX, y, locToSpawn.blockZ).type.isSolid) {
+                            y++
+                        }
+                        spawnY = y.toDouble()
+                    }
+                    val finalLoc = locToSpawn.clone().apply { y = spawnY }
+
+                    if (!finalLoc.block.type.isSolid) {
+                        val fangs = finalLoc.world.spawn(finalLoc, EvokerFangs::class.java)
                         
                         // Hit detection local a los fangs
                         if (onHitCallback != null) {
-                            locToSpawn.world.getNearbyEntities(locToSpawn, 1.5, 1.5, 1.5)
+                            finalLoc.world.getNearbyEntities(finalLoc, 1.5, 1.5, 1.5)
                                 .filterIsInstance<Player>()
                                 .forEach { victim ->
                                     if (GameplayFunctions.isValidTarget(player, victim) && hitPlayers.add(victim.uniqueId)) {
