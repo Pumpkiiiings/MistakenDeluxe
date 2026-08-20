@@ -55,7 +55,7 @@ dependencies {
     compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
     compileOnly("com.zaxxer:HikariCP:5.1.0")
     compileOnly("fr.skytasul:glowingentities:1.4.11")
-    compileOnly("com.mysql:mysql-connector-j:9.7.0")
+    compileOnly("com.mysql:mysql-connector-j:26.7.0")
     compileOnly("org.postgresql:postgresql:42.7.13")
     compileOnly("org.xerial:sqlite-jdbc:3.53.2.0")
     compileOnly("dev.triumphteam:triumph-gui:3.1.13")
