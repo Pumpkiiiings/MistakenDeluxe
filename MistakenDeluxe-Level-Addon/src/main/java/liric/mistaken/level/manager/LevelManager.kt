@@ -18,7 +18,7 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
 
     private val cache = ConcurrentHashMap<UUID, PlayerLevelData>()
 
-    // Exposed to providers
+    
     fun getLevel(uuid: UUID): Int {
         return cache[uuid]?.level ?: 1
     }
@@ -35,7 +35,7 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
         if (oldLevel != level) {
             val player = Bukkit.getPlayer(uuid)
             if (player != null) {
-                // Fire level up event on main thread
+                
                 plugin.server.scheduler.runTask(plugin, Runnable {
                     val event = PlayerLevelUpEvent(player, oldLevel, level)
                     Bukkit.getPluginManager().callEvent(event)
@@ -47,7 +47,7 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
                     ))
                     player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f)
                     
-                    // Give rewards for each level up
+                    
                     for (l in (oldLevel + 1)..level) {
                         val rewards = plugin.levelConfig.getRewardsForLevel(l)
                         for (rewardStr in rewards) {
@@ -55,7 +55,7 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
                         }
                     }
 
-                    // Handle Prefix broadcast if a new prefix is reached exactly at this level
+                    
                     val prefixData = plugin.levelConfig.getPrefixForLevel(level)
                     if (prefixData != null && prefixData.requiredLevel in (oldLevel + 1)..level) {
                         if (prefixData.broadcast) {
@@ -79,7 +79,7 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
     fun setExperience(uuid: UUID, amount: Long) {
         val data = cache[uuid] ?: return
         data.experience = amount
-        // Notice: we don't recalculate total_experience dynamically on set, just on add.
+        
         
         plugin.server.scheduler.runTaskAsynchronously(plugin, Runnable {
             plugin.repository.save(data)
@@ -90,7 +90,7 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
         val player = Bukkit.getPlayer(uuid) ?: return
         val data = cache[uuid] ?: return
 
-        // Fire event
+        
         val event = PlayerExperienceGainEvent(player, amount, reason)
         Bukkit.getPluginManager().callEvent(event)
 
@@ -99,7 +99,7 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
         data.experience += event.amount
         data.totalExperience += event.amount
 
-        // Check level up via the unified method
+        
         checkLevelUp(uuid, data)
     }
 
@@ -135,7 +135,7 @@ class LevelManager(private val plugin: LevelAddonPlugin) {
         if (levelUps > 0) {
             setLevel(uuid, currentLevel)
         } else {
-            // Just save experience asynchronously
+            
             plugin.server.scheduler.runTaskAsynchronously(plugin, Runnable {
                 plugin.repository.save(playerData)
             })

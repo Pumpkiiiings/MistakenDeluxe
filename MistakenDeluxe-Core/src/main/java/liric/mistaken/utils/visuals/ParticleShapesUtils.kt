@@ -22,7 +22,7 @@ object ParticleShapesUtils {
     @JvmOverloads
     fun broadcastParticle(loc: Location, type: Particle, offsetX: Float = 0f, offsetY: Float = 0f, offsetZ: Float = 0f, count: Int = 1, speed: Float = 0f) {
         loc.world?.players?.forEach { viewer ->
-            if (viewer.location.distanceSquared(loc) < 2500.0) { // 50 bloques
+            if (viewer.location.distanceSquared(loc) < 2500.0) { 
                 viewer.spawnParticle(type, loc, count, offsetX.toDouble(), offsetY.toDouble(), offsetZ.toDouble(), speed.toDouble())
             }
         }
@@ -193,10 +193,10 @@ object ParticleShapesUtils {
                 task.cancel()
                 return@Consumer
             }
-            val radius = (currentY / height) * maxRadius + 0.5 // Crece con la altura
+            val radius = (currentY / height) * maxRadius + 0.5 
             val points = (radius * 10).toInt().coerceAtLeast(5)
             for (i in 0 until points) {
-                val angle = (2 * Math.PI * i) / points + currentY // Rotación añadida
+                val angle = (2 * Math.PI * i) / points + currentY 
                 val x = cos(angle) * radius
                 val z = sin(angle) * radius
                 broadcastParticle(center.clone().add(x, currentY, z), type)
@@ -212,7 +212,7 @@ object ParticleShapesUtils {
     @JvmOverloads
     fun drawWings(player: Player, type: Particle = Particle.FLAME) {
         val loc = player.location
-        val yaw = Math.toRadians(loc.yaw.toDouble() + 90) // +90 para que estén a la espalda
+        val yaw = Math.toRadians(loc.yaw.toDouble() + 90) 
         
         
         val backOffset = 0.3
@@ -224,22 +224,22 @@ object ParticleShapesUtils {
         val vectorRight = vectorYaw.clone().crossProduct(Vector(0, 1, 0)).normalize()
         
         plugin.server.regionScheduler.run(plugin, center, Consumer { _ ->
-            // Patrón básico de ala (V shape con puntos)
+            
             val wingPoints = listOf(
-                Pair(0.2, 0.0), Pair(0.4, 0.2), Pair(0.6, 0.4), Pair(0.8, 0.6), Pair(1.0, 0.8), // Top edge
-                Pair(0.3, -0.2), Pair(0.5, -0.1), Pair(0.7, 0.1), Pair(0.9, 0.3), // Mid
-                Pair(0.1, -0.4), Pair(0.2, -0.6), Pair(0.3, -0.8) // Bottom edge
+                Pair(0.2, 0.0), Pair(0.4, 0.2), Pair(0.6, 0.4), Pair(0.8, 0.6), Pair(1.0, 0.8), 
+                Pair(0.3, -0.2), Pair(0.5, -0.1), Pair(0.7, 0.1), Pair(0.9, 0.3), 
+                Pair(0.1, -0.4), Pair(0.2, -0.6), Pair(0.3, -0.8) 
             )
             
             for (point in wingPoints) {
                 val xOffset = point.first
                 val yOffset = point.second
                 
-                // Ala derecha
+                
                 val rightWing = center.clone().add(vectorRight.clone().multiply(xOffset)).add(0.0, yOffset, 0.0)
                 broadcastParticle(rightWing, type)
                 
-                // Ala izquierda
+                
                 val leftWing = center.clone().add(vectorRight.clone().multiply(-xOffset)).add(0.0, yOffset, 0.0)
                 broadcastParticle(leftWing, type)
             }

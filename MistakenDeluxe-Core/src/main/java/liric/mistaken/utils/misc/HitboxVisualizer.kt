@@ -16,9 +16,9 @@ import org.bukkit.Bukkit
 
 object HitboxVisualizer {
 
-    // FIX #17: Was a plain `var Boolean` — non-atomic read-modify-write.
-    // The particle engine runs asynchronously and reads `isEnabled`; toggle()
-    // performs a check-then-act that must be atomic to avoid data races.
+    
+    
+    
     private val _isEnabled = AtomicBoolean(false)
 
     /** Thread-safe read of the enabled state. */
@@ -47,20 +47,20 @@ object HitboxVisualizer {
             display.block = mat.createBlockData()
             display.isPersistent = false
             display.setGravity(false)
-            display.isGlowing = true // Para que se vea a través de las paredes
+            display.isGlowing = true 
 
-            // getNearbyEntities expande hacia ambos lados, por lo que el tamaño real es el doble.
+            
             val sizeX = (x * 2).toFloat()
             val sizeY = (y * 2).toFloat()
             val sizeZ = (z * 2).toFloat()
 
-            // Para que la caja quede perfectamente centrada en el player/proyectil
+            
             val translation = Vector3f(-x.toFloat(), -y.toFloat(), -z.toFloat())
             val scale = Vector3f(sizeX, sizeY, sizeZ)
 
             display.transformation = Transformation(translation, Quaternionf(), scale, Quaternionf())
 
-            // Interpolación para que se mueva suavemente sin tirones
+            
             display.teleportDuration = 1
             display.interpolationDuration = 1
         }
@@ -78,11 +78,9 @@ object HitboxVisualizer {
 
         val hitbox = createHitbox(loc, x, y, z, mat) ?: return
 
-        // Se auto-destruye después del tiempo indicado
+        
         plugin.server.globalRegionScheduler.runDelayed(plugin, Consumer { _ ->
             if (hitbox.isValid) hitbox.remove()
         }, ticks)
     }
 }
-
-

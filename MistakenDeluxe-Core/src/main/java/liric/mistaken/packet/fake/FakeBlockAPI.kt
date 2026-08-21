@@ -50,16 +50,15 @@ class FakeBlockAPI {
     fun sendMultiBlockChange(player: Player, blocks: Map<Location, Material>) {
         if (blocks.isEmpty()) return
 
-        // PacketEvents WrapperPlayServerMultiBlockChange requiere agrupar por Chunk
-        // Para simplificar esta API, simplemente enviamos múltiples block changes individuales 
-        // si los bloques están esparcidos, o usar el wrapper oficial si están en un mismo chunk.
-        // Como optimización genérica y fácil de usar, enviamos individuales. 
-        // Nota: Para cambios masivos en el mismo chunk, se recomienda MultiBlockChange, 
-        // pero para evitar cálculos de chunks, el bucle suele ser igual de rápido para menos de 500 bloques.
+        
+        
+        
+        
+        
+        
         
         blocks.forEach { (loc, mat) ->
             sendBlockChange(player, loc, mat)
         }
     }
 }
-

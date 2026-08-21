@@ -1,4 +1,4 @@
-﻿package liric.mistaken.level
+package liric.mistaken.level
 
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.plugin.ServicePriority
@@ -60,10 +60,10 @@ class LevelAddonPlugin : JavaPlugin() {
     override fun onEnable() {
         componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Starting up...</gray>"))
 
-        // Init config
+        
         saveDefaultConfig()
         saveResource("levels.yml", false)
-        // No rewards.yml needed as it was merged, but keeping it if it's there
+        
         saveResource("messages.yml", false)
         try { saveResource("xp_sources.yml", false) } catch (e: Exception) {}
 
@@ -82,8 +82,8 @@ class LevelAddonPlugin : JavaPlugin() {
         }
         messagesConfig = YamlConfiguration.loadConfiguration(file)
 
-        // Init Database
-        // For simplicity we will assume SQLite if config is SQLITE
+        
+        
         val dbTypeStr = config.getString("database.type", "SQLITE")
         val dbType = try { DatabaseType.valueOf(dbTypeStr!!) } catch (e: Exception) { DatabaseType.SQLITE }
         
@@ -99,13 +99,13 @@ class LevelAddonPlugin : JavaPlugin() {
         repository = LevelRepository(databaseProvider)
         repository.init()
 
-        // Init Hooks
+        
         val advancementHook = UltimateAdvancementHook(this)
 
-        // Init Managers
+        
         manager = LevelManager(this)
 
-        // Register Rewards
+        
         RewardRegistry.register("message", MessageReward())
         RewardRegistry.register("actionbar", ActionBarReward())
         RewardRegistry.register("title", TitleReward())
@@ -116,11 +116,11 @@ class LevelAddonPlugin : JavaPlugin() {
         RewardRegistry.register("permission", PermissionReward())
         RewardRegistry.register("advancement", AdvancementReward(advancementHook))
 
-        // Init providers
+        
         levelProvider = LevelProviderImpl(this)
         experienceProvider = ExperienceProviderImpl(this)
 
-        // Register services to Bukkit ServicesManager
+        
         server.servicesManager.register(
             LevelProvider::class.java,
             levelProvider,
@@ -135,18 +135,18 @@ class LevelAddonPlugin : JavaPlugin() {
             ServicePriority.Normal
         )
 
-        // Register Commands
+        
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { event: ReloadableRegistrarEvent<Commands> ->
             val registrar = event.registrar()
             registrar.register("level", "View your level", listOf("levels", "xp"), LevelCommand(this))
             registrar.register("leveladmin", "Admin commands for levels", LevelAdminCommand(this))
         }
 
-        // Register Listeners
+        
         server.pluginManager.registerEvents(ExperienceListener(this), this)
         server.pluginManager.registerEvents(AdvancementHookListener(this), this)
 
-        // Register PAPI
+        
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             MistakenLevelExpansion(this).register()
             componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Registered PlaceholderAPI Expansion.</gray>"))
@@ -158,12 +158,12 @@ class LevelAddonPlugin : JavaPlugin() {
     override fun onDisable() {
         componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Shutting down...</gray>"))
         
-        // Save data
+        
         if (this::manager.isInitialized) {
             manager.saveAllSync()
         }
 
-        // Unregister services automatically handled by Bukkit, but good to be explicit for our own cleanup
+        
         server.servicesManager.unregisterAll(this)
 
         if (this::databaseProvider.isInitialized) {

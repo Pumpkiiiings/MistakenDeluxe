@@ -17,7 +17,7 @@ class Character(val entity: Entity) {
      * Añade un componente al personaje. Reemplaza si ya existía uno del mismo tipo.
      */
     fun <T : CharacterComponent> addComponent(type: Class<T>, component: T) {
-        // Remover el anterior si existe
+        
         components[type]?.onDisable()
         
         components[type] = component

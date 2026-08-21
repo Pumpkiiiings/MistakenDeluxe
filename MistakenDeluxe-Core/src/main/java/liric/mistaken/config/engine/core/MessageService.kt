@@ -30,7 +30,7 @@ object MessageService : IMessageService {
     private val langMap = ConcurrentHashMap<String, ConcurrentHashMap<String, FileConfiguration>>()
     var defaultLang: String = "es"
 
-    // Abstracted language provider to avoid coupling to Mistaken's PlayerDataManager
+    
     var languageProvider: LanguageProvider = object : LanguageProvider {
         override fun getLanguage(uuid: UUID): String = defaultLang
     }
@@ -70,11 +70,11 @@ object MessageService : IMessageService {
     override fun loadAllLanguages() {
         extractYamlResources()
 
-        // FIX #8: Load into a fresh map and then swap.
-        // The previous approach called langMap.clear() before re-populating, leaving a window
-        // where the main thread could call getComponent() and receive an empty map — causing
-        // every player to see "<red>Missing Path: ..." until loading was complete.
-        // Now we build the new map entirely before making it visible.
+        
+        
+        
+        
+        
         val newMap = ConcurrentHashMap<String, ConcurrentHashMap<String, FileConfiguration>>()
 
         val langFolder = File(MistakenLib.plugin.dataFolder, "langs")
@@ -93,7 +93,7 @@ object MessageService : IMessageService {
             newMap[langCode] = filesInDir
         }
 
-        // Atomic swap: clear and refill in one step to minimize the empty-map window
+        
         langMap.clear()
         langMap.putAll(newMap)
         MistakenLib.log(MistakenLib.LogCategory.CORE, "[Messages] Initialized (${langMap.size} languages).")
@@ -197,18 +197,18 @@ object MessageService : IMessageService {
     }
 
     private fun parseLegacy(text: String): String {
-        // FIX #14: The previous implementation had a logical bug:
-        //   1. replace("&", "§")            → "&a" becomes "§a"
-        //   2. replace("§(?=[0-9a-fk-or])", "") → "§a" becomes "a"  ← DELETES the color!
-        // The net result was that all legacy color codes were stripped rather than converted.
-        // ColorNormalizer.normalizeToMiniMessage() correctly converts &a / §a → <green>, etc.
-        // The {curly} → <angle> replacement is preserved for custom tag syntax support.
+        
+        
+        
+        
+        
+        
         return ColorNormalizer.normalizeToMiniMessage(
             text.replace("{", "<").replace("}", ">")
         )
     }
 
-    // --- API Methods ---
+    
 
     override fun send(player: Player, path: String, vararg extraTags: TagResolver) {
         player.sendMessage(getComponent(player, path, *extraTags))
@@ -231,7 +231,7 @@ object MessageService : IMessageService {
         player.showTitle(titleObj)
     }
 
-    // Basic implementation for bossbars (could be extended)
+    
     override fun bossBar(player: Player, path: String, color: BossBar.Color, overlay: BossBar.Overlay, vararg extraTags: TagResolver): BossBar {
         val comp = getComponent(player, path, *extraTags)
         val bar = BossBar.bossBar(comp, 1.0f, color, overlay)
@@ -249,5 +249,3 @@ object MessageService : IMessageService {
 interface LanguageProvider {
     fun getLanguage(uuid: UUID): String
 }
-
-

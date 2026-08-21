@@ -1,5 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget // ðŸ”¥ IMPORTANTE: Necesario para el nuevo compilerOptions
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget 
 
 buildscript {
     repositories {
@@ -17,7 +17,7 @@ plugins {
     id("maven-publish")
 }
 
-group = "liric.mistaken" // Actualizado a tu nuevo package
+group = "liric.mistaken" 
 version = "2.2.1"
 
 java {
@@ -50,7 +50,7 @@ dependencies {
     
     compileOnly(kotlin("stdlib"))
     compileOnly("com.mojang:brigadier:1.2.9")
-    // Librerías que se incluirán en el JAR (Shadow)
+    
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
     compileOnly("com.zaxxer:HikariCP:5.1.0")
@@ -62,7 +62,7 @@ dependencies {
     compileOnly("org.slf4j:slf4j-simple:2.0.18")
     implementation("com.infernalsuite.asp:file-loader:4.1.0-SNAPSHOT")
 
-    // APIs Externas (Solo para compilar)
+    
     compileOnly("io.github.toxicity188:bettermodel-bukkit-api:2.2.0")
     compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
@@ -76,7 +76,7 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.12.3")
     compileOnly(files("libs/observer-paper.jar"))
 
-    // Paper ya incluye Adventure y MiniMessage nativamente
+    
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
     compileOnly("org.jetbrains:annotations:26.0.1")
 }
@@ -95,7 +95,7 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        // ðŸ”¥ CORRECCIÃ“N: MigraciÃ³n de kotlinOptions a compilerOptions
+        
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
         }

@@ -47,7 +47,7 @@ class SmilerKiller : BaseKiller("smiler", "Smiler") {
                         if (player.isOnline && getCharacter(player)?.getComponent(liric.mistaken.characters.components.StateComponent::class.java)?.currentState == SmilerAttackState) {
                             transitionTo(player, liric.mistaken.characters.states.IdleState, force = true)
                         }
-                    }, 15L) // Assuming attack animation is ~0.75 seconds
+                    }, 15L) 
                 }
             }
 
@@ -58,6 +58,6 @@ class SmilerKiller : BaseKiller("smiler", "Smiler") {
     }
 
     override fun useSkill(player: Player, slot: Int) {
-        // No tiene abilities por defecto
+        
     }
 }

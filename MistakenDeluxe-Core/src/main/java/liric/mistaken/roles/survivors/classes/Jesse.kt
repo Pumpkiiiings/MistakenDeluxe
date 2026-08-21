@@ -42,7 +42,7 @@ class Jesse : Survivor(
                 usarHeroDash(player)
                 sendAbilityMessage(player, langConfig, mechConfig, "skill1")
             }
-            1 -> { /* H2: Pu�etazo (L�gica en Listener Melee) */ }
+            1 -> {  }
             2 -> if (!checkCooldown(player, 2, mechConfig.getInt("items.skill3_cooldown", 35))) {
                 usarBloqueoSonic(player)
                 sendAbilityMessage(player, langConfig, mechConfig, "skill3")
@@ -105,7 +105,7 @@ class Jesse : Survivor(
         player.updateInventory()
     }
 
-    // --- H1: HERO DASH (Da�o al impactar) ---
+    
     private fun usarHeroDash(player: Player) {
         val dir = player.location.direction.normalize().multiply(2.2).setY(0.3)
         player.velocity = dir
@@ -119,14 +119,14 @@ class Jesse : Survivor(
                 return@Consumer
             }
 
-            // Sonido y viento continuo
+            
             player.world.playSound(player.location, Sound.ENTITY_ENDER_DRAGON_FLAP, 0.5f, 1.5f)
 
             val pos = Vector3d(player.location.x, player.location.y + 1.0, player.location.z)
             val particle = WrapperPlayServerParticle(Particle(ParticleTypes.CLOUD), false, pos, Vector3f(0.3f, 0.3f, 0.3f), 0.05f, 5)
             PacketEvents.getAPI().playerManager.sendPacket(player, particle)
 
-            // Chocar contra el killer
+            
             player.getNearbyEntities(1.5, 1.5, 1.5).filterIsInstance<Player>().forEach { victim ->
                 val session = plugin.sessionManager.getSession(victim)
                 if (session?.isKiller(victim.uniqueId) == true && !hitted.contains(victim.uniqueId)) {
@@ -144,24 +144,24 @@ class Jesse : Survivor(
                 }
             }
             count++
-        }, null, 1L, 1L) // 50ms = 1 tick
+        }, null, 1L, 1L) 
     }
 
-    // --- H2: PU�ETAZO (L�gica en Listener) ---
+    
     fun applyGolpePuno(victim: Player) {
-        victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 120, 0)) // 6s
-        victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 120, 1))    // 6s
+        victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 120, 0)) 
+        victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 120, 1))    
         victim.world.playSound(victim.location, Sound.ENTITY_PLAYER_ATTACK_CRIT, 1f, 0.8f)
     }
 
-    // --- H3: BLOQUEO S�NICO (Warden Boom) ---
+    
     private fun usarBloqueoSonic(player: Player) {
         val startLoc = player.eyeLocation
         val direction = startLoc.direction.normalize()
 
         player.playSound(player.location, Sound.ENTITY_WARDEN_SONIC_CHARGE, 1f, 1f)
 
-        // 1500ms de carga = 30 ticks
+        
         player.scheduler.runDelayed(plugin, Consumer { _ ->
             if (!player.isOnline) return@Consumer
 
@@ -170,15 +170,15 @@ class Jesse : Survivor(
             var currentLoc = startLoc.clone()
             var hitTarget = false
 
-            for (i in 0..15) { // Distancia de 15 bloques
+            for (i in 0..15) { 
                 currentLoc.add(direction)
 
-                // Rayo visual del Warden usando PacketEvents
+                
                 val pos = Vector3d(currentLoc.x, currentLoc.y, currentLoc.z)
                 val particle = WrapperPlayServerParticle(Particle(ParticleTypes.SONIC_BOOM), false, pos, Vector3f(), 0f, 1)
                 player.world.players.forEach { PacketEvents.getAPI().playerManager.sendPacket(it, particle) }
 
-                // Impacto
+                
                 if (!hitTarget) {
                     currentLoc.world.getNearbyPlayers(currentLoc, 1.5).forEach { victim ->
                         val session = plugin.sessionManager.getSession(victim)
@@ -186,8 +186,8 @@ class Jesse : Survivor(
                             val kb = direction.clone().multiply(2.5).setY(0.5)
                             victim.velocity = kb
 
-                            victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 2)) // 2s
-                            victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1))  // 5s
+                            victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 2)) 
+                            victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1))  
 
                             hitTarget = true
                         }
@@ -201,8 +201,3 @@ class Jesse : Survivor(
         super.cleanup(player)
     }
 }
-
-
-
-
-

@@ -31,8 +31,8 @@ class LuaSandbox {
         fun createEnvironment(scriptId: String = "unknown"): LuaEnvironment {
             val globals = Globals()
             
-            // LuaJ libraries attempt to register themselves in package.loaded
-            // Since we omit PackageLib for security, we must mock package.loaded to avoid NPEs
+            
+            
             val packageTable = org.luaj.vm2.LuaTable()
             packageTable.set("loaded", org.luaj.vm2.LuaTable())
             globals.set("package", packageTable)
@@ -56,7 +56,7 @@ class LuaSandbox {
             
             globals.set("debug", LuaValue.NIL)
 
-            // Install effect DSL bindings (orbit, trail, projectile, dash, damage, etc.)
+            
             liric.mistaken.scripting.effects.lua.LuaEffectBindings.install(globals, scriptId)
 
             return LuaEnvironment(globals, debugHook)
@@ -85,5 +85,3 @@ class InstructionLimitDebugLib(private val instructionLimit: Int) : DebugLib() {
         instructionsExecuted = 0
     }
 }
-
-

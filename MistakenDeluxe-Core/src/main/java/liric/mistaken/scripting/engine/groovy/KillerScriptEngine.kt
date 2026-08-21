@@ -11,7 +11,7 @@ import liric.mistaken.scripting.security.groovy.ScriptSecurityScanner
 
 object KillerScriptEngine {
 
-    // Mantenemos una referencia a los classloaders activos para poder cerrarlos
+    
     private val activeLoaders = mutableMapOf<String, groovy.lang.GroovyClassLoader>()
 
     /**
@@ -23,12 +23,12 @@ object KillerScriptEngine {
 
         val content = file.readText(Charsets.UTF_8)
         
-        // 1. Esc�ner de seguridad
+        
         if (!ScriptSecurityScanner.isSafe(content, file.name)) {
             return null
         }
 
-        // 2. ClassLoader Aislado con Configuraci�n Personalizada
+        
         val config = CompilerConfiguration()
         config.addCompilationCustomizers(GroovyBukkitCompatibilityCustomizer())
         val loader = groovy.lang.GroovyClassLoader(KillerScriptEngine::class.java.classLoader, config)
@@ -38,7 +38,7 @@ object KillerScriptEngine {
             val result = scriptInstance.run()
             
             if (result is Killer) {
-                // Registrar el classloader
+                
                 activeLoaders[result.id] = loader
                 Bukkit.getLogger().info("[Mistaken] Cargado exitosamente asesino por script: ${result.id} (Clase: ${scriptClass.name})")
                 result
@@ -71,4 +71,3 @@ object KillerScriptEngine {
         }
     }
 }
-

@@ -21,13 +21,13 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val uuid = player.uniqueId
 
-        // 🔥 Ocultamos el message por defecto de Minecraft para no romper la inmersión del lobby aislado
+        
         event.joinMessage(null)
 
-        // 1. SINCRONIZACIÓN INICIAL
+        
         plugin.musicManager.syncPlayer(player)
 
-        // 2. CARGA DE DATOS ASÃNCRONA
+        
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
             plugin.statsManager.loadStats(uuid, player.name)
             plugin.playerDataManager.loadPlayerData(player)
@@ -40,18 +40,18 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
             }
         }
 
-        // 3. LÓGICA DE RED (Network Lobby vs Game Server vs Multiarena)
+        
         val serverMode = plugin.serverMode
 
         if (serverMode == "NETWORK_LOBBY") {
-            // 🔥 LOBBY PRINCIPAL: Nadie juega, solo compran en la tienda.
+            
             resetPlayerStatus(player)
             plugin.lobbyLocation?.let { player.teleportAsync(it) }
             return
         }
 
         if (serverMode == "GAME_SERVER") {
-            // 🔥 PRE-LOBBY DE CRISTAL: Buscamos una sesión esperando o creamos una nueva
+            
             val maxPlayers = plugin.config.getInt("settings.max-players-per-arena", 10)
 
             var targetSession = plugin.sessionManager.activeSessions.values.firstOrNull {
@@ -64,15 +64,15 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
 
             plugin.sessionManager.joinSession(player, targetSession.id)
 
-            // Los mandamos físicamente al Pre-Lobby de cristal (lobbyLocation)
+            
             plugin.lobbyLocation?.let { preLobby ->
                 player.teleportAsync(preLobby).thenAccept {
-                    // 🔥 LA MAGIA: Oculta a los de otras sesiones que estén en la misma caja de cristal
+                    
                     plugin.isolationManager.updateVisibility(player)
                 }
             }
 
-            // Checamos si la sesión ya puede empezar el contador (Ej: Llegaron a 4 players)
+            
             val minPlayers = plugin.config.getInt("settings.min-players", 4)
             if (targetSession.getPlayers().size >= minPlayers && targetSession.currentState == GameState.LOBBY) {
                 targetSession.stateController.startBreakProcess()
@@ -80,7 +80,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // MULTIARENA (Todos entran al lobby general hasta que entren por comandos a una sesión)
+        
         resetPlayerStatus(player)
         plugin.isolationManager.updateVisibility(player)
 
@@ -96,7 +96,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     fun onPlayerQuit(event: PlayerQuitEvent) {
-        // 🔥 Ocultamos el message por defecto de Minecraft al salir
+        
         event.quitMessage(null)
 
         plugin.nameTagManager.removePlayer(event.player)
@@ -149,12 +149,11 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
             status == PlayerResourcePackStatusEvent.Status.DECLINED ||
             status == PlayerResourcePackStatusEvent.Status.FAILED_DOWNLOAD) {
             
-            // Fix: Cuando el resource pack se carga (o falla), la música se corta.
-            // Limpiamos al player para que el MusicManager se la vuelva a poner.
+            
+            
             plugin.server.scheduler.runTaskLater(plugin, Runnable {
                 plugin.musicManager.stopMusicForPlayer(event.player)
-            }, 20L) // 1 seg extra para asegurar que el cliente terminó
+            }, 20L) 
         }
     }
 }
-

@@ -36,7 +36,7 @@ open class VirtualBaseDisplay(
         if (flags > 0) list.add(EntityData(0, EntityDataTypes.BYTE, flags))
 
         if (interpolationDuration > 0) list.add(EntityData(9, EntityDataTypes.INT, interpolationDuration))
-        // Index 10 = teleport_interpolation_duration (added in 1.21, must always be sent as int)
+        
         list.add(EntityData(10, EntityDataTypes.INT, teleportDuration))
         
         transformation?.let {
@@ -57,7 +57,7 @@ open class VirtualBaseDisplay(
         }
 
         brightness?.let {
-            // Brightness is packed into a single int: (blockLight << 4) | (skyLight << 20)
+            
             val packed = (it.blockLight shl 4) or (it.skyLight shl 20)
             list.add(EntityData(16, EntityDataTypes.INT, packed))
         }
@@ -108,14 +108,14 @@ class VirtualTextDisplay(location: Location, viewers: Collection<Player>) : Virt
             list.add(EntityData(23, EntityDataTypes.ADV_COMPONENT, it))
         }
         backgroundColor?.let {
-            // ARGB
+            
             val packed = (it.alpha shl 24) or (it.red shl 16) or (it.green shl 8) or it.blue
             list.add(EntityData(25, EntityDataTypes.INT, packed))
         }
         
         var textFlags = 0.toByte()
         if (isShadowed) textFlags = (textFlags.toInt() or 0x01).toByte()
-        if (backgroundColor == null) textFlags = (textFlags.toInt() or 0x04).toByte() // Use default background
+        if (backgroundColor == null) textFlags = (textFlags.toInt() or 0x04).toByte() 
 
         if (textFlags > 0) {
             list.add(EntityData(27, EntityDataTypes.BYTE, textFlags))

@@ -49,7 +49,7 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
         val langInfo = MessageService.getSpecificFile(player, "killers_info")
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
         
-        // Cargar triggers desde YAML (si existe la secci�n)
+        
         triggerRegistry.loadFromConfig(configMecanica)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -97,9 +97,9 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
         }
     }
 
-    // ----------------------------------------------------
-    // RESOURCE TRACKING
-    // ----------------------------------------------------
+    
+    
+    
     private var isDisposed = false
     private val taskTracker = liric.mistaken.roles.killers.tracking.KillerTaskTracker()
     private val eventTracker = liric.mistaken.roles.killers.tracking.KillerEventTracker()
@@ -110,9 +110,9 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
         resourceTracker.track(cleanupAction)
     }
 
-    // ----------------------------------------------------
-    // EVENT TRACKING (DSL)
-    // ----------------------------------------------------
+    
+    
+    
     fun <T : org.bukkit.event.Event> onEvent(
         eventClass: Class<T>,
         priority: org.bukkit.event.EventPriority = org.bukkit.event.EventPriority.NORMAL,
@@ -129,9 +129,9 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
         eventTracker.track(listener)
     }
 
-    // ----------------------------------------------------
-    // SCHEDULER TRACKING (DSL)
-    // ----------------------------------------------------
+    
+    
+    
     fun runTimer(
         entity: org.bukkit.entity.Entity, 
         delayTicks: Long, 
@@ -193,9 +193,9 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
         taskTracker.track(t)
     }
 
-    // ----------------------------------------------------
-    // LIFECYCLE
-    // ----------------------------------------------------
+    
+    
+    
     final override fun dispose() {
         if (isDisposed) return
         isDisposed = true

@@ -106,7 +106,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 formatted = PlaceholderAPI.setPlaceholders(player, formatted)
             }
 
-            // Convert to legacy string so the existing YAML format (MiniMessage) is preserved
+            
             result.add(legacy.serialize(ColorTranslator.translate(formatted)))
         }
 
@@ -126,7 +126,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
     private fun formatTime(seconds: Int): String =
         if (seconds >= 60) String.format("%02d:%02d", seconds / 60, seconds % 60) else seconds.toString()
 
-    // --- Public API (same contract as before) ---
+    
 
     fun addPlayer(player: Player) {
         PumpkingScoreboardManager.assignScoreboard(player, player.name)
@@ -143,4 +143,3 @@ class ScoreboardManager(private val plugin: Mistaken) {
         }
     }
 }
-

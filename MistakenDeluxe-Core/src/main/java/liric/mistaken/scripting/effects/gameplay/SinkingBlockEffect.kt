@@ -37,7 +37,7 @@ class SinkingBlockEffect(
 
             val mat = Material.matchMaterial(material) ?: Material.OBSIDIAN
             
-            // Spawn 2 blocks higher than the given location
+            
             val spawnLoc = location.clone().add(0.0, 2.0, 0.0)
             
             blockDisplay = location.world.spawn(spawnLoc, BlockDisplay::class.java) { bd ->
@@ -46,14 +46,14 @@ class SinkingBlockEffect(
                 bd.teleportDuration = sinkTicks
             }
 
-            // Tell it to teleport (sink) down to the exact location
-            // It takes sinkTicks ticks to get there smoothly
+            
+            
             plugin.server.regionScheduler.runDelayed(plugin, location, Consumer { _ ->
                 if (!alive.get()) return@Consumer
-                blockDisplay?.teleport(location.clone().subtract(0.0, 2.0, 0.0)) // actually original teleports it lower to hide it
+                blockDisplay?.teleport(location.clone().subtract(0.0, 2.0, 0.0)) 
             }, 5L)
 
-            // Schedule the remove task at durationTicks
+            
             removeTask = plugin.server.regionScheduler.runDelayed(plugin, location, Consumer { _ ->
                 if (onRemoveCallback != null) {
                     onRemoveCallback.invoke(location)

@@ -67,7 +67,7 @@ class TrailEffect(
 
             val loc = player.location
 
-            // Skip if not moving and onlyWhenMoving
+            
             if (onlyWhenMoving) {
                 val dx = loc.x - lastX
                 val dz = loc.z - lastZ
@@ -84,7 +84,7 @@ class TrailEffect(
             val viewRadiusSq = viewRadius * viewRadius
             
             if (dustR != null && dustG != null && dustB != null) {
-                // Use standard Bukkit API for dust particle
+                
                 val dustOptions = org.bukkit.Particle.DustOptions(
                     org.bukkit.Color.fromRGB((dustR*255).toInt(), (dustG*255).toInt(), (dustB*255).toInt()), 
                     dustSize

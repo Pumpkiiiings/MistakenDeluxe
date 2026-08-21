@@ -24,7 +24,7 @@ object LeaveCommand {
                     return@executes 0
                 }
 
-                // 1. Buscamos si el player est� en alguna sesi�n activa
+                
                 val session = plugin.sessionManager.getSession(player)
 
                 if (session == null) {
@@ -37,7 +37,7 @@ object LeaveCommand {
                 
                 if (session.currentState == GameState.INGAME) {
                     if (session.isKiller(player.uniqueId)) {
-                        // Si el killer se rinde
+                        
                         plugin.killerManager.removeKiller(player)
                         session.killersUUIDs.remove(player.uniqueId)
 
@@ -45,13 +45,13 @@ object LeaveCommand {
                             session.stateController.endGame("game.killer-disconnected", false)
                         }
                     } else {
-                        // Si el survivor se rinde (Lo tratamos como si hubiera sido asesinado)
+                        
                         session.playerController.handlePlayerDeath(player)
                     }
                 }
 
-                // 3. LIMPIEZA F�SICA PARA EL LOBBY
-                // Evita que lleguen al lobby del Multiarena volando, con pociones o con �tems del juego
+                
+                
                 if (plugin.spectatorManager.isSpectator(player)) {
                     plugin.spectatorManager.removeCustomSpectator(player)
                 }
@@ -63,11 +63,11 @@ object LeaveCommand {
                 player.isGlowing = false
                 player.isSwimming = false
 
-                // 4. SALIDA OFICIAL DE LA SESI�N
-                // Esto dispara el BungeeUtils (Velocity) o el Teleport al Lobby (Multiarena)
+                
+                
                 plugin.sessionManager.leaveSession(player)
 
-                // Actualizamos su scoreboard al del Lobby
+                
                 plugin.scoreboardManager.updatePlayer(player)
 
                 Command.SINGLE_SUCCESS

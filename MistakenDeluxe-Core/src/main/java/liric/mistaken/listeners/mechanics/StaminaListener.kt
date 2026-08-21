@@ -58,10 +58,10 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
             if (!plugin.isReady) return@runAtFixedRate
 
             for (player in plugin.server.onlinePlayers) {
-                // 🔥 MULTIARENA: Buscamos la sesión del player
+                
                 val session = plugin.sessionManager.getSession(player)
 
-                // Si no tiene sesión o no están en juego, resetear barra de exp
+                
                 if (session == null || session.currentState != GameState.INGAME) {
                     player.scheduler.execute(plugin, {
                         if (player.level != 100 || player.exp != 1.0f) {
@@ -73,7 +73,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                     continue
                 }
 
-                // LÓGICA IN-GAME
+                
                 if (player.gameMode != GameMode.SURVIVAL || plugin.isIgnored(player) || plugin.spectatorManager.isSpectator(player)) continue
 
                 val uuid = player.uniqueId
@@ -86,17 +86,17 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                 val maxStamina = if (isOneBounceSurvivor) 500.0 else 100.0
                 val currentRecoveryRate = if (isOneBounceSurvivor) recoveryRate * 2 else recoveryRate
 
-                // --- Cálculo de pérdida/recuperación ---
+                
                 if (isSprinting && currentStamina > 0.0) {
-                    // 🏟 MULTIARENA: Verificamos si es killer en SU sesión
+                    
                     var loss = if (session.isKiller(uuid)) lossKiller else lossSurvivor
                     if (session.currentMode == MistakenMode.ONE_BOUNCE && !session.isKiller(uuid)) {
                         loss /= 2.0
                     }
                     currentStamina = (currentStamina - loss).coerceAtLeast(0.0)
                 } else if (currentStamina < maxStamina) {
-                    // Recupera estamina siempre que no esté corriendo
-                    // (SLOWNESS no debe bloquear la regeneración, solo el agotamiento activo lo hace)
+                    
+                    
                     val isExhausted = player.hasPotionEffect(PotionEffectType.SLOWNESS) &&
                         (player.getPotionEffect(PotionEffectType.SLOWNESS)?.amplifier ?: -1) >= 2
                     if (!isExhausted) {
@@ -141,5 +141,3 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
         staminaTask?.cancel()
     }
 }
-
-

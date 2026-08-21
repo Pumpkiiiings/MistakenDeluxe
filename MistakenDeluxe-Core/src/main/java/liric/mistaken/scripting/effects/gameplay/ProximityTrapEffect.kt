@@ -68,7 +68,7 @@ class ProximityTrapEffect(
                 return@Consumer
             }
 
-            // Partículas opcionales
+            
             if (particle != null) {
                 try {
                     val bukkitParticle = org.bukkit.Particle.valueOf(particle.uppercase())
@@ -79,7 +79,7 @@ class ProximityTrapEffect(
                 } catch (e: Exception) {}
             }
 
-            // Detección de proximidad
+            
             if (onTriggerCallback != null) {
                 val victim = location.world.getNearbyEntities(location, triggerRadius, triggerRadius, triggerRadius)
                     .filterIsInstance<Player>()
@@ -95,7 +95,7 @@ class ProximityTrapEffect(
                 }
             }
 
-            tickCount += 2 // Asumiendo 2 ticks si se configura a 2L
+            tickCount += 2 
         }, 1L, 2L)
     }
 

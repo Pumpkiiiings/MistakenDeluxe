@@ -21,7 +21,7 @@ class LuaKillerEventDispatcher(private val plugin: Mistaken) : Listener {
         val attacker = event.damager
         val victim = event.entity
         
-        // 1. Si el atacante es un Killer manejado por Script
+        
         if (attacker is Player && plugin.killerManager.isKiller(attacker)) {
             val killer = plugin.killerManager.getKillerOfPlayer(attacker)
             if (killer is liric.mistaken.scripting.adapter.LuaKillerAdapter) {
@@ -33,7 +33,7 @@ class LuaKillerEventDispatcher(private val plugin: Mistaken) : Listener {
             }
         }
         
-        // 2. Si la víctima es un Killer manejado por Script
+        
         if (victim is Player && plugin.killerManager.isKiller(victim)) {
             val killer = plugin.killerManager.getKillerOfPlayer(victim)
             if (killer is liric.mistaken.scripting.adapter.LuaKillerAdapter) {
@@ -46,5 +46,3 @@ class LuaKillerEventDispatcher(private val plugin: Mistaken) : Listener {
         }
     }
 }
-
-

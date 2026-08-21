@@ -113,7 +113,7 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                     val party = partyOpt.get() as Party
                     
                     if (party.leader.uniqueId == player.uniqueId) {
-                        // Create Private Session
+                        
                         val arenas = plugin.arenaManager.getArenas()
                         if (arenas.isEmpty()) {
                             liric.mistaken.config.engine.core.MessageService.send(player, liric.mistaken.config.Messages.HOOK_PARTY_NO_MAPS)

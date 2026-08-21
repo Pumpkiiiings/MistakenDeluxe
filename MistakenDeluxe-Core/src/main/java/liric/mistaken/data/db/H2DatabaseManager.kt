@@ -16,7 +16,7 @@ class H2DatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(plugin) {
             dbFile.parentFile.mkdirs()
         }
 
-        // MODE=PostgreSQL to allow ON CONFLICT syntax
+        
         hikariConfig.jdbcUrl = "jdbc:h2:file:${dbFile.absolutePath};MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH"
         hikariConfig.driverClassName = "org.h2.Driver"
 

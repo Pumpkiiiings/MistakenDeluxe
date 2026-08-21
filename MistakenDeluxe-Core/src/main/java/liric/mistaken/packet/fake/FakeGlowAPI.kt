@@ -17,10 +17,10 @@ class FakeGlowAPI {
      * @param isGlowing true para activar, false para clear el estado forzado.
      */
     fun setGlowing(viewer: Player, target: Entity, isGlowing: Boolean) {
-        // En Minecraft, el Status Flag (índice 0, Byte) maneja estado como fuego, sneaking y glowing.
-        // Bitmask para glowing es 0x40.
-        // Nota: Para una integración perfecta sin borrar otros flags (como sprint),
-        // idealmente deberíamos leer el estado actual. Sin embargo, para forzar el brillo
+        
+        
+        
+        
         
         
         val flagValue: Byte = if (isGlowing) 0x40 else 0x00

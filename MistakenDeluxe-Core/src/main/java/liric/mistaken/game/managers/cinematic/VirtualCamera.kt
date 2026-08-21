@@ -21,7 +21,7 @@ class VirtualCamera(private val player: Player) {
         
         entityId = 2000000 + (Math.random() * 100000).toInt()
 
-        // 1. Spawn invisible ArmorStand
+        
         val spawnPacket = WrapperPlayServerSpawnEntity(
             entityId,
             Optional.of(UUID.randomUUID()),
@@ -40,7 +40,7 @@ class VirtualCamera(private val player: Player) {
         )
         PacketEvents.getAPI().playerManager.sendPacket(player, metadataPacket)
 
-        // 3. Force player camera to spectate the ArmorStand
+        
         val cameraPacket = WrapperPlayServerCamera(entityId)
         PacketEvents.getAPI().playerManager.sendPacket(player, cameraPacket)
         
@@ -50,7 +50,7 @@ class VirtualCamera(private val player: Player) {
     fun updatePosition(loc: Location) {
         if (!isSpectating) return
 
-        // Teleport the fake entity
+        
         val tpPacket = WrapperPlayServerEntityTeleport(
             entityId,
             Vector3d(loc.x, loc.y, loc.z),
@@ -60,7 +60,7 @@ class VirtualCamera(private val player: Player) {
         )
         PacketEvents.getAPI().playerManager.sendPacket(player, tpPacket)
 
-        // Update head look
+        
         val headLook = WrapperPlayServerEntityHeadLook(
             entityId,
             loc.yaw
@@ -71,11 +71,11 @@ class VirtualCamera(private val player: Player) {
     fun stopSpectating() {
         if (!isSpectating) return
 
-        // 1. Restore camera to player
+        
         val cameraPacket = WrapperPlayServerCamera(player.entityId)
         PacketEvents.getAPI().playerManager.sendPacket(player, cameraPacket)
 
-        // 2. Destroy the fake entity
+        
         val destroyPacket = WrapperPlayServerDestroyEntities(entityId)
         PacketEvents.getAPI().playerManager.sendPacket(player, destroyPacket)
 

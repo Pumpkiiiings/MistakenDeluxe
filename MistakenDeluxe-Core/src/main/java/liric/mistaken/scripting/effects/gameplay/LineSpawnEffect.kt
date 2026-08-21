@@ -51,7 +51,7 @@ class LineSpawnEffect(
 
                 val ticks = (i * delayTicks + 1).coerceAtLeast(1L)
                 
-                // Programar el spawn en la región destino
+                
                 val task = plugin.server.regionScheduler.runDelayed(plugin, locToSpawn, Consumer { _ ->
                     if (!alive.get()) return@Consumer
 
@@ -72,7 +72,7 @@ class LineSpawnEffect(
                     if (!finalLoc.block.type.isSolid) {
                         val fangs = finalLoc.world.spawn(finalLoc, EvokerFangs::class.java)
                         
-                        // Hit detection local a los fangs
+                        
                         if (onHitCallback != null) {
                             finalLoc.world.getNearbyEntities(finalLoc, 1.5, 1.5, 1.5)
                                 .filterIsInstance<Player>()

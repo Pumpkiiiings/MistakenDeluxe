@@ -40,14 +40,14 @@ repositories {
 
 
 dependencies {
-    // Dependencia al modulo API
+    
     implementation(project(":MistakenDeluxe-API"))
 
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
 
     compileOnly(kotlin("stdlib"))
     compileOnly("com.mojang:brigadier:1.2.9")
-    // Librerías que se incluirán en el JAR (Shadow)
+    
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     compileOnly("com.github.retrooper:packetevents-spigot:2.13.0")
     compileOnly("com.zaxxer:HikariCP:5.1.0")
@@ -60,14 +60,14 @@ dependencies {
     compileOnly("dev.wyck:wyck:3.3.0-1a0feb5")
     implementation("com.infernalsuite.asp:file-loader:4.1.0-SNAPSHOT")
     
-    // Groovy Scripting Engine
+    
     compileOnly("org.apache.groovy:groovy:5.0.6")
     compileOnly("org.apache.groovy:groovy-jsr223:5.0.6")
 
-    // Lua Scripting Engine
+    
     implementation("org.luaj:luaj-jse:3.0.1")
 
-    // APIs Externas (Solo para compilar)
+    
     compileOnly(files("../libs/bettermodel-api-3.4.1.jar"))
     compileOnly(files("../libs/bettermodel-bukkit-api-3.4.1.jar"))
     compileOnly(files("../libs/modelengine-4.1.0.jar"))
@@ -75,17 +75,17 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude(group = "org.bukkit", module = "bukkit")
     }
-    // compileOnly("net.momirealms:craft-engine-core:0.0.67.11")
+    
     compileOnly(files("../libs/craft-engine-paper-plugin-26.7.4.jar"))
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
     compileOnly(files("../libs/observer-paper.jar"))
 
-    // Integraciones de Parties (Addon Migrado)
+    
     compileOnly("com.alessiodp.parties:parties-api:3.2.16")
     compileOnly(files("../../LodestoneParties/LodestoneParties-API/build/libs/LodestoneParties-API-1.0.0-SNAPSHOT.jar"))
 
-    // Paper ya incluye Adventure y MiniMessage nativamente
+    
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
     compileOnly("org.jetbrains:annotations:26.0.1")
 }

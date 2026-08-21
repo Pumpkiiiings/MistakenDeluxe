@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
 
-    // Registra los characters activos de cada player usando este killer
+    
     protected val activeCharacters = ConcurrentHashMap<UUID, Character>()
 
     /**
@@ -41,7 +41,7 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
 
         val modelId = getModelId()
         if (modelId != null) {
-            // Solo cargar ECS + modelo si hay modelo 3D definido
+            
             val pluginManager = org.bukkit.Bukkit.getPluginManager()
             if (pluginManager.isPluginEnabled("ModelEngine")) {
                 character.addComponent(ModelComponent::class.java, liric.mistaken.characters.integration.modelengine.ModelEngineComponent(modelId))
@@ -56,10 +56,10 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
             character.addComponent(StateComponent::class.java, StandardStateComponent())
             character.addComponent(MovementComponent::class.java, BukkitMovementComponent())
 
-            // Componentes exclusivos del rol (CombatComponent, etc.)
+            
             setupAdditionalComponents(character)
 
-            // Inicializar modelo
+            
             character.getComponent(ModelComponent::class.java)?.spawn()
         }
     }
@@ -107,7 +107,7 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
         }
     }
     
-    // Stubs para cumplir con la interfaz abstracta heredada de CoreKiller/Killer
+    
     override fun showTrail(player: Player) {}
     override fun useSkill(player: Player, slot: Int) {}
 }

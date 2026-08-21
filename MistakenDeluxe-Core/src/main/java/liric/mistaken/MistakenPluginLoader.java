@@ -15,14 +15,14 @@ public class MistakenPluginLoader implements PluginLoader {
     public void classloader(@NotNull PluginClasspathBuilder classpathBuilder) {
         MavenLibraryResolver resolver = new MavenLibraryResolver();
 
-        // Repositorios
+        
         resolver.addRepository(new RemoteRepository.Builder("central", "default", MavenLibraryResolver.MAVEN_CENTRAL_DEFAULT_MIRROR).build());
         resolver.addRepository(new RemoteRepository.Builder("papermc", "default", "https://repo.papermc.io/repository/maven-public/").build());
         resolver.addRepository(new RemoteRepository.Builder("triumphteam", "default", "https://repo.triumphteam.dev/repository/maven-releases/").build());
         resolver.addRepository(new RemoteRepository.Builder("codemc", "default", "https://repo.codemc.io/repository/maven-public/").build());
         resolver.addRepository(new RemoteRepository.Builder("wyck", "default", "https://repo.wyck.dev/public/").build());
 
-        // Groovy Scripting (Reemplaza a Kotlin por problemas de ClassLoader en Paper 1.19+, usa 5.0.6 para soporte de Java 25+)
+        
         resolver.addDependency(new Dependency(new DefaultArtifact("org.apache.groovy:groovy:5.0.6"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("org.apache.groovy:groovy-jsr223:5.0.6"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("org.jetbrains.kotlin:kotlin-stdlib:2.3.0"), null));
@@ -31,14 +31,14 @@ public class MistakenPluginLoader implements PluginLoader {
 
 
 
-        // Bases de datos
+        
         resolver.addDependency(new Dependency(new DefaultArtifact("com.zaxxer:HikariCP:5.1.0"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("com.mysql:mysql-connector-j:9.7.0"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("org.postgresql:postgresql:42.7.13"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("com.h2database:h2:2.2.224"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("org.xerial:sqlite-jdbc:3.45.3.0"), null));
 
-        // Librerías de Bukkit
+        
         resolver.addDependency(new Dependency(new DefaultArtifact("dev.triumphteam:triumph-gui:3.1.13"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("fr.skytasul:glowingentities:1.4.11"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("com.mojang:brigadier:1.2.9"), null));

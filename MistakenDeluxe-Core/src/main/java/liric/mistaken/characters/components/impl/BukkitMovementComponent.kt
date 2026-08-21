@@ -53,18 +53,18 @@ class BukkitMovementComponent : MovementComponent {
         val currentLocation = entity.location
         val lastLoc = lastLocation ?: currentLocation
         
-        // Calcular velocidad horizontal (delta XZ)
+        
         val dx = currentLocation.x - lastLoc.x
         val dz = currentLocation.z - lastLoc.z
         currentVelocity = sqrt(dx * dx + dz * dz)
         
-        // Consideramos "movimiento" si la distancia horizontal supera un mínimo
+        
         if (currentVelocity > 0.01) {
             ticksStationary = 0
             isMoving = true
         } else {
             ticksStationary++
-            if (ticksStationary > 2) { // Debounce de 2 ticks (100ms)
+            if (ticksStationary > 2) { 
                 isMoving = false
             }
         }
@@ -75,12 +75,12 @@ class BukkitMovementComponent : MovementComponent {
 
         val stateComponent = character.getComponent(StateComponent::class.java) ?: return
 
-        // Aquí viene la magia: Notificamos a la máquina de estados basándonos en la física pura.
-        // La máquina de estados decidirá si acepta esta transición (por ejemplo, si el player 
-        // está STUN, la máquina de estados ignorará el WalkState o RunState).
+        
+        
+        
         
         if (!isGrounded && entity.velocity.y < -0.1) {
-            // Está cayendo (no solo saltando hacia arriba)
+            
             stateComponent.transitionTo(FallState)
         } else if (isMoving) {
             if (entity is Player && entity.isSprinting) {

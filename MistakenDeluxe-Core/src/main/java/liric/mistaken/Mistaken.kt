@@ -88,9 +88,9 @@ class Mistaken : JavaPlugin() {
     var serverMode: String = "GAME_SERVER"
         private set
 
-    // FIX #12: mutableSetOf<UUID>() returns a LinkedHashSet which is NOT thread-safe.
-    // iniciarMotorDeParticles() runs on the async scheduler and reads these sets via isIgnored().
-    // ConcurrentHashMap.newKeySet() provides a thread-safe, lock-free Set backed by CHM.
+    
+    
+    
     val staffEditMode: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
     val afkPlayers: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
     var lobbyLocation: Location? = null
@@ -142,13 +142,13 @@ class Mistaken : JavaPlugin() {
         val start = System.currentTimeMillis()
         instance = this
         
-        // Fix for Triumph-GUI classloader crash in Paper
+        
         TriumphGui.init(this)
 
         PacketEvents.getAPI().init()
         assassinKey = NamespacedKey(this, "selected_assassin")
-        // FIX #20: registerOutgoingPluginChannel throws IllegalArgumentException if the
-        // channel is already registered (e.g. on hot-reload). Guard with isOutgoingChannelRegistered.
+        
+        
         if (!server.messenger.isOutgoingChannelRegistered(this, "BungeeCord")) {
             server.messenger.registerOutgoingPluginChannel(this, "BungeeCord")
         }
@@ -156,11 +156,11 @@ class Mistaken : JavaPlugin() {
         saveDefaultConfig()
         createRequiredFolders()
 
-        // Initialize MistakenLib internal framework
+        
         MistakenLib.init(this)
 
-        // 🔥 FIX 1: Registramos los comandos PRIMERO.
-        // Si la base de datos o el lobby fallan, al menos tendrás comandos para arreglarlo.
+        
+        
         CommandRegistry(this).registerAll()
 
         serverMode = config.getString("server-mode", "GAME_SERVER")?.uppercase() ?: "GAME_SERVER"
@@ -177,15 +177,15 @@ class Mistaken : JavaPlugin() {
             componentLogger.warn(ColorTranslator.translate("[WARN] GAME_SERVER requires /setlobby to create the glass Pre-Lobby."))
         }
 
-        // 🔥 FIX 2: Si falla la conexión de DB o Vault, no apagamos el plugin entero.
-        // Solo lanzamos el warning, para que puedas usar comandos de admin.
+        
+        
         setupIntegrations()
         setupDatabase()
 
         statsManager = StatsManager(this)
         playerDataManager = PlayerDataManager(this)
 
-        // 🔥 FIX 3: Inicializamos la API ANTES de cargar los managers y killers
+        
         val apiImpl = MistakenAPIImpl(this)
         MistakenProvider.register(apiImpl)
 
@@ -256,8 +256,8 @@ class Mistaken : JavaPlugin() {
     override fun onDisable() {
         isReady = false
 
-        // Antes de cerrar sesiones y de terminar PacketEvents: hay que devolver los bloques
-        // reales a los clientes o se quedan con la zona iluminada hasta el relog.
+        
+        
         if (::flashlightManager.isInitialized) runCatching { flashlightManager.disableAll() }
         if (::sessionManager.isInitialized) sessionManager.activeSessions.values.forEach { it.shutdown() }
         if (::ambientManager.isInitialized) runCatching { ambientManager.stopAll() }
@@ -273,8 +273,8 @@ class Mistaken : JavaPlugin() {
         if (::visualUpdateService.isInitialized) runCatching { visualUpdateService.stop() }
         if (::glowingAPI.isInitialized) runCatching { glowingAPI.disable() }
         if (::databaseManager.isInitialized) runCatching { databaseManager.close() }
-        // FIX #3: webHook.shutdown() was missing from onDisable — the CoroutineScope and
-        // HttpClient were never released, leaking IO threads and TLS sockets.
+        
+        
         if (::webHook.isInitialized) runCatching { webHook.shutdown() }
 
         PacketEvents.getAPI().terminate()
@@ -336,7 +336,7 @@ class Mistaken : JavaPlugin() {
 
         if (pm.isPluginEnabled("ObserverPaper")) {
             try {
-                // Verificamos si existe la clase del evento (si tienen un JAR actualizado)
+                
                 Class.forName("com.observer.paper.api.events.ObserverPlayerIdleEvent")
                 pm.registerEvents(liric.mistaken.utils.hooks.ObserverEventListener, this)
                 componentLogger.info(ColorTranslator.translate("[INFO] Hooked into ObserverPaper!"))
@@ -349,11 +349,11 @@ class Mistaken : JavaPlugin() {
     }
 
     private fun iniciarMotorDeParticles() {
-        // FIX #13: asyncScheduler runs on an IO thread where Bukkit API calls like
-        // server.getPlayer(), player.isOnline, player.velocity, player.isSprinting
-        // are NOT thread-safe and can cause IllegalStateException / data corruption.
+        
+        
+        
         // globalRegionScheduler runs on the main thread — safe for all Bukkit API.
-        // Period of 2 ticks (100 ms) matches the original 100 ms interval.
+        
         server.globalRegionScheduler.runAtFixedRate(this, { _ ->
             if (!isReady) return@runAtFixedRate
 
@@ -365,16 +365,16 @@ class Mistaken : JavaPlugin() {
                     val killer = killerManager.getKillerOfPlayer(p) ?: return@forEach
 
                     if (p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
-                        // Both trail calls are now safe on the main thread — no need for the
+                        
                         // inner globalRegionScheduler.run() dispatch that was required before.
                         killer.showTrail(p)
                         killer.showPhysicalTrail(p)
                     }
                 }
             }
-        }, 1L, 2L) // 1 tick inicial, 2 ticks = 100 ms, on main thread
+        }, 1L, 2L) 
 
-        // ECS Character Tick (1 tick rate for smooth movement and animations)
+        
         server.globalRegionScheduler.runAtFixedRate(this, { _ ->
             if (!isReady) return@runAtFixedRate
             killerManager.getAvailableClasses().values.forEach { killer ->
@@ -382,7 +382,7 @@ class Mistaken : JavaPlugin() {
                     killer.tickAll()
                 }
             }
-            // Add Survivor ticking here if they also use BaseSurvivor with ECS in the future
+            
         }, 1L, 1L)
     }
 
@@ -430,7 +430,7 @@ class Mistaken : JavaPlugin() {
         val langFolder = File(dataFolder, "langs")
         if (!langFolder.exists()) langFolder.mkdirs()
 
-        // Carpeta global de layouts de menús (un YAML por menú, sin duplicar por idioma)
+        
         val menusFolder = File(dataFolder, "menus")
         if (!menusFolder.exists()) menusFolder.mkdirs()
 
@@ -502,4 +502,3 @@ class MistakenAPIImpl(private val _plugin: Mistaken) : MistakenAPI {
         return _plugin.isIgnored(player)
     }
 }
-

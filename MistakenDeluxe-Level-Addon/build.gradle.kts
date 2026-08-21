@@ -31,18 +31,18 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.12.3")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     
-    // Core API
+    
     implementation(project(":MistakenDeluxe-API"))
-    // Required to reuse pumpking.lib database infrastructure at compile time
+    
     compileOnly(project(":MistakenDeluxe-Core"))
 
-    // Addon specific dependencies (provided by bootstrapper)
+    
     compileOnly("com.zaxxer:HikariCP:5.1.0")
     compileOnly("com.mysql:mysql-connector-j:9.7.0")
     compileOnly("org.xerial:sqlite-jdbc:3.53.2.0")
     compileOnly("dev.triumphteam:triumph-gui:3.1.13")
 
-    // compileOnly("com.frengor:ultimateadvancementapi:2.8.0")
+    
 }
 
 tasks {

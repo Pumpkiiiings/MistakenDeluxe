@@ -108,7 +108,7 @@ class OrbitEffect(
                 return@Consumer
             }
 
-            // Check world change
+            
             if (displays.firstOrNull()?.world != player.world) {
                 displays.forEach { it.remove() }
                 displays.clear()

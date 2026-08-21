@@ -1,4 +1,4 @@
-﻿package liric.mistaken.api.managers
+package liric.mistaken.api.managers
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
@@ -17,7 +17,7 @@ interface IMessageService {
     fun getRawString(player: Player?, path: String, def: String, fileName: String = "messages"): String
     fun getRawStringList(player: Player?, path: String, fileName: String = "messages"): List<String>
     
-    // Strict config loading for Character data, avoids default fallbacks and prints Missing Path if absent.
+    
     fun getStrictString(player: Player?, path: String, fileName: String): String
     fun getStrictStringList(player: Player?, path: String, fileName: String): List<String>
 

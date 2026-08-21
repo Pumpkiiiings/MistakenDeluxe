@@ -31,7 +31,7 @@ class MusicManager(private val plugin: Mistaken) {
     private var currentLobbyTrack: Track? = null
     private var trackStartTime: Long = 0
 
-    // Registro de qu� canci�n est� escuchando cada player (para no solapar)
+    
     private val playersPlaying = ConcurrentHashMap.newKeySet<UUID>()
 
     private var cachedVolume: Float = 0.6f
@@ -67,17 +67,17 @@ class MusicManager(private val plugin: Mistaken) {
             while (isActive && !plugin.isReady) delay(1000L)
 
             while (isActive) {
-                // 1. Decidir la canci�n actual para los que est�n en "espera" (Lobby/Votaci�n/Break)
+                
                 if (currentLobbyTrack == null && playlist.isNotEmpty()) {
                     currentLobbyTrack = playlist.random()
                     trackStartTime = System.currentTimeMillis()
                 }
 
-                // 2. Evaluar a cada player individualmente
+                
                 for (player in plugin.server.onlinePlayers) {
                     val session = plugin.sessionManager.getSession(player)
 
-                    // Si no tiene sesi�n (Lobby) o la sesi�n est� en fase de espera
+                    
                     val state = session?.currentState ?: GameState.LOBBY
                     val shouldHearMusic = state == GameState.LOBBY || state == GameState.VOTING || state == GameState.BREAK
 
@@ -93,21 +93,21 @@ class MusicManager(private val plugin: Mistaken) {
                     }
                 }
 
-                // 3. Manejar el tiempo de la canci�n actual (Global)
+                
                 currentLobbyTrack?.let { track ->
                     val elapsed = (System.currentTimeMillis() - trackStartTime) / 1000
                     if (elapsed >= track.duration) {
-                        // Cambiar la canci�n para todos
+                        
                         currentLobbyTrack = playlist.random()
                         trackStartTime = System.currentTimeMillis()
-                        // Vaciamos el set para que en el siguiente tick todos empiecen a escuchar la nueva
+                        
                         playersPlaying.clear()
                     }
                 }
                 
                 delay(1000L)
 
-                // Clear rastro de players desconectados
+                
                 playersPlaying.removeIf { plugin.server.getPlayer(it) == null }
             }
         }
@@ -121,15 +121,15 @@ class MusicManager(private val plugin: Mistaken) {
 
         player.playSound(soundPacket)
 
-        // Ya no removemos al player de playersPlaying asincr�nicamente aqu�,
-        // ya que el bucle principal se encarga de reiniciar todo el set 
-        // cuando la canci�n global termina.
+        
+        
+        
     }
 
     fun stopMusicForPlayer(player: Player) {
         playersPlaying.remove(player.uniqueId)
 
-        // Kyori detiene todos los sonidos de la categor�a RECORD para este player
+        
         player.stopSound(SoundStop.source(Sound.Source.RECORD))
     }
 
@@ -156,7 +156,7 @@ class MusicManager(private val plugin: Mistaken) {
         plugin.server.onlinePlayers.forEach { p ->
             if (playersPlaying.contains(p.uniqueId)) {
                 stopMusicForPlayer(p)
-                // El bucle principal lo volver� a poner en el siguiente segundo
+                
             }
         }
     }

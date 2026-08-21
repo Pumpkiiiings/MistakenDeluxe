@@ -41,7 +41,7 @@ object DataCommand {
 
                                 sender.sendMessage(ColorTranslator.translate("<yellow>Iniciando transferencia de datos a MySQL... Esto puede tardar unos segundos.</yellow>"))
 
-                                // Ejecutar as�ncronamente para no congelar el servidor
+                                
                                 plugin.server.asyncScheduler.runNow(plugin) { _ ->
                                     try {
                                         val configProvider = ConfigManager.get(fileName)
@@ -61,7 +61,7 @@ object DataCommand {
                                             val nick = section.getString("nick", "") ?: ""
                                             val skin = section.getString("skin_source", "") ?: ""
 
-                                            // Enviar a DatabaseManager
+                                            
                                             plugin.databaseManager.savePlayerDataRaw(
                                                 uuidStr, lang, comprados, seleccionado, survComprados, survSeleccionado, nick, skin
                                             )
@@ -70,7 +70,7 @@ object DataCommand {
 
                                         sender.sendMessage(ColorTranslator.translate("<green><bold>��XITO!</bold> Se han migrado los datos de $count jugadores a la base de datos.</green>"))
 
-                                        // Renombrar el archivo para que no se vuelva a usar por error
+                                        
                                         file.renameTo(File(plugin.dataFolder, "players_OLD_BACKUP.yml"))
 
                                     } catch (e: Exception) {

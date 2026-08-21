@@ -46,7 +46,7 @@ object ConfigWatcher {
                         val now = System.currentTimeMillis()
                         val lastUpdate = debounceCache.getOrDefault(fileName, 0L)
 
-                        // 500ms debounce
+                        
                         if (now - lastUpdate > 500) {
                             debounceCache[fileName] = now
                             MistakenLib.log(MistakenLib.LogCategory.CONFIG, "Detected change in $fileName. Queuing reload...")
@@ -65,7 +65,7 @@ object ConfigWatcher {
             try {
                 watchService.close()
             } catch (e: Exception) {
-                // Ignore
+                
             }
         }
     }

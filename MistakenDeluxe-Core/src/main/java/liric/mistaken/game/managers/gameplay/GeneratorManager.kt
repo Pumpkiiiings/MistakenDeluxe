@@ -34,7 +34,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
     private val mm = MiniMessage.miniMessage()
 
-    // Cache en RAM pura para acceso instant嫕eo
+    
     private val generators = ConcurrentHashMap<Location, GeneratorState>()
     private val nameCache = ConcurrentHashMap<Material, String>()
 
@@ -76,8 +76,8 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     }
 
     fun prepareArenaGenerators(locations: List<Location>) {
-        // ?? MULTIARENA FIX: Ya no usamos clearGenerators() global.
-        // Solo limpiamos los que pertenezcan al world que estamos cargando ahora.
+        
+        
         val targetWorld = locations.firstOrNull()?.world
         if (targetWorld != null) {
             clearGeneratorsInWorld(targetWorld)
@@ -85,7 +85,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
 
-            // --- REPARTO DINÁMICO DE OBJETIVOS ---
+            
             val shuffled = locations.shuffled()
             val total = shuffled.size
             val genCount = Math.ceil(total * 0.60).toInt()
@@ -140,7 +140,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
         updateHologramVisual(state)
 
-        // Buscamos la sesi鏮 del world actual para el check de victoria
+        
         val session = plugin.sessionManager.activeSessions.values.find { s ->
             s.getPlayers().any { p -> p.world == loc.world }
         }
@@ -182,7 +182,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         generators.clear()
     }
 
-    // ?? NUEVO: Limpieza selectiva para Multiarena
+    
     fun clearGeneratorsInWorld(world: World) {
         generators.entries.removeIf { (loc, state) ->
             if (loc.world == world) {
@@ -206,9 +206,9 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         }
     }
 
-    // =========================================================================
-    // ?? M仈ODOS CONTEXTUALES PARA MULTIARENA
-    // =========================================================================
+    
+    
+    
 
     /**
      * Cuenta cu嫕tos generadores han sido completados en un world espec璗ico.
@@ -230,9 +230,3 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     fun getTotalGenerators(): Int = generators.size
     fun getGeneratorLocations(): List<Location> = generators.keys.toList()
 }
-
-
-
-
-
-

@@ -24,15 +24,15 @@ class CommandRegistry(private val plugin: Mistaken) {
     fun registerAll() {
         val manager = plugin.lifecycleManager
 
-        // 🔥 FIX: Declaramos los tipos explícitos para ayudar al compilador
+        
         manager.registerEventHandler(LifecycleEvents.COMMANDS) { event: ReloadableRegistrarEvent<Commands> ->
             val registrar = event.registrar()
 
-            // --- GRUPO A: COMANDOS "PRO" (Nodos de Brigadier) ---
+            
 
-            // ⚠️ IMPORTANTE: Si alguno de estos comandos falla al compilar después de bajar a 1.9.24,
-            // asegúrate de que el método `.get(plugin)` de tus comandos devuelva un LiteralCommandNode.
-            // Si devuelven un LiteralArgumentBuilder, debes agregar .build() al final de tu método get() en cada clase.
+            
+            
+            
 
             registrar.register(JoinCommand.get(plugin), "Unirse a una partida", listOf("join", "play"))
             registrar.register(VoteCommand.get(plugin), "Votar por el mapa", listOf("votar"))
@@ -45,7 +45,7 @@ class CommandRegistry(private val plugin: Mistaken) {
             registrar.register(CinematicCommand.get(plugin), "Reproducir cinemáticas", listOf("cine"))
             registrar.register(HitboxCommand.get(plugin), "Alternar el visor de hitboxes 3D", listOf("hitboxes"))
 
-            // --- GRUPO B: COMANDOS BÁSICOS (Clases BasicCommand) ---
+            
             registrar.register("mistaken", "Comando principal", listOf("ms", "mt"), MistakenCommand(plugin))
             registrar.register("arena", "Gestión de arenas", ArenaCommand(plugin))
             registrar.register("espectear", "Entrar al modo espectador", listOf("spectate"), EspectearCommand(plugin))

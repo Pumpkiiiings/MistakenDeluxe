@@ -55,8 +55,8 @@ class BetterModelComponent(override val modelId: String) : ModelComponent {
     }
 
     override fun setScale(scale: Float) {
-        // En BetterModel 3.4.1 el scaling puede estar basado en el Tracker.scaler() o actions.
-        // Aquí se usaría la API correspondiente de TrackerScaler
+        
+        
     }
 
     override fun setTint(rgb: Int?) {

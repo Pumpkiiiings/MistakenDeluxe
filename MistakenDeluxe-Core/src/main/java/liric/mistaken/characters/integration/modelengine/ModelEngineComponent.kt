@@ -40,8 +40,8 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
             return
         }
 
-        // SOLUCIÓN PARA F5: Usamos un Dummy en lugar del Player directamente.
-        // Esto permite forzar que el propio player vea el modelo.
+        
+        
         dummy = Dummy(player)
         dummy?.setLocation(player.location)
         dummy?.yHeadRot = player.location.yaw
@@ -51,22 +51,22 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
 
         modeledEntity = ModelEngineAPI.createModeledEntity(dummy)
         
-        // FIX RUBBERBAND: Evitar que el player colisione con el hitbox de su propio modelo
+        
         modeledEntity?.base?.setCollidableWith(player, false)
         
         activeModel = ModelEngineAPI.createActiveModel(blueprint)
         if (activeModel != null) {
-            activeModel!!.isHitboxVisible = false // Esto solo lo oculta visualmente
-            activeModel!!.setHitboxScale(0.0) // FIX SLABS: Elimina físicamente el hitbox reduciéndolo a 0
-            // FIX CINEMATIC: No añadimos el modelo aquí. Lo añadiremos en syncDummy cuando estemos INGAME.
+            activeModel!!.isHitboxVisible = false 
+            activeModel!!.setHitboxScale(0.0) 
+            
         }
         
         modeledEntity?.base?.setMaxStepHeight(1.5)
 
-        // Esconder al player real para que no se sobreponga
+        
         player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, Int.MAX_VALUE, 0, false, false))
 
-        // Sincronizar Dummy cada tick para animaciones y movimiento
+        
         taskId = Bukkit.getScheduler().runTaskTimer(liric.mistaken.Mistaken.instance, Runnable {
             syncDummy(player)
         }, 0L, 1L).taskId
@@ -77,12 +77,12 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         val loc = player.location
         val lastLoc = lastLocation ?: loc
 
-        // FIX VISIBILIDAD: Asegurar que el player siga invisible aunque otro plugin limpie los efectos
+        
         if (!player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
             player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, Int.MAX_VALUE, 0, false, false))
         }
 
-        // FIX CINEMATIC: Solo mostrar el modelo si el juego ya empezó (o si no hay sesión activa)
+        
         val session = liric.mistaken.Mistaken.instance.sessionManager.getSession(player)
         val shouldShow = session == null || session.currentState == liric.mistaken.game.enums.GameState.INGAME
 
@@ -94,7 +94,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
             modelAdded = false
         }
 
-        // Detectar si se movió para la animación 'walk' por defecto de ModelEngine
+        
         val dx = loc.x - lastLoc.x
         val dz = loc.z - lastLoc.z
         val distSq = dx * dx + dz * dz
@@ -108,7 +108,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         currentDummy.isWalking = walkTicks > 0
         currentDummy.isJumping = !player.isOnGround
 
-        // Actualizar posición
+        
         currentDummy.setLocation(loc)
         currentDummy.yHeadRot = loc.yaw
         currentDummy.yBodyRot = loc.yaw
@@ -145,14 +145,14 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
 
     override fun setTint(rgb: Int?) {
         if (rgb == null) {
-            activeModel?.defaultTint = org.bukkit.Color.WHITE // Reset tint
+            activeModel?.defaultTint = org.bukkit.Color.WHITE 
         } else {
             activeModel?.defaultTint = org.bukkit.Color.fromRGB(rgb)
         }
     }
 
     override fun forceUpdate() {
-        // En ModelEngine los updates son automáticos, no requiere forceUpdate explícito
+        
     }
 
     /**

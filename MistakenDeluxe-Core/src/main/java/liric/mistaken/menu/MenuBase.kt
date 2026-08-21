@@ -32,22 +32,22 @@ abstract class MenuBase(
         return ColorTranslator.translate("<!italic>$text")
     }
 
-    // Clave en messages.yml donde se lee el t�tulo traducido.
-    // Por defecto: menus.<menuName>.titulo
+    
+    
     protected open val titleMessageKey: String get() = "menus.$menuName.titulo"
 
-    // Fallback si no se encuentra la clave en messages.yml
+    
     protected open val titleFallback: String get() = "<red>Menu: $menuName"
 
-    // Cache de decoraciones procesadas, agrupadas por idioma del player.
-    // El t�tulo est� incluido porque var�a por idioma.
+    
+    
     private val langCache = ConcurrentHashMap<String, MenuBakedData>()
 
-    // Config global del men� (cargada una sola vez desde menus/<nombre>.yml)
+    
     private var globalConfig: FileConfiguration? = null
 
     
-    // API P�BLICA � para subclasses y acceso externo
+    
     
 
     /**
@@ -71,10 +71,10 @@ abstract class MenuBase(
             .disableAllInteractions()
             .create()
 
-        // Apply decoraciones desde cach�
+        
         baked.decorations.forEach { (slots, item) -> gui.setItem(slots, item) }
 
-        // L�gica de items din�micos (implementada por cada subclase)
+        
         setupItems(player, gui, config)
 
         gui.open(player)
@@ -120,7 +120,7 @@ abstract class MenuBase(
     }
 
     
-    // INTERNOS
+    
     
 
     private data class MenuBakedData(
@@ -139,7 +139,7 @@ abstract class MenuBase(
         return langCache.getOrPut(lang) {
             val config = getGlobalConfig()
 
-            // Resolver el t�tulo desde messages.yml (no desde el YAML del men�)
+            
             val rawTitle = MessageService.getRawString(player, titleMessageKey, titleFallback, "messages")
 
             val filas = config.getInt("filas", 3)
@@ -169,4 +169,3 @@ abstract class MenuBase(
         return ConfigManager.getMenuConfig(menuName)
     }
 }
-

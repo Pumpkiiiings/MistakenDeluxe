@@ -115,7 +115,7 @@ class Mariachi : CoreKiller(
 
     private fun abilityGrito(player: Player) {
         player.world.getNearbyPlayers(player.location, 8.0).forEach { victim ->
-            // 🔥 Uso de la función centralizada
+            
             if (isValidTarget(player, victim)) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
@@ -136,7 +136,7 @@ class Mariachi : CoreKiller(
 
     private fun abilityGuitarrazo(player: Player) {
         player.world.getNearbyPlayers(player.location, 6.0).forEach { victim ->
-            // 🔥 Uso de la función centralizada
+            
             if (isValidTarget(player, victim)) {
                 plugin.combatManager.takeDamage(victim)
                 victim.velocity = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(1.5).setY(0.4)
@@ -240,12 +240,3 @@ class Mariachi : CoreKiller(
         }
     }
 }
-
-
-
-
-
-
-
-
-

@@ -24,10 +24,10 @@ class GameSession(
 
     var settings: PrivateGameSettings? = if (isPrivate) PrivateGameSettings() else null
 
-    // --- JUGADORES AISLADOS DE ESTA SESIÓN ---
+    
     val players = ConcurrentHashMap.newKeySet<UUID>()
 
-    // --- ESTADO DEL JUEGO ---
+    
     override var currentState = GameState.LOBBY
     var currentMode = MistakenMode.CLASSIC
     var timer = 0
@@ -45,12 +45,12 @@ class GameSession(
     val yaJugaronKiller = ConcurrentHashMap.newKeySet<UUID>()
     val changedBlocks = ConcurrentHashMap<Location, Material>()
 
-    // --- MANAGERS GLOBALES (Compartidos) ---
+    
     val voteManager = plugin.voteManager
     val ambientManager = plugin.ambientManager
     val combatManager = plugin.combatManager
 
-    // --- CONTROLADORES DE LÓGICA (Instanciados POR SESIÓN) ---
+    
     val stateController = GameStateController(this)
     val playerController = GamePlayerController(this)
     val uiController = GameUIController(this)
@@ -62,7 +62,7 @@ class GameSession(
         plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Session $id started.</gray>"))
     }
 
-    // --- MÉTODOS DE JUGADORES ---
+    
     fun addPlayer(player: Player) {
         players.add(player.uniqueId)
     }
@@ -79,11 +79,11 @@ class GameSession(
         return players.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
     }
 
-    // --- GETTERS ÚTILES ---
+    
     fun getCurrentKiller(): Player? = currentKillerUUID?.let { plugin.server.getPlayer(it) }
     override fun isKiller(uuid: UUID): Boolean = killersUUIDs.contains(uuid)
 
-    // Solo envía messages a los players DE ESTA SESIÓN
+    
     fun broadcastLocalized(path: String, vararg tags: TagResolver) {
         val message = MessageService.getComponent(null, path, *tags)
         getPlayers().forEach { p -> p.sendMessage(message) }
@@ -91,13 +91,13 @@ class GameSession(
 
     fun shutdown() {
         loopTask.stop()
-        // FIX #7: Snapshot the player list before iterating.
-        // leaveSession() → removePlayer() modifies `players` concurrently.
-        // Taking a snapshot first makes the iteration deterministic and prevents
-        // any ambiguous state between leaveSession and the final players.clear().
+        
+        
+        
+        
         val snapshot = getPlayers().toList()
         snapshot.forEach { plugin.sessionManager.leaveSession(it) }
-        players.clear()       // defensive clear for any UUIDs whose Player was offline
+        players.clear()       
         changedBlocks.clear()
         plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Session $id destroyed.</gray>"))
     }
@@ -121,4 +121,3 @@ class GameSession(
     override val spectatorsUUIDs: Set<UUID>
         get() = players.filter { uuid -> plugin.server.getPlayer(uuid)?.let { plugin.spectatorManager.isSpectator(it) } ?: false }.toSet()
 }
-

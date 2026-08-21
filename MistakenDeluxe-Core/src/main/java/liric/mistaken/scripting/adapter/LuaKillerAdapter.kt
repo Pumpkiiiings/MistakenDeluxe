@@ -18,7 +18,7 @@ class LuaKillerAdapter(
     private val scriptKiller: ScriptKiller
 ) : BaseKiller(id, nombre) {
 
-    // Instancia lazy del contexto que inyectaremos al script
+    
     private val scriptContext by lazy {
         object : ScriptContext {
             override fun scheduler(): ScriptScheduler = LuaScriptScheduler(this@LuaKillerAdapter)
@@ -29,14 +29,14 @@ class LuaKillerAdapter(
     }
 
     init {
-        // Notificamos al script que ha sido cargado
+        
         scriptKiller.on_load(scriptContext)
     }
 
     override fun getModelId(): String? = scriptKiller.model_id()
 
     override fun equip(player: Player) {
-        super.equip(player) // Configura ECS, modelo y utilidades del Core
+        super.equip(player) 
         
         val config = plugin.configManager.getKillerConfig(id)
         val hasTriggersSection = config.isConfigurationSection("triggers")
@@ -71,10 +71,10 @@ class LuaKillerAdapter(
     }
 
     override fun onDispose() {
-        // Stop all effects registered by this script before notifying it
+        
         liric.mistaken.scripting.effects.EffectRegistry.stopAll(id)
         scriptKiller.on_disable()
-        // NOTA: Los schedulers de CoreKiller ya se cancelan en super.dispose()
+        
     }
 
     /**
@@ -100,4 +100,3 @@ class LuaKillerAdapter(
         scriptKiller.on_kill(scriptKillerPlayer, scriptVictimPlayer)
     }
 }
-

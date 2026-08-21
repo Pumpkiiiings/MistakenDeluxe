@@ -33,7 +33,7 @@ object ScoreboardAnimator {
         for (i in 0 until len) {
             val hue = ((phase + (i * 360.0 / len) * frequency) % 360.0).toFloat()
             val color = TextColor.color(hsvToRgb(hue, 1.0f, 1.0f))
-            // Component.text(Char) avoids the String allocation of char.toString()
+            
             builder.append(Component.text(text[i]).color(color))
         }
 

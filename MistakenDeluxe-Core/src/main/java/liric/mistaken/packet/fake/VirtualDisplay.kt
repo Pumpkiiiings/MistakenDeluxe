@@ -33,8 +33,8 @@ abstract class VirtualDisplay(
     val uniqueId: UUID get() = uuid
     var isValid: Boolean = true
 
-    // Guardamos UUIDs, no Player. Mantener referencias a Player tras la desconexión
-    // filtra memoria y deja el display enviando a players que ya no existen.
+    
+    
     private val viewerIds: MutableSet<UUID> =
         ConcurrentHashMap.newKeySet<UUID>().apply { initialViewers.forEach { add(it.uniqueId) } }
 
@@ -129,8 +129,8 @@ abstract class VirtualDisplay(
     protected fun sendPacket(packet: Any) {
         val wrapper = packet as PacketWrapper<*>
         val pm = PacketEvents.getAPI().playerManager
-        // Resolvemos por UUID en cada envío: los desconectados se descartan solos
-        // y no retenemos el objeto Player.
+        
+        
         viewerIds.forEach { id ->
             val player = Bukkit.getPlayer(id) ?: return@forEach
             if (player.isOnline) pm.sendPacket(player, wrapper)

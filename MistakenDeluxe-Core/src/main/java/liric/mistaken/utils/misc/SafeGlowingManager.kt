@@ -12,7 +12,7 @@ class SafeGlowingManager(plugin: Plugin) {
 
     val glowingEntities: GlowingEntities = GlowingEntities(plugin)
 
-    // Key: targetEntityId -> Map(viewerUUID -> ChatColor)
+    
     private val activeGlows = ConcurrentHashMap<Int, ConcurrentHashMap<UUID, ChatColor>>()
 
     fun setGlowing(target: Entity, viewer: Player, color: ChatColor) {

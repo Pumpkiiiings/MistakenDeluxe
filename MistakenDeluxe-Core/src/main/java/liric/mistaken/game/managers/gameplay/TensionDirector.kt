@@ -44,7 +44,7 @@ class TensionDirector(private val plugin: Mistaken) {
 
     private val tensions = ConcurrentHashMap<UUID, Tension>()
 
-    // Silencio obligatorio tras un evento, por estado. En CALMA no se dispara nada.
+    
     private fun cooldownMillis(state: State): Long = when (state) {
         State.CALMA -> Long.MAX_VALUE
         State.INQUIETUD -> 40_000L
@@ -65,7 +65,7 @@ class TensionDirector(private val plugin: Mistaken) {
     fun evaluate(survivor: Player, snapshot: KillerSnapshot): State {
         val tension = tensions.getOrPut(survivor.uniqueId) { Tension() }
 
-        // Otro world = fuera de juego para efectos de tensión.
+        
         if (survivor.world.uid != snapshot.worldUid) {
             return applyState(tension, State.CALMA)
         }
@@ -76,16 +76,16 @@ class TensionDirector(private val plugin: Mistaken) {
 
         val distSq = survivor.location.distanceSquared(snapshot.location)
 
-        // El orden importa: `distSq` cortocircuita antes del rayTrace, así que
-        // solo trazamos dentro de 20 bloques.
+        
+        
         val next = when {
-            // Último vivo: máxima presión pase lo que pase.
+            
             snapshot.aliveSurvivors <= 1 -> State.CAZA
-            // Cerca, con visión, y el killer mirando hacia ti.
+            
             distSq < 400.0 && hasLineOfSight(survivor, snapshot) && isLookedAt(survivor, snapshot) -> State.CAZA
             distSq < 400.0 && hasLineOfSight(survivor, snapshot) -> State.ACECHO
             distSq < 1600.0 -> State.INQUIETUD
-            // La recta final aprieta aunque el killer esté lejos.
+            
             snapshot.generatorsLeft in 1..2 -> State.INQUIETUD
             else -> State.CALMA
         }
@@ -100,8 +100,8 @@ class TensionDirector(private val plugin: Mistaken) {
         }
 
     private fun applyState(tension: Tension, next: State): State {
-        // La escalada solo sube dentro de la persecución. Bajarla a mitad le enseña
-        // al player que ya sobrevivió y lo relaja justo cuando no debe.
+        
+        
         if (next == State.CALMA) {
             tension.escalation = 0
         } else if (next.ordinal > tension.state.ordinal) {
@@ -137,7 +137,7 @@ class TensionDirector(private val plugin: Mistaken) {
     private fun isLookedAt(survivor: Player, snapshot: KillerSnapshot): Boolean {
         val toSurvivor = survivor.location.toVector().subtract(snapshot.location.toVector())
         if (toSurvivor.lengthSquared() < 0.001) return true
-        // ~60° de cono frontal
+        
         return snapshot.lookDirection.dot(toSurvivor.normalize()) > 0.5
     }
 

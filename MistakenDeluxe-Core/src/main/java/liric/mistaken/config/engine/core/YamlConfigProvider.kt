@@ -29,7 +29,7 @@ class YamlConfigProvider(override val file: File) : ConfigProvider {
         try {
             config = loadUtf8(file)
             
-            // Auto-update missing keys from internal resources
+            
             val plugin = MistakenLib.plugin
             val relativePath = file.relativeToOrNull(plugin.dataFolder)?.path?.replace("\\", "/")
             
@@ -55,7 +55,7 @@ class YamlConfigProvider(override val file: File) : ConfigProvider {
                 "Failed to load YAML file: ${file.name}. The file is corrupted. Renaming to .broken so it can be regenerated next boot. Error: ${e.message}"
             )
             file.renameTo(File(file.parentFile, file.name + ".broken"))
-            config = YamlConfiguration() // fallback to empty
+            config = YamlConfiguration() 
         }
     }
 
@@ -99,6 +99,6 @@ class YamlConfigProvider(override val file: File) : ConfigProvider {
         return config.getKeys(deep)
     }
 
-    // Expose the raw configuration just in case
+    
     override fun getRaw(): FileConfiguration = config
 }

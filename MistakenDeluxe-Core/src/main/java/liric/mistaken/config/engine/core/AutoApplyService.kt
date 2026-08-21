@@ -7,9 +7,9 @@ import java.lang.Runnable
 object AutoApplyService {
 
     fun onFileChanged(fileName: String) {
-        // FIX #9: All config loading and event firing must happen on the main thread.
-        // Previously, loadAllConfigs() ran on the IO thread (from ConfigWatcher) while the
-        // main thread could simultaneously read those same configs — a data race.
+        
+        
+        
         Bukkit.getScheduler().runTask(MistakenLib.plugin, Runnable {
             if (fileName == "asesinos.yml" || fileName == "supervivientes.yml" || fileName.startsWith("menus")) {
                 ConfigManager.loadAllConfigs()

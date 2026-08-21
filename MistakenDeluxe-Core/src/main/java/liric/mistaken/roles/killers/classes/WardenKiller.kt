@@ -8,7 +8,7 @@ import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-// --- Definici�n de Estados Exclusivos del Warden ---
+
 
 abstract class WardenSwipeState(override val id: String) : CharacterState {
     override val priority = 50
@@ -20,7 +20,7 @@ abstract class WardenSwipeState(override val id: String) : CharacterState {
         val player = character.entity as? org.bukkit.entity.Player ?: return
         val session = liric.mistaken.Mistaken.instance.sessionManager.getSession(player) ?: return
         
-        // Buscamos un bloque de aire cerca de la cabeza del player para iluminarlo
+        
         val loc = player.eyeLocation
         val block = loc.block
         if (block.type == org.bukkit.Material.AIR || block.type == org.bukkit.Material.CAVE_AIR) {
@@ -76,7 +76,7 @@ object WardenSniffWalkState : CharacterState {
     override val id = "sniff_walk"
     override val priority = 90
     
-    // Evitar que el player se mueva durante el estado
+    
     override fun onEnter(character: Character) {
         val player = character.entity as? org.bukkit.entity.Player ?: return
         player.walkSpeed = 0.0f
@@ -88,18 +88,18 @@ object WardenSniffWalkState : CharacterState {
     }
 }
 
-// --- Implementaci�n del Personaje ---
+
 
 class WardenKiller : BaseKiller("warden", "Warden") {
     
     override fun getModelId(): String = "warden"
 
-    // Registra en qu� parte del combo est� cada player y su �ltimo ataque
+    
     private val comboSteps = ConcurrentHashMap<UUID, Int>()
     private val lastAttackTimes = ConcurrentHashMap<UUID, Long>()
 
     override fun equip(player: Player) {
-        super.equip(player) // Inicializa el ECS (modelo, animaciones)
+        super.equip(player) 
         
         val inv = player.inventory
         val configMecanica = liric.mistaken.Mistaken.instance.configManager.getKillerConfig(this.id)
@@ -187,15 +187,15 @@ class WardenKiller : BaseKiller("warden", "Warden") {
                     player.world.playSound(loc, org.bukkit.Sound.ENTITY_GENERIC_EXPLODE, 2.0f, 0.5f)
                     player.world.spawnParticle(org.bukkit.Particle.EXPLOSION, loc, 5)
 
-                    // Insta-kill
+                    
                     for (victim in session.getPlayers()) {
                         if (victim == player) continue
-                        if (!session.isKiller(victim.uniqueId) && victim.location.distanceSquared(loc) <= 16.0) { // Radio de 4 bloques
+                        if (!session.isKiller(victim.uniqueId) && victim.location.distanceSquared(loc) <= 16.0) { 
                             session.playerController.handlePlayerDeath(victim)
                         }
                     }
 
-                    // Domino effect
+                    
                     object : org.bukkit.scheduler.BukkitRunnable() {
                         var radius = 1
                         val maxRadius = 10
@@ -274,7 +274,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
                     }
                 }
             }
-        }, 100L) // 5 segundos
+        }, 100L) 
     }
 
     /**
@@ -287,7 +287,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
         
         var comboStep = comboSteps.getOrDefault(uuid, 0)
         
-        // Resetea el combo si pas� mucho tiempo (ej: m�s de 1.5 segundos) sin atacar
+        
         if (now - lastAttackTime > 1500) {
             comboStep = 0
         }
@@ -298,11 +298,11 @@ class WardenKiller : BaseKiller("warden", "Warden") {
             else -> WardenSwipe3State
         }
 
-        // Forzamos la transici�n al estado de ataque.
+        
         transitionTo(player, state, force = true)
         
         lastAttackTimes[uuid] = now
-        comboSteps[uuid] = (comboStep + 1) % 3 // Cicla entre 0, 1 y 2
+        comboSteps[uuid] = (comboStep + 1) % 3 
     }
 
     /**

@@ -16,13 +16,13 @@ import java.time.Instant
 
 class WebHook(private val plugin: Mistaken) {
 
-    // FIX #3: Use a dedicated job so shutdown() can cancel only WebHook coroutines
-    // without affecting global scopes like MistakenLib.ioScope.
+    
+    
     private val webhookJob = SupervisorJob()
     private val discordScope = CoroutineScope(Dispatchers.IO + webhookJob)
 
-    // HttpClient is thread-safe and should be reused (avoids repeated SSL handshakes).
-    // FIX #3: Now closed in shutdown() to release native TLS/socket resources.
+    
+    
     private val httpClient: HttpClient = HttpClient.newBuilder()
         .followRedirects(HttpClient.Redirect.NORMAL)
         .build()
@@ -81,7 +81,7 @@ class WebHook(private val plugin: Mistaken) {
         dispatch(webhookUrl, json)
     }
 
-    // --- Internal helpers ---
+    
 
     private fun dispatch(urlStr: String, json: String) {
         discordScope.launch {
@@ -99,7 +99,7 @@ class WebHook(private val plugin: Mistaken) {
                     plugin.logger.warning("[Discord] Error ${response.statusCode()}: ${response.body()}")
                 }
             } catch (e: Exception) {
-                // Silent: avoids console spam if Discord is unreachable
+                
                 plugin.logger.fine("[Discord] Dispatch failed: ${e.message}")
             }
         }
@@ -153,7 +153,7 @@ class WebHook(private val plugin: Mistaken) {
                 '\r' -> sb.append("\\r")
                 '\t' -> sb.append("\\t")
                 else -> if (c.code < 0x20) {
-                    // Control characters: encode as \uXXXX
+                    
                     sb.append("\\u%04x".format(c.code))
                 } else {
                     sb.append(c)

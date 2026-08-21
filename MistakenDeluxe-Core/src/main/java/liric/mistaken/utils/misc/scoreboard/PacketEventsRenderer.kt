@@ -24,7 +24,7 @@ class PacketEventsRenderer : IScoreboardRenderer {
         val currentLines = template.lines
         var packetsGenerated = 0
 
-        // --- Initialization (Runs once via Bukkit for compatibility) ---
+        
         if (!context.initialized) {
             for (i in 0 until maxLines) {
                 val teamName = ScoreboardConstants.TEAM_NAMES[i]
@@ -39,7 +39,7 @@ class PacketEventsRenderer : IScoreboardRenderer {
             context.initialized = true
         }
 
-        // --- Layout Updates (Bukkit scores) ---
+        
         if (context.layoutChanged || currentLines.size != context.activeLines) {
             for (i in 0 until maxLines) {
                 val entryName = ScoreboardConstants.ENTRY_NAMES[i]
@@ -58,7 +58,7 @@ class PacketEventsRenderer : IScoreboardRenderer {
             context.layoutChanged = false
         }
 
-        // --- Title Updates ---
+        
         if (context.titleChanged) {
             val titleText = template.title.replace("%player%", player.name)
             if (template.animatedTitle || context.titleCache != titleText) {
@@ -80,7 +80,7 @@ class PacketEventsRenderer : IScoreboardRenderer {
             context.titleChanged = false
         }
 
-        // --- Line Updates ---
+        
         for (i in 0 until currentLines.size) {
             if (!context.lineChanged[i]) continue
 
@@ -112,7 +112,7 @@ class PacketEventsRenderer : IScoreboardRenderer {
             }
         }
 
-        // Clear unused lines if layout shrunk
+        
         for (i in currentLines.size until maxLines) {
             if (context.lineChanged[i] || context.lineCache[i] != null) {
                 sendTeamPrefixPacket(player, i, Component.empty())

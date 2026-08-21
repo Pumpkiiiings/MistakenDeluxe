@@ -50,11 +50,11 @@ class DashEffect(
                 return@Consumer
             }
 
-            // Apply velocity
+            
             val dir = player.location.direction.normalize().multiply(speed)
             player.velocity = dir
 
-            // Trail particles
+            
             if (trailParticleName != null) {
                 try {
                     val p = org.bukkit.Particle.valueOf(trailParticleName.uppercase())
@@ -62,11 +62,11 @@ class DashEffect(
                 } catch (_: Exception) {}
             }
 
-            // Block collision
+            
             if (stopOnBlock) {
                 val checkLoc = player.location.clone().add(dir.clone().multiply(0.8))
                 if (checkLoc.block.type.isSolid) {
-                    // Callback runs in player's entity scheduler (already here)
+                    
                     onBlockHitCallback?.invoke()
                     cleanup()
                     task.cancel()
@@ -74,7 +74,7 @@ class DashEffect(
                 }
             }
 
-            // Hit detection
+            
             if (onHitCallback != null) {
                 player.world.getNearbyEntities(player.location, hitRadius, hitRadius, hitRadius)
                     .filterIsInstance<Player>()
@@ -83,7 +83,7 @@ class DashEffect(
                             && victim.gameMode == GameMode.SURVIVAL
                             && hitPlayers.add(victim.uniqueId)
                         ) {
-                            // Execute callback in victim's entity scheduler for Folia safety
+                            
                             victim.scheduler.run(plugin, Consumer { _ ->
                                 onHitCallback.invoke(victim)
                             }, null)

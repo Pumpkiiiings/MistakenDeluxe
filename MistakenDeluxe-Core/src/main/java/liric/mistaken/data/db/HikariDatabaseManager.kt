@@ -37,7 +37,7 @@ class HikariDatabaseManager(
 
                 config.jdbcUrl = "jdbc:sqlite:${dbFile.absolutePath}"
                 config.driverClassName = "org.sqlite.JDBC"
-                config.maximumPoolSize = 1 // SQLite does not handle concurrent writes well
+                config.maximumPoolSize = 1 
             }
             DatabaseType.MYSQL -> {
                 config.jdbcUrl = "jdbc:mysql://$host:$port/$database?useSSL=false&autoReconnect=true"
@@ -55,7 +55,7 @@ class HikariDatabaseManager(
             }
         }
 
-        // Hikari optimizations
+        
         if (type != DatabaseType.SQLITE) {
             config.addDataSourceProperty("cachePrepStmts", "true")
             config.addDataSourceProperty("prepStmtCacheSize", "250")

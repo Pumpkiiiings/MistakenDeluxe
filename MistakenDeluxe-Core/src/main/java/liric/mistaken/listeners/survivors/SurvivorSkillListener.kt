@@ -38,7 +38,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
         private val PEDIDO_KEY = NamespacedKey("mistaken", "pedido")
         private val EMERALD_KEY = NamespacedKey("mistaken", "villager_emerald")
 
-        // Llaves para Melee
+        
         private val STICK_KEY = NamespacedKey("mistaken", "kid_stick")
         private val JESSE_PUNCH_KEY = NamespacedKey("mistaken", "jesse_punch")
 
@@ -58,18 +58,18 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
         if (event.hand != EquipmentSlot.HAND) return
         val player = event.player
 
-        // ?? MULTIARENA: Buscamos la sesi�n del player
+        
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
 
-        // Seguridad: Solo en Survival e ignora congelados
+        
         if (player.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(player)) return
         if (plugin.combatManager.isFrozen(player)) return
 
         val slot = player.inventory.heldItemSlot
         if (slot > 2) return
 
-        // Verifica que NO sea el killer de SU sesi�n
+        
         if (session.isKiller(player.uniqueId)) return
 
         val clase = plugin.survivorManager.getSurvivorClass(player) ?: return
@@ -77,7 +77,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
 
         when (event.action) {
             Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> {
-                // El RaincoatKid y Jesse usan melee en ciertos slots, saltamos el message de ability
+                
                 if (clase is RaincoatKid && slot == 2) return
                 if (clase is Jesse && slot == 1) return
 
@@ -86,13 +86,13 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
                 clase.useSkill(player, slot)
             }
             Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> {
-                // Comandante Teto dispara su Revlver con Click Izquierdo en el Slot 0
+                
                 if (clase is KasaneTeto && slot == 0) {
                     event.isCancelled = true
                     plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
                     clase.useSkill(player, slot)
                 } else if (slot == 1) {
-                    // Otros survivors usan rastreador en slot 1
+                    
                     event.isCancelled = true
                     plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
                     clase.trackearHeridos(player)
@@ -107,11 +107,11 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        // ?? MULTIARENA: Buscamos la sesi�n del atacante
+        
         val session = plugin.sessionManager.getSession(attacker) ?: return
         if (session.currentState != GameState.INGAME) return
 
-        // Reglas de equipo: El atacante debe ser humano y la v�ctima killer en la MISMA sesi�n
+        
         if (session.isKiller(attacker.uniqueId)) return
         if (!session.isKiller(victim.uniqueId)) return
 
@@ -123,7 +123,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
 
         val clase = plugin.survivorManager.getSurvivorClass(attacker) ?: return
 
-        // 1. Raincoat Kid (Palo)
+        
         if (pdc.has(STICK_KEY, PersistentDataType.BYTE) && clase is RaincoatKid) {
             val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("supervivientes.raincoatkid.items.skill3_cooldown", 40)
             if (!clase.checkCooldown(attacker, 2, cooldownTime)) {
@@ -134,7 +134,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // 2. Jesse (Pu�etazo)
+        
         if (pdc.has(JESSE_PUNCH_KEY, PersistentDataType.BYTE) && clase is Jesse) {
             val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("supervivientes.jesse.items.skill2_cooldown", 15)
             if (!clase.checkCooldown(attacker, 1, cooldownTime)) {
@@ -151,12 +151,12 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
         val victim = event.hitEntity as? Player ?: return
         val pdc = snowball.persistentDataContainer
 
-        // ?? MULTIARENA: Buscamos la sesi�n de la v�ctima para validar el rol
+        
         val session = plugin.sessionManager.getSession(victim) ?: return
 
         if (victim.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(victim)) return
 
-        // 1. Roca (Civilian)
+        
         if (pdc.has(ROCA_KEY, PersistentDataType.BYTE)) {
             victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 1))
             victim.playSound(victim.location, Sound.BLOCK_STONE_BREAK, 1f, 0.8f)
@@ -166,7 +166,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // 2. Pedido (DeliveryMan)
+        
         if (pdc.has(PEDIDO_KEY, PersistentDataType.BYTE)) {
             val isKiller = session.isKiller(victim.uniqueId)
             if (isKiller) {
@@ -183,7 +183,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // 3. Soborno (Villager)
+        
         if (pdc.has(EMERALD_KEY, PersistentDataType.BYTE)) {
             val isKiller = session.isKiller(victim.uniqueId)
             if (isKiller) {
@@ -217,6 +217,3 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
         }
     }
 }
-
-
-

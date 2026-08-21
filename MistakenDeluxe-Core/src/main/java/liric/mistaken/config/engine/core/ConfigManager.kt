@@ -26,9 +26,9 @@ object ConfigManager : IConfigManager {
     private val survivorsCache = ConcurrentHashMap<String, ConfigProvider>()
 
     private val menusCache = ConcurrentHashMap<String, ConfigProvider>()
-    // FIX #19: genericCache can grow indefinitely if callers use dynamic file names.
     
-    // If this changes, replace with a Caffeine cache with maximumSize().
+    
+    
     private val genericCache = ConcurrentHashMap<String, ConfigProvider>()
 
     fun get(fileName: String): ConfigProvider {
@@ -99,9 +99,9 @@ object ConfigManager : IConfigManager {
     }
 
     override fun getAssassinName(player: Player?, assassinId: String): String {
-        // FIX #6: Removed the useless `val mistaken = plugin as Mistaken` cast.
-        // The variable was never used after the cast, and having a library class depend on
-        // a concrete plugin implementation violates layer separation (SRP/DIP).
+        
+        
+        
         return MessageService.getRawString(
             player = player,
             fileName = "killers_info",
@@ -120,7 +120,7 @@ object ConfigManager : IConfigManager {
             try {
                 config.save()
             } catch (e: Exception) {
-                // Ignore exception, error logging handled by caller or core
+                
             }
         }
     }
@@ -134,5 +134,3 @@ object ConfigManager : IConfigManager {
         else "mistaken:$value"
     }
 }
-
-

@@ -163,10 +163,10 @@ class CharlieJazz : CoreKiller(
         Bukkit.getOnlinePlayers().forEach { ObserverHook.stopSound(it, sonidoId) }
     }
 
-    // --- 🔥 HABILIDADES ---
+    
 
     private fun abilityInfierno(player: Player) {
-        // 🔥 HITBOX: Explosión de Fuego
+        
         HitboxVisualizer.drawInstantHitbox(plugin, player.location, 7.5, 7.5, 7.5, 10L, Material.PURPLE_STAINED_GLASS)
 
         player.world.getNearbyPlayers(player.location, 7.5).forEach { target ->
@@ -174,7 +174,7 @@ class CharlieJazz : CoreKiller(
                 target.fireTicks = 100
                 plugin.combatManager.takeDamage(target)
                 target.playSound(target.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f)
-                // Híbrido:
+                
                 target.world.spawnParticle(org.bukkit.Particle.FIREWORK, target.location.add(0.0, 1.0, 0.0), 20, 0.5, 0.5, 0.5, 0.1)
                 ObserverHook.playScreenshake(target, 1.0f, 20)
                 ObserverHook.playScreenTint(target, 150, 0, 255, 0.6f, 25)
@@ -187,7 +187,7 @@ class CharlieJazz : CoreKiller(
     }
 
     private fun abilityDemonRun(player: Player) {
-        // 🔥 HITBOX: Rango de Marcado
+        
         HitboxVisualizer.drawInstantHitbox(plugin, player.location, 10.0, 10.0, 10.0, 20L, Material.YELLOW_STAINED_GLASS)
 
         val targets = player.world.getNearbyPlayers(player.location, 10.0).toMutableList()
@@ -200,7 +200,7 @@ class CharlieJazz : CoreKiller(
                     target.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
                     target.playSound(target.location, Sound.ENTITY_WARDEN_HEARTBEAT, 1f, 0.8f)
                     
-                    // Visuales
+                    
                     target.world.spawnParticle(org.bukkit.Particle.WAX_ON, target.location.add(0.0, 1.0, 0.0), 30, 0.5, 1.0, 0.5, 0.05)
                     ObserverHook.playScreenTint(target, 200, 150, 0, 0.5f, 30)
                 }
@@ -215,7 +215,7 @@ class CharlieJazz : CoreKiller(
         }
         val dir = player.location.direction.multiply(1.2)
 
-        // 🔥 HITBOX: Proyectil
+        
         val hitbox = HitboxVisualizer.createHitbox(player.eyeLocation, 1.0, 1.0, 1.0, Material.PURPLE_STAINED_GLASS)
 
         var ticks = 0
@@ -245,13 +245,13 @@ class CharlieJazz : CoreKiller(
                     it.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 2))
                     hitbox?.block = Material.RED_STAINED_GLASS.createBlockData()
                     
-                    // Mod
+                    
                     ObserverHook.playScreenTint(it, 100, 180, 255, 0.45f, 40)
                     ObserverHook.playScreenshake(it, 0.5f, 15)
                 }
                 ice.remove()
 
-                // Retraso de 2 ticks para ver el hit rojo
+                
                 player.scheduler.runDelayed(plugin, Consumer { _ -> hitbox?.remove() }, null, 2L)
                 task.cancel()
             }
@@ -273,7 +273,7 @@ class CharlieJazz : CoreKiller(
                 locToSpawn.world.spawnParticle(org.bukkit.Particle.END_ROD, locToSpawn, 10, 0.2, 0.2, 0.2, 0.05)
                 locToSpawn.world.spawnParticle(org.bukkit.Particle.END_ROD, locToSpawn, 5, 0.2, 0.5, 0.2, 0.05)
 
-                // 🔥 HITBOX: Diente individual
+                
                 HitboxVisualizer.drawInstantHitbox(plugin, locToSpawn, 1.5, 1.5, 1.5, 5L, Material.MAGENTA_STAINED_GLASS)
 
                 locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
@@ -287,7 +287,7 @@ class CharlieJazz : CoreKiller(
         }
     }
 
-    // --- 🚀 VISUALES ---
+    
 
     override fun showPhysicalTrail(player: Player) {
         val uuid = player.uniqueId
@@ -337,10 +337,3 @@ class CharlieJazz : CoreKiller(
         }
     }
 }
-
-
-
-
-
-
-

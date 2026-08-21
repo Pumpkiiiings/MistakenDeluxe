@@ -81,7 +81,7 @@ class ProjectileEffect(
 
             d.teleport(d.location.add(dir))
 
-            // Trail particles
+            
             if (trailParticleName != null) {
                 try {
                     val bukkitParticle = org.bukkit.Particle.valueOf(trailParticleName.uppercase())
@@ -89,23 +89,23 @@ class ProjectileEffect(
                 } catch (_: Exception) {}
             }
 
-            // Hit detection - players
+            
             val hit = d.world.getNearbyEntities(d.location, hitRadius, hitRadius, hitRadius)
                 .filterIsInstance<Player>()
                 .firstOrNull { it.uniqueId != ownerUuid && it.gameMode == org.bukkit.GameMode.SURVIVAL }
 
-            // Hit detection - block
+            
             val blockHit = d.location.block.type.isSolid
 
             if (hit != null || blockHit) {
-                // Impact particles
+                
                 if (impactParticleName != null) {
                     try {
                         val p = org.bukkit.Particle.valueOf(impactParticleName.uppercase())
                         d.world.spawnParticle(p, d.location, 30, 0.5, 0.5, 0.5, 0.1)
                     } catch (_: Exception) {}
                 }
-                // Impact sound
+                
                 if (impactSoundName != null) {
                     try {
                         val s = Sound.valueOf(impactSoundName.uppercase())
@@ -114,7 +114,7 @@ class ProjectileEffect(
                 }
                 // Callback — already running in the correct region thread (display entity's region)
                 if (hit != null && onHitCallback != null) {
-                    // Execute callback in the victim's entity scheduler to ensure Folia safety
+                    
                     hit.scheduler.run(plugin, Consumer { _ ->
                         onHitCallback.invoke(hit)
                     }, null)

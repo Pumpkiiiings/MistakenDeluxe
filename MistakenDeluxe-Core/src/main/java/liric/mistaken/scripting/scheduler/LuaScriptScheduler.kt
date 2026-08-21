@@ -11,24 +11,22 @@ class LuaScriptScheduler(
 ) : ScriptScheduler {
 
     override fun run_delayed(delayTicks: Long, taskId: String) {
-        // Por ahora usamos GlobalDelayed, pero idealmente 
-        // debería atarse al Player si es una tarea local.
+        
+        
         coreKiller.runGlobalDelayed(delayTicks) {
-            // Callback placeholder (necesitaríamos mantener un registro de lambdas 
-            // si Lua pasa un callback, pero en este contrato solo usamos IDs de tareas 
-            // o se pasaría un Runnable desde el adapter interno).
+            
+            
+            
         }
     }
 
     override fun run_timer(delayTicks: Long, periodTicks: Long, taskId: String) {
         coreKiller.runGlobalTimer(delayTicks, periodTicks) {
-            // Placeholder callback
+            
         }
     }
 
     override fun cancel(taskId: String) {
-        // TODO: Implementar cancelación específica por taskId en CoreKiller
+        
     }
 }
-
-

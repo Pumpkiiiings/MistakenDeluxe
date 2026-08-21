@@ -19,7 +19,7 @@ class MySQLDatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(plugin
         hikariConfig.username = user
         hikariConfig.password = pass
 
-        // Optimizaciones de rendimiento para MySQL
+        
         hikariConfig.addDataSourceProperty("cachePrepStmts", "true")
         hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250")
         hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048")

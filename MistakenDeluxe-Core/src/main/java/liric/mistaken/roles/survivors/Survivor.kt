@@ -14,10 +14,10 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
     protected val plugin = Mistaken.instance
     protected val mm = plugin.mm
 
-    // Cooldowns: UUID_Slot -> Timestamp (ms)
+    
     private val cooldowns = ConcurrentHashMap<String, Long>()
 
-    // Rastrero de tareas as�ncronas (Jobs) para limpieza profunda
+    
     protected val activeJobs = ConcurrentHashMap.newKeySet<Job>()
 
     /**
@@ -25,7 +25,7 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
      * Se mantiene 'open' para que classes como Jesse puedan sobreescribirla.
      */
     open fun trackearHeridos(player: Player) {
-        // Por defecto no hace nada, evitando errores en classes b�sicas como Civilian.
+        
     }
 
     /**
@@ -45,7 +45,7 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
             return true
         }
 
-        // Registrar nuevo cooldown
+        
         cooldowns[key] = now + (seconds * 1000L)
         return false
     }
@@ -59,21 +59,21 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
     }
 
     open override fun cleanup(player: Player?) {
-        // 1. Detener todas las corrutinas de la clase (rastreos, part�culas, etc.)
+        
         activeJobs.forEach { it.cancel() }
         activeJobs.clear()
 
         player?.let { p ->
             if (p.isOnline) {
-                // 2. Clear inventario
+                
                 p.inventory.clear()
 
-                // 3. Quitar efectos de poci�n que la clase haya podido apply
+                
                 p.activePotionEffects.forEach { effect ->
                     p.removePotionEffect(effect.type)
                 }
 
-                // 4. Clear cooldowns de la memoria RAM
+                
                 val prefix = p.uniqueId.toString()
                 cooldowns.keys.removeIf { it.startsWith(prefix) }
 
@@ -82,7 +82,7 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
         }
     }
 
-    // --- M�TODOS ABSTRACTOS ---
+    
 
     abstract override fun equip(player: Player)
     abstract override fun useSkill(player: Player, slot: Int)

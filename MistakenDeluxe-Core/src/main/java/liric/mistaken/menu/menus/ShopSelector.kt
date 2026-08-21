@@ -23,8 +23,8 @@ class ShopSelector : MenuBase("tienda_principal") {
         val soundName = config.getString("ajustes.sonido-click", "BLOCK_NOTE_BLOCK_XYLOPHONE") ?: "BLOCK_NOTE_BLOCK_XYLOPHONE"
         val clickSound = Sounds.of(soundName, Sound.BLOCK_NOTE_BLOCK_XYLOPHONE)
 
-        // --- ITEM: ASESINOS ---
-        // Nombre y lore desde messages.yml del player (menus.tienda_principal.items.killers.*)
+        
+        
         val matA = Material.matchMaterial(
             config.getString("items.asesinos.material", "NETHERITE_SWORD")!!.uppercase()
         ) ?: Material.NETHERITE_SWORD
@@ -44,7 +44,7 @@ class ShopSelector : MenuBase("tienda_principal") {
                 plugin.killerTienda.abrir(player)
             }
 
-        // --- ITEM: SUPERVIVIENTES ---
+        
         val matS = Material.matchMaterial(
             config.getString("items.supervivientes.material", "IRON_CHESTPLATE")!!.uppercase()
         ) ?: Material.IRON_CHESTPLATE

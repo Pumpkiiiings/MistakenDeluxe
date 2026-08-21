@@ -42,7 +42,7 @@ class SessionManager(private val plugin: Mistaken) : ISessionManager {
         session.addPlayer(player)
         plugin.isolationManager.updateVisibility(player)
 
-        // 🔥 Disparar evento a la API
+        
         val event = MistakenPlayerJoinSessionEvent(player, session)
         Bukkit.getPluginManager().callEvent(event)
     }
@@ -52,14 +52,14 @@ class SessionManager(private val plugin: Mistaken) : ISessionManager {
         val session = activeSessions[sessionId]
         session?.removePlayer(player)
 
-        // 🔥 Disparar evento a la API
+        
         if (session != null) {
             val event = MistakenPlayerLeaveSessionEvent(player, session)
             Bukkit.getPluginManager().callEvent(event)
         }
 
-        // 🔥 FIX: Al salir de la sesión, aseguramos que el player se limpie completamente
-        // del modo espectador y se vuelva a modo supervivencia (vital para Multiarena)
+        
+        
         plugin.spectatorManager.removeCustomSpectator(player)
         PlayerListener.resetPlayerStatus(player)
 
@@ -80,7 +80,7 @@ class SessionManager(private val plugin: Mistaken) : ISessionManager {
     fun destroySession(sessionId: String) {
         val session = activeSessions.remove(sessionId) ?: return
         session.shutdown()
-        // Remover de playerSessions a los que estaban allí
+        
         val toRemove = playerSessions.filterValues { it == sessionId }.keys
         toRemove.forEach { playerSessions.remove(it) }
     }

@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class KeypadListener(private val plugin: Mistaken) : Listener {
 
-    // Unique ID -> Pair<Location, AnswerCode>
+    
     private val activeTyping = ConcurrentHashMap<UUID, Pair<Location, String>>()
 
     private fun cancelWord(player: Player): String =
@@ -41,7 +41,7 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // ?? FIX: Espectadores no pueden usar el keypad
+        
         if (plugin.spectatorManager.isSpectator(player)) return
 
         val loc = block.location
@@ -61,7 +61,7 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // Generate a quick logic puzzle (Sort 4 digits)
+        
         val digits = (0..9).shuffled().take(4)
         val isAscending = Random().nextBoolean()
         
@@ -93,8 +93,8 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
         val answer = typingData.second
         val input = event.message.trim()
 
-        // Se acepta la palabra del idioma del player y ademas los dos literales base,
-        // para que nadie se quede atrapado en el panel si cambia de idioma a mitad.
+        
+        
         val cancels = setOf(cancelWord(player).lowercase(), "cancelar", "cancel")
         if (input.lowercase() in cancels) {
             activeTyping.remove(player.uniqueId)
@@ -103,15 +103,15 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
         }
 
         if (input == answer) {
-            // Success
+            
             activeTyping.remove(player.uniqueId)
             plugin.server.scheduler.runTask(plugin, Runnable {
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
-                plugin.generatorManager.addProgress(loc, 100) // Instantly complete this objective
+                plugin.generatorManager.addProgress(loc, 100) 
                 player.sendMessage(MessageService.getComponent(player, "listeners.keypad.success"))
             })
         } else {
-            // Fail
+            
             activeTyping.remove(player.uniqueId)
             plugin.server.scheduler.runTask(plugin, Runnable {
                 player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)

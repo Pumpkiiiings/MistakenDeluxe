@@ -15,13 +15,13 @@ class GameLoopTask(private val game: GameSession) {
         gameTask = game.plugin.server.globalRegionScheduler.runAtFixedRate(game.plugin, { _ ->
             if (!game.plugin.isReady) return@runAtFixedRate
 
-            val onlinePlayers = game.getPlayers() // Usar los de la sesión actual
+            val onlinePlayers = game.getPlayers() 
             tickCounter++
             val isSecondTick = tickCounter % 20 == 0
 
             if (isSecondTick || game.currentState == GameState.INGAME) {
 
-                // --- CADA SEGUNDO ---
+                
                 if (isSecondTick) {
                     if (game.timer > 0) game.timer--
 
@@ -29,7 +29,7 @@ class GameLoopTask(private val game: GameSession) {
 
                     val minPlayers = game.settings?.minPlayers ?: game.plugin.config.getInt("settings.min-players", 4)
 
-                    // Actualizar BossBars
+                    
                     onlinePlayers.forEach { p -> game.uiController.updatePersonalBar(p, onlinePlayers.size) }
 
                     when (game.currentState) {
@@ -88,7 +88,7 @@ class GameLoopTask(private val game: GameSession) {
                     }
                 }
 
-                // --- CADA TICK ---
+                
                 if (game.currentState == GameState.INGAME) {
                     game.playerController.handleInGameTick(onlinePlayers, tickCounter)
                 }

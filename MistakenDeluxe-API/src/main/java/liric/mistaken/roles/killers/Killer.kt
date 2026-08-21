@@ -22,7 +22,7 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
     protected val api = MistakenProvider.get()
     protected val mm = api.mm
 
-    // Cooldowns: UUID_Slot -> Timestamp (ms)
+    
     private val cooldowns = ConcurrentHashMap<String, Long>()
 
 
@@ -30,13 +30,13 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
      * Verifica el cooldown buscando el tiempo en la raÃƒ­z y el nombre en el idioma del player.
      */
     fun checkCooldown(player: Player, slot: Int): Boolean {
-        // 1. Obtenemos el tiempo del archivo raÃƒ­z (LÃƒ³gica global)
+        
         val globalConfig = api.configManager.getKillerConfig(this.id)
         val cooldownSecs = globalConfig.getInt("items.skill${slot}_cooldown", 0)
 
         if (cooldownSecs <= 0) return false
 
-        // 2. Obtenemos el nombre traducido para el feedback visual
+        
         val langConfig = api.messages.getSpecificFile(player, "killers")
         val nombreHab = langConfig.getString("killers.$id.items.ability${slot}_name") ?: "Skill $slot"
 
@@ -47,7 +47,7 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
         if (now < expireTime) {
             val remaining = (expireTime - now) / 1000.0
 
-            // Mensaje de error traducido desde es/messages.yml o en/messages.yml
+            
             val msg = api.messages.getComponent(player, "errors.ability-cooldown",
                 Placeholder.parsed("skill", nombreHab),
                 Placeholder.parsed("time", "%.1f".format(remaining))
@@ -58,7 +58,7 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
             return true
         }
 
-        // Registrar nuevo cooldown
+        
         cooldowns[key] = now + (cooldownSecs * 1000L)
         return false
     }
@@ -71,8 +71,8 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
         val config = api.configManager.getKillerConfig(this.id)
         val sonidoName = config.getString("items.skill${slot}_sound") ?: return
 
-        // Si no es un sonido de vanilla se manda el string tal cual: puede ser
-        // un sonido custom del resource pack.
+        
+        
         val sound = Sounds.orNull(sonidoName)
         if (sound != null) {
             player.world.playSound(player.location, sound, 1.0f, 0.7f)
@@ -100,7 +100,7 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
                 p.inventory.clear()
                 p.inventory.armorContents = arrayOfNulls(4)
 
-                // Limpieza de pociones segura
+                
                 p.activePotionEffects.toList().forEach { p.removePotionEffect(it.type) }
 
                 
@@ -108,7 +108,7 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
                 p.isGliding = false
                 p.isGlowing = false
 
-                // Aseguramos que vuelva al slot principal
+                
                 p.inventory.heldItemSlot = 0
 
                 
@@ -157,15 +157,15 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
      * MULTIARENA FIX: Toma en cuenta el Fuego Amigo leyendo la sesiÃƒ³n especÃƒ­fica de la vÃƒ­ctima.
      */
     protected fun isValidTarget(atacante: Player, victim: Player): Boolean {
-        // 1. Inmortales o Espectadores ignorados
+        
         if (victim.gameMode != GameMode.SURVIVAL) return false
         if (api.isIgnored(victim)) return false
         if (victim.isInvisible) return false
 
-        // 2. No se puede pegar a sÃƒ­ mismo con un Ãƒ¡rea
+        
         if (atacante.uniqueId == victim.uniqueId) return false
 
-        // 3. RevisiÃƒ³n de Fuego Amigo basada en la sesiÃƒ³n del player atacado
+        
         val session = api.sessionManager.getSession(victim) ?: return false
 
         
@@ -180,14 +180,13 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
             return false
         }
 
-        // En cualquier otro caso (Killer vs Survivor) es vÃƒ¡lido
+        
         return true
     }
 
-    // --- MÃƒâ€°TODOS ABSTRACTOS ---
+    
     abstract override fun equip(player: Player)
     abstract fun useSkill(player: Player, slot: Int)
     abstract fun showTrail(player: Player)
     open fun showPhysicalTrail(player: Player) {}
 }
-

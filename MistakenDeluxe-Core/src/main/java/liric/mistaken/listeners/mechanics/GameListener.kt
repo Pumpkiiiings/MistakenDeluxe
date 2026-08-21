@@ -48,7 +48,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onRescue(event: PlayerInteractEntityEvent) {
         val player = event.player
-        val session = plugin.sessionManager.getSession(player) ?: return // ?? MULTIARENA
+        val session = plugin.sessionManager.getSession(player) ?: return 
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
         if (session.currentMode != MistakenMode.FREEZE_TAG) return
@@ -76,7 +76,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onDamageEffects(event: EntityDamageByEntityEvent) {
         val victim = event.entity as? Player ?: return
-        val session = plugin.sessionManager.getSession(victim) ?: return // ?? MULTIARENA
+        val session = plugin.sessionManager.getSession(victim) ?: return 
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
 
@@ -90,7 +90,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val isVictimKiller = session.isKiller(victim.uniqueId)
 
         if (!isDamagerKiller && isVictimKiller) {
-            // ?? FIX: Espectadores no deben recibir sonidos ni actionbars de golpe
+            
             if (plugin.spectatorManager.isSpectator(damager)) return
 
             val killerHealth = plugin.combatManager.getHealth(victim)
@@ -109,7 +109,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
         val victim = event.entity
-        val session = plugin.sessionManager.getSession(victim) ?: return // ?? MULTIARENA
+        val session = plugin.sessionManager.getSession(victim) ?: return 
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
 
@@ -118,13 +118,13 @@ class GameListener(private val plugin: Mistaken) : Listener {
         event.droppedExp = 0
         event.deathMessage(null)
 
-        // ?? FIX INFECCI�N: Guardamos la ubicaci�n ANTES de handlePlayerDeath
-        // para que onRespawn siempre tenga la loc disponible
+        
+        
         if (session.currentMode == MistakenMode.INFECTION) {
             infectionDeathLocs[victim.uniqueId] = deathLoc
         }
 
-        // Procesar muerte en su controlador de sesi�n
+        
         session.playerController.handlePlayerDeath(victim)
 
         victim.scheduler.runDelayed(plugin, Consumer { _ ->
@@ -132,7 +132,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                 victim.spigot().respawn()
                 victim.scheduler.runDelayed(plugin, Consumer { _ ->
                     if (session.currentState == GameState.INGAME) {
-                        // ?? FIX: En infecci�n el player se convierte en killer, nunca espectador
+                        
                         if (!session.isKiller(victim.uniqueId)) {
                             plugin.spectatorManager.setCustomSpectator(victim)
                         }
@@ -142,7 +142,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         }, null, 1L)
     }
 
-    // ?? FIX INFECCI�N: HIGHEST para que nuestro respawnLocation no sea sobreescrito por otros plugins/sistemas
+    
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onRespawn(event: PlayerRespawnEvent) {
         val player = event.player
@@ -161,7 +161,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
         killer.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
         killer.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 4)) 
-        killer.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, 100, 200)) // Disables jump
+        killer.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, 100, 200)) 
 
         if (liric.mistaken.utils.hooks.ObserverHook.hasObserverPlugin) {
             val anim = liric.mistaken.utils.hooks.ObserverHook.getAnimation(killer, "stun", "")
@@ -237,7 +237,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
     private val healCooldowns = ConcurrentHashMap<UUID, Long>()
     private val isHealing = ConcurrentHashMap<UUID, Boolean>()
 
-    // --- PROTECCIONES AISLADAS POR SESIN ---
+    
     @EventHandler fun onDrop(e: PlayerDropItemEvent) {
         val player = e.player
         val session = plugin.sessionManager.getSession(player)
@@ -245,12 +245,12 @@ class GameListener(private val plugin: Mistaken) : Listener {
         if (session?.currentState == GameState.INGAME || session?.currentState == GameState.STARTING) {
             e.isCancelled = true
             
-            // Fix visual desync where client thinks the item dropped
+            
             plugin.server.scheduler.runTask(plugin, Runnable {
                 player.updateInventory()
             })
             
-            // Curación de survivors
+            
             if (!session.isKiller(player.uniqueId) && !plugin.spectatorManager.isSpectator(player)) {
                 val uuid = player.uniqueId
                 val now = System.currentTimeMillis()
@@ -264,7 +264,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                     return
                 }
 
-                // RayTrace para buscar objetivo
+                
                 val target = player.world.rayTraceEntities(player.eyeLocation, player.location.direction, 4.5) {
                     it is Player && it != player && !session.isKiller(it.uniqueId) && !plugin.spectatorManager.isSpectator(it)
                 }?.hitEntity as? Player
@@ -282,7 +282,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                 }
                 
                 isHealing[uuid] = true
-                val totalTicks = 60 // 3 segundos de curación
+                val totalTicks = 60 
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, totalTicks, 1, false, false))
                 
                 if (targetToHeal != player) {
@@ -301,7 +301,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                             return
                         }
 
-                        // Verificar movimiento (Tolerancia 1 bloque, es decir distanceSquared > 1.0)
+                        
                         if (player.location.distanceSquared(initialPlayerLoc) > 1.0 || 
                             targetToHeal.location.distanceSquared(initialTargetLoc) > 1.0) {
                             
@@ -310,8 +310,8 @@ class GameListener(private val plugin: Mistaken) : Listener {
                             if (targetToHeal != player) targetToHeal.sendMessage(cancelMsg)
                             
                             isHealing[uuid] = false
-                            // Penalización leve de cooldown por cancelar
-                            healCooldowns[uuid] = System.currentTimeMillis() - 25_000L // 5 segundos
+                            
+                            healCooldowns[uuid] = System.currentTimeMillis() - 25_000L 
                             cancel()
                             return
                         }
@@ -349,7 +349,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                                     times
                                 ))
                                 
-                                // Recompensa
+                                
                                 liric.mistaken.Mistaken.economy?.depositPlayer(player, 100.0)
                                 player.sendMessage(ColorTranslator.translate("<green>+100 monedas por curar a un compañero."))
                             }
@@ -362,7 +362,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                             isHealing[uuid] = false
                             healCooldowns[uuid] = System.currentTimeMillis()
                             
-                            // Programar notificación de ability lista
+                            
                             plugin.server.scheduler.runTaskLater(plugin, Runnable {
                                 if (player.isOnline && plugin.sessionManager.getSession(player)?.currentState == GameState.INGAME) {
                                     player.sendActionBar(ColorTranslator.translate("<green>¡Tu habilidad de curación está lista!"))
@@ -459,4 +459,3 @@ class GameListener(private val plugin: Mistaken) : Listener {
         }
     }
 }
-

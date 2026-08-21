@@ -24,7 +24,7 @@ class KillerShop : MenuBase("killers_shop") {
 
         val preferredSlots = config.getIntegerList("ajustes.slots-disponibles").toMutableList()
 
-        // ðŸ”¥ NUEVO: Slots fijos configurados desde el YAML
+        
         val fixedSlotsSection = config.getConfigurationSection("ajustes.slots-fijos")
         val fixedSlots = mutableMapOf<String, Int>()
         if (fixedSlotsSection != null) {
@@ -57,7 +57,7 @@ class KillerShop : MenuBase("killers_shop") {
                 if (!hasAccess) continue
             }
 
-            // 🔥 NUEVO: Detección de slot fijo
+            
             val targetSlot = if (fixedSlots.containsKey(killerId)) {
                 fixedSlots[killerId]!!
             } else if (preferredSlots.isNotEmpty()) {
@@ -66,7 +66,7 @@ class KillerShop : MenuBase("killers_shop") {
                 gui.inventory.firstEmpty()
             }
 
-            if (targetSlot == -1) continue // Si no hay espacio en el inventario, lo salta
+            if (targetSlot == -1) continue 
 
             val nombreVisual = MessageService.getStrictString(player, "killers.$killerId.nombre", "killers_info")
             val descripcion = MessageService.getStrictStringList(player, "killers.$killerId.descripcion", "killers_info")
@@ -88,7 +88,7 @@ class KillerShop : MenuBase("killers_shop") {
             for (i in 1..4) {
                 val habName = MessageService.getRawString(player, "killers.$killerId.skill_names.ability$i", "", "killers_info")
                 if (habName.isNotEmpty()) {
-                    fullLore.add(parseSafe(" <dark_gray>â€¢</dark_gray> <white>$habName</white>"))
+                    fullLore.add(parseSafe(" <dark_gray>•</dark_gray> <white>$habName</white>"))
                 }
             }
             fullLore.add(Component.empty())
@@ -159,7 +159,7 @@ class KillerShop : MenuBase("killers_shop") {
         val econ = Mistaken.Companion.economy
 
         if (econ == null) {
-            player.sendMessage(parseSafe("<red><b>[!]</b> Error interno: El sistema de economÃ­a (Vault) no estÃ¡ conectado.</red>"))
+            player.sendMessage(parseSafe("<red><b>[!]</b> Error interno: El sistema de economía (Vault) no está conectado.</red>"))
             plugin.componentLogger.error("Purchase failed due to disconnected Vault: Player ${player.name}, Killer $killerId")
             return
         }
@@ -187,7 +187,3 @@ class KillerShop : MenuBase("killers_shop") {
 
 
 }
-
-
-
-

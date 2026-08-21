@@ -60,7 +60,7 @@ class FormationEffect(
                         x = offset
                     }
                     else -> {
-                        // fallback circle
+                        
                         val angle = (i * Math.PI * 2) / count
                         x = radius * cos(angle)
                         z = radius * sin(angle)

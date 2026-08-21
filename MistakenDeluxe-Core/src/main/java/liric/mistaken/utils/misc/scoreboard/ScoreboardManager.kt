@@ -16,16 +16,16 @@ object ScoreboardManager {
 
     private val contexts = ConcurrentHashMap<UUID, ScoreboardContext>()
 
-    // Static templates (fixed strings, resolved by renderer)
+    
     private val templates = ConcurrentHashMap<String, ScoreboardTemplate>()
 
 
     private var updateTask: ScoreboardUpdateTask? = null
 
-    // Active renderer - selected at init time
+    
     private lateinit var renderer: IScoreboardRenderer
 
-    // --- Capability Flags ---
+    
 
     /** Returns true if the active renderer supports animated RGB gradients and titles. */
     fun supportsAnimations(): Boolean = if (::renderer.isInitialized) renderer.supportsAnimations else false
@@ -33,7 +33,7 @@ object ScoreboardManager {
     /** Returns true if the active renderer supports packet-level rendering optimizations. */
     fun supportsAdvancedRendering(): Boolean = if (::renderer.isInitialized) renderer.supportsAdvancedRendering else false
 
-    // --- Lifecycle ---
+    
 
     fun init(plugin: JavaPlugin) {
         renderer = detectRenderer()
@@ -48,7 +48,7 @@ object ScoreboardManager {
         templates.clear()
     }
 
-    // --- Renderer Detection ---
+    
 
     private fun detectRenderer(): IScoreboardRenderer {
         val hasPacketEvents = runCatching {
@@ -67,7 +67,7 @@ object ScoreboardManager {
         }
     }
 
-    // --- Static Template Management ---
+    
 
     fun registerTemplate(template: ScoreboardTemplate) {
         val old = templates.put(template.id, template)
@@ -96,7 +96,7 @@ object ScoreboardManager {
     fun getTemplate(id: String): ScoreboardTemplate? = templates[id]
 
 
-    // --- Scoreboard Assignment ---
+    
 
     fun assignScoreboard(player: Player, templateId: String) {
         val uuid = player.uniqueId
@@ -110,7 +110,7 @@ object ScoreboardManager {
             context.layoutChanged = true
             context.titleChanged = true
             
-            // Re-populate static cache for the new template
+            
             val template = getTemplate(templateId)
             if (template != null) {
                 for (i in template.lines.indices) {
@@ -157,7 +157,7 @@ object ScoreboardManager {
 
     internal fun getContext(uuid: UUID): ScoreboardContext? = contexts[uuid]
 
-    // FIX #5: Guard against calling getRenderer() before init() (possible on /reload).
+    
     internal fun getRenderer(): IScoreboardRenderer {
         check(::renderer.isInitialized) {
             "ScoreboardManager.getRenderer() called before init(). Make sure MistakenLib.init() runs in onEnable()."

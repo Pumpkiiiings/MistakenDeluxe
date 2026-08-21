@@ -75,7 +75,7 @@ object GameplayFunctions {
         if (target.uniqueId == player.uniqueId) return false
         if (target.gameMode != GameMode.SURVIVAL) return false
         if (!target.isOnline) return false
-        // Delegate to killerManager if available
+        
         return !plugin.killerManager.isKiller(target)
     }
 

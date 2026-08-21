@@ -34,9 +34,9 @@ object FallState : CharacterState {
 
 object DeathState : CharacterState {
     override val id = "death"
-    override val priority = 100 // Máxima prioridad general
+    override val priority = 100 
     
-    // Nadie puede interrumpir la muerte a menos que sea un estado de "Revive" especial
+    
     override fun canInterrupt(currentState: CharacterState): Boolean = true 
 }
 

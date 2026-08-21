@@ -17,7 +17,7 @@ class ModelEngineAnimationComponent : AnimationComponent {
     }
 
     override fun onDisable() {
-        // ModelEngine limpia sus animaciones cuando se destruye el ActiveModel
+        
     }
 
     override fun play(
@@ -33,7 +33,7 @@ class ModelEngineAnimationComponent : AnimationComponent {
         if (activeModel != null) {
             val handler = activeModel.animationHandler
             
-            // ModelEngine playAnimation: (String animation, double lerpIn, double lerpOut, double speed, boolean force)
+            
             val property = handler.playAnimation(animationName, 0.0, 0.0, speed.toDouble(), true)
             
             if (property != null) {

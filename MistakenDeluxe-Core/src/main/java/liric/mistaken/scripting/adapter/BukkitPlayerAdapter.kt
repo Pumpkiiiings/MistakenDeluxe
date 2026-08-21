@@ -24,7 +24,7 @@ class BukkitPlayerAdapter(
             val bukkitSound = Sound.valueOf(sound.uppercase())
             player.playSound(player.location, bukkitSound, volume, pitch)
         } catch (e: Exception) {
-            // Log sound error softly, don't crash
+            
         }
     }
 
@@ -33,7 +33,7 @@ class BukkitPlayerAdapter(
             val bukkitParticle = org.bukkit.Particle.valueOf(particle.uppercase())
             player.world.spawnParticle(bukkitParticle, player.location, amount)
         } catch (e: Exception) {
-            // Ignore invalid particle
+            
         }
     }
 
@@ -65,4 +65,3 @@ class BukkitPlayerAdapter(
 
     internal fun getPlayer(): Player = player
 }
-

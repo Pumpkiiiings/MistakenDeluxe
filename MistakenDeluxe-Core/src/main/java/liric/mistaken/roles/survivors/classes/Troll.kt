@@ -46,7 +46,7 @@ class Troll : Survivor(
 ) {
 
     private val pathBase = "supervivientes.troll"
-    private val activeClones = ConcurrentHashMap<Int, UUID>() // FakeEntityID -> PlayerUUID
+    private val activeClones = ConcurrentHashMap<Int, UUID>() 
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
@@ -113,7 +113,7 @@ class Troll : Survivor(
         player.updateInventory()
     }
 
-    // --- 🏃‍♂️ HABILIDAD 1: CLON INTELIGENTE (PAQUETES FALSOS) ---
+    
 
     private fun invocarClonInteligente(player: Player) {
         val loc = player.location.clone()
@@ -121,13 +121,13 @@ class Troll : Survivor(
         val fakeUUID = UUID.randomUUID()
         val pm = PacketEvents.getAPI().playerManager
 
-        // 1. Copiar Texturas del Player
+        
         val profile = UserProfile(fakeUUID, player.name)
         player.playerProfile.properties.forEach { prop ->
             profile.textureProperties.add(TextureProperty(prop.name, prop.value, prop.signature))
         }
 
-        // 2. Crear Paquetes Base (Spawn & Metadata)
+        
         val infoData = WrapperPlayServerPlayerInfoUpdate.PlayerInfo(
             profile,
             true,
@@ -147,7 +147,7 @@ class Troll : Survivor(
             Vector3d(loc.x, loc.y, loc.z), loc.pitch, loc.yaw, loc.yaw, 0, Optional.empty()
         )
 
-        // 3. Copiar Equipamiento (PacketEvents 2.0+)
+        
         val equipmentList = mutableListOf<com.github.retrooper.packetevents.protocol.player.Equipment>()
         val fromBukkit = { item: ItemStack? -> io.github.retrooper.packetevents.util.SpigotConversionUtil.fromBukkitItemStack(item) }
         
@@ -160,20 +160,20 @@ class Troll : Survivor(
         
         val equipPacket = WrapperPlayServerEntityEquipment(fakeId, equipmentList)
 
-        // Enviar a todos
+        
         plugin.server.onlinePlayers.forEach { viewer ->
             pm.sendPacket(viewer, infoPacket)
             pm.sendPacket(viewer, spawnPacket)
             if (equipmentList.isNotEmpty()) pm.sendPacket(viewer, equipPacket)
         }
 
-        // Quitar del TAB casi al instante
+        
         player.scheduler.runDelayed(plugin, Consumer { _ ->
             val removeInfo = WrapperPlayServerPlayerInfoRemove(profile.uuid)
             plugin.server.onlinePlayers.forEach { pm.sendPacket(it, removeInfo) }
         }, null, 5L)
         
-        // 4. Hacer invisible al player real y esconder armadura
+        
         val savedArmor = player.inventory.armorContents.clone()
         val savedHand = player.inventory.itemInMainHand.clone()
         val savedOffHand = player.inventory.itemInOffHand.clone()
@@ -191,7 +191,7 @@ class Troll : Survivor(
             }
         }, null, 140L)
 
-        // --- IA DE MOVIMIENTO DEL CLON MEJORADA (MÁS NATURAL Y EVASIVA) ---
+        
         var ticks = 0
         val currentLoc = loc.clone()
         var currentYaw = loc.yaw
@@ -202,7 +202,7 @@ class Troll : Survivor(
         var stuckCheckLoc = currentLoc.clone()
 
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (ticks >= 600 || !player.isOnline) { // Dura 30 segundos
+            if (ticks >= 600 || !player.isOnline) { 
                 val destroyPacket = WrapperPlayServerDestroyEntities(fakeId)
                 plugin.server.onlinePlayers.forEach { pm.sendPacket(it, destroyPacket) }
                 player.world.spawnParticle(Particle.CLOUD, currentLoc.clone().add(0.0, 1.0, 0.0), 10, 0.3, 0.5, 0.3, 0.05)
@@ -210,30 +210,30 @@ class Troll : Survivor(
                 return@Consumer
             }
 
-            // Chequeo de atasco cada 20 ticks (1 segundo)
+            
             if (ticks > 0 && ticks % 20 == 0) {
                 if (currentLoc.distanceSquared(stuckCheckLoc) < 0.8) {
-                    // Está atascado, forzar giro y salto
+                    
                     targetYaw += 180f + (Math.random() * 90 - 45).toFloat()
                     if (velocityY <= 0) velocityY = 0.5
                 }
                 stuckCheckLoc = currentLoc.clone()
             }
 
-            // Función para verificar si un bloque es sólido (Ignora puertas abiertas y carteles)
+            
             val isSolidBlock = { b: org.bukkit.block.Block ->
                 if (!b.type.isSolid) false
                 else {
                     val data = b.blockData
                     if (data is org.bukkit.block.data.Openable) {
-                        !data.isOpen // No es sólido si está abierto
+                        !data.isOpen 
                     } else {
                         !b.type.name.contains("SIGN")
                     }
                 }
             }
 
-            // --- 0. Interacción con Killers (Huir o Explotar) ---
+            
             var isFleeing = false
             for (viewer in plugin.server.onlinePlayers) {
                 val session = plugin.sessionManager.getSession(viewer)
@@ -248,24 +248,24 @@ class Troll : Survivor(
                         
                         task.cancel()
                         return@Consumer
-                    } else if (dist < 100.0) { // Menos de 10 bloques: Huir
+                    } else if (dist < 100.0) { 
                         val fleeDir = currentLoc.clone().subtract(viewer.location).toVector().setY(0).normalize()
                         if (fleeDir.lengthSquared() > 0) {
                             targetYaw = Math.toDegrees(Math.atan2(-fleeDir.x, fleeDir.z)).toFloat()
                             isFleeing = true
-                            // Pánico: salta más rápido
+                            
                             if (Math.random() > 0.85 && velocityY <= 0.0) velocityY = 0.42
                         }
                     }
                 }
             }
 
-            // --- 1. Movimientos irregulares (Zig-zag suave) ---
+            
             if (!isFleeing && ticks % 10 == 0 && Math.random() > 0.2) {
                 targetYaw += (Math.random() * 40 - 20).toFloat()
             }
 
-            // Suavizar el yaw
+            
             var yawDiff = (targetYaw - currentYaw) % 360
             if (yawDiff > 180) yawDiff -= 360
             if (yawDiff < -180) yawDiff += 360
@@ -277,7 +277,7 @@ class Troll : Survivor(
                 Math.cos(Math.toRadians(currentYaw.toDouble()))
             ).normalize()
 
-            // --- 2. Detección de suelo y salto ---
+            
             val isOnGround = currentLoc.clone().subtract(0.0, 0.1, 0.0).block.type.isSolid || currentLoc.y <= Math.floor(currentLoc.y) + 0.1
 
             if (isOnGround && ticks - lastJumpTick > 15) {
@@ -288,10 +288,10 @@ class Troll : Survivor(
                 }
             }
 
-            // --- 3. Steering / Navegación inteligente (Whiskers / Raytracing simulado) ---
+            
             val eyeLoc = currentLoc.clone().add(0.0, 1.0, 0.0)
             
-            // Función para "lanzar un rayo" y medir distancia libre
+            
             val getFreeDistance = { dirVector: Vector ->
                 var dist = 0.0
                 while (dist < 4.0) {
@@ -320,15 +320,15 @@ class Troll : Survivor(
             val leftDist = getFreeDistance(leftDir)
             val rightDist = getFreeDistance(rightDir)
 
-            // Lógica de dirección (Steering) guiada por los rayos
+            
             if (frontDist < 1.5) {
-                // Hay un obstáculo al frente. Decidir mejor ruta (evita chocar).
+                
                 if (leftDist > rightDist && leftDist > 1.5) {
-                    targetYaw -= 35f // Más peso hacia la izquierda
+                    targetYaw -= 35f 
                 } else if (rightDist > leftDist && rightDist > 1.5) {
-                    targetYaw += 35f // Más peso a la derecha
+                    targetYaw += 35f 
                 } else {
-                    // Atrapado o pasillo ciego, dar media vuelta suave
+                    
                     targetYaw += 60f
                 }
                 
@@ -337,16 +337,16 @@ class Troll : Survivor(
                     val footBlock = currentLoc.clone().add(direction.clone().multiply(0.8)).block
                     val headBlock = footBlock.getRelative(0, 1, 0)
                     if (isSolidBlock(footBlock) && !isSolidBlock(headBlock)) {
-                        velocityY = 0.42 // Saltar escalón
+                        velocityY = 0.42 
                     }
                 }
             } else {
                 
-                if (leftDist < 1.2) targetYaw += 20f // Aléjate de la izquierda
-                if (rightDist < 1.2) targetYaw -= 20f // Aléjate de la derecha
+                if (leftDist < 1.2) targetYaw += 20f 
+                if (rightDist < 1.2) targetYaw -= 20f 
             }
 
-            // --- 4. Físicas de caída y desplazamiento ---
+            
             velocityY -= 0.08
             if (velocityY < -0.8) velocityY = -0.8
             
@@ -356,7 +356,7 @@ class Troll : Survivor(
             val moveX = direction.x * speed
             val moveZ = direction.z * speed
             
-            // Colisión X/Z
+            
             val nextXLoc = currentLoc.clone().add(moveX, 0.2, 0.0)
             if (!isSolidBlock(nextXLoc.block) && !isSolidBlock(nextXLoc.clone().add(0.0, 1.0, 0.0).block)) {
                 currentLoc.x += moveX
@@ -371,7 +371,7 @@ class Troll : Survivor(
                 targetYaw += if (Math.random() > 0.5) 50f else -50f 
             }
 
-            // Colisión Y
+            
             currentLoc.y += velocityY
             if (velocityY < 0 && currentLoc.block.type.isSolid) {
                 currentLoc.y = currentLoc.block.y + 1.0
@@ -382,7 +382,7 @@ class Troll : Survivor(
 
             currentLoc.yaw = currentYaw
 
-            // --- 5. Envío de paquetes ---
+            
             val tpPacket = WrapperPlayServerEntityTeleport(fakeId, Vector3d(currentLoc.x, currentLoc.y, currentLoc.z), currentYaw, currentLoc.pitch, isOnGround)
             val headPacket = WrapperPlayServerEntityHeadLook(fakeId, currentYaw)
             
@@ -404,13 +404,13 @@ class Troll : Survivor(
         }, null, 1L, 1L)
     }
 
-    // --- 🍌 HABILIDAD 2: CÁSCARA DE PLÁTANO ---
+    
 
     private fun colocarCascaraPlatano(player: Player) {
         val loc = player.location.clone()
         val platano = PacketFactory.displays.buildItemDisplay(player.sessionViewers(), loc) { id ->
             id.setItemStack(ItemStack(Material.YELLOW_DYE))
-            // Acostado en el piso
+            
             id.transformation = Transformation(
                 JomlVector3f(0f, 0.1f, 0f),
                 Quaternionf().rotateX(Math.toRadians(90.0).toFloat()),
@@ -431,12 +431,12 @@ class Troll : Survivor(
                 plugin.sessionManager.getSession(it)?.isKiller(it.uniqueId) == true
             }
             if (killer != null) {
-                // ¡Se resbaló!
+                
                 killer.playSound(killer.location, Sound.ENTITY_SLIME_SQUISH, 1f, 0.5f)
                 killer.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 4))
                 killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 40, 0))
 
-                // Sacudida de cámara fuerte y salto involuntario
+                
                 killer.velocity = Vector(0.0, 0.6, 0.0)
                 killer.setRotation(killer.yaw + 180f, -45f)
 
@@ -452,7 +452,7 @@ class Troll : Survivor(
         }, null, 1L, 1L)
     }
 
-    // --- 🎁 HABILIDAD 3: CAJA SORPRESA ---
+    
 
     private fun colocarCajaSorpresa(player: Player) {
         val loc = player.location.block.location.add(0.5, 0.0, 0.5)
@@ -463,7 +463,7 @@ class Troll : Survivor(
 
         var ticks = 0
         caja.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (ticks >= 400 || !caja.isValid) { // 20s
+            if (ticks >= 400 || !caja.isValid) { 
                 if (caja.isValid) caja.remove()
                 task.cancel()
                 return@Consumer
@@ -473,7 +473,7 @@ class Troll : Survivor(
                 plugin.sessionManager.getSession(it)?.isKiller(it.uniqueId) == true
             }
             if (killer != null) {
-                // ¡Sorpresa!
+                
                 caja.world.playSound(caja.location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f)
                 caja.world.playSound(caja.location, Sound.ENTITY_WITCH_CELEBRATE, 1f, 1f)
                 caja.world.spawnParticle(Particle.EXPLOSION_EMITTER, caja.location, 1)
@@ -491,9 +491,3 @@ class Troll : Survivor(
         }, null, 1L, 1L)
     }
 }
-
-
-
-
-
-

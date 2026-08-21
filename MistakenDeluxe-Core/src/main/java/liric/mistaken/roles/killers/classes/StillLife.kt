@@ -54,7 +54,7 @@ class StillLife : CoreKiller(
     override fun onTrigger(player: Player, triggerId: String) {
         when (triggerId) {
             "skill1" -> {
-                // Smoke bomb
+                
                 val loc = player.location
                 loc.world.spawnParticle(org.bukkit.Particle.CAMPFIRE_COSY_SMOKE, loc, 200, 4.0, 2.0, 4.0, 0.05)
                 loc.world.getNearbyPlayers(loc, 6.0).forEach { p ->
@@ -65,7 +65,7 @@ class StillLife : CoreKiller(
                 playSkillEffects(player, 1)
             }
             "skill2" -> {
-                // Spikes
+                
                 val dir = player.location.direction.setY(0.0).normalize()
                 var current = player.location.clone()
                 for (i in 1..8) {
@@ -78,7 +78,7 @@ class StillLife : CoreKiller(
                 playSkillEffects(player, 2)
             }
             "skill3" -> {
-                // Fake Generator
+                
                 val targetLoc = player.location.add(player.location.direction.multiply(2.0)).block.location
                 
                 val trap = liric.mistaken.roles.killers.triggers.traps.TrapDefinition(
@@ -104,7 +104,7 @@ class StillLife : CoreKiller(
                 playSkillEffects(player, 3)
             }
             "skill4" -> {
-                // Spawn clones (Null armor)
+                
                 val loc = player.location
                 val session = plugin.sessionManager.getSession(player)
                 for (i in 1..4) {
@@ -129,7 +129,7 @@ class StillLife : CoreKiller(
                     zombie.isCustomNameVisible = true
                     zombie.customName(liric.mistaken.utils.color.ColorTranslator.translate("<dark_gray>Null"))
                     
-                    // Seek survivor
+                    
                     if (session != null) {
                         val closest = loc.world.getNearbyEntities(loc, 30.0, 10.0, 30.0).filterIsInstance<Player>().firstOrNull {
                             !session.isKiller(it.uniqueId) && !plugin.spectatorManager.isSpectator(it)
@@ -139,7 +139,7 @@ class StillLife : CoreKiller(
                         }
                     }
                     
-                    // Kill after 15 seconds
+                    
                     Bukkit.getScheduler().runTaskLater(plugin, Runnable {
                         if (!zombie.isDead) {
                             zombie.health = 0.0

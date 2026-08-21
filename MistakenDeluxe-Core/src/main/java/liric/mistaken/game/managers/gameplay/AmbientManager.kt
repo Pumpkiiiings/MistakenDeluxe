@@ -32,23 +32,23 @@ class AmbientManager(private val plugin: Mistaken) {
 
     private fun startGlobalTask() {
         // globalRegionScheduler, no asyncScheduler: aquí se lee estado de Bukkit
-        // (posición del killer, world, línea de visión) y esas llamadas no son
-        // thread-safe fuera del hilo principal. Mismo criterio que el motor de
-        // partículas en Mistaken.iniciarMotorDeParticles().
-        // 2 ticks = 100 ms, el intervalo original.
+        
+        
+        
+        
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, { _ ->
             if (!plugin.isReady) return@runAtFixedRate
 
-            // 🔥 MULTIARENA: Evaluamos cada sesión independiente
+            
             for (session in plugin.sessionManager.activeSessions.values) {
                 if (session.currentState != GameState.INGAME) continue
 
                 val killer = session.getCurrentKiller() ?: continue
                 if (!killer.isOnline) continue
 
-                // Foto inmutable de la sesión, una vez por tick: los survivors
-                // no vuelven a tocar el objeto Player del killer, y los datos
-                // compartidos no se recalculan por player.
+                
+                
+                
                 val world = killer.world
                 val snapshot = TensionDirector.KillerSnapshot(
                     location = killer.location.clone(),
@@ -98,11 +98,11 @@ class AmbientManager(private val plugin: Mistaken) {
         val state = director.evaluate(survivor, snapshot)
         val distSq = survivor.location.distanceSquared(snapshot.location)
 
-        // 1. Latido y oscuridad — continuos, escalan con el estado
+        
         applyHeartbeat(survivor, session, state, distSq)
 
         
-        //    El presupuesto (silencio obligatorio tras cada evento) vive en requestEvent.
+        
         if (director.requestEvent(survivor.uniqueId)) {
             fireEventFor(survivor, state)
         }
@@ -112,11 +112,11 @@ class AmbientManager(private val plugin: Mistaken) {
         if (session.settings?.heartbeatsEnabled == false) return
         if (survivor.hasPotionEffect(PotionEffectType.INVISIBILITY)) return
         if (state == TensionDirector.State.CALMA) return
-        if (distSq >= 576.0) return // 24 bloques
+        if (distSq >= 576.0) return 
 
-        // OJO: esta tarea corre cada 2 ticks, así que currentTick siempre es par.
-        // Un rate impar solo coincidiría en los múltiplos de 2*rate — el latido
-        // saldría a un tercio de la velocidad prevista. Todos los valores pares.
+        
+        
+        
         val rate = when (state) {
             TensionDirector.State.CAZA -> 4
             TensionDirector.State.ACECHO -> 6
@@ -140,13 +140,13 @@ class AmbientManager(private val plugin: Mistaken) {
         when (state) {
             TensionDirector.State.CALMA -> return
 
-            // Lejano y sonoro: algo se mueve, no sabes dónde.
+            
             TensionDirector.State.INQUIETUD -> playDistortedSound(survivor)
 
-            // Presencia visual en la periferia.
+            
             TensionDirector.State.ACECHO -> triggerParanoia(survivor)
 
-            // Encima: visual + físico a la vez.
+            
             TensionDirector.State.CAZA -> {
                 triggerParanoia(survivor)
                 packetFactory.sendFakeHit(survivor)
@@ -159,7 +159,7 @@ class AmbientManager(private val plugin: Mistaken) {
 
         if (dice < 0.4f) {
             val shadowLoc = getPeripheryLocation(survivor)
-            packetFactory.spawnShadowEntity(survivor, shadowLoc, 15) // 15 ticks
+            packetFactory.spawnShadowEntity(survivor, shadowLoc, 15) 
             survivor.playSound(survivor.location, Sound.ENTITY_ENDERMAN_STARE, 0.4f, 0.1f)
         } else {
             packetFactory.sendFakeAir(survivor, survivor.location.subtract(0.0, 1.0, 0.0), 12)

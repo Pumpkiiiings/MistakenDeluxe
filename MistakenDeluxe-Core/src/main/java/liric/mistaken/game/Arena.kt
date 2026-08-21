@@ -10,8 +10,8 @@ class Arena(override val name: String) : IArena {
     override var killerSpawn: Location? = null
     override var timeMode: String = "dynamic"
 
-    // Usamos MutableList de Kotlin (que compila a ArrayList en la JVM)
-    // val asegura que la referencia a la lista no cambie, pero el contenido es mutable.
+    
+    
     override val survivorSpawns: MutableList<Location> = mutableListOf()
     override val generators: MutableList<Location> = mutableListOf()
 
@@ -49,4 +49,3 @@ class Arena(override val name: String) : IArena {
         killerSpawn = null
     }
 }
-

@@ -33,7 +33,7 @@ abstract class AbstractRoleManager<T : GameRole>(protected val plugin: Mistaken)
         val role = activeRoles.remove(uuid) ?: return
 
         if (player != null && player.isOnline) {
-            // Paper entity scheduler
+            
             player.scheduler.run(plugin, { _ ->
                 role.cleanup(player)
                 onRoleRemoved(player)

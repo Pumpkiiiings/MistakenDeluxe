@@ -23,7 +23,7 @@ class AdvancementHookListener(private val plugin: LevelAddonPlugin) : Listener {
 
         if (milestone != null) {
             try {
-                // Soft dependency via Reflection to avoid build failures with nexus.frengor.com
+                
                 val uapiPlugin = Bukkit.getPluginManager().getPlugin("UltimateAdvancementAPI")
                 if (uapiPlugin != null && uapiPlugin.isEnabled) {
                     val uapiClass = Class.forName("com.frengor.ultimateadvancementapi.UltimateAdvancementAPI")

@@ -41,7 +41,7 @@ class BaitTrapEffect(
         val spawnLoc = location.block.location.add(0.5, 0.1, 0.5)
         
         // ArmorStand is an entity, must be spawned sync to its region.
-        // It's safer to spawn it in a task.
+        
         plugin.server.regionScheduler.run(plugin, spawnLoc, Consumer {
             if (!alive.get()) return@Consumer
             

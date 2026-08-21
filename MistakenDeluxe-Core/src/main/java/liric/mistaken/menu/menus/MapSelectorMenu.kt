@@ -41,7 +41,7 @@ class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSes
 
         val settings = session.settings ?: PrivateGameSettings().also { session.settings = it }
 
-        // Fetch all available maps from plugin.arenaManager
+        
         val allMaps = plugin.arenaManager.getArenas()
 
         var slot = startSlot
@@ -65,10 +65,10 @@ class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSes
                 }
 
             gui.setItem(slot++, item)
-            // L�gica simple de filas (salta a la siguiente fila si llega al borde derecho asumiendo centrado est�ndar)
+            
             if (slot == 26) slot = 28 
             
-            if (slot > maxSlots) break // Max maps shown
+            if (slot > maxSlots) break 
         }
 
         gui.setItem(backSlot, ItemBuilder.from(Material.ARROW)

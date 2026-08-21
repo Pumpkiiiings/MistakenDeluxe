@@ -125,7 +125,7 @@ object ObserverHook {
         }
     }
 
-    // --- Screen Effects ---
+    
 
     fun playScreenshake(player: Player, intensity: Float, durationTicks: Int) {
         if (!hasObserverPlugin) return
@@ -141,7 +141,7 @@ object ObserverHook {
         } catch (e: Exception) {}
     }
 
-    // --- Animations ---
+    
 
     private val plugin: Mistaken
         get() = JavaPlugin.getPlugin(Mistaken::class.java)
@@ -161,19 +161,19 @@ object ObserverHook {
             roleId = plugin.playerDataManager.getSelectedSurvivor(player.uniqueId)
         }
         
-        // Specific class override (e.g. animations.slasher.run)
+        
         var anim = config.getString("animations.$roleId.$key")
         if (anim != null && anim.isNotEmpty()) {
             return anim
         }
         
-        // Category fallback (e.g. animations.killer.run)
+        
         anim = config.getString("animations.$category.$key")
         if (anim != null && anim.isNotEmpty()) {
             return anim
         }
         
-        // Legacy/Global fallback just in case
+        
         anim = config.getString("animations.global.$key")
         if (anim != null && anim.isNotEmpty()) {
             return anim
@@ -187,7 +187,7 @@ object ObserverHook {
         try {
             com.observer.paper.ObserverPaper.getInstance().environmentManager.setTrueDarkness(player, enabled)
         } catch (e: Exception) {
-            // Ignore if Observer doesn't support environment manager yet
+            
         }
     }
 }

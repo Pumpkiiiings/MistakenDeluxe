@@ -43,7 +43,7 @@ class CinematicManager(private val plugin: Mistaken) {
         registerProfile(CharlieJazzProfile())
         registerProfile(WardenProfile())
         
-        // Register aliases
+        
         profiles["charlieinferno"] = CharlieProfile()
         profiles["colorsito"] = ColorAndElectricityProfile()
         profiles["romeodebuff"] = RomeoProfile()
@@ -94,21 +94,21 @@ class CinematicManager(private val plugin: Mistaken) {
             if (p == killer) p.isInvisible = true
             
             val cam = VirtualCamera(p)
-            // Initial position fallback, we will update it immediately in the task
+            
             cam.startSpectating(centerLoc.clone().add(5.0, 1.5, 0.0))
             cameras.add(cam)
         }
 
         val fxLoc = centerLoc.clone(); fxLoc.y -= yOffset
         
-        // Play visual effects
+        
         try {
             profile.playEffects(plugin, fxLoc, visualDummy, true, displayManager, viewers)
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
-        // Start cinematic orbit and dialogs
+        
         val dialogos = profile.getDialogs(isIntro = true)
         var ticks = 0
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
@@ -120,8 +120,8 @@ class CinematicManager(private val plugin: Mistaken) {
                 viewers.forEach { p ->
                     originalGameModes[p]?.let { gm -> p.gameMode = gm }
                     originalLocations[p]?.let { loc ->
-                        // Delay the teleport by 5 ticks to prevent Sodium chunk render crash
-                        // This allows the client to process the stopSpectating packet before teleporting
+                        
+                        
                         plugin.server.globalRegionScheduler.runDelayed(plugin, { _ ->
                             p.teleportAsync(loc)
                         }, 5L)
@@ -130,7 +130,7 @@ class CinematicManager(private val plugin: Mistaken) {
                 return@Consumer
             }
             
-            // Dialog logic
+            
             if (dialogos.isNotEmpty()) {
                 val index = (ticks / 40) % dialogos.size
                 if (ticks < dialogos.size * 40) {
@@ -139,7 +139,7 @@ class CinematicManager(private val plugin: Mistaken) {
                 }
             }
 
-            // Cinematic Dynamic Camera
+            
             val progress = ticks.toDouble() / duracionTicks.toDouble()
             val camLoc = getCameraLocation(profile.introCameraStyle, centerLoc, progress, true)
             cameras.forEach { it.updatePosition(camLoc) }
@@ -186,14 +186,14 @@ class CinematicManager(private val plugin: Mistaken) {
             cameras.add(cam)
         }
 
-        // Play visual effects
+        
         try {
             profile.playEffects(plugin, centerLoc, visualDummy, false, displayManager, viewers)
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
-        // Start cinematic orbit and dialogs
+        
         val dialogos = profile.getDialogs(isIntro = false)
         var ticks = 0
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { task ->
@@ -205,8 +205,8 @@ class CinematicManager(private val plugin: Mistaken) {
                 viewers.forEach { p ->
                     originalGameModes[p]?.let { gm -> p.gameMode = gm }
                     originalLocations[p]?.let { loc ->
-                        // Delay the teleport by 5 ticks to prevent Sodium chunk render crash
-                        // This allows the client to process the stopSpectating packet before teleporting
+                        
+                        
                         plugin.server.globalRegionScheduler.runDelayed(plugin, { _ ->
                             p.teleportAsync(loc)
                         }, 5L)
@@ -215,7 +215,7 @@ class CinematicManager(private val plugin: Mistaken) {
                 return@Consumer
             }
             
-            // Dialog logic
+            
             if (dialogos.isNotEmpty()) {
                 val index = (ticks / 40) % dialogos.size
                 if (ticks < dialogos.size * 40) {
@@ -224,7 +224,7 @@ class CinematicManager(private val plugin: Mistaken) {
                 }
             }
 
-            // Cinematic Dynamic Camera
+            
             val progress = ticks.toDouble() / duracionTicks.toDouble()
             val camLoc = getCameraLocation(profile.outroCameraStyle, centerLoc, progress, false)
             cameras.forEach { it.updatePosition(camLoc) }
@@ -292,7 +292,7 @@ class CinematicManager(private val plugin: Mistaken) {
         }
         forward.multiply(-1.0).normalize()
         
-        // Rotate the forward vector by `angle` radians
+        
         val rx = forward.x * kotlin.math.cos(angle) - forward.z * kotlin.math.sin(angle)
         val rz = forward.x * kotlin.math.sin(angle) + forward.z * kotlin.math.cos(angle)
 

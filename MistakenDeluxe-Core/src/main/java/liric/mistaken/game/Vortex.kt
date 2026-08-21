@@ -24,14 +24,14 @@ class Vortex(private val plugin: Mistaken) {
     fun spawnShadowEntity(victim: Player, loc: Location, ticks: Int) {
         if (!victim.isOnline) return
 
-        // Los IDs de entidad reales de Bukkit son secuenciales desde 0 y en un servidor
-        // con uptime largo alcanzan el rango de millones. Un ID aleatorio ahí colisiona
-        // con una entidad real y el DestroyEntities de más abajo la borra en el cliente.
-        // PacketFactory reserva un rango alto para las falsas.
+        
+        
+        
+        
         val fakeId = PacketFactory.generateEntityId()
         val uuid = UUID.randomUUID()
 
-        // 1. Construcción del Paquete (Skeleton para la forma)
+        
         val spawnPacket = WrapperPlayServerSpawnEntity(
             fakeId,
             Optional.of(uuid),
@@ -44,19 +44,19 @@ class Vortex(private val plugin: Mistaken) {
             Optional.of(Vector3d(0.0, 0.0, 0.0))
         )
 
-        // 2. Metadata: Invisible (0x20) + Glowing (0x40) = 0x60
+        
         val metadataPacket = WrapperPlayServerEntityMetadata(
             fakeId,
             listOf(EntityData(0, EntityDataTypes.BYTE, 0x60.toByte()))
         )
 
-        // 3. Envío seguro
+        
         val pm = PacketEvents.getAPI().playerManager
         pm.sendPacket(victim, spawnPacket)
         pm.sendPacket(victim, metadataPacket)
 
-        // 4. 🔥 FIX: Destrucción de entidad usando Consumer para el EntityScheduler.
-        // Además, en PacketEvents moderno WrapperPlayServerDestroyEntities toma un `int...` (vararg de ints).
+        
+        
         victim.scheduler.runDelayed(plugin, Consumer { _ ->
             pm.sendPacket(victim, WrapperPlayServerDestroyEntities(fakeId))
         }, null, ticks.toLong())
@@ -71,13 +71,13 @@ class Vortex(private val plugin: Mistaken) {
         val pm = PacketEvents.getAPI().playerManager
         val pos = Vector3i(loc.blockX, loc.blockY, loc.blockZ)
 
-        // Enviamos aire (GlobalState 0 suele representar el aire en la mayoría de mappers de PE)
+        
         pm.sendPacket(victim, WrapperPlayServerBlockChange(pos, 0))
 
-        // Restauración automática
+        
         victim.scheduler.runDelayed(plugin, Consumer { _ ->
             if (victim.isOnline) {
-                // Al estar en el EntityScheduler, es seguro hacer sendBlockChange (API de Bukkit)
+                
                 victim.sendBlockChange(loc, loc.block.blockData)
             }
         }, null, ticks.toLong())
@@ -89,7 +89,7 @@ class Vortex(private val plugin: Mistaken) {
     fun sendFakeHit(victim: Player) {
         if (!victim.isOnline) return
 
-        // Status 2 = Hurt Animation
+        
         PacketEvents.getAPI().playerManager.sendPacket(
             victim,
             WrapperPlayServerEntityStatus(victim.entityId, 2)
@@ -106,11 +106,11 @@ class Vortex(private val plugin: Mistaken) {
 
         val center = victim.location
         val world = center.world
-        val y = center.blockY - 1 // Solo el suelo bajo sus pies
+        val y = center.blockY - 1 
 
-        // Agrupamos por sección de chunk (16x16x16). Un BlockChange por bloque son
-        // (2r+1)^2 paquetes en un tick — con radio 10 eso es 441 a un solo player.
-        // MultiBlockChange manda una sección entera en un paquete: ~6 en total.
+        
+        
+        
         val bySection = HashMap<Vector3i, MutableList<WrapperPlayServerMultiBlockChange.EncodedBlock>>()
         val affected = ArrayList<Location>((2 * radius + 1) * (2 * radius + 1))
 
@@ -121,7 +121,7 @@ class Vortex(private val plugin: Mistaken) {
                 affected.add(Location(world, bx.toDouble(), y.toDouble(), bz.toDouble()))
 
                 val section = Vector3i(bx shr 4, y shr 4, bz shr 4)
-                // Coordenadas relativas a la sección (0-15)
+                
                 bySection.getOrPut(section) { mutableListOf() }
                     .add(WrapperPlayServerMultiBlockChange.EncodedBlock(0, bx and 15, y and 15, bz and 15))
             }
@@ -132,9 +132,9 @@ class Vortex(private val plugin: Mistaken) {
             pm.sendPacket(victim, WrapperPlayServerMultiBlockChange(section, true, blocks.toTypedArray()))
         }
 
-        // Restauración: leemos el estado real en el scheduler de la REGIÓN de cada bloque.
-        // victim.scheduler pertenece a la región del player; tocar loc.block de una
-        // región distinta revienta en Folia.
+        
+        
+        
         plugin.server.regionScheduler.runDelayed(plugin, center, Consumer { _ ->
             if (!victim.isOnline) return@Consumer
             affected.forEach { loc -> victim.sendBlockChange(loc, loc.block.blockData) }

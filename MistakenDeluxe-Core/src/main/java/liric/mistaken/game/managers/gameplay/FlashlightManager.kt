@@ -40,7 +40,7 @@ class FlashlightManager(private val plugin: Mistaken) {
     /** Distancia minima al ojo. Mas cerca la luz queda dentro de la cabeza del player. */
     private val minDistance = 1.5
 
-    // --- API PUBLICA ---
+    
 
     fun isOn(player: Player): Boolean = states.containsKey(player.uniqueId)
 
@@ -80,14 +80,14 @@ class FlashlightManager(private val plugin: Mistaken) {
         state.worldName = player.world.name
         states[uuid] = state
 
-        // Scheduler de la entidad: es Folia-safe y se autocancela si el player se va.
-        // El callback 'retired' cubre el caso de que la entidad desaparezca sin quit event.
+        
+        
         state.task = player.scheduler.runAtFixedRate(
             plugin,
             Consumer { _ -> tick(player) },
             Runnable { clear(uuid) },
             1L,
-            1L // 1 tick para máxima fluidez
+            1L 
         )
     }
 
@@ -112,7 +112,7 @@ class FlashlightManager(private val plugin: Mistaken) {
         states.keys.toList().forEach { clear(it) }
     }
 
-    // --- LOGICA INTERNA ---
+    
 
     private fun tick(player: Player) {
         val state = states[player.uniqueId] ?: return
@@ -122,7 +122,7 @@ class FlashlightManager(private val plugin: Mistaken) {
             return
         }
 
-        // Cambio de world: los viewers antiguos ya no estan viendo esos bloques,
+        
         
         if (player.world.name != state.worldName) {
             restore(state)
@@ -133,26 +133,26 @@ class FlashlightManager(private val plugin: Mistaken) {
         val audience = audience(player)
         val audienceIds = audience.map { it.uniqueId }.toSet()
 
-        // --- EFECTO VISUAL DE HAZ DE LUZ (PARTICULAS VOLUMETRICAS) ---
+        
         val eye = player.eyeLocation
         val dir = eye.direction
-        // Hacer las partículas muy sutiles para no estorbar la visión
+        
         var currentDist = 1.0
         val maxParticleDist = targets.lastOrNull()?.distance(eye) ?: range
-        // Color más tenue y tamaño muy pequeño (0.2f en lugar de 0.6f)
+        
         val dustOptions = org.bukkit.Particle.DustOptions(org.bukkit.Color.fromRGB(120, 120, 100), 0.2f)
         
         while (currentDist <= maxParticleDist) {
             val point = eye.clone().add(dir.clone().multiply(currentDist))
-            // Enviar la partícula solo a la audiencia
+            
             audience.forEach { viewer ->
                 viewer.spawnParticle(org.bukkit.Particle.DUST, point, 1, 0.02, 0.02, 0.02, 0.0, dustOptions)
             }
-            // Espaciado más amplio para que no se vea una línea sólida densa
+            
             currentDist += 1.0
         }
 
-        // Quieto y sin cambios de publico: cero packets de bloques.
+        
         if (targets == state.litBlocks && audienceIds == state.viewers) return
 
         restore(state)
@@ -187,7 +187,7 @@ class FlashlightManager(private val plugin: Mistaken) {
         val maxRange = range
 
         val hit = player.world.rayTraceBlocks(eye, dir, maxRange, FluidCollisionMode.NEVER, true)
-        // 0.3 de margen para no meter la luz dentro del bloque golpeado.
+        
         val maxDist = hit?.hitPosition?.distance(eye.toVector())?.minus(0.3) ?: maxRange
         if (maxDist < minDistance) return emptyList()
 
@@ -195,7 +195,7 @@ class FlashlightManager(private val plugin: Mistaken) {
         val result = LinkedHashSet<Location>(total)
 
         for (i in 1..total) {
-            // Reparte los puntos hasta el 90% del alcance util (0.3 / 0.6 / 0.9 con 3 puntos).
+            
             val fraction = (i.toDouble() / total) * 0.9
             val distance = (maxDist * fraction).coerceAtLeast(minDistance)
             if (distance > maxDist) continue

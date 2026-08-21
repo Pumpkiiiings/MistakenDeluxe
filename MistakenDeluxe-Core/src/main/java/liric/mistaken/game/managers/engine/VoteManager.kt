@@ -19,7 +19,7 @@ class VoteManager {
     fun getWinningMap(arenas: Map<String, Arena>): String? {
         if (arenas.isEmpty()) return null
 
-        // 🔥 MEJORA: .random() de Kotlin es más limpio que ThreadLocalRandom.nextInt
+        
         if (votes.isEmpty()) return arenas.keys.random()
 
         val tally = votes.values
@@ -32,7 +32,7 @@ class VoteManager {
         val maxVotes = tally.maxOf { it.value }
         val winners = tally.filterValues { it == maxVotes }.keys
 
-        // Retorna el ganador directo, o elige uno al azar si hay empate
+        
         return winners.random()
     }
 
@@ -49,7 +49,7 @@ class VoteManager {
 
     fun getTotalVotes(): Int = votes.size
 
-    // 🔥 NUEVO: Función para clear la memoria si el player se desconecta en pleno lobby
+    
     fun removeVote(uuid: UUID) {
         votes.remove(uuid)
     }

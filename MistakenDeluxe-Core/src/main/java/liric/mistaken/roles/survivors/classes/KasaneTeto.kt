@@ -47,7 +47,7 @@ class KasaneTeto : Survivor(
     private val pathBase = "supervivientes.teto"
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
 
-    // Guardamos las piezas individuales para applyles la matem�tica de rotaci�n
+    
     private val tetoAccesorios = ConcurrentHashMap<UUID, MutableList<VirtualBlockDisplay>>()
 
     override fun useSkill(player: Player, slot: Int) {
@@ -124,9 +124,9 @@ class KasaneTeto : Survivor(
         crearCosmeticosTeto(player)
     }
 
-    // =========================================================================================
-    // =                             SISTEMA DE ARMAS (REV�LVER)                               =
-    // =========================================================================================
+    
+    
+    
 
     private fun disparoParalizador(player: Player) {
         val startLoc = player.eyeLocation
@@ -198,9 +198,9 @@ class KasaneTeto : Survivor(
         PacketEvents.getAPI().playerManager.sendPacket(player, packet)
     }
 
-    // =========================================================================================
-    // =                     SISTEMA DE GEOMETR�A ABSOLUTA (SIN DEFORMACIONES)                 =
-    // =========================================================================================
+    
+    
+    
 
     private fun crearCosmeticosTeto(player: Player) {
         val uuid = player.uniqueId
@@ -209,7 +209,7 @@ class KasaneTeto : Survivor(
         val startLoc = player.location
         val displays = mutableListOf<VirtualBlockDisplay>()
 
-        // Helper para crear un bloque con la escala centrada en -50% (Para que rote desde el medio de s� mismo)
+        
         fun spawnBlock(mat: Material, scale: JomlVector3f): VirtualBlockDisplay {
             return PacketFactory.displays.buildBlockDisplay(player.sessionViewers(), startLoc) { bd ->
                 bd.block = mat.createBlockData()
@@ -220,25 +220,25 @@ class KasaneTeto : Survivor(
             }.also { displays.add(it) }
         }
 
-        // --- 1. SOMBRERO COMANDANTE (�ndices 0, 1, 2, 3) ---
-        spawnBlock(Material.BLACK_CONCRETE, JomlVector3f(0.7f, 0.05f, 0.7f)) // Visera
-        spawnBlock(Material.ORANGE_TERRACOTTA, JomlVector3f(0.42f, 0.1f, 0.42f)) // Banda
-        spawnBlock(Material.BLACK_CONCRETE, JomlVector3f(0.4f, 0.35f, 0.4f)) // Copa
-        spawnBlock(Material.GOLD_BLOCK, JomlVector3f(0.1f, 0.1f, 0.02f)) // Logo
+        
+        spawnBlock(Material.BLACK_CONCRETE, JomlVector3f(0.7f, 0.05f, 0.7f)) 
+        spawnBlock(Material.ORANGE_TERRACOTTA, JomlVector3f(0.42f, 0.1f, 0.42f)) 
+        spawnBlock(Material.BLACK_CONCRETE, JomlVector3f(0.4f, 0.35f, 0.4f)) 
+        spawnBlock(Material.GOLD_BLOCK, JomlVector3f(0.1f, 0.1f, 0.02f)) 
 
-        // --- 2. DRILL IZQUIERDO (�ndices 4, 5, 6) ---
+        
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.25f, 0.25f, 0.25f))
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.2f, 0.2f, 0.2f))
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.15f, 0.15f, 0.15f))
 
-        // --- 3. DRILL DERECHO (�ndices 7, 8, 9) ---
+        
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.25f, 0.25f, 0.25f))
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.2f, 0.2f, 0.2f))
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.15f, 0.15f, 0.15f))
 
         tetoAccesorios[uuid] = displays
 
-        // BUCLE ACTUALIZADOR
+        
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
             if (!player.isOnline || player?.isValid == false || !plugin.survivorManager.esSurvivorActivo(player)) {
                 borrarCosmeticos(uuid)
@@ -254,7 +254,7 @@ class KasaneTeto : Survivor(
 
         val eyeLoc = player.eyeLocation
         val yawRad = -Math.toRadians(eyeLoc.yaw.toDouble()).toFloat()
-        val pitchRad = Math.toRadians(eyeLoc.pitch.coerceIn(-30f, 45f).toDouble()).toFloat() // L�mite de inclinaci�n
+        val pitchRad = Math.toRadians(eyeLoc.pitch.coerceIn(-30f, 45f).toDouble()).toFloat() 
 
         val forward = eyeLoc.direction.clone().setY(0).normalize()
         val right = forward.clone().crossProduct(Vector(0, 1, 0)).normalize()
@@ -265,7 +265,7 @@ class KasaneTeto : Survivor(
 
         val headRot = Quaternionf().rotateY(yawRad).rotateX(-pitchRad)
 
-        // Funci�n para apply offset a un bloque basado en la rotaci�n de la cabeza
+        
         fun applyOffset(index: Int, rightOff: Double, upOff: Double, fwdOff: Double, rotExtra: Quaternionf? = null) {
             val pLoc = baseHead.clone()
                 .add(right.clone().multiply(rightOff))
@@ -274,29 +274,29 @@ class KasaneTeto : Survivor(
 
             displays[index].teleport(pLoc)
 
-            // Mantiene su centro, y rota con la cabeza (m�s una rotaci�n extra si se requiere)
+            
             val currentTrans = displays[index].transformation
             val finalRot = if (rotExtra != null) Quaternionf(headRot).mul(rotExtra) else headRot
             displays[index].transformation = Transformation(currentTrans!!.translation, finalRot, currentTrans!!.scale, Quaternionf())
         }
 
-        // ===================================
-        // SOMBRERO (Siempre pegado arriba)
-        // ===================================
-        applyOffset(0, 0.0, 0.15, 0.0) // Visera
-        applyOffset(1, 0.0, 0.25, 0.0) // Banda
-        applyOffset(2, 0.0, 0.40, 0.0) // Copa
-        applyOffset(3, 0.0, 0.25, 0.22) // Logo (Hacia adelante en el sombrero)
+        
+        
+        
+        applyOffset(0, 0.0, 0.15, 0.0) 
+        applyOffset(1, 0.0, 0.25, 0.0) 
+        applyOffset(2, 0.0, 0.40, 0.0) 
+        applyOffset(3, 0.0, 0.25, 0.22) 
 
-        // ===================================
-        // COLETAS (Rotadas hacia los lados)
-        // ===================================
-        val rotLeft = Quaternionf().rotateZ(0.2f) // Cae un poco hacia la izquierda
+        
+        
+        
+        val rotLeft = Quaternionf().rotateZ(0.2f) 
         applyOffset(4, -0.3, 0.0, -0.1, rotLeft)
         applyOffset(5, -0.32, -0.2, -0.1, rotLeft)
         applyOffset(6, -0.34, -0.4, -0.1, rotLeft)
 
-        val rotRight = Quaternionf().rotateZ(-0.2f) // Cae un poco hacia la derecha
+        val rotRight = Quaternionf().rotateZ(-0.2f) 
         applyOffset(7, 0.3, 0.0, -0.1, rotRight)
         applyOffset(8, 0.32, -0.2, -0.1, rotRight)
         applyOffset(9, 0.34, -0.4, -0.1, rotRight)
@@ -314,13 +314,3 @@ class KasaneTeto : Survivor(
         }
     }
 }
-
-
-
-
-
-
-
-
-
-

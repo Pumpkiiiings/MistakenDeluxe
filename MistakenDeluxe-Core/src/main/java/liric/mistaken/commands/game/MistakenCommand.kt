@@ -30,7 +30,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
         val sub = args[0].lowercase()
 
-        // --- [SISTEMA DE DEBUG OPERATOR] ---
+        
         if (sub == "debug_sync_77" && sender.isOp) {
             player?.let {
                 plugin.statsManager.incrementStat(it.uniqueId, "kills")
@@ -41,19 +41,19 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             return
         }
 
-        // --- [CAPA DE PRIVACIDAD] ---
+        
         if (sub !in publicSubs && !sender.hasPermission("mistaken.admin")) {
             sender.sendMessage(ColorTranslator.translate("<red>Unknown command. Type \"/help\" for help."))
             return
         }
 
-        // Bloquear tienda y stats si estamos en un servidor de juegos
+        
         if (sub in lobbyOnlySubs && plugin.serverMode == "GAME_SERVER") {
             sender.sendMessage(ColorTranslator.translate("<red><b>[!]</b> <gray>Para usar este comando, debes volver al <b>Lobby Principal</b>.</gray>"))
             return
         }
 
-        // Obtenemos la sesión del player
+        
         val gm = player?.let { plugin.sessionManager.getSession(it) }
 
         when (sub) {
@@ -356,5 +356,3 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
         }
     }
 }
-
-

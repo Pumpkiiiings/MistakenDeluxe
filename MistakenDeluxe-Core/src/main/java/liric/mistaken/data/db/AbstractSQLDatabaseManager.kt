@@ -40,7 +40,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
 
     protected abstract fun getHikariConfig(): HikariConfig
 
-    // === QUERIES ESPECÃFICAS DE MOTOR (Sobrescribir en PostgreSQL/SQLite si difieren) ===
+    
     protected open val createStatsTableQuery = """
         CREATE TABLE IF NOT EXISTS stats (
             uuid VARCHAR(36) PRIMARY KEY,
@@ -80,7 +80,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
 
     protected open val insertIgnoreStatsQuery = "INSERT IGNORE INTO stats (uuid, username) VALUES (?, ?)"
 
-    // Default: MySQL Syntax (ON DUPLICATE KEY UPDATE)
+    
     protected open val upsertPlayerDataQuery = """
         INSERT INTO mistaken_player_data
         (uuid, lang, killers_owned, killer_selected, survivors_owned, survivor_selected, nick, skin_source)
@@ -106,14 +106,14 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
     override fun loadStats(uuid: String, username: String): PlayerStats? {
         try {
             connection.use { conn ->
-                // 1. Ensure exists
+                
                 conn.prepareStatement(insertIgnoreStatsQuery).use { ps ->
                     ps.setString(1, uuid)
                     ps.setString(2, username)
                     ps.executeUpdate()
                 }
 
-                // 2. Load data
+                
                 val query = "SELECT * FROM stats WHERE uuid = ?"
                 conn.prepareStatement(query).use { ps ->
                     ps.setString(1, uuid)
@@ -202,7 +202,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
         try {
             connection.use { conn ->
                 conn.prepareStatement(upsertPlayerDataQuery).use { ps ->
-                    // Set variables for UPSERT logic which might differ per db engine
+                    
                     bindUpsertVariables(ps, uuid, lang, killersOwned, killerSelected, survOwned, survSelected, nick, skin)
                     ps.executeUpdate()
                 }
@@ -212,14 +212,14 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
         }
     }
 
-    // Método virtual para bindear las variables del Upsert
+    
     protected open fun bindUpsertVariables(ps: PreparedStatement, uuid: String, lang: String, killersOwned: String, killerSelected: String, survOwned: String, survSelected: String, nick: String, skin: String) {
-        // Formato por defecto para MySQL (15 params totales por duplicarse)
+        
         ps.setString(1, uuid); ps.setString(2, lang); ps.setString(3, killersOwned)
         ps.setString(4, killerSelected); ps.setString(5, survOwned); ps.setString(6, survSelected)
         ps.setString(7, nick); ps.setString(8, skin)
 
-        // UPDATE (MySQL)
+        
         ps.setString(9, lang); ps.setString(10, killersOwned); ps.setString(11, killerSelected)
         ps.setString(12, survOwned); ps.setString(13, survSelected); ps.setString(14, nick); ps.setString(15, skin)
     }

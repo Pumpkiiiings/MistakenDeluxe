@@ -8,9 +8,9 @@ data class PrivateGameSettings(
     var maxPlayers: Int? = null,
     var forcedMap: String? = null,
     var forcedMode: MistakenMode? = null,
-    var speedMultiplier: Int? = null, // Nivel de poción (0 = nivel 1)
+    var speedMultiplier: Int? = null, 
     var jumpMultiplier: Int? = null,
-    var blindnessRole: String? = null, // "KILLER", "SURVIVOR", "NONE"
+    var blindnessRole: String? = null, 
     var heartbeatsEnabled: Boolean = true,
     var killerHealth: Double? = null,
     var survivorHealth: Double? = null,

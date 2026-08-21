@@ -48,7 +48,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
 
         val settings = session.settings ?: PrivateGameSettings().also { session.settings = it }
 
-        // Glowing
+        
         val glowingMat = if (settings.glowingEnabled) Material.GLOWSTONE_DUST else Material.GUNPOWDER
         val glowingColor = if (settings.glowingEnabled) "<green>" else "<red>"
         val glowingName = config.getString("menus.rule_editor.items.glowing.name", "<gold><bold>Glowing Constante") ?: "<gold><bold>Glowing Constante"
@@ -60,10 +60,10 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 settings.glowingEnabled = !settings.glowingEnabled
                 player.playSound(player.location, org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f)
                 player.sendActionBar(ColorTranslator.translate("<green>Regla modificada: Glowing ${if (settings.glowingEnabled) "ON" else "OFF"}"))
-                abrir(player) // Refresh
+                abrir(player) 
             })
 
-        // Heartbeats
+        
         val hbMat = if (settings.heartbeatsEnabled != false) Material.NOTE_BLOCK else Material.JUKEBOX
         val hbColor = if (settings.heartbeatsEnabled != false) "<green>" else "<red>"
         val hbName = config.getString("menus.rule_editor.items.heartbeats.name", "<gold><bold>Latidos (Heartbeats)") ?: "<gold><bold>Latidos (Heartbeats)"
@@ -78,7 +78,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 abrir(player)
             })
 
-        // Speed
+        
         val speedVal = settings.speedMultiplier ?: 0
         val speedName = config.getString("menus.rule_editor.items.speed.name", "<gold><bold>Velocidad Base") ?: "<gold><bold>Velocidad Base"
         val speedLore = config.getString("menus.rule_editor.items.speed.lore_level", "<gray>Nivel: <yellow>{level}") ?: "<gray>Nivel: <yellow>{level}"
@@ -92,7 +92,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 abrir(player)
             })
 
-        // Jump
+        
         val jumpVal = settings.jumpMultiplier ?: 0
         val jumpName = config.getString("menus.rule_editor.items.jump.name", "<gold><bold>Salto Base") ?: "<gold><bold>Salto Base"
         val jumpLore = config.getString("menus.rule_editor.items.jump.lore_level", "<gray>Nivel: <yellow>{level}") ?: "<gray>Nivel: <yellow>{level}"
@@ -106,7 +106,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 abrir(player)
             })
 
-        // Blindness Role
+        
         val blindnessVal = settings.blindnessRole ?: "NONE"
         val blindnessNext = when(blindnessVal) {
             "NONE" -> "KILLER"
@@ -125,7 +125,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 abrir(player)
             })
 
-        // Killer Health
+        
         val kHealth = settings.killerHealth ?: 160.0
         val khealthName = config.getString("menus.rule_editor.items.khealth.name", "<gold><bold>Vida Asesino") ?: "<gold><bold>Vida Asesino"
         val khealthLore = config.getString("menus.rule_editor.items.khealth.lore_hearts", "<gray>Corazones: <red>{hearts}") ?: "<gray>Corazones: <red>{hearts}"
@@ -139,7 +139,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 abrir(player)
             })
 
-        // Survivor Health
+        
         val sHealth = settings.survivorHealth ?: 20.0
         val shealthName = config.getString("menus.rule_editor.items.shealth.name", "<gold><bold>Vida Superviviente") ?: "<gold><bold>Vida Superviviente"
         val shealthLore = config.getString("menus.rule_editor.items.shealth.lore_hearts", "<gray>Corazones: <red>{hearts}") ?: "<gray>Corazones: <red>{hearts}"
@@ -153,8 +153,8 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 abrir(player)
             })
 
-        // Game Duration
-        val currentDuration = settings.gameDuration ?: 300 // default 5 minutes in seconds
+        
+        val currentDuration = settings.gameDuration ?: 300 
         val durationName = config.getString("menus.rule_editor.items.duration.name", "<gold><bold>Duraci�n de Partida") ?: "<gold><bold>Duraci�n de Partida"
         val durationLore = config.getString("menus.rule_editor.items.duration.lore_time", "<gray>Tiempo: <yellow>{time}") ?: "<gray>Tiempo: <yellow>{time}"
         val minutes = currentDuration / 60
@@ -165,14 +165,14 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
             .name(ColorTranslator.translate("<!italic>$durationName"))
             .lore(ColorTranslator.translate("<!italic>${durationLore.replace("{time}", formattedTime)}"))
             .asGuiItem { event ->
-                // Click Izquierdo: +1 minuto, Click Derecho: -1 minuto
+                
                 var newDuration = currentDuration
                 if (event.isLeftClick) {
                     newDuration += 60
-                    if (newDuration > 1800) newDuration = 60 // Max 30 minutes, wraps to 1 min
+                    if (newDuration > 1800) newDuration = 60 
                 } else if (event.isRightClick) {
                     newDuration -= 60
-                    if (newDuration < 60) newDuration = 1800 // Min 1 min, wraps to 30 min
+                    if (newDuration < 60) newDuration = 1800 
                 }
                 
                 settings.gameDuration = newDuration
@@ -184,7 +184,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 abrir(player)
             })
 
-        // Character Selector
+        
         val charactersName = config.getString("menus.rule_editor.items.characters.name", "<gold><bold>Clases Permitidas") ?: "<gold><bold>Clases Permitidas"
         val charactersLoreList = config.getStringList("menus.rule_editor.items.characters.lore")
         val charactersLore = if (charactersLoreList.isNotEmpty()) {
@@ -200,7 +200,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 CharacterSelectorMenu(plugin, session).abrir(player)
             })
 
-        // Back button
+        
         val backItem = ItemBuilder.from(Material.ARROW)
             .name(ColorTranslator.translate("<!italic>$backName"))
             .asGuiItem {

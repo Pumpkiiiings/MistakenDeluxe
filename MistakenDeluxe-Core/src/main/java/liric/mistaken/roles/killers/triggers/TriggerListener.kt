@@ -38,13 +38,13 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         var handled = false
         for (trigger in triggers) {
             if (!killer.triggerRegistry.checkCooldown(player, trigger.triggerId, trigger.cooldownSeconds)) {
-                // Not in cooldown, execute
+                
                 plugin.server.scheduler.runTask(plugin, Runnable {
                     killer.onTrigger(player, trigger.triggerId)
                 })
                 handled = true
             } else {
-                // In cooldown but mapped to this input, so we still consider it "handled" to cancel the event
+                
                 handled = true
             }
         }
@@ -62,14 +62,14 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val killer = getActiveKiller(player) ?: return
         
-        // Verifica si el killer tiene triggers definidos.
-        // Si no los tiene (es legacy), lo dejamos para KillerSkillListener o se maneja ahí
-        // Pero idealmente, pasamos todo a este sistema si el killer lo usa.
+        
+        
+        
         val slot = player.inventory.heldItemSlot
         val input = when (slot) {
-            0 -> InputTrigger.SLOT_1 // depends on config mapping, wait!
-            // The user requested inputs: slot_1, slot_2...
-            // Let's assume slots match 1..4 (which is inventory slot 1..4)
+            0 -> InputTrigger.SLOT_1 
+            
+            
             1 -> InputTrigger.SLOT_1
             2 -> InputTrigger.SLOT_2
             3 -> InputTrigger.SLOT_3
@@ -82,9 +82,9 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
                 event.isCancelled = true
                 plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
             } else {
-                // Legacy support: if no trigger maps it, fallback to old `useSkill`
-                // KillerSkillListener will handle it, or we do it here. 
-                // Let's just return false and let KillerSkillListener run for legacy.
+                
+                
+                
             }
         }
     }
@@ -109,20 +109,20 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         val victim = event.entity as? Player ?: return
 
         val killer = getActiveKiller(attacker) ?: return
-        // Ensure the victim is a valid target before firing the attack trigger
+        
         if (liric.mistaken.scripting.effects.gameplay.GameplayFunctions.isValidTarget(attacker, victim)) {
             handleInput(attacker, InputTrigger.ATTACK)
-            // No cancelamos el evento porque queremos que el golpe aplique daño normalmente
+            
         }
     }
 
 
     @EventHandler(priority = EventPriority.HIGH)
     fun onToggleSneak(event: PlayerToggleSneakEvent) {
-        if (event.isSneaking) { // Only trigger on press, not release
+        if (event.isSneaking) { 
             handleInput(event.player, InputTrigger.SNEAK_TOGGLE)
-            // No cancelamos el sneak para no romper el movimiento natural,
-            // pero se despacha el trigger de todos modos.
+            
+            
         }
     }
 
@@ -131,23 +131,23 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val killer = getActiveKiller(player) ?: return
 
-        // 1. Despachar como trigger general si es necesario
+        
         val triggers = killer.triggerRegistry.getTriggersForInput(InputTrigger.CHAT_MESSAGE)
         for (trigger in triggers) {
             if (!killer.triggerRegistry.checkCooldown(player, trigger.triggerId, trigger.cooldownSeconds)) {
-                // We dispatch on sync thread
+                
                 plugin.server.scheduler.runTask(plugin, Runnable {
                     killer.onTrigger(player, trigger.triggerId)
                 })
             }
         }
 
-        // 2. Interceptación de texto (reescritura sincrónica/asincrónica de chat)
+        
         val rewritten = killer.onInterceptChat(player, event.message)
         if (rewritten != null) {
             event.isCancelled = true
             
-            // Broadcast the rewritten message ourselves
+            
             plugin.server.scheduler.runTask(plugin, Runnable {
                 plugin.server.onlinePlayers.forEach { p ->
                     p.sendMessage(rewritten)
@@ -164,7 +164,7 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         if (victim.gameMode == GameMode.SPECTATOR) {
             val killer = getActiveKiller(attacker) ?: return
             
-            // Dispatch onKill in sync thread (though we are already sync)
+            
             killer.onKill(attacker, victim)
         }
     }

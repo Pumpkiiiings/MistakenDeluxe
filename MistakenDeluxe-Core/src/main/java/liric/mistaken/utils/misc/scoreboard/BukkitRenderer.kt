@@ -19,7 +19,7 @@ class BukkitRenderer : IScoreboardRenderer {
         val maxLines = 15
         val currentLines = template.lines
 
-        // --- Initialization (Runs once) ---
+        
         if (!context.initialized) {
             for (i in 0 until maxLines) {
                 val teamName = ScoreboardConstants.TEAM_NAMES[i]
@@ -34,7 +34,7 @@ class BukkitRenderer : IScoreboardRenderer {
             context.initialized = true
         }
 
-        // --- Layout Updates (Runs only when line count changes) ---
+        
         if (context.layoutChanged || currentLines.size != context.activeLines) {
             for (i in 0 until maxLines) {
                 val entryName = ScoreboardConstants.ENTRY_NAMES[i]
@@ -53,7 +53,7 @@ class BukkitRenderer : IScoreboardRenderer {
             context.layoutChanged = false
         }
 
-        // --- Title Updates ---
+        
         if (context.titleChanged) {
             val titleText = template.title.replace("%player%", player.name)
             if (context.titleCache != titleText) {
@@ -64,17 +64,17 @@ class BukkitRenderer : IScoreboardRenderer {
             context.titleChanged = false
         }
 
-        // --- Line Updates ---
+        
         for (i in 0 until currentLines.size) {
             if (!context.lineChanged[i]) continue
 
             var componentToApply: Component? = null
 
             if (!template.isLineDynamic[i]) {
-                // Completely static line
+                
                 componentToApply = context.staticLineCache[i]
             } else {
-                // Dynamic line (only %player% supported in BukkitRenderer for now)
+                
                 val rawLine = currentLines[i].replace("%player%", player.name)
                 if (context.lineCache[i] != rawLine) {
                     componentToApply = ColorTranslator.translate(rawLine)
@@ -88,7 +88,7 @@ class BukkitRenderer : IScoreboardRenderer {
             }
         }
         
-        // Clear unused lines if layout shrunk
+        
         for (i in currentLines.size until maxLines) {
             if (context.lineChanged[i] || context.lineCache[i] != null) {
                 val team = scoreboard.getTeam(ScoreboardConstants.TEAM_NAMES[i])

@@ -54,7 +54,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
             gui.filler.fill(fillerItem)
         }
 
-        // Boton Iniciar
+        
         val startItem = ItemBuilder.from(Material.EMERALD_BLOCK)
             .name(ColorTranslator.translate("<!italic>$startName"))
             .lore(startLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
@@ -69,7 +69,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
         
         gui.setItem(startSlot, startItem)
 
-        // Boton Reglas
+        
         val rulesItem = ItemBuilder.from(Material.COMPARATOR)
             .name(ColorTranslator.translate("<!italic>$rulesName"))
             .lore(rulesLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
@@ -80,7 +80,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
         
         gui.setItem(rulesSlot, rulesItem)
 
-        // Boton Mapa
+        
         val mapItem = ItemBuilder.from(Material.MAP)
             .name(ColorTranslator.translate("<!italic>$mapName"))
             .lore(mapLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
@@ -91,7 +91,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
         
         gui.setItem(mapSlot, mapItem)
 
-        // Boton Modo
+        
         val modeItem = ItemBuilder.from(Material.DIAMOND_SWORD)
             .name(ColorTranslator.translate("<!italic>$modeName"))
             .lore(modeLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
@@ -102,7 +102,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
         
         gui.setItem(modeSlot, modeItem)
 
-        // Boton Players
+        
         val playersItem = ItemBuilder.from(Material.PLAYER_HEAD)
             .name(ColorTranslator.translate("<!italic>$playersName"))
             .lore(playersLoreRaw.map { ColorTranslator.translate("<!italic>$it") })

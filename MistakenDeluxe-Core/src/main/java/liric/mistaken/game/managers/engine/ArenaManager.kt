@@ -29,10 +29,10 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
     private var config = configProvider.getRaw()
     private val mm = MiniMessage.miniMessage()
 
-    // Candado para evitar que el archivo se corrompa si 2 personas configuran a la vez
+    
     private val fileLock = Any()
 
-    // Scope para operaciones de disco (I/O)
+    
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
@@ -63,14 +63,14 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
                 tempArenas[key] = arena
             }
 
-            // Reemplazo atómico para no causar tirones
+            
             arenas.clear()
             arenas.putAll(tempArenas)
             plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>${arenas.size} templates loaded into secure memory.</gray>"))
         }
     }
 
-    // --- COMANDOS Y MUTACIONES ---
+    
 
     fun createArena(name: String) {
         if (arenas.containsKey(name)) return
@@ -98,7 +98,7 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
 
         when (type.lowercase()) {
             "asesino" -> {
-                // Clonamos para quitarle el world a la copia guardada en RAM
+                
                 val cleanLoc = Location(null, loc.x, loc.y, loc.z, loc.yaw, loc.pitch)
                 arena.killerSpawn = cleanLoc
                 saveSafeLocation("arenas.$name.asesinoSpawn", loc)
@@ -143,7 +143,7 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
         saveAsync()
     }
 
-    // --- UTILS DE LOCALIZACIÓN ---
+    
 
     private fun loadLocationList(path: String): List<Location> {
         val list = mutableListOf<Location>()
@@ -159,9 +159,9 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
         
         if (!config.contains("$path.x")) return null
 
-        // 🔥 LA MAGIA ANTI-LEAKS: Retornamos la Location con World en NULL.
-        // Esto garantiza que el ArenaManager NUNCA sostenga un world descargado en la RAM.
-        // El GameManager le inyectará el world activo al clonar la Location.
+        
+        
+        
         return Location(
             null,
             config.getDouble("$path.x"),

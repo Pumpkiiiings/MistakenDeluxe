@@ -17,7 +17,7 @@ import kotlin.math.sin
 import liric.mistaken.utils.color.ColorTranslator
 
 class RomeoProfile : CinematicProfile {
-    override val id: String = "romeo" // Or romeodebuff
+    override val id: String = "romeo" 
     override val isFloating: Boolean = true
     override val introCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.PAN_UP_REVEAL
     override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.PAN_UP_REVEAL

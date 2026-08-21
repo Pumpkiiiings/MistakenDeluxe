@@ -30,7 +30,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
             return
         }
 
-        // Filtro de seguridad: Si no es admin, fingimos que el comando no existe
+        
         if (!sender.hasPermission("mistaken.admin")) {
             sender.sendMessage(ColorTranslator.translate("<red>Unknown command. Type \"/help\" for help."))
             return
@@ -45,7 +45,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
         val arenaName = args[1]
         val arena = plugin.arenaManager.getArena(arenaName)
 
-        // Validar existencia excepto para creaci�n
+        
         if (arena == null && sub != "create") {
             player.sendMessage(MessageService.getComponent(player, "errors.arena-not-found",
                 Placeholder.parsed("name", arenaName)))

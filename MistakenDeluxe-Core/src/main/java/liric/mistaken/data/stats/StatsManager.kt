@@ -27,7 +27,7 @@ class StatsManager(private val plugin: Mistaken) : liric.mistaken.api.managers.I
             if (stats != null) {
                 cache[uuid] = stats
             } else {
-                cache[uuid] = PlayerStats() // Fallback a vac�o
+                cache[uuid] = PlayerStats() 
             }
         }
     }

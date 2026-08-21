@@ -95,7 +95,7 @@ class ProgressionMenu(private val plugin: LevelAddonPlugin) {
         }
 
         if (paginationEnabled) {
-            // Map items to slots first so it doesn't overwrite buttons
+            
             gui.filler.fillBorder(ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).name(Component.empty()).asGuiItem())
 
             val prevSlot = config.getInt("pagination.buttons.previous_page.slot", 45)

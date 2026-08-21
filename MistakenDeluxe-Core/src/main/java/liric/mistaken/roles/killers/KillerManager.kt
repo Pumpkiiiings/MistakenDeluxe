@@ -51,7 +51,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             scriptsFolder.mkdirs()
         }
 
-        // Copiar scripts por defecto si no existen
+        
         try {
             val defaults = listOf("slasher", "herobrine", "romeo", "entity303", "colorandelectricity", "null", "tinkywinky")
             for (script in defaults) {
@@ -76,7 +76,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                 val killerId = file.nameWithoutExtension.lowercase()
                 val scriptKiller = liric.mistaken.scripting.engine.lua.LuaScriptEngine.loadScript(file, killerId)
                 if (scriptKiller != null) {
-                    // Create the adapter
+                    
                     val luaAdapter = liric.mistaken.scripting.adapter.LuaKillerAdapter(
                         id = killerId,
                         nombre = killerId.replaceFirstChar { it.uppercase() },
@@ -104,7 +104,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         }
         val clase = getClassById(claseId) ?: return
 
-        // ?? FIX: Ejecutamos el cleanup de forma segura en el hilo del player (Entity Scheduler)
+        
         player.scheduler.run(plugin, Consumer { _ ->
             clase.cleanup(player)
             plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>${player.name} synchronized with ${clase.nombre}</gray>"))
@@ -114,22 +114,22 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
     fun registerKiller(player: Player, killer: Killer) {
         val uuid = player.uniqueId
 
-        // Si ya tenía un killer, clearlo primero
+        
         if (activeRoles.containsKey(uuid)) {
             removeRoleLogic(uuid, player)
         }
 
-        // 1. Limpieza total inmediata (Hilo Principal)
+        
         player.inventory.clear()
         player.inventory.armorContents = arrayOfNulls(4)
         activeRoles[uuid] = killer
 
-        // Feedback
+        
         player.sendMessage(MessageService.getComponent(player, "killer.transform",
             Placeholder.component("name", ColorTranslator.translate(killer.nombre))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
-        // 2. ?? FIX: EntityScheduler de Paper con runDelayed y Consumer explï¿½cito
+        
         player.scheduler.runDelayed(
             plugin,
             Consumer { _ ->
@@ -137,10 +137,10 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
                 killer.equip(player)
 
-                // ReorganizaciÃ³n dinÃ¡mica de slots basada en config
+                
                 val config = plugin.configManager.getKillerConfig(killer.id)
                 
-                // Apply vida mÃ¡xima del killer
+                
                 val maxHealth = config.getDouble("stats.health", 40.0)
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = maxHealth
                 player.health = maxHealth
@@ -172,7 +172,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                 player.inventory.heldItemSlot = weaponSlot
             },
             null,
-            15L // 15 ticks de retraso
+            15L 
         )
     }
 
@@ -188,10 +188,10 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
     override fun removeRoleLogic(uuid: UUID, player: Player?) {
         val killer = activeRoles.remove(uuid) ?: return
 
-        // Limpiamos los datos del Killer
+        
         killer.cleanup(player)
         
-        // Stop all active Lua/ECS effects for this player
+        
         liric.mistaken.scripting.effects.EffectRegistry.stopAll(uuid)
 
         if (player != null && player.isOnline) {
@@ -204,14 +204,14 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             player.isGlowing = false
             player.activePotionEffects.forEach { effect -> player.removePotionEffect(effect.type) }
             
-            // Remove invisibility if they had it
+            
             plugin.visibilityManager.removePlayer(player.uniqueId)
         }
     }
 
     fun removeAllKillers() {
         cleanAll()
-        // Le decimos a todos los killers que vacÃ­en su memoria RAM interna
+        
         availableClasses.values.forEach { killer ->
             killer.dispose()
         }
@@ -253,7 +253,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             if (newKiller != null) {
                 registerClass(newKiller)
                 
-                // Actualizar players en vivo
+                
                 val affectedPlayers = mutableListOf<Player>()
                 activeRoles.forEach { (uuid, activeKiller) ->
                     if (activeKiller.id.equals(lowerId, ignoreCase = true)) {
@@ -281,7 +281,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         }
     }
 
-    // --- GETTERS ---
+    
     fun getKillerOfPlayer(player: Player?): Killer? = player?.let { activeRoles[it.uniqueId] }
     fun isKiller(player: Player?): Boolean = player?.let { activeRoles.containsKey(it.uniqueId) } ?: false
     fun getAvailableClasses(): Map<String, Killer> = availableClasses
@@ -290,5 +290,3 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         removeAllKillers()
     }
 }
-
-

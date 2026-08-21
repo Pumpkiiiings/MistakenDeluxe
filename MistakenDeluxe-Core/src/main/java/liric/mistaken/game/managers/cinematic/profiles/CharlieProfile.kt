@@ -17,7 +17,7 @@ import kotlin.math.sin
 import liric.mistaken.utils.color.ColorTranslator
 
 class CharlieProfile : CinematicProfile {
-    override val id: String = "charlie" // Or charlieinferno
+    override val id: String = "charlie" 
     override val isFloating: Boolean = false
     override val introCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.DRONE_SPIRAL
     override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.DRONE_SPIRAL

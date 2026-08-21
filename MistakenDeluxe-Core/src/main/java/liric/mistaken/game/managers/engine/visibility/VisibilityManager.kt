@@ -33,7 +33,7 @@ class VisibilityManager(private val plugin: Mistaken) {
             PacketEvents.getAPI().playerManager.sendPacket(viewer, infoRemove)
         }
 
-        // Destruir entidad instantáneamente para el cliente
+        
         val destroyPacket = WrapperPlayServerDestroyEntities(target.entityId)
         PacketEvents.getAPI().playerManager.sendPacket(viewer, destroyPacket)
     }
@@ -52,7 +52,7 @@ class VisibilityManager(private val plugin: Mistaken) {
         viewers.forEach { viewerIds.add(it.uniqueId) }
         visibleOnlyTo[target.uniqueId] = viewerIds
         
-        // Destruimos la entidad para los que no están en la lista
+        
         Bukkit.getOnlinePlayers().forEach { online ->
             if (!viewerIds.contains(online.uniqueId)) {
                 val destroyPacket = WrapperPlayServerDestroyEntities(target.entityId)
@@ -75,13 +75,13 @@ class VisibilityManager(private val plugin: Mistaken) {
             }
         }
 
-        // Si estaba en visibleOnlyTo, agregarlo
+        
         val onlyViewers = visibleOnlyTo[target.uniqueId]
         if (onlyViewers != null) {
             onlyViewers.add(viewer.uniqueId)
         }
 
-        // Forzar re-envo con Bukkit
+        
         viewer.hidePlayer(plugin, target)
         plugin.server.scheduler.runTask(plugin, Runnable {
             if (viewer.isOnline && target.isOnline) {
@@ -94,13 +94,13 @@ class VisibilityManager(private val plugin: Mistaken) {
      * Verifica si el target está oculto para el viewer.
      */
     fun isHidden(targetUuid: UUID, viewerUuid: UUID): Boolean {
-        // 1. Verificar si tiene Whitelist (visibleOnlyTo)
+        
         val whitelist = visibleOnlyTo[targetUuid]
         if (whitelist != null && !whitelist.contains(viewerUuid)) {
-            return true // Oculto porque no está en la lista de los únicos que pueden verlo
+            return true 
         }
 
-        // 2. Verificar si está en Blacklist (hiddenFrom)
+        
         return hiddenFrom[targetUuid]?.contains(viewerUuid) == true
     }
     
@@ -110,15 +110,15 @@ class VisibilityManager(private val plugin: Mistaken) {
      * Para mantenerlo genérico, iteramos todos los worlds (o asumimos que si es un player usamos getOnlinePlayers).
      */
     fun isHidden(targetEntityId: Int, viewerUuid: UUID): Boolean {
-        // Optimización 1: ¿Es un player?
+        
         val online = Bukkit.getOnlinePlayers().find { it.entityId == targetEntityId }
         if (online != null) return isHidden(online.uniqueId, viewerUuid)
         
-        // Si no es player, necesitamos saber su UUID. Como este chequeo ocurre millones de veces, 
-        // no podemos hacer un Bukkit.getWorlds().forEach { it.entities }.
-        // Solución: PacketVisibilityListener pasará el UUID si lo conoce, pero `WrapperPlayServerSpawnEntity` 
-        // tiene un `uuid`. En PacketVisibilityListener debemos usar el UUID del paquete!
-        return false // Fallback
+        
+        
+        
+        
+        return false 
     }
 
     /**

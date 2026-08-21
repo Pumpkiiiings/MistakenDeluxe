@@ -40,7 +40,7 @@ class AmbientMusicEffect(
                 task.cancel()
                 return@Consumer
             }
-            // Emitir música
+            
             Bukkit.getOnlinePlayers().forEach { p ->
                 ObserverHook.stopSound(p, soundId)
                 ObserverHook.playEntitySound(p, soundId, player, volume, 1.0f)

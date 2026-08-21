@@ -31,7 +31,7 @@ class NameTagManager(private val plugin: Mistaken) {
 
 
 
-    // ── Setup / Teardown ──
+    
 
     fun setupPlayer(player: Player) {
         removePlayer(player)
@@ -42,7 +42,7 @@ class NameTagManager(private val plugin: Mistaken) {
         val tag = VirtualNametag(entityId)
         nametags[player.uniqueId] = tag
 
-        // Spawn the virtual TextDisplay to all viewers (including self for F5 view)
+        
         Bukkit.getOnlinePlayers().forEach { viewer ->
             spawnForViewer(player, viewer, tag)
         }
@@ -69,7 +69,7 @@ class NameTagManager(private val plugin: Mistaken) {
         }
     }
 
-    // ── Update (called every tick by VisualUpdateService) ──
+    
 
     fun updatePlayer(player: Player) {
         val tag = nametags[player.uniqueId] ?: return
@@ -114,26 +114,26 @@ class NameTagManager(private val plugin: Mistaken) {
             ColorTranslator.translate(processedLines)
         }
 
-        // Build metadata update
+        
         val metadata = mutableListOf<EntityData<*>>()
 
-        // Index 23: Text (ADV_COMPONENT)
+        
         metadata.add(EntityData(23, EntityDataTypes.ADV_COMPONENT, textComponent))
-        // Index 25: Background color (INT) — ARGB packed
+        
         metadata.add(EntityData(25, EntityDataTypes.INT, bgColorInt))
-        // Index 27: Text flags — bit 0x01 = shadow
+        
         val textFlags: Byte = if (shadow) 0x01.toByte() else 0x00.toByte()
         metadata.add(EntityData(27, EntityDataTypes.BYTE, textFlags))
-        // Index 11: Translation (VECTOR3F) — Y offset above head
+        
         metadata.add(EntityData(11, EntityDataTypes.VECTOR3F, Vector3f(0f, 0.3f, 0f)))
-        // Index 12: Scale (VECTOR3F)
+        
         metadata.add(EntityData(12, EntityDataTypes.VECTOR3F, Vector3f(size, size, size)))
-        // Index 17: View range (FLOAT) — 1.0 = ~64 blocks default
+        
         metadata.add(EntityData(17, EntityDataTypes.FLOAT, 1.0f))
 
         val metadataPacket = WrapperPlayServerEntityMetadata(tag.entityId, metadata)
         
-        // Use SetPassengers for 100% smooth movement
+        
         val passengerIds = player.passengers.map { it.entityId }.toIntArray() + tag.entityId
         val passengerPacket = WrapperPlayServerSetPassengers(player.entityId, passengerIds)
 
@@ -146,7 +146,7 @@ class NameTagManager(private val plugin: Mistaken) {
         }
     }
 
-    // ── Internals ──
+    
 
     private fun spawnForViewer(owner: Player, viewer: Player, tag: VirtualNametag) {
         val loc = owner.location
@@ -160,17 +160,17 @@ class NameTagManager(private val plugin: Mistaken) {
             Vector3d(0.0, 0.0, 0.0)
         )
 
-        // Initial metadata: billboard CENTER, empty text
+        
         val metadata = mutableListOf<EntityData<*>>()
-        // Index 15: Display entity flags — 0x03 = Billboard CENTER
+        
         metadata.add(EntityData(15, EntityDataTypes.BYTE, 0x03.toByte()))
-        // Index 23: Text
+        
         metadata.add(EntityData(23, EntityDataTypes.ADV_COMPONENT, net.kyori.adventure.text.Component.empty()))
-        // Index 25: Background transparent
+        
         metadata.add(EntityData(25, EntityDataTypes.INT, 0))
-        // Index 11: Translation
+        
         metadata.add(EntityData(11, EntityDataTypes.VECTOR3F, Vector3f(0f, 0.3f, 0f)))
-        // Index 17: View range
+        
         metadata.add(EntityData(17, EntityDataTypes.FLOAT, 1.0f))
 
         val metadataPacket = WrapperPlayServerEntityMetadata(tag.entityId, metadata)
@@ -193,8 +193,8 @@ class NameTagManager(private val plugin: Mistaken) {
         return try {
             val hex = str.removePrefix("#")
             when (hex.length) {
-                6 -> (0xFF shl 24) or hex.toInt(16) // Opaque
-                8 -> hex.toLong(16).toInt()           // ARGB
+                6 -> (0xFF shl 24) or hex.toInt(16) 
+                8 -> hex.toLong(16).toInt()           
                 else -> 0
             }
         } catch (_: Exception) { 0 }

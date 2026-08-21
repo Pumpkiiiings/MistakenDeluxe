@@ -13,8 +13,8 @@ class BetterModelAnimationComponent : AnimationComponent {
 
     private lateinit var character: Character
     
-    // Almacena un mapa de animaciones que requieren detenerse de forma custom, etc.
-    // Opcionalmente podemos abstraerlo.
+    
+    
 
     override fun onEnable(character: Character) {
         this.character = character
@@ -72,9 +72,9 @@ class BetterModelAnimationComponent : AnimationComponent {
     }
 
     override fun stopAll() {
-        // BetterModel no tiene un "stopAll" explícito en Tracker (a menos que se detenga por filtro).
-        // Una opción es iterar sobre animaciones activas si las almacenamos, 
-        // o usar el scriptProcessor subyacente. Por ahora se delega a parar animaciones conocidas.
+        
+        
+        
     }
 
     private fun getTracker(): kr.toxicity.model.api.tracker.EntityTracker? {

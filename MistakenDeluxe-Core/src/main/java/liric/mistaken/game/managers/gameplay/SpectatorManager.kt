@@ -44,17 +44,17 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     fun setCustomSpectator(player: Player) {
         activeSpectators.add(player.uniqueId)
 
-        // Clear TrueDarkness si era un survivor
+        
         liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(player, false)
 
-        // 🔥 FIX VUELO: Usamos SURVIVAL (no ADVENTURE) porque el modo ADVENTURE no soporta vuelo en Minecraft.
-        // El player es invisible e invulnerable, lo que lo protege como un espectador real.
+        
+        
         player.gameMode = GameMode.SURVIVAL
         player.isInvisible = true
         player.isCollidable = false
         player.isInvulnerable = true
 
-        // Forzamos el vuelo con un pequeño delay para asegurar que el cambio de GameMode no lo cancele
+        
         player.scheduler.runDelayed(plugin, Consumer { _ ->
             player.allowFlight = true
             player.isFlying = true
@@ -73,7 +73,7 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         player.inventory.setItem(0, tpItem)
         player.inventory.setItem(4, speedItem)
 
-        // Ocultar de los vivos
+        
         Bukkit.getOnlinePlayers().forEach { online ->
             if (online != player) {
                 if (isSpectator(online)) {
@@ -110,12 +110,12 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         }
     }
 
-    // 🔥 FIX: Restaurar vuelo al cambiar de world (Lobby -> Arena)
+    
     @EventHandler(priority = EventPriority.MONITOR)
     fun onWorldChange(e: PlayerChangedWorldEvent) {
         val p = e.player
         if (isSpectator(p)) {
-            // Delay obligatorio: Bukkit resetea el vuelo al spawnear en el nuevo world
+            
             p.scheduler.runDelayed(plugin, Consumer { _ ->
                 p.gameMode = GameMode.SURVIVAL
                 p.allowFlight = true
@@ -125,7 +125,7 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         }
     }
 
-    // 🔥 FIX: Restaurar vuelo después de un Teleport
+    
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onTeleport(e: PlayerTeleportEvent) {
         val p = e.player
@@ -140,7 +140,7 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     @EventHandler
     fun onJoin(e: PlayerJoinEvent) {
         val player = e.player
-        // 🔥 MULTIARENA: Buscamos la sesión a la que acaba de entrar el player
+        
         val session = plugin.sessionManager.getSession(player)
 
         
@@ -155,7 +155,7 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
                 }
             }
         } else {
-            // Si entra al Lobby o la partida no ha empezado, nos aseguramos que no sea espectador
+            
             removeCustomSpectator(player)
         }
     }

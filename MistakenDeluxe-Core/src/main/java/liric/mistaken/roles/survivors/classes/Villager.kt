@@ -30,7 +30,7 @@ class Villager : Survivor(
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
     private val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
 
-    // Llave para la esmeralda lanzable
+    
     val EMERALD_KEY = NamespacedKey("mistaken", "villager_emerald")
 
     init {
@@ -40,7 +40,7 @@ class Villager : Survivor(
     private fun preLoadKit() {
         val config = plugin.configManager.getSurvivorConfig(this.id)
 
-        // 1. Cargar Abilities
+        
         listOf("skill1", "skill2", "skill3").forEach { key ->
             config.getString("items.$key")?.let { id ->
                 if (id != "none" && id.isNotEmpty()) {
@@ -50,7 +50,7 @@ class Villager : Survivor(
             }
         }
 
-        // 2. Cargar Armadura
+        
         val armorParts = mapOf(
             "helmet" to Material.LEATHER_HELMET,
             "chestplate" to Material.LEATHER_CHESTPLATE,
@@ -97,7 +97,7 @@ class Villager : Survivor(
         var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
         if (!msg.isNullOrEmpty()) player.sendMessage(ColorTranslator.translate(msg))
 
-        // Sonido por defecto "Hrmm"
+        
         val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_VILLAGER_YES")
         Sounds.orNull(soundName)?.let { player.playSound(player.location, it, 1f, 1f) }
     }
@@ -106,7 +106,7 @@ class Villager : Survivor(
         val inv = player.inventory
         inv.clear()
 
-        // Recarga segura
+        
         preLoadKit()
 
         val langInfo = MessageService.getSpecificFile(player, "survivors_info")
@@ -131,14 +131,14 @@ class Villager : Survivor(
         player.updateInventory()
     }
 
-    // --- H1: P�NICO (Velocidad Explosiva) ---
+    
     private fun usarPanico(player: Player) {
-        player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 60, 2)) // Speed III por 3s
+        player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 60, 2)) 
         player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
         player.world.spawnParticle(Particle.ANGRY_VILLAGER, player.location.add(0.0, 2.0, 0.0), 5)
     }
 
-    // --- H2: SOBORNO (Proyectil Esmeralda) ---
+    
     private fun lanzarSoborno(player: Player) {
         val item = itemCache["skill2"] ?: ItemStack(Material.EMERALD)
 
@@ -149,16 +149,16 @@ class Villager : Survivor(
         player.playSound(player.location, Sound.ENTITY_SNOWBALL_THROW, 1f, 1f)
     }
 
-    // --- H3: AYUDA DEL GOLEM (Onda de Choque) ---
+    
     private fun invocarGolem(player: Player) {
         player.world.playSound(player.location, Sound.ENTITY_IRON_GOLEM_ATTACK, 1f, 0.5f)
         player.world.spawnParticle(Particle.BLOCK_CRUMBLE, player.location, 30, 2.0, 0.5, 2.0, Material.IRON_BLOCK.createBlockData())
 
-        // Empujar al killer si est� cerca (5 bloques)
+        
         player.world.getNearbyPlayers(player.location, 5.0).forEach { victim ->
             val session = plugin.sessionManager.getSession(victim)
             if (session?.isKiller(victim.uniqueId) == true) {
-                // Vector de empuje fuerte hacia atr�s
+                
                 val knockback = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(2.5).setY(0.5)
                 victim.velocity = knockback
 
@@ -177,8 +177,3 @@ class Villager : Survivor(
         activeTasks.clear()
     }
 }
-
-
-
-
-

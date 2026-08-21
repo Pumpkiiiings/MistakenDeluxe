@@ -61,7 +61,7 @@ class HackTerminalListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val session = plugin.sessionManager.getSession(player) ?: return
 
-        // ?? FIX: Espectadores no pueden hackear terminales
+        
         if (plugin.spectatorManager.isSpectator(player)) return
 
         if (session.isKiller(player.uniqueId)) {
@@ -84,27 +84,27 @@ class HackTerminalListener(private val plugin: Mistaken) : Listener {
         val inv = Bukkit.createInventory(HackTerminalHolder(loc), 27, msg(player, "gui_title"))
         player.openInventory(inv)
 
-        // Generate sequence (3 to 5 colors depending on some random factor or just 4)
+        
         val seqLength = 4
         val sequence = (1..seqLength).map { colors.random() }
 
         val hackSession = HackSession(loc, sequence)
         activeSessions[player.uniqueId] = hackSession
 
-        // Fill background
+        
         val bg = ItemStack(Material.BLACK_STAINED_GLASS_PANE)
         val bgMeta = bg.itemMeta
         bgMeta?.displayName(Component.empty())
         bg.itemMeta = bgMeta
         for (i in 0 until 27) inv.setItem(i, bg)
 
-        // Bottom row inputs
+        
         inv.setItem(19, createItem(Material.RED_STAINED_GLASS_PANE, msg(player, "color_red")))
         inv.setItem(21, createItem(Material.LIME_STAINED_GLASS_PANE, msg(player, "color_green")))
         inv.setItem(23, createItem(Material.BLUE_STAINED_GLASS_PANE, msg(player, "color_blue")))
         inv.setItem(25, createItem(Material.YELLOW_STAINED_GLASS_PANE, msg(player, "color_yellow")))
 
-        // Show sequence animation
+        
         object : BukkitRunnable() {
             var step = 0
             override fun run() {
@@ -118,7 +118,7 @@ class HackTerminalListener(private val plugin: Mistaken) : Listener {
                     inv.setItem(13, createItem(mat, msg(player, "memorize")))
                     player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f)
                     
-                    // Clear after 0.5s
+                    
                     Bukkit.getScheduler().runTaskLater(plugin, Runnable {
                         if (player.openInventory.topInventory.holder is HackTerminalHolder) {
                             inv.setItem(13, createItem(Material.GRAY_STAINED_GLASS_PANE, msg(player, "waiting")))
@@ -144,7 +144,7 @@ class HackTerminalListener(private val plugin: Mistaken) : Listener {
         val player = event.whoClicked as? Player ?: return
         val session = activeSessions[player.uniqueId] ?: return
 
-        if (session.isShowing) return // Cannot click while showing sequence
+        if (session.isShowing) return 
 
         val clicked = event.currentItem ?: return
         if (clicked.type !in colors) return
@@ -156,7 +156,7 @@ class HackTerminalListener(private val plugin: Mistaken) : Listener {
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 2f)
             
             if (session.currentIndex >= session.sequence.size) {
-                // Success!
+                
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
                 activeSessions.remove(player.uniqueId)
                 player.closeInventory()
@@ -165,7 +165,7 @@ class HackTerminalListener(private val plugin: Mistaken) : Listener {
                 player.sendMessage(msg(player, "success"))
             }
         } else {
-            // Failed
+            
             player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
             player.sendMessage(msg(player, "fail"))
             activeSessions.remove(player.uniqueId)

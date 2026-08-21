@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 object PacketFactory {
     
-    // Generador seguro de IDs para entidades falsas.
-    // Usamos un número muy alto para evitar colisionar con IDs de entidades reales de Bukkit.
+    
+    
     private val fakeEntityIdCounter = AtomicInteger(2000000000)
 
     val blocks = FakeBlockAPI()

@@ -26,7 +26,7 @@ interface CharacterState {
      * Si es null, no se solicita ninguna animación automáticamente.
      */
     val defaultAnimation: String?
-        get() = id // Por defecto asume que la animación se llama igual que el id
+        get() = id 
 
     /**
      * Define si este estado puede interrumpir al estado actual especificado.
@@ -42,7 +42,7 @@ interface CharacterState {
      * Aquí se puede ejecutar lógica como iniciar cooldowns, apply lentitud, etc.
      */
     fun onEnter(character: Character) {
-        // Implementación vacía por defecto
+        
     }
 
     /**
@@ -50,6 +50,6 @@ interface CharacterState {
      * Aquí se deben clear timers o efectos temporales aplicados en onEnter.
      */
     fun onExit(character: Character) {
-        // Implementación vacía por defecto
+        
     }
 }

@@ -31,13 +31,13 @@ class GamePlayerController(private val game: GameSession) {
     private var activeLmsMusic = "mistaken:lms"
 
     fun setupPlayers(arena: Arena) {
-        // 🔥 FIX: Solo tomamos los players de ESTA sesión
+        
         val sessionPlayers = game.getPlayers().filter { !game.plugin.isIgnored(it) }.toMutableList()
         if (sessionPlayers.isEmpty()) return
 
         game.killersUUIDs.clear()
 
-        // --- 2. MODOS CLÁSICOS ---
+        
         val candidatos = sessionPlayers.filter { 
             !globalRecentKillers.contains(it.uniqueId.toString()) && 
             !game.forcedSurvivorUUIDs.contains(it.uniqueId)
@@ -51,17 +51,17 @@ class GamePlayerController(private val game: GameSession) {
         
         var selectedCount = 0
         
-        // Asignar el killer forzado si existe y esta en la partida
+        
         game.forcedKillerUUID?.let { forcedUuid ->
             if (sessionPlayers.any { it.uniqueId == forcedUuid }) {
                 game.killersUUIDs.add(forcedUuid)
                 candidatos.removeAll { it.uniqueId == forcedUuid }
                 selectedCount++
-                game.forcedKillerUUID = null // Solo sirve para 1 partida
+                game.forcedKillerUUID = null 
             }
         }
 
-        // Asignar killers de la partida privada
+        
         game.settings?.let { rules ->
             rules.allowedKillers.forEach { killerName ->
                 val p = sessionPlayers.find { it.name.equals(killerName, ignoreCase = true) }
@@ -205,7 +205,7 @@ class GamePlayerController(private val game: GameSession) {
             game.uiController.playRoleTitle(p, isKiller)
             game.plugin.observerHUDManager.updatePlayerRole(p)
 
-            // --- APLICAR REGLAS PRIVADAS ---
+            
             game.settings?.let { rules ->
                 rules.speedMultiplier?.let { lvl ->
                     p.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, lvl, false, false, false))
@@ -235,7 +235,7 @@ class GamePlayerController(private val game: GameSession) {
             return
         }
 
-        // Solo evalúa a los killers de esta sesión
+        
         val killersOnline = game.killersUUIDs.mapNotNull { game.plugin.server.getPlayer(it) }.filter { it.isOnline }
 
         for (p in players) {
@@ -276,15 +276,15 @@ class GamePlayerController(private val game: GameSession) {
                 game.plugin.playerDataManager.consumeStamina(p.uniqueId, 0.4)
             }
 
-            // --- Bloody Screen Effect for Low Health and LMS ---
+            
             if (ticks % 10 == 0) {
                 val health = p.health
-                if (health <= 10.0) { // 5 hearts or less
-                    // Alpha ranges from ~0.15 (at 10 health) to ~0.8 (at 1 health)
+                if (health <= 10.0) { 
+                    
                     val alpha = (1.0f - (health.toFloat() / 10.0f)) * 0.7f + 0.15f
                     liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, alpha, 20)
                 } else if (lmsActivado) {
-                    liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 20) // Filtro ligero rojo por LMS
+                    liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 20) 
                 }
             }
         }
@@ -301,7 +301,7 @@ class GamePlayerController(private val game: GameSession) {
     fun checkWinCondition() {
         if (game.currentState != GameState.INGAME) return
 
-        // 🔥 FIX: Obtenemos solo los players de esta sesión
+        
         val sessionPlayers = game.getPlayers()
 
 
@@ -321,7 +321,7 @@ class GamePlayerController(private val game: GameSession) {
     private fun checkLastManStanding() {
         if (game.currentState != GameState.INGAME || lmsActivado) return
 
-        // 🔥 FIX: Solo evaluamos en esta sesión
+        
         val survivorsVivos = game.getPlayers().filter {
             !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !game.plugin.spectatorManager.isSpectator(it)
         }
@@ -344,7 +344,7 @@ class GamePlayerController(private val game: GameSession) {
         game.uiController.broadcastLMS(player, activeLmsMusic)
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 20 * 60, 0))
 
-        // Efecto visual LMS: Flash blanco inicial y vibración
+        
         liric.mistaken.utils.hooks.ObserverHook.playScreenTint(player, 255, 255, 255, 0.9f, 30)
         liric.mistaken.utils.hooks.ObserverHook.playScreenshake(player, 1.5f, 40)
 
@@ -354,8 +354,8 @@ class GamePlayerController(private val game: GameSession) {
     }
 
     fun handlePlayerDeath(player: Player) {
-        // Apagar la linterna antes que nada: si muere encendida, los bloques de luz falsos
-        // se quedan enviados a todos los que la estaban viendo.
+        
+        
         game.plugin.flashlightManager.disable(player)
 
         if (game.currentState == GameState.ENDING || player.gameMode == GameMode.SPECTATOR || game.plugin.spectatorManager.isSpectator(player)) return
@@ -378,7 +378,7 @@ class GamePlayerController(private val game: GameSession) {
             game.ambientManager.stopAmbience(player)
             game.combatManager.resetHealth(player)
 
-            // Clear TrueDarkness porque ahora es killer
+            
             liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(player, false)
 
             game.uiController.setLuckPermsPrefix(player, "<red>")
@@ -448,7 +448,7 @@ class GamePlayerController(private val game: GameSession) {
         val winSound = if (killerWon) Sound.ENTITY_WITHER_SPAWN else Sound.UI_TOAST_CHALLENGE_COMPLETE
         val type = if (killerWon) "killer" else "survivor"
 
-        // 🔥 FIX: Solo limpiamos a los players de ESTA sesión
+        
         game.getPlayers().forEach { p ->
             p.stopSound(activeLmsMusic, SoundCategory.RECORDS)
             game.plugin.flashlightManager.disable(p)
@@ -477,7 +477,7 @@ class GamePlayerController(private val game: GameSession) {
                 p.allowFlight = false
                 p.isFlying = false
 
-                // Mostrar player nuevamente solo a los de esta sesión
+                
                 game.getPlayers().forEach { online -> online.showPlayer(game.plugin, p) }
             }
 
@@ -492,7 +492,7 @@ class GamePlayerController(private val game: GameSession) {
         game.combatManager.clearAll()
         game.killersUUIDs.clear()
 
-        // KillerManager y SurvivorManager manejan la limpieza individual por UUID, no deberian afectar a otras partidas.
+        
         game.plugin.killerManager.removeAllKillers()
         game.plugin.survivorManager.cleanAll()
     }
@@ -504,11 +504,11 @@ class GamePlayerController(private val game: GameSession) {
             p.gameMode = GameMode.SURVIVAL
 
             if (serverMode == "GAME_SERVER") {
-                // 🔥 Modo Network: Los pateamos al proxy (Servidor Lobby Principal)
+                
                 val lobbyName = game.plugin.config.getString("proxy-lobby-server", "lobby") ?: "lobby"
                 BungeeUtils.sendToServer(game.plugin, p, lobbyName)
             } else {
-                // 🔥 Modo Multiarena local: Los mandamos al punto de spawn local
+                
                 game.plugin.lobbyLocation?.let { loc ->
                     p.teleportAsync(loc)
                 }
@@ -516,5 +516,3 @@ class GamePlayerController(private val game: GameSession) {
         }
     }
 }
-
-

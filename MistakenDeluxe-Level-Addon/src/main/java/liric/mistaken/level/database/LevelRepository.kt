@@ -1,4 +1,4 @@
-﻿package liric.mistaken.level.database
+package liric.mistaken.level.database
 
 import liric.mistaken.data.db.DatabaseProvider
 import liric.mistaken.data.db.Repository
@@ -49,12 +49,12 @@ class LevelRepository(provider: DatabaseProvider) : Repository<UUID, PlayerLevel
             prestige = VALUES(prestige)
         """.trimIndent()
 
-        // Wait, SQLite doesn't support ON DUPLICATE KEY UPDATE exactly like MySQL.
-        // It supports INSERT OR REPLACE, but we need compatibility with both.
-        // Let's use standard approach or check if it's MySQL/SQLite.
-        // For now, let's assume we can use a safe upsert, or do a select then insert/update.
         
-        // Simpler compatible approach for generic use:
+        
+        
+        
+        
+        
         val exists = load(entity.uuid) != null
         if (exists) {
             val updateQuery = "UPDATE mistaken_levels SET level = ?, experience = ?, total_experience = ?, prestige = ? WHERE uuid = ?"

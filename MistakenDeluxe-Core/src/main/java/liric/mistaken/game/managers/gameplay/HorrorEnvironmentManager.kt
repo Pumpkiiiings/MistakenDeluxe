@@ -15,7 +15,7 @@ class HorrorEnvironmentManager(private val plugin: Mistaken) {
     }
 
     private fun setupHorrorBiome() {
-        // Bioma para la noche estática (cielo forzado a negro)
+        
         val customBiomeNight = CustomBiome.builder()
             .resourceKey(ResourceKey.of("mistaken", "horrorbiome_night"))
             .fogColor("#050505") 
@@ -25,7 +25,7 @@ class HorrorEnvironmentManager(private val plugin: Mistaken) {
             .waterFogColor("#000000")
             .register()
 
-        // Bioma para el día, tarde, o dinámico (cielo natural para permitir transición de día a noche, pero conserva niebla densa)
+        
         val customBiomeDay = CustomBiome.builder()
             .resourceKey(ResourceKey.of("mistaken", "horrorbiome_day"))
             .fogColor("#050505") 

@@ -59,7 +59,7 @@ class RaincoatKid : Survivor(
         Sounds.orNull(soundName)?.let { player.playSound(player.location, it, 1f, 1f) }
     }
 
-    // --- 🛠️ EQUIPAMIENTO (ESTILO SLASHER) ---
+    
     override fun equip(player: Player) {
         val inv = player.inventory
         inv.clear()
@@ -68,7 +68,7 @@ class RaincoatKid : Survivor(
         player.getAttribute(Attribute.SCALE)?.baseValue = 0.8
 
         val langInfo = MessageService.getSpecificFile(player, "survivors_info")
-        val configMecanica = plugin.configManager.getSurvivorConfig(this.id) // El global survivors.yml
+        val configMecanica = plugin.configManager.getSurvivorConfig(this.id) 
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val id = if (isArmor) configMecanica.getString("armor.$key")
@@ -76,21 +76,21 @@ class RaincoatKid : Survivor(
 
             if (id == null || id == "none") return
 
-            // Intentamos sacar el ítem de CraftEngine
+            
             val item = CraftEngine.getCustomItem(id) ?: run {
                 val matName = id.replace(".*:".toRegex(), "").uppercase()
                 val mat = Material.matchMaterial(matName)
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            // Si es el palo, le ponemos la marca
+            
             if (key == "skill3") {
                 val meta = item.itemMeta
                 meta.persistentDataContainer.set(STICK_KEY, PersistentDataType.BYTE, 1.toByte())
                 item.itemMeta = meta
             }
 
-            // Le ponemos el nombre
+            
             val namePath = "$pathBase.skill_names.$key"
             langInfo.getString(namePath)?.let {
                 item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
@@ -120,7 +120,7 @@ class RaincoatKid : Survivor(
         player.updateInventory()
     }
 
-    // --- HABILIDADES ---
+    
     private fun usarSprint(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 2))
         player.world.spawnParticle(Particle.CLOUD, player.location, 5, 0.2, 0.1, 0.2, 0.05)
@@ -163,8 +163,3 @@ class RaincoatKid : Survivor(
         activeTasks.clear()
     }
 }
-
-
-
-
-

@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 object PlayerStateRegistry {
 
-    // scriptId -> UUID -> Key -> Value
+    
     private val states = ConcurrentHashMap<String, ConcurrentHashMap<UUID, ConcurrentHashMap<String, String>>>()
 
     fun set(scriptId: String, playerUuid: UUID, key: String, value: String) {

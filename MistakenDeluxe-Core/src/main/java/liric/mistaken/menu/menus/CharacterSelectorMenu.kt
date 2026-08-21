@@ -47,7 +47,7 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
         val allKillers = plugin.killerManager.catalogo.values.toList()
         val allSurvivors = plugin.survivorManager.catalogo.values.toList()
 
-        // For killers
+        
         for (killer in allKillers) {
             val isEnabled = !settings.disabledClasses.contains(killer.id.lowercase())
             val color = if (isEnabled) "<green>" else "<red>"
@@ -61,7 +61,7 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
                     ColorTranslator.translate("<!italic>$loreClick")
                 )
                 .asGuiItem {
-                    // Slasher cannot be disabled as it's the fallback
+                    
                     if (killer.id.equals("slasher", ignoreCase = true)) {
                         player.sendMessage(ColorTranslator.translate("<red>No puedes bloquear a Slasher, es la clase por defecto."))
                         return@asGuiItem
@@ -77,11 +77,11 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
             
             if (slot <= maxSlots) {
                 gui.setItem(slot++, item)
-                if (slot % 9 == 8) slot += 2 // Skip edges assuming a standard layout
+                if (slot % 9 == 8) slot += 2 
             }
         }
 
-        // For survivors
+        
         for (survivor in allSurvivors) {
             val isEnabled = !settings.disabledClasses.contains(survivor.id.lowercase())
             val color = if (isEnabled) "<green>" else "<red>"
@@ -95,7 +95,7 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
                     ColorTranslator.translate("<!italic>$loreClick")
                 )
                 .asGuiItem {
-                    // Civilian cannot be disabled
+                    
                     if (survivor.id.equals("civilian", ignoreCase = true) || survivor.id.equals("civil", ignoreCase = true)) {
                         player.sendMessage(ColorTranslator.translate("<red>No puedes bloquear a Civilian, es la clase por defecto."))
                         return@asGuiItem
@@ -115,7 +115,7 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
             }
         }
 
-        // Back button
+        
         val backItem = ItemBuilder.from(Material.ARROW)
             .name(ColorTranslator.translate("<!italic>$backName"))
             .asGuiItem {

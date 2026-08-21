@@ -6,11 +6,11 @@ object ColorNormalizer {
     private val HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})")
     private val BUKKIT_HEX_PATTERN = Pattern.compile("§x(§[A-Fa-f0-9]){6}")
 
-    // FIX #11: Was compiled inside normalizeToMiniMessage() on every call.
-    // Pattern.compile() is expensive (NFA construction). Moved here as a compile-once constant.
+    
+    
     private val STANDALONE_HEX_PATTERN = Pattern.compile("(?<![<:/])#([A-Fa-f0-9]{6})")
 
-    // Map of legacy color codes to MiniMessage tags
+    
     private val LEGACY_MAP = mapOf(
         '0' to "<black>", '1' to "<dark_blue>", '2' to "<dark_green>", '3' to "<dark_aqua>",
         '4' to "<dark_red>", '5' to "<dark_purple>", '6' to "<gold>", '7' to "<gray>",
@@ -26,8 +26,8 @@ object ColorNormalizer {
     fun normalizeToMiniMessage(input: String): String {
         var text = input
 
-        // 1. Convert &#RRGGBB or #RRGGBB to <#RRGGBB>
-        // Catch &#FF0000
+        
+        
         var hexMatcher = HEX_PATTERN.matcher(text)
         val sbHex = StringBuffer()
         while (hexMatcher.find()) {
@@ -36,8 +36,8 @@ object ColorNormalizer {
         hexMatcher.appendTail(sbHex)
         text = sbHex.toString()
 
-        // Catch standalone #FF0000 if it's not already inside a tag like <#FF0000>
-        // FIX #11: STANDALONE_HEX_PATTERN is now a pre-compiled constant.
+        
+        
         val standaloneHexMatcher = STANDALONE_HEX_PATTERN.matcher(text)
         val sbStand = StringBuffer()
         while (standaloneHexMatcher.find()) {
@@ -46,7 +46,7 @@ object ColorNormalizer {
         standaloneHexMatcher.appendTail(sbStand)
         text = sbStand.toString()
 
-        // 2. Normalize Bukkit §x§R§R§G§G§B§B -> <#RRGGBB>
+        
         var bukkitHexMatcher = BUKKIT_HEX_PATTERN.matcher(text)
         val sbBukkit = StringBuffer()
         while (bukkitHexMatcher.find()) {
@@ -61,7 +61,7 @@ object ColorNormalizer {
         bukkitHexMatcher.appendTail(sbBukkit)
         text = sbBukkit.toString()
 
-        // 3. Convert Legacy &a / §a to MiniMessage tags
+        
         val sbLegacy = StringBuilder()
         var i = 0
         while (i < text.length) {

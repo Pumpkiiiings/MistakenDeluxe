@@ -13,11 +13,11 @@ interface DatabaseManager {
 
     val connection: Connection
 
-    // Player Stats
+    
     fun loadStats(uuid: String, username: String): PlayerStats?
     fun saveStats(uuid: String, stats: PlayerStats)
 
-    // Player Profile Data
+    
     fun loadPlayerData(uuid: String): Map<String, String>?
     fun savePlayerDataRaw(
         uuid: String,

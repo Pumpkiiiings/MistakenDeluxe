@@ -4,7 +4,7 @@ import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
 
 object ChatInterceptorRegistry {
-    // scriptId -> callback que toma Player y String y devuelve String?
+    
     private val callbacks = ConcurrentHashMap<String, (Player, String) -> String?>()
 
     fun registerCallback(scriptId: String, callback: (Player, String) -> String?) {

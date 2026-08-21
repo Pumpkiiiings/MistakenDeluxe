@@ -19,7 +19,7 @@ class ScoreboardUpdateTask : BukkitRunnable() {
             val template = ScoreboardManager.getTemplate(templateId) ?: continue
 
             try {
-                // Update dirty flags for animations
+                
                 if (supportsAnimations) {
                     context.animTick++
                     if (template.animatedTitle) {
@@ -41,7 +41,7 @@ class ScoreboardUpdateTask : BukkitRunnable() {
                 
                 renderer.render(player, context, template)
                 
-                // Reset dirty flags after render
+                
                 context.markAllClean()
 
                 val elapsedNs = System.nanoTime() - startNs

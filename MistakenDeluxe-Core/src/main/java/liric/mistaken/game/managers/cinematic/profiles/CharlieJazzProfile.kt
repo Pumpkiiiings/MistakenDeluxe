@@ -39,7 +39,7 @@ class CharlieJazzProfile : CinematicProfile {
 
     override fun applyPose(dummy: ArmorStand, isIntro: Boolean) {
         if (isIntro) {
-            // Girar de espaldas
+            
             val loc = dummy.location
             loc.yaw = loc.yaw + 180f
             dummy.teleport(loc)
@@ -84,7 +84,7 @@ class CharlieJazzProfile : CinematicProfile {
         if (isIntro) {
             world.playSound(loc, Sound.BLOCK_AMETHYST_BLOCK_RESONATE, 2f, 0.5f)
             
-            // Spawn orbiting blocks
+            
             val b1 = world.spawn(dummy.location, BlockDisplay::class.java) { bd -> bd.block = Material.AMETHYST_BLOCK.createBlockData() }
             val b2 = world.spawn(dummy.location, BlockDisplay::class.java) { bd -> bd.block = Material.GOLD_BLOCK.createBlockData() }
             
@@ -96,7 +96,7 @@ class CharlieJazzProfile : CinematicProfile {
                     task.cancel()
                     return@Consumer 
                 }
-                val speed = 0.5 // High speed
+                val speed = 0.5 
                 val angle = ticks * speed
                 val radius = 1.5
                 

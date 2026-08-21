@@ -1,4 +1,4 @@
-﻿package liric.mistaken.level.integration
+package liric.mistaken.level.integration
 
 import liric.mistaken.level.LevelAddonPlugin
 import org.bukkit.Bukkit
@@ -11,13 +11,13 @@ class UltimateAdvancementHook(private val plugin: LevelAddonPlugin) {
 
     private var isEnabled = false
 
-    // Reflection objects
+    
     private var uaaInstance: Any? = null
     private var createTabMethod: Method? = null
     private var registerAdvancementMethod: Method? = null
     private var grantMethod: Method? = null
     
-    // Cache for custom advancements created via Mode B
+    
     private val registeredAdvancements = mutableMapOf<String, Any>()
 
     init {
@@ -44,7 +44,7 @@ class UltimateAdvancementHook(private val plugin: LevelAddonPlugin) {
         val baseAdvancementClass = Class.forName("com.frengor.ultimateadvancementapi.advancement.BaseAdvancement")
         val advancementArrayClass = java.lang.reflect.Array.newInstance(baseAdvancementClass, 0).javaClass
         
-        // Wait, registering an advancement usually takes varargs or single. Let's find a method with 1 arg.
+        
         registerAdvancementMethod = tabClass.methods.find { it.name == "registerAdvancements" }
         
         grantMethod = Class.forName("com.frengor.ultimateadvancementapi.advancement.Advancement")
@@ -64,7 +64,7 @@ class UltimateAdvancementHook(private val plugin: LevelAddonPlugin) {
             val frameTypeClass = Class.forName("com.frengor.ultimateadvancementapi.advancement.display.AdvancementFrameType")
             val taskFrame = frameTypeClass.getField("TASK").get(null)
             
-            // public AdvancementDisplay(Material material, String title, AdvancementFrameType frame, boolean showToast, boolean announceToChat, float x, float y, String... description)
+            
             val displayConstructor = displayClass.getConstructor(
                 Material::class.java,
                 String::class.java,
@@ -77,25 +77,25 @@ class UltimateAdvancementHook(private val plugin: LevelAddonPlugin) {
             )
 
             val baseAdvancementClass = Class.forName("com.frengor.ultimateadvancementapi.advancement.BaseAdvancement")
-            // public BaseAdvancement(String key, AdvancementDisplay display, String backgroundTexture)
+            
             val baseAdvConstructor = baseAdvancementClass.getConstructor(
                 String::class.java,
                 displayClass,
                 String::class.java
             )
 
-            // Register Root
+            
             val rootDisplay = displayConstructor.newInstance(
                 Material.DIAMOND, "Mistaken Progression", taskFrame, true, true, 0f, 0f, arrayOf("Mistaken levels and rewards")
             )
             val rootAdv = baseAdvConstructor.newInstance("mistaken_progression_root", rootDisplay, "textures/block/stone.png")
             
-            // registerAdvancements takes varargs
+            
             val rootArray = java.lang.reflect.Array.newInstance(baseAdvancementClass, 1)
             java.lang.reflect.Array.set(rootArray, 0, rootAdv)
             registerAdvancementMethod?.invoke(tab, rootArray)
 
-            // Register Children
+            
             for (key in advancementsSection.getKeys(false)) {
                 val title = advancementsSection.getString("$key.title", key) ?: key
                 val description = advancementsSection.getString("$key.description", "") ?: ""
@@ -123,7 +123,7 @@ class UltimateAdvancementHook(private val plugin: LevelAddonPlugin) {
     fun grantAdvancement(player: Player, advancementId: String) {
         if (!isEnabled) return
         
-        // Mode B: Try to grant from registered custom advancements
+        
         val registered = registeredAdvancements[advancementId]
         if (registered != null && grantMethod != null) {
             try {
@@ -134,7 +134,7 @@ class UltimateAdvancementHook(private val plugin: LevelAddonPlugin) {
             }
         }
 
-        // Mode A: Fallback to dispatch command for existing external advancements
+        
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "uadv grant ${player.name} $advancementId")
     }
 }

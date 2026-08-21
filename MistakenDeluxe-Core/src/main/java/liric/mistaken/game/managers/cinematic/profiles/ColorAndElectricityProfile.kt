@@ -22,7 +22,7 @@ import kotlin.math.sin
 import liric.mistaken.utils.color.ColorTranslator
 
 class ColorAndElectricityProfile : CinematicProfile {
-    override val id: String = "colorandelectricity" // Or colorsito
+    override val id: String = "colorandelectricity" 
     override val isFloating: Boolean = false
     override val introCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.DRONE_SPIRAL
     override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.DRONE_SPIRAL

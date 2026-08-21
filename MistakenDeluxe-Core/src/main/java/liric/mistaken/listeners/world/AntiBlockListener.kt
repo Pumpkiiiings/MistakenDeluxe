@@ -22,22 +22,22 @@ class AntiBlockListener(private val plugin: Mistaken) : Listener {
     private val activeGameWorlds = ConcurrentHashMap.newKeySet<String>()
 
     init {
-        // Tarea periódica para clear la caché de worlds
+        
         plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             updateWorldCache()
         }, 1, 1, TimeUnit.MINUTES)
     }
 
     fun updateWorldCache() {
-        // 1. Proteger el world del lobby
+        
         plugin.lobbyLocation?.world?.name?.let { activeGameWorlds.add(it) }
 
-        // 2. Proteger worlds de sesiones activas
+        
         val loadedWorlds = plugin.server.worlds.map { it.name }
         val arenaTemplates = plugin.arenaManager.getArenas().map { it.name }
 
         for (worldName in loadedWorlds) {
-            // Si el world es una arena dinámica (ASP), lo protegemos
+            
             if (arenaTemplates.any { worldName.startsWith(it) }) {
                 activeGameWorlds.add(worldName)
             }
@@ -53,33 +53,33 @@ class AntiBlockListener(private val plugin: Mistaken) : Listener {
     fun onCombatBypass(event: EntityDamageByEntityEvent) {
         val victim = event.entity as? Player ?: return
 
-        // Si el world no es de Mistaken, no intervenimos
+        
         if (!isProtectedWorld(victim.world)) return
 
         val damager = event.damager as? Player ?: return
 
-        // 🔥 MULTIARENA: Buscamos la sesión de los involucrados
+        
         val session = plugin.sessionManager.getSession(victim) ?: return
 
-        // Seguridad: Si están en el mismo world pero en sesiones distintas (error raro de TP)
-        // o si uno está en el lobby y el otro no, cancelamos daño.
+        
+        
         if (plugin.sessionManager.getSession(damager) != session) {
             event.isCancelled = true
             return
         }
 
-        // Aplicamos reglas de equipo basadas en SU sesión
+        
         val damagerIsKiller = session.isKiller(damager.uniqueId)
         val victimIsKiller = session.isKiller(victim.uniqueId)
 
         if (damagerIsKiller && !victimIsKiller) {
-            // Killer pegando a Humano -> PERMITIDO
+            
             event.isCancelled = false
         } else if (!damagerIsKiller && victimIsKiller) {
-            // Humano pegando a Killer -> PERMITIDO (Empuje/Stun)
+            
             event.isCancelled = false
         } else {
-            // Fuego amigo (Humano vs Humano o Killer vs Killer) -> DENEGADO
+            
             event.isCancelled = true
         }
     }

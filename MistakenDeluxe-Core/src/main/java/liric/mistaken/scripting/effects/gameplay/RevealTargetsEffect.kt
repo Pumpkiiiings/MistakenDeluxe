@@ -60,7 +60,7 @@ class RevealTargetsEffect(
         PacketEvents.getAPI().playerManager.sendPacket(player, createTeam)
 
         targets.forEach { victim ->
-            val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x40.toByte())) // Glowing flag
+            val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x40.toByte())) 
             PacketEvents.getAPI().playerManager.sendPacket(player, WrapperPlayServerEntityMetadata(victim.entityId, metadata))
             revealedPlayers.add(victim)
         }
@@ -78,13 +78,13 @@ class RevealTargetsEffect(
             scheduledTask = null
             
             if (player.isOnline) {
-                // Remove team
+                
                 val removeTeam = WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.REMOVE, Optional.empty())
                 PacketEvents.getAPI().playerManager.sendPacket(player, removeTeam)
                 
-                // Remove glowing metadata for the player
+                
                 revealedPlayers.forEach { victim ->
-                    val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x00.toByte())) // Remove glowing
+                    val metadata = listOf(EntityData(0, EntityDataTypes.BYTE, 0x00.toByte())) 
                     PacketEvents.getAPI().playerManager.sendPacket(player, WrapperPlayServerEntityMetadata(victim.entityId, metadata))
                 }
             }

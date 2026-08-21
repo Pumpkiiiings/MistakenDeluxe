@@ -57,7 +57,7 @@ class Sowoul : CoreKiller(
     private val angulos = ConcurrentHashMap<UUID, Double>()
     private val fakeEntities = ConcurrentHashMap.newKeySet<VirtualDisplay>()
 
-    // Anti-spam de los efectos de muerte
+    
     private val lastKillEffect = ConcurrentHashMap<UUID, Long>()
 
     init {
@@ -180,7 +180,7 @@ class Sowoul : CoreKiller(
                     victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 40, 2))
                     victim.playSound(victim.location, Sound.ENTITY_ILLUSIONER_MIRROR_MOVE, 1f, 1f)
                     
-                    // Epic 200% Hit Visuals
+                    
                     victim.world.spawnParticle(org.bukkit.Particle.SONIC_BOOM, victim.location.add(0.0, 1.0, 0.0), 1)
                     victim.world.spawnParticle(org.bukkit.Particle.FIREWORK, victim.location.add(0.0, 1.0, 0.0), 1)
                     liric.mistaken.utils.hooks.ObserverHook.playScreenTint(victim, 128, 0, 128, 0.8f, 40)
@@ -274,7 +274,7 @@ class Sowoul : CoreKiller(
                         
                         locToSpawn.world.getNearbyPlayers(locToSpawn, 1.5).forEach { victim ->
                             if (isValidTarget(player, victim)) {
-                                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(victim, 10, 0, 15, 0.6f, 15) // Morado oscurisimo
+                                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(victim, 10, 0, 15, 0.6f, 15) 
                                 liric.mistaken.utils.hooks.ObserverHook.playScreenshake(victim, 1.0f, 15)
                             }
                         }
@@ -349,20 +349,20 @@ class Sowoul : CoreKiller(
         }, null, 1L, 1L)
     }
 
-    // --- 💀 FINISHERS: EFECTOS DE ASESINATO ALEATORIOS ---
+    
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onSowoulKill(event: EntityDamageByEntityEvent) {
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        // 🔥 MULTIARENA FIX: Obtenemos la sesión del atacante
+        
         val session = plugin.sessionManager.getSession(attacker) ?: return
 
-        // Usamos "session" en lugar de "plugin.gameSession"
+        
         if (session.isKiller(attacker.uniqueId) && this.id == plugin.playerDataManager.getSelectedKiller(attacker.uniqueId)) {
 
-            // Verificamos si la víctima ya es espectador en esta arena
+            
             if (plugin.spectatorManager.isSpectator(victim)) {
                 val now = System.currentTimeMillis()
 
@@ -561,15 +561,3 @@ class Sowoul : CoreKiller(
         fakeEntities.clear()
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-

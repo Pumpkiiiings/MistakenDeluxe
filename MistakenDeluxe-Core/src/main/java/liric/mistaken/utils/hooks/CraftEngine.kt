@@ -25,12 +25,12 @@ object CraftEngine {
      * Resuelve el �tem buscando primero en CraftEngine y luego en Vanilla.
      */
     fun getCustomItem(property: String?): ItemStack? {
-        // 1. Filtro r�pido: si no hay nada o dice 'none', nos ahorramos el jale.
+        
         if (property.isNullOrBlank() || property.equals("none", ignoreCase = true)) {
             return null
         }
 
-        // 2. Intento por CraftEngine (usando la nueva API CraftEngineItems)
+        
         if (property.contains(":") && isAvailable()) {
             try {
                 val itemDef = CraftEngineItems.byId(net.momirealms.craftengine.core.util.Key.from(property))
@@ -43,14 +43,14 @@ object CraftEngine {
             }
         }
 
-        // 3. Fallback Vanilla: Si no tiene ':' o CraftEngine no lo hall�.
-        // Usamos matchMaterial porque es m�s aguantador que el valueOf
+        
+        
         val mat = Material.matchMaterial(property.uppercase())
 
         return if (mat != null && mat != Material.AIR) {
             ItemStack(mat)
         } else {
-            // Si llegamos aqu�, es que el admin escribi� algo que no existe
+            
             if (!property.contains(":")) {
                 Mistaken.Companion.instance.logger.warning("�Aviso! No se encontr� el material vanilla: $property")
             }
@@ -66,7 +66,7 @@ object CraftEngine {
         val item = getCustomItem(property)
         if (item != null) return item
 
-        // Si fall�, fabricamos un �tem de error para que el admin sepa qu� onda
+        
         return ItemStack(Material.BARRIER).apply {
             editMeta { meta ->
                 meta.displayName(ColorTranslator.translate("<red><bold>ERROR:</bold> <white>$property"))

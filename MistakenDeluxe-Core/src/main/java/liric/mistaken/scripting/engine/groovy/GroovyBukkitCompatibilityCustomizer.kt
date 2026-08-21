@@ -31,23 +31,23 @@ class GroovyBukkitCompatibilityCustomizer : CompilationCustomizer(CompilePhase.S
             override fun transform(exp: Expression?): Expression? {
                 if (exp == null) return null
 
-                // Interceptar accesos a propiedades (e.g., "player.isOnline")
+                
                 if (exp is PropertyExpression) {
                     val propertyName = exp.propertyAsString
                     
-                    // Si la propiedad empieza con "is" seguido de una letra mayúscula (ej: isOnline, isOp)
+                    
                     if (propertyName != null && propertyName.startsWith("is") && propertyName.length > 2 && propertyName[2].isUpperCase()) {
                         
-                        // Transformar: objeto.isPropiedad -> objeto.isPropiedad()
+                        
                         val methodCall = MethodCallExpression(
-                            transform(exp.objectExpression), // transformar el objeto recursivamente
+                            transform(exp.objectExpression), 
                             propertyName,
-                            ArgumentListExpression() // sin argumentos
+                            ArgumentListExpression() 
                         )
                         
                         methodCall.setSourcePosition(exp)
-                        methodCall.isSafe = exp.isSafe             // Soporte para ?. (e.g. player?.isOnline)
-                        methodCall.isSpreadSafe = exp.isSpreadSafe // Soporte para *. 
+                        methodCall.isSafe = exp.isSafe             
+                        methodCall.isSpreadSafe = exp.isSpreadSafe 
                         
                         return methodCall
                     }
@@ -60,4 +60,3 @@ class GroovyBukkitCompatibilityCustomizer : CompilationCustomizer(CompilePhase.S
         transformer.visitClass(classNode)
     }
 }
-

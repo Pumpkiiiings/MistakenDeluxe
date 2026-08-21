@@ -34,7 +34,7 @@ class Notch : Survivor(
     private fun preLoadKit() {
         val config = plugin.configManager.getSurvivorConfig(this.id)
 
-        // 1. Abilities
+        
         listOf("skill1", "skill2", "skill3").forEach { key ->
             config.getString("items.$key")?.let { id ->
                 if (id != "none" && id.isNotEmpty()) {
@@ -44,7 +44,7 @@ class Notch : Survivor(
             }
         }
 
-        // 2. Armadura (Por defecto Oro/Diamante si no hay config)
+        
         val armorParts = mapOf(
             "helmet" to Material.GOLDEN_HELMET,
             "chestplate" to Material.GOLDEN_CHESTPLATE,
@@ -119,21 +119,21 @@ class Notch : Survivor(
         player.updateInventory()
     }
 
-    // --- H1: SALTO CREATIVO (Vuelo temporal) ---
+    
     private fun usarSaltoCreativo(player: Player) {
-        // Impulso f�sico
-        val velocity = player.location.direction.multiply(1.2).setY(1.1) // Salto alto y hacia adelante
+        
+        val velocity = player.location.direction.multiply(1.2).setY(1.1) 
         player.velocity = velocity
 
-        // SFX Combinado: Cohete + Experiencia (Sonido "M�gico")
+        
         player.world.playSound(player.location, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.5f, 0.8f)
         player.world.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 0.5f)
 
-        // Part�culas: Nubes debajo de los pies
+        
         player.world.spawnParticle(Particle.CLOUD, player.location, 15, 0.3, 0.1, 0.3, 0.05)
-        player.world.spawnParticle(Particle.WAX_OFF, player.location, 10, 0.5, 0.5, 0.5) // Destellos blancos
+        player.world.spawnParticle(Particle.WAX_OFF, player.location, 10, 0.5, 0.5, 0.5) 
 
-        // Ca�da lenta para simular "Creative Mode" al bajar
+        
         val task = player.scheduler.runDelayed(plugin, {
             if (player.isOnline) {
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOW_FALLING, 60, 0))
@@ -143,24 +143,24 @@ class Notch : Survivor(
         task?.let { activeTasks.add(it) }
     }
 
-    // --- H2: MURO DEL ADMIN (Empuje de Bedrock) ---
+    
     private fun usarMuroAdmin(player: Player) {
-        // SFX Combinado: Yunque + Pist�n (Sonido "Pesado/Denegado")
+        
         player.world.playSound(player.location, Sound.BLOCK_ANVIL_LAND, 0.8f, 0.5f)
         player.world.playSound(player.location, Sound.BLOCK_PISTON_EXTEND, 1.0f, 0.5f)
 
-        // VFX: C�rculo de Bedrock y Runas
+        
         player.world.spawnParticle(Particle.BLOCK, player.location.add(0.0, 1.0, 0.0), 40, 3.0, 0.5, 3.0, Material.BEDROCK.createBlockData())
         player.world.spawnParticle(Particle.ENCHANT, player.location.add(0.0, 1.0, 0.0), 30, 2.0, 2.0, 2.0, 1.0)
 
-        // L�gica de empuje
+        
         player.getNearbyEntities(6.0, 6.0, 6.0).forEach { entity ->
             if (entity is Player && plugin.sessionManager.getSession(entity)?.isKiller(entity.uniqueId) == true) {
-                // Vector de rechazo fuerte
+                
                 val push = entity.location.toVector().subtract(player.location.toVector()).normalize().multiply(2.5).setY(0.4)
                 entity.velocity = push
 
-                // Efectos al killer
+                
                 entity.sendMessage(ColorTranslator.translate(
                     liric.mistaken.config.engine.core.MessageService.getStrictString(entity, "supervivientes.notch.habilidades.denied", "survivors_info")
                 ))
@@ -169,24 +169,24 @@ class Notch : Survivor(
         }
     }
 
-    // --- H3: MANZANA DEL CREADOR (Buffs Epicos) ---
+    
     private fun usarManzanaCreador(player: Player) {
-        // SFX Combinado: T�tem + Comer
+        
         player.world.playSound(player.location, Sound.ITEM_TOTEM_USE, 1.0f, 1.2f)
         player.world.playSound(player.location, Sound.ENTITY_GENERIC_EAT, 1.0f, 1.0f)
 
-        // VFX: Explosi�n de T�tem + Flash
+        
         player.world.spawnParticle(Particle.TOTEM_OF_UNDYING, player.location.add(0.0, 1.0, 0.0), 40, 0.5, 0.5, 0.5, 0.3)
         player.world.spawnParticle(Particle.FIREWORK, player.location.add(0.0, 1.0, 0.0), 1)
 
-        // Buffs Poderosos
-        player.addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, 100, 2)) // Regen III por 5s
-        player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 100, 1))   // Resistencia II por 5s
-        player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 1))        // Velocidad II por 5s
+        
+        player.addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, 100, 2)) 
+        player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 100, 1))   
+        player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, 1))        
 
-        // Curaci�n instant�nea visual
+        
         val maxHealth = player.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
-        player.health = (player.health + 6.0).coerceAtMost(maxHealth) // Cura 3 corazones
+        player.health = (player.health + 6.0).coerceAtMost(maxHealth) 
     }
 
     override fun cleanup(player: Player?) {
@@ -195,9 +195,3 @@ class Notch : Survivor(
         activeTasks.clear()
     }
 }
-
-
-
-
-
-

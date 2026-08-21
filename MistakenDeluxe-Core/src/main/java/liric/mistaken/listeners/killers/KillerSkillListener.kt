@@ -41,10 +41,10 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         if (session.currentState != GameState.INGAME) return
         if (!session.isKiller(player.uniqueId)) return
 
-        // Anti-spam para evitar que spamee transiciones si el player mantiene presionado el click izquierdo
+        
         val now = System.currentTimeMillis()
         val lastHit = lastAttackMap.getOrDefault(player.uniqueId, 0L)
-        if (now - lastHit < 500L) { // Medio segundo de cooldown para la animación
+        if (now - lastHit < 500L) { 
             return
         }
         lastAttackMap[player.uniqueId] = now
@@ -97,7 +97,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
 
         val player = event.player
 
-        // ?? MULTIARENA: Buscamos la sesi�n espec�fica del killer
+        
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
 
@@ -128,7 +128,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         event.isCancelled = true
         plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
 
-        // Ejecutar ability mapeada dinmicamente
+        
         killer.useSkill(player, abilityEjecutada)
     }
 
@@ -140,7 +140,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         val snowball = event.entity as? Snowball ?: return
         val shooter = snowball.shooter as? Player ?: return
 
-        // ?? MULTIARENA: Detectamos la sesi�n del disparador
+        
         val session = plugin.sessionManager.getSession(shooter) ?: return
 
         val nameComp = snowball.customName() ?: return
@@ -150,7 +150,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
             val loc = snowball.location
             val world = loc.world ?: return
 
-            // --- 1. EFECTOS VISUALES ---
+            
             world.spawnParticle(Particle.ENCHANTED_HIT, loc, 15, 0.3, 0.3, 0.3, 0.1)
             val dust = Particle.DustOptions(Color.fromRGB(0, 255, 240), 1.0f)
             world.spawnParticle(Particle.DUST, loc, 10, 0.2, 0.2, 0.2, 0.1, dust)
@@ -158,20 +158,20 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
             world.playSound(loc, Sound.BLOCK_GLASS_BREAK, 1.0f, 0.5f)
             world.playSound(loc, Sound.ENTITY_ITEM_BREAK, 0.8f, 0.1f)
 
-            // --- 2. L�GICA DE IMPACTO ---
+            
             val victim = event.hitEntity as? Player ?: return
 
-            // No infectar a otros killers de la misma sesi�n
+            
             if (session.isKiller(victim.uniqueId)) return
 
-            // Verificamos que la v�ctima sea un survivor v�lido en esa arena
+            
             if (victim.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(victim)) return
 
             victim.apply {
                 addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 1))
                 addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 100, 0))
 
-                // ?? DA�O: Usamos el combatManager de la sesi�n correspondiente
+                
                 session.combatManager.takeDamage(this)
 
                 world.spawnParticle(Particle.ANGRY_VILLAGER, location.add(0.0, 1.5, 0.0), 5, 0.2, 0.2, 0.2, 0.1)
@@ -182,5 +182,3 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         }
     }
 }
-
-

@@ -16,7 +16,7 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
     override fun onRequest(player: OfflinePlayer?, params: String): String? {
         if (player == null) return ""
 
-        val p = player.player // Player online (puede ser null)
+        val p = player.player 
         val param = params.lowercase()
 
         fun formatTime(seconds: Int): String {
@@ -27,18 +27,18 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
             else String.format("%02d:%02d", m, s)
         }
 
-        // 1. BUSCAR SESIÓN (Solo si el player está online)
+        
         val session = p?.let { plugin.sessionManager.getSession(it) }
 
         return when (param) {
-            // --- ESTADO DE LA PARTIDA ACTUAL (Contextual) ---
+            
             "game_state" -> session?.currentState?.name ?: "LOBBY"
             "mode" -> session?.currentMode?.name ?: "N/A"
             "timer" -> session?.timer?.let { formatTime(it) } ?: "00:00"
             "map" -> session?.currentMapName ?: "Lobby"
             "session_id" -> session?.id ?: "NONE"
             
-            // --- OBSERVER PLACEHOLDERS ---
+            
             "alive_survivors" -> session?.getPlayers()?.count { !session.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !plugin.spectatorManager.isSpectator(it) }?.toString() ?: "0"
             "id" -> session?.id ?: "NONE"
             "time" -> session?.timer?.let { formatTime(it) } ?: "00:00"
@@ -56,8 +56,8 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
                 }
             }
 
-            // --- GENERADORES (Contextuales a la arena del player) ---
-            // Nota: Se asume que generatorManager puede filtrar por el world/sesión del player
+            
+            
             "gens_repaired" -> {
                 if (p == null) "0"
                 else plugin.generatorManager.getCompletedCountInWorld(p.world).toString()
@@ -67,7 +67,7 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
                 else plugin.generatorManager.getTotalGeneratorsInWorld(p.world).toString()
             }
 
-            // --- LÓGICA DE ROL ---
+            
             "is_killer" -> if (session?.isKiller(player.uniqueId) == true) "Yes" else "No"
 
             "killer_name" -> {
@@ -80,7 +80,7 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
                 plugin.killerManager.getKillerOfPlayer(p)?.id ?: "none"
             }
 
-            // --- ESTADÍSTICAS GLOBALES (Independientes de la sesión) ---
+            
             else -> {
                 val stats = plugin.statsManager.getStats(player.uniqueId)
                 when (param) {

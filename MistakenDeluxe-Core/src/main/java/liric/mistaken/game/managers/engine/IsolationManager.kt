@@ -32,7 +32,7 @@ class IsolationManager(private val plugin: Mistaken) : Listener {
                 plugin.visibilityManager.showPlayer(target, online)
                 plugin.visibilityManager.showPlayer(online, target)
             } else {
-                // Si están en partidas distintas, se vuelven inexistentes el uno para el otro
+                
                 plugin.visibilityManager.hidePlayer(target, online)
                 plugin.visibilityManager.hidePlayer(online, target)
             }
@@ -47,14 +47,14 @@ class IsolationManager(private val plugin: Mistaken) : Listener {
     fun onIsolatedChat(event: AsyncChatEvent) {
         val senderSessionId = plugin.sessionManager.playerSessions[event.player.uniqueId]
 
-        // Filtramos a quién le llega el message
+        
         event.viewers().removeIf { viewer ->
             if (viewer is Player) {
                 val viewerSessionId = plugin.sessionManager.playerSessions[viewer.uniqueId]
-                // Si el ID de sesión es distinto, eliminamos al receptor de la lista
+                
                 viewerSessionId != senderSessionId
             } else {
-                false // Consola siempre lee todo
+                false 
             }
         }
     }

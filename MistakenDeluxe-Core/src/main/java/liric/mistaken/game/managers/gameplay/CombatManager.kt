@@ -43,7 +43,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     private val killerCooldowns = ConcurrentHashMap<UUID, Long>()
     private val survivorCooldowns = ConcurrentHashMap<UUID, Long>()
 
-    // ?? TIEMPOS DE COOLDOWN
+    
     private val KILLER_COOLDOWN = 1000L
     private val SURVIVOR_COOLDOWN = 1000L
 
@@ -57,7 +57,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { _ ->
             if (!plugin.isReady) return@Consumer
 
-            // ?? MULTIARENA: Recorremos todas las sesiones activas
+            
             val sessions = plugin.sessionManager.activeSessions.values
 
             for (session in sessions) {
@@ -79,7 +79,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                         
                         var targetsProcessed = 0
 
-                        // Obtenemos los players de ESTA sesiï¿½n para no escanear a todo el servidor
+                        
                         for (target in players) {
                             target.scheduler.run(plugin, Consumer { _ ->
                                 if (!target.isOnline || !killer.isOnline) {
@@ -235,7 +235,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             return
         }
 
-        // ?? MULTIARENA: Obtenemos la sesiï¿½n donde ocurre la pelea
+        
         val session = plugin.sessionManager.getSession(victim) ?: return
         if (session.currentState != GameState.INGAME) return
 
@@ -390,13 +390,13 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             victim.health = 10.0
             victim.world.playSound(victim.location, Sound.BLOCK_FIRE_EXTINGUISH, 1f, 1.5f)
             
-            // Efecto de fuego al descongelar
+            
             victim.world.spawnParticle(Particle.FLAME, victim.location.add(0.0, 1.0, 0.0), 30, 0.5, 0.5, 0.5, 0.05)
             victim.world.spawnParticle(Particle.LAVA, victim.location.add(0.0, 1.0, 0.0), 10, 0.5, 0.5, 0.5, 0.05)
         }
     }
 
-    // ?? FIX: Adaptado a Multiarena
+    
     fun giveWinRewards(killerWon: Boolean, session: GameSession) {
         val killers = session.killersUUIDs
         val winners = if (killerWon) {
@@ -440,7 +440,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 return@Consumer
             }
             
-            // Aura azul de frio
+            
             victim.world.spawnParticle(Particle.SOUL_FIRE_FLAME, victim.location.add(0.0, 1.0, 0.0), 10, 0.3, 0.5, 0.3, 0.02)
             
             val timeFormatted = String.Companion.format(Locale.US, "%d:%02d", timeLeft / 60, timeLeft % 60)
@@ -518,7 +518,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         }
     }
 
-    // ?? EL ESCUDO ABSOLUTO MULTIARENA
+    
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onKillerDarkness(event: EntityPotionEffectEvent) {
         val player = event.entity as? Player ?: return

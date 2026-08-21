@@ -28,7 +28,7 @@ class LevelConfig(private val plugin: LevelAddonPlugin) {
         maxLevel = config.getInt("settings.max_level", 100)
         defaultMultiplier = config.getInt("curves.default-multiplier", 500)
 
-        // Load Prefixes
+        
         prefixesMap.clear()
         val prefixesSection = config.getConfigurationSection("prefixes")
         if (prefixesSection != null) {
@@ -41,7 +41,7 @@ class LevelConfig(private val plugin: LevelAddonPlugin) {
             }
         }
 
-        // Load Levels/Rewards/Requirements
+        
         levelRewards.clear()
         levelRequirements.clear()
         val levelsSection = config.getConfigurationSection("levels")

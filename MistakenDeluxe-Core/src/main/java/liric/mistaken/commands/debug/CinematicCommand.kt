@@ -21,7 +21,7 @@ object CinematicCommand {
 
         return Commands.literal("cinematic")
             .requires { source -> source.sender.hasPermission("mistaken.admin") }
-            // --- SUBCOMANDO: INTRO ---
+            
             .then(
                 Commands.literal("intro")
                     .then(
@@ -42,7 +42,7 @@ object CinematicCommand {
                             }
                     )
             )
-            // --- SUBCOMANDO: OUTRO (Victoria) ---
+            
             .then(
                 Commands.literal("outro")
                     .then(

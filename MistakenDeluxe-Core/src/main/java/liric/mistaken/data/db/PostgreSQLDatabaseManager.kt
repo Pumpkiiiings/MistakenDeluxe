@@ -45,7 +45,7 @@ class PostgreSQLDatabaseManager(plugin: Mistaken) : AbstractSQLDatabaseManager(p
     """.trimIndent()
 
     override fun bindUpsertVariables(ps: PreparedStatement, uuid: String, lang: String, killersOwned: String, killerSelected: String, survOwned: String, survSelected: String, nick: String, skin: String) {
-        // En PostgreSQL usando EXCLUDED.columna no es necesario enviar los parámetros duplicados del UPDATE
+        
         ps.setString(1, uuid); ps.setString(2, lang); ps.setString(3, killersOwned)
         ps.setString(4, killerSelected); ps.setString(5, survOwned); ps.setString(6, survSelected)
         ps.setString(7, nick); ps.setString(8, skin)

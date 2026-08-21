@@ -48,9 +48,9 @@ object WorldTrapRegistry {
                     if (trap != null) {
                         event.isCancelled = true
                         
-                        // Executamos sincrónicamente para evitar ConcurrentModification o llamadas de Bukkit en asincrónico
+                        
                         Bukkit.getScheduler().runTask(plugin, Runnable {
-                            // Enviar al trap definition
+                            
                             val trapLoc = Location(player.world, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
                             trap.onTrigger(player, trapLoc)
                         })

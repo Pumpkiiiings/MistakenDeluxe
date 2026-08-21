@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class PlayerStats {
 
-    // Contadores atómicos para alto rendimiento y seguridad entre hilos
+    
     val winsSurvivor = AtomicInteger(0)
     val winsAssassin = AtomicInteger(0)
     val lossesSurvivor = AtomicInteger(0)
@@ -16,7 +16,7 @@ class PlayerStats {
     val generatorsRepaired = AtomicInteger(0)
 
     companion object {
-        // Objeto estático para formateo, evita instanciar uno por cada player (Ahorro de RAM)
+        
         private val df = DecimalFormat("#.##")
     }
 
@@ -52,7 +52,7 @@ class PlayerStats {
         }
     }
 
-    // --- LÓGICA DE CÁLCULO ---
+    
 
     /**
      * Calcula el KDR (Kill/Death Ratio).
@@ -88,7 +88,7 @@ class PlayerStats {
     val gamesPlayed: Int
         get() = totalWins + totalLosses
 
-    // --- MÉTODOS DE UTILIDAD PARA DB ---
+    
 
     /**
      * Carga masiva de datos (usado al entrar al servidor).

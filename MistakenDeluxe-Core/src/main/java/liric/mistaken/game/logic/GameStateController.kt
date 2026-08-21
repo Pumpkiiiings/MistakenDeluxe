@@ -18,10 +18,10 @@ import liric.mistaken.config.engine.core.MessageService
 
 class GameStateController(private val game: GameSession) {
 
-    // Cache local para el resultado de la partida
+    
     private var lastKillerWon = false
 
-    // Referencia a Geoffrey (anomalía del modo INITIALIZES)
+    
     internal var geoffreyEntity: GeoffreyEXE? = null
 
     fun startBreakProcess() {
@@ -31,14 +31,14 @@ class GameStateController(private val game: GameSession) {
             game.playerController.cleanupAllPlayers(lastKillerWon)
             game.worldController.clearMapa()
             
-            // Usamos leaveSession para cada player para que maneje el teleport, la visibilidad
-            // y, en caso de GAME_SERVER, el envío al proxy.
+            
+            
             val playersToLeave = game.getPlayers().toList()
             playersToLeave.forEach { player ->
                 game.plugin.sessionManager.leaveSession(player)
             }
             
-            // Programar la destrucción de la sesión
+            
             game.plugin.server.globalRegionScheduler.runDelayed(game.plugin, { _ ->
                 game.plugin.sessionManager.destroySession(game.id)
             }, 80L)
@@ -50,7 +50,7 @@ class GameStateController(private val game: GameSession) {
 
         game.timer = game.plugin.config.getInt("settings.break-duration", 10)
 
-        // --- LIMPIEZA POST-CINEMÃTICA ---
+        
         if (venimosDePartida) {
             game.playerController.cleanupAllPlayers(lastKillerWon)
             game.worldController.clearMapa()
@@ -80,11 +80,11 @@ class GameStateController(private val game: GameSession) {
                 online.forEach { it.playSound(it.location, Sound.BLOCK_BEACON_DEACTIVATE, 1f, 0.1f) }
             }
             8 -> {
-                // Revelar modo
+                
                 game.broadcastLocalized("game.mode-selected", Placeholder.parsed("mode", game.currentMode.name))
                 game.uiController.playModeTitle(online)
 
-                // 🔥 REPRODUCIR INTRO DEL ASESINO 🔥
+                
                 val killer = game.getCurrentKiller()
                 if (killer != null && killer.isOnline) {
                     val killerClass = game.plugin.killerManager.getKillerOfPlayer(killer)
@@ -98,14 +98,14 @@ class GameStateController(private val game: GameSession) {
                 game.timer = game.settings?.gameDuration ?: game.plugin.config.getInt("settings.game-duration", 300)
                 game.broadcastLocalized("game.hunt-start")
 
-                // 🔥 RESTAURAR VISTAS Y APLICAR OSCURIDAD A SUPERVIVIENTES
+                
                 online.forEach { p ->
                     if (p.gameMode == GameMode.SPECTATOR && !game.plugin.spectatorManager.isSpectator(p)) {
-                        p.spectatorTarget = null // Limpiamos primero en modo SPECTATOR
-                        p.gameMode = GameMode.SURVIVAL // Y luego lo pasamos a SURVIVAL
+                        p.spectatorTarget = null 
+                        p.gameMode = GameMode.SURVIVAL 
                     }
 
-                    // A los survivors se les aplica True Darkness de Observer
+                    
                     if (!game.isKiller(p.uniqueId) && !game.plugin.spectatorManager.isSpectator(p)) {
                         liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(p, true)
                     }
@@ -114,12 +114,12 @@ class GameStateController(private val game: GameSession) {
         }
     }
 
-    // 🔥 NUEVA FUNCIÓN: Invocación Programada de Geoffrey
+    
     fun checkGeoffreySpawn() {
-        // Modo clásico INITIALIZES: spawnea exactamente a los 290 segundos
+        
         if (game.currentMode == MistakenMode.INITIALIZES && game.timer == 290) {
 
-            // 1. Títulos de Terror a todos los players (Incluyendo el Killer)
+            
             val title = ColorTranslator.translate("<dark_red><bold><obfuscated>||</obfuscated> ¡GEOFFREY ESTÃ AQUÃ! <obfuscated>||</obfuscated>")
             val subtitle = ColorTranslator.translate("<dark_gray>Nadie sobrevivirá...")
             val times = Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(4), Duration.ofMillis(500))
@@ -129,12 +129,12 @@ class GameStateController(private val game: GameSession) {
                 p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1.5f, 0.5f)
                 p.playSound(p.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.5f)
 
-                // Efecto de Estática (Ceguera + Nausea fugaz)
+                
                 p.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0, false, false, false))
                 p.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1, false, false, false))
             }
 
-            // 2. Invocar la entidad en el centro
+            
             val spawnLoc = game.getCurrentKiller()?.location ?: game.plugin.server.onlinePlayers.firstOrNull()?.location
 
             if (spawnLoc != null) {
@@ -208,7 +208,7 @@ class GameStateController(private val game: GameSession) {
                 chance <= 83 -> MistakenMode.INFECTION
                 chance <= 92 -> MistakenMode.FREEZE_TAG
                 chance <= 98 -> MistakenMode.HIDE_AND_SEEK
-                else         -> MistakenMode.INITIALIZES    // 💀 2% de probabilidad
+                else         -> MistakenMode.INITIALIZES    
             }
             if (selected == MistakenMode.DOUBLE_KILLER && onlineCount < 4) selected = MistakenMode.CLASSIC
             game.currentMode = selected
@@ -220,11 +220,11 @@ class GameStateController(private val game: GameSession) {
         if (game.currentState == GameState.ENDING) return
         game.currentState = GameState.ENDING
 
-        // Linternas fuera: al terminar la partida los bloques de luz falsos deben volver
-        // a su estado real para todos los que los estaban recibiendo.
+        
+        
         game.getPlayers().forEach { game.plugin.flashlightManager.disable(it) }
 
-        // 🔥 Limpieza de Anomalía
+        
         geoffreyEntity?.remove()
         geoffreyEntity = null
 
@@ -314,7 +314,7 @@ class GameStateController(private val game: GameSession) {
     fun resetToLobby(path: String?) {
         path?.let { game.broadcastLocalized(it) }
 
-        // 🔥 Limpieza de Anomalía por Abandono
+        
         geoffreyEntity?.remove()
         geoffreyEntity = null
 
@@ -335,5 +335,3 @@ class GameStateController(private val game: GameSession) {
         game.uiController.clearBossBars()
     }
 }
-
-

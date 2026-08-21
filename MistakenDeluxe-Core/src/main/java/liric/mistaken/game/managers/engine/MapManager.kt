@@ -32,7 +32,7 @@ class MapManager(private val plugin: Mistaken) {
         val future = CompletableFuture<World?>()
         val instanceName = "${templateName}_${System.currentTimeMillis()}"
 
-        // --- FASE 1: DISCO (Hilo Asíncrono de Paper para no laguear el server) ---
+        
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
             try {
                 if (!fileLoader.worldExists(templateName)) {
@@ -50,7 +50,7 @@ class MapManager(private val plugin: Mistaken) {
                 val template = asp.readWorld(fileLoader, templateName, true, props)
                 val worldInstance = template.clone(instanceName)
 
-                // --- FASE 2: REGISTRO (Hilo Principal Global de Paper) ---
+                
                 plugin.server.globalRegionScheduler.execute(plugin) {
                     try {
                         val instance = asp.loadWorld(worldInstance, false)
@@ -62,10 +62,10 @@ class MapManager(private val plugin: Mistaken) {
                             return@execute
                         }
 
-                        // --- CONFIGURACIÓN DE AMBIENTE (Tu lógica intacta) ---
+                        
                         bukkitWorld.apply {
                             isAutoSave = false
-                            time = 18000L // Noche
+                            time = 18000L 
 
                             setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false)
                             setGameRule(GameRule.DO_WEATHER_CYCLE, false)
@@ -74,7 +74,7 @@ class MapManager(private val plugin: Mistaken) {
                             setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false)
                             setGameRule(GameRule.DO_FIRE_TICK, false)
 
-                            // 🔥 TU CAMBIO: Anulamos el daño de caída globalmente
+                            
                             setGameRule(GameRule.FALL_DAMAGE, false)
 
                             setStorm(false)
@@ -106,7 +106,7 @@ class MapManager(private val plugin: Mistaken) {
     fun unloadWorld(world: World?) {
         if (world == null) return
 
-        // La descarga SIEMPRE debe ocurrir en el hilo principal
+        
         plugin.server.globalRegionScheduler.execute(plugin) {
             Bukkit.unloadWorld(world, false)
             plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>World ${world.name} unloaded.</gray>"))
@@ -114,7 +114,7 @@ class MapManager(private val plugin: Mistaken) {
     }
 
     fun shutdown() {
-        // En Paper 1.21.4 ya no ocupamos cancelar corrutinas porque los schedulers
-        // del servidor se limpian solos al apagar el plugin. ¡Menos RAM gastada!
+        
+        
     }
 }

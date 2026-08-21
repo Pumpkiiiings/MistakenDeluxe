@@ -23,13 +23,13 @@ class ObserverHUDManager(private val plugin: Mistaken) {
     private val configFile: File = File(plugin.dataFolder, "observer-hud.yml")
     private var config: YamlConfiguration = YamlConfiguration()
 
-    // Estado actual pintado para no sobreescribir: Map<PlayerUUID, State>
+    
     private val activeStates = ConcurrentHashMap<UUID, String>()
-    // Componentes din�micos que deben ser actualizados
+    
     private val activeDynamicTexts = ConcurrentHashMap<UUID, MutableSet<DynamicTextComponent>>()
-    // IDs de los componentes globales (nunca se borran mientras el player est�)
+    
     private val globalComponentIds = ConcurrentHashMap<UUID, MutableSet<String>>()
-    // IDs de los componentes de estado actual para borrado manual
+    
     private val stateComponentIds = ConcurrentHashMap<UUID, MutableSet<String>>()
 
     private var updateTask: BukkitTask? = null
@@ -66,15 +66,15 @@ class ObserverHUDManager(private val plugin: Mistaken) {
             else "ingame"
         }
 
-        // 1. Asegurar HUD global siempre dibujado
+        
         if (!globalComponentIds.containsKey(player.uniqueId)) {
             drawComponents(player, "global", true)
         }
 
-        // 2. Transici�n de estados
+        
         if (activeStates[player.uniqueId] != stateName) {
             activeStates[player.uniqueId] = stateName
-            clearPlayerStateComponents(player) // Borra estado anterior sin tocar global
+            clearPlayerStateComponents(player) 
             
             if (stateName != "none") {
                 drawComponents(player, stateName, false)
@@ -93,8 +93,8 @@ class ObserverHUDManager(private val plugin: Mistaken) {
         val gm = plugin.sessionManager.getSession(player) ?: return
         if (activeStates[player.uniqueId] == "ingame") {
             val role = if (gm.isKiller(player.uniqueId)) "killer" else "survivor"
-            // Remover componentes de roles previos no es tan trivial porque no guardamos la key exacta,
-            // pero podemos draw encima o confiar en que se llame despu�s de un clearHUD().
+            
+            
             drawComponents(player, "roles.$role", false)
         }
     }
@@ -104,7 +104,7 @@ class ObserverHUDManager(private val plugin: Mistaken) {
             val ids = stateComponentIds.remove(player.uniqueId)
             ids?.forEach { ObserverHook.removeComponent(player, it) }
             
-            // Removemos los textos din�micos asociados al estado
+            
             val dynamic = activeDynamicTexts[player.uniqueId]
             dynamic?.removeIf { ids?.contains(it.id) == true }
         }
@@ -112,7 +112,7 @@ class ObserverHUDManager(private val plugin: Mistaken) {
 
     fun clearPlayer(player: Player) {
         if (ObserverHook.hasObserver(player)) {
-            ObserverHook.clearHUD(player) // Borra todo f�sicamente al salir
+            ObserverHook.clearHUD(player) 
         }
         activeStates.remove(player.uniqueId)
         globalComponentIds.remove(player.uniqueId)

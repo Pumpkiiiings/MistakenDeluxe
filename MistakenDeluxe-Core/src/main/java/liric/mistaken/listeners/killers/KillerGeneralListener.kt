@@ -24,8 +24,8 @@ class KillerGeneralListener(private val plugin: Mistaken) : Listener {
      */
     @EventHandler(priority = EventPriority.LOWEST)
     fun onFallDamage(event: EntityDamageEvent) {
-        // 🔥 FIX CPU: Revisar el Enum es 100 veces más rápido que castear la entidad
-        // Si no es daño por caída, abortamos de inmediato.
+        
+        
         if (event.cause != EntityDamageEvent.DamageCause.FALL) return
 
         val player = event.entity as? Player ?: return
@@ -33,7 +33,7 @@ class KillerGeneralListener(private val plugin: Mistaken) : Listener {
         if (plugin.killerManager.isKiller(player)) {
             event.isCancelled = true
 
-            // Efecto sutil solo si la caída fue considerable
+            
             if (event.damage > 4.0) {
                 player.playSound(player.location, Sound.ENTITY_ZOMBIE_STEP, 0.5f, 0.5f)
             }
@@ -49,19 +49,19 @@ class KillerGeneralListener(private val plugin: Mistaken) : Listener {
 
         if (!plugin.killerManager.isKiller(player)) return
 
-        // 1. Bloquear teclas rápidas (presionar 'F' o un número sobre un ítem)
+        
         if (event.click == ClickType.SWAP_OFFHAND || event.click == ClickType.NUMBER_KEY) {
             event.isCancelled = true
             return
         }
 
-        // 2. Bloquear Armor Slots y Offhand (slot 45)
+        
         if (event.slotType == InventoryType.SlotType.ARMOR || event.rawSlot == 45) {
             event.isCancelled = true
             return
         }
 
-        // 3. Bloquear Hotbar de abilities (Slots 0 al 4)
+        
         val clickedInv = event.clickedInventory
         if (clickedInv != null && clickedInv.type == InventoryType.PLAYER) {
             if (event.slot in 0..4) {
@@ -70,7 +70,7 @@ class KillerGeneralListener(private val plugin: Mistaken) : Listener {
             }
         }
 
-        // 4. Bloquear Shift+Click hacia contenedores
+        
         if (event.click.isShiftClick) {
             event.isCancelled = true
         }

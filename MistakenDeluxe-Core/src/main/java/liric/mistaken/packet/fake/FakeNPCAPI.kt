@@ -38,7 +38,7 @@ class FakeNPCAPI {
             profile.textureProperties.add(TextureProperty("textures", textureValue, textureSignature))
         }
 
-        // 1. INFO UPDATE (Carga la skin y el perfil)
+        
         val infoData = WrapperPlayServerPlayerInfoUpdate.PlayerInfo(
             profile,
             true,
@@ -53,7 +53,7 @@ class FakeNPCAPI {
         )
         pm.sendPacket(player, infoPacket)
 
-        // 2. SPAWN FISICO
+        
         val pos = SpigotConversionUtil.fromBukkitLocation(location)
         val spawnPacket = WrapperPlayServerSpawnEntity(
             entityId,
@@ -68,12 +68,10 @@ class FakeNPCAPI {
         )
         pm.sendPacket(player, spawnPacket)
 
-        // 3. HEAD LOOK (Girar cabeza correctamente)
+        
         val headLook = WrapperPlayServerEntityHeadLook(entityId, pos.yaw)
         pm.sendPacket(player, headLook)
 
         return entityId
     }
 }
-
-

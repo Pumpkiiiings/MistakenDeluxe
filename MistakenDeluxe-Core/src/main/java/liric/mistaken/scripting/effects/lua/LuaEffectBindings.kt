@@ -71,7 +71,7 @@ object LuaEffectBindings {
 
     fun install(globals: Globals, scriptId: String) {
         
-        // ──────────── on_chat(callback) ────────────
+        
         globals.set("on_chat", object : OneArgFunction() {
             override fun call(callbackArg: LuaValue): LuaValue {
                 if (callbackArg.isfunction()) {
@@ -84,7 +84,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── player_state_set(player, key, value) ────────────
+        
         globals.set("player_state_set", object : ThreeArgFunction() {
             override fun call(playerArg: LuaValue, keyArg: LuaValue, valArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -95,7 +95,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── player_state_get(player, key) ────────────
+        
         globals.set("player_state_get", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, keyArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -105,7 +105,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── player_state_clear(player, key) ────────────
+        
         globals.set("player_state_clear", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, keyArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -115,19 +115,19 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── get_nearby_players(player, radius) ────────────
+        
         globals.set("get_nearby_players", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, radiusArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
                 val radius = radiusArg.checkdouble()
                 val nearby = player.getNearbyEntities(radius, radius, radius)
                     .filterIsInstance<org.bukkit.entity.Player>()
-                    .filter { it.uniqueId != player.uniqueId } // Exclude self
+                    .filter { it.uniqueId != player.uniqueId } 
                 return playersToLuaTable(nearby)
             }
         })
 
-        // ──────────── ray_trace_player(player, distance) ────────────
+        
         globals.set("ray_trace_player", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, distArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -142,7 +142,7 @@ object LuaEffectBindings {
 
 
 
-        // ──────────── draw_star(player, hex_color, radius, points) ────────────
+        
         globals.set("draw_star", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
@@ -158,7 +158,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── visual_hitbox(player, x, y, z, ticks, material_name) ────────────
+        
         globals.set("visual_hitbox", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
@@ -174,7 +174,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── draw_dna_helix(location, particle_type, radius, height) ────────────
+        
         globals.set("draw_dna_helix", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
@@ -187,7 +187,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── draw_shockwave(location, particle_type, max_radius) ────────────
+        
         globals.set("draw_shockwave", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
@@ -199,7 +199,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── draw_vortex(location, particle_type, radius, height) ────────────
+        
         globals.set("draw_vortex", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
@@ -212,7 +212,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── draw_tornado(location, particle_type, height, max_radius) ────────────
+        
         globals.set("draw_tornado", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
@@ -225,7 +225,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── draw_wings(player, particle_type) ────────────
+        
         globals.set("draw_wings", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, pArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -235,7 +235,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── spawn_fake_swarm(location, count, duration) ────────────
+        
         globals.set("spawn_fake_swarm", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
@@ -248,7 +248,7 @@ object LuaEffectBindings {
         })
         
 
-        // ──────────── spawn_temp_item(location, material_name, scale_x, scale_y, scale_z, glow_color, duration_ticks) ────────────
+        
         globals.set("spawn_temp_item", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
@@ -264,7 +264,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── spawn_spinning_tnt(location, duration_ticks) ────────────
+        
         globals.set("spawn_spinning_tnt", object : TwoArgFunction() {
             override fun call(locArg: LuaValue, durationArg: LuaValue): LuaValue {
                 val locAdapter = locArg.checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
@@ -275,7 +275,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── spawn_evoker_fang(location) ────────────
+        
         globals.set("spawn_evoker_fang", object : OneArgFunction() {
             override fun call(locArg: LuaValue): LuaValue {
                 val locAdapter = locArg.checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
@@ -285,7 +285,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── spawn_blinking_ritual(location, material_name, count, radius, duration_ticks) ────────────
+        
         globals.set("spawn_blinking_ritual", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
@@ -299,7 +299,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── play_entity_sound(player, sound_name, source_entity, volume, pitch) ────────────
+        
         globals.set("play_entity_sound", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val viewer = (args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).getPlayer()
@@ -312,7 +312,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── stop_sound(player, sound_name) ────────────
+        
         globals.set("stop_sound", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, soundArg: LuaValue): LuaValue {
                 val viewer = (playerArg.checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).getPlayer()
@@ -323,7 +323,7 @@ object LuaEffectBindings {
         })
         
 
-        // ──────────── draw_instant_hitbox(location, sx, sy, sz, duration, material) ────────────
+        
         globals.set("draw_instant_hitbox", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
@@ -338,7 +338,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── spawn_tracking_hitbox(player, sx, sy, sz, material, duration) ────────────
+        
         globals.set("spawn_tracking_hitbox", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val player = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter
@@ -352,7 +352,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── spawn_temp_block(location, material, tx, ty, tz, sx, sy, sz, duration) ────────────
+        
         globals.set("spawn_temp_block", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val locAdapter = args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitLocationAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitLocationAdapter
@@ -370,7 +370,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── apply_glowing_team(player, targets_table, color_hex, duration) ────────────
+        
         globals.set("apply_glowing_team", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
@@ -391,7 +391,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── launch_wither_skull(player, yield, max_ticks, on_hit_callback) ────────────
+        
         globals.set("launch_wither_skull", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
@@ -425,7 +425,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── dash(player) ────────────
+        
         globals.set("dash", object : OneArgFunction() {
             override fun call(playerArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -433,7 +433,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── place_trap(player, location) ────────────
+        
         globals.set("place_trap", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -442,7 +442,7 @@ object LuaEffectBindings {
                 return buildTrapTable(scriptId, player, loc)
             }
         })
-        // ──────────── orbit(player) ────────────
+        
         globals.set("orbit", object : OneArgFunction() {
             override fun call(playerArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -450,7 +450,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── proximity_trap(player, location) ────────────
+        
         globals.set("proximity_trap", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -460,7 +460,7 @@ object LuaEffectBindings {
             }
         })
         
-        // ──────────── sequence(player, location) ────────────
+        
         globals.set("sequence", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -469,7 +469,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── trail(player) ────────────
+        
         globals.set("trail", object : OneArgFunction() {
             override fun call(playerArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -477,7 +477,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── projectile(player) ────────────
+        
         globals.set("projectile", object : OneArgFunction() {
             override fun call(playerArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -485,7 +485,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── dash(player) ────────────
+        
         globals.set("dash", object : OneArgFunction() {
             override fun call(playerArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -493,7 +493,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── damage(victim) ────────────
+        
         globals.set("damage", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val victimArg = args.arg(1)
@@ -504,7 +504,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── apply_effect(victim, name, amplifier, ticks) ────────────
+        
         globals.set("apply_effect", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val victim = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
@@ -516,7 +516,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── knockback(victim, source, hForce, vForce) ────────────
+        
         globals.set("knockback", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val victim = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
@@ -528,7 +528,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── is_valid_target(player, victim) → bool ────────────
+        
         globals.set("is_valid_target", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, victimArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.FALSE
@@ -537,7 +537,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ------------- spawn_particle(location, name, offsetX, offsetY, offsetZ, speed, count) -------------
+        
         globals.set("spawn_particle", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val loc = unwrapLocation(args.arg(1)) ?: return LuaValue.NIL
@@ -553,7 +553,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── nearby_players(player, radius) → table ────────────
+        
         globals.set("nearby_players", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, radiusArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaTable()
@@ -563,7 +563,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── nearby_valid_targets(player, radius) → table ────────────
+        
         globals.set("nearby_valid_targets", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, radiusArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaTable()
@@ -573,8 +573,8 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── sound(has_location, id, volume, pitch) ────────────
-        // Acepta cualquier objeto que implemente HasLocation (player, location, etc.)
+        
+        
         globals.set("sound", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val loc = unwrapHasLocation(args.arg(1)) ?: return LuaValue.NIL
@@ -586,7 +586,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── play_animation(player, animation_id, priority) ────────────
+        
         globals.set("play_animation", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
@@ -611,8 +611,8 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── send_translated(player, key) ────────────
-        // Resuelve la key contra MessageService.getComponent
+        
+        
         globals.set("send_translated", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, keyArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -622,15 +622,15 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── particle_burst(has_location) ────────────
-        // Builder para explosión puntual de partículas. Acepta HasLocation.
+        
+        
         globals.set("particle_burst", object : OneArgFunction() {
             override fun call(locArg: LuaValue): LuaValue {
                 val loc = unwrapHasLocation(locArg) ?: return LuaValue.NIL
                 return buildParticleBurstTable(loc)
             }
         })
-        // ──────────── ambient_music(player) ────────────
+        
         globals.set("ambient_music", object : OneArgFunction() {
             override fun call(playerArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -638,7 +638,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── line_spawn(player) ────────────
+        
         globals.set("line_spawn", object : OneArgFunction() {
             override fun call(playerArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -646,7 +646,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── temp_fly(player) ────────────
+        
         globals.set("temp_fly", object : OneArgFunction() {
             override fun call(playerArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -654,7 +654,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── bait_trap(player, location) ────────────
+        
         globals.set("bait_trap", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -663,7 +663,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── formation(player, location) ────────────
+        
         globals.set("formation", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -672,7 +672,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── sinking_block(player, location) ────────────
+        
         globals.set("sinking_block", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -681,7 +681,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── spiral_particle(player, location) ────────────
+        
         globals.set("spiral_particle", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -690,7 +690,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── reveal_targets(player) ────────────
+        
         globals.set("reveal_targets", object : OneArgFunction() {
             override fun call(playerArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -698,7 +698,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── screen_tint(victim) ────────────
+        
         globals.set("screen_tint", object : OneArgFunction() {
             override fun call(victimArg: LuaValue): LuaValue {
                 val victim = unwrapPlayer(victimArg) ?: return LuaValue.NIL
@@ -706,7 +706,7 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── screen_shake(victim) ────────────
+        
         globals.set("screen_shake", object : OneArgFunction() {
             override fun call(victimArg: LuaValue): LuaValue {
                 val victim = unwrapPlayer(victimArg) ?: return LuaValue.NIL
@@ -714,14 +714,14 @@ object LuaEffectBindings {
             }
         })
 
-        // ──────────── shape(type) ────────────
+        
         globals.set("shape", object : OneArgFunction() {
             override fun call(typeArg: LuaValue): LuaValue {
                 return buildShapeTable(typeArg.checkjstring())
             }
         })
 
-        // ──────────── on_finisher(callback) ────────────
+        
         globals.set("on_finisher", object : OneArgFunction() {
             override fun call(callbackArg: LuaValue): LuaValue {
                 if (callbackArg.isfunction()) {
@@ -735,9 +735,9 @@ object LuaEffectBindings {
         })
     }
 
-    // ═══════════════════════════════════════════════════════
-    // BUILDERS
-    // ═══════════════════════════════════════════════════════
+    
+    
+    
 
     private fun buildOrbitTable(scriptId: String, player: Player): LuaTable {
         val t = LuaTable()
@@ -745,7 +745,7 @@ object LuaEffectBindings {
         var rotSpeed = 0.15; var wobbleAmp = 0.2; var wobbleFreq = 2.0; var glow = false
         var duration: Int? = null
 
-        // All builder methods accept (self, value) because of ':' syntax
+        
         t.set("count", TwoArg(t) { _, v -> count = v.checkint().coerceIn(1, 20) })
         t.set("material", TwoArg(t) { _, v -> materialNames.clear(); materialNames.add(v.checkjstring()); isItem = false })
         t.set("materials", object : VarArgFunction() {
@@ -776,7 +776,7 @@ object LuaEffectBindings {
         t.set("glow", TwoArg(t) { _, v -> glow = v.optboolean(true) })
         t.set("duration", TwoArg(t) { _, v -> duration = if (v.isnil()) null else v.checkint().coerceIn(1, 6000) })
 
-        // Terminal method
+        
         t.set("show", object : OneArgFunction() {
             override fun call(self: LuaValue): LuaValue {
                 val effect = OrbitEffect(scriptId, player.uniqueId, player, count, materialNames, isItem, radius, height, rotSpeed, wobbleAmp, wobbleFreq, glow, duration)
@@ -796,7 +796,7 @@ object LuaEffectBindings {
 
         t.set("particle", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
-                // :particle("DUST", {r=1, g=0, b=0.5}, 1.1) or :particle("WITCH")
+                
                 particleName = args.arg(2).checkjstring()
                 if (args.narg() >= 3 && args.arg(3).istable()) {
                     val colorTable = args.arg(3).checktable()
@@ -805,7 +805,7 @@ object LuaEffectBindings {
                     dustB = colorTable.get("b").optdouble(0.0).toFloat()
                     if (args.narg() >= 4) dustSize = args.arg(4).optdouble(1.0).toFloat()
                 }
-                return args.arg(1) // return self
+                return args.arg(1) 
             }
         })
         t.set("offset", object : VarArgFunction() {
@@ -841,7 +841,7 @@ object LuaEffectBindings {
 
         t.set("model", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
-                val type = args.arg(2).checkjstring() // "item" or "block"
+                val type = args.arg(2).checkjstring() 
                 material = args.arg(3).checkjstring()
                 isBlock = type.equals("block", ignoreCase = true)
                 return args.arg(1)
@@ -1083,8 +1083,8 @@ object LuaEffectBindings {
                     "star" -> ParticleShapesUtils.drawStar(loc, particle, radius)
                     "tornado" -> ParticleShapesUtils.drawTornado(loc, particle, radius, height)
                     "wings" -> {
-                        // Wings in ParticleShapesUtils require a Player, not a Location
-                        // We will just do a sphere as fallback if called with Location
+                        
+                        
                         ParticleShapesUtils.drawSphere(loc, particle, radius)
                     }
                 }
@@ -1129,9 +1129,9 @@ object LuaEffectBindings {
         return table
     }
 
-    // ═══════════════════════════════════════════════════════
-    // HELPERS
-    // ═══════════════════════════════════════════════════════
+    
+    
+    
 
     /** Builds a Lua handle table with stop() and remove() */
     private fun buildHandle(effect: EffectHandle): LuaTable {
@@ -1344,7 +1344,7 @@ object LuaEffectBindings {
         return t
     }
 
-    // ═══════════════════════════════════════════════════════
+    
     private fun buildProximityTrapTable(scriptId: String, player: Player, location: org.bukkit.Location): LuaTable {
         val t = LuaTable()
         var model: String? = null
@@ -1408,8 +1408,8 @@ object LuaEffectBindings {
         return t
     }
 
-    // Builder method helpers for ':' syntax
-    // ═══════════════════════════════════════════════════════
+    
+    
 
 
 

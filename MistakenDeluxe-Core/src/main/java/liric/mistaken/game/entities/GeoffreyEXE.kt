@@ -52,7 +52,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
      */
     var assignedSession: GameSession? = null
 
-    // Constantes para la máquina de estados
+    
     private enum class State { BUSCANDO, SALTANDO, MISIL, AEREO, FURIA }
     private var currentState = State.BUSCANDO
 
@@ -63,9 +63,9 @@ class GeoffreyEXE(private val plugin: Mistaken) {
                 val white = scoreboard.getTeam(teamWhite) ?: scoreboard.registerNewTeam(teamWhite).apply { color(NamedTextColor.WHITE) }
                 val red = scoreboard.getTeam(teamRed) ?: scoreboard.registerNewTeam(teamRed).apply { color(NamedTextColor.RED) }
 
-                // =========================================================
-                // 🔥 DISEÑO "EVIL SCARY" (ESCALA x2, MÁS ATERRADOR)
-                // =========================================================
+                
+                
+                
 
                 val core1 = createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(5.2f, 5.2f, 5.2f), Vector3f(-2.6f, 0f, -2.6f))
                 val core2 = createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(5.6f, 4.4f, 4.8f), Vector3f(-2.8f, 0.4f, -2.4f))
@@ -240,7 +240,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
                 target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1.5f, 0.3f)
                 nextLoc.world.spawnParticle(Particle.SOUL_FIRE_FLAME, nextLoc, 10, 0.5, 0.5, 0.5, 0.1)
 
-                // 🔥 FIX: También daña a cualquiera en Survival (incluyendo killers)
+                
                 val victims = nextLoc.world.getNearbyPlayers(nextLoc, 2.0).filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
                 if (victims.isNotEmpty()) {
                     victims.forEach { ejecutarMuerte(it) }
@@ -268,7 +268,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
                         if (!isRunning || hitAny || step >= 30 || target == null) {
                             taskBajada.cancel()
 
-                            // 🔥 FIX: Eliminamos el código que reseteaba la rotación a 0 y dañaba la pose original.
+                            
 
                             if (hitAny) consecutiveMisses = 0 else consecutiveMisses++
                             currentState = State.BUSCANDO
@@ -279,8 +279,8 @@ class GeoffreyEXE(private val plugin: Mistaken) {
                         val dir = target.location.add(0.0, 1.0, 0.0).toVector().subtract(current.toVector()).normalize()
                         val nextLoc = current.add(dir.clone().multiply(2.0))
 
-                        // 🔥 FIX: Eliminamos la rotación continua que deformaba los bloques.
-                        // Ahora caerá firme y recto hacia el player, viéndose mucho más estable e intimidante.
+                        
+                        
 
                         moverTodo(nextLoc, target.location)
                         target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1f, 0.5f)
@@ -362,22 +362,22 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         victim.world.spawnParticle(Particle.EXPLOSION_EMITTER, victim.location, 2)
         victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2f, 0.5f)
 
-        // Cuánto daño hará el ataque (14.0 = 7 corazones).
-        // Si está enfurecido, hace más daño (20.0 = 10 corazones / Instakill si no tiene armor)
+        
+        
         val damageAmount = if (enrage) 20.0 else 7.0
 
         val nuevaVida = victim.health - damageAmount
 
         if (nuevaVida <= 0) {
-            // AQUÍ SÍ MUERE
+            
             victim.health = 0.0
             val prefix = if (enrage) "<dark_red><b>[FURIA]</b>" else "<red><b>[!]</b>"
             Bukkit.broadcast(MessageService.getComponent(null, "anomalies.geoffrey.death", Placeholder.parsed("player", victim.name)))
         } else {
-            // SOBREVIVE AL GOLPE, PERO QUEDA GRAVEMENTE HERIDO Y EMPUJADO
+            
             victim.health = nuevaVida
 
-            // Empuje (Knockback) fuerte para alejarlo y que tenga oportunidad de huir
+            
             if (parts.isNotEmpty()) {
                 val empuje = victim.location.toVector().subtract(parts[0].location.toVector()).normalize().multiply(2.0).setY(0.8)
                 victim.velocity = empuje
@@ -391,7 +391,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
     }
 
     private fun aplicarAuraMiedo(loc: Location, duration: Int) {
-        // 🔥 FIX: También le da oscuridad al killer si está cerca
+        
         loc.world.getNearbyPlayers(loc, 15.0).forEach { p ->
             if (p.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(p)) {
                 p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, duration, 0, false, false, false))
@@ -404,9 +404,9 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         val newLoc = baseLoc.clone()
         if (lookAtTargetLoc != null) {
             val dir = lookAtTargetLoc.toVector().subtract(baseLoc.toVector())
-            // 🔥 FIX: Anulamos el eje Y para que rote solo en horizontal (Yaw) y no se desarme (Pitch)
+            
             dir.y = 0.0
-            if (dir.lengthSquared() > 0.001) { // Evita errores matemáticos si el player está exactamente dentro
+            if (dir.lengthSquared() > 0.001) { 
                 newLoc.direction = dir
             }
         }
@@ -428,6 +428,3 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         parts.clear()
     }
 }
-
-
-

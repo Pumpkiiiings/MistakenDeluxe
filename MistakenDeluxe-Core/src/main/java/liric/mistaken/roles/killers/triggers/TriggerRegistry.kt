@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 class TriggerRegistry(val killerId: String) {
 
     private val triggers = mutableMapOf<InputTrigger, MutableList<TriggerDefinition>>()
-    // Map<UUID, Map<TriggerId, LastUsedMillis>>
+    
     private val cooldowns = ConcurrentHashMap<UUID, ConcurrentHashMap<String, Long>>()
 
     fun loadFromConfig(config: FileConfiguration) {

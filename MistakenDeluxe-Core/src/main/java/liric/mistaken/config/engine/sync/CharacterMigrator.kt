@@ -21,16 +21,16 @@ object CharacterMigrator {
                 if (section != null) {
                     val individualFile = File(killersDir, "$id.yml")
                     val individualConfig = YamlConfiguration.loadConfiguration(individualFile)
-                    // Volcar datos
+                    
                     section.getKeys(true).forEach { key ->
                         individualConfig.set(key, section.get(key))
                     }
-                    individualConfig.set("id", id) // Garantizar ID
+                    individualConfig.set("id", id) 
                     individualConfig.save(individualFile)
                 }
             }
             
-            // Renombrar a .old para evitar re-migraci�n
+            
             killersFile.renameTo(File(plugin.dataFolder, "asesinos.yml.old"))
             plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Migrated ${keys.size} killers to individual files.</gray>"))
         }
@@ -47,16 +47,16 @@ object CharacterMigrator {
                 if (section != null) {
                     val individualFile = File(survivorsDir, "$id.yml")
                     val individualConfig = YamlConfiguration.loadConfiguration(individualFile)
-                    // Volcar datos
+                    
                     section.getKeys(true).forEach { key ->
                         individualConfig.set(key, section.get(key))
                     }
-                    individualConfig.set("id", id) // Garantizar ID
+                    individualConfig.set("id", id) 
                     individualConfig.save(individualFile)
                 }
             }
             
-            // Renombrar a .old para evitar re-migraci�n
+            
             survivorsFile.renameTo(File(plugin.dataFolder, "supervivientes.yml.old"))
             plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Migrated ${keys.size} survivors to individual files.</gray>"))
         }

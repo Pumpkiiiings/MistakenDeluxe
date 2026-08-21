@@ -24,7 +24,7 @@ object MistakenDebugCommand {
         val rootNode = Commands.literal("mistakendebug")
             .requires { it.sender.hasPermission("mistaken.admin") }
 
-        // --- IGNORAR JUGADORES ---
+        
         rootNode.then(
             Commands.literal("ignore")
             .then(
@@ -56,7 +56,7 @@ object MistakenDebugCommand {
             )
         )
 
-        // --- FORCE START ---
+        
         rootNode.then(
             Commands.literal("forcestart")
             .executes { ctx ->
@@ -87,7 +87,7 @@ object MistakenDebugCommand {
             }
         )
 
-        // --- DEBUG START ---
+        
         rootNode.then(
             Commands.literal("debugstart")
             .executes { ctx ->
@@ -119,7 +119,7 @@ object MistakenDebugCommand {
             }
         )
 
-        // --- FORCE ROLE ---
+        
         rootNode.then(
             Commands.literal("role")
             .then(
@@ -160,7 +160,7 @@ object MistakenDebugCommand {
             )
         )
 
-        // --- END GAME ---
+        
         rootNode.then(
             Commands.literal("endgame")
             .executes { ctx ->
@@ -182,23 +182,23 @@ object MistakenDebugCommand {
             }
         )
 
-        // --- LMS DEBUG ---
+        
         rootNode.then(
             Commands.literal("lms")
             .then(
                 Commands.literal("start").executes { ctx ->
                     val p = ctx.source.sender as? Player ?: return@executes 0
                     
-                    // Flash blanco inicial y vibración
+                    
                     liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 255, 255, 0.9f, 30)
                     liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.5f, 40)
                     
-                    // Música (asume default)
+                    
                     p.playSound(p.location, "mistaken:lms", org.bukkit.SoundCategory.RECORDS, 1f, 1f)
                     
-                    // Apply el filtro rojo constante después del flash blanco
+                    
                     p.scheduler.runDelayed(plugin, Consumer { _ ->
-                        liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) // 1 minuto
+                        liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) 
                     }, null, 30L)
                     
                     p.sendMessage("§a[!] Efectos y música de LMS iniciados (Duración prueba: 1 min).")
@@ -213,7 +213,7 @@ object MistakenDebugCommand {
                             liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.5f, 40)
                             p.playSound(p.location, "mistaken:lms", org.bukkit.SoundCategory.RECORDS, 1f, 1f)
                             p.scheduler.runDelayed(plugin, Consumer { _ ->
-                                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) // 1 minuto
+                                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) 
                             }, null, 30L)
                         }, null, 20L)
                     }
@@ -225,13 +225,13 @@ object MistakenDebugCommand {
                 val p = ctx.source.sender as? Player ?: return@executes 0
                 
                 p.stopSound("mistaken:lms", org.bukkit.SoundCategory.RECORDS)
-                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 0, 0, 0, 0f, 1) // Clear filtro
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 0, 0, 0, 0f, 1) 
                 p.sendMessage("§c[!] Efectos de LMS detenidos.")
                 1
             })
         )
 
-        // --- GEOFFREY ---
+        
         rootNode.then(
             Commands.literal("geoffrey")
             .then(Commands.literal("start").executes { ctx ->
@@ -243,7 +243,7 @@ object MistakenDebugCommand {
             })
         )
 
-        // --- SPAWN ALL (CAOS TOTAL) ---
+        
         rootNode.then(
             Commands.literal("spawnall")
             .executes { ctx ->
@@ -258,7 +258,7 @@ object MistakenDebugCommand {
             }
         )
 
-        // --- STOP ---
+        
         rootNode.then(
             Commands.literal("stop")
             .executes { ctx ->

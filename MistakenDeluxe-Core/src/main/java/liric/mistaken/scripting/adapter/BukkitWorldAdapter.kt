@@ -24,7 +24,7 @@ class BukkitWorldAdapter(
                 val bukkitSound = Sound.valueOf(sound.uppercase())
                 world.playSound(location.getBukkitLocation(), bukkitSound, volume, pitch)
             } catch (e: Exception) {
-                // Soft ignore
+                
             }
         }
     }
@@ -35,7 +35,7 @@ class BukkitWorldAdapter(
                 val bukkitParticle = org.bukkit.Particle.valueOf(particle.uppercase())
                 world.spawnParticle(bukkitParticle, location.getBukkitLocation(), count)
             } catch (e: Exception) {
-                // Soft ignore
+                
             }
         }
     }
@@ -44,4 +44,3 @@ class BukkitWorldAdapter(
         return world.players.map { BukkitPlayerAdapter(it) }.toTypedArray()
     }
 }
-

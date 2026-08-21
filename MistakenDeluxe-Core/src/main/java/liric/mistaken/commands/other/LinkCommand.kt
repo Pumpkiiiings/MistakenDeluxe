@@ -14,7 +14,7 @@ object LinkCommand {
 
     fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {
         return Commands.literal("link")
-            // Aquí manejamos el permiso, ¡adiós al error de canUse!
+            
             .requires { it.sender.hasPermission("mistaken.link") }
             .executes { ctx ->
                 val sender = ctx.source.sender
@@ -23,16 +23,16 @@ object LinkCommand {
                     return@executes 0
                 }
 
-                // 🔥 ARREGLADO: Usamos el AsyncScheduler nativo de Paper
+                
                 plugin.server.asyncScheduler.runNow(plugin) { _ ->
                     val uuid = player.uniqueId.toString()
                     val name = player.name
 
                     try {
-                        // OJO: Asegúrate que en Mistaken.kt se llame 'databaseManager'
+                        
                         plugin.databaseManager.connection.use { conn ->
 
-                            // 1. Verificar vínculo previo
+                            
                             val checkSql = "SELECT discord_id FROM discord_links WHERE uuid = ?;"
                             conn.prepareStatement(checkSql).use { ps ->
                                 ps.setString(1, uuid)
@@ -46,16 +46,16 @@ object LinkCommand {
                                             <gray>Tu cuenta de Minecraft ya está enlazada a un Discord.
                                             <dark_gray><i>Si perdiste acceso a tu cuenta, contacta al Staff.</i><newline>
                                         """.trimIndent()))
-                                        // 🔥 ARREGLADO: El return ahora apunta a runNow
+                                        
                                         return@runNow
                                     }
                                 }
                             }
 
-                            // 2. Generar código secreto
+                            
                             val code = String.format("%06d", ThreadLocalRandom.current().nextInt(1_000_000))
 
-                            // 3. Guardar código en la DB
+                            
                             val sql = """
                                 INSERT INTO discord_links (uuid, username, code) VALUES (?, ?, ?) 
                                 ON DUPLICATE KEY UPDATE code = ?, username = ?;
@@ -70,7 +70,7 @@ object LinkCommand {
                                 ps.executeUpdate()
                             }
 
-                            // 4. Feedback chulo con MiniMessage
+                            
                             player.sendMessage(ColorTranslator.translate("""
                                 <newline><gradient:#55ffff:#55ff55><bold>VINCULACIÓN</bold></gradient>
                                 <gray>Tu código secreto es: <yellow><bold>$code</bold>
@@ -83,7 +83,7 @@ object LinkCommand {
                         plugin.componentLogger.error("LinkCommand SQL failure: ${e.message}")
                     }
                 }
-                1 // Éxito para Brigadier
+                1 
             }
             .build()
     }

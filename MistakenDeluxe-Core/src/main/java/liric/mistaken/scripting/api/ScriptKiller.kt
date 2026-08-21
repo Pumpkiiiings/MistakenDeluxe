@@ -9,17 +9,17 @@ interface ScriptKiller {
     fun id(): String
     fun model_id(): String?
     
-    // Lifecycle
+    
     fun on_load(context: ScriptContext)
     fun on_equip(player: ScriptPlayer)
     fun on_unequip(player: ScriptPlayer)
     fun on_tick()
     fun on_disable()
     
-    // Event dispatching genérico
+    
     fun dispatch_event(event: ScriptEvent)
 
-    // Triggers y Chat
+    
     fun has_trigger(): Boolean
     fun on_trigger(player: ScriptPlayer, triggerId: String)
     fun on_intercept_chat(player: ScriptPlayer, message: String): String?
@@ -36,4 +36,3 @@ interface ScriptContext {
     fun log_warning(message: String)
     fun log_error(message: String)
 }
-

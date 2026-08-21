@@ -53,7 +53,7 @@ object MistakenLib {
 
         log(LogCategory.CORE, "INIT OK - Starting modules...")
 
-        // Initialize internal systems
+        
         try {
             ConfigManager.init(plugin)
             log(LogCategory.CONFIG, "INIT OK")

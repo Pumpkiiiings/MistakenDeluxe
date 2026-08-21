@@ -18,7 +18,7 @@ class WardenProfile : CinematicProfile {
     override val introCameraStyle = CameraStyle.PAN_UP_REVEAL
     override val outroCameraStyle = CameraStyle.ORBIT_ZOOM_IN
     
-    // El usuario confirmó que la animación 'spawn' dura 6 segundos (120 ticks)
+    
     override val introDuration: Int = 120
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
@@ -50,12 +50,12 @@ class WardenProfile : CinematicProfile {
     }
 
     override fun applyPose(dummy: ArmorStand, isIntro: Boolean) {
-        // En ModelEngine no necesitamos poses del ArmorStand porque el modelo lo cubre por completo
-        dummy.isVisible = false // Ocultamos el armorstand
+        
+        dummy.isVisible = false 
     }
 
     override fun applyEquipment(killer: Player, dummy: ArmorStand, isIntro: Boolean) {
-        // No necesitamos equipamiento
+        
     }
 
     override fun playEffects(
@@ -68,7 +68,7 @@ class WardenProfile : CinematicProfile {
     ) {
         if (!isIntro) return
         
-        // Creamos una entidad dummy de ModelEngine conectada al ArmorStand
+        
         val meDummy = Dummy<ArmorStand>(dummy)
         meDummy.setLocation(loc)
         meDummy.yHeadRot = loc.yaw
@@ -83,11 +83,11 @@ class WardenProfile : CinematicProfile {
             activeModel.setHitboxScale(0.0)
             modeledEntity.addModel(activeModel, true)
             
-            // Reproducimos la animación 'spawn' (dura 6s)
+            
             activeModel.animationHandler.playAnimation("spawn", 1.0, 0.0, 1.0, true)
         }
         
-        // Destruir el modelo cuando la cinemática acabe
+        
         org.bukkit.Bukkit.getScheduler().runTaskLater(plugin, Runnable {
             if (activeModel != null) {
                 meDummy.isRemoved = true

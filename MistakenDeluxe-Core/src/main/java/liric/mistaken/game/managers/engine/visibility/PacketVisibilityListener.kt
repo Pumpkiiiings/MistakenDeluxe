@@ -15,16 +15,16 @@ class PacketVisibilityListener(private val manager: VisibilityManager) : PacketL
         val viewer = (event.getPlayer() as? Player) ?: return
         val packetType = event.packetType
 
-        // 1. Interceptar Spawn
+        
         if (packetType == PacketType.Play.Server.SPAWN_ENTITY) {
             val spawn = WrapperPlayServerSpawnEntity(event)
-            // Se debe buscar por UUID porque los Fake Displays usarán la lista de UUIDs
+            
             if (manager.isHidden(spawn.uuid.get(), viewer.uniqueId)) {
                 event.isCancelled = true
             }
         }
         
-        // 2. Interceptar Teleport
+        
         else if (packetType == PacketType.Play.Server.ENTITY_TELEPORT) {
             val tp = WrapperPlayServerEntityTeleport(event)
             if (manager.isHidden(tp.entityId, viewer.uniqueId)) {
@@ -32,7 +32,7 @@ class PacketVisibilityListener(private val manager: VisibilityManager) : PacketL
             }
         }
 
-        // 3. Interceptar Metadata
+        
         else if (packetType == PacketType.Play.Server.ENTITY_METADATA) {
             val meta = WrapperPlayServerEntityMetadata(event)
             if (manager.isHidden(meta.entityId, viewer.uniqueId)) {
@@ -40,7 +40,7 @@ class PacketVisibilityListener(private val manager: VisibilityManager) : PacketL
             }
         }
 
-        // 4. Interceptar TAB
+        
         else if (packetType == PacketType.Play.Server.PLAYER_INFO_UPDATE) {
             val info = WrapperPlayServerPlayerInfoUpdate(event)
             val entries = info.entries
@@ -59,13 +59,13 @@ class PacketVisibilityListener(private val manager: VisibilityManager) : PacketL
                 if (newEntries.isEmpty()) {
                     event.isCancelled = true
                 } else {
-                    // Update the packet if there are remaining valid entries
+                    
                     info.entries = newEntries
                 }
             }
         }
 
-        // 5. Interceptar Teams para ocultar Nametags
+        
         else if (packetType == PacketType.Play.Server.TEAMS) {
             val teamsPacket = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams(event)
             val infoOpt = teamsPacket.teamInfo
@@ -77,4 +77,3 @@ class PacketVisibilityListener(private val manager: VisibilityManager) : PacketL
         }
     }
 }
-

@@ -16,8 +16,8 @@ import liric.mistaken.roles.shared.AbstractRoleManager
 class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api.roles.ISurvivor>(plugin), liric.mistaken.api.managers.ISurvivorManager {
 
     init {
-        // Registro de Classes (Singletons)
-        // Aqu� agregas las dem�s classes cuando las tengas listas (Jesse, Petra, etc.)
+        
+        
         listOf(
             Civilian(),
             DeliveryMan(),
@@ -47,17 +47,17 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
     fun registrarSurvivor(player: Player, clase: Survivor) {
         val uuid = player.uniqueId
 
-        // 1. Asignaci�n inmediata en RAM
+        
         activeRoles[uuid] = clase
 
-        // 2. Tarea diferida anclada a la entidad (Safe)
-        // Se ejecuta 5 ticks (250ms) despu�s para asegurar que el inventario est� listo
+        
+        
         player.scheduler.runDelayed(plugin, { task ->
             
             if (activeRoles[uuid] == clase) {
                 clase.equip(player)
 
-                // Apply vida m�xima espec�fica del survivor
+                
                 val config = plugin.configManager.getSurvivorConfig(clase.id)
                 val maxHealth = config.getDouble("stats.health", 20.0)
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = maxHealth
@@ -69,7 +69,7 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
                     "<gray>[Survivor]</gray> <white>${player.name}</white> <green>equipado como ${clase.nombre}</green>"
                 ))
 
-                // Feedback al player
+                
                 player.sendMessage(MessageService.getComponent(player, "game.class-selected",
                     Placeholder.component("class", ColorTranslator.translate(clase.nombre))))
             }
@@ -92,19 +92,19 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
         val clase = activeRoles.remove(uuid) ?: return
 
         if (player != null && player.isOnline) {
-            // ?? FOLIA FIX: Modificar inventario/efectos DEBE hacerse en el hilo de la entidad
+            
             player.scheduler.run(plugin, { _ ->
-                // 1. Limpieza l�gica de la clase
+                
                 clase.cleanup(player)
 
-                // 2. Limpieza f�sica
+                
                 player.inventory.clear()
                 player.inventory.armorContents = arrayOfNulls(4)
                 
-                // Restaurar vida m�xima por defecto (20.0 = 10 corazones)
+                
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = 20.0
 
-                // Limpieza de pociones eficiente
+                
                 player.activePotionEffects.forEach { effect ->
                     player.removePotionEffect(effect.type)
                 }
@@ -113,7 +113,7 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
                 player.walkSpeed = 0.2f
             }, null)
         } else {
-            // Si est� offline, solo limpiamos la l�gica interna de la clase (si aplica)
+            
             clase.cleanup(null)
         }
     }
@@ -123,9 +123,8 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
         plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Survivor cleanup completed.</gray>"))
     }
 
-    // --- GETTERS ---
+    
     fun esSurvivorActivo(player: Player?): Boolean = player?.let { activeRoles.containsKey(it.uniqueId) } ?: false
     fun getSurvivorClass(player: Player?): Survivor? = player?.let { activeRoles[it.uniqueId] as? Survivor }
     fun getAvailableClasses(): Map<String, Survivor> = availableClasses.mapValues { it.value as Survivor }
 }
-

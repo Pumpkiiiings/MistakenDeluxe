@@ -76,8 +76,8 @@ class CurrencyReward : RewardExecutor {
 
 class PermissionReward : RewardExecutor {
     override fun execute(player: Player, value: String) {
-        // We can execute lp command as permission plugin might vary, but luckperms API is better.
-        // Easiest robust way is to dispatch command unless luckperms API is specifically requested.
+        
+        
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "lp user ${player.name} permission set $value true")
     }
 }
