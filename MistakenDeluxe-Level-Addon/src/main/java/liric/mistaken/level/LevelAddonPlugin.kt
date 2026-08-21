@@ -62,10 +62,7 @@ class LevelAddonPlugin : JavaPlugin() {
 
         
         saveDefaultConfig()
-        saveResource("levels.yml", false)
-        
-        saveResource("messages.yml", false)
-        try { saveResource("xp_sources.yml", false) } catch (e: Exception) {}
+
 
         levelConfig = LevelConfig(this)
         levelConfig.load()

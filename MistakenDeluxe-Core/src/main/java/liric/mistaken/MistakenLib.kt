@@ -26,9 +26,9 @@ object MistakenLib {
     }
 
     enum class LogCategory(val prefix: String) {
-        CORE("<gradient:#ff8c00:#ff0080>[Mistaken]</gradient>"),
-        CONFIG("<gradient:#ff8c00:#ff0080>[Mistaken]</gradient>"),
-        SCOREBOARD("<gradient:#ff8c00:#ff0080>[Mistaken]</gradient>")
+        CORE("<gradient:#1e3c72:#2a5298>[Mistaken]</gradient>"),
+        CONFIG("<gradient:#1e3c72:#2a5298>[Mistaken]</gradient>"),
+        SCOREBOARD("<gradient:#1e3c72:#2a5298>[Mistaken]</gradient>")
     }
 
     /**
