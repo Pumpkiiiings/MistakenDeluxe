@@ -66,7 +66,7 @@ class StatsManager(private val plugin: Mistaken) : liric.mistaken.api.managers.I
     private fun startAutoSave() {
         autoSaveTask = plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             if (cache.isNotEmpty()) {
-                plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Synchronizing statistics for ${cache.size} players with MySQL...</gray>"))
+                plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Synchronizing statistics for ${cache.size} players with the database...</gray>"))
                 saveAllToDatabaseAsync()
             }
         }, 5L, 5L, TimeUnit.MINUTES)

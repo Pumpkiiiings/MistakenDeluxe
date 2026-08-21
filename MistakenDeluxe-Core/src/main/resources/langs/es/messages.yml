@@ -319,6 +319,7 @@ help:
   setasesino: "&#CCCCCC» &#FFE300/mistaken setasesino <id> &#888888- &#FFFFFFTest de asesino."
   setsuperviviente: "&#CCCCCC» &#FFE300/mistaken setsuperviviente <id> &#888888- &#FFFFFFTest de supervivientes."
   removekiller: "&#CCCCCC» &#FFE300/mistaken removekiller <p> &#888888- &#FFFFFFQuitar rol de test."
+  reloadkiller: "&#CCCCCC» &#FFE300/mistaken reloadkiller &#888888- &#FFFFFFRecargar asesinos."
   setmode: "&#CCCCCC» &#FFE300/mistaken setmode <id> &#888888- &#FFFFFFForzar un modo."
   footer: " "
 
