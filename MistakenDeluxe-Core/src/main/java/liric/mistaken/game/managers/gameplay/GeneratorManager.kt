@@ -20,9 +20,9 @@ import java.util.concurrent.ConcurrentHashMap
 import liric.mistaken.packet.PacketFactory
 import liric.mistaken.packet.fake.VirtualTextDisplay
 import org.bukkit.Bukkit
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.config.ConfigManager
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.ConfigManager
+import liric.mistaken.config.engine.core.MessageService
 import liric.mistaken.game.objectives.ObjectiveType
 
 /**
@@ -54,7 +54,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     }
 
     fun loadTemplates() {
-        val langConfig = PumpkingServiceManager.messages.getSpecificFile(null, "messages")
+        val langConfig = MessageService.getSpecificFile(null, "messages")
 
         idleLines = langConfig.getStringList("generators.hologram.lines-idle").ifEmpty {
             listOf("<gold><bold>{name}", "<white>Progreso: <gray>{progress}%", "<yellow>。lick para reparar!")

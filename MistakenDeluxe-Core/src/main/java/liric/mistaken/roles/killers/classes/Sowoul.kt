@@ -37,8 +37,8 @@ import liric.mistaken.packet.PacketFactory
 import liric.mistaken.packet.fake.VirtualDisplay
 import liric.mistaken.packet.fake.VirtualItemDisplay
 import org.bukkit.plugin.java.JavaPlugin
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 /**
  *[LIRIC-MISTAKEN 2.0]
@@ -47,7 +47,7 @@ import pumpking.lib.service.PumpkingServiceManager
  */
 class Sowoul : CoreKiller(
     "sowoul",
-    PumpkingServiceManager.messages.getStrictString(null, "asesinos.sowoul.nombre", "killers_info")
+    MessageService.getStrictString(null, "asesinos.sowoul.nombre", "killers_info")
 ), Listener {
 
     private val pathBase = "asesinos.sowoul"
@@ -289,7 +289,7 @@ class Sowoul : CoreKiller(
 
         if (target == null) {
             player.sendActionBar(ColorTranslator.translate(
-                pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.sowoul.habilidades.nadie_rango", "killers_info")
+                liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.sowoul.habilidades.nadie_rango", "killers_info")
             ))
             return
         }
@@ -297,7 +297,7 @@ class Sowoul : CoreKiller(
         player.playSound(player.location, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1.5f, 0.5f)
         target.playSound(target.location, Sound.ENTITY_ENDERMAN_STARE, 1.5f, 0.1f)
         target.sendActionBar(ColorTranslator.translate(
-            pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(target, "asesinos.sowoul.habilidades.mano_magica", "killers_info")
+            liric.mistaken.config.engine.core.MessageService.getStrictString(target, "asesinos.sowoul.habilidades.mano_magica", "killers_info")
         ))
 
         val manoDisplay = target.world.spawn(target.location.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) { bd ->
@@ -445,7 +445,7 @@ class Sowoul : CoreKiller(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = MessageService.getSpecificFile(player, "killers_info")
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {

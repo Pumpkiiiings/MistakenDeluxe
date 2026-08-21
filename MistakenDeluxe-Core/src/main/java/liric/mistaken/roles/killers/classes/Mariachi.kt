@@ -30,12 +30,12 @@ import kotlin.math.sin
 import liric.mistaken.packet.PacketFactory
 import liric.mistaken.packet.fake.VirtualItemDisplay
 import org.bukkit.plugin.java.JavaPlugin
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 class Mariachi : CoreKiller(
     "mariachi",
-    PumpkingServiceManager.messages.getStrictString(null, "asesinos.mariachi.nombre", "killers_info")
+    MessageService.getStrictString(null, "asesinos.mariachi.nombre", "killers_info")
 ) {
 
     private val pathBase = "asesinos.mariachi"
@@ -87,7 +87,7 @@ class Mariachi : CoreKiller(
         inv.armorContents = arrayOfNulls(4)
 
         if (itemKitCache.isEmpty()) preLoadKit()
-        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = MessageService.getSpecificFile(player, "killers_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val item = itemKitCache[key]?.clone() ?: return
@@ -120,7 +120,7 @@ class Mariachi : CoreKiller(
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
                 victim.sendMessage(ColorTranslator.translate(
-                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(victim, "asesinos.mariachi.habilidades.grito_corrompido", "killers_info")
+                    liric.mistaken.config.engine.core.MessageService.getStrictString(victim, "asesinos.mariachi.habilidades.grito_corrompido", "killers_info")
                 ))
                 victim.playSound(victim.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.8f)
             }
@@ -130,7 +130,7 @@ class Mariachi : CoreKiller(
     private fun abilityJarabe(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 120, 3))
         player.sendMessage(ColorTranslator.translate(
-            pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.mariachi.habilidades.a_zapatear", "killers_info")
+            liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.mariachi.habilidades.a_zapatear", "killers_info")
         ))
     }
 
@@ -149,7 +149,7 @@ class Mariachi : CoreKiller(
         player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 120, 4))
         player.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 160, 0))
         player.sendMessage(ColorTranslator.translate(
-            pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.mariachi.habilidades.salud_inmune", "killers_info")
+            liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.mariachi.habilidades.salud_inmune", "killers_info")
         ))
     }
 

@@ -13,7 +13,7 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.EulerAngle
 import org.bukkit.Particle
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 class SlasherProfile : CinematicProfile {
     override val id: String = "slasher"

@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Bukkit
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 object UnlinkCommand {
 

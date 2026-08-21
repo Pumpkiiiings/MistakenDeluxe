@@ -17,13 +17,13 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
 import org.bukkit.configuration.file.FileConfiguration
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 
 class Villager : Survivor(
     "aldeano",
-    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.aldeano.nombre", "survivors_info")
+    MessageService.getStrictString(null, "supervivientes.aldeano.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.aldeano"
@@ -75,7 +75,7 @@ class Villager : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = MessageService.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 20))) {
@@ -109,7 +109,7 @@ class Villager : Survivor(
         // Recarga segura
         preLoadKit()
 
-        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langInfo = MessageService.getSpecificFile(player, "survivors_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
@@ -164,7 +164,7 @@ class Villager : Survivor(
 
                 victim.playSound(victim.location, Sound.ENTITY_IRON_GOLEM_HURT, 1f, 1f)
                 victim.sendMessage(ColorTranslator.translate(
-                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(victim, "supervivientes.aldeano.habilidades.golem_rechazado", "survivors_info")
+                    liric.mistaken.config.engine.core.MessageService.getStrictString(victim, "supervivientes.aldeano.habilidades.golem_rechazado", "survivors_info")
                 ))
             }
         }

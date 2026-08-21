@@ -2,7 +2,7 @@ package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.roles.killers.CoreKiller
 import org.bukkit.entity.Player
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.config.engine.core.MessageService
 import org.bukkit.event.Listener
 import org.bukkit.event.EventHandler
 import org.bukkit.event.entity.PlayerDeathEvent
@@ -17,7 +17,7 @@ import java.util.function.Consumer
 
 class StillLife : CoreKiller(
     "still_life",
-    PumpkingServiceManager.messages.getStrictString(null, "asesinos.still_life.nombre", "killers_info")
+    MessageService.getStrictString(null, "asesinos.still_life.nombre", "killers_info")
 ), Listener {
 
     override val defaultMusic = "mistaken:still_life"
@@ -98,8 +98,8 @@ class StillLife : CoreKiller(
                 Bukkit.getOnlinePlayers().forEach { p ->
                     com.github.retrooper.packetevents.PacketEvents.getAPI().playerManager.sendPacket(p, packet)
                 }
-                player.sendMessage(pumpking.lib.color.ColorTranslator.translate(
-                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.still_life.habilidades.generador_colocado", "killers_info")
+                player.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate(
+                    liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.still_life.habilidades.generador_colocado", "killers_info")
                 ))
                 playSkillEffects(player, 3)
             }
@@ -127,7 +127,7 @@ class StillLife : CoreKiller(
                     }
                     
                     zombie.isCustomNameVisible = true
-                    zombie.customName(pumpking.lib.color.ColorTranslator.translate("<dark_gray>Null"))
+                    zombie.customName(liric.mistaken.utils.color.ColorTranslator.translate("<dark_gray>Null"))
                     
                     // Seek survivor
                     if (session != null) {
@@ -147,7 +147,7 @@ class StillLife : CoreKiller(
                     }, 20L * 15L)
                 }
                 
-                player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>�Clones invocados!"))
+                player.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<green>�Clones invocados!"))
                 playSkillEffects(player, 4)
             }
             "disguise_toggle" -> {
@@ -159,8 +159,8 @@ class StillLife : CoreKiller(
                         disguisedAs[player.uniqueId] = last
                         player.customName = last
                         player.isCustomNameVisible = true
-                        player.sendMessage(pumpking.lib.color.ColorTranslator.translate(
-                            pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.still_life.habilidades.disfrazado", "killers_info")
+                        player.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate(
+                            liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.still_life.habilidades.disfrazado", "killers_info")
                                 .replace("%last%", last)
                         ))
                     }
@@ -185,8 +185,8 @@ class StillLife : CoreKiller(
         survivor.addPotionEffect(org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.GLOWING, 100, 0))
         
         Bukkit.getPlayer(killerUuid)?.let {
-            it.sendMessage(pumpking.lib.color.ColorTranslator.translate(
-                pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(it, "asesinos.still_life.habilidades.generador_interactuado", "killers_info")
+            it.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate(
+                liric.mistaken.config.engine.core.MessageService.getStrictString(it, "asesinos.still_life.habilidades.generador_interactuado", "killers_info")
             ))
         }
     }
@@ -199,8 +199,8 @@ class StillLife : CoreKiller(
         val session = plugin.sessionManager.getSession(killer) ?: return
         if (session.isKiller(killer.uniqueId) && plugin.playerDataManager.getSelectedKiller(killer.uniqueId) == this.id) {
             lastKilled[killer.uniqueId] = victim.name
-            killer.sendMessage(pumpking.lib.color.ColorTranslator.translate(
-                pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(killer, "asesinos.still_life.habilidades.asesinado", "killers_info")
+            killer.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate(
+                liric.mistaken.config.engine.core.MessageService.getStrictString(killer, "asesinos.still_life.habilidades.asesinado", "killers_info")
                     .replace("%victim%", victim.name)
             ))
         }
@@ -210,15 +210,15 @@ class StillLife : CoreKiller(
         disguisedAs.remove(player.uniqueId)
         player.customName = null
         player.isCustomNameVisible = false
-        player.sendMessage(pumpking.lib.color.ColorTranslator.translate(
-            pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.still_life.habilidades.disfraz_quitado", "killers_info")
+        player.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate(
+            liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.still_life.habilidades.disfraz_quitado", "killers_info")
         ))
     }
 
     override fun onInterceptChat(player: Player, message: String): String? {
         val disguiseName = disguisedAs[player.uniqueId]
         if (disguiseName != null) {
-            return pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.still_life.habilidades.chat_disfraz", "killers_info")
+            return liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.still_life.habilidades.chat_disfraz", "killers_info")
                 .replace("%disguisename%", disguiseName)
                 .replace("%message%", message)
         }

@@ -13,8 +13,8 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import liric.mistaken.api.managers.IKillerManager
 import org.bukkit.Material
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 import liric.mistaken.roles.shared.AbstractRoleManager
 
@@ -42,7 +42,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             CharlieInferno(), CharlieJazz(), Mariachi(),
             Sowoul(), StillLife(), WardenKiller(), SmilerKiller(), PiglinBigKiller()
         ).forEach { registerClass(it) }
-        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Loaded native killers (Hardcoded).</gray>"))
+        plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Loaded native killers (Hardcoded).</gray>"))
     }
 
     fun loadScripts() {
@@ -60,7 +60,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                 }
             }
         } catch (e: Exception) {
-            plugin.componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Failed to copy default scripts.</gray>"))
+            plugin.componentLogger.warn(liric.mistaken.utils.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Failed to copy default scripts.</gray>"))
         }
 
         val files = scriptsFolder.listFiles() ?: return
@@ -87,7 +87,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                 }
             }
         }
-        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Loaded $loadedCount killers from scripts.</gray>"))
+        plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Loaded $loadedCount killers from scripts.</gray>"))
     }
 
     override fun registerClass(role: Killer) {
@@ -107,7 +107,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         // ?? FIX: Ejecutamos el cleanup de forma segura en el hilo del player (Entity Scheduler)
         player.scheduler.run(plugin, Consumer { _ ->
             clase.cleanup(player)
-            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>${player.name} synchronized with ${clase.nombre}</gray>"))
+            plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>${player.name} synchronized with ${clase.nombre}</gray>"))
         }, null)
     }
 
@@ -125,7 +125,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         activeRoles[uuid] = killer
 
         // Feedback
-        player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "killer.transform",
+        player.sendMessage(MessageService.getComponent(player, "killer.transform",
             Placeholder.component("name", ColorTranslator.translate(killer.nombre))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
@@ -271,13 +271,13 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                     equipKiller(p, lowerId)
                 }
                 
-                plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Killer $lowerId reloaded successfully.</gray>"))
+                plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Killer $lowerId reloaded successfully.</gray>"))
             } else {
                 availableClasses.remove(lowerId)
-                plugin.componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Error reloading $lowerId. The killer has been disabled.</gray>"))
+                plugin.componentLogger.warn(liric.mistaken.utils.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Error reloading $lowerId. The killer has been disabled.</gray>"))
             }
         } else {
-            plugin.componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Could not find script $lowerId.groovy or .lua to reload.</gray>"))
+            plugin.componentLogger.warn(liric.mistaken.utils.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Could not find script $lowerId.groovy or .lua to reload.</gray>"))
         }
     }
 

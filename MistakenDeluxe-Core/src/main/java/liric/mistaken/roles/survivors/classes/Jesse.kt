@@ -21,13 +21,13 @@ import org.bukkit.potion.PotionEffectType
 import java.util.function.Consumer
 import java.util.UUID
 import org.bukkit.configuration.file.FileConfiguration
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 
 class Jesse : Survivor(
     "jesse",
-    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.jesse.nombre", "survivors_info")
+    MessageService.getStrictString(null, "supervivientes.jesse.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.jesse"
@@ -35,7 +35,7 @@ class Jesse : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = MessageService.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 20))) {
@@ -63,7 +63,7 @@ class Jesse : Survivor(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langInfo = MessageService.getSpecificFile(player, "survivors_info")
         val configMecanica = plugin.configManager.getSurvivorConfig(this.id)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {

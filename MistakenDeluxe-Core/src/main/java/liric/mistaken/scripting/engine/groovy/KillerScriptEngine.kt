@@ -2,7 +2,7 @@ package liric.mistaken.scripting.engine.groovy
 
 import liric.mistaken.roles.killers.Killer
 import org.bukkit.Bukkit
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 import java.io.File
 import javax.script.ScriptEngineManager
 import javax.script.ScriptException

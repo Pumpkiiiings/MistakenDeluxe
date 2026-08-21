@@ -36,13 +36,13 @@ import java.util.function.Consumer
 import liric.mistaken.packet.PacketFactory
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.plugin.java.JavaPlugin
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 
 class Troll : Survivor(
     "troll",
-    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.troll.nombre", "survivors_info")
+    MessageService.getStrictString(null, "supervivientes.troll.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.troll"
@@ -50,7 +50,7 @@ class Troll : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = MessageService.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 30))) {
@@ -80,7 +80,7 @@ class Troll : Survivor(
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langInfo = MessageService.getSpecificFile(player, "survivors_info")
         val configMecanica = plugin.configManager.getSurvivorConfig(this.id)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -441,7 +441,7 @@ class Troll : Survivor(
                 killer.setRotation(killer.yaw + 180f, -45f)
 
                 killer.sendMessage(ColorTranslator.translate(
-                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(killer, "supervivientes.troll.habilidades.resbalaste_platano", "survivors_info")
+                    liric.mistaken.config.engine.core.MessageService.getStrictString(killer, "supervivientes.troll.habilidades.resbalaste_platano", "survivors_info")
                 ))
 
                 platano.world.spawnParticle(Particle.DUST, platano.location, 10, 0.2, 0.2, 0.2, Particle.DustOptions(Color.YELLOW, 1f))
@@ -481,7 +481,7 @@ class Troll : Survivor(
                 killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 80, 0))
                 killer.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
                 killer.sendMessage(ColorTranslator.translate(
-                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(killer, "supervivientes.troll.habilidades.boom_trampa", "survivors_info")
+                    liric.mistaken.config.engine.core.MessageService.getStrictString(killer, "supervivientes.troll.habilidades.boom_trampa", "survivors_info")
                 ))
 
                 caja.remove()

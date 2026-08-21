@@ -101,10 +101,10 @@ object GameplayFunctions {
 
     /**
      * Envía un message traducido al player, resolviendo la key contra
-     * PumpkingServiceManager.messages — mismo sistema que usan los killers Kotlin.
+     * MessageService — mismo sistema que usan los killers Kotlin.
      */
     fun sendTranslated(player: Player, key: String) {
-        player.sendMessage(pumpking.lib.service.PumpkingServiceManager.messages.getComponent(null, key))
+        player.sendMessage(liric.mistaken.config.engine.core.MessageService.getComponent(null, key))
     }
 
     /**

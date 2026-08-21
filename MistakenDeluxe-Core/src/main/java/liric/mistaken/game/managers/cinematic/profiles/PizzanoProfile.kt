@@ -14,7 +14,7 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.util.EulerAngle
 import kotlin.math.cos
 import kotlin.math.sin
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 class PizzanoProfile : CinematicProfile {
     override val id: String = "pizzano"

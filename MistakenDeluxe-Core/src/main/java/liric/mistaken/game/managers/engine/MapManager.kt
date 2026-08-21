@@ -11,7 +11,7 @@ import org.bukkit.GameRule
 import org.bukkit.World
 import java.io.File
 import java.util.concurrent.CompletableFuture
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 
 class MapManager(private val plugin: Mistaken) {
@@ -36,7 +36,7 @@ class MapManager(private val plugin: Mistaken) {
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
             try {
                 if (!fileLoader.worldExists(templateName)) {
-                    plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Slime file '$templateName' does not exist.</gray>"))
+                    plugin.componentLogger.error(liric.mistaken.utils.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Slime file '$templateName' does not exist.</gray>"))
                     future.complete(null)
                     return@runNow
                 }
@@ -57,7 +57,7 @@ class MapManager(private val plugin: Mistaken) {
                         val bukkitWorld = instance.bukkitWorld
 
                         if (bukkitWorld == null) {
-                            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Bukkit returned a null world.</gray>"))
+                            plugin.componentLogger.error(liric.mistaken.utils.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Bukkit returned a null world.</gray>"))
                             future.complete(null)
                             return@execute
                         }
@@ -81,17 +81,17 @@ class MapManager(private val plugin: Mistaken) {
                             isThundering = false
                         }
 
-                        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>World instantiated: ${bukkitWorld.name}</gray>"))
+                        plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>World instantiated: ${bukkitWorld.name}</gray>"))
                         future.complete(bukkitWorld)
 
                     } catch (e: Exception) {
-                        plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Failed to register world in Bukkit: ${e.message}</gray>"))
+                        plugin.componentLogger.error(liric.mistaken.utils.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Failed to register world in Bukkit: ${e.message}</gray>"))
                         future.complete(null)
                     }
                 }
 
             } catch (e: Exception) {
-                plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Critical failure loading $templateName: ${e.message}</gray>"))
+                plugin.componentLogger.error(liric.mistaken.utils.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Critical failure loading $templateName: ${e.message}</gray>"))
                 e.printStackTrace()
                 future.complete(null)
             }
@@ -109,7 +109,7 @@ class MapManager(private val plugin: Mistaken) {
         // La descarga SIEMPRE debe ocurrir en el hilo principal
         plugin.server.globalRegionScheduler.execute(plugin) {
             Bukkit.unloadWorld(world, false)
-            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>World ${world.name} unloaded.</gray>"))
+            plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>World ${world.name} unloaded.</gray>"))
         }
     }
 

@@ -4,7 +4,7 @@ import kotlinx.coroutines.Job
 import liric.mistaken.Mistaken
 import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 import liric.mistaken.api.roles.GameRole
 

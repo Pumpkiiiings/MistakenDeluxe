@@ -43,7 +43,7 @@ class TriggerRegistry(val killerId: String) {
         
         if (now - lastUsed < cooldownSeconds * 1000L) {
             val remaining = (cooldownSeconds * 1000L - (now - lastUsed)) / 1000
-            player.sendActionBar(pumpking.lib.color.ColorTranslator.translate("<red>Habilidad en enfriamiento. <gray>($remaining s)"))
+            player.sendActionBar(liric.mistaken.utils.color.ColorTranslator.translate("<red>Habilidad en enfriamiento. <gray>($remaining s)"))
             return true
         }
         

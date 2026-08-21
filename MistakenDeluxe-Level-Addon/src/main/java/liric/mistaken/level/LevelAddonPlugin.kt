@@ -1,4 +1,4 @@
-package liric.mistaken.level
+﻿package liric.mistaken.level
 
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.plugin.ServicePriority
@@ -20,8 +20,8 @@ import liric.mistaken.level.rewards.types.*
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent
-import pumpking.lib.database.HikariDatabaseManager
-import pumpking.lib.database.DatabaseType
+import liric.mistaken.data.db.HikariDatabaseManager
+import liric.mistaken.data.db.DatabaseType
 import org.bukkit.Bukkit
 import java.io.File
 import liric.mistaken.level.config.MenuConfig
@@ -58,7 +58,7 @@ class LevelAddonPlugin : JavaPlugin() {
     private lateinit var databaseProvider: HikariDatabaseManager
 
     override fun onEnable() {
-        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Starting up...</gray>"))
+        componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Starting up...</gray>"))
 
         // Init config
         saveDefaultConfig()
@@ -149,14 +149,14 @@ class LevelAddonPlugin : JavaPlugin() {
         // Register PAPI
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             MistakenLevelExpansion(this).register()
-            componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Registered PlaceholderAPI Expansion.</gray>"))
+            componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Registered PlaceholderAPI Expansion.</gray>"))
         }
 
-        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Successfully registered Level & Experience API Services.</gray>"))
+        componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Successfully registered Level & Experience API Services.</gray>"))
     }
 
     override fun onDisable() {
-        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Shutting down...</gray>"))
+        componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Shutting down...</gray>"))
         
         // Save data
         if (this::manager.isInitialized) {

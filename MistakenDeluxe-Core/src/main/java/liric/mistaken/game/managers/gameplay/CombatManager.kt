@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.gameplay
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.HealthAPI
@@ -29,8 +29,8 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
@@ -54,8 +54,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     }
 
     private fun startRadarTask() {
-        plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
-            if (!plugin.isReady) return@runAtFixedRate
+        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { _ ->
+            if (!plugin.isReady) return@Consumer
 
             // ?? MULTIARENA: Recorremos todas las sesiones activas
             val sessions = plugin.sessionManager.activeSessions.values
@@ -68,120 +68,117 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 if (killersOnline.isEmpty()) continue
 
                 for (killer in killersOnline) {
-                    val killerLoc = killer.location
-                    var minDistanceSq = Double.MAX_VALUE
-                    var foundSomeone = false
-                    var ghostName = ""
+                    killer.scheduler.run(plugin, Consumer { _ ->
+                        if (!killer.isOnline) return@Consumer
+                        val killerLoc = killer.location
+                        var minDistanceSq = Double.MAX_VALUE
+                        var foundSomeone = false
+                        
+                        val players = session.getPlayers().filter { it != killer }
+                        if (players.isEmpty()) return@Consumer
+                        
+                        var targetsProcessed = 0
 
-                    // Obtenemos los players de ESTA sesiï¿½n para no escanear a todo el servidor
-                    for (target in session.getPlayers()) {
-                        if (target == killer || target.world != killerLoc.world) continue
-
-                        if (session.isKiller(target.uniqueId)) {
-                            val mode = session.currentMode
-                            if (mode == MistakenMode.DOUBLE_KILLER || mode == MistakenMode.ONE_BOUNCE) {
-                                target.scheduler.run(plugin, Consumer { _ ->
-                                    if (target.isOnline && killer.isOnline) {
-                                        if (session.currentState == GameState.INGAME) {
-                                            try {
-                                                plugin.glowingAPI.setGlowing(target, killer, ChatColor.YELLOW)
-                                            } catch (_: Exception) {
-                                            }
-                                        } else {
-                                            try {
-                                                plugin.glowingAPI.unsetGlowing(target, killer)
-                                            } catch (_: Exception) {
-                                            }
-                                        }
-                                    }
-                                }, null)
-                            } else {
-                                target.scheduler.run(plugin, Consumer { _ ->
-                                    if (target.isOnline && killer.isOnline) {
-                                        try {
-                                            plugin.glowingAPI.unsetGlowing(target, killer)
-                                        } catch (_: Exception) {
-                                        }
-                                    }
-                                }, null)
-                            }
-                            continue
-                        }
-
-                        val tabName = PlainTextComponentSerializer.plainText().serialize(target.playerListName())
-                        val isNPC = target.hasMetadata("NPC") || target.name.isEmpty() || tabName.isBlank()
-
-                        val isValidSurvivor = target.gameMode == GameMode.SURVIVAL &&
-                                !isNPC &&
-                                !plugin.spectatorManager.isSpectator(target) &&
-                                killer.canSee(target) &&
-                                !plugin.isIgnored(target) &&
-                                !plugin.spectatorManager.isSpectator(target)
-
-                        if (isValidSurvivor) {
-                            val distSq = killerLoc.distanceSquared(target.location)
-
-                            if (distSq <= 225.0) {
-                                target.scheduler.run(plugin, Consumer { _ ->
-                                    if (target.isOnline && killer.isOnline) {
-                                        if (session.currentState == GameState.INGAME) {
-                                            try {
-                                                plugin.glowingAPI.setGlowing(target, killer, ChatColor.RED)
-                                            } catch (_: Exception) {
-                                            }
-                                        } else {
-                                            try {
-                                                plugin.glowingAPI.unsetGlowing(target, killer)
-                                            } catch (_: Exception) {
-                                            }
-                                        }
-                                    }
-                                }, null)
-                            } else {
-                                target.scheduler.run(plugin, Consumer { _ ->
-                                    if (target.isOnline && killer.isOnline) {
-                                        try {
-                                            plugin.glowingAPI.unsetGlowing(target, killer)
-                                        } catch (_: Exception) {
-                                        }
-                                    }
-                                }, null)
-                            }
-
-                            if (distSq <= 900.0) {
-                                if (distSq < minDistanceSq) {
-                                    minDistanceSq = distSq
-                                    foundSomeone = true
-                                    ghostName = target.name
-                                }
-                            }
-                        } else {
+                        // Obtenemos los players de ESTA sesiï¿½n para no escanear a todo el servidor
+                        for (target in players) {
                             target.scheduler.run(plugin, Consumer { _ ->
-                                if (target.isOnline && killer.isOnline) {
-                                    try {
-                                        plugin.glowingAPI.unsetGlowing(target, killer)
-                                    } catch (_: Exception) {
+                                if (!target.isOnline || !killer.isOnline) {
+                                    killer.scheduler.run(plugin, Consumer { _ ->
+                                        targetsProcessed++
+                                        if (targetsProcessed == players.size && foundSomeone) {
+                                            val realDist = Math.sqrt(minDistanceSq)
+                                            killer.sendActionBar(ColorTranslator.translate("<yellow>Escuchas el latido de alguien.."))
+                                            val (vol, pitch) = when {
+                                                realDist < 5.0 -> 1.2f to 1.5f
+                                                realDist < 15.0 -> 0.8f to 1.0f
+                                                else -> 0.4f to 0.6f
+                                            }
+                                            killer.playSound(killer.location, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, vol, pitch)
+                                        }
+                                    }, null)
+                                    return@Consumer
+                                }
+
+                                val targetLoc = target.location
+                                var distForHeartbeat = Double.MAX_VALUE
+
+                                if (targetLoc.world != killerLoc.world) {
+                                    if (session.isKiller(target.uniqueId)) {
+                                        val mode = session.currentMode
+                                        if (mode != MistakenMode.DOUBLE_KILLER && mode != MistakenMode.ONE_BOUNCE) {
+                                            try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                                        }
+                                    } else {
+                                        try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                                    }
+                                } else {
+                                    val distSq = killerLoc.distanceSquared(targetLoc)
+                                    
+                                    if (session.isKiller(target.uniqueId)) {
+                                        val mode = session.currentMode
+                                        if (mode == MistakenMode.DOUBLE_KILLER || mode == MistakenMode.ONE_BOUNCE) {
+                                            if (session.currentState == GameState.INGAME) {
+                                                try { plugin.glowingAPI.setGlowing(target, killer, ChatColor.YELLOW) } catch (_: Exception) {}
+                                            } else {
+                                                try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                                            }
+                                        } else {
+                                            try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                                        }
+                                    } else {
+                                        val tabName = PlainTextComponentSerializer.plainText().serialize(target.playerListName())
+                                        val isNPC = target.hasMetadata("NPC") || target.name.isEmpty() || tabName.isBlank()
+    
+                                        val isValidSurvivor = target.gameMode == GameMode.SURVIVAL &&
+                                                !isNPC &&
+                                                !plugin.spectatorManager.isSpectator(target) &&
+                                                killer.canSee(target) &&
+                                                !plugin.isIgnored(target) &&
+                                                !plugin.spectatorManager.isSpectator(target)
+    
+                                        if (isValidSurvivor) {
+                                            if (distSq <= 225.0) {
+                                                if (session.currentState == GameState.INGAME) {
+                                                    try { plugin.glowingAPI.setGlowing(target, killer, ChatColor.RED) } catch (_: Exception) {}
+                                                } else {
+                                                    try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                                                }
+                                            } else {
+                                                try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                                            }
+                                            distForHeartbeat = distSq
+                                        } else {
+                                            try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
+                                        }
                                     }
                                 }
+
+                                killer.scheduler.run(plugin, Consumer { _ ->
+                                    if (distForHeartbeat <= 900.0) {
+                                        if (distForHeartbeat < minDistanceSq) {
+                                            minDistanceSq = distForHeartbeat
+                                            foundSomeone = true
+                                        }
+                                    }
+                                    targetsProcessed++
+                                    
+                                    if (targetsProcessed == players.size && foundSomeone) {
+                                        val realDist = Math.sqrt(minDistanceSq)
+                                        killer.sendActionBar(ColorTranslator.translate("<yellow>Escuchas el latido de alguien.."))
+                                        val (vol, pitch) = when {
+                                            realDist < 5.0 -> 1.2f to 1.5f
+                                            realDist < 15.0 -> 0.8f to 1.0f
+                                            else -> 0.4f to 0.6f
+                                        }
+                                        killer.playSound(killer.location, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, vol, pitch)
+                                    }
+                                }, null)
                             }, null)
                         }
-                    }
-
-                    if (foundSomeone) {
-                        val realDist = Math.sqrt(minDistanceSq)
-                        killer.sendActionBar(ColorTranslator.translate("<yellow>Escuchas el latido de alguien.."))
-
-
-                        val (vol, pitch) = when {
-                            realDist < 5.0 -> 1.2f to 1.5f
-                            realDist < 15.0 -> 0.8f to 1.0f
-                            else -> 0.4f to 0.6f
-                        }
-                        killer.playSound(killer.location, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, vol, pitch)
-                    }
+                    }, null)
                 }
             }
-        }, 0L, 500L, TimeUnit.MILLISECONDS)
+        }, 1L, 10L)
     }
 
     private inline fun runOnMain(crossinline block: () -> Unit) {
@@ -268,7 +265,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             if (now - lastHit < KILLER_COOLDOWN) {
                 val remaining = (KILLER_COOLDOWN - (now - lastHit)) / 1000.0
-                attacker.sendActionBar(PumpkingServiceManager.messages.getComponent(attacker, "combat.cooldown", Placeholder.parsed("time", String.Companion.format(
+                attacker.sendActionBar(MessageService.getComponent(attacker, "combat.cooldown", Placeholder.parsed("time", String.Companion.format(
                     Locale.US, "%.1f", remaining))))
                 event.isCancelled = true
                 return
@@ -299,7 +296,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             if (now - lastHit < SURVIVOR_COOLDOWN) {
                 val remaining = (SURVIVOR_COOLDOWN - (now - lastHit)) / 1000.0
-                attacker.sendActionBar(PumpkingServiceManager.messages.getComponent(attacker, "combat.cooldown", Placeholder.parsed("time", String.Companion.format(
+                attacker.sendActionBar(MessageService.getComponent(attacker, "combat.cooldown", Placeholder.parsed("time", String.Companion.format(
                     Locale.US, "%.1f", remaining))))
                 event.isCancelled = true
                 return
@@ -335,7 +332,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             if (isSurvivor && nextHP <= 4.0 && nextHP > 0.0) {
                 if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {
-                    val msg = PumpkingServiceManager.messages.getRawString(victim, "combat.critical-wound", "<red><bold>ï¿½HERIDA CRÃTICA!</bold>")
+                    val msg = MessageService.getRawString(victim, "combat.critical-wound", "<red><bold>ï¿½HERIDA CRÃ TICA!</bold>", "messages")
                     victim.sendMessage(ColorTranslator.translate(msg))
                     victim.addPotionEffect(
                         PotionEffect(
@@ -375,7 +372,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         val clamped = amount.coerceIn(MIN_SCRIPT_DAMAGE, MAX_SCRIPT_DAMAGE)
         if (amount != clamped) {
             val sourceStr = sourceName?.let { "Script '$it'" } ?: "CÃ³digo nativo"
-            plugin.componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>$sourceStr attempted to apply out-of-bounds damage: $amount. Clamped to $clamped.</gray>"))
+            plugin.componentLogger.warn(liric.mistaken.utils.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>$sourceStr attempted to apply out-of-bounds damage: $amount. Clamped to $clamped.</gray>"))
         }
         processTrueDamage(victim, null, clamped)
     }
@@ -449,8 +446,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             val timeFormatted = String.Companion.format(Locale.US, "%d:%02d", timeLeft / 60, timeLeft % 60)
             victim.showTitle(
                 Title.title(
-                    PumpkingServiceManager.messages.getComponent(victim, "game.freeze-title"),
-                    PumpkingServiceManager.messages.getComponent(
+                    MessageService.getComponent(victim, "game.freeze-title"),
+                    MessageService.getComponent(
                         victim,
                         "game.freeze-subtitle",
                         Placeholder.parsed("time", timeFormatted)

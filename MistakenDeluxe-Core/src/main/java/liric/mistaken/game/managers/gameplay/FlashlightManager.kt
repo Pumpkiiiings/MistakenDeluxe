@@ -15,7 +15,7 @@ import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.config.engine.core.MessageService
 
 
 class FlashlightManager(private val plugin: Mistaken) {
@@ -63,12 +63,12 @@ class FlashlightManager(private val plugin: Mistaken) {
         if (isOn(player)) {
             disable(player)
             player.playSound(player.location, Sound.BLOCK_LEVER_CLICK, 0.6f, 1.2f)
-            PumpkingServiceManager.messages.actionBar(player, "listeners.flashlight.disabled")
+            MessageService.actionBar(player, "listeners.flashlight.disabled")
         } else {
             if (!canUse(player)) return
             enable(player)
             player.playSound(player.location, Sound.BLOCK_LEVER_CLICK, 0.6f, 1.6f)
-            PumpkingServiceManager.messages.actionBar(player, "listeners.flashlight.enabled")
+            MessageService.actionBar(player, "listeners.flashlight.enabled")
         }
     }
 

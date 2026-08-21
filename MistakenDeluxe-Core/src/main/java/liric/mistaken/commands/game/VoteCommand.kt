@@ -11,8 +11,8 @@ import liric.mistaken.game.enums.GameState
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Sound
 import org.bukkit.entity.Player
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 object VoteCommand {
 
@@ -21,7 +21,7 @@ object VoteCommand {
             .executes { ctx ->
                 val sender = ctx.source.sender
                 val player = sender as? Player
-                sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "voting.usage"))
+                sender.sendMessage(MessageService.getComponent(player, "voting.usage"))
                 1
             }
             .then(
@@ -45,13 +45,13 @@ object VoteCommand {
                         }
 
                         if (session.currentState != GameState.VOTING) {
-                            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "voting.not-active"))
+                            player.sendMessage(MessageService.getComponent(player, "voting.not-active"))
                             return@executes 0
                         }
 
                         val voteManager = session.voteManager
                         if (voteManager.hasVoted(player.uniqueId)) {
-                            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "voting.already-voted"))
+                            player.sendMessage(MessageService.getComponent(player, "voting.already-voted"))
                             return@executes 0
                         }
 
@@ -61,7 +61,7 @@ object VoteCommand {
 
                         if (actualMapName == null) {
                             player.sendMessage(
-                                PumpkingServiceManager.messages.getComponent(
+                                MessageService.getComponent(
                                     player,
                                     "voting.not-found",
                                     Placeholder.parsed("map", inputName)
@@ -73,7 +73,7 @@ object VoteCommand {
                         voteManager.addVote(player.uniqueId, actualMapName)
 
                         player.sendMessage(
-                            PumpkingServiceManager.messages.getComponent(
+                            MessageService.getComponent(
                                 player,
                                 "voting.success",
                                 Placeholder.parsed("map", actualMapName)

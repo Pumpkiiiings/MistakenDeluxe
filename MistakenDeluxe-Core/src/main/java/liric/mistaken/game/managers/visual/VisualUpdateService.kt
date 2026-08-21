@@ -3,7 +3,7 @@ package liric.mistaken.game.managers.visual
 import liric.mistaken.Mistaken
 import org.bukkit.Bukkit
 import org.bukkit.scheduler.BukkitTask
-import pumpking.lib.scoreboard.ScoreboardManager as PumpkingScoreboardManager
+import liric.mistaken.utils.scoreboard.ScoreboardManager as PumpkingScoreboardManager
 
 class VisualUpdateService(private val plugin: Mistaken) {
 

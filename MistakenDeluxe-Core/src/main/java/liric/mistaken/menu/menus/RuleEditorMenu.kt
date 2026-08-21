@@ -8,13 +8,13 @@ import liric.mistaken.game.PrivateGameSettings
 import liric.mistaken.config.Messages
 import org.bukkit.Material
 import org.bukkit.entity.Player
-import pumpking.lib.service.PumpkingServiceManager
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
+import liric.mistaken.utils.color.ColorTranslator
 
 class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSession) {
 
     fun abrir(player: Player) {
-        val config = pumpking.lib.config.ConfigManager.getMenuConfig("private_lobby")
+        val config = liric.mistaken.config.engine.core.ConfigManager.getMenuConfig("private_lobby")
         val titleText = config.getString("menus.rule_editor.title", "<dark_gray>Editor de Reglas") ?: "<dark_gray>Editor de Reglas"
         val backName = config.getString("items.back.name", "<red>Volver") ?: "<red>Volver"
         

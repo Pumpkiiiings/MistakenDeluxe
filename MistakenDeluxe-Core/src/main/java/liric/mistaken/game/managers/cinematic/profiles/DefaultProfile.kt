@@ -13,7 +13,7 @@ import org.bukkit.util.EulerAngle
 import kotlin.math.cos
 import kotlin.math.sin
 import org.bukkit.Particle
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 class DefaultProfile : CinematicProfile {
     override val id: String = "default"

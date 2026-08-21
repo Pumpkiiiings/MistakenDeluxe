@@ -1,4 +1,4 @@
-package liric.mistaken.api
+﻿package liric.mistaken.api
 
 import liric.mistaken.api.managers.IKillerManager
 import liric.mistaken.api.managers.ISessionManager
@@ -8,7 +8,7 @@ import org.bukkit.plugin.Plugin
 import java.util.logging.Logger
 import liric.mistaken.api.managers.IPlayerDataManager
 import org.bukkit.entity.Player
-import pumpking.lib.messages.IMessageService
+import liric.mistaken.api.managers.IMessageService
 
 /**
  * [MistakenDeluxe]

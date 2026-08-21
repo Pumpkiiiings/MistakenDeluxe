@@ -7,8 +7,8 @@ import liric.mistaken.Mistaken
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Sound
 import org.bukkit.entity.Player
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 /**
  * SetLobbyCommand - Kotlin Edition (Paper 1.21.4+)
@@ -48,7 +48,7 @@ object SetLobbyCommand {
                 plugin.setLobbyLocationConfig(player.location)
 
                 // 4. Feedback Visual (Multiling�e)
-                val message = PumpkingServiceManager.messages.getComponent(player, "admin.lobby-set")
+                val message = MessageService.getComponent(player, "admin.lobby-set")
                 player.sendMessage(message)
 
                 // 5. Feedback Auditivo

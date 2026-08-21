@@ -7,8 +7,8 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -47,7 +47,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
 
         // Validar existencia excepto para creaci�n
         if (arena == null && sub != "create") {
-            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.arena-not-found",
+            player.sendMessage(MessageService.getComponent(player, "errors.arena-not-found",
                 Placeholder.parsed("name", arenaName)))
             return
         }
@@ -55,7 +55,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
         when (sub) {
             "create" -> {
                 plugin.arenaManager.createArena(arenaName)
-                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.created",
+                player.sendMessage(MessageService.getComponent(player, "arena.created",
                     Placeholder.parsed("name", arenaName)))
                 player.playSound(player.location, Sound.ENTITY_VILLAGER_YES, 1f, 1f)
                 player.sendMessage(ColorTranslator.translate("<gray>Nota: Aseg�rate de tener el archivo <white>$arenaName.slime</white> en su carpeta."))
@@ -63,37 +63,37 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
 
             "delete" -> {
                 plugin.arenaManager.deleteArena(arenaName)
-                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.deleted",
+                player.sendMessage(MessageService.getComponent(player, "arena.deleted",
                     Placeholder.parsed("name", arenaName)))
                 player.playSound(player.location, Sound.BLOCK_ANVIL_BREAK, 1f, 1f)
             }
 
             "setspawn" -> {
                 if (args.size < 3) {
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.usage-setspawn",
+                    player.sendMessage(MessageService.getComponent(player, "arena.usage-setspawn",
                         Placeholder.parsed("name", arenaName)))
                     return
                 }
                 val type = args[2].lowercase()
                 if (type == "asesino" || type == "survivor") {
                     plugin.arenaManager.setSpawn(arenaName, type, player.location)
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.setspawn",
+                    player.sendMessage(MessageService.getComponent(player, "arena.setspawn",
                         Placeholder.parsed("type", type),
                         Placeholder.parsed("name", arenaName)))
                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
                 } else {
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.invalid-spawn-type"))
+                    player.sendMessage(MessageService.getComponent(player, "errors.invalid-spawn-type"))
                 }
             }
 
             "setgenerator" -> {
                 val target = player.getTargetBlockExact(5)
                 if (target == null || target.type !in allowedGens) {
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.invalid-gen-block"))
+                    player.sendMessage(MessageService.getComponent(player, "errors.invalid-gen-block"))
                     return
                 }
                 plugin.arenaManager.addGenerator(arenaName, target.location)
-                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.setgenerator",
+                player.sendMessage(MessageService.getComponent(player, "arena.setgenerator",
                     Placeholder.parsed("name", arenaName)))
                 player.playSound(player.location, Sound.BLOCK_BEACON_ACTIVATE, 1f, 2f)
             }
@@ -108,11 +108,11 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
 
                     if (removed) {
                         plugin.arenaManager.saveGenerators(arenaName, currentGens)
-                        player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.delgenerator",
+                        player.sendMessage(MessageService.getComponent(player, "arena.delgenerator",
                             Placeholder.parsed("name", arenaName)))
                         player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.5f)
                     } else {
-                        player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.not-a-generator"))
+                        player.sendMessage(MessageService.getComponent(player, "errors.not-a-generator"))
                     }
                 }
             }
@@ -121,20 +121,20 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
                 arena?.let {
                     val ready = it.killerSpawn != null && it.survivorSpawns.isNotEmpty() && it.generators.isNotEmpty()
                     val statusKey = if (ready) "arena.status-ready" else "arena.status-incomplete"
-                    val statusText = PumpkingServiceManager.messages.getRawString(player, statusKey, "Unknown")
+                    val statusText = MessageService.getRawString(player, statusKey, "Unknown", "messages")
 
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.check-header",
+                    player.sendMessage(MessageService.getComponent(player, "arena.check-header",
                         Placeholder.parsed("name", arenaName),
                         Placeholder.parsed("status", statusText)))
 
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.check-survivors",
+                    player.sendMessage(MessageService.getComponent(player, "arena.check-survivors",
                         Placeholder.parsed("count", it.survivorSpawns.size.toString())))
 
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.check-generators",
+                    player.sendMessage(MessageService.getComponent(player, "arena.check-generators",
                         Placeholder.parsed("count", it.generators.size.toString())))
 
                     val killerIcon = if (it.killerSpawn != null) "<green>?" else "<red>?"
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.check-killer",
+                    player.sendMessage(MessageService.getComponent(player, "arena.check-killer",
                         Placeholder.parsed("icon", killerIcon)))
 
                     player.playSound(player.location, Sound.BLOCK_CHEST_OPEN, 1f, 1.5f)
@@ -160,9 +160,9 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
     }
 
     private fun sendHelp(p: Player) {
-        p.sendMessage(PumpkingServiceManager.messages.getComponent(p, "arena.help-header"))
+        p.sendMessage(MessageService.getComponent(p, "arena.help-header"))
         listOf("create", "delete", "check", "setspawn", "setgenerator", "delgenerator", "settime").forEach { sub ->
-            p.sendMessage(PumpkingServiceManager.messages.getComponent(p, "arena.help-line-$sub"))
+            p.sendMessage(MessageService.getComponent(p, "arena.help-line-$sub"))
         }
         p.playSound(p.location, Sound.BLOCK_NOTE_BLOCK_HAT, 1f, 1f)
     }

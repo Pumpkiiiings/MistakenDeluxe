@@ -41,7 +41,7 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                             
                             Bukkit.getScheduler().runTask(plugin, Runnable {
                                 MistakenProvider.get().sessionManager.joinSession(memberPlayer, sessionId)
-                                pumpking.lib.service.PumpkingServiceManager.messages.send(memberPlayer, liric.mistaken.config.Messages.HOOK_PARTY_ENTER)
+                                liric.mistaken.config.engine.core.MessageService.send(memberPlayer, liric.mistaken.config.Messages.HOOK_PARTY_ENTER)
                                 
                                 Bukkit.getScheduler().runTaskLater(plugin, Runnable {
                                     recentlyPulled.remove(member.uniqueId)
@@ -80,7 +80,7 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                             
                             Bukkit.getScheduler().runTask(plugin, Runnable {
                                 MistakenProvider.get().sessionManager.leaveSession(memberPlayer)
-                                pumpking.lib.service.PumpkingServiceManager.messages.send(memberPlayer, liric.mistaken.config.Messages.HOOK_PARTY_LEAVE)
+                                liric.mistaken.config.engine.core.MessageService.send(memberPlayer, liric.mistaken.config.Messages.HOOK_PARTY_LEAVE)
                                 
                                 Bukkit.getScheduler().runTaskLater(plugin, Runnable {
                                     recentlyPulled.remove(member.uniqueId)
@@ -116,7 +116,7 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                         // Create Private Session
                         val arenas = plugin.arenaManager.getArenas()
                         if (arenas.isEmpty()) {
-                            pumpking.lib.service.PumpkingServiceManager.messages.send(player, liric.mistaken.config.Messages.HOOK_PARTY_NO_MAPS)
+                            liric.mistaken.config.engine.core.MessageService.send(player, liric.mistaken.config.Messages.HOOK_PARTY_NO_MAPS)
                             return
                         }
                         
@@ -129,7 +129,7 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                                 
                                 Bukkit.getScheduler().runTask(plugin, Runnable {
                                     MistakenProvider.get().sessionManager.joinSession(memberPlayer, session.id)
-                                    pumpking.lib.service.PumpkingServiceManager.messages.send(memberPlayer, liric.mistaken.config.Messages.HOOK_PARTY_ENTER_PRIVATE)
+                                    liric.mistaken.config.engine.core.MessageService.send(memberPlayer, liric.mistaken.config.Messages.HOOK_PARTY_ENTER_PRIVATE)
                                     
                                     if (member.uniqueId == player.uniqueId) {
                                         val panelItem = org.bukkit.inventory.ItemStack(org.bukkit.Material.COMMAND_BLOCK)
@@ -146,13 +146,13 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                             }
                         }
                         
-                        pumpking.lib.service.PumpkingServiceManager.messages.send(player, liric.mistaken.config.Messages.HOOK_PARTY_CREATED_PRIVATE)
+                        liric.mistaken.config.engine.core.MessageService.send(player, liric.mistaken.config.Messages.HOOK_PARTY_CREATED_PRIVATE)
                         
                     } else {
-                        pumpking.lib.service.PumpkingServiceManager.messages.send(player, liric.mistaken.config.Messages.HOOK_PARTY_ONLY_LEADER)
+                        liric.mistaken.config.engine.core.MessageService.send(player, liric.mistaken.config.Messages.HOOK_PARTY_ONLY_LEADER)
                     }
                 } else {
-                    pumpking.lib.service.PumpkingServiceManager.messages.send(player, liric.mistaken.config.Messages.HOOK_PARTY_NOT_IN)
+                    liric.mistaken.config.engine.core.MessageService.send(player, liric.mistaken.config.Messages.HOOK_PARTY_NOT_IN)
                 }
             } catch (e: Exception) {
                  plugin.logger.warning("Error al procesar /party private: \${e.message}")

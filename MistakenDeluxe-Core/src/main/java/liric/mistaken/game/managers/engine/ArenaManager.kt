@@ -15,8 +15,8 @@ import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.forEach
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.config.ConfigManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.ConfigManager
 
 
 class ArenaManager(private val plugin: Mistaken) {
@@ -63,7 +63,7 @@ class ArenaManager(private val plugin: Mistaken) {
             // Reemplazo atómico para no causar tirones
             arenas.clear()
             arenas.putAll(tempArenas)
-            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>${arenas.size} templates loaded into secure memory.</gray>"))
+            plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>${arenas.size} templates loaded into secure memory.</gray>"))
         }
     }
 
@@ -189,7 +189,7 @@ class ArenaManager(private val plugin: Mistaken) {
                     configProvider.save()
                 }
             } catch (e: Exception) {
-                plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Failed to save arenas.yml: ${e.message}</gray>"))
+                plugin.componentLogger.error(liric.mistaken.utils.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Failed to save arenas.yml: ${e.message}</gray>"))
             }
         }
     }

@@ -3,7 +3,7 @@ package liric.mistaken.game.logic
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.game.enums.MistakenMode
-import liric.mistaken.utils.proxy.BungeeUtils
+import liric.mistaken.utils.misc.BungeeUtils
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.title.Title
 import org.bukkit.GameMode
@@ -19,7 +19,7 @@ import kotlin.math.min
 import liric.mistaken.game.Arena
 import liric.mistaken.roles.survivors.classes.Civilian
 import net.kyori.adventure.text.minimessage.MiniMessage
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.config.engine.core.MessageService
 
 class GamePlayerController(private val game: GameSession) {
 
@@ -128,7 +128,7 @@ class GamePlayerController(private val game: GameSession) {
                         var claseID = game.plugin.playerDataManager.getSelectedKiller(p.uniqueId)
                         if (game.settings?.disabledClasses?.contains(claseID.lowercase()) == true) {
                             claseID = "slasher"
-                            p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Slasher."))
+                            p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Slasher."))
                         }
                         game.plugin.killerManager.equipKiller(p, claseID)
 
@@ -138,7 +138,7 @@ class GamePlayerController(private val game: GameSession) {
                             p.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, 1200, 250, false, false, false))
                             p.addPotionEffect(PotionEffect(PotionEffectType.MINING_FATIGUE, 1200, 255, false, false, false))
                             
-                            p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>¡Espera 1 minuto mientras los supervivientes se esconden!"))
+                            p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<red>¡Espera 1 minuto mientras los supervivientes se esconden!"))
                             
                             p.scheduler.runDelayed(game.plugin, Consumer { _ ->
                                 if (p.isOnline && game.currentState == GameState.INGAME) {
@@ -148,8 +148,8 @@ class GamePlayerController(private val game: GameSession) {
                                     p.removePotionEffect(PotionEffectType.MINING_FATIGUE)
                                     p.playSound(p.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 1f)
                                     p.showTitle(Title.title(
-                                        PumpkingServiceManager.messages.getComponent(p, "game.killer-released-title"),
-                                        PumpkingServiceManager.messages.getComponent(p, "game.killer-released-subtitle")
+                                        MessageService.getComponent(p, "game.killer-released-title"),
+                                        MessageService.getComponent(p, "game.killer-released-subtitle")
                                     ))
                                 }
                             }, null, 1200L)
@@ -173,7 +173,7 @@ class GamePlayerController(private val game: GameSession) {
                                 var idElegido = game.plugin.playerDataManager.getSelectedSurvivor(p.uniqueId)
                                 if (game.settings?.disabledClasses?.contains(idElegido.lowercase()) == true) {
                                     idElegido = "civilian"
-                                    p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Civilian."))
+                                    p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Civilian."))
                                 }
                                 val clase = game.plugin.survivorManager.getClassById(idElegido) ?: liric.mistaken.roles.survivors.classes.Civilian()
                                 game.plugin.survivorManager.registrarSurvivor(p, clase)
@@ -183,13 +183,13 @@ class GamePlayerController(private val game: GameSession) {
                                     p.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = 100.0
                                     p.health = 100.0
                                 } else if (game.currentMode == MistakenMode.HIDE_AND_SEEK) {
-                                    p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>¡Tienes 1 minuto para esconderte antes de que el asesino sea liberado!"))
+                                    p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<green>¡Tienes 1 minuto para esconderte antes de que el asesino sea liberado!"))
                                     p.scheduler.runDelayed(game.plugin, Consumer { _ ->
                                         if (p.isOnline && game.currentState == GameState.INGAME) {
                                             p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 0.5f, 0.8f)
                                             p.showTitle(Title.title(
-                                                PumpkingServiceManager.messages.getComponent(p, "game.killer-released-title"),
-                                                PumpkingServiceManager.messages.getComponent(p, "game.killer-released-subtitle")
+                                                MessageService.getComponent(p, "game.killer-released-title"),
+                                                MessageService.getComponent(p, "game.killer-released-subtitle")
                                             ))
                                         }
                                     }, null, 1200L)
@@ -482,8 +482,8 @@ class GamePlayerController(private val game: GameSession) {
             }
 
             p.showTitle(Title.title(
-                PumpkingServiceManager.messages.getComponent(p, "game.$type-title"),
-                PumpkingServiceManager.messages.getComponent(p, "game.$type-subtitle")
+                MessageService.getComponent(p, "game.$type-title"),
+                MessageService.getComponent(p, "game.$type-subtitle")
             ))
 
             p.playSound(p.location, winSound, 1f, 1f)

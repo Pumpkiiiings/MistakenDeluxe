@@ -11,8 +11,8 @@ import liric.mistaken.api.managers.ISession
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Location
 import org.bukkit.Material
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 
 class GameSession(
@@ -59,7 +59,7 @@ class GameSession(
 
     init {
         loopTask.start()
-        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Session $id started.</gray>"))
+        plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Session $id started.</gray>"))
     }
 
     // --- MÉTODOS DE JUGADORES ---
@@ -85,7 +85,7 @@ class GameSession(
 
     // Solo envía messages a los players DE ESTA SESIÓN
     fun broadcastLocalized(path: String, vararg tags: TagResolver) {
-        val message = PumpkingServiceManager.messages.getComponent(null, path, *tags)
+        val message = MessageService.getComponent(null, path, *tags)
         getPlayers().forEach { p -> p.sendMessage(message) }
     }
 
@@ -99,7 +99,7 @@ class GameSession(
         snapshot.forEach { plugin.sessionManager.leaveSession(it) }
         players.clear()       // defensive clear for any UUIDs whose Player was offline
         changedBlocks.clear()
-        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Session $id destroyed.</gray>"))
+        plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Session $id destroyed.</gray>"))
     }
 }
 

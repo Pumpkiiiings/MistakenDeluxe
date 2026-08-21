@@ -31,8 +31,8 @@ import liric.mistaken.packet.fake.VirtualBlockDisplay
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.util.Vector
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 /**
  *[LIRIC-MISTAKEN 2.0]
@@ -41,7 +41,7 @@ import pumpking.lib.service.PumpkingServiceManager
  */
 class KasaneTeto : Survivor(
     "teto",
-    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.teto.nombre", "survivors_info")
+    MessageService.getStrictString(null, "supervivientes.teto.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.teto"
@@ -52,7 +52,7 @@ class KasaneTeto : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = MessageService.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 15))) {
@@ -82,7 +82,7 @@ class KasaneTeto : Survivor(
 
         player.getAttribute(Attribute.SCALE)?.baseValue = 0.8861
 
-        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langInfo = MessageService.getSpecificFile(player, "survivors_info")
         val configMecanica = plugin.configManager.getSurvivorConfig(this.id)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -154,7 +154,7 @@ class KasaneTeto : Survivor(
             hitEntity.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3))
 
             player.sendMessage(ColorTranslator.translate(
-                pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "supervivientes.teto.habilidades.impacto_directo", "survivors_info")
+                liric.mistaken.config.engine.core.MessageService.getStrictString(player, "supervivientes.teto.habilidades.impacto_directo", "survivors_info")
             ))
         }
     }

@@ -14,7 +14,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.persistence.PersistentDataType
 import liric.mistaken.api.requirements.RequirementEngine
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.config.engine.core.MessageService
 
 
 class SurvivorShop : MenuBase("survivors_shop") {
@@ -33,11 +33,11 @@ class SurvivorShop : MenuBase("survivors_shop") {
         val selected = data.getSelectedSurvivor(uuid)
 
         // Labels generales desde messages.yml
-        val labelHumano = PumpkingServiceManager.messages.getComponent(player, "shop.clase-humana")
-        val labelSeleccionado = PumpkingServiceManager.messages.getComponent(player, "shop.estado-seleccionado")
-        val labelPoseido = PumpkingServiceManager.messages.getComponent(player, "shop.estado-poseido")
-        val labelComprar = PumpkingServiceManager.messages.getComponent(player, "shop.estado-comprar-survivor")
-        val labelAbilityes = PumpkingServiceManager.messages.getComponent(player, "shop.abilityes-titulo")
+        val labelHumano = MessageService.getComponent(player, "shop.clase-humana")
+        val labelSeleccionado = MessageService.getComponent(player, "shop.estado-seleccionado")
+        val labelPoseido = MessageService.getComponent(player, "shop.estado-poseido")
+        val labelComprar = MessageService.getComponent(player, "shop.estado-comprar-survivor")
+        val labelAbilityes = MessageService.getComponent(player, "shop.abilityes-titulo")
 
         var slotIndex = 0
 
@@ -50,9 +50,9 @@ class SurvivorShop : MenuBase("survivors_shop") {
 
             // --- 🎨 DATOS VISUALES (Desde survivors_info.yml) ---
             // Ruta: survivors.<id>.nombre
-            val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "survivors.$survivorId.nombre", "survivors_info")
+            val nombreVisual = MessageService.getStrictString(player, "survivors.$survivorId.nombre", "survivors_info")
             
-            val loreShop = PumpkingServiceManager.messages.getStrictStringList(player, "survivors.$survivorId.lore_shop", "survivors_info")
+            val loreShop = MessageService.getStrictStringList(player, "survivors.$survivorId.lore_shop", "survivors_info")
 
             // --- ⚙️ DATOS MECÁNICOS (Desde survivors.yml) ---
             // Ruta: survivors.<id>.precio
@@ -77,7 +77,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
                 // Listar abilityes (Nombres desde INFO)
                 // Ruta: survivors.<id>.skill_names.abilityX
                 for (i in 1..3) {
-                    val habName = PumpkingServiceManager.messages.getRawString(player, "survivors.$survivorId.skill_names.ability$i", "", "survivors_info")
+                    val habName = MessageService.getRawString(player, "survivors.$survivorId.skill_names.ability$i", "", "survivors_info")
                     if (habName.isNotEmpty()) {
                         add(parseSafe(" <dark_gray>â€¢</dark_gray> <white>$habName</white>"))
                     }
@@ -96,7 +96,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
                 esSeleccionado -> fullLore.add(labelSeleccionado)
                 tiene -> fullLore.add(labelPoseido)
                 else -> {
-                    fullLore.add(PumpkingServiceManager.messages.getComponent(player, "shop.estado-precio", Placeholder.parsed("amount", precio.toString())))
+                    fullLore.add(MessageService.getComponent(player, "shop.estado-precio", Placeholder.parsed("amount", precio.toString())))
                     fullLore.add(labelComprar)
                 }
             }
@@ -138,7 +138,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
 
         // 1. Ya seleccionado
         if (id.equals(actual, ignoreCase = true)) {
-            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "shop.ya-seleccionado"))
+            player.sendMessage(MessageService.getComponent(player, "shop.ya-seleccionado"))
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
             return
         }
@@ -149,9 +149,9 @@ class SurvivorShop : MenuBase("survivors_shop") {
             player.persistentDataContainer.set(survivorKey, PersistentDataType.STRING, id)
 
             // Obtenemos el nombre bonito para el mensaje de confirmaciÃ³n
-            val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "survivors.$id.nombre", "survivors_info")
+            val nombreVisual = MessageService.getStrictString(player, "survivors.$id.nombre", "survivors_info")
 
-            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "shop.seleccionado", Placeholder.component("name", parseSafe(nombreVisual))))
+            player.sendMessage(MessageService.getComponent(player, "shop.seleccionado", Placeholder.component("name", parseSafe(nombreVisual))))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
             abrir(player)
             return
@@ -171,16 +171,16 @@ class SurvivorShop : MenuBase("survivors_shop") {
             if (response.transactionSuccess()) {
                 data.comprarSurvivor(uuid, id)
 
-                val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "survivors.$id.nombre", "survivors_info")
+                val nombreVisual = MessageService.getStrictString(player, "survivors.$id.nombre", "survivors_info")
 
-                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "shop.comprado", Placeholder.component("name", parseSafe(nombreVisual))))
+                player.sendMessage(MessageService.getComponent(player, "shop.comprado", Placeholder.component("name", parseSafe(nombreVisual))))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
                 abrir(player)
             } else {
-                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "shop_errores.error_bancario", Placeholder.parsed("error", response.errorMessage ?: "Unknown error")))
+                player.sendMessage(MessageService.getComponent(player, "shop_errores.error_bancario", Placeholder.parsed("error", response.errorMessage ?: "Unknown error")))
             }
         } else {
-            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.no-money"))
+            player.sendMessage(MessageService.getComponent(player, "errors.no-money"))
             player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
         }
     }

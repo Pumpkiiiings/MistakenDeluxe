@@ -18,8 +18,8 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.get
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.config.ConfigManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.ConfigManager
 
 
 class MusicManager(private val plugin: Mistaken) {
@@ -59,7 +59,7 @@ class MusicManager(private val plugin: Mistaken) {
             playlist.add(Track(id, duration))
         }
 
-        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Multiarena System loaded with ${playlist.size} tracks.</gray>"))
+        plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Multiarena System loaded with ${playlist.size} tracks.</gray>"))
     }
 
     private fun startMusicLoop() {

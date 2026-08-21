@@ -30,7 +30,11 @@ import liric.mistaken.game.managers.gameplay.GeneratorManager
 import liric.mistaken.game.managers.gameplay.SpectatorManager
 import liric.mistaken.game.managers.cinematic.CinematicManager
 import liric.mistaken.game.managers.visual.ScoreboardManager
-import liric.mistaken.listeners.*
+import liric.mistaken.listeners.mechanics.*
+import liric.mistaken.listeners.interactables.*
+import liric.mistaken.listeners.player.*
+import liric.mistaken.listeners.world.*
+import liric.mistaken.listeners.lobby.*
 import liric.mistaken.listeners.killers.KillerGeneralListener
 import liric.mistaken.listeners.killers.KillerSkillListener
 import liric.mistaken.listeners.survivors.FlashlightListener
@@ -52,14 +56,14 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import org.bukkit.plugin.java.JavaPlugin
 import dev.triumphteam.gui.TriumphGui
-import liric.mistaken.api.MistakenAPIImpl
 import liric.mistaken.api.MistakenProvider
+import liric.mistaken.api.MistakenAPI
 import liric.mistaken.data.db.DatabaseFactory
 import liric.mistaken.game.managers.visual.ObserverHUDManager
 import liric.mistaken.packet.PacketInteractListener
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.config.ConfigManager
-import pumpking.lib.core.PumpkingLib
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.ConfigManager
+import liric.mistaken.MistakenLib
 
 @Suppress("UnstableApiUsage")
 class Mistaken : JavaPlugin() {
@@ -152,8 +156,8 @@ class Mistaken : JavaPlugin() {
         saveDefaultConfig()
         createRequiredFolders()
 
-        // Initialize PumpkingLib internal framework
-        PumpkingLib.init(this)
+        // Initialize MistakenLib internal framework
+        MistakenLib.init(this)
 
         // 🔥 FIX 1: Registramos los comandos PRIMERO.
         // Si la base de datos o el lobby fallan, al menos tendrás comandos para arreglarlo.
@@ -262,7 +266,7 @@ class Mistaken : JavaPlugin() {
         if (::generatorManager.isInitialized) runCatching { generatorManager.clearGenerators() }
         if (::scoreboardManager.isInitialized) runCatching { scoreboardManager.removeAll() }
         if (::nameTagManager.isInitialized) runCatching { nameTagManager.removeAll() }
-        PumpkingLib.shutdown()
+        MistakenLib.shutdown()
         if (::killerManager.isInitialized) runCatching { killerManager.shutdown() }
         if (::survivorManager.isInitialized) runCatching { survivorManager.shutdown() }
         if (::observerHUDManager.isInitialized) runCatching { observerHUDManager.shutdown() }
@@ -317,9 +321,9 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(SurvivorAbilityListener(this), this)
         pm.registerEvents(FlashlightListener(this), this)
         pm.registerEvents(GeneratorListener(this), this)
-        pm.registerEvents(liric.mistaken.listeners.HackTerminalListener(this), this)
-        pm.registerEvents(liric.mistaken.listeners.KeypadListener(this), this)
-        pm.registerEvents(liric.mistaken.listeners.PrivateGameInteractListener(this), this)
+        pm.registerEvents(HackTerminalListener(this), this)
+        pm.registerEvents(KeypadListener(this), this)
+        pm.registerEvents(PrivateGameInteractListener(this), this)
 
         if (pm.isPluginEnabled("Parties")) {
             pm.registerEvents(liric.mistaken.utils.hooks.AlessioPartiesHook(this), this)
@@ -393,7 +397,7 @@ class Mistaken : JavaPlugin() {
         val world = server.getWorld(worldName)
         
         if (world == null) {
-            componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("[WARN] El mundo del lobby ('$worldName') no existe. Usando el spawn del mundo por defecto."))
+            componentLogger.warn(liric.mistaken.utils.color.ColorTranslator.translate("[WARN] El mundo del lobby ('$worldName') no existe. Usando el spawn del mundo por defecto."))
             lobbyLocation = server.worlds[0].spawnLocation
             return
         }
@@ -467,6 +471,29 @@ class Mistaken : JavaPlugin() {
                <white>Database:</white> <green>● $dbType</green>
             <newline>
         """.trimIndent()))
+    }
+}
+
+class MistakenAPIImpl(private val _plugin: Mistaken) : MistakenAPI {
+    override val plugin: org.bukkit.plugin.Plugin
+        get() = _plugin
+    override val killerManager: liric.mistaken.api.managers.IKillerManager
+        get() = _plugin.killerManager
+    override val sessionManager: liric.mistaken.api.managers.ISessionManager
+        get() = _plugin.sessionManager
+    override val configManager: liric.mistaken.api.managers.IConfigManager
+        get() = _plugin.configManager
+    override val playerDataManager: liric.mistaken.api.managers.IPlayerDataManager
+        get() = _plugin.playerDataManager
+    override val messages: liric.mistaken.api.managers.IMessageService
+        get() = liric.mistaken.config.engine.core.MessageService
+    override val mm: net.kyori.adventure.text.minimessage.MiniMessage
+        get() = _plugin.mm
+    override val logger: java.util.logging.Logger
+        get() = _plugin.logger
+
+    override fun isIgnored(player: org.bukkit.entity.Player): Boolean {
+        return _plugin.isIgnored(player)
     }
 }
 

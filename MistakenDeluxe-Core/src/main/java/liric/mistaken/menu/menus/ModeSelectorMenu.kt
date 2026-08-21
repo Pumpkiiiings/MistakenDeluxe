@@ -8,12 +8,12 @@ import liric.mistaken.game.PrivateGameSettings
 import liric.mistaken.game.enums.MistakenMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 class ModeSelectorMenu(private val plugin: Mistaken, private val session: GameSession) {
 
     fun abrir(player: Player) {
-        val config = pumpking.lib.config.ConfigManager.getMenuConfig("private_lobby")
+        val config = liric.mistaken.config.engine.core.ConfigManager.getMenuConfig("private_lobby")
         val title = config.getString("menus.mode_selector.title", "<dark_gray>Seleccionar Modo") ?: "<dark_gray>Seleccionar Modo"
         val loreClick = config.getString("menus.mode_selector.items.mode.lore_click", "<e>Click para seleccionar") ?: "<e>Click para seleccionar"
         val backName = config.getString("items.back.name", "<red>Volver") ?: "<red>Volver"

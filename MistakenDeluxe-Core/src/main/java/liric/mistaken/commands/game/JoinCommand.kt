@@ -6,9 +6,9 @@ import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.utils.proxy.BungeeUtils
+import liric.mistaken.utils.misc.BungeeUtils
 import org.bukkit.entity.Player
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 /**
  * [LIRIC-MISTAKEN 2.0]

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.scripting.api
+package liric.mistaken.scripting.api
 
 /**
  * Contrato para eventos aislados en Lua.

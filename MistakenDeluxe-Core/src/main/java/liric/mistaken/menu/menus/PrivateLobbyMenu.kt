@@ -8,13 +8,13 @@ import liric.mistaken.game.enums.MistakenMode
 import liric.mistaken.config.Messages
 import org.bukkit.Material
 import org.bukkit.entity.Player
-import pumpking.lib.service.PumpkingServiceManager
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
+import liric.mistaken.utils.color.ColorTranslator
 
 class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSession) {
 
     fun abrir(player: Player) {
-        val config = pumpking.lib.config.ConfigManager.getMenuConfig("private_lobby")
+        val config = liric.mistaken.config.engine.core.ConfigManager.getMenuConfig("private_lobby")
         val titleText = config.getString("title", "<dark_gray>Configuraci�n de Partida Privada") ?: "<dark_gray>Configuraci�n de Partida Privada"
         val startName = config.getString("items.start.name", "<green><bold>Iniciar Partida") ?: "<green><bold>Iniciar Partida"
         val startLoreRaw = config.getStringList("items.start.lore").ifEmpty { listOf("<gray>Inicia la partida forzosamente.") }

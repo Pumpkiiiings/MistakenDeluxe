@@ -11,7 +11,7 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
 import liric.mistaken.game.enums.GameState
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 import java.util.function.Consumer
 
 object MistakenDebugCommand {

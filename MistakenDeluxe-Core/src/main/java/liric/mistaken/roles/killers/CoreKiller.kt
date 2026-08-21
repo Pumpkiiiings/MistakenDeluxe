@@ -6,8 +6,8 @@ import liric.mistaken.roles.killers.triggers.TriggerRegistry
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 import liric.mistaken.utils.hooks.CraftEngine
 
 abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
@@ -46,7 +46,7 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
         inv.clear()
         inv.armorContents = arrayOfNulls(4)
 
-        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = MessageService.getSpecificFile(player, "killers_info")
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
         
         // Cargar triggers desde YAML (si existe la secci�n)

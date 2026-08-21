@@ -8,8 +8,8 @@ import io.papermc.paper.command.brigadier.Commands
 import liric.mistaken.Mistaken
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.config.ConfigManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.ConfigManager
 
 object DataCommand {
 

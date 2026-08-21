@@ -14,13 +14,13 @@ import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
 import org.bukkit.attribute.Attribute
 import org.bukkit.configuration.file.FileConfiguration
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 
 class Notch : Survivor(
     "notch",
-    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.notch.nombre", "survivors_info")
+    MessageService.getStrictString(null, "supervivientes.notch.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.notch"
@@ -69,7 +69,7 @@ class Notch : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = MessageService.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 20))) {
@@ -97,7 +97,7 @@ class Notch : Survivor(
         inv.clear()
         if (itemCache.isEmpty()) preLoadKit()
 
-        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = MessageService.getSpecificFile(player, "survivors_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return
@@ -162,7 +162,7 @@ class Notch : Survivor(
 
                 // Efectos al killer
                 entity.sendMessage(ColorTranslator.translate(
-                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(entity, "supervivientes.notch.habilidades.denied", "survivors_info")
+                    liric.mistaken.config.engine.core.MessageService.getStrictString(entity, "supervivientes.notch.habilidades.denied", "survivors_info")
                 ))
                 entity.playSound(entity.location, Sound.ENTITY_VILLAGER_NO, 1f, 0.8f)
             }

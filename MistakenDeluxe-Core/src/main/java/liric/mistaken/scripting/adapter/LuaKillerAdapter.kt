@@ -43,7 +43,7 @@ class LuaKillerAdapter(
         val hasSkills = (1..4).any { config.contains("items.skill$it") }
         
         if (scriptKiller.has_trigger() && !hasTriggersSection && !hasSkills) {
-            val msgEn = pumpking.lib.color.ColorTranslator.translate("<red>Warning! This killer (Lua) defines on_trigger but has no configured triggers or skills. Abilities won't work. Please notify an admin.</red>")
+            val msgEn = liric.mistaken.utils.color.ColorTranslator.translate("<red>Warning! This killer (Lua) defines on_trigger but has no configured triggers or skills. Abilities won't work. Please notify an admin.</red>")
             org.bukkit.Bukkit.getConsoleSender().sendMessage(msgEn)
         }
         val scriptPlayer = BukkitPlayerAdapter(player)

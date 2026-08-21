@@ -1,7 +1,7 @@
-package liric.mistaken.level.database
+﻿package liric.mistaken.level.database
 
-import pumpking.lib.database.DatabaseProvider
-import pumpking.lib.database.Repository
+import liric.mistaken.data.db.DatabaseProvider
+import liric.mistaken.data.db.Repository
 import java.sql.ResultSet
 import java.util.UUID
 

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.utils.misc
+package liric.mistaken.utils.misc
 
 import liric.mistaken.utils.worldViewers
 import org.bukkit.Location
@@ -16,7 +16,7 @@ import org.bukkit.Bukkit
 
 object HitboxVisualizer {
 
-    // FIX #17: Was a plain `var Boolean` â€” non-atomic read-modify-write.
+    // FIX #17: Was a plain `var Boolean` — non-atomic read-modify-write.
     // The particle engine runs asynchronously and reads `isEnabled`; toggle()
     // performs a check-then-act that must be atomic to avoid data races.
     private val _isEnabled = AtomicBoolean(false)
@@ -35,8 +35,8 @@ object HitboxVisualizer {
      * Crea una Hitbox 3D usando BlockDisplays (Cristal tintado).
      * Ideal para abilityes continuas o proyectiles (debes borrarla manualmente con hitbox.remove()).
      *
-     * @param loc UbicaciÃ³n inicial.
-     * @param x, y, z El radio de expansiÃ³n (Los mismos nÃºmeros de getNearbyEntities).
+     * @param loc Ubicación inicial.
+     * @param x, y, z El radio de expansión (Los mismos números de getNearbyEntities).
      * @param mat El color del cristal.
      * @return El BlockDisplay creado.
      */
@@ -47,9 +47,9 @@ object HitboxVisualizer {
             display.block = mat.createBlockData()
             display.isPersistent = false
             display.setGravity(false)
-            display.isGlowing = true // Para que se vea a travÃ©s de las paredes
+            display.isGlowing = true // Para que se vea a través de las paredes
 
-            // getNearbyEntities expande hacia ambos lados, por lo que el tamaÃ±o real es el doble.
+            // getNearbyEntities expande hacia ambos lados, por lo que el tamaño real es el doble.
             val sizeX = (x * 2).toFloat()
             val sizeY = (y * 2).toFloat()
             val sizeZ = (z * 2).toFloat()
@@ -60,25 +60,25 @@ object HitboxVisualizer {
 
             display.transformation = Transformation(translation, Quaternionf(), scale, Quaternionf())
 
-            // InterpolaciÃ³n para que se mueva suavemente sin tirones
+            // Interpolación para que se mueva suavemente sin tirones
             display.teleportDuration = 1
             display.interpolationDuration = 1
         }
     }
 
     /**
-     * Dibuja una Hitbox estÃ¡tica que SE BORRA SOLA despuÃ©s de X ticks.
-     * Ideal para explosiones, golpes melee en Ã¡rea, o trampas temporales.
+     * Dibuja una Hitbox estática que SE BORRA SOLA después de X ticks.
+     * Ideal para explosiones, golpes melee en área, o trampas temporales.
      *
      * @param plugin Instancia principal del plugin (para el scheduler)
-     * @param ticks Tiempo que durarÃ¡ visible la caja.
+     * @param ticks Tiempo que durará visible la caja.
      */
     fun drawInstantHitbox(plugin: Plugin, loc: Location, x: Double, y: Double, z: Double, ticks: Long, mat: Material = Material.RED_STAINED_GLASS) {
         if (!isEnabled) return
 
         val hitbox = createHitbox(loc, x, y, z, mat) ?: return
 
-        // Se auto-destruye despuÃ©s del tiempo indicado
+        // Se auto-destruye después del tiempo indicado
         plugin.server.globalRegionScheduler.runDelayed(plugin, Consumer { _ ->
             if (hitbox.isValid) hitbox.remove()
         }, ticks)

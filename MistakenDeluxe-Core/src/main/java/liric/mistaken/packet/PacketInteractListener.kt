@@ -1,4 +1,4 @@
-﻿package liric.mistaken.packet
+package liric.mistaken.packet
 
 import com.github.retrooper.packetevents.event.PacketListenerAbstract
 import com.github.retrooper.packetevents.event.PacketReceiveEvent
@@ -14,12 +14,12 @@ import liric.mistaken.Mistaken
  */
 class PacketInteractListener : PacketListenerAbstract() {
 
-    // Almacena callbacks para entidades falsas: EntityID -> AcciÃ³n(Player)
+    // Almacena callbacks para entidades falsas: EntityID -> Acción(Player)
     companion object {
         private val clickCallbacks = ConcurrentHashMap<Int, (Player, WrapperPlayClientInteractEntity.InteractAction) -> Unit>()
 
         /**
-         * Registra una acciÃ³n a ejecutarse cuando un player interactÃºa con una entidad falsa.
+         * Registra una acción a ejecutarse cuando un player interactúa con una entidad falsa.
          */
         fun registerCallback(entityId: Int, callback: (Player, WrapperPlayClientInteractEntity.InteractAction) -> Unit) {
             clickCallbacks[entityId] = callback
@@ -40,8 +40,8 @@ class PacketInteractListener : PacketListenerAbstract() {
                 val player = (event.getPlayer() as? Player) ?: return
                 
                 // Las acciones suelen ser INTERACT o ATTACK
-                // Ejecutamos en el Main Thread porque Bukkit API (ej. abrir menÃº) 
-                // fallarÃ¡ si se ejecuta en el hilo asÃ­ncrono de Netty.
+                // Ejecutamos en el Main Thread porque Bukkit API (ej. abrir menú) 
+                // fallará si se ejecuta en el hilo asíncrono de Netty.
                 Bukkit.getScheduler().runTask(Mistaken.instance, Runnable {
                     callback.invoke(player, interact.action)
                 })

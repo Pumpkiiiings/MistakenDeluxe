@@ -1,4 +1,4 @@
-﻿package liric.mistaken.scripting.api
+package liric.mistaken.scripting.api
 
 /**
  * Contrato del Scheduler para los scripts.
@@ -7,7 +7,7 @@
  */
 interface ScriptScheduler {
     /**
-     * Programa una tarea para ejecutarse despuÃ©s de un retraso (en ticks).
+     * Programa una tarea para ejecutarse después de un retraso (en ticks).
      */
     fun run_delayed(delayTicks: Long, taskId: String)
     
@@ -17,7 +17,7 @@ interface ScriptScheduler {
     fun run_timer(delayTicks: Long, periodTicks: Long, taskId: String)
     
     /**
-     * Cancela una tarea especÃ­fica por su ID.
+     * Cancela una tarea específica por su ID.
      */
     fun cancel(taskId: String)
 }

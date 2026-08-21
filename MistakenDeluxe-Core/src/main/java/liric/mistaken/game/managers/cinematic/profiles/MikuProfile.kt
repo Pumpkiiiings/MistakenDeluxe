@@ -15,7 +15,7 @@ import org.bukkit.util.EulerAngle
 import java.util.function.Consumer
 import kotlin.math.cos
 import kotlin.math.sin
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 class MikuProfile : CinematicProfile {
     override val id: String = "miku"

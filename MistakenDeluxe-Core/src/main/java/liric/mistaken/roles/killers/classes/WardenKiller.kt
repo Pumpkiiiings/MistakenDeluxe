@@ -103,7 +103,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
         
         val inv = player.inventory
         val configMecanica = liric.mistaken.Mistaken.instance.configManager.getKillerConfig(this.id)
-        val langInfo = pumpking.lib.service.PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = liric.mistaken.config.engine.core.MessageService.getSpecificFile(player, "killers_info")
 
         fun deliver(key: String, slot: Int) {
             val id = configMecanica.getString("items.$key")
@@ -119,7 +119,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
             else "asesinos.warden.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(pumpking.lib.color.ColorTranslator.translate(it)) }
+                item.editMeta { meta -> meta.displayName(liric.mistaken.utils.color.ColorTranslator.translate(it)) }
             }
             inv.setItem(slot, item)
         }

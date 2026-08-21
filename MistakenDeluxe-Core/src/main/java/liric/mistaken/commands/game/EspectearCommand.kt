@@ -6,7 +6,7 @@ import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 
 class EspectearCommand(private val plugin: Mistaken) : BasicCommand {

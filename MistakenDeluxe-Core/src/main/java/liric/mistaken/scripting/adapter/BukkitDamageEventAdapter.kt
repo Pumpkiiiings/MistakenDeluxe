@@ -1,4 +1,4 @@
-﻿package liric.mistaken.scripting.adapter
+package liric.mistaken.scripting.adapter
 
 import liric.mistaken.scripting.api.ScriptDamageEvent
 import liric.mistaken.scripting.api.ScriptEntity

@@ -11,7 +11,7 @@ import org.bukkit.entity.Player
 import java.time.Duration
 import java.util.UUID
 import java.util.function.Consumer
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.game.managers.cinematic.CameraStyle
 import liric.mistaken.utils.hooks.ObserverHook
 import org.bukkit.Sound

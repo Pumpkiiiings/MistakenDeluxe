@@ -7,12 +7,12 @@ import liric.mistaken.game.GameSession
 import liric.mistaken.game.PrivateGameSettings
 import org.bukkit.Material
 import org.bukkit.entity.Player
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSession) {
 
     fun abrir(player: Player) {
-        val config = pumpking.lib.config.ConfigManager.getMenuConfig("private_lobby")
+        val config = liric.mistaken.config.engine.core.ConfigManager.getMenuConfig("private_lobby")
         val title = config.getString("menus.map_selector.title", "<dark_gray>Seleccionar Mapa") ?: "<dark_gray>Seleccionar Mapa"
         val loreId = config.getString("menus.map_selector.items.map.lore_id", "<gray>ID: {map}") ?: "<gray>ID: {map}"
         val loreClick = config.getString("menus.map_selector.items.map.lore_click", "<e>Click para seleccionar") ?: "<e>Click para seleccionar"

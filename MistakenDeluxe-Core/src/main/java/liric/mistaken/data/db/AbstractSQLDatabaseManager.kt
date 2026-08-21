@@ -8,7 +8,7 @@ import liric.mistaken.data.stats.PlayerStats
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.PreparedStatement
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : DatabaseManager {
 

@@ -13,8 +13,8 @@ import org.bukkit.potion.PotionEffectType
 import java.time.Duration
 import java.util.concurrent.ThreadLocalRandom
 import org.bukkit.Particle
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 class GameStateController(private val game: GameSession) {
 
@@ -236,14 +236,14 @@ class GameStateController(private val game: GameSession) {
         val mapName = game.currentMapName
         val killer = game.getCurrentKiller()
 
-        val defaultAssassinWord = PumpkingServiceManager.messages.getRawString(null, "words.assassin", "El Killer", "messages")
-        val defaultSurvivorsWord = PumpkingServiceManager.messages.getRawString(null, "words.survivors", "Survivors", "messages")
+        val defaultAssassinWord = MessageService.getRawString(null, "words.assassin", "El Killer", "messages")
+        val defaultSurvivorsWord = MessageService.getRawString(null, "words.survivors", "Survivors", "messages")
 
         val ganadorNombre = if (killerWon) (killer?.name ?: defaultAssassinWord) else defaultSurvivorsWord
         val razon = if (killerWon) {
-            PumpkingServiceManager.messages.getRawString(null, "discord.reason_killer_won", "¡El asesino ganó!", "messages")
+            MessageService.getRawString(null, "discord.reason_killer_won", "¡El asesino ganó!", "messages")
         } else {
-            PumpkingServiceManager.messages.getRawString(null, "discord.reason_survivors_won", "¡Los supervivientes escaparon!", "messages")
+            MessageService.getRawString(null, "discord.reason_survivors_won", "¡Los supervivientes escaparon!", "messages")
         }
 
         val escapados = game.plugin.server.onlinePlayers.filter {
@@ -261,10 +261,10 @@ class GameStateController(private val game: GameSession) {
             Pair("game.survivor-defeat-title", "game.survivor-defeat-subtitle")
         }
 
-        val tK1 = ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(null, titlePair.first, "", "messages"))
-        val tK2 = ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(null, titlePair.second, "", "messages"))
-        val tS1 = ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(null, survivorTitlePair.first, "", "messages"))
-        val tS2 = ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(null, survivorTitlePair.second, "", "messages"))
+        val tK1 = ColorTranslator.translate(MessageService.getRawString(null, titlePair.first, "", "messages"))
+        val tK2 = ColorTranslator.translate(MessageService.getRawString(null, titlePair.second, "", "messages"))
+        val tS1 = ColorTranslator.translate(MessageService.getRawString(null, survivorTitlePair.first, "", "messages"))
+        val tS2 = ColorTranslator.translate(MessageService.getRawString(null, survivorTitlePair.second, "", "messages"))
 
         val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(5), Duration.ofMillis(1000))
         

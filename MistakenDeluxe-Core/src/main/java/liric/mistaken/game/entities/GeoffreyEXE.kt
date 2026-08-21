@@ -24,8 +24,8 @@ import liric.mistaken.packet.PacketFactory
 import liric.mistaken.packet.fake.VirtualBlockDisplay
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Particle
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 /**
  *[LIRIC-MISTAKEN 2.0] - MODO TROLL SUPREMO
@@ -100,7 +100,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
                 ))
 
                 setGlowColor(NamedTextColor.WHITE)
-                Bukkit.broadcast(PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.spawn"))
+                Bukkit.broadcast(MessageService.getComponent(null, "anomalies.geoffrey.spawn"))
 
                 iniciarIANativa()
             } catch (e: Exception) {
@@ -315,7 +315,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
             parts[4].block = Material.RED_CONCRETE.createBlockData()
         }
 
-        Bukkit.broadcast(PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.rage"))
+        Bukkit.broadcast(MessageService.getComponent(null, "anomalies.geoffrey.rage"))
 
         var hasHit = false
         var ticks = 0
@@ -372,7 +372,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
             // AQUÍ SÍ MUERE
             victim.health = 0.0
             val prefix = if (enrage) "<dark_red><b>[FURIA]</b>" else "<red><b>[!]</b>"
-            Bukkit.broadcast(PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.death", Placeholder.parsed("player", victim.name)))
+            Bukkit.broadcast(MessageService.getComponent(null, "anomalies.geoffrey.death", Placeholder.parsed("player", victim.name)))
         } else {
             // SOBREVIVE AL GOLPE, PERO QUEDA GRAVEMENTE HERIDO Y EMPUJADO
             victim.health = nuevaVida

@@ -15,7 +15,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.util.EulerAngle
 import kotlin.math.cos
 import kotlin.math.sin
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 class MariachiProfile : CinematicProfile {
     override val id: String = "mariachi"

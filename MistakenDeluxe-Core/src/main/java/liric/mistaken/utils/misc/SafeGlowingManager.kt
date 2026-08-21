@@ -20,10 +20,12 @@ class SafeGlowingManager(plugin: Plugin) {
         val currentColor = targetMap[viewer.uniqueId]
 
         if (currentColor != color) {
+            if (!viewer.isOnline || !target.isValid) return
             try {
                 glowingEntities.setGlowing(target, viewer, color)
                 targetMap[viewer.uniqueId] = color
-            } catch (_: Exception) {
+            } catch (e: ReflectiveOperationException) {
+                liric.mistaken.MistakenLib.logError(liric.mistaken.MistakenLib.LogCategory.CORE, "Failed to set glowing for ${target.entityId} to ${viewer.name}: ${e.message}")
             }
         }
     }
@@ -35,9 +37,12 @@ class SafeGlowingManager(plugin: Plugin) {
     fun unsetGlowing(targetEntityId: Int, viewer: Player) {
         val targetMap = activeGlows[targetEntityId] ?: return
         if (targetMap.remove(viewer.uniqueId) != null) {
-            try {
-                glowingEntities.unsetGlowing(targetEntityId, viewer)
-            } catch (_: Exception) {
+            if (viewer.isOnline) {
+                try {
+                    glowingEntities.unsetGlowing(targetEntityId, viewer)
+                } catch (e: ReflectiveOperationException) {
+                    liric.mistaken.MistakenLib.logError(liric.mistaken.MistakenLib.LogCategory.CORE, "Failed to unset glowing for $targetEntityId to ${viewer.name}: ${e.message}")
+                }
             }
             if (targetMap.isEmpty()) {
                 activeGlows.remove(targetEntityId)

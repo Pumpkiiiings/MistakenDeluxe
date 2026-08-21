@@ -4,12 +4,12 @@ import liric.mistaken.Mistaken
 import liric.mistaken.api.events.MistakenPlayerJoinSessionEvent
 import liric.mistaken.api.events.MistakenPlayerLeaveSessionEvent
 import liric.mistaken.game.GameSession
-import liric.mistaken.utils.proxy.BungeeUtils
+import liric.mistaken.utils.misc.BungeeUtils
 import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import liric.mistaken.api.managers.ISessionManager
-import liric.mistaken.listeners.PlayerListener
+import liric.mistaken.listeners.player.PlayerListener
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 

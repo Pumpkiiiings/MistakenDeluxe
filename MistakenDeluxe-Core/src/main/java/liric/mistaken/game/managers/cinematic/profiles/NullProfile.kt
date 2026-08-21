@@ -14,7 +14,7 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.EulerAngle
 import java.util.function.Consumer
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 class NullProfile : CinematicProfile {
     override val id: String = "null" // Or nullkiller

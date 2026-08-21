@@ -25,8 +25,8 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
 import org.bukkit.Location
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 
 class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
@@ -161,7 +161,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
             victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 1))
             victim.playSound(victim.location, Sound.BLOCK_STONE_BREAK, 1f, 0.8f)
             (snowball.shooter as? Player)?.let { shooter ->
-                shooter.sendMessage(PumpkingServiceManager.messages.getComponent(shooter, "habilidades.roca-impacto-exito"))
+                shooter.sendMessage(MessageService.getComponent(shooter, "habilidades.roca-impacto-exito"))
             }
             return
         }
@@ -172,12 +172,12 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
             if (isKiller) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
-                victim.sendMessage(PumpkingServiceManager.messages.getComponent(victim, "habilidades.pedido-impacto-asesino"))
+                victim.sendMessage(MessageService.getComponent(victim, "habilidades.pedido-impacto-asesino"))
                 victim.playSound(victim.location, Sound.ENTITY_GENERIC_SPLASH, 1f, 1f)
             } else {
                 val maxHealth = victim.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
                 victim.health = (victim.health + 4.0).coerceAtMost(maxHealth)
-                victim.sendMessage(PumpkingServiceManager.messages.getComponent(victim, "habilidades.pedido-recibido-cura"))
+                victim.sendMessage(MessageService.getComponent(victim, "habilidades.pedido-recibido-cura"))
                 victim.playSound(victim.location, Sound.ENTITY_PLAYER_BURP, 1f, 1f)
             }
             return

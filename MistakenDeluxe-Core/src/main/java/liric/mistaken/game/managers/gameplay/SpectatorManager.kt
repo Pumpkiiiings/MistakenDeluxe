@@ -29,7 +29,7 @@ import org.bukkit.inventory.meta.SkullMeta
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 class SpectatorManager(private val plugin: Mistaken) : Listener {
 

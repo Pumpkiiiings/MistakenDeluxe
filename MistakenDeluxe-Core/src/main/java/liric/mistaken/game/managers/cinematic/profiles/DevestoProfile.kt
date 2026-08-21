@@ -14,7 +14,7 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.EulerAngle
 import java.util.function.Consumer
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 class DevestoProfile : CinematicProfile {
     override val id: String = "devesto"

@@ -1,6 +1,6 @@
-package liric.mistaken.level.database
+﻿package liric.mistaken.level.database
 
-import pumpking.lib.database.DatabaseProvider
+import liric.mistaken.data.db.DatabaseProvider
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet

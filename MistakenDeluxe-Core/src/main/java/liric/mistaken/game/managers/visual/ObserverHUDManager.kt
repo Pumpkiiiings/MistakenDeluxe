@@ -15,7 +15,7 @@ import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.UUID
 import org.bukkit.scheduler.BukkitTask
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 
 class ObserverHUDManager(private val plugin: Mistaken) {

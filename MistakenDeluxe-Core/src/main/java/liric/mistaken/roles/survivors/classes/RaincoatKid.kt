@@ -17,8 +17,8 @@ import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
 import org.bukkit.Particle
 import org.bukkit.configuration.file.FileConfiguration
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -27,7 +27,7 @@ import pumpking.lib.service.PumpkingServiceManager
  */
 class RaincoatKid : Survivor(
     "raincoatkid",
-    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.raincoatkid.nombre", "survivors_info")
+    MessageService.getStrictString(null, "supervivientes.raincoatkid.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.raincoatkid"
@@ -36,7 +36,7 @@ class RaincoatKid : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = MessageService.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 25))) {
@@ -67,7 +67,7 @@ class RaincoatKid : Survivor(
 
         player.getAttribute(Attribute.SCALE)?.baseValue = 0.8
 
-        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langInfo = MessageService.getSpecificFile(player, "survivors_info")
         val configMecanica = plugin.configManager.getSurvivorConfig(this.id) // El global survivors.yml
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
@@ -130,7 +130,7 @@ class RaincoatKid : Survivor(
                 player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 0))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_BREATH, 1f, 0.8f)
                 player.sendActionBar(ColorTranslator.translate(
-                    pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "supervivientes.raincoatkid.habilidades.jadeo", "survivors_info")
+                    liric.mistaken.config.engine.core.MessageService.getStrictString(player, "supervivientes.raincoatkid.habilidades.jadeo", "survivors_info")
                 ))
             }
         }, null, 100L)

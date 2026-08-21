@@ -7,12 +7,12 @@ import liric.mistaken.game.GameSession
 import liric.mistaken.game.PrivateGameSettings
 import org.bukkit.Material
 import org.bukkit.entity.Player
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 class PlayerSelectorMenu(private val plugin: Mistaken, private val session: GameSession) {
 
     fun abrir(player: Player) {
-        val config = pumpking.lib.config.ConfigManager.getMenuConfig("private_lobby")
+        val config = liric.mistaken.config.engine.core.ConfigManager.getMenuConfig("private_lobby")
         val title = config.getString("menus.player_selector.title", "<dark_gray>Selector de Jugadores") ?: "<dark_gray>Selector de Jugadores"
         val loreRole = config.getString("menus.player_selector.items.player.lore_role", "<gray>Rol: {role}") ?: "<gray>Rol: {role}"
         val loreLeft = config.getString("menus.player_selector.items.player.lore_left", "<e>Click Izq: Toggle Asesino") ?: "<e>Click Izq: Toggle Asesino"

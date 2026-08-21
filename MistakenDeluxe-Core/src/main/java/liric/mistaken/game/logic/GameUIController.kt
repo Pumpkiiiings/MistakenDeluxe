@@ -14,7 +14,7 @@ import java.time.Duration
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import liric.mistaken.utils.hooks.ObserverHook
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.config.engine.core.MessageService
 
 class GameUIController(private val game: GameSession) {
 
@@ -53,7 +53,7 @@ class GameUIController(private val game: GameSession) {
             game.timer.toString()
         }
 
-        val lobbyWord = PumpkingServiceManager.messages.getRawString(p, "words.lobby", "Lobby", "messages")
+        val lobbyWord = MessageService.getRawString(p, "words.lobby", "Lobby", "messages")
 
         val mapDisplay = if (game.currentState == GameState.LOBBY || game.currentState == GameState.VOTING || game.currentState == GameState.BREAK) {
             lobbyWord
@@ -66,7 +66,7 @@ class GameUIController(private val game: GameSession) {
         if (lastProcessedText[uuid] == signature) return
         lastProcessedText[uuid] = signature
 
-        val barComponent = PumpkingServiceManager.messages.getComponentFromFile(
+        val barComponent = MessageService.getComponentFromFile(
             p, "messages", "bossbar.$stateName",
             Placeholder.parsed("time", timeStr),
             Placeholder.parsed("map", mapDisplay),
@@ -75,7 +75,7 @@ class GameUIController(private val game: GameSession) {
         )
 
         val bar = personalBars.getOrPut(uuid) {
-            val colorStr = PumpkingServiceManager.messages.getRawString(p, "bossbar.colors.$stateName", "WHITE", "messages")
+            val colorStr = MessageService.getRawString(p, "bossbar.colors.$stateName", "WHITE", "messages")
             val color = try { BossBar.Color.valueOf(colorStr.uppercase()) } catch (e: Exception) { BossBar.Color.WHITE }
 
             val newBar = BossBar.bossBar(barComponent, 1.0f, color, BossBar.Overlay.PROGRESS)
@@ -84,15 +84,15 @@ class GameUIController(private val game: GameSession) {
         }
 
         bar.name(barComponent)
-        val colorStr = PumpkingServiceManager.messages.getRawString(p, "bossbar.colors.$stateName", "WHITE", "messages")
+        val colorStr = MessageService.getRawString(p, "bossbar.colors.$stateName", "WHITE", "messages")
         try { bar.color(BossBar.Color.valueOf(colorStr.uppercase())) } catch (_: Exception) {}
     }
 
     fun playRoleTitle(p: Player, isKiller: Boolean) {
         val rp = if (isKiller) "killer" else "survivor"
         p.showTitle(Title.title(
-            PumpkingServiceManager.messages.getComponent(p, "roles.$rp.title"),
-            PumpkingServiceManager.messages.getComponent(p, "roles.$rp.subtitle")
+            MessageService.getComponent(p, "roles.$rp.title"),
+            MessageService.getComponent(p, "roles.$rp.subtitle")
         ))
     }
 
@@ -100,8 +100,8 @@ class GameUIController(private val game: GameSession) {
         players.forEach { p ->
             p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f)
             p.showTitle(Title.title(
-                PumpkingServiceManager.messages.getComponent(p, "modes.${game.currentMode.name.lowercase()}.title"),
-                PumpkingServiceManager.messages.getComponent(p, "modes.${game.currentMode.name.lowercase()}.subtitle"),
+                MessageService.getComponent(p, "modes.${game.currentMode.name.lowercase()}.title"),
+                MessageService.getComponent(p, "modes.${game.currentMode.name.lowercase()}.subtitle"),
                 Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(3), Duration.ofMillis(500))
             ))
         }
@@ -114,18 +114,18 @@ class GameUIController(private val game: GameSession) {
             val isKiller = game.isKiller(p.uniqueId)
             val isTheSurvivor = p.uniqueId == lastSurvivor.uniqueId
 
-            val titleMain = PumpkingServiceManager.messages.getComponent(p, "lms.title")
+            val titleMain = MessageService.getComponent(p, "lms.title")
 
             val subtitle = when {
-                isTheSurvivor -> PumpkingServiceManager.messages.getComponent(p, "lms.subtitle.survivor")
-                isKiller -> PumpkingServiceManager.messages.getComponent(p, "lms.subtitle.killer")
-                else -> PumpkingServiceManager.messages.getComponent(p, "lms.subtitle.other", parsedSurvivorName)
+                isTheSurvivor -> MessageService.getComponent(p, "lms.subtitle.survivor")
+                isKiller -> MessageService.getComponent(p, "lms.subtitle.killer")
+                else -> MessageService.getComponent(p, "lms.subtitle.other", parsedSurvivorName)
             }
 
             val chatMsg = if (isTheSurvivor) {
-                PumpkingServiceManager.messages.getComponent(p, "lms.chat.survivor")
+                MessageService.getComponent(p, "lms.chat.survivor")
             } else {
-                PumpkingServiceManager.messages.getComponent(p, "lms.chat.other", parsedSurvivorName)
+                MessageService.getComponent(p, "lms.chat.other", parsedSurvivorName)
             }
 
             p.sendMessage(chatMsg)

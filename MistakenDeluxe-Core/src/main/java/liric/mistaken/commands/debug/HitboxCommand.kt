@@ -6,7 +6,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import liric.mistaken.Mistaken
 import liric.mistaken.utils.misc.HitboxVisualizer
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 object HitboxCommand {
 

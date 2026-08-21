@@ -10,8 +10,8 @@ import org.bukkit.Bukkit
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import liric.mistaken.config.Messages
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
@@ -63,16 +63,16 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     return
                 }
                 if (args.size < 2) {
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "admin.usage-lang"))
+                    player.sendMessage(MessageService.getComponent(player, "admin.usage-lang"))
                     return
                 }
                 val targetLang = args[1].lowercase()
-                if (PumpkingServiceManager.messages.getLoadedLanguages().contains(targetLang)) {
+                if (MessageService.getLoadedLanguages().contains(targetLang)) {
                     plugin.playerDataManager.setLanguage(player.uniqueId, targetLang)
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "admin.lang-set", Placeholder.parsed("langs", targetLang)))
+                    player.sendMessage(MessageService.getComponent(player, "admin.lang-set", Placeholder.parsed("langs", targetLang)))
                     player.playSound(player.location, Sound.ENTITY_VILLAGER_YES, 1f, 1f)
                 } else {
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.lang-not-found"))
+                    player.sendMessage(MessageService.getComponent(player, "errors.lang-not-found"))
                 }
             }
 
@@ -98,11 +98,11 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 val uuid = player.uniqueId
                 if (plugin.afkPlayers.contains(uuid)) {
                     plugin.afkPlayers.remove(uuid)
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "game.afk-disable"))
+                    player.sendMessage(MessageService.getComponent(player, "game.afk-disable"))
                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 2f)
                 } else {
                     plugin.afkPlayers.add(uuid)
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "game.afk-enable"))
+                    player.sendMessage(MessageService.getComponent(player, "game.afk-enable"))
                     player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 0.5f)
 
                     gm?.playerController?.checkWinCondition()
@@ -115,11 +115,11 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     val uuid = it.uniqueId
                     if (plugin.staffEditMode.contains(uuid)) {
                         plugin.staffEditMode.remove(uuid)
-                        it.sendMessage(PumpkingServiceManager.messages.getComponent(it, "game.edit-disable"))
+                        it.sendMessage(MessageService.getComponent(it, "game.edit-disable"))
                         it.playSound(it.location, Sound.BLOCK_BEACON_DEACTIVATE, 1f, 1f)
                     } else {
                         plugin.staffEditMode.add(uuid)
-                        it.sendMessage(PumpkingServiceManager.messages.getComponent(it, "game.edit-enable"))
+                        it.sendMessage(MessageService.getComponent(it, "game.edit-enable"))
                         it.playSound(it.location, Sound.BLOCK_BEACON_ACTIVATE, 1f, 2f)
                     }
                 }
@@ -129,7 +129,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 if (!sender.hasPermission("mistaken.admin")) return
                 plugin.server.asyncScheduler.runNow(plugin) { _ ->
                     plugin.reloadConfig()
-                    PumpkingServiceManager.messages.loadAllLanguages()
+                    MessageService.loadAllLanguages()
                     plugin.configManager.loadAllConfigs()
                     plugin.configManager.reloadMenus()
                     plugin.musicManager.loadMusicConfig()
@@ -139,7 +139,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                         plugin.shopSelector.reload()
                         plugin.killerTienda.reload()
                         plugin.survivorTienda.reload()
-                        sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "admin.reload-success"))
+                        sender.sendMessage(MessageService.getComponent(player, "admin.reload-success"))
                         player?.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f)
                     }
                 }
@@ -189,9 +189,9 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 }
 
                 if (session.currentState == GameState.INGAME) {
-                    sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "admin.start-already-ingame"))
+                    sender.sendMessage(MessageService.getComponent(player, "admin.start-already-ingame"))
                 } else {
-                    sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "admin.start-forcing"))
+                    sender.sendMessage(MessageService.getComponent(player, "admin.start-forcing"))
                     if (session.currentState == GameState.LOBBY || session.currentState == GameState.VOTING || session.currentState == GameState.BREAK) {
                         session.stateController.startVotingProcess()
                         session.timer = 5
@@ -205,7 +205,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     sender.sendMessage(ColorTranslator.translate("<red>No hay ninguna partida activa en tu ubicación."))
                 } else {
                     gm.stateController.endGame("admin.stop-broadcast", false)
-                    sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "admin.stop-success"))
+                    sender.sendMessage(MessageService.getComponent(player, "admin.stop-success"))
                 }
             }
 
@@ -213,7 +213,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (player == null) return
                 if (args.size < 2) {
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "admin.usage-stamina"))
+                    player.sendMessage(MessageService.getComponent(player, "admin.usage-stamina"))
                     return
                 }
                 try {
@@ -222,12 +222,12 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     user?.let {
                         it.stamina = amount
                         player.foodLevel = (amount / 5).toInt()
-                        player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "admin.stamina-set",
+                        player.sendMessage(MessageService.getComponent(player, "admin.stamina-set",
                             Placeholder.parsed("player", player.name),
                             Placeholder.parsed("amount", amount.toInt().toString())))
                     }
                 } catch (e: NumberFormatException) {
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.invalid-number"))
+                    player.sendMessage(MessageService.getComponent(player, "errors.invalid-number"))
                 }
             }
 
@@ -236,7 +236,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 if (player == null || args.size < 2) return
                 val killer = plugin.killerManager.getClassById(args[1])
                 if (killer == null) {
-                    player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.killer-not-found", Placeholder.parsed("type", args[1])))
+                    player.sendMessage(MessageService.getComponent(player, "errors.killer-not-found", Placeholder.parsed("type", args[1])))
                 } else {
                     plugin.killerManager.registerKiller(player, killer)
                 }
@@ -261,7 +261,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     val target = Bukkit.getPlayer(args[1])
                     if (target != null) {
                         plugin.killerManager.removeKiller(target)
-                        val msg = PumpkingServiceManager.messages.getRawString(player, Messages.ADMIN_REMOVEKILLER_SUCCESS, "<green>Killer removido: {player}", "messages")
+                        val msg = MessageService.getRawString(player, Messages.ADMIN_REMOVEKILLER_SUCCESS, "<green>Killer removido: {player}", "messages")
                             .replace("{player}", target.name)
                         sender.sendMessage(ColorTranslator.translate(msg))
                     }
@@ -282,55 +282,55 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "forcekiller" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (args.size < 2) {
-                    sender.sendMessage(ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(player, Messages.ADMIN_FORCEKILLER_USAGE, "<red>Uso: /mistaken forcekiller <jugador>", "messages")))
+                    sender.sendMessage(ColorTranslator.translate(MessageService.getRawString(player, Messages.ADMIN_FORCEKILLER_USAGE, "<red>Uso: /mistaken forcekiller <jugador>", "messages")))
                     return
                 }
                 val target = Bukkit.getPlayer(args[1])
                 if (target == null) {
-                    sender.sendMessage(ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(player, Messages.ERRORS_PLAYER_NOT_FOUND, "<red>Jugador desconectado.", "messages")))
+                    sender.sendMessage(ColorTranslator.translate(MessageService.getRawString(player, Messages.ERRORS_PLAYER_NOT_FOUND, "<red>Jugador desconectado.", "messages")))
                     return
                 }
                 if (gm == null) {
-                    sender.sendMessage(ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(player, Messages.ADMIN_FORCEKILLER_NOT_IN_GAME, "<red>Debes estar en una partida para forzar un asesino.", "messages")))
+                    sender.sendMessage(ColorTranslator.translate(MessageService.getRawString(player, Messages.ADMIN_FORCEKILLER_NOT_IN_GAME, "<red>Debes estar en una partida para forzar un asesino.", "messages")))
                     return
                 }
                 if (gm.currentState == GameState.INGAME || gm.currentState == GameState.ENDING || gm.currentState == GameState.STARTING) {
-                    sender.sendMessage(ColorTranslator.translate(PumpkingServiceManager.messages.getRawString(player, Messages.ADMIN_FORCEKILLER_ALREADY_STARTED, "<red>No puedes forzar el rol porque la partida ya inició.", "messages")))
+                    sender.sendMessage(ColorTranslator.translate(MessageService.getRawString(player, Messages.ADMIN_FORCEKILLER_ALREADY_STARTED, "<red>No puedes forzar el rol porque la partida ya inició.", "messages")))
                     return
                 }
                 gm.forcedKillerUUID = target.uniqueId
-                val successMsg = PumpkingServiceManager.messages.getRawString(player, Messages.ADMIN_FORCEKILLER_SUCCESS, "<green>Has forzado a <white>{player}</white> a ser el asesino en la siguiente partida de <aqua>{arena}</aqua>.", "messages")
+                val successMsg = MessageService.getRawString(player, Messages.ADMIN_FORCEKILLER_SUCCESS, "<green>Has forzado a <white>{player}</white> a ser el asesino en la siguiente partida de <aqua>{arena}</aqua>.", "messages")
                     .replace("{player}", target.name)
                     .replace("{arena}", gm.id)
                 sender.sendMessage(ColorTranslator.translate(successMsg))
             }
 
-            else -> sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.unknown-command"))
+            else -> sender.sendMessage(MessageService.getComponent(player, "errors.unknown-command"))
         }
     }
 
     private fun enviarEstadisticas(p: Player, target: Player) {
         val stats = plugin.statsManager.getStats(target.uniqueId)
-        p.sendMessage(PumpkingServiceManager.messages.getComponent(p, "stats.header", Placeholder.parsed("player", target.name)))
-        p.sendMessage(PumpkingServiceManager.messages.getComponent(p, "stats.wins-survivor", Placeholder.parsed("value", stats.winsSurvivor.get().toString())))
-        p.sendMessage(PumpkingServiceManager.messages.getComponent(p, "stats.wins-assassin", Placeholder.parsed("value", stats.winsAssassin.get().toString())))
-        p.sendMessage(PumpkingServiceManager.messages.getComponent(p, "stats.kills", Placeholder.parsed("value", stats.kills.get().toString())))
-        p.sendMessage(PumpkingServiceManager.messages.getComponent(p, "stats.deaths", Placeholder.parsed("value", stats.deaths.get().toString())))
-        p.sendMessage(PumpkingServiceManager.messages.getComponent(p, "stats.footer"))
+        p.sendMessage(MessageService.getComponent(p, "stats.header", Placeholder.parsed("player", target.name)))
+        p.sendMessage(MessageService.getComponent(p, "stats.wins-survivor", Placeholder.parsed("value", stats.winsSurvivor.get().toString())))
+        p.sendMessage(MessageService.getComponent(p, "stats.wins-assassin", Placeholder.parsed("value", stats.winsAssassin.get().toString())))
+        p.sendMessage(MessageService.getComponent(p, "stats.kills", Placeholder.parsed("value", stats.kills.get().toString())))
+        p.sendMessage(MessageService.getComponent(p, "stats.deaths", Placeholder.parsed("value", stats.deaths.get().toString())))
+        p.sendMessage(MessageService.getComponent(p, "stats.footer"))
         p.playSound(p.location, Sound.BLOCK_NOTE_BLOCK_CHIME, 1f, 1.2f)
     }
 
     private fun enviarAyuda(stack: CommandSourceStack) {
         val player = stack.sender as? Player
-        stack.sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "help.header"))
+        stack.sender.sendMessage(MessageService.getComponent(player, "help.header"))
 
         val subs = listOf("shop", "langs", "stats", "afk", "edit", "start", "stop", "reload", "setstamina", "setasesino", "setsuperviviente", "removekiller", "reloadkiller", "setmode")
         subs.forEach { sub ->
             if (sub in publicSubs || stack.sender.hasPermission("mistaken.admin")) {
-                stack.sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "help.$sub"))
+                stack.sender.sendMessage(MessageService.getComponent(player, "help.$sub"))
             }
         }
-        stack.sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "help.footer"))
+        stack.sender.sendMessage(MessageService.getComponent(player, "help.footer"))
     }
 
     override fun suggest(stack: CommandSourceStack, args: Array<String>): List<String> {
@@ -348,7 +348,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     "setasesino", "reloadkiller" -> if (isAdmin) plugin.killerManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "setsuperviviente" -> if (isAdmin) plugin.survivorManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "stats", "forcekiller", "removekiller" -> if (isAdmin) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
-                    "langs", "language" -> PumpkingServiceManager.messages.getLoadedLanguages().toList()
+                    "langs", "language" -> MessageService.getLoadedLanguages().toList()
                     else -> emptyList()
                 }
             }

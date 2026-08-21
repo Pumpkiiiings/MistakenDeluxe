@@ -4,20 +4,20 @@ import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.entity.Player
-import pumpking.lib.scoreboard.ScoreboardTemplate
-import pumpking.lib.scoreboard.ScoreboardManager as PumpkingScoreboardManager
+import liric.mistaken.utils.scoreboard.ScoreboardTemplate
+import liric.mistaken.utils.scoreboard.ScoreboardManager as PumpkingScoreboardManager
 import java.util.UUID
 import liric.mistaken.utils.hooks.ObserverHook
 import me.clip.placeholderapi.PlaceholderAPI
 import org.bukkit.Bukkit
 import org.bukkit.scheduler.BukkitTask
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 /**
  * [LIRIC-MISTAKEN 2.0]
  * ScoreboardManager: Motor Multiarena / Velocity.
- * Migrated to PumpkingLib ScoreboardManager backend (FastBoard removed).
+ * Migrated to MistakenLib ScoreboardManager backend (FastBoard removed).
  * Dynamic templates resolve live game state per-player every tick.
  */
 class ScoreboardManager(private val plugin: Mistaken) {
@@ -31,7 +31,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
             return
         }
 
-        val config = PumpkingServiceManager.messages.getSpecificFile(player, "messages")
+        val config = MessageService.getSpecificFile(player, "messages")
         val title = config.getString("scoreboard.title") ?: "<gradient:#88C6F2:#4386B5><bold>MISTAKEN"
         val lines = buildLines(player)
 
@@ -47,7 +47,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
 
     private fun buildLines(player: Player): List<String> {
         val gm = plugin.sessionManager.getSession(player)
-        val config = PumpkingServiceManager.messages.getSpecificFile(player, "messages")
+        val config = MessageService.getSpecificFile(player, "messages")
         val onlineCount = plugin.server.onlinePlayers.size.toString()
 
         val path: String

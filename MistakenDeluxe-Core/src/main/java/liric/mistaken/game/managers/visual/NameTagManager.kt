@@ -10,7 +10,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.*
 import liric.mistaken.Mistaken
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger

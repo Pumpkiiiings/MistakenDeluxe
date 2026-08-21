@@ -7,7 +7,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import net.momirealms.craftengine.bukkit.api.CraftEngineItems
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 /**
  * [LIRIC-MISTAKEN 2.0]

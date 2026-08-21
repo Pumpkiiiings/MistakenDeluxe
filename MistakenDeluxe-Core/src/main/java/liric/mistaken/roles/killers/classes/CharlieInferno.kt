@@ -36,12 +36,12 @@ import kotlin.math.sin
 import liric.mistaken.packet.PacketFactory
 import liric.mistaken.packet.fake.VirtualBlockDisplay
 import org.bukkit.plugin.java.JavaPlugin
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 class CharlieInferno : CoreKiller(
     "charlie",
-    PumpkingServiceManager.messages.getStrictString(null, "asesinos.charlie.nombre", "killers_info")
+    MessageService.getStrictString(null, "asesinos.charlie.nombre", "killers_info")
 ) {
 
     private val pathBase = "asesinos.charlie"
@@ -94,7 +94,7 @@ class CharlieInferno : CoreKiller(
         inv.armorContents = arrayOfNulls(4)
 
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
-        val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
+        val langInfo = MessageService.getSpecificFile(player, "killers_info")
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val id = if (isArmor) configMecanica.getString("armor.$key")

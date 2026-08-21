@@ -612,7 +612,7 @@ object LuaEffectBindings {
         })
 
         // ──────────── send_translated(player, key) ────────────
-        // Resuelve la key contra PumpkingServiceManager.messages.getComponent
+        // Resuelve la key contra MessageService.getComponent
         globals.set("send_translated", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, keyArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL

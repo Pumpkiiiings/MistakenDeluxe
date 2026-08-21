@@ -7,7 +7,7 @@ import liric.mistaken.Mistaken
 import org.bukkit.entity.Player
 import java.sql.SQLException
 import java.util.concurrent.ThreadLocalRandom
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 
 object LinkCommand {

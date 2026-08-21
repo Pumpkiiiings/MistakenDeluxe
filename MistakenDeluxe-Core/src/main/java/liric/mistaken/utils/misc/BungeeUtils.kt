@@ -1,0 +1,27 @@
+package liric.mistaken.utils.misc
+
+import liric.mistaken.Mistaken
+import org.bukkit.entity.Player
+import java.io.ByteArrayOutputStream
+import java.io.DataOutputStream
+import liric.mistaken.utils.color.ColorTranslator
+
+object BungeeUtils {
+
+    fun sendToServer(plugin: Mistaken, player: Player, serverName: String) {
+        try {
+            val b = ByteArrayOutputStream()
+            val out = DataOutputStream(b)
+
+            out.writeUTF("Connect")
+            out.writeUTF(serverName)
+
+            player.scheduler.run(plugin, { _ ->
+                player.sendPluginMessage(plugin, "BungeeCord", b.toByteArray())
+            }, null)
+
+        } catch (e: Exception) {
+            plugin.componentLogger.error(liric.mistaken.utils.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Failed to send ${player.name} to proxy: ${e.message}</gray>"))
+        }
+    }
+}

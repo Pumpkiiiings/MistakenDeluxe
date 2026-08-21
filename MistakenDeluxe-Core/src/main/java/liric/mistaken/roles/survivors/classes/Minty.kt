@@ -15,8 +15,8 @@ import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.ConcurrentHashMap
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.util.Vector
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 /**
  * [LIRIC-MISTAKEN 2.0]
@@ -26,7 +26,7 @@ import pumpking.lib.service.PumpkingServiceManager
  */
 class Minty : Survivor(
     "minty",
-    PumpkingServiceManager.messages.getStrictString(null, "supervivientes.minty.nombre", "survivors_info")
+    MessageService.getStrictString(null, "supervivientes.minty.nombre", "survivors_info")
 ) {
 
     private val pathBase = "supervivientes.minty"
@@ -51,7 +51,7 @@ class Minty : Survivor(
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
-        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = MessageService.getSpecificFile(player, "survivors_info")
 
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 15))) {
@@ -138,7 +138,7 @@ class Minty : Survivor(
         inv.clear()
         if (itemCache.isEmpty()) preLoadKit()
 
-        val langConfig = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
+        val langConfig = MessageService.getSpecificFile(player, "survivors_info")
 
         fun giveLocalizedSkill(slot: Int, key: String) {
             val item = itemCache[key]?.clone() ?: return

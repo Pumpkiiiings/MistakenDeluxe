@@ -8,7 +8,7 @@ import io.papermc.paper.command.brigadier.Commands
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.killers.Killer
 import org.bukkit.entity.Player
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 object CinematicCommand {
 

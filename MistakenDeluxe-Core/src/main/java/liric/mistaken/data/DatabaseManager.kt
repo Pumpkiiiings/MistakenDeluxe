@@ -1,4 +1,4 @@
-﻿package liric.mistaken.data
+package liric.mistaken.data
 
 import liric.mistaken.data.stats.PlayerStats
 import java.sql.Connection

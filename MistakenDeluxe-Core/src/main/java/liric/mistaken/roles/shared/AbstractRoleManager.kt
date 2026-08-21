@@ -6,7 +6,7 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 /**
  * [LIRIC-MISTAKEN 2.0]

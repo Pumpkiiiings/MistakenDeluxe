@@ -11,9 +11,9 @@ import org.bukkit.entity.Player
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import net.kyori.adventure.text.Component
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.config.ConfigManager
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.ConfigManager
+import liric.mistaken.config.engine.core.MessageService
 
 
 abstract class MenuBase(
@@ -99,14 +99,14 @@ abstract class MenuBase(
      * @param def    Valor por defecto si no se encuentra la clave.
      */
     fun getTranslatedString(player: Player, path: String, def: String = "<red>Missing: $path"): String {
-        return PumpkingServiceManager.messages.getRawString(player, path, def, "messages")
+        return MessageService.getRawString(player, path, def, "messages")
     }
 
     /**
      * Obtiene una lista de strings traducidos desde messages.yml del player.
      */
     fun getTranslatedList(player: Player, path: String): List<String> {
-        return PumpkingServiceManager.messages.getRawStringList(player, path, "messages")
+        return MessageService.getRawStringList(player, path, "messages")
     }
 
 
@@ -140,7 +140,7 @@ abstract class MenuBase(
             val config = getGlobalConfig()
 
             // Resolver el t�tulo desde messages.yml (no desde el YAML del men�)
-            val rawTitle = PumpkingServiceManager.messages.getRawString(player, titleMessageKey, titleFallback, "messages")
+            val rawTitle = MessageService.getRawString(player, titleMessageKey, titleFallback, "messages")
 
             val filas = config.getInt("filas", 3)
             val decorList = mutableListOf<Pair<List<Int>, GuiItem>>()
@@ -163,7 +163,7 @@ abstract class MenuBase(
     }
 
     /**
-     * Carga el YAML global del men� usando PumpkingLib ConfigManager
+     * Carga el YAML global del men� usando MistakenLib ConfigManager
      */
     private fun loadGlobalConfig(): FileConfiguration {
         return ConfigManager.getMenuConfig(menuName)

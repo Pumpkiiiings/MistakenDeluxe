@@ -17,7 +17,7 @@ import liric.mistaken.commands.game.LeaveCommand
 import liric.mistaken.commands.game.MistakenCommand
 import liric.mistaken.commands.game.VoteCommand
 import liric.mistaken.commands.other.LinkCommand
-import pumpking.lib.color.ColorTranslator
+import liric.mistaken.utils.color.ColorTranslator
 
 class CommandRegistry(private val plugin: Mistaken) {
 

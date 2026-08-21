@@ -7,8 +7,8 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import pumpking.lib.color.ColorTranslator
-import pumpking.lib.service.PumpkingServiceManager
+import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
 
 import liric.mistaken.roles.shared.AbstractRoleManager
 
@@ -68,7 +68,7 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
                 ))
 
                 // Feedback al player
-                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "game.class-selected",
+                player.sendMessage(MessageService.getComponent(player, "game.class-selected",
                     Placeholder.component("class", ColorTranslator.translate(clase.nombre))))
             }
         }, null, 5L)
@@ -118,7 +118,7 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
 
     override fun cleanAll() {
         super.cleanAll()
-        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Survivor cleanup completed.</gray>"))
+        plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Survivor cleanup completed.</gray>"))
     }
 
     // --- GETTERS ---
