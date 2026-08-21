@@ -2,6 +2,10 @@
 -- Port de la clase Slasher de Kotlin a Lua
 -- Usando LuaEffectBindings
 
+local killer = {
+    id = "slasher"
+}
+
 local attack_queue = {1, 2, 3, 4}
 
 local function get_next_attack_sound()
