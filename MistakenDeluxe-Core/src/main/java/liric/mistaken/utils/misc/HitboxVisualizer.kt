@@ -33,7 +33,7 @@ object HitboxVisualizer {
     }
     /**
      * Crea una Hitbox 3D usando BlockDisplays (Cristal tintado).
-     * Ideal para abilities continuas o proyectiles (debes borrarla manualmente con hitbox.remove()).
+     * Ideal para abilityes continuas o proyectiles (debes borrarla manualmente con hitbox.remove()).
      *
      * @param loc UbicaciÃ³n inicial.
      * @param x, y, z El radio de expansiÃ³n (Los mismos nÃºmeros de getNearbyEntities).

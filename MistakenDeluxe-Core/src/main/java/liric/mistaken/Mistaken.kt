@@ -1,4 +1,4 @@
-﻿package liric.mistaken
+package liric.mistaken
 
 import com.github.retrooper.packetevents.PacketEvents
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
@@ -34,7 +34,7 @@ import liric.mistaken.listeners.*
 import liric.mistaken.listeners.killers.KillerGeneralListener
 import liric.mistaken.listeners.killers.KillerSkillListener
 import liric.mistaken.listeners.survivors.FlashlightListener
-import liric.mistaken.listeners.survivors.SurvivorAbilityListener
+import liric.mistaken.listeners.survivors.SurvivorHabilidadListener
 import liric.mistaken.menu.menus.ShopSelector
 import liric.mistaken.roles.survivors.SurvivorManager
 import liric.mistaken.menu.menus.SurvivorTienda
@@ -85,7 +85,7 @@ class Mistaken : JavaPlugin() {
         private set
 
     // FIX #12: mutableSetOf<UUID>() returns a LinkedHashSet which is NOT thread-safe.
-    // iniciarMotorDeParticles() runs on the async scheduler and reads these sets via isIgnored().
+    // iniciarMotorDeParticulas() runs on the async scheduler and reads these sets via isIgnored().
     // ConcurrentHashMap.newKeySet() provides a thread-safe, lock-free Set backed by CHM.
     val staffEditMode: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
     val afkPlayers: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
@@ -120,10 +120,10 @@ class Mistaken : JavaPlugin() {
     lateinit var observerHUDManager: ObserverHUDManager
 
     lateinit var spectatorManager: SpectatorManager
-    lateinit var killerManager: KillerManager
-    lateinit var survivorManager: SurvivorManager
-    lateinit var killerTienda: KillerShop
-    lateinit var survivorTienda: SurvivorTienda
+    lateinit var asesinoManager: KillerManager
+    lateinit var supervivienteManager: SurvivorManager
+    lateinit var asesinoTienda: KillerShop
+    lateinit var supervivienteTienda: SurvivorTienda
     lateinit var shopSelector: ShopSelector
     lateinit var glowingAPI: liric.mistaken.utils.misc.SafeGlowingManager
 
@@ -155,25 +155,25 @@ class Mistaken : JavaPlugin() {
         // Initialize PumpkingLib internal framework
         PumpkingLib.init(this)
 
-        // ðŸ”¥ FIX 1: Registramos los comandos PRIMERO.
-        // Si la base de datos o el lobby fallan, al menos tendrÃ¡s comandos para arreglarlo.
+        // 🔥 FIX 1: Registramos los comandos PRIMERO.
+        // Si la base de datos o el lobby fallan, al menos tendrás comandos para arreglarlo.
         CommandRegistry(this).registerAll()
 
         serverMode = config.getString("server-mode", "GAME_SERVER")?.uppercase() ?: "GAME_SERVER"
-        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Server mode set to: $serverMode</gray>"))
+        componentLogger.info(ColorTranslator.translate("[INFO] Server mode set to: $serverMode"))
 
         loadLobbyLocation()
         if (serverMode == "MULTIARENA" || serverMode == "NETWORK_LOBBY") {
             if (lobbyLocation != null) {
                 lobbyLocation?.world?.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
             } else {
-                componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Lobby is not set (/setlobby).</gray>"))
+                componentLogger.warn(ColorTranslator.translate("[WARN] Lobby is not set (/setlobby)."))
             }
         } else if (serverMode == "GAME_SERVER" && lobbyLocation == null) {
-            componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>GAME_SERVER requires /setlobby to create the glass Pre-Lobby.</gray>"))
+            componentLogger.warn(ColorTranslator.translate("[WARN] GAME_SERVER requires /setlobby to create the glass Pre-Lobby."))
         }
 
-        // ðŸ”¥ FIX 2: Si falla la conexiÃ³n de DB o Vault, no apagamos el plugin entero.
+        // 🔥 FIX 2: Si falla la conexión de DB o Vault, no apagamos el plugin entero.
         // Solo lanzamos el warning, para que puedas usar comandos de admin.
         setupIntegrations()
         setupDatabase()
@@ -181,7 +181,7 @@ class Mistaken : JavaPlugin() {
         statsManager = StatsManager(this)
         playerDataManager = PlayerDataManager(this)
 
-        // ðŸ”¥ FIX 3: Inicializamos la API ANTES de cargar los managers y killers
+        // 🔥 FIX 3: Inicializamos la API ANTES de cargar los managers y asesinos
         val apiImpl = MistakenAPIImpl(this)
         MistakenProvider.register(apiImpl)
 
@@ -207,8 +207,8 @@ class Mistaken : JavaPlugin() {
         nameTagManager = liric.mistaken.game.managers.visual.NameTagManager(this)
         ambientManager = AmbientManager(this)
         arenaManager = ArenaManager(this)
-        killerManager = KillerManager(this)
-        survivorManager = SurvivorManager(this)
+        asesinoManager = KillerManager(this)
+        supervivienteManager = SurvivorManager(this)
         webHook = WebHook(this)
         musicManager = MusicManager(this)
         spectatorManager = SpectatorManager(this)
@@ -216,8 +216,8 @@ class Mistaken : JavaPlugin() {
 
         server.pluginManager.registerEvents(spectatorManager, this)
 
-        killerTienda = KillerShop()
-        survivorTienda = SurvivorTienda()
+        asesinoTienda = KillerShop()
+        supervivienteTienda = SurvivorTienda()
         shopSelector = ShopSelector()
         scoreboardManager = ScoreboardManager(this)
         observerHUDManager = ObserverHUDManager(this)
@@ -240,13 +240,13 @@ class Mistaken : JavaPlugin() {
                 combatManager.resetHealth(player)
                 musicManager.syncPlayer(player)
             }
-            iniciarMotorDeParticles()
+            iniciarMotorDeParticulas()
         }
 
         sendLogo()
 
         val time = System.currentTimeMillis() - start
-        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Mistaken v${pluginMeta.version} enabled in ${time}ms ($serverMode)</gray>"))
+        componentLogger.info(ColorTranslator.translate("[SUCCESS] Mistaken v${pluginMeta.version} enabled in ${time}ms ($serverMode)"))
     }
 
     override fun onDisable() {
@@ -263,19 +263,19 @@ class Mistaken : JavaPlugin() {
         if (::scoreboardManager.isInitialized) runCatching { scoreboardManager.removeAll() }
         if (::nameTagManager.isInitialized) runCatching { nameTagManager.removeAll() }
         PumpkingLib.shutdown()
-        if (::killerManager.isInitialized) runCatching { killerManager.shutdown() }
-        if (::survivorManager.isInitialized) runCatching { survivorManager.shutdown() }
+        if (::asesinoManager.isInitialized) runCatching { asesinoManager.shutdown() }
+        if (::supervivienteManager.isInitialized) runCatching { supervivienteManager.shutdown() }
         if (::observerHUDManager.isInitialized) runCatching { observerHUDManager.shutdown() }
         if (::visualUpdateService.isInitialized) runCatching { visualUpdateService.stop() }
         if (::glowingAPI.isInitialized) runCatching { glowingAPI.disable() }
         if (::databaseManager.isInitialized) runCatching { databaseManager.close() }
-        // FIX #3: webHook.shutdown() was missing from onDisable â€” the CoroutineScope and
+        // FIX #3: webHook.shutdown() was missing from onDisable — the CoroutineScope and
         // HttpClient were never released, leaking IO threads and TLS sockets.
         if (::webHook.isInitialized) runCatching { webHook.shutdown() }
 
         PacketEvents.getAPI().terminate()
 
-        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>MISTAKEN has been successfully disabled.</gray>"))
+        componentLogger.info(ColorTranslator.translate("[INFO] MISTAKEN has been successfully disabled."))
     }
 
     private fun setupDatabase(): Boolean {
@@ -285,7 +285,7 @@ class Mistaken : JavaPlugin() {
             databaseManager.setup()
             true
         } catch (e: Exception) {
-            componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Could not connect to the database. Data will not be saved.</gray>"))
+            componentLogger.error(ColorTranslator.translate("[ERROR] Could not connect to the database. Data will not be saved."))
             false
         }
     }
@@ -294,13 +294,13 @@ class Mistaken : JavaPlugin() {
         val rsp: RegisteredServiceProvider<Economy>? = server.servicesManager.getRegistration(Economy::class.java)
 
         if (rsp == null) {
-            componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Vault found no compatible economy plugin.</gray>"))
+            componentLogger.error(ColorTranslator.translate("[ERROR] Vault found no compatible economy plugin."))
             return false
         }
         economy = rsp.provider
 
         craftEngineEnabled = server.pluginManager.isPluginEnabled("CraftEngine")
-        if (craftEngineEnabled) componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>CraftEngine detected and hooked.</gray>"))
+        if (craftEngineEnabled) componentLogger.info(ColorTranslator.translate("[SUCCESS] CraftEngine detected and hooked."))
 
         return true
     }
@@ -314,7 +314,7 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(KillerSkillListener(this), this)
         pm.registerEvents(KillerGeneralListener(this), this)
         pm.registerEvents(antiBlockListener, this)
-        pm.registerEvents(SurvivorAbilityListener(this), this)
+        pm.registerEvents(SurvivorHabilidadListener(this), this)
         pm.registerEvents(FlashlightListener(this), this)
         pm.registerEvents(GeneratorListener(this), this)
         pm.registerEvents(liric.mistaken.listeners.HackTerminalListener(this), this)
@@ -323,11 +323,11 @@ class Mistaken : JavaPlugin() {
 
         if (pm.isPluginEnabled("Parties")) {
             pm.registerEvents(liric.mistaken.utils.hooks.AlessioPartiesHook(this), this)
-            componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Hooked into Parties (AlessioDP)!</gray>"))
+            componentLogger.info(ColorTranslator.translate("[INFO] Hooked into Parties (AlessioDP)!"))
         }
         if (pm.isPluginEnabled("LodestoneParties")) {
             pm.registerEvents(liric.mistaken.utils.hooks.LodestonePartiesHook(this), this)
-            componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Hooked into LodestoneParties!</gray>"))
+            componentLogger.info(ColorTranslator.translate("[INFO] Hooked into LodestoneParties!"))
         }
 
         if (pm.isPluginEnabled("ObserverPaper")) {
@@ -335,20 +335,20 @@ class Mistaken : JavaPlugin() {
                 // Verificamos si existe la clase del evento (si tienen un JAR actualizado)
                 Class.forName("com.observer.paper.api.events.ObserverPlayerIdleEvent")
                 pm.registerEvents(liric.mistaken.utils.hooks.ObserverEventListener, this)
-                componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Hooked into ObserverPaper!</gray>"))
+                componentLogger.info(ColorTranslator.translate("[INFO] Hooked into ObserverPaper!"))
             } catch (e: ClassNotFoundException) {
-                componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>ObserverPaper found, but it is an older version. Update Observer to enable animation events.</gray>"))
+                componentLogger.warn(ColorTranslator.translate("[WARN] ObserverPaper found, but it is an older version. Update Observer to enable animation events."))
             } catch (e: Throwable) {
-                componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Could not register ObserverPaper events: ${e.message}</gray>"))
+                componentLogger.warn(ColorTranslator.translate("[WARN] Could not register ObserverPaper events: ${e.message}"))
             }
         }
     }
 
-    private fun iniciarMotorDeParticles() {
+    private fun iniciarMotorDeParticulas() {
         // FIX #13: asyncScheduler runs on an IO thread where Bukkit API calls like
         // server.getPlayer(), player.isOnline, player.velocity, player.isSprinting
         // are NOT thread-safe and can cause IllegalStateException / data corruption.
-        // globalRegionScheduler runs on the main thread â€” safe for all Bukkit API.
+        // globalRegionScheduler runs on the main thread — safe for all Bukkit API.
         // Period of 2 ticks (100 ms) matches the original 100 ms interval.
         server.globalRegionScheduler.runAtFixedRate(this, { _ ->
             if (!isReady) return@runAtFixedRate
@@ -356,15 +356,15 @@ class Mistaken : JavaPlugin() {
             sessionManager.activeSessions.values.forEach { session ->
                 if (session.currentState != GameState.INGAME) return@forEach
 
-                session.killersUUIDs.forEach { uuid ->
+                session.asesinosUUIDs.forEach { uuid ->
                     val p = server.getPlayer(uuid) ?: return@forEach
-                    val killer = killerManager.getKillerOfPlayer(p) ?: return@forEach
+                    val asesino = asesinoManager.getKillerOfPlayer(p) ?: return@forEach
 
                     if (p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
-                        // Both trail calls are now safe on the main thread â€” no need for the
+                        // Both trail calls are now safe on the main thread — no need for the
                         // inner globalRegionScheduler.run() dispatch that was required before.
-                        killer.showTrail(p)
-                        killer.showPhysicalTrail(p)
+                        asesino.showTrail(p)
+                        asesino.showPhysicalTrail(p)
                     }
                 }
             }
@@ -373,7 +373,7 @@ class Mistaken : JavaPlugin() {
         // ECS Character Tick (1 tick rate for smooth movement and animations)
         server.globalRegionScheduler.runAtFixedRate(this, { _ ->
             if (!isReady) return@runAtFixedRate
-            killerManager.getAvailableClasses().values.forEach { killer ->
+            asesinoManager.getAvailableClasses().values.forEach { killer ->
                 if (killer is liric.mistaken.roles.killers.BaseKiller) {
                     killer.tickAll()
                 }
@@ -393,7 +393,7 @@ class Mistaken : JavaPlugin() {
         val world = server.getWorld(worldName)
         
         if (world == null) {
-            componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>The lobby world ('$worldName') does not exist. Using the default world's spawn.</gray>"))
+            componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("[WARN] El mundo del lobby ('$worldName') no existe. Usando el spawn del mundo por defecto."))
             lobbyLocation = server.worlds[0].spawnLocation
             return
         }
@@ -426,7 +426,7 @@ class Mistaken : JavaPlugin() {
         val langFolder = File(dataFolder, "langs")
         if (!langFolder.exists()) langFolder.mkdirs()
 
-        // Carpeta global de layouts de menÃºs (un YAML por menÃº, sin duplicar por idioma)
+        // Carpeta global de layouts de menús (un YAML por menú, sin duplicar por idioma)
         val menusFolder = File(dataFolder, "menus")
         if (!menusFolder.exists()) menusFolder.mkdirs()
 
@@ -450,18 +450,18 @@ class Mistaken : JavaPlugin() {
 
         componentLogger.info(ColorTranslator.translate("""
             <newline>
-             $b1<bold>â–ˆâ–ˆâ–ˆâ•—   â–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ•—  â–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ•—   â–ˆâ–ˆâ•—</bold>$b1
-             $b1<bold>â–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•”â•â•â•â•â•â•šâ•â•â–ˆâ–ˆâ•”â•â•â•â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘ â–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•”â•â•â•â•â•â–ˆâ–ˆâ–ˆâ–ˆâ•—  â–ˆâ–ˆâ•‘</bold>$b1
-             $b2<bold>â–ˆâ–ˆâ•”â–ˆâ–ˆâ–ˆâ–ˆâ•”â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—   â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•”â• â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—  â–ˆâ–ˆâ•”â–ˆâ–ˆâ•— â–ˆâ–ˆâ•‘</bold>$b2
-             $b3<bold>â–ˆâ–ˆâ•‘â•šâ–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â•šâ•â•â•â•â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•— â–ˆâ–ˆâ•”â•â•â•  â–ˆâ–ˆâ•‘â•šâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘</bold>$b3
-             $b4<bold>â–ˆâ–ˆâ•‘ â•šâ•â• â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘  â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘  â–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘ â•šâ–ˆâ–ˆâ–ˆâ–ˆâ•‘</bold>$b4
-             $b5<bold>â•šâ•â•     â•šâ•â•â•šâ•â•â•šâ•â•â•â•â•â•â•   â•šâ•â•   â•šâ•â•  â•šâ•â•â•šâ•â•  â•šâ•â•â•šâ•â•â•â•â•â•â•â•šâ•â•  â•šâ•â•â•â•</bold>$b5
+             $b1<bold>███╗   ███╗██╗███████╗████████╗ █████╗ ██╗  ██╗███████╗███╗   ██╗</bold>$b1
+             $b1<bold>████╗ ████║██║██╔════╝╚══██╔══╝██╔══██╗██║ ██╔╝██╔════╝████╗  ██║</bold>$b1
+             $b2<bold>██╔████╔██║██║███████╗   ██║   ███████║█████╔╝ █████╗  ██╔██╗ ██║</bold>$b2
+             $b3<bold>██║╚██╔╝██║██║╚════██║   ██║   ██╔══██║██╔═██╗ ██╔══╝  ██║╚██╗██║</bold>$b3
+             $b4<bold>██║ ╚═╝ ██║██║███████║   ██║   ██║  ██║██║  ██╗███████╗██║ ╚████║</bold>$b4
+             $b5<bold>╚═╝     ╚═╝╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝</bold>$b5
              $b4<bold>               ___  ____ _    _  _ _  _ ____ </bold>$b4
              $b5<bold>               |  \ |___ |    |  |  \/  |___ </bold>$b5
              $b5<bold>               |__/ |___ |___ |__| _/\_ |___ </bold>$b5
             <newline>
                <white>Autor:</white> $info Pumpkingz$info
-               <white>Modo Red:</white> <green>â— $serverMode</green>
+               <white>Modo Red:</white> <green>● $serverMode</green>
             <newline>
         """.trimIndent()))
     }

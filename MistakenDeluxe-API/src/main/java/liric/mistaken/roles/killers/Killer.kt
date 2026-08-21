@@ -37,8 +37,8 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
         if (cooldownSecs <= 0) return false
 
         // 2. Obtenemos el nombre traducido para el feedback visual
-        val langConfig = api.messages.getSpecificFile(player, "asesinos")
-        val nombreHab = langConfig.getString("asesinos.$id.items.habilidad${slot}_name") ?: "Skill $slot"
+        val langConfig = api.messages.getSpecificFile(player, "killers")
+        val nombreHab = langConfig.getString("killers.$id.items.ability${slot}_name") ?: "Skill $slot"
 
         val key = "${player.uniqueId}_$slot"
         val now = System.currentTimeMillis()
@@ -47,7 +47,7 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
         if (now < expireTime) {
             val remaining = (expireTime - now) / 1000.0
 
-            // Message de error traducido desde es/messages.yml o en/messages.yml
+            // Mensaje de error traducido desde es/messages.yml o en/messages.yml
             val msg = api.messages.getComponent(player, "errors.ability-cooldown",
                 Placeholder.parsed("skill", nombreHab),
                 Placeholder.parsed("time", "%.1f".format(remaining))

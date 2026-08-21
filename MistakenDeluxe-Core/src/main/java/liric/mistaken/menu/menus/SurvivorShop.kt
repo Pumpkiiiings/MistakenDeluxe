@@ -17,7 +17,7 @@ import liric.mistaken.api.requirements.RequirementEngine
 import pumpking.lib.service.PumpkingServiceManager
 
 
-class SurvivorTienda : MenuBase("survivors_shop") {
+class SurvivorShop : MenuBase("survivors_shop") {
 
     private val survivorKey by lazy { NamespacedKey(plugin, "selected_survivor") }
 
@@ -37,11 +37,11 @@ class SurvivorTienda : MenuBase("survivors_shop") {
         val labelSeleccionado = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-seleccionado")
         val labelPoseido = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-poseido")
         val labelComprar = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-comprar-superviviente")
-        val labelAbilities = PumpkingServiceManager.messages.getComponent(player, "tienda.habilidades-titulo")
+        val labelAbilityes = PumpkingServiceManager.messages.getComponent(player, "tienda.abilityes-titulo")
 
         var slotIndex = 0
 
-        for (survivorId in plugin.survivorManager.catalogo.keys) {
+        for (survivorId in plugin.supervivienteManager.catalogo.keys) {
             if (slotIndex >= slots.size) break
 
             val survivorConfig = plugin.configManager.getSurvivorConfig(survivorId)
@@ -49,15 +49,15 @@ class SurvivorTienda : MenuBase("survivors_shop") {
             if (permisoRequerido != null && !player.hasPermission(permisoRequerido)) continue
 
             // --- 🎨 DATOS VISUALES (Desde survivors_info.yml) ---
-            // Ruta: survivors.<id>.nombre
+            // Ruta: supervivientes.<id>.nombre
             val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "supervivientes.$survivorId.nombre", "survivors_info")
             
             val loreTienda = PumpkingServiceManager.messages.getStrictStringList(player, "supervivientes.$survivorId.lore_tienda", "survivors_info")
 
-            // --- ⚙️ DATOS MECÁNICOS (Desde survivors.yml) ---
-            // Ruta: survivors.<id>.precio
+            // --- ⚙️ DATOS MECÁNICOS (Desde supervivientes.yml) ---
+            // Ruta: supervivientes.<id>.precio
             val precio = survivorConfig.getInt("precio", 0)
-            // Ruta: survivors.<id>.icono_material
+            // Ruta: supervivientes.<id>.icono_material
             val matStr = survivorConfig.getString("icono_material", "IRON_CHESTPLATE")!!
             val iconoMat = Material.matchMaterial(matStr.uppercase()) ?: Material.IRON_CHESTPLATE
 
@@ -72,12 +72,12 @@ class SurvivorTienda : MenuBase("survivors_shop") {
                 }
 
                 add(Component.empty())
-                add(labelAbilities)
+                add(labelAbilityes)
 
-                // Listar abilities (Nombres desde INFO)
-                // Ruta: survivors.<id>.skill_names.abilityX
+                // Listar abilityes (Nombres desde INFO)
+                // Ruta: supervivientes.<id>.skill_names.abilityX
                 for (i in 1..3) {
-                    val habName = PumpkingServiceManager.messages.getRawString(player, "supervivientes.$survivorId.skill_names.habilidad$i", "", "survivors_info")
+                    val habName = PumpkingServiceManager.messages.getRawString(player, "supervivientes.$survivorId.skill_names.ability$i", "", "survivors_info")
                     if (habName.isNotEmpty()) {
                         add(parseSafe(" <dark_gray>â€¢</dark_gray> <white>$habName</white>"))
                     }
@@ -148,7 +148,7 @@ class SurvivorTienda : MenuBase("survivors_shop") {
             data.setSelectedSurvivor(uuid, id)
             player.persistentDataContainer.set(survivorKey, PersistentDataType.STRING, id)
 
-            // Obtenemos el nombre bonito para el message de confirmaciÃ³n
+            // Obtenemos el nombre bonito para el mensaje de confirmaciÃ³n
             val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "supervivientes.$id.nombre", "survivors_info")
 
             player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda.seleccionado", Placeholder.component("name", parseSafe(nombreVisual))))

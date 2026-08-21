@@ -1,4 +1,4 @@
-﻿package liric.mistaken.menu.menus
+package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -24,7 +24,7 @@ class KillerShop : MenuBase("killers_shop") {
 
         val preferredSlots = config.getIntegerList("ajustes.slots-disponibles").toMutableList()
 
-        // Ã°Å¸â€Â¥ NUEVO: Slots fijos configurados desde el YAML
+        // ðŸ”¥ NUEVO: Slots fijos configurados desde el YAML
         val fixedSlotsSection = config.getConfigurationSection("ajustes.slots-fijos")
         val fixedSlots = mutableMapOf<String, Int>()
         if (fixedSlotsSection != null) {
@@ -40,7 +40,7 @@ class KillerShop : MenuBase("killers_shop") {
         val labelSeleccionado = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-seleccionado")
         val labelPoseido = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-poseido")
         val labelComprar = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-comprar")
-        val labelAbilities = PumpkingServiceManager.messages.getComponent(player, "tienda.habilidades-titulo")
+        val labelAbilityes = PumpkingServiceManager.messages.getComponent(player, "tienda.abilityes-titulo")
 
         val killersCatalogo = plugin.killerManager.catalogo.keys
 
@@ -57,7 +57,7 @@ class KillerShop : MenuBase("killers_shop") {
                 if (!hasAccess) continue
             }
 
-            // ðŸ”¥ NUEVO: DetecciÃ³n de slot fijo
+            // 🔥 NUEVO: Detección de slot fijo
             val targetSlot = if (fixedSlots.containsKey(killerId)) {
                 fixedSlots[killerId]!!
             } else if (preferredSlots.isNotEmpty()) {
@@ -68,9 +68,9 @@ class KillerShop : MenuBase("killers_shop") {
 
             if (targetSlot == -1) continue // Si no hay espacio en el inventario, lo salta
 
-            val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "asesinos.$killerId.nombre", "killers_info")
-            val descripcion = PumpkingServiceManager.messages.getStrictStringList(player, "asesinos.$killerId.descripcion", "killers_info")
-            val loreTienda = PumpkingServiceManager.messages.getStrictStringList(player, "asesinos.$killerId.lore_tienda", "killers_info")
+            val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "killers.$killerId.nombre", "killers_info")
+            val descripcion = PumpkingServiceManager.messages.getStrictStringList(player, "killers.$killerId.descripcion", "killers_info")
+            val loreTienda = PumpkingServiceManager.messages.getStrictStringList(player, "killers.$killerId.lore_tienda", "killers_info")
 
             val precio = killerConfig.getInt("precio", 0)
             val matStr = killerConfig.getString("icono_material", "STONE")!!
@@ -84,11 +84,11 @@ class KillerShop : MenuBase("killers_shop") {
             loreTienda.forEach { fullLore.add(parseSafe(it)) }
             fullLore.add(Component.empty())
 
-            fullLore.add(labelAbilities)
+            fullLore.add(labelAbilityes)
             for (i in 1..4) {
-                val habName = PumpkingServiceManager.messages.getRawString(player, "asesinos.$killerId.skill_names.habilidad$i", "", "killers_info")
+                val habName = PumpkingServiceManager.messages.getRawString(player, "killers.$killerId.skill_names.ability$i", "", "killers_info")
                 if (habName.isNotEmpty()) {
-                    fullLore.add(parseSafe(" <dark_gray>Ã¢â‚¬Â¢</dark_gray> <white>$habName</white>"))
+                    fullLore.add(parseSafe(" <dark_gray>â€¢</dark_gray> <white>$habName</white>"))
                 }
             }
             fullLore.add(Component.empty())
@@ -115,7 +115,7 @@ class KillerShop : MenuBase("killers_shop") {
                 .asGuiItem { event ->
                     event.isCancelled = true
                     if (reqMessages.isNotEmpty()) {
-                        player.sendMessage(parseSafe("<red>No cumples los requisitos para este asesino.</red>"))
+                        player.sendMessage(parseSafe("<red>No cumples los requisitos para este killer.</red>"))
                         player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
                         return@asGuiItem
                     }
@@ -159,8 +159,8 @@ class KillerShop : MenuBase("killers_shop") {
         val econ = Mistaken.Companion.economy
 
         if (econ == null) {
-            player.sendMessage(parseSafe("<red><b>[!]</b> Error interno: El sistema de economÃƒÂ­a (Vault) no estÃƒÂ¡ conectado.</red>"))
-            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Purchase failed due to disconnected Vault: Player ${player.name}, Killer $killerId</gray>"))
+            player.sendMessage(parseSafe("<red><b>[!]</b> Error interno: El sistema de economÃ­a (Vault) no estÃ¡ conectado.</red>"))
+            plugin.componentLogger.error("Purchase failed due to disconnected Vault: Player ${player.name}, Killer $killerId")
             return
         }
 

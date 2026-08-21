@@ -1,4 +1,4 @@
-﻿package liric.mistaken.data.db
+package liric.mistaken.data.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -20,9 +20,9 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
         try {
             dataSource = HikariDataSource(config)
             createTables()
-            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Connection established (${this::class.simpleName}).</gray>"))
+            plugin.componentLogger.info(ColorTranslator.translate("[SUCCESS] [Database] Connection established (${this::class.simpleName})."))
         } catch (e: Exception) {
-            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Connection failed: ${e.message}</gray>"))
+            plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [Database] Connection failed: ${e.message}"))
         }
     }
 
@@ -40,7 +40,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
 
     protected abstract fun getHikariConfig(): HikariConfig
 
-    // === QUERIES ESPECÃƒÂFICAS DE MOTOR (Sobrescribir en PostgreSQL/SQLite si difieren) ===
+    // === QUERIES ESPECÃFICAS DE MOTOR (Sobrescribir en PostgreSQL/SQLite si difieren) ===
     protected open val createStatsTableQuery = """
         CREATE TABLE IF NOT EXISTS stats (
             uuid VARCHAR(36) PRIMARY KEY,
@@ -52,7 +52,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
             deaths INT DEFAULT 0,
             kills INT DEFAULT 0,
             generators_repaired INT DEFAULT 0,
-            asesino_equipado VARCHAR(32) DEFAULT 'slasher'
+            killer_equipado VARCHAR(32) DEFAULT 'slasher'
         );
     """.trimIndent()
 
@@ -99,7 +99,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
                 }
             }
         } catch (e: SQLException) {
-            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Failed to create tables: ${e.message}</gray>"))
+            plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [Database] Failed to create tables: ${e.message}"))
         }
     }
 
@@ -212,7 +212,7 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
         }
     }
 
-    // MÃ©todo virtual para bindear las variables del Upsert
+    // Método virtual para bindear las variables del Upsert
     protected open fun bindUpsertVariables(ps: PreparedStatement, uuid: String, lang: String, killersOwned: String, killerSelected: String, survOwned: String, survSelected: String, nick: String, skin: String) {
         // Formato por defecto para MySQL (15 params totales por duplicarse)
         ps.setString(1, uuid); ps.setString(2, lang); ps.setString(3, killersOwned)
