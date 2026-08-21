@@ -101,5 +101,24 @@ class GameSession(
         changedBlocks.clear()
         plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Session $id destroyed.</gray>"))
     }
+    override fun forceStart() {
+        stateController.startInGame()
+    }
+
+    override fun forceEnd(killerWon: Boolean) {
+        stateController.endGame("game.forced-end", killerWon)
+    }
+
+    override val survivorsUUIDs: Set<UUID>
+        get() = players.filter { uuid -> !isKiller(uuid) && plugin.server.getPlayer(uuid)?.let { !plugin.spectatorManager.isSpectator(it) } ?: false }.toSet()
+
+    override val aliveSurvivorsUUIDs: Set<UUID>
+        get() = survivorsUUIDs.filter { uuid ->
+            val p = plugin.server.getPlayer(uuid)
+            p != null && p.health > 0
+        }.toSet()
+
+    override val spectatorsUUIDs: Set<UUID>
+        get() = players.filter { uuid -> plugin.server.getPlayer(uuid)?.let { plugin.spectatorManager.isSpectator(it) } ?: false }.toSet()
 }
 

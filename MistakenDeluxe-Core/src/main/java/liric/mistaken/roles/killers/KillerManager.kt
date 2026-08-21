@@ -40,7 +40,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
     private fun loadHardcodedKillers() {
         listOf(
             CharlieInferno(), CharlieJazz(), Mariachi(),
-            Sowoul(), StillLife(), WardenKiller(), SmilerKiller(), PiglinBigKiller()
+            Sowoul(), StillLife(), WardenKiller(), SmilerKiller()
         ).forEach { registerClass(it) }
         plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Loaded native killers (Hardcoded).</gray>"))
     }

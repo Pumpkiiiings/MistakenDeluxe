@@ -40,15 +40,15 @@ class PlayerStats {
     /**
      * Incrementa una estadística por nombre de forma segura.
      */
-    fun incrementStat(statName: String) {
+    fun incrementStat(statName: String, amount: Int = 1) {
         when (statName.lowercase()) {
-            "wins_survivor" -> winsSurvivor.incrementAndGet()
-            "wins_assassin" -> winsAssassin.incrementAndGet()
-            "losses_survivor" -> lossesSurvivor.incrementAndGet()
-            "losses_assassin" -> lossesAssassin.incrementAndGet()
-            "kills" -> kills.incrementAndGet()
-            "deaths" -> deaths.incrementAndGet()
-            "generators_repaired" -> generatorsRepaired.incrementAndGet()
+            "wins_survivor" -> winsSurvivor.addAndGet(amount)
+            "wins_assassin" -> winsAssassin.addAndGet(amount)
+            "losses_survivor" -> lossesSurvivor.addAndGet(amount)
+            "losses_assassin" -> lossesAssassin.addAndGet(amount)
+            "kills" -> kills.addAndGet(amount)
+            "deaths" -> deaths.addAndGet(amount)
+            "generators_repaired" -> generatorsRepaired.addAndGet(amount)
         }
     }
 

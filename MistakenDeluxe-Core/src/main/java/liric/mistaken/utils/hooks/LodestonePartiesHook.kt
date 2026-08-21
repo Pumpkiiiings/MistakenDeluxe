@@ -120,7 +120,7 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                             return
                         }
                         
-                        val session = plugin.sessionManager.createSession(arenas.values.first().name, true)
+                        val session = plugin.sessionManager.createSession(arenas.first().name, true)
                         
                         party.members.forEach { member ->
                             val memberPlayer = Bukkit.getPlayer(member.uniqueId)

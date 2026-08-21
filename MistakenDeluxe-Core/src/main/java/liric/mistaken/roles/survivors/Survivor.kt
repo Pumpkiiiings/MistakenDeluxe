@@ -9,7 +9,7 @@ import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.api.roles.GameRole
 
 
-abstract class Survivor(override val id: String, override val nombre: String) : GameRole {
+abstract class Survivor(override val id: String, override val nombre: String) : liric.mistaken.api.roles.ISurvivor {
 
     protected val plugin = Mistaken.instance
     protected val mm = plugin.mm
@@ -85,5 +85,5 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
     // --- M�TODOS ABSTRACTOS ---
 
     abstract override fun equip(player: Player)
-    abstract fun useSkill(player: Player, slot: Int)
+    abstract override fun useSkill(player: Player, slot: Int)
 }

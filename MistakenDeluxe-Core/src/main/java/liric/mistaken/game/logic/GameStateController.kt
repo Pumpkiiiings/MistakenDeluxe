@@ -66,7 +66,7 @@ class GameStateController(private val game: GameSession) {
         game.timer = game.plugin.config.getInt("settings.voting-duration", 30)
 
         game.broadcastLocalized("voting.started")
-        game.plugin.arenaManager.getArenas().keys.forEach { map ->
+        game.plugin.arenaManager.getArenasMap().keys.forEach { map ->
             game.broadcastLocalized("voting.map-option", Placeholder.parsed("map", map))
         }
     }
@@ -149,7 +149,7 @@ class GameStateController(private val game: GameSession) {
     }
 
     fun startInGame() {
-        val arenas = game.plugin.arenaManager.getArenas()
+        val arenas = game.plugin.arenaManager.getArenasMap()
         val winner = game.settings?.forcedMap ?: game.voteManager.getWinningMap(arenas) ?: run { resetToLobby(null); return }
         val arena = game.plugin.arenaManager.getArena(winner) ?: run { resetToLobby(null); return }
 

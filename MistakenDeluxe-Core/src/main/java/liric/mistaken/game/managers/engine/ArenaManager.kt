@@ -19,7 +19,10 @@ import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.config.engine.core.ConfigManager
 
 
-class ArenaManager(private val plugin: Mistaken) {
+import liric.mistaken.api.managers.IArenaManager
+import liric.mistaken.api.managers.IArena
+
+class ArenaManager(private val plugin: Mistaken) : IArenaManager {
 
     private val arenas = ConcurrentHashMap<String, Arena>()
     private var configProvider = ConfigManager.get("arenas.yml")
@@ -194,8 +197,12 @@ class ArenaManager(private val plugin: Mistaken) {
         }
     }
 
-    fun getArenas(): Map<String, Arena> = arenas
-    fun getArena(name: String): Arena? = arenas[name]
+    override val defaultArena: IArena?
+        get() = arenas.values.firstOrNull()
+
+    fun getArenasMap(): Map<String, Arena> = arenas
+    override fun getArenas(): List<IArena> = arenas.values.toList()
+    override fun getArena(name: String): Arena? = arenas[name]
 
     fun reloadConfig() {
         loadArenasAsync()

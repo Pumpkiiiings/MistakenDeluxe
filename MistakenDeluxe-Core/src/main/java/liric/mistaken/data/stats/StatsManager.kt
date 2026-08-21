@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 
-class StatsManager(private val plugin: Mistaken) {
+class StatsManager(private val plugin: Mistaken) : liric.mistaken.api.managers.IStatsManager {
 
     private val cache = ConcurrentHashMap<UUID, PlayerStats>()
     private var autoSaveTask: ScheduledTask? = null
@@ -36,8 +36,8 @@ class StatsManager(private val plugin: Mistaken) {
      * Actualiza la RAM al instante (0ms latencia).
      * No toca la base de datos, evitando micro-tirones durante el juego.
      */
-    fun incrementStat(uuid: UUID, column: String) {
-        cache[uuid]?.incrementStat(column)
+    override fun incrementStat(uuid: UUID, statType: String, amount: Int) {
+        cache[uuid]?.incrementStat(statType, amount)
     }
 
     /**
@@ -93,7 +93,7 @@ class StatsManager(private val plugin: Mistaken) {
     /**
      * Obtiene una estad�stica espec�fica desde la RAM.
      */
-    fun getStat(uuid: UUID, statName: String): Int {
+    override fun getStat(uuid: UUID, statName: String): Int {
         return cache[uuid]?.getStatValue(statName) ?: 0
     }
 

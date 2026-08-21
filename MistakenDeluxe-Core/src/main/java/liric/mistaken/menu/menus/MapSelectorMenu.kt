@@ -42,7 +42,7 @@ class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSes
         val settings = session.settings ?: PrivateGameSettings().also { session.settings = it }
 
         // Fetch all available maps from plugin.arenaManager
-        val allMaps = plugin.arenaManager.getArenas().values
+        val allMaps = plugin.arenaManager.getArenas()
 
         var slot = startSlot
         for (map in allMaps) {

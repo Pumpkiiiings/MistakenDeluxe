@@ -27,7 +27,7 @@ object VoteCommand {
             .then(
                 Commands.argument("mapName", StringArgumentType.greedyString())
                     .suggests { _, builder: SuggestionsBuilder ->
-                        plugin.arenaManager.getArenas().keys.forEach { mapName ->
+                        plugin.arenaManager.getArenas().map { it.name }.forEach { mapName ->
                             if (mapName.startsWith(builder.remainingLowerCase, ignoreCase = true)) {
                                 builder.suggest(mapName)
                             }
@@ -56,7 +56,7 @@ object VoteCommand {
                         }
 
                         val inputName = StringArgumentType.getString(ctx, "mapName")
-                        val actualMapName = plugin.arenaManager.getArenas().keys
+                        val actualMapName = plugin.arenaManager.getArenas().map { it.name }
                             .firstOrNull { it.equals(inputName, ignoreCase = true) }
 
                         if (actualMapName == null) {

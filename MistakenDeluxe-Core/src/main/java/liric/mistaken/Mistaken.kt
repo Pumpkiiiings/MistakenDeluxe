@@ -491,6 +491,12 @@ class MistakenAPIImpl(private val _plugin: Mistaken) : MistakenAPI {
         get() = _plugin.mm
     override val logger: java.util.logging.Logger
         get() = _plugin.logger
+    override val arenaManager: liric.mistaken.api.managers.IArenaManager
+        get() = _plugin.arenaManager
+    override val survivorManager: liric.mistaken.api.managers.ISurvivorManager
+        get() = _plugin.survivorManager
+    override val statsManager: liric.mistaken.api.managers.IStatsManager
+        get() = _plugin.statsManager
 
     override fun isIgnored(player: org.bukkit.entity.Player): Boolean {
         return _plugin.isIgnored(player)

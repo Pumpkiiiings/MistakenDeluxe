@@ -2,17 +2,18 @@ package liric.mistaken.game
 
 import org.bukkit.Location
 
+import liric.mistaken.api.managers.IArena
 
-class Arena(val name: String) {
+class Arena(override val name: String) : IArena {
 
-    var slimeWorldName: String? = null
-    var killerSpawn: Location? = null
-    var timeMode: String = "dynamic"
+    override var slimeWorldName: String? = null
+    override var killerSpawn: Location? = null
+    override var timeMode: String = "dynamic"
 
     // Usamos MutableList de Kotlin (que compila a ArrayList en la JVM)
     // val asegura que la referencia a la lista no cambie, pero el contenido es mutable.
-    val survivorSpawns: MutableList<Location> = mutableListOf()
-    val generators: MutableList<Location> = mutableListOf()
+    override val survivorSpawns: MutableList<Location> = mutableListOf()
+    override val generators: MutableList<Location> = mutableListOf()
 
     /**
      * Añade un punto de spawn para survivors de forma segura.

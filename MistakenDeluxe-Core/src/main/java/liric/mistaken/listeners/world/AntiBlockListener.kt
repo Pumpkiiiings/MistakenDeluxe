@@ -34,7 +34,7 @@ class AntiBlockListener(private val plugin: Mistaken) : Listener {
 
         // 2. Proteger worlds de sesiones activas
         val loadedWorlds = plugin.server.worlds.map { it.name }
-        val arenaTemplates = plugin.arenaManager.getArenas().keys
+        val arenaTemplates = plugin.arenaManager.getArenas().map { it.name }
 
         for (worldName in loadedWorlds) {
             // Si el world es una arena dinámica (ASP), lo protegemos

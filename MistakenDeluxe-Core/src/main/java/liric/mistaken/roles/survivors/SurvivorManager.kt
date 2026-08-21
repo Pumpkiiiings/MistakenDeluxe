@@ -13,7 +13,7 @@ import liric.mistaken.config.engine.core.MessageService
 import liric.mistaken.roles.shared.AbstractRoleManager
 
 
-class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) {
+class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api.roles.ISurvivor>(plugin), liric.mistaken.api.managers.ISurvivorManager {
 
     init {
         // Registro de Classes (Singletons)
@@ -30,10 +30,12 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
         ).forEach { registerClass(it) }
     }
 
-    override fun registerClass(survivor: Survivor) {
-        val config = plugin.configManager.getSurvivorConfig(survivor.id)
-        if (config.getBoolean("enabled", true)) {
-            availableClasses[survivor.id.lowercase()] = survivor
+    override fun registerClass(role: liric.mistaken.api.roles.ISurvivor) {
+        if (role is Survivor) {
+            val config = plugin.configManager.getSurvivorConfig(role.id)
+            if (config.getBoolean("enabled", true)) {
+                availableClasses[role.id.lowercase()] = role
+            }
         }
     }
 
@@ -123,7 +125,7 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
 
     // --- GETTERS ---
     fun esSurvivorActivo(player: Player?): Boolean = player?.let { activeRoles.containsKey(it.uniqueId) } ?: false
-    fun getSurvivorClass(player: Player?): Survivor? = player?.let { activeRoles[it.uniqueId] }
-    fun getAvailableClasses(): Map<String, Survivor> = availableClasses
+    fun getSurvivorClass(player: Player?): Survivor? = player?.let { activeRoles[it.uniqueId] as? Survivor }
+    fun getAvailableClasses(): Map<String, Survivor> = availableClasses.mapValues { it.value as Survivor }
 }
 

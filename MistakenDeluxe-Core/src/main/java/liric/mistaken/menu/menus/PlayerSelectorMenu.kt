@@ -29,10 +29,24 @@ class PlayerSelectorMenu(private val plugin: Mistaken, private val session: Game
         val startSlot = config.getInt("menus.player_selector.start_slot", 19)
         val maxSlots = config.getInt("menus.player_selector.max_slots", 34)
         val backSlot = config.getInt("menus.player_selector.back_slot", 40)
+        
+        val nextSlot = config.getInt("menus.player_selector.next_slot", 41)
+        val prevSlot = config.getInt("menus.player_selector.prev_slot", 39)
+        val nextName = config.getString("menus.player_selector.items.next.name", "<green>Siguiente Página") ?: "<green>Siguiente Página"
+        val prevName = config.getString("menus.player_selector.items.prev.name", "<green>Página Anterior") ?: "<green>Página Anterior"
 
-        val gui = Gui.gui()
+        val playerSlots = mutableListOf<Int>()
+        var currentSlot = startSlot
+        while (currentSlot <= maxSlots) {
+            playerSlots.add(currentSlot)
+            currentSlot++
+            if (currentSlot == 26) currentSlot = 28
+        }
+
+        val gui = Gui.paginated()
             .title(ColorTranslator.translate("<!italic>$title"))
             .rows(rows)
+            .pageSize(playerSlots.size)
             .disableAllInteractions()
             .create()
 
@@ -40,12 +54,15 @@ class PlayerSelectorMenu(private val plugin: Mistaken, private val session: Game
             val fillerItem = ItemBuilder.from(fillerMat)
                 .name(ColorTranslator.translate(" "))
                 .asGuiItem()
-            gui.filler.fill(fillerItem)
+            for (i in 0 until (rows * 9)) {
+                if (i !in playerSlots) {
+                    gui.setItem(i, fillerItem)
+                }
+            }
         }
 
         val settings = session.settings ?: PrivateGameSettings().also { session.settings = it }
 
-        var slot = startSlot
         for (sessionPlayer in session.getPlayers()) {
             val name = sessionPlayer.name
             
@@ -95,11 +112,16 @@ class PlayerSelectorMenu(private val plugin: Mistaken, private val session: Game
                     }
                 }
 
-            gui.setItem(slot++, item)
-            // L�gica simple de filas (salta a la siguiente fila si llega al borde derecho asumiendo centrado est�ndar)
-            if (slot == 26) slot = 28
-            if (slot > maxSlots) break // Max players shown
+            gui.addItem(item)
         }
+
+        gui.setItem(nextSlot, ItemBuilder.from(Material.ARROW)
+            .name(ColorTranslator.translate("<!italic>$nextName"))
+            .asGuiItem { gui.next() })
+            
+        gui.setItem(prevSlot, ItemBuilder.from(Material.ARROW)
+            .name(ColorTranslator.translate("<!italic>$prevName"))
+            .asGuiItem { gui.previous() })
 
         gui.setItem(backSlot, ItemBuilder.from(Material.ARROW)
             .name(ColorTranslator.translate("<!italic>$backName"))

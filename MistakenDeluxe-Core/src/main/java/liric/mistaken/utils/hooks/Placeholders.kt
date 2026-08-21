@@ -48,7 +48,7 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
                 else {
                     val format = plugin.config.getString("visuals.vote-format", "<gray>-</gray> <white>{map}</white> <yellow>({votes})</yellow><newline>") ?: "<gray>-</gray> <white>{map}</white> <yellow>({votes})</yellow><newline>"
                     val builder = StringBuilder()
-                    arenas.keys.forEach { mapName ->
+                    arenas.map { it.name }.forEach { mapName ->
                         val votes = session?.voteManager?.getVotesForMap(mapName) ?: 0
                         builder.append(format.replace("{map}", mapName).replace("{votes}", votes.toString()))
                     }

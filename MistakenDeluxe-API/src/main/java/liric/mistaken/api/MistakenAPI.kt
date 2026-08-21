@@ -1,4 +1,4 @@
-﻿package liric.mistaken.api
+package liric.mistaken.api
 
 import liric.mistaken.api.managers.IKillerManager
 import liric.mistaken.api.managers.ISessionManager
@@ -21,6 +21,10 @@ interface MistakenAPI {
     val configManager: IConfigManager
     val playerDataManager: IPlayerDataManager
     val messages: IMessageService
+    val arenaManager: liric.mistaken.api.managers.IArenaManager
+    val survivorManager: liric.mistaken.api.managers.ISurvivorManager
+    val statsManager: liric.mistaken.api.managers.IStatsManager
+    
     val mm: MiniMessage
     val logger: Logger
 

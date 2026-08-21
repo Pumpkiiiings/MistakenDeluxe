@@ -176,7 +176,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
         return when (args.size) {
             1 -> listOf("create", "delete", "check", "setspawn", "setgenerator", "delgenerator", "settime")
                 .filter { it.startsWith(args[0], true) }
-            2 -> plugin.arenaManager.getArenas().keys
+            2 -> plugin.arenaManager.getArenas().map { it.name }
                 .filter { it.startsWith(args[1], true) }
             3 -> {
                 if (args[0].equals("setspawn", true)) {

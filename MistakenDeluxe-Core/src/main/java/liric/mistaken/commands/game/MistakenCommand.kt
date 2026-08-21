@@ -249,7 +249,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 if (clase == null) {
                     player.sendMessage(ColorTranslator.translate("<red>Esa clase no existe, bro."))
                 } else {
-                    plugin.survivorManager.registrarSurvivor(player, clase)
+                    plugin.survivorManager.registrarSurvivor(player, clase as liric.mistaken.roles.survivors.Survivor)
                 }
             }
 

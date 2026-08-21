@@ -176,7 +176,7 @@ class GamePlayerController(private val game: GameSession) {
                                     p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Civilian."))
                                 }
                                 val clase = game.plugin.survivorManager.getClassById(idElegido) ?: liric.mistaken.roles.survivors.classes.Civilian()
-                                game.plugin.survivorManager.registrarSurvivor(p, clase)
+                                game.plugin.survivorManager.registrarSurvivor(p, clase as liric.mistaken.roles.survivors.Survivor)
 
                                 if (game.currentMode == MistakenMode.ONE_BOUNCE) {
                                     p.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, 1, false, false, false))
