@@ -1,11 +1,11 @@
-﻿package liric.mistaken.models.core
+package liric.mistaken.models.core
 
 import org.bukkit.entity.Entity
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Representa un personaje en el juego (Killer, Survivor, NPC).
- * Es un contenedor puro (Registry) que delega la lÃ³gica a sus componentes.
+ * Es un contenedor puro (Registry) que delega la lógica a sus componentes.
  * 
  * @property entity La entidad de Bukkit asociada a este personaje (Player, Zombie, etc.)
  */
@@ -14,7 +14,7 @@ class Character(val entity: Entity) {
     private val components: MutableMap<Class<out CharacterComponent>, CharacterComponent> = ConcurrentHashMap()
 
     /**
-     * AÃ±ade un componente al personaje. Reemplaza si ya existÃ­a uno del mismo tipo.
+     * Añade un componente al personaje. Reemplaza si ya existía uno del mismo tipo.
      */
     fun <T : CharacterComponent> addComponent(type: Class<T>, component: T) {
         
@@ -33,7 +33,7 @@ class Character(val entity: Entity) {
     }
 
     /**
-     * Comprueba si el personaje tiene un componente especÃ­fico.
+     * Comprueba si el personaje tiene un componente específico.
      */
     fun hasComponent(type: Class<out CharacterComponent>): Boolean {
         return components.containsKey(type)
@@ -47,7 +47,7 @@ class Character(val entity: Entity) {
     }
 
     /**
-     * Llama al mÃ©todo tick() de todos los componentes.
+     * Llama al método tick() de todos los componentes.
      */
     fun tick() {
         for (component in components.values) {

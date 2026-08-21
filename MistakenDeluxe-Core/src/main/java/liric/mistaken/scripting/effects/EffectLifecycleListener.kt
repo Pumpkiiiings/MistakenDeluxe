@@ -18,7 +18,7 @@ class EffectLifecycleListener(private val plugin: Mistaken) : Listener {
     fun onPlayerQuit(event: PlayerQuitEvent) {
         val uuid = event.player.uniqueId
         EffectRegistry.stopAll(uuid)
-        liric.mistaken.roles.killers.triggers.traps.WorldTrapRegistry.cleanupByOwner(uuid)
+        liric.mistaken.roles.common.triggers.traps.WorldTrapRegistry.cleanupByOwner(uuid)
         liric.mistaken.scripting.effects.gameplay.PlayerStateRegistry.clearAllForPlayer(uuid)
     }
 
@@ -26,7 +26,7 @@ class EffectLifecycleListener(private val plugin: Mistaken) : Listener {
     fun onPlayerDeath(event: PlayerDeathEvent) {
         val uuid = event.player.uniqueId
         EffectRegistry.stopAll(uuid)
-        liric.mistaken.roles.killers.triggers.traps.WorldTrapRegistry.cleanupByOwner(uuid)
+        liric.mistaken.roles.common.triggers.traps.WorldTrapRegistry.cleanupByOwner(uuid)
         liric.mistaken.scripting.effects.gameplay.PlayerStateRegistry.clearAllForPlayer(uuid)
     }
 }

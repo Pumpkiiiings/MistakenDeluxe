@@ -19,15 +19,57 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
         
         
         listOf(
-            Civilian(),
             DeliveryMan(),
             Minty(),
             RaincoatKid(),
             Jesse(),
             Villager(),
-            Notch(),
-            Troll()
+            Notch()
         ).forEach { registerClass(it) }
+
+        loadScripts()
+    }
+
+    fun reloadAll() {
+        cleanAll()
+        availableClasses.clear()
+        listOf(
+            DeliveryMan(),
+            Minty(),
+            RaincoatKid(),
+            Jesse(),
+            Villager(),
+            Notch()
+        ).forEach { registerClass(it) }
+        loadScripts()
+    }
+
+    fun loadScripts() {
+        val scriptsFolder = java.io.File(plugin.dataFolder, "scripts/survivors")
+        if (!scriptsFolder.exists()) {
+            scriptsFolder.mkdirs()
+        }
+
+        val files = scriptsFolder.listFiles() ?: return
+        var loadedCount = 0
+        for (file in files) {
+            if (file.name.endsWith(".lua")) {
+                val survivorId = file.nameWithoutExtension.lowercase()
+                val scriptRole = liric.mistaken.scripting.engine.lua.LuaScriptEngine.loadScript(file, survivorId)
+                if (scriptRole != null) {
+                    val luaAdapter = liric.mistaken.scripting.adapter.LuaSurvivorAdapter(
+                        id = survivorId,
+                        nombre = survivorId.replaceFirstChar { it.uppercase() },
+                        scriptRole = scriptRole
+                    )
+                    registerClass(luaAdapter)
+                    loadedCount++
+                }
+            }
+        }
+        if (loadedCount > 0) {
+            plugin.componentLogger.info(ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Loaded $loadedCount survivors from scripts.</gray>"))
+        }
     }
 
     override fun registerClass(role: liric.mistaken.api.roles.ISurvivor) {

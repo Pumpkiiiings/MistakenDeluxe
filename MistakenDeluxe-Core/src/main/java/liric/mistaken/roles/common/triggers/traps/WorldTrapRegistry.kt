@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.triggers.traps
+package liric.mistaken.roles.common.triggers.traps
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.event.PacketListenerAbstract

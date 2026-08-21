@@ -1,4 +1,4 @@
-﻿package liric.mistaken.listeners.killers
+package liric.mistaken.listeners.killers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -29,7 +29,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
     private val lastAttackMap = java.util.concurrent.ConcurrentHashMap<java.util.UUID, Long>()
 
     /**
-     * Trigger: Ataque bÃ¡sico (Click Izquierdo).
+     * Trigger: Ataque básico (Click Izquierdo).
      */
     @EventHandler(priority = EventPriority.HIGH)
     fun onBasicAttack(event: PlayerInteractEvent) {
@@ -64,7 +64,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * Trigger: Ataque a entidad (DaÃ±o cuerpo a cuerpo).
+     * Trigger: Ataque a entidad (Daño cuerpo a cuerpo).
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun onEntityAttack(event: org.bukkit.event.entity.EntityDamageByEntityEvent) {

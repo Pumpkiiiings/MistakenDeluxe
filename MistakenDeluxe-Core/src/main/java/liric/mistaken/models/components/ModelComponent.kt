@@ -1,10 +1,10 @@
-﻿package liric.mistaken.models.components
+package liric.mistaken.models.components
 
 import liric.mistaken.models.core.CharacterComponent
 
 /**
  * Componente base para manejar el modelo visual de un personaje.
- * Este componente aÃ­sla la integraciÃ³n directa con engines de modelos (como BetterModel).
+ * Este componente aísla la integración directa con engines de modelos (como BetterModel).
  */
 interface ModelComponent : CharacterComponent {
     
@@ -29,13 +29,13 @@ interface ModelComponent : CharacterComponent {
     fun setScale(scale: Float)
     
     /**
-     * Aplica un color/tinte al modelo (Ãºtil para efectos de daÃ±o).
+     * Aplica un color/tinte al modelo (útil para efectos de daño).
      * @param rgb El color en formato RGB, o null para remover el tinte.
      */
     fun setTint(rgb: Int?)
     
     /**
-     * Fuerza una actualizaciÃ³n visual (si el engine subyacente lo requiere).
+     * Fuerza una actualización visual (si el engine subyacente lo requiere).
      */
     fun forceUpdate()
 }

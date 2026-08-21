@@ -1,4 +1,4 @@
-﻿package liric.mistaken.scripting.effects.lua
+package liric.mistaken.scripting.effects.lua
 
 import liric.mistaken.scripting.api.HasLocation
 import liric.mistaken.scripting.adapter.BukkitPlayerAdapter
@@ -14,8 +14,8 @@ import liric.mistaken.scripting.effects.music.AmbientMusicEffect
 import liric.mistaken.scripting.effects.gameplay.FinisherEngine
 import liric.mistaken.scripting.effects.gameplay.PlayerStateRegistry
 import liric.mistaken.scripting.effects.gameplay.ChatInterceptorRegistry
-import liric.mistaken.roles.killers.triggers.traps.WorldTrapRegistry
-import liric.mistaken.roles.killers.triggers.traps.TrapDefinition
+import liric.mistaken.roles.common.triggers.traps.WorldTrapRegistry
+import liric.mistaken.roles.common.triggers.traps.TrapDefinition
 import liric.mistaken.scripting.effects.gameplay.LineSpawnEffect
 import liric.mistaken.scripting.effects.gameplay.SequenceEffect
 import liric.mistaken.scripting.effects.gameplay.BaitTrapEffect
@@ -46,26 +46,26 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 
 /**
  * Registra TODAS las funciones DSL en el sandbox Globals de un script.
- * Cada funciÃ³n recibe ScriptPlayer (userdata) y devuelve LuaTable builders con sintaxis ':'.
+ * Cada función recibe ScriptPlayer (userdata) y devuelve LuaTable builders con sintaxis ':'.
  *
  * SEGURIDAD: Lua nunca ve Player/Location/World directos. Los builders unwrapean
  * internamente via BukkitPlayerAdapter.getPlayer() (internal).
  *
  * FOLIA: Cada efecto posee su propio ScheduledTask. Los callbacks de on_hit
- * se ejecutan en el entity scheduler de la vÃ­ctima.
+ * se ejecutan en el entity scheduler de la víctima.
  *
- * CONVENCIÃ“N DE BUILDERS:
+ * CONVENCIÓN DE BUILDERS:
  * - Builders atados a player (orbit, trail, dash, projectile, line_spawn,
  *   temp_fly, reveal_targets, ambient_music): reciben solo (player), porque
- *   el efecto se mueve con el player y su lifecycle estÃ¡ atado al entity scheduler.
+ *   el efecto se mueve con el player y su lifecycle está atado al entity scheduler.
  * - Builders de world (bait_trap, formation, sinking_block, spiral_particle,
  *   place_trap, proximity_trap, sequence): reciben (player, loc) como los dos
- *   primeros argumentos, para ownership â€” player provee scriptId/ownerUuid para
- *   registrarse en EffectRegistry con cleanup automÃ¡tico (quit/death/reload),
- *   y loc define la posiciÃ³n fija del efecto en el world.
- * - Funciones globales de ubicaciÃ³n (sound, particle_burst): reciben cualquier
+ *   primeros argumentos, para ownership — player provee scriptId/ownerUuid para
+ *   registrarse en EffectRegistry con cleanup automático (quit/death/reload),
+ *   y loc define la posición fija del efecto en el world.
+ * - Funciones globales de ubicación (sound, particle_burst): reciben cualquier
  *   objeto que implemente HasLocation como primer argumento (player, location,
- *   o cualquier wrapper futuro con sentido de ubicaciÃ³n).
+ *   o cualquier wrapper futuro con sentido de ubicación).
  */
 object LuaEffectBindings {
 
@@ -529,6 +529,24 @@ object LuaEffectBindings {
         })
 
         
+        globals.set("is_enemy", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, victimArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.FALSE
+                val victim = unwrapPlayer(victimArg) ?: return LuaValue.FALSE
+                return LuaValue.valueOf(GameplayFunctions.isEnemy(player, victim))
+            }
+        })
+
+        
+        globals.set("is_ally", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, victimArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.FALSE
+                val victim = unwrapPlayer(victimArg) ?: return LuaValue.FALSE
+                return LuaValue.valueOf(GameplayFunctions.isAlly(player, victim))
+            }
+        })
+
+        
         globals.set("is_valid_target", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, victimArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.FALSE
@@ -560,6 +578,26 @@ object LuaEffectBindings {
                 val radius = radiusArg.optdouble(10.0)
                 val players = GameplayFunctions.nearbyPlayers(player, radius)
                 return playersToLuaTable(players)
+            }
+        })
+
+        
+        globals.set("nearby_enemies", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, radiusArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaTable()
+                val radius = radiusArg.optdouble(10.0)
+                val targets = GameplayFunctions.nearbyEnemies(player, radius)
+                return playersToLuaTable(targets)
+            }
+        })
+
+        
+        globals.set("nearby_allies", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, radiusArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaTable()
+                val radius = radiusArg.optdouble(10.0)
+                val targets = GameplayFunctions.nearbyAllies(player, radius)
+                return playersToLuaTable(targets)
             }
         })
 
@@ -733,11 +771,111 @@ object LuaEffectBindings {
                 return LuaValue.NIL
             }
         })
+
+        globals.set("hide_equipment", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, durationArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                val duration = durationArg.checkint()
+                GameplayFunctions.hideEquipment(player, duration)
+                return LuaValue.NIL
+            }
+        })
+
+        globals.set("fake_player", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
+                val loc = if (args.narg() >= 2) unwrapLocation(args.arg(2)) ?: player.location else player.location
+                return buildFakePlayerTable(scriptId, player, loc)
+            }
+        })
     }
 
     
     
     
+
+    private fun buildFakePlayerTable(scriptId: String, owner: Player, loc: Location): LuaTable {
+        val t = LuaTable()
+        var copyAppearanceFrom: Player? = null
+        var copyEquipmentFrom: Player? = null
+        var durationTicks = 600
+        var enableAi = false
+        var fleeRadius: Double? = null
+        var fleeCatchRadius: Double? = null
+        var onCaughtCallback: LuaValue = LuaValue.NIL
+        var onExpireCallback: LuaValue = LuaValue.NIL
+
+        t.set("copy_appearance", TwoArg(t) { _, v ->
+            copyAppearanceFrom = unwrapPlayer(v)
+        })
+        
+        t.set("copy_equipment", TwoArg(t) { _, v ->
+            copyEquipmentFrom = unwrapPlayer(v)
+        })
+        
+        t.set("duration", TwoArg(t) { _, v ->
+            durationTicks = v.checkint().coerceIn(1, 6000)
+        })
+        
+        t.set("enable_ai", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val b = if (args.narg() >= 2) args.arg(2).optboolean(true) else true
+                enableAi = b
+                return args.arg(1)
+            }
+        })
+        
+        t.set("flee_from_enemies", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                fleeRadius = args.arg(2).checkdouble()
+                fleeCatchRadius = args.arg(3).checkdouble()
+                if (args.narg() >= 4) {
+                    onCaughtCallback = args.arg(4)
+                }
+                return args.arg(1)
+            }
+        })
+        
+        t.set("on_expire", TwoArg(t) { _, v ->
+            onExpireCallback = v
+        })
+        
+        t.set("spawn", object : OneArgFunction() {
+            override fun call(self: LuaValue): LuaValue {
+                val caughtCb: ((Location) -> Unit)? = if (onCaughtCallback.isfunction()) {
+                    { caughtLoc: Location ->
+                        val adapter = BukkitLocationAdapter(caughtLoc)
+                        onCaughtCallback.call(CoerceJavaToLua.coerce(adapter))
+                    }
+                } else null
+
+                val expireCb: ((Location) -> Unit)? = if (onExpireCallback.isfunction()) {
+                    { expireLoc: Location ->
+                        val adapter = BukkitLocationAdapter(expireLoc)
+                        onExpireCallback.call(CoerceJavaToLua.coerce(adapter))
+                    }
+                } else null
+
+                val effect = liric.mistaken.scripting.effects.gameplay.FakePlayerEffect(
+                    scriptId = scriptId,
+                    ownerUuid = owner.uniqueId,
+                    location = loc,
+                    copyAppearanceFrom = copyAppearanceFrom,
+                    copyEquipmentFrom = copyEquipmentFrom,
+                    durationTicks = durationTicks,
+                    enableAi = enableAi,
+                    fleeRadius = fleeRadius,
+                    fleeCatchRadius = fleeCatchRadius,
+                    onCaughtCallback = caughtCb,
+                    onExpireCallback = expireCb
+                )
+                effect.start()
+                EffectRegistry.register(effect)
+                return buildHandle(effect)
+            }
+        })
+        return t
+    }
 
     private fun buildOrbitTable(scriptId: String, player: Player): LuaTable {
         val t = LuaTable()
@@ -1304,7 +1442,7 @@ object LuaEffectBindings {
         return t
     }
 
-    /** Unwraps BukkitPlayerAdapter userdata â†’ Player */
+    /** Unwraps BukkitPlayerAdapter userdata → Player */
     private fun unwrapPlayer(luaVal: LuaValue): Player? {
         if (luaVal.isnil()) return null
         return try {
@@ -1313,7 +1451,7 @@ object LuaEffectBindings {
         } catch (_: Exception) { null }
     }
 
-    /** Unwraps BukkitLocationAdapter userdata â†’ Location */
+    /** Unwraps BukkitLocationAdapter userdata → Location */
     private fun unwrapLocation(luaVal: LuaValue): Location? {
         if (luaVal.isnil()) return null
         return try {
@@ -1323,7 +1461,7 @@ object LuaEffectBindings {
     }
 
     /**
-     * Unwraps cualquier userdata que implemente HasLocation â†’ Location.
+     * Unwraps cualquier userdata que implemente HasLocation → Location.
      * Funciona con BukkitPlayerAdapter, BukkitLocationAdapter, y cualquier
      * wrapper futuro que implemente la interfaz.
      */

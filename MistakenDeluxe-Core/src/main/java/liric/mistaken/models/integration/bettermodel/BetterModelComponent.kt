@@ -1,4 +1,4 @@
-﻿package liric.mistaken.models.integration.bettermodel
+package liric.mistaken.models.integration.bettermodel
 
 import kr.toxicity.model.api.BetterModel
 import kr.toxicity.model.api.bukkit.platform.BukkitAdapter
@@ -8,7 +8,7 @@ import liric.mistaken.models.components.ModelComponent
 import liric.mistaken.models.core.Character
 
 /**
- * ImplementaciÃ³n de ModelComponent utilizando BetterModel.
+ * Implementación de ModelComponent utilizando BetterModel.
  */
 class BetterModelComponent(override val modelId: String) : ModelComponent {
 

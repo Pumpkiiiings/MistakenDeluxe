@@ -1,4 +1,4 @@
-﻿package liric.mistaken.models.components.impl
+package liric.mistaken.models.components.impl
 
 import liric.mistaken.models.components.MovementComponent
 import liric.mistaken.models.components.StateComponent
@@ -12,9 +12,9 @@ import org.bukkit.entity.Player
 import kotlin.math.sqrt
 
 /**
- * ImplementaciÃ³n de MovementComponent para Bukkit.
- * Calcula el movimiento basÃ¡ndose en deltas de posiciÃ³n durante el tick(),
- * lo cual es mÃ¡s eficiente que usar PlayerMoveEvent.
+ * Implementación de MovementComponent para Bukkit.
+ * Calcula el movimiento basándose en deltas de posición durante el tick(),
+ * lo cual es más eficiente que usar PlayerMoveEvent.
  */
 class BukkitMovementComponent : MovementComponent {
 

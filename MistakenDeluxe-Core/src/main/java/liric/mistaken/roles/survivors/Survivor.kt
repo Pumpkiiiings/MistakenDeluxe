@@ -5,6 +5,7 @@ import liric.mistaken.Mistaken
 import org.bukkit.entity.Player
 import java.util.concurrent.ConcurrentHashMap
 import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.roles.common.triggers.TriggerRegistry
 
 import liric.mistaken.api.roles.GameRole
 
@@ -14,6 +15,7 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
     protected val plugin = Mistaken.instance
     protected val mm = plugin.mm
 
+    val triggerRegistry = TriggerRegistry(this.id)
     
     private val cooldowns = ConcurrentHashMap<String, Long>()
 
@@ -29,8 +31,8 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
     }
 
     /**
-     * Verifica el enfriamiento de una ability y env�a feedback visual.
-     * @return true si a�n est� en cooldown, false si se puede usar.
+     * Verifica el enfriamiento de una ability y enva feedback visual.
+     * @return true si an est en cooldown, false si se puede usar.
      */
     fun checkCooldown(player: Player, slot: Int, seconds: Int): Boolean {
         if (seconds <= 0) return false
@@ -51,7 +53,7 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
     }
 
     /**
-     * Registra una corrutina (Job) para ser cancelada autom�ticamente al finalizar la partida.
+     * Registra una corrutina (Job) para ser cancelada automticamente al finalizar la partida.
      */
     protected fun trackJob(job: Job) {
         activeJobs.add(job)
@@ -64,6 +66,8 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
         activeJobs.clear()
 
         player?.let { p ->
+            triggerRegistry.clearCooldowns(p.uniqueId)
+            
             if (p.isOnline) {
                 
                 p.inventory.clear()
@@ -82,7 +86,7 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
         }
     }
 
-    
+    open fun onTrigger(player: Player, triggerId: String) {}
 
     abstract override fun equip(player: Player)
     abstract override fun useSkill(player: Player, slot: Int)

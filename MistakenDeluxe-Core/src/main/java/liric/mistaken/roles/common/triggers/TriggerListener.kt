@@ -1,8 +1,9 @@
-package liric.mistaken.roles.killers.triggers
+package liric.mistaken.roles.common.triggers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.roles.killers.CoreKiller
+import liric.mistaken.roles.survivors.Survivor
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -19,28 +20,49 @@ import org.bukkit.inventory.EquipmentSlot
 
 class TriggerListener(private val plugin: Mistaken) : Listener {
 
-    private fun getActiveKiller(player: Player): CoreKiller? {
+    private fun getActiveRole(player: Player): Any? {
         val session = plugin.sessionManager.getSession(player) ?: return null
         if (session.currentState != GameState.INGAME) return null
-        if (!session.isKiller(player.uniqueId)) return null
         if (player.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(player)) return null
 
-        val killer = plugin.killerManager.getKillerOfPlayer(player) ?: return null
-        return killer as? CoreKiller
+        if (session.isKiller(player.uniqueId)) {
+            val killer = plugin.killerManager.getKillerOfPlayer(player)
+            return killer as? CoreKiller
+        } else if (!session.isKiller(player.uniqueId)) {
+            val survivor = plugin.survivorManager.getSurvivorClass(player)
+            return survivor as? Survivor
+        }
+        return null
+    }
+
+    private fun getTriggerRegistry(role: Any): TriggerRegistry? {
+        return when (role) {
+            is CoreKiller -> role.triggerRegistry
+            is Survivor -> role.triggerRegistry
+            else -> null
+        }
+    }
+
+    private fun fireTrigger(role: Any, player: Player, triggerId: String) {
+        when (role) {
+            is CoreKiller -> role.onTrigger(player, triggerId)
+            is Survivor -> role.onTrigger(player, triggerId)
+        }
     }
 
     private fun handleInput(player: Player, input: InputTrigger): Boolean {
-        val killer = getActiveKiller(player) ?: return false
+        val role = getActiveRole(player) ?: return false
+        val registry = getTriggerRegistry(role) ?: return false
         
-        val triggers = killer.triggerRegistry.getTriggersForInput(input)
+        val triggers = registry.getTriggersForInput(input)
         if (triggers.isEmpty()) return false
 
         var handled = false
         for (trigger in triggers) {
-            if (!killer.triggerRegistry.checkCooldown(player, trigger.triggerId, trigger.cooldownSeconds)) {
+            if (!registry.checkCooldown(player, trigger.triggerId, trigger.cooldownSeconds)) {
                 
                 plugin.server.scheduler.runTask(plugin, Runnable {
-                    killer.onTrigger(player, trigger.triggerId)
+                    fireTrigger(role, player, trigger.triggerId)
                 })
                 handled = true
             } else {
@@ -60,7 +82,7 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         if (!event.action.isRightClick) return
 
         val player = event.player
-        val killer = getActiveKiller(player) ?: return
+        val role = getActiveRole(player) ?: return
         
         
         
@@ -108,8 +130,6 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         val attacker = event.damager as? Player ?: return
         val victim = event.entity as? Player ?: return
 
-        val killer = getActiveKiller(attacker) ?: return
-        
         if (liric.mistaken.scripting.effects.gameplay.GameplayFunctions.isValidTarget(attacker, victim)) {
             handleInput(attacker, InputTrigger.ATTACK)
             
@@ -129,30 +149,32 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
     @EventHandler(priority = EventPriority.HIGH)
     fun onChat(event: AsyncPlayerChatEvent) {
         val player = event.player
-        val killer = getActiveKiller(player) ?: return
-
+        val role = getActiveRole(player) ?: return
+        val registry = getTriggerRegistry(role) ?: return
         
-        val triggers = killer.triggerRegistry.getTriggersForInput(InputTrigger.CHAT_MESSAGE)
+        val triggers = registry.getTriggersForInput(InputTrigger.CHAT_MESSAGE)
         for (trigger in triggers) {
-            if (!killer.triggerRegistry.checkCooldown(player, trigger.triggerId, trigger.cooldownSeconds)) {
+            if (!registry.checkCooldown(player, trigger.triggerId, trigger.cooldownSeconds)) {
                 
                 plugin.server.scheduler.runTask(plugin, Runnable {
-                    killer.onTrigger(player, trigger.triggerId)
+                    fireTrigger(role, player, trigger.triggerId)
                 })
             }
         }
 
         
-        val rewritten = killer.onInterceptChat(player, event.message)
-        if (rewritten != null) {
-            event.isCancelled = true
-            
-            
-            plugin.server.scheduler.runTask(plugin, Runnable {
-                plugin.server.onlinePlayers.forEach { p ->
-                    p.sendMessage(rewritten)
-                }
-            })
+        if (role is CoreKiller) {
+            val rewritten = role.onInterceptChat(player, event.message)
+            if (rewritten != null) {
+                event.isCancelled = true
+                
+                
+                plugin.server.scheduler.runTask(plugin, Runnable {
+                    plugin.server.onlinePlayers.forEach { p ->
+                        p.sendMessage(rewritten)
+                    }
+                })
+            }
         }
     }
 
@@ -162,10 +184,10 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         val victim = event.entity as? Player ?: return
 
         if (victim.gameMode == GameMode.SPECTATOR) {
-            val killer = getActiveKiller(attacker) ?: return
-            
-            
-            killer.onKill(attacker, victim)
+            val role = getActiveRole(attacker)
+            if (role is CoreKiller) {
+                role.onKill(attacker, victim)
+            }
         }
     }
 }

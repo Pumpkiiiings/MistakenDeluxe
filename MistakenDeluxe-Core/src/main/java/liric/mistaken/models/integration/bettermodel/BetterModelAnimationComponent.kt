@@ -1,4 +1,4 @@
-﻿package liric.mistaken.models.integration.bettermodel
+package liric.mistaken.models.integration.bettermodel
 
 import kr.toxicity.model.api.animation.AnimationIterator
 import kr.toxicity.model.api.animation.AnimationModifier
@@ -7,7 +7,7 @@ import liric.mistaken.models.components.ModelComponent
 import liric.mistaken.models.core.Character
 
 /**
- * ImplementaciÃ³n de AnimationComponent utilizando BetterModel.
+ * Implementación de AnimationComponent utilizando BetterModel.
  */
 class BetterModelAnimationComponent : AnimationComponent {
 

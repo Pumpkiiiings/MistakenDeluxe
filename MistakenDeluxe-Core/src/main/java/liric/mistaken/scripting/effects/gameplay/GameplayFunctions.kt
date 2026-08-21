@@ -60,23 +60,65 @@ object GameplayFunctions {
     }
 
     /**
-     * Devuelve players cercanos que sean válidos como target.
-     * Usa la misma lógica que CoreKiller.isValidTarget.
+     * Devuelve players cercanos que son enemigos del caster.
      */
-    fun nearbyValidTargets(player: Player, radius: Double): List<Player> {
-        return nearbyPlayers(player, radius).filter { isValidTarget(player, it) }
+    fun nearbyEnemies(player: Player, radius: Double): List<Player> {
+        return nearbyPlayers(player, radius).filter { isEnemy(player, it) }
     }
 
     /**
-     * Comprueba si un player es un objetivo válido.
-     * Lógica: el target debe estar en SURVIVAL, no ser espectador, y no ser killer.
+     * Devuelve players cercanos que son aliados del caster.
      */
-    fun isValidTarget(player: Player, target: Player): Boolean {
-        if (target.uniqueId == player.uniqueId) return false
+    fun nearbyAllies(player: Player, radius: Double): List<Player> {
+        return nearbyPlayers(player, radius).filter { isAlly(player, it) }
+    }
+
+    /**
+     * Comprueba si un target es enemigo del caster.
+     * Si el caster es Killer, los enemigos son los Survivors.
+     * Si el caster es Survivor, los enemigos son los Killers.
+     */
+    fun isEnemy(caster: Player, target: Player): Boolean {
+        if (target.uniqueId == caster.uniqueId) return false
         if (target.gameMode != GameMode.SURVIVAL) return false
         if (!target.isOnline) return false
-        
-        return !plugin.killerManager.isKiller(target)
+
+        val session = plugin.sessionManager.getSession(caster) ?: return false
+        val casterIsKiller = session.isKiller(caster.uniqueId)
+        val targetIsKiller = session.isKiller(target.uniqueId)
+
+        return casterIsKiller != targetIsKiller
+    }
+
+    /**
+     * Comprueba si un target es aliado del caster.
+     * Si el caster es Killer, los aliados son otros Killers.
+     * Si el caster es Survivor, los aliados son otros Survivors.
+     */
+    fun isAlly(caster: Player, target: Player): Boolean {
+        if (target.uniqueId == caster.uniqueId) return false
+        if (target.gameMode != GameMode.SURVIVAL) return false
+        if (!target.isOnline) return false
+
+        val session = plugin.sessionManager.getSession(caster) ?: return false
+        val casterIsKiller = session.isKiller(caster.uniqueId)
+        val targetIsKiller = session.isKiller(target.uniqueId)
+
+        return casterIsKiller == targetIsKiller
+    }
+
+    /**
+     * @deprecated Use nearbyEnemies() en su lugar.
+     */
+    fun nearbyValidTargets(player: Player, radius: Double): List<Player> {
+        return nearbyEnemies(player, radius)
+    }
+
+    /**
+     * @deprecated Use isEnemy() en su lugar.
+     */
+    fun isValidTarget(player: Player, target: Player): Boolean {
+        return isEnemy(player, target)
     }
 
     /**
@@ -123,5 +165,28 @@ object GameplayFunctions {
             val particle = org.bukkit.Particle.valueOf(particleName.uppercase())
             location.world?.spawnParticle(particle, location, count, offsetX, offsetY, offsetZ, speed)
         } catch (_: Exception) {}
+    }
+
+    /**
+     * Oculta temporalmente la armadura y los objetos en mano del jugador
+     * vaciando su inventario y restaurándolos tras la duración especificada.
+     */
+    fun hideEquipment(player: Player, durationTicks: Int) {
+        val armor = player.inventory.armorContents.clone()
+        val offHand = player.inventory.itemInOffHand.clone()
+        val mainHand = player.inventory.itemInMainHand.clone()
+        
+        player.inventory.armorContents = arrayOfNulls(4)
+        player.inventory.setItemInOffHand(null)
+        player.inventory.setItemInMainHand(null)
+        
+        plugin.server.regionScheduler.runDelayed(plugin, player.location, { _ ->
+            if (player.isOnline) {
+                player.inventory.armorContents = armor
+                player.inventory.setItemInOffHand(offHand)
+                player.inventory.setItemInMainHand(mainHand)
+                player.updateInventory()
+            }
+        }, durationTicks.toLong())
     }
 }

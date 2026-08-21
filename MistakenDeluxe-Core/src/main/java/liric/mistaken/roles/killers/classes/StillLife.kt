@@ -81,14 +81,14 @@ class StillLife : CoreKiller(
                 
                 val targetLoc = player.location.add(player.location.direction.multiply(2.0)).block.location
                 
-                val trap = liric.mistaken.roles.killers.triggers.traps.TrapDefinition(
+                val trap = liric.mistaken.roles.common.triggers.traps.TrapDefinition(
                     ownerUuid = player.uniqueId,
                     killerId = this.id,
                     location = targetLoc
                 ) { survivor, trapLoc ->
                     handleFakeGeneratorTrap(survivor, trapLoc, player.uniqueId)
                 }
-                liric.mistaken.roles.killers.triggers.traps.WorldTrapRegistry.registerTrap(trap)
+                liric.mistaken.roles.common.triggers.traps.WorldTrapRegistry.registerTrap(trap)
                 
                 val blockState = io.github.retrooper.packetevents.util.SpigotConversionUtil.fromBukkitBlockData(Material.RAW_IRON_BLOCK.createBlockData())
                 val packet = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockChange(
@@ -170,7 +170,7 @@ class StillLife : CoreKiller(
     }
 
     private fun handleFakeGeneratorTrap(survivor: Player, loc: Location, killerUuid: UUID) {
-        liric.mistaken.roles.killers.triggers.traps.WorldTrapRegistry.unregisterTrap(loc)
+        liric.mistaken.roles.common.triggers.traps.WorldTrapRegistry.unregisterTrap(loc)
         
         val airState = io.github.retrooper.packetevents.util.SpigotConversionUtil.fromBukkitBlockData(Material.AIR.createBlockData())
         val packet = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockChange(

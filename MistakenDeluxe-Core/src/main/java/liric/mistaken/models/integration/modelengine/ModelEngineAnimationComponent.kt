@@ -1,4 +1,4 @@
-﻿package liric.mistaken.models.integration.modelengine
+package liric.mistaken.models.integration.modelengine
 
 import liric.mistaken.models.components.AnimationComponent
 import liric.mistaken.models.components.ModelComponent
@@ -6,7 +6,7 @@ import liric.mistaken.models.core.Character
 import org.bukkit.Bukkit
 
 /**
- * ImplementaciÃ³n de AnimationComponent utilizando ModelEngine 4.1.0.
+ * Implementación de AnimationComponent utilizando ModelEngine 4.1.0.
  */
 class ModelEngineAnimationComponent : AnimationComponent {
 

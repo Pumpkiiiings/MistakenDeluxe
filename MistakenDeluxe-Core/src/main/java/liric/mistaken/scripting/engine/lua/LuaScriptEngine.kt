@@ -2,7 +2,7 @@ package liric.mistaken.scripting.engine.lua
 
 import liric.mistaken.scripting.api.ScriptContext
 import liric.mistaken.scripting.api.ScriptEvent
-import liric.mistaken.scripting.api.ScriptKiller
+import liric.mistaken.scripting.api.ScriptRole
 import liric.mistaken.scripting.api.ScriptPlayer
 import org.bukkit.Bukkit
 import org.luaj.vm2.Globals
@@ -17,11 +17,11 @@ object LuaScriptEngine {
     /**
      * Carga y aísla un script Lua desde un archivo.
      */
-    fun loadScript(file: File, killerId: String): ScriptKiller? {
+    fun loadScript(file: File, scriptId: String): ScriptRole? {
         if (!file.exists() || !file.name.endsWith(".lua")) return null
 
         try {
-            val env = LuaSandbox.createEnvironment(killerId)
+            val env = LuaSandbox.createEnvironment(scriptId)
             val chunk = env.globals.loadfile(file.absolutePath)
             val result = chunk.call()
             
@@ -30,7 +30,7 @@ object LuaScriptEngine {
                 return null
             }
             
-            return LuaKillerWrapper(killerId, result, env)
+            return LuaRoleWrapper(scriptId, result, env)
             
         } catch (e: Exception) {
             Bukkit.getLogger().severe("[Mistaken Script Engine] Error cargando Lua script ${file.name}: ${e.message}")
@@ -40,11 +40,11 @@ object LuaScriptEngine {
     }
 }
 
-class LuaKillerWrapper(
+class LuaRoleWrapper(
     private val id: String,
     private val luaTable: LuaValue,
     private val env: LuaEnvironment
-) : ScriptKiller {
+) : ScriptRole {
 
     override fun id(): String = id
 

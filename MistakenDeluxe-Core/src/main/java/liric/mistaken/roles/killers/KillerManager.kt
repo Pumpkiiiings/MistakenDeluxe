@@ -25,8 +25,8 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.api.event.LuaKillerEventDispatcher(plugin), plugin)
         plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.effects.EffectLifecycleListener(plugin), plugin)
         plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.effects.gameplay.FinisherEngine, plugin)
-        plugin.server.pluginManager.registerEvents(liric.mistaken.roles.killers.triggers.TriggerListener(plugin), plugin)
-        liric.mistaken.roles.killers.triggers.traps.WorldTrapRegistry.init(plugin)
+        plugin.server.pluginManager.registerEvents(liric.mistaken.roles.common.triggers.TriggerListener(plugin), plugin)
+        liric.mistaken.roles.common.triggers.traps.WorldTrapRegistry.init(plugin)
         reloadAll()
     }
 
@@ -46,7 +46,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
     }
 
     fun loadScripts() {
-        val scriptsFolder = java.io.File(plugin.dataFolder, "characters/scripts")
+        val scriptsFolder = java.io.File(plugin.dataFolder, "scripts/killers")
         if (!scriptsFolder.exists()) {
             scriptsFolder.mkdirs()
         }
@@ -56,7 +56,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             val defaults = listOf("slasher", "herobrine", "romeo", "entity303", "colorandelectricity", "null", "tinkywinky")
             for (script in defaults) {
                 if (!java.io.File(scriptsFolder, "$script.lua").exists() && !java.io.File(scriptsFolder, "$script.groovy").exists()) {
-                    plugin.saveResource("characters/scripts/$script.lua", false)
+                    plugin.saveResource("scripts/killers/$script.lua", false)
                 }
             }
         } catch (e: Exception) {
@@ -74,13 +74,13 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                 }
             } else if (file.name.endsWith(".lua")) {
                 val killerId = file.nameWithoutExtension.lowercase()
-                val scriptKiller = liric.mistaken.scripting.engine.lua.LuaScriptEngine.loadScript(file, killerId)
-                if (scriptKiller != null) {
+                val scriptRole = liric.mistaken.scripting.engine.lua.LuaScriptEngine.loadScript(file, killerId)
+                if (scriptRole != null) {
                     
                     val luaAdapter = liric.mistaken.scripting.adapter.LuaKillerAdapter(
                         id = killerId,
                         nombre = killerId.replaceFirstChar { it.uppercase() },
-                        scriptKiller = scriptKiller
+                        scriptRole = scriptRole
                     )
                     registerClass(luaAdapter)
                     loadedCount++
@@ -229,7 +229,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             KillerScriptEngine.unloadKillerScript(lowerId)
         }
 
-        val scriptsFolder = java.io.File(plugin.dataFolder, "characters/scripts")
+        val scriptsFolder = java.io.File(plugin.dataFolder, "scripts/killers")
         val groovyScript = java.io.File(scriptsFolder, "$lowerId.groovy")
         val luaScript = java.io.File(scriptsFolder, "$lowerId.lua")
         
@@ -238,12 +238,12 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         
         if (scriptFile.exists()) {
             val newKiller = if (isLua) {
-                val scriptKiller = liric.mistaken.scripting.engine.lua.LuaScriptEngine.loadScript(scriptFile, lowerId)
-                if (scriptKiller != null) {
+                val scriptRole = liric.mistaken.scripting.engine.lua.LuaScriptEngine.loadScript(scriptFile, lowerId)
+                if (scriptRole != null) {
                     liric.mistaken.scripting.adapter.LuaKillerAdapter(
                         id = lowerId,
                         nombre = lowerId.replaceFirstChar { it.uppercase() },
-                        scriptKiller = scriptKiller
+                        scriptRole = scriptRole
                     )
                 } else null
             } else {

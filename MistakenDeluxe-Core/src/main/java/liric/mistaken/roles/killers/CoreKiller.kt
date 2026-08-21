@@ -1,7 +1,7 @@
 package liric.mistaken.roles.killers
 
 import liric.mistaken.Mistaken
-import liric.mistaken.roles.killers.triggers.TriggerRegistry
+import liric.mistaken.roles.common.triggers.TriggerRegistry
 
 import org.bukkit.Material
 import org.bukkit.entity.Player

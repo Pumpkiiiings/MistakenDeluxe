@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.classes
+package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.models.components.CombatComponent
 import liric.mistaken.models.core.Character
@@ -270,7 +270,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
                 for (victim in session.getPlayers()) {
                     if (!session.isKiller(victim.uniqueId)) {
                         victim.addPotionEffect(org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.GLOWING, 20 * 15, 0))
-                        victim.sendMessage("ï¿½cï¿½El Warden te ha olfateado!")
+                        victim.sendMessage("�c�El Warden te ha olfateado!")
                     }
                 }
             }
@@ -278,7 +278,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
     }
 
     /**
-     * Lï¿½gica de combo simple por player: Alterna entre swipe 1, 2 y 3.
+     * L�gica de combo simple por player: Alterna entre swipe 1, 2 y 3.
      */
     fun attack(player: Player) {
         val uuid = player.uniqueId

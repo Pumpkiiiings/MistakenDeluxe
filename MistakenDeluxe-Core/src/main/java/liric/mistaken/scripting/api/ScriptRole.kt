@@ -1,11 +1,9 @@
 package liric.mistaken.scripting.api
 
 /**
- * Contrato que representa el script de un Killer cargado en el Sandbox.
- * Permite al motor (KillerManager) notificar al script sobre el ciclo de vida y eventos
- * sin exponer la implementación de Lua.
+ * Representa el contrato que debe cumplir un script Lua.
  */
-interface ScriptKiller {
+interface ScriptRole {
     fun id(): String
     fun model_id(): String?
     

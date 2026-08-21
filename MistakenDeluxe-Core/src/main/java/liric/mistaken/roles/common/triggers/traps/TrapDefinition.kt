@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.triggers.traps
+package liric.mistaken.roles.common.triggers.traps
 
 import org.bukkit.Location
 import org.bukkit.entity.Player

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.models.states
+package liric.mistaken.models.states
 
 /**
  * Estados base universales que aplican a casi cualquier Character animado.

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers
+package liric.mistaken.roles.killers
 
 import liric.mistaken.models.components.AnimationComponent
 import liric.mistaken.models.components.CombatComponent
@@ -27,8 +27,8 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
     /**
      * YAGNI: El pipeline ECS (modelo + state machine + movement) solo se inicializa
      * si getModelId() retorna un valor no-null. Killers sin modelo 3D (Null, Charlie,
-     * 303, Romeo, etc.) no necesitan ningÃºn componente ECS y se comportan igual que
-     * sus equivalentes Kotlin vÃ­a CoreKiller.
+     * 303, Romeo, etc.) no necesitan ningún componente ECS y se comportan igual que
+     * sus equivalentes Kotlin vía CoreKiller.
      *
      * Si en el futuro se necesita un killer Lua con state machine pero sin modelo 3D,
      * este bloque debe separarse en dos flags independientes (getModelId() y
@@ -66,7 +66,7 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
 
     /**
      * El identificador del modelo en BetterModel (ej. "warden").
-     * Retorna null si el killer no usa modelo 3D â€” en ese caso, el pipeline
+     * Retorna null si el killer no usa modelo 3D — en ese caso, el pipeline
      * ECS completo (modelo, animaciones, estado, movimiento) se omite.
      */
     abstract fun getModelId(): String?
@@ -77,7 +77,7 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
     open fun setupAdditionalComponents(character: Character) {}
 
     /**
-     * Helper para transicionar de estado fÃ¡cilmente para un player especÃ­fico.
+     * Helper para transicionar de estado fácilmente para un player específico.
      */
     protected fun transitionTo(player: Player, state: CharacterState, force: Boolean = false) {
         val character = activeCharacters[player.uniqueId] ?: return

@@ -17,7 +17,7 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.min
 import liric.mistaken.game.Arena
-import liric.mistaken.roles.survivors.classes.Civilian
+
 import net.kyori.adventure.text.minimessage.MiniMessage
 import liric.mistaken.config.engine.core.MessageService
 
@@ -172,11 +172,13 @@ class GamePlayerController(private val game: GameSession) {
                             if (success && p.isOnline) {
                                 var idElegido = game.plugin.playerDataManager.getSelectedSurvivor(p.uniqueId)
                                 if (game.settings?.disabledClasses?.contains(idElegido.lowercase()) == true) {
-                                    idElegido = "civilian"
-                                    p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Civilian."))
+                                    idElegido = "civil"
+                                    p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Civil."))
                                 }
-                                val clase = game.plugin.survivorManager.getClassById(idElegido) ?: liric.mistaken.roles.survivors.classes.Civilian()
-                                game.plugin.survivorManager.registrarSurvivor(p, clase as liric.mistaken.roles.survivors.Survivor)
+                                val clase = game.plugin.survivorManager.getClassById(idElegido) ?: game.plugin.survivorManager.getClassById("civil") ?: game.plugin.survivorManager.availableClasses.values.firstOrNull()
+                                if (clase != null) {
+                                    game.plugin.survivorManager.registrarSurvivor(p, clase as liric.mistaken.roles.survivors.Survivor)
+                                }
 
                                 if (game.currentMode == MistakenMode.ONE_BOUNCE) {
                                     p.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, 1, false, false, false))

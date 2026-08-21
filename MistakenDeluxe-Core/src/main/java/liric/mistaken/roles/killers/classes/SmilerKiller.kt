@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.classes
+package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.models.components.CombatComponent
 import liric.mistaken.models.core.Character
@@ -27,7 +27,7 @@ class SmilerKiller : BaseKiller("smiler", "Smiler") {
             val mat = org.bukkit.Material.matchMaterial(matName)
             if (mat != null) {
                 val item = org.bukkit.inventory.ItemStack(mat)
-                item.editMeta { meta -> meta.displayName(net.kyori.adventure.text.Component.text("Â§cArma Smiler")) }
+                item.editMeta { meta -> meta.displayName(net.kyori.adventure.text.Component.text("§cArma Smiler")) }
                 inv.setItem(8, item)
             }
         }

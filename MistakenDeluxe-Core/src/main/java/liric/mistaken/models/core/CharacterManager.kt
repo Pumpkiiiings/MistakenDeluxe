@@ -1,4 +1,4 @@
-﻿package liric.mistaken.models.core
+package liric.mistaken.models.core
 
 import org.bukkit.entity.Entity
 import java.util.UUID
@@ -36,7 +36,7 @@ class CharacterManager {
     }
 
     /**
-     * Elimina el Character asociado a la entidad y llama a su mÃ©todo destroy().
+     * Elimina el Character asociado a la entidad y llama a su método destroy().
      */
     fun remove(entity: Entity) {
         charactersByEntity.remove(entity.uniqueId)?.destroy()
@@ -44,7 +44,7 @@ class CharacterManager {
 
     /**
      * Llama a tick() en todos los Characters registrados.
-     * Esto deberÃ­a ser invocado periÃ³dicamente por un BukkitRunnable (ej. cada tick).
+     * Esto debería ser invocado periódicamente por un BukkitRunnable (ej. cada tick).
      */
     fun tickAll() {
         for (character in charactersByEntity.values) {

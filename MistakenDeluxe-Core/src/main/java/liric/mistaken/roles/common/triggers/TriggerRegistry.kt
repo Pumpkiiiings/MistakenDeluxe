@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.triggers
+package liric.mistaken.roles.common.triggers
 
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player

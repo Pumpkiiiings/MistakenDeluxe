@@ -1,29 +1,26 @@
 package liric.mistaken.scripting.scheduler
 
 import liric.mistaken.scripting.api.ScriptScheduler
-import liric.mistaken.roles.killers.CoreKiller
+import liric.mistaken.Mistaken
+import org.bukkit.Bukkit
 
 /**
- * Adaptador del Scheduler que delega las tareas a los métodos seguros de CoreKiller.
+ * Scheduler para Lua que delega en el BukkitScheduler.
  */
-class LuaScriptScheduler(
-    private val coreKiller: CoreKiller
-) : ScriptScheduler {
+class LuaScriptScheduler : ScriptScheduler {
+
+    private val plugin = Mistaken.instance
 
     override fun run_delayed(delayTicks: Long, taskId: String) {
-        
-        
-        coreKiller.runGlobalDelayed(delayTicks) {
+        Bukkit.getScheduler().runTaskLater(plugin, Runnable {
             
-            
-            
-        }
+        }, delayTicks)
     }
 
     override fun run_timer(delayTicks: Long, periodTicks: Long, taskId: String) {
-        coreKiller.runGlobalTimer(delayTicks, periodTicks) {
+        Bukkit.getScheduler().runTaskTimer(plugin, Runnable {
             
-        }
+        }, delayTicks, periodTicks)
     }
 
     override fun cancel(taskId: String) {

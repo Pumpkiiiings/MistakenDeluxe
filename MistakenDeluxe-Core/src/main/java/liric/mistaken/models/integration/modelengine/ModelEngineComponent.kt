@@ -1,4 +1,4 @@
-﻿package liric.mistaken.models.integration.modelengine
+package liric.mistaken.models.integration.modelengine
 
 import com.ticxo.modelengine.api.ModelEngineAPI
 import com.ticxo.modelengine.api.entity.Dummy

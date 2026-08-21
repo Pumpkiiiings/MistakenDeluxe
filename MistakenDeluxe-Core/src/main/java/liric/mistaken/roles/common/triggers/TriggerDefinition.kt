@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.triggers
+package liric.mistaken.roles.common.triggers
 
 data class TriggerDefinition(
     val triggerId: String,

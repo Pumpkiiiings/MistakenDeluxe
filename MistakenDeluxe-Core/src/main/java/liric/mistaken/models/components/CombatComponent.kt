@@ -1,10 +1,10 @@
-﻿package liric.mistaken.models.components
+package liric.mistaken.models.components
 
 import liric.mistaken.models.core.CharacterComponent
 
 /**
- * Componente opcional para manejar lÃ³gicas de combate.
- * Killers tendrÃ¡n uno, Survivors probablemente no.
+ * Componente opcional para manejar lógicas de combate.
+ * Killers tendrán uno, Survivors probablemente no.
  */
 interface CombatComponent : CharacterComponent {
     
@@ -14,8 +14,8 @@ interface CombatComponent : CharacterComponent {
     fun performAttack(attackId: String = "attack")
 
     /**
-     * Aplica daÃ±o a este personaje.
-     * Retorna true si el daÃ±o fue procesado exitosamente (ej. no estaba en invulnerabilidad).
+     * Aplica daño a este personaje.
+     * Retorna true si el daño fue procesado exitosamente (ej. no estaba en invulnerabilidad).
      */
     fun takeDamage(amount: Double, source: Any? = null): Boolean
     

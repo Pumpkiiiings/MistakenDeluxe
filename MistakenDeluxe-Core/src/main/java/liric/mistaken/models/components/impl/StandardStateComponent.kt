@@ -1,4 +1,4 @@
-﻿package liric.mistaken.models.components.impl
+package liric.mistaken.models.components.impl
 
 import liric.mistaken.models.components.AnimationComponent
 import liric.mistaken.models.components.StateComponent
@@ -7,8 +7,8 @@ import liric.mistaken.models.states.CharacterState
 import liric.mistaken.models.states.IdleState
 
 /**
- * ImplementaciÃ³n estÃ¡ndar de la mÃ¡quina de estados.
- * Gestiona transiciones y notifica automÃ¡ticamente al AnimationComponent.
+ * Implementación estándar de la máquina de estados.
+ * Gestiona transiciones y notifica automáticamente al AnimationComponent.
  */
 class StandardStateComponent : StateComponent {
     

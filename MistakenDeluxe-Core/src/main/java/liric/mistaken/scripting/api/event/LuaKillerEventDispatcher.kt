@@ -3,7 +3,7 @@ package liric.mistaken.scripting.api.event
 import liric.mistaken.Mistaken
 import liric.mistaken.scripting.adapter.BukkitDamageEventAdapter
 import liric.mistaken.scripting.adapter.BukkitEntityAdapter
-import liric.mistaken.scripting.api.ScriptKiller
+import liric.mistaken.scripting.api.ScriptRole
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority

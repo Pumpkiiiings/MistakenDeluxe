@@ -1,32 +1,32 @@
-﻿package liric.mistaken.models.components
+package liric.mistaken.models.components
 
 import liric.mistaken.models.core.CharacterComponent
 
 /**
- * Componente que detecta los cambios fÃ­sicos del player o entidad.
+ * Componente que detecta los cambios físicos del player o entidad.
  * No reproduce animaciones directamente; su trabajo es notificar al StateComponent
- * cuando detecta que el Character empezÃ³ a correr, caminar, saltar, etc.
+ * cuando detecta que el Character empezó a correr, caminar, saltar, etc.
  */
 interface MovementComponent : CharacterComponent {
     
     /**
-     * La velocidad fÃ­sica actual del personaje.
+     * La velocidad física actual del personaje.
      */
     val currentVelocity: Double
 
     /**
-     * Comprueba si el personaje estÃ¡ en el suelo.
+     * Comprueba si el personaje está en el suelo.
      */
     val isGrounded: Boolean
 
     /**
-     * Comprueba si el personaje se estÃ¡ moviendo.
+     * Comprueba si el personaje se está moviendo.
      */
     val isMoving: Boolean
 
     /**
-     * Permite habilitar o deshabilitar la detecciÃ³n de movimiento 
-     * (por ejemplo, si el personaje estÃ¡ stuneado, se puede bloquear el movimiento).
+     * Permite habilitar o deshabilitar la detección de movimiento 
+     * (por ejemplo, si el personaje está stuneado, se puede bloquear el movimiento).
      */
     fun setMovementEnabled(enabled: Boolean)
 }
