@@ -1,11 +1,11 @@
-package liric.mistaken.characters.integration.modelengine
+﻿package liric.mistaken.models.integration.modelengine
 
 import com.ticxo.modelengine.api.ModelEngineAPI
 import com.ticxo.modelengine.api.entity.Dummy
 import com.ticxo.modelengine.api.model.ActiveModel
 import com.ticxo.modelengine.api.model.ModeledEntity
-import liric.mistaken.characters.components.ModelComponent
-import liric.mistaken.characters.core.Character
+import liric.mistaken.models.components.ModelComponent
+import liric.mistaken.models.core.Character
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.Player

@@ -1,14 +1,14 @@
-package liric.mistaken.characters.components.impl
+﻿package liric.mistaken.models.components.impl
 
-import liric.mistaken.characters.components.AnimationComponent
-import liric.mistaken.characters.components.StateComponent
-import liric.mistaken.characters.core.Character
-import liric.mistaken.characters.states.CharacterState
-import liric.mistaken.characters.states.IdleState
+import liric.mistaken.models.components.AnimationComponent
+import liric.mistaken.models.components.StateComponent
+import liric.mistaken.models.core.Character
+import liric.mistaken.models.states.CharacterState
+import liric.mistaken.models.states.IdleState
 
 /**
- * Implementación estándar de la máquina de estados.
- * Gestiona transiciones y notifica automáticamente al AnimationComponent.
+ * ImplementaciÃ³n estÃ¡ndar de la mÃ¡quina de estados.
+ * Gestiona transiciones y notifica automÃ¡ticamente al AnimationComponent.
  */
 class StandardStateComponent : StateComponent {
     
@@ -63,13 +63,13 @@ class StandardStateComponent : StateComponent {
     }
 
     override fun returnToIdle() {
-        val movement = character.getComponent(liric.mistaken.characters.components.MovementComponent::class.java)
+        val movement = character.getComponent(liric.mistaken.models.components.MovementComponent::class.java)
         if (movement != null && movement.isMoving) {
             val entity = character.entity
             val newState = if (entity is org.bukkit.entity.Player && entity.isSprinting) {
-                liric.mistaken.characters.states.RunState
+                liric.mistaken.models.states.RunState
             } else {
-                liric.mistaken.characters.states.WalkState
+                liric.mistaken.models.states.WalkState
             }
             transitionTo(newState, force = true)
         } else {

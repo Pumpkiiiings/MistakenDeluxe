@@ -1,20 +1,20 @@
-package liric.mistaken.characters.components.impl
+﻿package liric.mistaken.models.components.impl
 
-import liric.mistaken.characters.components.MovementComponent
-import liric.mistaken.characters.components.StateComponent
-import liric.mistaken.characters.core.Character
-import liric.mistaken.characters.states.FallState
-import liric.mistaken.characters.states.IdleState
-import liric.mistaken.characters.states.RunState
-import liric.mistaken.characters.states.WalkState
+import liric.mistaken.models.components.MovementComponent
+import liric.mistaken.models.components.StateComponent
+import liric.mistaken.models.core.Character
+import liric.mistaken.models.states.FallState
+import liric.mistaken.models.states.IdleState
+import liric.mistaken.models.states.RunState
+import liric.mistaken.models.states.WalkState
 import org.bukkit.Location
 import org.bukkit.entity.Player
 import kotlin.math.sqrt
 
 /**
- * Implementación de MovementComponent para Bukkit.
- * Calcula el movimiento basándose en deltas de posición durante el tick(),
- * lo cual es más eficiente que usar PlayerMoveEvent.
+ * ImplementaciÃ³n de MovementComponent para Bukkit.
+ * Calcula el movimiento basÃ¡ndose en deltas de posiciÃ³n durante el tick(),
+ * lo cual es mÃ¡s eficiente que usar PlayerMoveEvent.
  */
 class BukkitMovementComponent : MovementComponent {
 

@@ -1,14 +1,14 @@
-package liric.mistaken.characters.integration.bettermodel
+﻿package liric.mistaken.models.integration.bettermodel
 
 import kr.toxicity.model.api.BetterModel
 import kr.toxicity.model.api.bukkit.platform.BukkitAdapter
 import kr.toxicity.model.api.tracker.EntityTracker
 import kr.toxicity.model.api.tracker.TrackerModifier
-import liric.mistaken.characters.components.ModelComponent
-import liric.mistaken.characters.core.Character
+import liric.mistaken.models.components.ModelComponent
+import liric.mistaken.models.core.Character
 
 /**
- * Implementación de ModelComponent utilizando BetterModel.
+ * ImplementaciÃ³n de ModelComponent utilizando BetterModel.
  */
 class BetterModelComponent(override val modelId: String) : ModelComponent {
 

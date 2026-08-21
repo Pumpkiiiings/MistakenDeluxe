@@ -1,8 +1,8 @@
-package liric.mistaken.roles.killers.classes
+﻿package liric.mistaken.roles.killers.classes
 
-import liric.mistaken.characters.components.CombatComponent
-import liric.mistaken.characters.core.Character
-import liric.mistaken.characters.states.CharacterState
+import liric.mistaken.models.components.CombatComponent
+import liric.mistaken.models.core.Character
+import liric.mistaken.models.states.CharacterState
 import liric.mistaken.roles.killers.BaseKiller
 import org.bukkit.entity.Player
 
@@ -27,7 +27,7 @@ class SmilerKiller : BaseKiller("smiler", "Smiler") {
             val mat = org.bukkit.Material.matchMaterial(matName)
             if (mat != null) {
                 val item = org.bukkit.inventory.ItemStack(mat)
-                item.editMeta { meta -> meta.displayName(net.kyori.adventure.text.Component.text("§cArma Smiler")) }
+                item.editMeta { meta -> meta.displayName(net.kyori.adventure.text.Component.text("Â§cArma Smiler")) }
                 inv.setItem(8, item)
             }
         }
@@ -44,8 +44,8 @@ class SmilerKiller : BaseKiller("smiler", "Smiler") {
                     transitionTo(player, SmilerAttackState, force = true)
                     
                     org.bukkit.Bukkit.getScheduler().runTaskLater(liric.mistaken.Mistaken.instance, Runnable {
-                        if (player.isOnline && getCharacter(player)?.getComponent(liric.mistaken.characters.components.StateComponent::class.java)?.currentState == SmilerAttackState) {
-                            transitionTo(player, liric.mistaken.characters.states.IdleState, force = true)
+                        if (player.isOnline && getCharacter(player)?.getComponent(liric.mistaken.models.components.StateComponent::class.java)?.currentState == SmilerAttackState) {
+                            transitionTo(player, liric.mistaken.models.states.IdleState, force = true)
                         }
                     }, 15L) 
                 }

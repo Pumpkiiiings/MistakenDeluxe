@@ -1,16 +1,16 @@
-package liric.mistaken.roles.killers
+﻿package liric.mistaken.roles.killers
 
-import liric.mistaken.characters.components.AnimationComponent
-import liric.mistaken.characters.components.CombatComponent
-import liric.mistaken.characters.components.ModelComponent
-import liric.mistaken.characters.components.MovementComponent
-import liric.mistaken.characters.components.StateComponent
-import liric.mistaken.characters.components.impl.BukkitMovementComponent
-import liric.mistaken.characters.components.impl.StandardStateComponent
-import liric.mistaken.characters.core.Character
-import liric.mistaken.characters.integration.bettermodel.BetterModelAnimationComponent
-import liric.mistaken.characters.integration.bettermodel.BetterModelComponent
-import liric.mistaken.characters.states.CharacterState
+import liric.mistaken.models.components.AnimationComponent
+import liric.mistaken.models.components.CombatComponent
+import liric.mistaken.models.components.ModelComponent
+import liric.mistaken.models.components.MovementComponent
+import liric.mistaken.models.components.StateComponent
+import liric.mistaken.models.components.impl.BukkitMovementComponent
+import liric.mistaken.models.components.impl.StandardStateComponent
+import liric.mistaken.models.core.Character
+import liric.mistaken.models.integration.bettermodel.BetterModelAnimationComponent
+import liric.mistaken.models.integration.bettermodel.BetterModelComponent
+import liric.mistaken.models.states.CharacterState
 import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -27,8 +27,8 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
     /**
      * YAGNI: El pipeline ECS (modelo + state machine + movement) solo se inicializa
      * si getModelId() retorna un valor no-null. Killers sin modelo 3D (Null, Charlie,
-     * 303, Romeo, etc.) no necesitan ningún componente ECS y se comportan igual que
-     * sus equivalentes Kotlin vía CoreKiller.
+     * 303, Romeo, etc.) no necesitan ningÃºn componente ECS y se comportan igual que
+     * sus equivalentes Kotlin vÃ­a CoreKiller.
      *
      * Si en el futuro se necesita un killer Lua con state machine pero sin modelo 3D,
      * este bloque debe separarse en dos flags independientes (getModelId() y
@@ -44,8 +44,8 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
             
             val pluginManager = org.bukkit.Bukkit.getPluginManager()
             if (pluginManager.isPluginEnabled("ModelEngine")) {
-                character.addComponent(ModelComponent::class.java, liric.mistaken.characters.integration.modelengine.ModelEngineComponent(modelId))
-                character.addComponent(AnimationComponent::class.java, liric.mistaken.characters.integration.modelengine.ModelEngineAnimationComponent())
+                character.addComponent(ModelComponent::class.java, liric.mistaken.models.integration.modelengine.ModelEngineComponent(modelId))
+                character.addComponent(AnimationComponent::class.java, liric.mistaken.models.integration.modelengine.ModelEngineAnimationComponent())
             } else if (pluginManager.isPluginEnabled("BetterModel")) {
                 character.addComponent(ModelComponent::class.java, BetterModelComponent(modelId))
                 character.addComponent(AnimationComponent::class.java, BetterModelAnimationComponent())
@@ -66,7 +66,7 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
 
     /**
      * El identificador del modelo en BetterModel (ej. "warden").
-     * Retorna null si el killer no usa modelo 3D — en ese caso, el pipeline
+     * Retorna null si el killer no usa modelo 3D â€” en ese caso, el pipeline
      * ECS completo (modelo, animaciones, estado, movimiento) se omite.
      */
     abstract fun getModelId(): String?
@@ -77,7 +77,7 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
     open fun setupAdditionalComponents(character: Character) {}
 
     /**
-     * Helper para transicionar de estado fácilmente para un player específico.
+     * Helper para transicionar de estado fÃ¡cilmente para un player especÃ­fico.
      */
     protected fun transitionTo(player: Player, state: CharacterState, force: Boolean = false) {
         val character = activeCharacters[player.uniqueId] ?: return

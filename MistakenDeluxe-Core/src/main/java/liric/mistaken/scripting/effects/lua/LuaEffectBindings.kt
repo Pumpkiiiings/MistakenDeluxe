@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.effects.lua
+﻿package liric.mistaken.scripting.effects.lua
 
 import liric.mistaken.scripting.api.HasLocation
 import liric.mistaken.scripting.adapter.BukkitPlayerAdapter
@@ -46,26 +46,26 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 
 /**
  * Registra TODAS las funciones DSL en el sandbox Globals de un script.
- * Cada función recibe ScriptPlayer (userdata) y devuelve LuaTable builders con sintaxis ':'.
+ * Cada funciÃ³n recibe ScriptPlayer (userdata) y devuelve LuaTable builders con sintaxis ':'.
  *
  * SEGURIDAD: Lua nunca ve Player/Location/World directos. Los builders unwrapean
  * internamente via BukkitPlayerAdapter.getPlayer() (internal).
  *
  * FOLIA: Cada efecto posee su propio ScheduledTask. Los callbacks de on_hit
- * se ejecutan en el entity scheduler de la víctima.
+ * se ejecutan en el entity scheduler de la vÃ­ctima.
  *
- * CONVENCIÓN DE BUILDERS:
+ * CONVENCIÃ“N DE BUILDERS:
  * - Builders atados a player (orbit, trail, dash, projectile, line_spawn,
  *   temp_fly, reveal_targets, ambient_music): reciben solo (player), porque
- *   el efecto se mueve con el player y su lifecycle está atado al entity scheduler.
+ *   el efecto se mueve con el player y su lifecycle estÃ¡ atado al entity scheduler.
  * - Builders de world (bait_trap, formation, sinking_block, spiral_particle,
  *   place_trap, proximity_trap, sequence): reciben (player, loc) como los dos
- *   primeros argumentos, para ownership — player provee scriptId/ownerUuid para
- *   registrarse en EffectRegistry con cleanup automático (quit/death/reload),
- *   y loc define la posición fija del efecto en el world.
- * - Funciones globales de ubicación (sound, particle_burst): reciben cualquier
+ *   primeros argumentos, para ownership â€” player provee scriptId/ownerUuid para
+ *   registrarse en EffectRegistry con cleanup automÃ¡tico (quit/death/reload),
+ *   y loc define la posiciÃ³n fija del efecto en el world.
+ * - Funciones globales de ubicaciÃ³n (sound, particle_burst): reciben cualquier
  *   objeto que implemente HasLocation como primer argumento (player, location,
- *   o cualquier wrapper futuro con sentido de ubicación).
+ *   o cualquier wrapper futuro con sentido de ubicaciÃ³n).
  */
 object LuaEffectBindings {
 
@@ -599,12 +599,12 @@ object LuaEffectBindings {
                 if (killer is liric.mistaken.roles.killers.BaseKiller) {
                     val character = killer.getCharacter(player)
                     if (character != null) {
-                        val state = object : liric.mistaken.characters.states.CharacterState {
+                        val state = object : liric.mistaken.models.states.CharacterState {
                             override val id = animName
                             override val priority = priority
                             override val defaultAnimation = animName
                         }
-                        character.getComponent(liric.mistaken.characters.components.StateComponent::class.java)?.transitionTo(state, force = true)
+                        character.getComponent(liric.mistaken.models.components.StateComponent::class.java)?.transitionTo(state, force = true)
                     }
                 }
                 return LuaValue.NIL
@@ -1304,7 +1304,7 @@ object LuaEffectBindings {
         return t
     }
 
-    /** Unwraps BukkitPlayerAdapter userdata → Player */
+    /** Unwraps BukkitPlayerAdapter userdata â†’ Player */
     private fun unwrapPlayer(luaVal: LuaValue): Player? {
         if (luaVal.isnil()) return null
         return try {
@@ -1313,7 +1313,7 @@ object LuaEffectBindings {
         } catch (_: Exception) { null }
     }
 
-    /** Unwraps BukkitLocationAdapter userdata → Location */
+    /** Unwraps BukkitLocationAdapter userdata â†’ Location */
     private fun unwrapLocation(luaVal: LuaValue): Location? {
         if (luaVal.isnil()) return null
         return try {
@@ -1323,7 +1323,7 @@ object LuaEffectBindings {
     }
 
     /**
-     * Unwraps cualquier userdata que implemente HasLocation → Location.
+     * Unwraps cualquier userdata que implemente HasLocation â†’ Location.
      * Funciona con BukkitPlayerAdapter, BukkitLocationAdapter, y cualquier
      * wrapper futuro que implemente la interfaz.
      */

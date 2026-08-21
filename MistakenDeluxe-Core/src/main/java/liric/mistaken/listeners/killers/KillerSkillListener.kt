@@ -1,4 +1,4 @@
-package liric.mistaken.listeners.killers
+﻿package liric.mistaken.listeners.killers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -29,7 +29,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
     private val lastAttackMap = java.util.concurrent.ConcurrentHashMap<java.util.UUID, Long>()
 
     /**
-     * Trigger: Ataque básico (Click Izquierdo).
+     * Trigger: Ataque bÃ¡sico (Click Izquierdo).
      */
     @EventHandler(priority = EventPriority.HIGH)
     fun onBasicAttack(event: PlayerInteractEvent) {
@@ -53,18 +53,18 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         if (killer is liric.mistaken.roles.killers.BaseKiller) {
             val character = killer.getCharacter(player) ?: return
             
-            val combatComp = character.getComponent(liric.mistaken.characters.components.CombatComponent::class.java)
+            val combatComp = character.getComponent(liric.mistaken.models.components.CombatComponent::class.java)
             if (combatComp != null) {
                 combatComp.performAttack("basic")
             } else {
-                character.getComponent(liric.mistaken.characters.components.StateComponent::class.java)
-                    ?.transitionTo(liric.mistaken.characters.states.AttackState, force = true)
+                character.getComponent(liric.mistaken.models.components.StateComponent::class.java)
+                    ?.transitionTo(liric.mistaken.models.states.AttackState, force = true)
             }
         }
     }
 
     /**
-     * Trigger: Ataque a entidad (Daño cuerpo a cuerpo).
+     * Trigger: Ataque a entidad (DaÃ±o cuerpo a cuerpo).
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun onEntityAttack(event: org.bukkit.event.entity.EntityDamageByEntityEvent) {
@@ -77,12 +77,12 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         if (killer is liric.mistaken.roles.killers.BaseKiller) {
             val character = killer.getCharacter(player) ?: return
             
-            val combatComp = character.getComponent(liric.mistaken.characters.components.CombatComponent::class.java)
+            val combatComp = character.getComponent(liric.mistaken.models.components.CombatComponent::class.java)
             if (combatComp != null) {
                 combatComp.performAttack("entity")
             } else {
-                character.getComponent(liric.mistaken.characters.components.StateComponent::class.java)
-                    ?.transitionTo(liric.mistaken.characters.states.AttackState, force = true)
+                character.getComponent(liric.mistaken.models.components.StateComponent::class.java)
+                    ?.transitionTo(liric.mistaken.models.states.AttackState, force = true)
             }
         }
     }

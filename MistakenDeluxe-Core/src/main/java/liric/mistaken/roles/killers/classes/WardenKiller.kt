@@ -1,8 +1,8 @@
-package liric.mistaken.roles.killers.classes
+﻿package liric.mistaken.roles.killers.classes
 
-import liric.mistaken.characters.components.CombatComponent
-import liric.mistaken.characters.core.Character
-import liric.mistaken.characters.states.CharacterState
+import liric.mistaken.models.components.CombatComponent
+import liric.mistaken.models.core.Character
+import liric.mistaken.models.states.CharacterState
 import liric.mistaken.roles.killers.BaseKiller
 import org.bukkit.entity.Player
 import java.util.UUID
@@ -171,14 +171,14 @@ class WardenKiller : BaseKiller("warden", "Warden") {
 
         object : org.bukkit.scheduler.BukkitRunnable() {
             override fun run() {
-                if (!player.isOnline || getCharacter(player)?.getComponent(liric.mistaken.characters.components.StateComponent::class.java)?.currentState != WardenSlamState) {
+                if (!player.isOnline || getCharacter(player)?.getComponent(liric.mistaken.models.components.StateComponent::class.java)?.currentState != WardenSlamState) {
                     cancel()
                     return
                 }
 
                 if ((player.isOnGround || player.location.block.getRelative(org.bukkit.block.BlockFace.DOWN).type.isSolid) && player.velocity.y <= 0) {
                     cancel()
-                    transitionTo(player, liric.mistaken.characters.states.IdleState, force = true)
+                    transitionTo(player, liric.mistaken.models.states.IdleState, force = true)
 
                     val loc = player.location
                     val world = loc.world ?: return
@@ -261,8 +261,8 @@ class WardenKiller : BaseKiller("warden", "Warden") {
         player.world.playSound(player.location, org.bukkit.Sound.ENTITY_WARDEN_SNIFF, 1.5f, 1.0f)
 
         org.bukkit.Bukkit.getScheduler().runTaskLater(liric.mistaken.Mistaken.instance, Runnable {
-            if (player.isOnline && getCharacter(player)?.getComponent(liric.mistaken.characters.components.StateComponent::class.java)?.currentState == WardenSniffWalkState) {
-                transitionTo(player, liric.mistaken.characters.states.IdleState, force = true)
+            if (player.isOnline && getCharacter(player)?.getComponent(liric.mistaken.models.components.StateComponent::class.java)?.currentState == WardenSniffWalkState) {
+                transitionTo(player, liric.mistaken.models.states.IdleState, force = true)
                 
                 val session = liric.mistaken.Mistaken.instance.sessionManager.getSession(player) ?: return@Runnable
                 player.world.playSound(player.location, org.bukkit.Sound.ENTITY_WARDEN_HEARTBEAT, 2.0f, 1.0f)
@@ -270,7 +270,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
                 for (victim in session.getPlayers()) {
                     if (!session.isKiller(victim.uniqueId)) {
                         victim.addPotionEffect(org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.GLOWING, 20 * 15, 0))
-                        victim.sendMessage("�c�El Warden te ha olfateado!")
+                        victim.sendMessage("ï¿½cï¿½El Warden te ha olfateado!")
                     }
                 }
             }
@@ -278,7 +278,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
     }
 
     /**
-     * L�gica de combo simple por player: Alterna entre swipe 1, 2 y 3.
+     * Lï¿½gica de combo simple por player: Alterna entre swipe 1, 2 y 3.
      */
     fun attack(player: Player) {
         val uuid = player.uniqueId
