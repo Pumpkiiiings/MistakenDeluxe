@@ -24,7 +24,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * Efecto de objetos orbitando alrededor de un jugador.
+ * Efecto de objetos orbitando alrededor de un player.
  * Generaliza showPhysicalTrail de Charlie/Entity303/Null/Romeo/Color.
  * Cada instancia posee su propio ScheduledTask (Folia-safe).
  */

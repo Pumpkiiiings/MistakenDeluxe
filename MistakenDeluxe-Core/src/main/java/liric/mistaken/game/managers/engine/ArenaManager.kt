@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.engine
+﻿package liric.mistaken.game.managers.engine
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +52,7 @@ class ArenaManager(private val plugin: Mistaken) {
 
                 arena.slimeWorldName = config.getString("${path}slimeWorld", key)
                 arena.timeMode = config.getString("${path}timeMode", "dynamic") ?: "dynamic"
-                arena.asesinoSpawn = loadSafeLocation("${path}asesinoSpawn")
+                arena.killerSpawn = loadSafeLocation("${path}asesinoSpawn")
 
                 loadLocationList("${path}survivorSpawns").forEach { arena.addSurvivorSpawn(it) }
                 loadLocationList("${path}generators").forEach { arena.addGenerator(it) }
@@ -60,10 +60,10 @@ class ArenaManager(private val plugin: Mistaken) {
                 tempArenas[key] = arena
             }
 
-            // Reemplazo atómico para no causar tirones
+            // Reemplazo atÃ³mico para no causar tirones
             arenas.clear()
             arenas.putAll(tempArenas)
-            plugin.componentLogger.info(ColorTranslator.translate("[SUCCESS] [Arenas] ${arenas.size} templates loaded into secure memory."))
+            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>${arenas.size} templates loaded into secure memory.</gray>"))
         }
     }
 
@@ -95,9 +95,9 @@ class ArenaManager(private val plugin: Mistaken) {
 
         when (type.lowercase()) {
             "asesino" -> {
-                // Clonamos para quitarle el mundo a la copia guardada en RAM
+                // Clonamos para quitarle el world a la copia guardada en RAM
                 val cleanLoc = Location(null, loc.x, loc.y, loc.z, loc.yaw, loc.pitch)
-                arena.asesinoSpawn = cleanLoc
+                arena.killerSpawn = cleanLoc
                 saveSafeLocation("arenas.$name.asesinoSpawn", loc)
             }
             "survivor" -> {
@@ -140,7 +140,7 @@ class ArenaManager(private val plugin: Mistaken) {
         saveAsync()
     }
 
-    // --- UTILS DE LOCALIZACIÓN ---
+    // --- UTILS DE LOCALIZACIÃ“N ---
 
     private fun loadLocationList(path: String): List<Location> {
         val list = mutableListOf<Location>()
@@ -156,9 +156,9 @@ class ArenaManager(private val plugin: Mistaken) {
         
         if (!config.contains("$path.x")) return null
 
-        // 🔥 LA MAGIA ANTI-LEAKS: Retornamos la Location con World en NULL.
-        // Esto garantiza que el ArenaManager NUNCA sostenga un mundo descargado en la RAM.
-        // El GameManager le inyectará el mundo activo al clonar la Location.
+        // ðŸ”¥ LA MAGIA ANTI-LEAKS: Retornamos la Location con World en NULL.
+        // Esto garantiza que el ArenaManager NUNCA sostenga un world descargado en la RAM.
+        // El GameManager le inyectarÃ¡ el world activo al clonar la Location.
         return Location(
             null,
             config.getDouble("$path.x"),
@@ -189,7 +189,7 @@ class ArenaManager(private val plugin: Mistaken) {
                     configProvider.save()
                 }
             } catch (e: Exception) {
-                plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [Arenas] Failed to save arenas.yml: ${e.message}"))
+                plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Failed to save arenas.yml: ${e.message}</gray>"))
             }
         }
     }

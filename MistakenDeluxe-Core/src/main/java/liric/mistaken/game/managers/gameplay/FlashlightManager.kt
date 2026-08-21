@@ -37,7 +37,7 @@ class FlashlightManager(private val plugin: Mistaken) {
     private val points: Int get() = plugin.config.getInt("settings.flashlight.points", 3)
     private val viewerRadius: Double get() = plugin.config.getDouble("settings.flashlight.viewer-radius", 32.0)
 
-    /** Distancia minima al ojo. Mas cerca la luz queda dentro de la cabeza del jugador. */
+    /** Distancia minima al ojo. Mas cerca la luz queda dentro de la cabeza del player. */
     private val minDistance = 1.5
 
     // --- API PUBLICA ---
@@ -45,15 +45,15 @@ class FlashlightManager(private val plugin: Mistaken) {
     fun isOn(player: Player): Boolean = states.containsKey(player.uniqueId)
 
     /**
-     * Mismos requisitos que una habilidad de superviviente (ver SurvivorHabilidadListener).
-     * Si devuelve false, el evento de swap NO se cancela: asesinos y lobby conservan la
+     * Mismos requisitos que una ability de survivor (ver SurvivorAbilityListener).
+     * Si devuelve false, el evento de swap NO se cancela: killers y lobby conservan la
      * segunda mano normal.
      */
     fun canUse(player: Player): Boolean {
         val session = plugin.sessionManager.getSession(player) ?: return false
         if (session.currentState != GameState.INGAME) return false
         if (session.isKiller(player.uniqueId)) return false
-        if (!plugin.supervivienteManager.esSurvivorActivo(player)) return false
+        if (!plugin.survivorManager.esSurvivorActivo(player)) return false
         if (player.gameMode != GameMode.SURVIVAL) return false
         if (plugin.combatManager.isFrozen(player)) return false
         return true
@@ -80,7 +80,7 @@ class FlashlightManager(private val plugin: Mistaken) {
         state.worldName = player.world.name
         states[uuid] = state
 
-        // Scheduler de la entidad: es Folia-safe y se autocancela si el jugador se va.
+        // Scheduler de la entidad: es Folia-safe y se autocancela si el player se va.
         // El callback 'retired' cubre el caso de que la entidad desaparezca sin quit event.
         state.task = player.scheduler.runAtFixedRate(
             plugin,
@@ -99,7 +99,7 @@ class FlashlightManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Version por UUID: sirve cuando el jugador ya se desconecto y no hay Player.
+     * Version por UUID: sirve cuando el player ya se desconecto y no hay Player.
      * Los bloques se restauran a los espectadores que sigan online.
      */
     fun clear(uuid: UUID) {
@@ -122,7 +122,7 @@ class FlashlightManager(private val plugin: Mistaken) {
             return
         }
 
-        // Cambio de mundo: los viewers antiguos ya no estan viendo esos bloques,
+        // Cambio de world: los viewers antiguos ya no estan viendo esos bloques,
         
         if (player.world.name != state.worldName) {
             restore(state)
@@ -208,7 +208,7 @@ class FlashlightManager(private val plugin: Mistaken) {
         return result.toList()
     }
 
-    /** Jugadores de la misma sesion dentro del radio. Incluye al asesino: la luz delata. */
+    /** Players de la misma sesion dentro del radio. Incluye al killer: la luz delata. */
     private fun audience(player: Player): List<Player> {
         val session = plugin.sessionManager.getSession(player) ?: return listOf(player)
         return player.world.getNearbyPlayers(player.location, viewerRadius)

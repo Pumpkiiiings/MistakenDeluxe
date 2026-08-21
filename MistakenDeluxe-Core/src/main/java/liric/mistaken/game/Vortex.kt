@@ -109,7 +109,7 @@ class Vortex(private val plugin: Mistaken) {
         val y = center.blockY - 1 // Solo el suelo bajo sus pies
 
         // Agrupamos por sección de chunk (16x16x16). Un BlockChange por bloque son
-        // (2r+1)^2 paquetes en un tick — con radio 10 eso es 441 a un solo jugador.
+        // (2r+1)^2 paquetes en un tick — con radio 10 eso es 441 a un solo player.
         // MultiBlockChange manda una sección entera en un paquete: ~6 en total.
         val bySection = HashMap<Vector3i, MutableList<WrapperPlayServerMultiBlockChange.EncodedBlock>>()
         val affected = ArrayList<Location>((2 * radius + 1) * (2 * radius + 1))
@@ -133,7 +133,7 @@ class Vortex(private val plugin: Mistaken) {
         }
 
         // Restauración: leemos el estado real en el scheduler de la REGIÓN de cada bloque.
-        // victim.scheduler pertenece a la región del jugador; tocar loc.block de una
+        // victim.scheduler pertenece a la región del player; tocar loc.block de una
         // región distinta revienta en Folia.
         plugin.server.regionScheduler.runDelayed(plugin, center, Consumer { _ ->
             if (!victim.isOnline) return@Consumer

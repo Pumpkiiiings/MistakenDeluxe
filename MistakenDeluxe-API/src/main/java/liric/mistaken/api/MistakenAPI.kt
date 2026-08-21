@@ -16,7 +16,7 @@ import pumpking.lib.messages.IMessageService
  */
 interface MistakenAPI {
     val plugin: Plugin
-    val asesinoManager: IKillerManager
+    val killerManager: IKillerManager
     val sessionManager: ISessionManager
     val configManager: IConfigManager
     val playerDataManager: IPlayerDataManager

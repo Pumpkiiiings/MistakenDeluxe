@@ -44,11 +44,11 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     fun setCustomSpectator(player: Player) {
         activeSpectators.add(player.uniqueId)
 
-        // Limpiar TrueDarkness si era un superviviente
+        // Clear TrueDarkness si era un survivor
         liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(player, false)
 
         // 🔥 FIX VUELO: Usamos SURVIVAL (no ADVENTURE) porque el modo ADVENTURE no soporta vuelo en Minecraft.
-        // El jugador es invisible e invulnerable, lo que lo protege como un espectador real.
+        // El player es invisible e invulnerable, lo que lo protege como un espectador real.
         player.gameMode = GameMode.SURVIVAL
         player.isInvisible = true
         player.isCollidable = false
@@ -110,12 +110,12 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         }
     }
 
-    // 🔥 FIX: Restaurar vuelo al cambiar de mundo (Lobby -> Arena)
+    // 🔥 FIX: Restaurar vuelo al cambiar de world (Lobby -> Arena)
     @EventHandler(priority = EventPriority.MONITOR)
     fun onWorldChange(e: PlayerChangedWorldEvent) {
         val p = e.player
         if (isSpectator(p)) {
-            // Delay obligatorio: Bukkit resetea el vuelo al spawnear en el nuevo mundo
+            // Delay obligatorio: Bukkit resetea el vuelo al spawnear en el nuevo world
             p.scheduler.runDelayed(plugin, Consumer { _ ->
                 p.gameMode = GameMode.SURVIVAL
                 p.allowFlight = true
@@ -140,7 +140,7 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     @EventHandler
     fun onJoin(e: PlayerJoinEvent) {
         val player = e.player
-        // 🔥 MULTIARENA: Buscamos la sesión a la que acaba de entrar el jugador
+        // 🔥 MULTIARENA: Buscamos la sesión a la que acaba de entrar el player
         val session = plugin.sessionManager.getSession(player)
 
         

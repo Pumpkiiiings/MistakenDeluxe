@@ -59,7 +59,7 @@ object CraftEngine {
     }
 
     /**
-     * Versión para el equipo de los asesinos.
+     * Versión para el equipo de los killers.
      * Si no encuentra el ítem, te da una barrera con el nombre del error.
      */
     fun getCustomItemSafe(property: String?): ItemStack {

@@ -43,7 +43,7 @@ object JoinCommand {
 
                     val maxPlayers = plugin.config.getInt("settings.max-players-per-arena", 10)
 
-                    // Buscar una partida que esté esperando jugadores
+                    // Buscar una partida que esté esperando players
                     var targetSession = plugin.sessionManager.activeSessions.values.firstOrNull {
                         (it.currentState == GameState.LOBBY || it.currentState == GameState.VOTING || it.currentState == GameState.BREAK) && it.getPlayers().size < maxPlayers
                     }
@@ -53,7 +53,7 @@ object JoinCommand {
                         targetSession = plugin.sessionManager.createSession("Votando...")
                     }
 
-                    // Meter al jugador y aislarlo
+                    // Meter al player y aislarlo
                     plugin.sessionManager.joinSession(player, targetSession.id)
 
                     plugin.lobbyLocation?.let { preLobby ->

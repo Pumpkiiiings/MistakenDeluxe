@@ -33,7 +33,7 @@ class GameWorldController(private val game: GameSession) {
         }
     }
 
-    fun limpiarMapa() {
+    fun clearMapa() {
         game.plugin.generatorManager.resetGenerators()
         game.changedBlocks.forEach { (loc, material) -> loc.block.type = material }
         game.changedBlocks.clear()

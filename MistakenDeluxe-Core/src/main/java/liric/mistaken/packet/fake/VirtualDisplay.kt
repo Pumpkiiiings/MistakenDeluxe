@@ -34,7 +34,7 @@ abstract class VirtualDisplay(
     var isValid: Boolean = true
 
     // Guardamos UUIDs, no Player. Mantener referencias a Player tras la desconexión
-    // filtra memoria y deja el display enviando a jugadores que ya no existen.
+    // filtra memoria y deja el display enviando a players que ya no existen.
     private val viewerIds: MutableSet<UUID> =
         ConcurrentHashMap.newKeySet<UUID>().apply { initialViewers.forEach { add(it.uniqueId) } }
 

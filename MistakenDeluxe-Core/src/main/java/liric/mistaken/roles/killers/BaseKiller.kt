@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
 
-    // Registra los characters activos de cada jugador usando este asesino
+    // Registra los characters activos de cada player usando este killer
     protected val activeCharacters = ConcurrentHashMap<UUID, Character>()
 
     /**
@@ -77,7 +77,7 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
     open fun setupAdditionalComponents(character: Character) {}
 
     /**
-     * Helper para transicionar de estado fácilmente para un jugador específico.
+     * Helper para transicionar de estado fácilmente para un player específico.
      */
     protected fun transitionTo(player: Player, state: CharacterState, force: Boolean = false) {
         val character = activeCharacters[player.uniqueId] ?: return
@@ -85,7 +85,7 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
     }
 
     /**
-     * Obtiene el Character (ECS) asociado a un jugador.
+     * Obtiene el Character (ECS) asociado a un player.
      */
     fun getCharacter(player: Player): Character? {
         return activeCharacters[player.uniqueId]

@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.classes
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -68,7 +68,7 @@ class RaincoatKid : Survivor(
         player.getAttribute(Attribute.SCALE)?.baseValue = 0.8
 
         val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "survivors_info")
-        val configMecanica = plugin.configManager.getSurvivorConfig(this.id) // El global supervivientes.yml
+        val configMecanica = plugin.configManager.getSurvivorConfig(this.id) // El global survivors.yml
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val id = if (isArmor) configMecanica.getString("armor.$key")
@@ -145,7 +145,7 @@ class RaincoatKid : Survivor(
         player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 0))
     }
 
-    fun aplicarGolpePalo(victim: Player) {
+    fun applyGolpePalo(victim: Player) {
         victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 100, 2))
         victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 100, 0))
         victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR, 1f, 0.5f)

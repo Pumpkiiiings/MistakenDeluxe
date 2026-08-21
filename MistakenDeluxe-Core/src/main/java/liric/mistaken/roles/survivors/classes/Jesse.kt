@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.classes
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -126,7 +126,7 @@ class Jesse : Survivor(
             val particle = WrapperPlayServerParticle(Particle(ParticleTypes.CLOUD), false, pos, Vector3f(0.3f, 0.3f, 0.3f), 0.05f, 5)
             PacketEvents.getAPI().playerManager.sendPacket(player, particle)
 
-            // Chocar contra el asesino
+            // Chocar contra el killer
             player.getNearbyEntities(1.5, 1.5, 1.5).filterIsInstance<Player>().forEach { victim ->
                 val session = plugin.sessionManager.getSession(victim)
                 if (session?.isKiller(victim.uniqueId) == true && !hitted.contains(victim.uniqueId)) {
@@ -148,7 +148,7 @@ class Jesse : Survivor(
     }
 
     // --- H2: PUÑETAZO (Lógica en Listener) ---
-    fun aplicarGolpePuno(victim: Player) {
+    fun applyGolpePuno(victim: Player) {
         victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 120, 0)) // 6s
         victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 120, 1))    // 6s
         victim.world.playSound(victim.location, Sound.ENTITY_PLAYER_ATTACK_CRIT, 1f, 0.8f)

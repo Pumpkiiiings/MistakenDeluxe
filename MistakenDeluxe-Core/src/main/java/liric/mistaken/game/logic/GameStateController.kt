@@ -29,9 +29,9 @@ class GameStateController(private val game: GameSession) {
 
         if (venimosDePartida) {
             game.playerController.cleanupAllPlayers(lastKillerWon)
-            game.worldController.limpiarMapa()
+            game.worldController.clearMapa()
             
-            // Usamos leaveSession para cada jugador para que maneje el teleport, la visibilidad
+            // Usamos leaveSession para cada player para que maneje el teleport, la visibilidad
             // y, en caso de GAME_SERVER, el envío al proxy.
             val playersToLeave = game.getPlayers().toList()
             playersToLeave.forEach { player ->
@@ -53,7 +53,7 @@ class GameStateController(private val game: GameSession) {
         // --- LIMPIEZA POST-CINEMÃTICA ---
         if (venimosDePartida) {
             game.playerController.cleanupAllPlayers(lastKillerWon)
-            game.worldController.limpiarMapa()
+            game.worldController.clearMapa()
             game.playerController.teleportAllToLobby()
         }
 
@@ -85,9 +85,9 @@ class GameStateController(private val game: GameSession) {
                 game.uiController.playModeTitle(online)
 
                 // 🔥 REPRODUCIR INTRO DEL ASESINO 🔥
-                val killer = game.getCurrentAsesino()
+                val killer = game.getCurrentKiller()
                 if (killer != null && killer.isOnline) {
-                    val killerClass = game.plugin.asesinoManager.getKillerOfPlayer(killer)
+                    val killerClass = game.plugin.killerManager.getKillerOfPlayer(killer)
                     if (killerClass != null) {
                         game.plugin.cinematicManager.playKillerIntro(killer, killerClass, game.getPlayers())
                     }
@@ -105,7 +105,7 @@ class GameStateController(private val game: GameSession) {
                         p.gameMode = GameMode.SURVIVAL // Y luego lo pasamos a SURVIVAL
                     }
 
-                    // A los supervivientes se les aplica True Darkness de Observer
+                    // A los survivors se les aplica True Darkness de Observer
                     if (!game.isKiller(p.uniqueId) && !game.plugin.spectatorManager.isSpectator(p)) {
                         liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(p, true)
                     }
@@ -119,7 +119,7 @@ class GameStateController(private val game: GameSession) {
         // Modo clásico INITIALIZES: spawnea exactamente a los 290 segundos
         if (game.currentMode == MistakenMode.INITIALIZES && game.timer == 290) {
 
-            // 1. Títulos de Terror a todos los jugadores (Incluyendo el Killer)
+            // 1. Títulos de Terror a todos los players (Incluyendo el Killer)
             val title = ColorTranslator.translate("<dark_red><bold><obfuscated>||</obfuscated> ¡GEOFFREY ESTÃ AQUÃ! <obfuscated>||</obfuscated>")
             val subtitle = ColorTranslator.translate("<dark_gray>Nadie sobrevivirá...")
             val times = Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(4), Duration.ofMillis(500))
@@ -135,7 +135,7 @@ class GameStateController(private val game: GameSession) {
             }
 
             // 2. Invocar la entidad en el centro
-            val spawnLoc = game.getCurrentAsesino()?.location ?: game.plugin.server.onlinePlayers.firstOrNull()?.location
+            val spawnLoc = game.getCurrentKiller()?.location ?: game.plugin.server.onlinePlayers.firstOrNull()?.location
 
             if (spawnLoc != null) {
                 val geoffreyLoc = spawnLoc.clone().add(0.0, 15.0, 0.0)
@@ -177,7 +177,7 @@ class GameStateController(private val game: GameSession) {
                     else -> aspWorld.time = 0
                 }
 
-                arena.asesinoSpawn?.world = aspWorld
+                arena.killerSpawn?.world = aspWorld
                 arena.survivorSpawns.forEach { it.world = aspWorld }
 
                 val genLocations = arena.generators.map { it.clone().apply { world = aspWorld } }
@@ -234,7 +234,7 @@ class GameStateController(private val game: GameSession) {
         game.timer = 12
 
         val mapName = game.currentMapName
-        val killer = game.getCurrentAsesino()
+        val killer = game.getCurrentKiller()
 
         val defaultAssassinWord = PumpkingServiceManager.messages.getRawString(null, "words.assassin", "El Killer", "messages")
         val defaultSurvivorsWord = PumpkingServiceManager.messages.getRawString(null, "words.survivors", "Survivors", "messages")
@@ -295,7 +295,7 @@ class GameStateController(private val game: GameSession) {
         }
 
         if (killerWon && killer != null) {
-            val killerClass = game.plugin.asesinoManager.getKillerOfPlayer(killer)
+            val killerClass = game.plugin.killerManager.getKillerOfPlayer(killer)
             if (killerClass != null) {
                 game.plugin.cinematicManager.playKillerOutro(killer, killerClass, game.getPlayers())
             } else {
@@ -320,14 +320,14 @@ class GameStateController(private val game: GameSession) {
 
         if (game.currentState == GameState.INGAME || game.currentState == GameState.STARTING || game.currentState == GameState.ENDING) {
             game.playerController.cleanupAllPlayers(lastKillerWon)
-            game.worldController.limpiarMapa()
+            game.worldController.clearMapa()
             game.playerController.teleportAllToLobby()
         }
 
         game.currentState = GameState.LOBBY
         game.timer = 0
         game.currentKillerUUID = null
-        game.asesinosUUIDs.clear()
+        game.killersUUIDs.clear()
         game.modeForced = false
         game.forceStart = false
         game.ambientManager.stopAll()

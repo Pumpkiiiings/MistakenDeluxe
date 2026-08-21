@@ -27,7 +27,7 @@ class ObserverHUDManager(private val plugin: Mistaken) {
     private val activeStates = ConcurrentHashMap<UUID, String>()
     // Componentes dinámicos que deben ser actualizados
     private val activeDynamicTexts = ConcurrentHashMap<UUID, MutableSet<DynamicTextComponent>>()
-    // IDs de los componentes globales (nunca se borran mientras el jugador esté)
+    // IDs de los componentes globales (nunca se borran mientras el player esté)
     private val globalComponentIds = ConcurrentHashMap<UUID, MutableSet<String>>()
     // IDs de los componentes de estado actual para borrado manual
     private val stateComponentIds = ConcurrentHashMap<UUID, MutableSet<String>>()
@@ -50,7 +50,7 @@ class ObserverHUDManager(private val plugin: Mistaken) {
         val hasObs = ObserverHook.hasObserver(player)
         
         if (hasObs && loggedObserverPlayers.add(player.uniqueId)) {
-            plugin.componentLogger.info(ColorTranslator.translate("[<green>ObserverHook</green>] <white>¡El jugador <yellow>${player.name}</yellow> ha sido detectado por ObserverHook!</white>"))
+            plugin.componentLogger.info(ColorTranslator.translate("[<green>ObserverHook</green>] <white>Player <yellow>${player.name}</yellow> has been detected by ObserverHook!</white>"))
         }
 
         handlePlayerState(player)
@@ -94,7 +94,7 @@ class ObserverHUDManager(private val plugin: Mistaken) {
         if (activeStates[player.uniqueId] == "ingame") {
             val role = if (gm.isKiller(player.uniqueId)) "killer" else "survivor"
             // Remover componentes de roles previos no es tan trivial porque no guardamos la key exacta,
-            // pero podemos dibujar encima o confiar en que se llame después de un clearHUD().
+            // pero podemos draw encima o confiar en que se llame después de un clearHUD().
             drawComponents(player, "roles.$role", false)
         }
     }

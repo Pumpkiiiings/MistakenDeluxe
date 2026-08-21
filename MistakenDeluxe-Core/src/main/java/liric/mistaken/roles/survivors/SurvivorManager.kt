@@ -1,7 +1,7 @@
-package liric.mistaken.roles.survivors
+﻿package liric.mistaken.roles.survivors
 
 import liric.mistaken.Mistaken
-import liric.mistaken.roles.survivors.clases.*
+import liric.mistaken.roles.survivors.classes.*
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -16,8 +16,8 @@ import liric.mistaken.roles.shared.AbstractRoleManager
 class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) {
 
     init {
-        // Registro de Clases (Singletons)
-        // Aquí agregas las demás clases cuando las tengas listas (Jesse, Petra, etc.)
+        // Registro de Classes (Singletons)
+        // AquÃ­ agregas las demÃ¡s classes cuando las tengas listas (Jesse, Petra, etc.)
         listOf(
             Civilian(),
             DeliveryMan(),
@@ -30,32 +30,32 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
         ).forEach { registerClass(it) }
     }
 
-    override fun registerClass(superviviente: Survivor) {
-        val config = plugin.configManager.getSurvivorConfig(superviviente.id)
+    override fun registerClass(survivor: Survivor) {
+        val config = plugin.configManager.getSurvivorConfig(survivor.id)
         if (config.getBoolean("enabled", true)) {
-            availableClasses[superviviente.id.lowercase()] = superviviente
+            availableClasses[survivor.id.lowercase()] = survivor
         }
     }
 
     /**
      * ?? REGISTRO OPTIMIZADO (Paper 1.21.4+):
-     * Usamos 'player.scheduler'. Si el jugador se desconecta antes de los 5 ticks,
-     * la tarea se cancela sola automáticamente.
+     * Usamos 'player.scheduler'. Si el player se desconecta antes de los 5 ticks,
+     * la tarea se cancela sola automÃ¡ticamente.
      */
     fun registrarSurvivor(player: Player, clase: Survivor) {
         val uuid = player.uniqueId
 
-        // 1. Asignación inmediata en RAM
+        // 1. AsignaciÃ³n inmediata en RAM
         activeRoles[uuid] = clase
 
         // 2. Tarea diferida anclada a la entidad (Safe)
-        // Se ejecuta 5 ticks (250ms) después para asegurar que el inventario esté listo
+        // Se ejecuta 5 ticks (250ms) despuÃ©s para asegurar que el inventario estÃ© listo
         player.scheduler.runDelayed(plugin, { task ->
             
             if (activeRoles[uuid] == clase) {
                 clase.equip(player)
 
-                // Aplicar vida máxima específica del superviviente
+                // Apply vida mÃ¡xima especÃ­fica del survivor
                 val config = plugin.configManager.getSurvivorConfig(clase.id)
                 val maxHealth = config.getDouble("stats.health", 20.0)
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = maxHealth
@@ -67,7 +67,7 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
                     "<gray>[Survivor]</gray> <white>${player.name}</white> <green>equipado como ${clase.nombre}</green>"
                 ))
 
-                // Feedback al jugador
+                // Feedback al player
                 player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "game.class-selected",
                     Placeholder.component("class", ColorTranslator.translate(clase.nombre))))
             }
@@ -75,7 +75,7 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
     }
 
     /**
-     * Remueve al superviviente.
+     * Remueve al survivor.
      */
     fun removerSurvivor(player: Player) {
         removeRoleLogic(player.uniqueId, player)
@@ -92,14 +92,14 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
         if (player != null && player.isOnline) {
             // ?? FOLIA FIX: Modificar inventario/efectos DEBE hacerse en el hilo de la entidad
             player.scheduler.run(plugin, { _ ->
-                // 1. Limpieza lógica de la clase
+                // 1. Limpieza lÃ³gica de la clase
                 clase.cleanup(player)
 
-                // 2. Limpieza física
+                // 2. Limpieza fÃ­sica
                 player.inventory.clear()
                 player.inventory.armorContents = arrayOfNulls(4)
                 
-                // Restaurar vida máxima por defecto (20.0 = 10 corazones)
+                // Restaurar vida mÃ¡xima por defecto (20.0 = 10 corazones)
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = 20.0
 
                 // Limpieza de pociones eficiente
@@ -111,14 +111,14 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
                 player.walkSpeed = 0.2f
             }, null)
         } else {
-            // Si está offline, solo limpiamos la lógica interna de la clase (si aplica)
+            // Si estÃ¡ offline, solo limpiamos la lÃ³gica interna de la clase (si aplica)
             clase.cleanup(null)
         }
     }
 
     override fun cleanAll() {
         super.cleanAll()
-        plugin.componentLogger.info(ColorTranslator.translate("[INFO] [Manager] Survivor cleanup completed."))
+        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Survivor cleanup completed.</gray>"))
     }
 
     // --- GETTERS ---

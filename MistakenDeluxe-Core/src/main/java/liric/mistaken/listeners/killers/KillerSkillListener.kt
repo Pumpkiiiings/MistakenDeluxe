@@ -41,7 +41,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         if (session.currentState != GameState.INGAME) return
         if (!session.isKiller(player.uniqueId)) return
 
-        // Anti-spam para evitar que spamee transiciones si el jugador mantiene presionado el click izquierdo
+        // Anti-spam para evitar que spamee transiciones si el player mantiene presionado el click izquierdo
         val now = System.currentTimeMillis()
         val lastHit = lastAttackMap.getOrDefault(player.uniqueId, 0L)
         if (now - lastHit < 500L) { // Medio segundo de cooldown para la animación
@@ -49,9 +49,9 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         }
         lastAttackMap[player.uniqueId] = now
 
-        val asesino = plugin.asesinoManager.getKillerOfPlayer(player) ?: return
-        if (asesino is liric.mistaken.roles.killers.BaseKiller) {
-            val character = asesino.getCharacter(player) ?: return
+        val killer = plugin.killerManager.getKillerOfPlayer(player) ?: return
+        if (killer is liric.mistaken.roles.killers.BaseKiller) {
+            val character = killer.getCharacter(player) ?: return
             
             val combatComp = character.getComponent(liric.mistaken.characters.components.CombatComponent::class.java)
             if (combatComp != null) {
@@ -73,9 +73,9 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         if (session.currentState != GameState.INGAME) return
         if (!session.isKiller(player.uniqueId)) return
 
-        val asesino = plugin.asesinoManager.getKillerOfPlayer(player) ?: return
-        if (asesino is liric.mistaken.roles.killers.BaseKiller) {
-            val character = asesino.getCharacter(player) ?: return
+        val killer = plugin.killerManager.getKillerOfPlayer(player) ?: return
+        if (killer is liric.mistaken.roles.killers.BaseKiller) {
+            val character = killer.getCharacter(player) ?: return
             
             val combatComp = character.getComponent(liric.mistaken.characters.components.CombatComponent::class.java)
             if (combatComp != null) {
@@ -88,7 +88,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * Trigger: Activacin de habilidades activas (Click Derecho).
+     * Trigger: Activacin de abilities activas (Click Derecho).
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onUseAbility(event: PlayerInteractEvent) {
@@ -97,7 +97,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
 
         val player = event.player
 
-        // ?? MULTIARENA: Buscamos la sesi�n espec�fica del asesino
+        // ?? MULTIARENA: Buscamos la sesi�n espec�fica del killer
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
 
@@ -106,21 +106,21 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
 
         val slot = player.inventory.heldItemSlot
         if (!session.isKiller(player.uniqueId)) return
-        val asesino = plugin.asesinoManager.getKillerOfPlayer(player) ?: return
+        val killer = plugin.killerManager.getKillerOfPlayer(player) ?: return
 
-        val config = plugin.configManager.getKillerConfig(asesino.id)
-        val pathBase = "asesinos.${asesino.id}"
+        val config = plugin.configManager.getKillerConfig(killer.id)
+        val pathBase = "asesinos.${killer.id}"
 
-        var habilidadEjecutada = -1
+        var abilityEjecutada = -1
         for (i in 1..4) {
             val configSlot = config.getInt("items.skill${i}_slot", i)
             if (slot == configSlot) {
-                habilidadEjecutada = i
+                abilityEjecutada = i
                 break
             }
         }
 
-        if (habilidadEjecutada == -1) return
+        if (abilityEjecutada == -1) return
 
         val item = player.inventory.itemInMainHand
         if (item.type == Material.AIR) return
@@ -128,12 +128,12 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         event.isCancelled = true
         plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
 
-        // Ejecutar habilidad mapeada dinmicamente
-        asesino.useSkill(player, habilidadEjecutada)
+        // Ejecutar ability mapeada dinmicamente
+        killer.useSkill(player, abilityEjecutada)
     }
 
     /**
-     * Lgica de impacto: Habilidades basadas en proyectiles (Ej: Entity 303).
+     * Lgica de impacto: Abilities basadas en proyectiles (Ej: Entity 303).
      */
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun onProjectileHit(event: ProjectileHitEvent) {
@@ -161,10 +161,10 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
             // --- 2. L�GICA DE IMPACTO ---
             val victim = event.hitEntity as? Player ?: return
 
-            // No infectar a otros asesinos de la misma sesi�n
+            // No infectar a otros killers de la misma sesi�n
             if (session.isKiller(victim.uniqueId)) return
 
-            // Verificamos que la v�ctima sea un superviviente v�lido en esa arena
+            // Verificamos que la v�ctima sea un survivor v�lido en esa arena
             if (victim.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(victim)) return
 
             victim.apply {

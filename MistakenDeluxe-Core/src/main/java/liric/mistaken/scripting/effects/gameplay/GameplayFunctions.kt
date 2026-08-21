@@ -38,7 +38,7 @@ object GameplayFunctions {
     }
 
     /**
-     * Aplica knockback a un jugador desde una dirección.
+     * Aplica knockback a un player desde una dirección.
      */
     fun knockback(victim: Player, source: Player, horizontalForce: Double, verticalForce: Double) {
         val dir = victim.location.toVector()
@@ -50,7 +50,7 @@ object GameplayFunctions {
     }
 
     /**
-     * Devuelve jugadores cercanos en modo SURVIVAL (filtra al propio jugador).
+     * Devuelve players cercanos en modo SURVIVAL (filtra al propio player).
      */
     fun nearbyPlayers(player: Player, radius: Double): List<Player> {
         val clampedRadius = radius.coerceIn(0.5, 50.0)
@@ -60,7 +60,7 @@ object GameplayFunctions {
     }
 
     /**
-     * Devuelve jugadores cercanos que sean válidos como target.
+     * Devuelve players cercanos que sean válidos como target.
      * Usa la misma lógica que CoreKiller.isValidTarget.
      */
     fun nearbyValidTargets(player: Player, radius: Double): List<Player> {
@@ -68,15 +68,15 @@ object GameplayFunctions {
     }
 
     /**
-     * Comprueba si un jugador es un objetivo válido.
+     * Comprueba si un player es un objetivo válido.
      * Lógica: el target debe estar en SURVIVAL, no ser espectador, y no ser killer.
      */
     fun isValidTarget(player: Player, target: Player): Boolean {
         if (target.uniqueId == player.uniqueId) return false
         if (target.gameMode != GameMode.SURVIVAL) return false
         if (!target.isOnline) return false
-        // Delegate to asesinoManager if available
-        return !plugin.asesinoManager.isKiller(target)
+        // Delegate to killerManager if available
+        return !plugin.killerManager.isKiller(target)
     }
 
     /**
@@ -90,7 +90,7 @@ object GameplayFunctions {
     }
 
     /**
-     * Reproduce un sonido en una ubicación arbitraria del mundo.
+     * Reproduce un sonido en una ubicación arbitraria del world.
      */
     fun playSoundAt(location: org.bukkit.Location, soundName: String, volume: Float, pitch: Float) {
         try {
@@ -100,7 +100,7 @@ object GameplayFunctions {
     }
 
     /**
-     * Envía un mensaje traducido al jugador, resolviendo la key contra
+     * Envía un message traducido al player, resolviendo la key contra
      * PumpkingServiceManager.messages — mismo sistema que usan los killers Kotlin.
      */
     fun sendTranslated(player: Player, key: String) {

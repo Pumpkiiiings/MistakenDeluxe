@@ -1,4 +1,4 @@
-package liric.mistaken.game.entities
+﻿package liric.mistaken.game.entities
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.utils.worldViewers
@@ -30,8 +30,8 @@ import pumpking.lib.service.PumpkingServiceManager
 /**
  *[LIRIC-MISTAKEN 2.0] - MODO TROLL SUPREMO
  * GEOFFREY 3.0: EVIL SCARY EDITION.
- * Tamaño MASIVO (x2), Manos hacia adelante, Sin collar, Terror puro.
- * TRACKING EN TIEMPO REAL: Cambia al objetivo más cercano dinámicamente (TODOS SON PRESA).
+ * TamaÃ±o MASIVO (x2), Manos hacia adelante, Sin collar, Terror puro.
+ * TRACKING EN TIEMPO REAL: Cambia al objetivo mÃ¡s cercano dinÃ¡micamente (TODOS SON PRESA).
  */
 class GeoffreyEXE(private val plugin: Mistaken) {
 
@@ -45,14 +45,14 @@ class GeoffreyEXE(private val plugin: Mistaken) {
     private var consecutiveMisses = 0
 
     /**
-     * Sesión a la que pertenece esta anomalía. La fija [liric.mistaken.game.logic.GameStateController]
+     * SesiÃ³n a la que pertenece esta anomalÃ­a. La fija [liric.mistaken.game.logic.GameStateController]
      * al invocarla en partida. Queda null cuando se spawnea desde /mtest, y entonces
-     * el alcance cae al mundo. Sin esto los displays se envían a TODO el servidor,
-     * saltándose el aislamiento entre arenas.
+     * el alcance cae al world. Sin esto los displays se envÃ­an a TODO el servidor,
+     * saltÃ¡ndose el aislamiento entre arenas.
      */
     var assignedSession: GameSession? = null
 
-    // Constantes para la máquina de estados
+    // Constantes para la mÃ¡quina de estados
     private enum class State { BUSCANDO, SALTANDO, MISIL, AEREO, FURIA }
     private var currentState = State.BUSCANDO
 
@@ -64,7 +64,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
                 val red = scoreboard.getTeam(teamRed) ?: scoreboard.registerNewTeam(teamRed).apply { color(NamedTextColor.RED) }
 
                 // =========================================================
-                // 🔥 DISEÑO "EVIL SCARY" (ESCALA x2, MÁS ATERRADOR)
+                // ðŸ”¥ DISEÃ‘O "EVIL SCARY" (ESCALA x2, MÃS ATERRADOR)
                 // =========================================================
 
                 val core1 = createPart(startLoc, Material.BLACK_CONCRETE, Vector3f(5.2f, 5.2f, 5.2f), Vector3f(-2.6f, 0f, -2.6f))
@@ -104,12 +104,12 @@ class GeoffreyEXE(private val plugin: Mistaken) {
 
                 iniciarIANativa()
             } catch (e: Exception) {
-                plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [Entity] Failed to invoke dark entity: ${e.message}"))
+                plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Failed to invoke dark entity: ${e.message}</gray>"))
             }
         }
     }
 
-    /** Espectadores de la anomalía: la sesión si la tiene, si no el mundo donde aparece. */
+    /** Espectadores de la anomalÃ­a: la sesiÃ³n si la tiene, si no el world donde aparece. */
     private fun viewerScope(loc: Location): List<Player> =
         assignedSession?.getPlayers() ?: loc.worldViewers()
 
@@ -202,7 +202,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
             val bodyLoc = parts[0].location
             val nextLoc = bodyLoc.add(target.location.toVector().subtract(bodyLoc.toVector()).normalize().multiply(3.0))
             moverTodo(nextLoc, target.location)
-            aplicarAuraMiedo(nextLoc, 20)
+            applyAuraMiedo(nextLoc, 20)
             target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1.2f, 0.8f)
 
             saltos++
@@ -214,7 +214,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         initialTarget.playSound(initialTarget.location, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 0.5f)
         initialTarget.showTitle(Title.title(
             ColorTranslator.translate("<dark_red><bold>!!! VIENE !!!"),
-            ColorTranslator.translate("<red>¡¡¡¡corre!!!!")
+            ColorTranslator.translate("<red>Â¡Â¡Â¡Â¡corre!!!!")
         ))
 
         plugin.server.globalRegionScheduler.runDelayed(plugin, {
@@ -236,11 +236,11 @@ class GeoffreyEXE(private val plugin: Mistaken) {
 
                 moverTodo(nextLoc, target.location)
 
-                aplicarAuraMiedo(nextLoc, 40)
+                applyAuraMiedo(nextLoc, 40)
                 target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1.5f, 0.3f)
                 nextLoc.world.spawnParticle(Particle.SOUL_FIRE_FLAME, nextLoc, 10, 0.5, 0.5, 0.5, 0.1)
 
-                // 🔥 FIX: También daña a cualquiera en Survival (incluyendo asesinos)
+                // ðŸ”¥ FIX: TambiÃ©n daÃ±a a cualquiera en Survival (incluyendo killers)
                 val victims = nextLoc.world.getNearbyPlayers(nextLoc, 2.0).filter { it.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(it) }
                 if (victims.isNotEmpty()) {
                     victims.forEach { ejecutarMuerte(it) }
@@ -268,7 +268,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
                         if (!isRunning || hitAny || step >= 30 || target == null) {
                             taskBajada.cancel()
 
-                            // 🔥 FIX: Eliminamos el código que reseteaba la rotación a 0 y dañaba la pose original.
+                            // ðŸ”¥ FIX: Eliminamos el cÃ³digo que reseteaba la rotaciÃ³n a 0 y daÃ±aba la pose original.
 
                             if (hitAny) consecutiveMisses = 0 else consecutiveMisses++
                             currentState = State.BUSCANDO
@@ -279,8 +279,8 @@ class GeoffreyEXE(private val plugin: Mistaken) {
                         val dir = target.location.add(0.0, 1.0, 0.0).toVector().subtract(current.toVector()).normalize()
                         val nextLoc = current.add(dir.clone().multiply(2.0))
 
-                        // 🔥 FIX: Eliminamos la rotación continua que deformaba los bloques.
-                        // Ahora caerá firme y recto hacia el jugador, viéndose mucho más estable e intimidante.
+                        // ðŸ”¥ FIX: Eliminamos la rotaciÃ³n continua que deformaba los bloques.
+                        // Ahora caerÃ¡ firme y recto hacia el player, viÃ©ndose mucho mÃ¡s estable e intimidante.
 
                         moverTodo(nextLoc, target.location)
                         target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1f, 0.5f)
@@ -345,7 +345,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
                 val nextLoc = current.add(dir.multiply(1.8))
 
                 moverTodo(nextLoc, target.location)
-                aplicarAuraMiedo(nextLoc, 40)
+                applyAuraMiedo(nextLoc, 40)
                 target.playSound(nextLoc, Sound.BLOCK_ANVIL_LAND, 1.0f, 1.5f)
 
                 if (nextLoc.distanceSquared(target.location) < 6.50) {
@@ -362,14 +362,14 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         victim.world.spawnParticle(Particle.EXPLOSION_EMITTER, victim.location, 2)
         victim.world.playSound(victim.location, Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 2f, 0.5f)
 
-        // Cuánto daño hará el ataque (14.0 = 7 corazones).
-        // Si está enfurecido, hace más daño (20.0 = 10 corazones / Instakill si no tiene armor)
+        // CuÃ¡nto daÃ±o harÃ¡ el ataque (14.0 = 7 corazones).
+        // Si estÃ¡ enfurecido, hace mÃ¡s daÃ±o (20.0 = 10 corazones / Instakill si no tiene armor)
         val damageAmount = if (enrage) 20.0 else 7.0
 
         val nuevaVida = victim.health - damageAmount
 
         if (nuevaVida <= 0) {
-            // AQUÍ SÍ MUERE
+            // AQUÃ SÃ MUERE
             victim.health = 0.0
             val prefix = if (enrage) "<dark_red><b>[FURIA]</b>" else "<red><b>[!]</b>"
             Bukkit.broadcast(PumpkingServiceManager.messages.getComponent(null, "anomalies.geoffrey.death", Placeholder.parsed("player", victim.name)))
@@ -390,8 +390,8 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         }
     }
 
-    private fun aplicarAuraMiedo(loc: Location, duration: Int) {
-        // 🔥 FIX: También le da oscuridad al asesino si está cerca
+    private fun applyAuraMiedo(loc: Location, duration: Int) {
+        // ðŸ”¥ FIX: TambiÃ©n le da oscuridad al killer si estÃ¡ cerca
         loc.world.getNearbyPlayers(loc, 15.0).forEach { p ->
             if (p.gameMode == GameMode.SURVIVAL && !plugin.isIgnored(p)) {
                 p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, duration, 0, false, false, false))
@@ -404,9 +404,9 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         val newLoc = baseLoc.clone()
         if (lookAtTargetLoc != null) {
             val dir = lookAtTargetLoc.toVector().subtract(baseLoc.toVector())
-            // 🔥 FIX: Anulamos el eje Y para que rote solo en horizontal (Yaw) y no se desarme (Pitch)
+            // ðŸ”¥ FIX: Anulamos el eje Y para que rote solo en horizontal (Yaw) y no se desarme (Pitch)
             dir.y = 0.0
-            if (dir.lengthSquared() > 0.001) { // Evita errores matemáticos si el jugador está exactamente dentro
+            if (dir.lengthSquared() > 0.001) { // Evita errores matemÃ¡ticos si el player estÃ¡ exactamente dentro
                 newLoc.direction = dir
             }
         }

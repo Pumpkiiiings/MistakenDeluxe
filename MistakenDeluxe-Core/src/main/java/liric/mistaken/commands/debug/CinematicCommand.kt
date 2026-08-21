@@ -10,16 +10,16 @@ import liric.mistaken.roles.killers.Killer
 import org.bukkit.entity.Player
 import pumpking.lib.color.ColorTranslator
 
-object CinematicaCommand {
+object CinematicCommand {
 
     fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {
-        val asesinosList = listOf(
+        val killersList = listOf(
             "sowoul", "pizzano", "errorestatico", "charlieinferno",
             "colorandelectricity", "rome", "romeodebuff", "slasher",
             "herobrine", "nullasesino", "entity303", "bendy", "kasaneteto", "mariachi"
         )
 
-        return Commands.literal("cinematica")
+        return Commands.literal("cinematic")
             .requires { source -> source.sender.hasPermission("mistaken.admin") }
             // --- SUBCOMANDO: INTRO ---
             .then(
@@ -27,17 +27,17 @@ object CinematicaCommand {
                     .then(
                         Commands.argument("asesino", StringArgumentType.word())
                             .suggests { _, builder ->
-                                asesinosList.forEach { if (it.startsWith(builder.remainingLowerCase)) builder.suggest(it) }
+                                killersList.forEach { if (it.startsWith(builder.remainingLowerCase)) builder.suggest(it) }
                                 builder.buildFuture()
                             }
                             .executes { context ->
                                 val source = context.source.sender as? Player ?: return@executes 0
-                                val asesinoId = StringArgumentType.getString(context, "asesino")
+                                val killerId = StringArgumentType.getString(context, "asesino")
 
-                                val asesinoDummy = createDummy(asesinoId)
-                                source.sendMessage(ColorTranslator.translate("<green>Reproduciendo <bold>INTRO</bold> de: <yellow>$asesinoId"))
+                                val killerDummy = createDummy(killerId)
+                                source.sendMessage(ColorTranslator.translate("<green>Reproduciendo <bold>INTRO</bold> de: <yellow>$killerId"))
 
-                                plugin.cinematicManager.playKillerIntro(source, asesinoDummy, listOf(source))
+                                plugin.cinematicManager.playKillerIntro(source, killerDummy, listOf(source))
                                 Command.SINGLE_SUCCESS
                             }
                     )
@@ -48,17 +48,17 @@ object CinematicaCommand {
                     .then(
                         Commands.argument("asesino", StringArgumentType.word())
                             .suggests { _, builder ->
-                                asesinosList.forEach { if (it.startsWith(builder.remainingLowerCase)) builder.suggest(it) }
+                                killersList.forEach { if (it.startsWith(builder.remainingLowerCase)) builder.suggest(it) }
                                 builder.buildFuture()
                             }
                             .executes { context ->
                                 val source = context.source.sender as? Player ?: return@executes 0
-                                val asesinoId = StringArgumentType.getString(context, "asesino")
+                                val killerId = StringArgumentType.getString(context, "asesino")
 
-                                val asesinoDummy = createDummy(asesinoId)
-                                source.sendMessage(ColorTranslator.translate("<red>Reproduciendo <bold>OUTRO</bold> de: <yellow>$asesinoId"))
+                                val killerDummy = createDummy(killerId)
+                                source.sendMessage(ColorTranslator.translate("<red>Reproduciendo <bold>OUTRO</bold> de: <yellow>$killerId"))
 
-                                plugin.cinematicManager.playKillerOutro(source, asesinoDummy, listOf(source))
+                                plugin.cinematicManager.playKillerOutro(source, killerDummy, listOf(source))
                                 Command.SINGLE_SUCCESS
                             }
                     )

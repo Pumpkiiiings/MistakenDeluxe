@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.engine
+﻿package liric.mistaken.game.managers.engine
 
 import com.infernalsuite.asp.api.AdvancedSlimePaperAPI
 import com.infernalsuite.asp.api.loaders.SlimeLoader
@@ -26,17 +26,17 @@ class MapManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Carga un mundo de arena desde una plantilla .slime.
+     * Carga un world de arena desde una plantilla .slime.
      */
     fun loadArenaWorld(templateName: String): CompletableFuture<World?> {
         val future = CompletableFuture<World?>()
         val instanceName = "${templateName}_${System.currentTimeMillis()}"
 
-        // --- FASE 1: DISCO (Hilo Asíncrono de Paper para no laguear el server) ---
+        // --- FASE 1: DISCO (Hilo AsÃ­ncrono de Paper para no laguear el server) ---
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
             try {
                 if (!fileLoader.worldExists(templateName)) {
-                    plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [MapManager] Slime file '$templateName' does not exist."))
+                    plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Slime file '$templateName' does not exist.</gray>"))
                     future.complete(null)
                     return@runNow
                 }
@@ -57,12 +57,12 @@ class MapManager(private val plugin: Mistaken) {
                         val bukkitWorld = instance.bukkitWorld
 
                         if (bukkitWorld == null) {
-                            plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [MapManager] Bukkit returned a null world."))
+                            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Bukkit returned a null world.</gray>"))
                             future.complete(null)
                             return@execute
                         }
 
-                        // --- CONFIGURACIÓN DE AMBIENTE (Tu lógica intacta) ---
+                        // --- CONFIGURACIÃ“N DE AMBIENTE (Tu lÃ³gica intacta) ---
                         bukkitWorld.apply {
                             isAutoSave = false
                             time = 18000L // Noche
@@ -74,24 +74,24 @@ class MapManager(private val plugin: Mistaken) {
                             setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false)
                             setGameRule(GameRule.DO_FIRE_TICK, false)
 
-                            // 🔥 TU CAMBIO: Anulamos el daño de caída globalmente
+                            // ðŸ”¥ TU CAMBIO: Anulamos el daÃ±o de caÃ­da globalmente
                             setGameRule(GameRule.FALL_DAMAGE, false)
 
                             setStorm(false)
                             isThundering = false
                         }
 
-                        plugin.componentLogger.info(ColorTranslator.translate("[SUCCESS] [MapManager] World instantiated: ${bukkitWorld.name}"))
+                        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>World instantiated: ${bukkitWorld.name}</gray>"))
                         future.complete(bukkitWorld)
 
                     } catch (e: Exception) {
-                        plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [MapManager] Failed to register world in Bukkit: ${e.message}"))
+                        plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Failed to register world in Bukkit: ${e.message}</gray>"))
                         future.complete(null)
                     }
                 }
 
             } catch (e: Exception) {
-                plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [MapManager] Critical failure loading $templateName: ${e.message}"))
+                plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Critical failure loading $templateName: ${e.message}</gray>"))
                 e.printStackTrace()
                 future.complete(null)
             }
@@ -101,7 +101,7 @@ class MapManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Descarga un mundo sin guardar cambios de forma segura.
+     * Descarga un world sin guardar cambios de forma segura.
      */
     fun unloadWorld(world: World?) {
         if (world == null) return
@@ -109,12 +109,12 @@ class MapManager(private val plugin: Mistaken) {
         // La descarga SIEMPRE debe ocurrir en el hilo principal
         plugin.server.globalRegionScheduler.execute(plugin) {
             Bukkit.unloadWorld(world, false)
-            plugin.componentLogger.info(ColorTranslator.translate("[INFO] [MapManager] World ${world.name} unloaded."))
+            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>World ${world.name} unloaded.</gray>"))
         }
     }
 
     fun shutdown() {
         // En Paper 1.21.4 ya no ocupamos cancelar corrutinas porque los schedulers
-        // del servidor se limpian solos al apagar el plugin. ¡Menos RAM gastada!
+        // del servidor se limpian solos al apagar el plugin. Â¡Menos RAM gastada!
     }
 }

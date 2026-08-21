@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
@@ -81,10 +81,10 @@ class CharlieInferno : CoreKiller(
 
     override fun useSkill(player: Player, slot: Int) {
         when (slot) {
-            1 -> if (!checkCooldown(player, 1)) { habilidadInfierno(player); playSkillEffects(player, 1) }
-            2 -> if (!checkCooldown(player, 2)) { habilidadDemonRun(player); playSkillEffects(player, 2) }
-            3 -> if (!checkCooldown(player, 3)) { habilidadBloqueHielo(player); playSkillEffects(player, 3) }
-            4 -> if (!checkCooldown(player, 4)) { habilidadColmillosInfierno(player); playSkillEffects(player, 4) }
+            1 -> if (!checkCooldown(player, 1)) { abilityInfierno(player); playSkillEffects(player, 1) }
+            2 -> if (!checkCooldown(player, 2)) { abilityDemonRun(player); playSkillEffects(player, 2) }
+            3 -> if (!checkCooldown(player, 3)) { abilityBloqueHielo(player); playSkillEffects(player, 3) }
+            4 -> if (!checkCooldown(player, 4)) { abilityColmillosInfierno(player); playSkillEffects(player, 4) }
         }
     }
 
@@ -142,7 +142,7 @@ class CharlieInferno : CoreKiller(
         detenerMusica(uuid)
 
         val task = player.scheduler.runAtFixedRate(plugin, Consumer { t ->
-            if (!player.isOnline || !plugin.asesinoManager.isKiller(player)) {
+            if (!player.isOnline || !plugin.killerManager.isKiller(player)) {
                 detenerMusica(uuid)
                 t.cancel()
                 return@Consumer
@@ -165,7 +165,7 @@ class CharlieInferno : CoreKiller(
 
     // --- 🔥 HABILIDADES ---
 
-    private fun habilidadInfierno(player: Player) {
+    private fun abilityInfierno(player: Player) {
         // 🔥 HITBOX: Explosión de Fuego
         HitboxVisualizer.drawInstantHitbox(plugin, player.location, 7.5, 7.5, 7.5, 10L, Material.ORANGE_STAINED_GLASS)
 
@@ -186,7 +186,7 @@ class CharlieInferno : CoreKiller(
         player.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 1))
     }
 
-    private fun habilidadDemonRun(player: Player) {
+    private fun abilityDemonRun(player: Player) {
         // 🔥 HITBOX: Rango de Marcado
         HitboxVisualizer.drawInstantHitbox(plugin, player.location, 10.0, 10.0, 10.0, 20L, Material.GRAY_STAINED_GLASS)
 
@@ -208,7 +208,7 @@ class CharlieInferno : CoreKiller(
         }
     }
 
-    private fun habilidadBloqueHielo(player: Player) {
+    private fun abilityBloqueHielo(player: Player) {
         val ice = PacketFactory.displays.buildItemDisplay(player.sessionViewers(), player.eyeLocation) {
             it.setItemStack(ItemStack(Material.PACKED_ICE))
             it.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.6f, 0.6f, 0.6f), Quaternionf())
@@ -259,7 +259,7 @@ class CharlieInferno : CoreKiller(
         }, null, 1L, 1L)
     }
 
-    private fun habilidadColmillosInfierno(player: Player) {
+    private fun abilityColmillosInfierno(player: Player) {
         val direction = player.location.direction.setY(0.0).normalize()
         val startLoc = player.location.clone()
         val current = startLoc.clone()
@@ -291,8 +291,8 @@ class CharlieInferno : CoreKiller(
 
     override fun showPhysicalTrail(player: Player) {
         val uuid = player.uniqueId
-        if (!plugin.asesinoManager.isKiller(player)) { limpiarEntidades(uuid); return }
-        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarEntidades(uuid)
+        if (!plugin.killerManager.isKiller(player)) { clearEntidades(uuid); return }
+        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) clearEntidades(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
             orbitMaterials.map { mat ->
@@ -325,7 +325,7 @@ class CharlieInferno : CoreKiller(
         }
     }
 
-    private fun limpiarEntidades(uuid: UUID) {
+    private fun clearEntidades(uuid: UUID) {
         orbitadores.remove(uuid)?.forEach { it.remove() }
         angulos.remove(uuid)
     }
@@ -333,7 +333,7 @@ class CharlieInferno : CoreKiller(
     override fun cleanup(player: Player?) {
         super.cleanup(player)
         player?.let {
-            limpiarEntidades(it.uniqueId)
+            clearEntidades(it.uniqueId)
             detenerMusica(it.uniqueId)
         }
     }

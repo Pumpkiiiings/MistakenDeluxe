@@ -55,14 +55,14 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask
  * se ejecutan en el entity scheduler de la víctima.
  *
  * CONVENCIÓN DE BUILDERS:
- * - Builders atados a jugador (orbit, trail, dash, projectile, line_spawn,
+ * - Builders atados a player (orbit, trail, dash, projectile, line_spawn,
  *   temp_fly, reveal_targets, ambient_music): reciben solo (player), porque
- *   el efecto se mueve con el jugador y su lifecycle está atado al entity scheduler.
- * - Builders de mundo (bait_trap, formation, sinking_block, spiral_particle,
+ *   el efecto se mueve con el player y su lifecycle está atado al entity scheduler.
+ * - Builders de world (bait_trap, formation, sinking_block, spiral_particle,
  *   place_trap, proximity_trap, sequence): reciben (player, loc) como los dos
  *   primeros argumentos, para ownership — player provee scriptId/ownerUuid para
  *   registrarse en EffectRegistry con cleanup automático (quit/death/reload),
- *   y loc define la posición fija del efecto en el mundo.
+ *   y loc define la posición fija del efecto en el world.
  * - Funciones globales de ubicación (sound, particle_burst): reciben cualquier
  *   objeto que implemente HasLocation como primer argumento (player, location,
  *   o cualquier wrapper futuro con sentido de ubicación).
@@ -595,9 +595,9 @@ object LuaEffectBindings {
                 
                 val priority = args.arg(3).optint(80)
                 
-                val asesino = liric.mistaken.Mistaken.instance.asesinoManager.getKillerOfPlayer(player)
-                if (asesino is liric.mistaken.roles.killers.BaseKiller) {
-                    val character = asesino.getCharacter(player)
+                val killer = liric.mistaken.Mistaken.instance.killerManager.getKillerOfPlayer(player)
+                if (killer is liric.mistaken.roles.killers.BaseKiller) {
+                    val character = killer.getCharacter(player)
                     if (character != null) {
                         val state = object : liric.mistaken.characters.states.CharacterState {
                             override val id = animName

@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.classes
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -60,8 +60,8 @@ class Civilian : Survivor(
                 sendAbilityMessage(player, langConfig, mechConfig, "skill1")
             }
             1 -> if (!checkCooldown(player, 1, mechConfig.getInt("items.skill2_cooldown", 45))) {
-                val mensajeFin = langConfig.getString("habilidades_mensajes.skill2_fin")
-                usarInvisibilidad(player, mensajeFin)
+                val messageFin = langConfig.getString("habilidades_mensajes.skill2_fin")
+                usarInvisibilidad(player, messageFin)
                 sendAbilityMessage(player, langConfig, mechConfig, "skill2")
             }
             2 -> if (!checkCooldown(player, 2, mechConfig.getInt("items.skill3_cooldown", 20))) {
@@ -121,12 +121,12 @@ class Civilian : Survivor(
         task?.let { activeTasks.add(it) }
     }
 
-    private fun usarInvisibilidad(player: Player, mensajeFin: String?) {
+    private fun usarInvisibilidad(player: Player, messageFin: String?) {
         player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, 100, 0, false, false, false))
 
         val task = player.scheduler.runDelayed(plugin, {
             if (player.isOnline) {
-                mensajeFin?.let { player.sendMessage(ColorTranslator.translate(it)) }
+                messageFin?.let { player.sendMessage(ColorTranslator.translate(it)) }
                 player.playSound(player.location, Sound.BLOCK_BEACON_DEACTIVATE, 0.5f, 1.5f)
             }
         }, null, 100L)

@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.classes
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -72,7 +72,7 @@ class Minty : Survivor(
     private fun usarSarpazo(player: Player) {
         val range = 4.0
         val ray = player.world.rayTraceEntities(player.eyeLocation, player.location.direction, range) {
-            it is Player && plugin.asesinoManager.isKiller(it)
+            it is Player && plugin.killerManager.isKiller(it)
         }
 
         player.world.spawnParticle(Particle.SWEEP_ATTACK, player.location.add(player.location.direction.multiply(1.5)).add(0.0, 1.2, 0.0), 1)
@@ -112,7 +112,7 @@ class Minty : Survivor(
 
         val targets = player.getNearbyEntities(8.0, 8.0, 8.0)
             .filterIsInstance<Player>()
-            .filter { plugin.asesinoManager.isKiller(it) }
+            .filter { plugin.killerManager.isKiller(it) }
 
         targets.forEach { killer ->
             killer.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))

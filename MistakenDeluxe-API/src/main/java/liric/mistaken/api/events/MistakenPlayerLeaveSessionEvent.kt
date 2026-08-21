@@ -6,7 +6,7 @@ import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 
 /**
- * Evento disparado cuando un jugador sale o es expulsado de una partida de Mistaken.
+ * Evento disparado cuando un player sale o es expulsado de una partida de Mistaken.
  */
 class MistakenPlayerLeaveSessionEvent(
     val player: Player,

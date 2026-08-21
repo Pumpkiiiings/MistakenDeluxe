@@ -22,22 +22,22 @@ class AntiBlockListener(private val plugin: Mistaken) : Listener {
     private val activeGameWorlds = ConcurrentHashMap.newKeySet<String>()
 
     init {
-        // Tarea periódica para limpiar la caché de mundos
+        // Tarea periódica para clear la caché de worlds
         plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             updateWorldCache()
         }, 1, 1, TimeUnit.MINUTES)
     }
 
     fun updateWorldCache() {
-        // 1. Proteger el mundo del lobby
+        // 1. Proteger el world del lobby
         plugin.lobbyLocation?.world?.name?.let { activeGameWorlds.add(it) }
 
-        // 2. Proteger mundos de sesiones activas
+        // 2. Proteger worlds de sesiones activas
         val loadedWorlds = plugin.server.worlds.map { it.name }
         val arenaTemplates = plugin.arenaManager.getArenas().keys
 
         for (worldName in loadedWorlds) {
-            // Si el mundo es una arena dinámica (ASP), lo protegemos
+            // Si el world es una arena dinámica (ASP), lo protegemos
             if (arenaTemplates.any { worldName.startsWith(it) }) {
                 activeGameWorlds.add(worldName)
             }
@@ -53,7 +53,7 @@ class AntiBlockListener(private val plugin: Mistaken) : Listener {
     fun onCombatBypass(event: EntityDamageByEntityEvent) {
         val victim = event.entity as? Player ?: return
 
-        // Si el mundo no es de Mistaken, no intervenimos
+        // Si el world no es de Mistaken, no intervenimos
         if (!isProtectedWorld(victim.world)) return
 
         val damager = event.damager as? Player ?: return
@@ -61,7 +61,7 @@ class AntiBlockListener(private val plugin: Mistaken) : Listener {
         // 🔥 MULTIARENA: Buscamos la sesión de los involucrados
         val session = plugin.sessionManager.getSession(victim) ?: return
 
-        // Seguridad: Si están en el mismo mundo pero en sesiones distintas (error raro de TP)
+        // Seguridad: Si están en el mismo world pero en sesiones distintas (error raro de TP)
         // o si uno está en el lobby y el otro no, cancelamos daño.
         if (plugin.sessionManager.getSession(damager) != session) {
             event.isCancelled = true

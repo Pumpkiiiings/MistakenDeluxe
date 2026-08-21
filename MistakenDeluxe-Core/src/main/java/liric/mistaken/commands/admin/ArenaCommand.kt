@@ -119,7 +119,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
 
             "check" -> {
                 arena?.let {
-                    val ready = it.asesinoSpawn != null && it.survivorSpawns.isNotEmpty() && it.generators.isNotEmpty()
+                    val ready = it.killerSpawn != null && it.survivorSpawns.isNotEmpty() && it.generators.isNotEmpty()
                     val statusKey = if (ready) "arena.status-ready" else "arena.status-incomplete"
                     val statusText = PumpkingServiceManager.messages.getRawString(player, statusKey, "Unknown")
 
@@ -133,7 +133,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
                     player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.check-generators",
                         Placeholder.parsed("count", it.generators.size.toString())))
 
-                    val killerIcon = if (it.asesinoSpawn != null) "<green>?" else "<red>?"
+                    val killerIcon = if (it.killerSpawn != null) "<green>?" else "<red>?"
                     player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.check-killer",
                         Placeholder.parsed("icon", killerIcon)))
 

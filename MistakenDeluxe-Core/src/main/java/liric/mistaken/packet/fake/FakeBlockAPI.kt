@@ -14,9 +14,9 @@ import com.github.retrooper.packetevents.util.Vector3i
 class FakeBlockAPI {
 
     /**
-     * EnvÃ­a un bloque falso (Client-Side) a un jugador especÃ­fico.
-     * @param player El jugador que verÃ¡ el bloque falso.
-     * @param location La ubicaciÃ³n en el mundo.
+     * EnvÃ­a un bloque falso (Client-Side) a un player especÃ­fico.
+     * @param player El player que verÃ¡ el bloque falso.
+     * @param location La ubicaciÃ³n en el world.
      * @param material El material falso.
      */
     fun sendBlockChange(player: Player, location: Location, material: Material) {
@@ -44,7 +44,7 @@ class FakeBlockAPI {
 
     /**
      * EnvÃ­a mÃºltiples bloques falsos de forma optimizada.
-     * @param player El jugador que verÃ¡ los bloques.
+     * @param player El player que verÃ¡ los bloques.
      * @param blocks Un mapa de ubicaciones y materiales a cambiar.
      */
     fun sendMultiBlockChange(player: Player, blocks: Map<Location, Material>) {

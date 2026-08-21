@@ -9,10 +9,10 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent
 /**
  * [LIRIC-MISTAKEN 2.0]
  * FlashlightListener: la tecla F deja de intercambiar la segunda mano y pasa a
- * encender/apagar la linterna del superviviente.
+ * encender/apagar la linterna del survivor.
  *
  * PlayerSwapHandItemsEvent se dispara aunque ambas manos esten vacias, asi que no hace
- * falta interceptar el packet. Si canUse() dice que no (asesino, lobby, muerto), el
+ * falta interceptar el packet. Si canUse() dice que no (killer, lobby, muerto), el
  * evento no se cancela y el swap funciona como siempre.
  */
 class FlashlightListener(private val plugin: Mistaken) : Listener {

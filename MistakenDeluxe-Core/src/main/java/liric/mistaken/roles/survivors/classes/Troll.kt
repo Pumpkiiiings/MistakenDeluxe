@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.classes
 
 import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
@@ -121,7 +121,7 @@ class Troll : Survivor(
         val fakeUUID = UUID.randomUUID()
         val pm = PacketEvents.getAPI().playerManager
 
-        // 1. Copiar Texturas del Jugador
+        // 1. Copiar Texturas del Player
         val profile = UserProfile(fakeUUID, player.name)
         player.playerProfile.properties.forEach { prop ->
             profile.textureProperties.add(TextureProperty(prop.name, prop.value, prop.signature))
@@ -173,7 +173,7 @@ class Troll : Survivor(
             plugin.server.onlinePlayers.forEach { pm.sendPacket(it, removeInfo) }
         }, null, 5L)
         
-        // 4. Hacer invisible al jugador real y esconder armadura
+        // 4. Hacer invisible al player real y esconder armadura
         val savedArmor = player.inventory.armorContents.clone()
         val savedHand = player.inventory.itemInMainHand.clone()
         val savedOffHand = player.inventory.itemInOffHand.clone()
@@ -233,7 +233,7 @@ class Troll : Survivor(
                 }
             }
 
-            // --- 0. Interacción con Asesinos (Huir o Explotar) ---
+            // --- 0. Interacción con Killers (Huir o Explotar) ---
             var isFleeing = false
             for (viewer in plugin.server.onlinePlayers) {
                 val session = plugin.sessionManager.getSession(viewer)

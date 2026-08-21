@@ -6,7 +6,7 @@ import org.bukkit.event.HandlerList
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * MistakenDeathEvent: Evento disparado cuando un asesino elimina a un superviviente
+ * MistakenDeathEvent: Evento disparado cuando un killer elimina a un survivor
  * o viceversa dentro de la lógica del juego.
  */
 class MistakenDeathEvent(

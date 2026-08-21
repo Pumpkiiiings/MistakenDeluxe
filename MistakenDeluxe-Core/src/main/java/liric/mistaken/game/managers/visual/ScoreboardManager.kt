@@ -69,7 +69,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
             mapName = gm.currentMapName
             completed = plugin.generatorManager.getCompletedCountInWorld(player.world).toString()
             total = plugin.generatorManager.getTotalGeneratorsInWorld(player.world).toString()
-            killerLines = getKillerDisplayStrings(gm.asesinosUUIDs)
+            killerLines = getKillerDisplayStrings(gm.killersUUIDs)
 
             path = if (gm.currentState == GameState.INGAME)
                 "scoreboard.ingame_${gm.currentMode.name.lowercase()}"

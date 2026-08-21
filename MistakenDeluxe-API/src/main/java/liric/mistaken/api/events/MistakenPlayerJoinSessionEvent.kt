@@ -6,7 +6,7 @@ import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 
 /**
- * Evento disparado cuando un jugador se une a una partida de Mistaken.
+ * Evento disparado cuando un player se une a una partida de Mistaken.
  */
 class MistakenPlayerJoinSessionEvent(
     val player: Player,

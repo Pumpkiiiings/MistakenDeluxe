@@ -17,7 +17,7 @@ import java.util.function.Consumer
 import pumpking.lib.color.ColorTranslator
 
 class NullProfile : CinematicProfile {
-    override val id: String = "null" // Or nullasesino
+    override val id: String = "null" // Or nullkiller
     override val isFloating: Boolean = false
     override val introCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.JUMPSCARE_RUSH
     override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.JUMPSCARE_RUSH

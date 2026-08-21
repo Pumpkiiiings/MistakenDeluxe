@@ -6,7 +6,7 @@ import org.bukkit.Location
 class Arena(val name: String) {
 
     var slimeWorldName: String? = null
-    var asesinoSpawn: Location? = null
+    var killerSpawn: Location? = null
     var timeMode: String = "dynamic"
 
     // Usamos MutableList de Kotlin (que compila a ArrayList en la JVM)
@@ -15,7 +15,7 @@ class Arena(val name: String) {
     val generators: MutableList<Location> = mutableListOf()
 
     /**
-     * Añade un punto de spawn para supervivientes de forma segura.
+     * Añade un punto de spawn para survivors de forma segura.
      * O(n) check para evitar duplicados en tiempo de configuración.
      */
     fun addSurvivorSpawn(loc: Location) {
@@ -40,12 +40,12 @@ class Arena(val name: String) {
     fun getGeneratorLocations(): List<Location> = generators
 
     /**
-     * Limpia las configuraciones de la arena si es necesario.
+     * Limpia las configurations de la arena si es necesario.
      */
     fun clearConfig() {
         survivorSpawns.clear()
         generators.clear()
-        asesinoSpawn = null
+        killerSpawn = null
     }
 }
 

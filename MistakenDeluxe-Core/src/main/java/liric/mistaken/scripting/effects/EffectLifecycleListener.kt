@@ -9,7 +9,7 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
 /**
- * Listener que limpia efectos automáticamente cuando un jugador se desconecta o muere.
+ * Listener que limpia efectos automáticamente cuando un player se desconecta o muere.
  * También ejecuta cleanup periódico de handles muertos.
  */
 class EffectLifecycleListener(private val plugin: Mistaken) : Listener {

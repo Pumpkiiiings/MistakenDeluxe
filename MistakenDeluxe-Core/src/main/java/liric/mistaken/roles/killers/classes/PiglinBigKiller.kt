@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.Mistaken
 import liric.mistaken.characters.components.CombatComponent
@@ -189,7 +189,7 @@ class PiglinBigKiller : BaseKiller("piglinbig", "PiglinBig") {
             }
         }
 
-        // Aplicar aturdimiento a supervivientes en el radio
+        // Apply aturdimiento a survivors en el radio
         for (victim in session.getPlayers()) {
             if (victim == player) continue
             if (!session.isKiller(victim.uniqueId)) {
@@ -242,7 +242,7 @@ class PiglinBigKiller : BaseKiller("piglinbig", "PiglinBig") {
                     if (victim == player || session.isKiller(victim.uniqueId)) continue
                     
                     if (victim.location.distanceSquared(axeItem.location) < 2.5) { // Hitbox pequeña
-                        // Aplicar daño
+                        // Apply daño
                         Mistaken.instance.combatManager.takeDamage(victim)
                         victim.world.spawnParticle(Particle.BLOCK_CRUMBLE, victim.location.add(0.0, 1.0, 0.0), 10, 0.5, 0.5, 0.5, Material.REDSTONE_BLOCK.createBlockData())
                         victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1.0f, 1.0f)

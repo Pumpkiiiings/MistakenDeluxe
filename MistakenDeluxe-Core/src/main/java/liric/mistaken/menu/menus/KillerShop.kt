@@ -1,4 +1,4 @@
-package liric.mistaken.menu.menus
+﻿package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -24,7 +24,7 @@ class KillerShop : MenuBase("killers_shop") {
 
         val preferredSlots = config.getIntegerList("ajustes.slots-disponibles").toMutableList()
 
-        // ðŸ”¥ NUEVO: Slots fijos configurados desde el YAML
+        // Ã°Å¸â€Â¥ NUEVO: Slots fijos configurados desde el YAML
         val fixedSlotsSection = config.getConfigurationSection("ajustes.slots-fijos")
         val fixedSlots = mutableMapOf<String, Int>()
         if (fixedSlotsSection != null) {
@@ -40,11 +40,11 @@ class KillerShop : MenuBase("killers_shop") {
         val labelSeleccionado = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-seleccionado")
         val labelPoseido = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-poseido")
         val labelComprar = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-comprar")
-        val labelHabilidades = PumpkingServiceManager.messages.getComponent(player, "tienda.habilidades-titulo")
+        val labelAbilities = PumpkingServiceManager.messages.getComponent(player, "tienda.habilidades-titulo")
 
-        val asesinosCatalogo = plugin.asesinoManager.catalogo.keys
+        val killersCatalogo = plugin.killerManager.catalogo.keys
 
-        for (killerId in asesinosCatalogo) {
+        for (killerId in killersCatalogo) {
             val killerConfig = plugin.configManager.getKillerConfig(killerId)
             val permisoRequerido = killerConfig.getString("permiso")
             if (permisoRequerido != null && !player.hasPermission(permisoRequerido)) continue
@@ -57,7 +57,7 @@ class KillerShop : MenuBase("killers_shop") {
                 if (!hasAccess) continue
             }
 
-            // 🔥 NUEVO: Detección de slot fijo
+            // ðŸ”¥ NUEVO: DetecciÃ³n de slot fijo
             val targetSlot = if (fixedSlots.containsKey(killerId)) {
                 fixedSlots[killerId]!!
             } else if (preferredSlots.isNotEmpty()) {
@@ -84,11 +84,11 @@ class KillerShop : MenuBase("killers_shop") {
             loreTienda.forEach { fullLore.add(parseSafe(it)) }
             fullLore.add(Component.empty())
 
-            fullLore.add(labelHabilidades)
+            fullLore.add(labelAbilities)
             for (i in 1..4) {
                 val habName = PumpkingServiceManager.messages.getRawString(player, "asesinos.$killerId.skill_names.habilidad$i", "", "killers_info")
                 if (habName.isNotEmpty()) {
-                    fullLore.add(parseSafe(" <dark_gray>â€¢</dark_gray> <white>$habName</white>"))
+                    fullLore.add(parseSafe(" <dark_gray>Ã¢â‚¬Â¢</dark_gray> <white>$habName</white>"))
                 }
             }
             fullLore.add(Component.empty())
@@ -159,8 +159,8 @@ class KillerShop : MenuBase("killers_shop") {
         val econ = Mistaken.Companion.economy
 
         if (econ == null) {
-            player.sendMessage(parseSafe("<red><b>[!]</b> Error interno: El sistema de economÃ­a (Vault) no estÃ¡ conectado.</red>"))
-            plugin.componentLogger.error("[ERROR] [Economy] Purchase failed due to disconnected Vault: Player ${player.name}, Assassin $killerId")
+            player.sendMessage(parseSafe("<red><b>[!]</b> Error interno: El sistema de economÃƒÂ­a (Vault) no estÃƒÂ¡ conectado.</red>"))
+            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Purchase failed due to disconnected Vault: Player ${player.name}, Killer $killerId</gray>"))
             return
         }
 

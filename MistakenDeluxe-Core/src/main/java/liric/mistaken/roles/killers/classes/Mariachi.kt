@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
@@ -74,10 +74,10 @@ class Mariachi : CoreKiller(
 
     override fun useSkill(player: Player, slot: Int) {
         when (slot) {
-            1 -> if (!checkCooldown(player, 1)) { habilidadGrito(player); playSkillEffects(player, 1) }
-            2 -> if (!checkCooldown(player, 2)) { habilidadJarabe(player); playSkillEffects(player, 2) }
-            3 -> if (!checkCooldown(player, 3)) { habilidadGuitarrazo(player); playSkillEffects(player, 3) }
-            4 -> if (!checkCooldown(player, 4)) { habilidadTequila(player); playSkillEffects(player, 4) }
+            1 -> if (!checkCooldown(player, 1)) { abilityGrito(player); playSkillEffects(player, 1) }
+            2 -> if (!checkCooldown(player, 2)) { abilityJarabe(player); playSkillEffects(player, 2) }
+            3 -> if (!checkCooldown(player, 3)) { abilityGuitarrazo(player); playSkillEffects(player, 3) }
+            4 -> if (!checkCooldown(player, 4)) { abilityTequila(player); playSkillEffects(player, 4) }
         }
     }
 
@@ -113,7 +113,7 @@ class Mariachi : CoreKiller(
         iniciarMusica(player)
     }
 
-    private fun habilidadGrito(player: Player) {
+    private fun abilityGrito(player: Player) {
         player.world.getNearbyPlayers(player.location, 8.0).forEach { victim ->
             // 🔥 Uso de la función centralizada
             if (isValidTarget(player, victim)) {
@@ -127,14 +127,14 @@ class Mariachi : CoreKiller(
         }
     }
 
-    private fun habilidadJarabe(player: Player) {
+    private fun abilityJarabe(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 120, 3))
         player.sendMessage(ColorTranslator.translate(
             pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(player, "asesinos.mariachi.habilidades.a_zapatear", "killers_info")
         ))
     }
 
-    private fun habilidadGuitarrazo(player: Player) {
+    private fun abilityGuitarrazo(player: Player) {
         player.world.getNearbyPlayers(player.location, 6.0).forEach { victim ->
             // 🔥 Uso de la función centralizada
             if (isValidTarget(player, victim)) {
@@ -145,7 +145,7 @@ class Mariachi : CoreKiller(
         }
     }
 
-    private fun habilidadTequila(player: Player) {
+    private fun abilityTequila(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 120, 4))
         player.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 160, 0))
         player.sendMessage(ColorTranslator.translate(
@@ -155,8 +155,8 @@ class Mariachi : CoreKiller(
 
     override fun showPhysicalTrail(player: Player) {
         val uuid = player.uniqueId
-        if (!plugin.asesinoManager.isKiller(player)) { limpiarVisuales(uuid); return }
-        if (skullsOrbit[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
+        if (!plugin.killerManager.isKiller(player)) { clearVisuales(uuid); return }
+        if (skullsOrbit[uuid]?.firstOrNull()?.world != player.world) clearVisuales(uuid)
 
         val skulls = skullsOrbit.getOrPut(uuid) {
             mutableListOf<VirtualItemDisplay>().apply {
@@ -209,7 +209,7 @@ class Mariachi : CoreKiller(
         detenerMusica(uuid)
 
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!player.isOnline || !plugin.asesinoManager.isKiller(player)) {
+            if (!player.isOnline || !plugin.killerManager.isKiller(player)) {
                 detenerMusica(uuid)
                 task.cancel()
                 return@Consumer
@@ -223,7 +223,7 @@ class Mariachi : CoreKiller(
         }, null, 1L, 1480L)
     }
 
-    private fun limpiarVisuales(uuid: UUID) {
+    private fun clearVisuales(uuid: UUID) {
         skullsOrbit.remove(uuid)?.forEach { it.remove() }
         angulos.remove(uuid)
     }
@@ -235,7 +235,7 @@ class Mariachi : CoreKiller(
     override fun cleanup(player: Player?) {
         super.cleanup(player)
         player?.let {
-            limpiarVisuales(it.uniqueId)
+            clearVisuales(it.uniqueId)
             detenerMusica(it.uniqueId)
         }
     }

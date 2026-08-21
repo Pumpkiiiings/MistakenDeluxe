@@ -16,7 +16,7 @@ class PlayerStats {
     val generatorsRepaired = AtomicInteger(0)
 
     companion object {
-        // Objeto estático para formateo, evita instanciar uno por cada jugador (Ahorro de RAM)
+        // Objeto estático para formateo, evita instanciar uno por cada player (Ahorro de RAM)
         private val df = DecimalFormat("#.##")
     }
 

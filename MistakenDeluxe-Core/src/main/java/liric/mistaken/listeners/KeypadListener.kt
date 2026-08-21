@@ -93,7 +93,7 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
         val answer = typingData.second
         val input = event.message.trim()
 
-        // Se acepta la palabra del idioma del jugador y ademas los dos literales base,
+        // Se acepta la palabra del idioma del player y ademas los dos literales base,
         // para que nadie se quede atrapado en el panel si cambia de idioma a mitad.
         val cancels = setOf(cancelWord(player).lowercase(), "cancelar", "cancel")
         if (input.lowercase() in cancels) {

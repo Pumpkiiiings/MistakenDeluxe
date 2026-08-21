@@ -106,15 +106,15 @@ class VisibilityManager(private val plugin: Mistaken) {
     
     /**
      * Busca la entidad por EntityID y verifica visibilidad.
-     * O(N) si no es jugador, pero en Paper/Spigot moderno podemos optimizarlo.
-     * Para mantenerlo genérico, iteramos todos los mundos (o asumimos que si es un jugador usamos getOnlinePlayers).
+     * O(N) si no es player, pero en Paper/Spigot moderno podemos optimizarlo.
+     * Para mantenerlo genérico, iteramos todos los worlds (o asumimos que si es un player usamos getOnlinePlayers).
      */
     fun isHidden(targetEntityId: Int, viewerUuid: UUID): Boolean {
-        // Optimización 1: ¿Es un jugador?
+        // Optimización 1: ¿Es un player?
         val online = Bukkit.getOnlinePlayers().find { it.entityId == targetEntityId }
         if (online != null) return isHidden(online.uniqueId, viewerUuid)
         
-        // Si no es jugador, necesitamos saber su UUID. Como este chequeo ocurre millones de veces, 
+        // Si no es player, necesitamos saber su UUID. Como este chequeo ocurre millones de veces, 
         // no podemos hacer un Bukkit.getWorlds().forEach { it.entities }.
         // Solución: PacketVisibilityListener pasará el UUID si lo conoce, pero `WrapperPlayServerSpawnEntity` 
         // tiene un `uuid`. En PacketVisibilityListener debemos usar el UUID del paquete!
@@ -122,7 +122,7 @@ class VisibilityManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Limpieza cuando un jugador o entidad se desconecta/muere.
+     * Limpieza cuando un player o entidad se desconecta/muere.
      */
     fun removePlayer(uuid: UUID) {
         hiddenFrom.remove(uuid)

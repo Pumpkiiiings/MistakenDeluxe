@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.classes
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -34,7 +34,7 @@ class Notch : Survivor(
     private fun preLoadKit() {
         val config = plugin.configManager.getSurvivorConfig(this.id)
 
-        // 1. Habilidades
+        // 1. Abilities
         listOf("skill1", "skill2", "skill3").forEach { key ->
             config.getString("items.$key")?.let { id ->
                 if (id != "none" && id.isNotEmpty()) {
@@ -160,7 +160,7 @@ class Notch : Survivor(
                 val push = entity.location.toVector().subtract(player.location.toVector()).normalize().multiply(2.5).setY(0.4)
                 entity.velocity = push
 
-                // Efectos al asesino
+                // Efectos al killer
                 entity.sendMessage(ColorTranslator.translate(
                     pumpking.lib.service.PumpkingServiceManager.messages.getStrictString(entity, "supervivientes.notch.habilidades.denied", "survivors_info")
                 ))

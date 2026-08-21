@@ -6,7 +6,7 @@ import org.bukkit.Sound
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Resolucion de sonidos por nombre, para los que llegan desde configuracion.
+ * Resolucion de sonidos por nombre, para los que llegan desde configuration.
  *
  * Desde 1.21.x Sound dejo de ser un enum y paso a ser una interfaz respaldada por
  * Registry.SOUNDS. Sound.valueOf() sigue existiendo pero esta deprecado y acabara

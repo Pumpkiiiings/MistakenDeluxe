@@ -17,7 +17,7 @@ import java.util.concurrent.ThreadLocalRandom
 import java.util.function.Consumer
 import kotlin.math.min
 import liric.mistaken.game.Arena
-import liric.mistaken.roles.survivors.clases.Civilian
+import liric.mistaken.roles.survivors.classes.Civilian
 import net.kyori.adventure.text.minimessage.MiniMessage
 import pumpking.lib.service.PumpkingServiceManager
 
@@ -31,11 +31,11 @@ class GamePlayerController(private val game: GameSession) {
     private var activeLmsMusic = "mistaken:lms"
 
     fun setupPlayers(arena: Arena) {
-        // 🔥 FIX: Solo tomamos los jugadores de ESTA sesión
+        // 🔥 FIX: Solo tomamos los players de ESTA sesión
         val sessionPlayers = game.getPlayers().filter { !game.plugin.isIgnored(it) }.toMutableList()
         if (sessionPlayers.isEmpty()) return
 
-        game.asesinosUUIDs.clear()
+        game.killersUUIDs.clear()
 
         // --- 2. MODOS CLÁSICOS ---
         val candidatos = sessionPlayers.filter { 
@@ -54,7 +54,7 @@ class GamePlayerController(private val game: GameSession) {
         // Asignar el killer forzado si existe y esta en la partida
         game.forcedKillerUUID?.let { forcedUuid ->
             if (sessionPlayers.any { it.uniqueId == forcedUuid }) {
-                game.asesinosUUIDs.add(forcedUuid)
+                game.killersUUIDs.add(forcedUuid)
                 candidatos.removeAll { it.uniqueId == forcedUuid }
                 selectedCount++
                 game.forcedKillerUUID = null // Solo sirve para 1 partida
@@ -65,8 +65,8 @@ class GamePlayerController(private val game: GameSession) {
         game.settings?.let { rules ->
             rules.allowedKillers.forEach { killerName ->
                 val p = sessionPlayers.find { it.name.equals(killerName, ignoreCase = true) }
-                if (p != null && selectedCount < killersToSelect && !game.asesinosUUIDs.contains(p.uniqueId)) {
-                    game.asesinosUUIDs.add(p.uniqueId)
+                if (p != null && selectedCount < killersToSelect && !game.killersUUIDs.contains(p.uniqueId)) {
+                    game.killersUUIDs.add(p.uniqueId)
                     candidatos.removeAll { it.uniqueId == p.uniqueId }
                     selectedCount++
                 }
@@ -82,7 +82,7 @@ class GamePlayerController(private val game: GameSession) {
         
         if (candidatos.isEmpty() && selectedCount < killersToSelect) {
             val backup = sessionPlayers.filter { p -> 
-                !game.asesinosUUIDs.contains(p.uniqueId) && 
+                !game.killersUUIDs.contains(p.uniqueId) && 
                 !(game.settings?.allowedSurvivors?.any { it.equals(p.name, true) } ?: false) &&
                 !game.forcedSurvivorUUIDs.contains(p.uniqueId)
             }
@@ -94,13 +94,13 @@ class GamePlayerController(private val game: GameSession) {
 
         for (i in 0 until min(killersToSelect - selectedCount, candidatos.size)) {
             val uuid = candidatos[i].uniqueId
-            game.asesinosUUIDs.add(uuid)
+            game.killersUUIDs.add(uuid)
             globalRecentKillers.add(uuid.toString())
         }
         
         while(globalRecentKillers.size > 50) globalRecentKillers.removeAt(0)
 
-        game.currentKillerUUID = game.asesinosUUIDs.firstOrNull()
+        game.currentKillerUUID = game.killersUUIDs.firstOrNull()
 
         var survivorIndex = 0
         val survivorsSolo = mutableListOf<Player>()
@@ -117,7 +117,7 @@ class GamePlayerController(private val game: GameSession) {
 
             if (isKiller) {
                 game.uiController.setLuckPermsPrefix(p, "<red>")
-                val spawnLoc = arena.asesinoSpawn ?: p.world.spawnLocation
+                val spawnLoc = arena.killerSpawn ?: p.world.spawnLocation
 
                 p.teleportAsync(spawnLoc).thenAccept { success ->
                     if (success && p.isOnline) {
@@ -130,7 +130,7 @@ class GamePlayerController(private val game: GameSession) {
                             claseID = "slasher"
                             p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Slasher."))
                         }
-                        game.plugin.asesinoManager.equipKiller(p, claseID)
+                        game.plugin.killerManager.equipKiller(p, claseID)
 
                         if (game.currentMode == MistakenMode.HIDE_AND_SEEK) {
                             p.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 1200, 0, false, false, false))
@@ -161,7 +161,7 @@ class GamePlayerController(private val game: GameSession) {
                 game.uiController.setLuckPermsPrefix(p, "<green>")
 
                 val spawns = arena.survivorSpawns
-                val spawnLoc = if (spawns.isEmpty()) arena.asesinoSpawn ?: p.world.spawnLocation else spawns[survivorIndex % spawns.size]
+                val spawnLoc = if (spawns.isEmpty()) arena.killerSpawn ?: p.world.spawnLocation else spawns[survivorIndex % spawns.size]
                 val delayTicks = (survivorIndex / 2).toLong()
                 survivorIndex++
 
@@ -175,8 +175,8 @@ class GamePlayerController(private val game: GameSession) {
                                     idElegido = "civilian"
                                     p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Civilian."))
                                 }
-                                val clase = game.plugin.supervivienteManager.getClassById(idElegido) ?: liric.mistaken.roles.survivors.clases.Civilian()
-                                game.plugin.supervivienteManager.registrarSurvivor(p, clase)
+                                val clase = game.plugin.survivorManager.getClassById(idElegido) ?: liric.mistaken.roles.survivors.classes.Civilian()
+                                game.plugin.survivorManager.registrarSurvivor(p, clase)
 
                                 if (game.currentMode == MistakenMode.ONE_BOUNCE) {
                                     p.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, 1, false, false, false))
@@ -223,20 +223,20 @@ class GamePlayerController(private val game: GameSession) {
         }
 
         game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
-            game.getCurrentAsesino()?.let { killer ->
+            game.getCurrentKiller()?.let { killer ->
                 game.plugin.webHook.sendGameStart(game.currentMapName, game.currentMode.name, survivorsSolo, killer)
             }
         }
     }
 
     fun handleInGameTick(players: Collection<Player>, ticks: Int) {
-        if (game.asesinosUUIDs.isEmpty()) {
+        if (game.killersUUIDs.isEmpty()) {
             game.stateController.endGame("game.killer-disconnected", false)
             return
         }
 
-        // Solo evalúa a los asesinos de esta sesión
-        val killersOnline = game.asesinosUUIDs.mapNotNull { game.plugin.server.getPlayer(it) }.filter { it.isOnline }
+        // Solo evalúa a los killers de esta sesión
+        val killersOnline = game.killersUUIDs.mapNotNull { game.plugin.server.getPlayer(it) }.filter { it.isOnline }
 
         for (p in players) {
             if (game.plugin.isIgnored(p) || game.isKiller(p.uniqueId) || p.gameMode == GameMode.SPECTATOR || game.plugin.spectatorManager.isSpectator(p)) continue
@@ -301,7 +301,7 @@ class GamePlayerController(private val game: GameSession) {
     fun checkWinCondition() {
         if (game.currentState != GameState.INGAME) return
 
-        // 🔥 FIX: Obtenemos solo los jugadores de esta sesión
+        // 🔥 FIX: Obtenemos solo los players de esta sesión
         val sessionPlayers = game.getPlayers()
 
 
@@ -322,20 +322,20 @@ class GamePlayerController(private val game: GameSession) {
         if (game.currentState != GameState.INGAME || lmsActivado) return
 
         // 🔥 FIX: Solo evaluamos en esta sesión
-        val supervivientesVivos = game.getPlayers().filter {
+        val survivorsVivos = game.getPlayers().filter {
             !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !game.plugin.spectatorManager.isSpectator(it)
         }
 
-        if (supervivientesVivos.size == 1 && game.currentMode != MistakenMode.FREEZE_TAG) {
+        if (survivorsVivos.size == 1 && game.currentMode != MistakenMode.FREEZE_TAG) {
             lmsActivado = true
-            val ultimoHeroe = supervivientesVivos[0]
+            val ultimoHeroe = survivorsVivos[0]
             triggerLMS(ultimoHeroe)
         }
     }
 
     private fun triggerLMS(player: Player) {
-        val asesinoPlayer = game.getCurrentAsesino()
-        val killerClass = asesinoPlayer?.let { game.plugin.asesinoManager.getKillerOfPlayer(it) }
+        val killerPlayer = game.getCurrentKiller()
+        val killerClass = killerPlayer?.let { game.plugin.killerManager.getKillerOfPlayer(it) }
         val customMusic = killerClass?.let { killer ->
             game.plugin.configManager.getKillerConfig(killer.id).getString("lms_music") ?: killer.defaultMusic
         }
@@ -362,23 +362,23 @@ class GamePlayerController(private val game: GameSession) {
 
 
         if (game.isKiller(player.uniqueId)) {
-            game.asesinosUUIDs.remove(player.uniqueId)
+            game.killersUUIDs.remove(player.uniqueId)
             game.plugin.spectatorManager.setCustomSpectator(player)
 
-            if (game.asesinosUUIDs.isEmpty() && game.currentState == GameState.INGAME) {
+            if (game.killersUUIDs.isEmpty() && game.currentState == GameState.INGAME) {
                 game.stateController.endGame("game.victory-survivors", false)
             }
             return
         }
 
         if (game.currentMode == MistakenMode.INFECTION) {
-            game.plugin.supervivienteManager.getSurvivorClass(player)?.cleanup(player)
-            game.asesinosUUIDs.add(player.uniqueId)
+            game.plugin.survivorManager.getSurvivorClass(player)?.cleanup(player)
+            game.killersUUIDs.add(player.uniqueId)
             player.isSwimming = false
             game.ambientManager.stopAmbience(player)
             game.combatManager.resetHealth(player)
 
-            // Limpiar TrueDarkness porque ahora es asesino
+            // Clear TrueDarkness porque ahora es killer
             liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(player, false)
 
             game.uiController.setLuckPermsPrefix(player, "<red>")
@@ -391,7 +391,7 @@ class GamePlayerController(private val game: GameSession) {
                 game.plugin,
                 Consumer { _ ->
                     val claseID = game.plugin.playerDataManager.getSelectedKiller(player.uniqueId)
-                    game.plugin.asesinoManager.equipKiller(player, claseID)
+                    game.plugin.killerManager.equipKiller(player, claseID)
                     game.uiController.playRoleTitle(player, true)
                 },
                 null,
@@ -401,7 +401,7 @@ class GamePlayerController(private val game: GameSession) {
             game.getPlayers().forEach { it.sendMessage(MiniMessage.miniMessage().deserialize("<dark_red>Infección</dark_red> <dark_gray>»</dark_gray> <red>¡${player.name} ha sido infectado y ahora es un asesino!</red>")) }
             player.world.playSound(player.location, Sound.ENTITY_ZOMBIE_VILLAGER_CONVERTED, 1f, 1f)
 
-            game.getCurrentAsesino()?.let { killer ->
+            game.getCurrentKiller()?.let { killer ->
                 game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
                     game.plugin.statsManager.incrementStat(killer.uniqueId, "kills")
                 }
@@ -424,7 +424,7 @@ class GamePlayerController(private val game: GameSession) {
         game.broadcastLocalized("game.player-died", Placeholder.parsed("player", player.name))
         player.playSound(player.location, Sound.ENTITY_PLAYER_DEATH, 1f, 1f)
 
-        game.getCurrentAsesino()?.let { killer ->
+        game.getCurrentKiller()?.let { killer ->
             game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
                 game.plugin.statsManager.incrementStat(killer.uniqueId, "kills")
             }
@@ -448,7 +448,7 @@ class GamePlayerController(private val game: GameSession) {
         val winSound = if (killerWon) Sound.ENTITY_WITHER_SPAWN else Sound.UI_TOAST_CHALLENGE_COMPLETE
         val type = if (killerWon) "killer" else "survivor"
 
-        // 🔥 FIX: Solo limpiamos a los jugadores de ESTA sesión
+        // 🔥 FIX: Solo limpiamos a los players de ESTA sesión
         game.getPlayers().forEach { p ->
             p.stopSound(activeLmsMusic, SoundCategory.RECORDS)
             game.plugin.flashlightManager.disable(p)
@@ -463,9 +463,9 @@ class GamePlayerController(private val game: GameSession) {
             p.health = 20.0
 
             if (game.isKiller(p.uniqueId)) {
-                game.plugin.asesinoManager.getKillerOfPlayer(p)?.cleanup(p)
+                game.plugin.killerManager.getKillerOfPlayer(p)?.cleanup(p)
             } else {
-                game.plugin.supervivienteManager.getSurvivorClass(p)?.cleanup(p)
+                game.plugin.survivorManager.getSurvivorClass(p)?.cleanup(p)
             }
 
             game.combatManager.removePlayerData(p.uniqueId)
@@ -477,7 +477,7 @@ class GamePlayerController(private val game: GameSession) {
                 p.allowFlight = false
                 p.isFlying = false
 
-                // Mostrar jugador nuevamente solo a los de esta sesión
+                // Mostrar player nuevamente solo a los de esta sesión
                 game.getPlayers().forEach { online -> online.showPlayer(game.plugin, p) }
             }
 
@@ -490,11 +490,11 @@ class GamePlayerController(private val game: GameSession) {
         }
 
         game.combatManager.clearAll()
-        game.asesinosUUIDs.clear()
+        game.killersUUIDs.clear()
 
         // KillerManager y SurvivorManager manejan la limpieza individual por UUID, no deberian afectar a otras partidas.
-        game.plugin.asesinoManager.removeAllKillers()
-        game.plugin.supervivienteManager.cleanAll()
+        game.plugin.killerManager.removeAllKillers()
+        game.plugin.survivorManager.cleanAll()
     }
 
     fun teleportAllToLobby() {

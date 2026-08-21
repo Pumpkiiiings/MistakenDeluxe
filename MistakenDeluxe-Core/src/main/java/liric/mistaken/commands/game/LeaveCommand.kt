@@ -24,7 +24,7 @@ object LeaveCommand {
                     return@executes 0
                 }
 
-                // 1. Buscamos si el jugador está en alguna sesión activa
+                // 1. Buscamos si el player está en alguna sesión activa
                 val session = plugin.sessionManager.getSession(player)
 
                 if (session == null) {
@@ -37,15 +37,15 @@ object LeaveCommand {
                 
                 if (session.currentState == GameState.INGAME) {
                     if (session.isKiller(player.uniqueId)) {
-                        // Si el asesino se rinde
-                        plugin.asesinoManager.removeKiller(player)
-                        session.asesinosUUIDs.remove(player.uniqueId)
+                        // Si el killer se rinde
+                        plugin.killerManager.removeKiller(player)
+                        session.killersUUIDs.remove(player.uniqueId)
 
-                        if (session.asesinosUUIDs.isEmpty()) {
+                        if (session.killersUUIDs.isEmpty()) {
                             session.stateController.endGame("game.killer-disconnected", false)
                         }
                     } else {
-                        // Si el superviviente se rinde (Lo tratamos como si hubiera sido asesinado)
+                        // Si el survivor se rinde (Lo tratamos como si hubiera sido asesinado)
                         session.playerController.handlePlayerDeath(player)
                     }
                 }

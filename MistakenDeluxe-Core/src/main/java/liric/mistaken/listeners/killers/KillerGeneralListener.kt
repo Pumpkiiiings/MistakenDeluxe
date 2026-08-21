@@ -20,7 +20,7 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent
 class KillerGeneralListener(private val plugin: Mistaken) : Listener {
 
     /**
-     * Ventaja: Inmunidad al daño por caída para los Asesinos.
+     * Ventaja: Inmunidad al daño por caída para los Killers.
      */
     @EventHandler(priority = EventPriority.LOWEST)
     fun onFallDamage(event: EntityDamageEvent) {
@@ -30,7 +30,7 @@ class KillerGeneralListener(private val plugin: Mistaken) : Listener {
 
         val player = event.entity as? Player ?: return
 
-        if (plugin.asesinoManager.isKiller(player)) {
+        if (plugin.killerManager.isKiller(player)) {
             event.isCancelled = true
 
             // Efecto sutil solo si la caída fue considerable
@@ -41,13 +41,13 @@ class KillerGeneralListener(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * Blindaje: Evita que el asesino tire o mueva su equipo.
+     * Blindaje: Evita que el killer tire o mueva su equipo.
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onInventoryClick(event: InventoryClickEvent) {
         val player = event.whoClicked as? Player ?: return
 
-        if (!plugin.asesinoManager.isKiller(player)) return
+        if (!plugin.killerManager.isKiller(player)) return
 
         // 1. Bloquear teclas rápidas (presionar 'F' o un número sobre un ítem)
         if (event.click == ClickType.SWAP_OFFHAND || event.click == ClickType.NUMBER_KEY) {
@@ -61,7 +61,7 @@ class KillerGeneralListener(private val plugin: Mistaken) : Listener {
             return
         }
 
-        // 3. Bloquear Hotbar de habilidades (Slots 0 al 4)
+        // 3. Bloquear Hotbar de abilities (Slots 0 al 4)
         val clickedInv = event.clickedInventory
         if (clickedInv != null && clickedInv.type == InventoryType.PLAYER) {
             if (event.slot in 0..4) {
@@ -81,7 +81,7 @@ class KillerGeneralListener(private val plugin: Mistaken) : Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onHandSwap(event: PlayerSwapHandItemsEvent) {
-        if (plugin.asesinoManager.isKiller(event.player)) {
+        if (plugin.killerManager.isKiller(event.player)) {
             event.isCancelled = true
         }
     }

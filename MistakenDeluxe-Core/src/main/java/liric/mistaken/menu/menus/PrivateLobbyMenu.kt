@@ -102,7 +102,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
         
         gui.setItem(modeSlot, modeItem)
 
-        // Boton Jugadores
+        // Boton Players
         val playersItem = ItemBuilder.from(Material.PLAYER_HEAD)
             .name(ColorTranslator.translate("<!italic>$playersName"))
             .lore(playersLoreRaw.map { ColorTranslator.translate("<!italic>$it") })

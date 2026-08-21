@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.gameplay
+﻿package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.HealthAPI
@@ -64,7 +64,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 if (session.currentState != GameState.INGAME) continue
                 if (session.currentMode == MistakenMode.HIDE_AND_SEEK) continue
 
-                val killersOnline = session.asesinosUUIDs.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
+                val killersOnline = session.killersUUIDs.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
                 if (killersOnline.isEmpty()) continue
 
                 for (killer in killersOnline) {
@@ -73,7 +73,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                     var foundSomeone = false
                     var ghostName = ""
 
-                    // Obtenemos los jugadores de ESTA sesi�n para no escanear a todo el servidor
+                    // Obtenemos los players de ESTA sesiï¿½n para no escanear a todo el servidor
                     for (target in session.getPlayers()) {
                         if (target == killer || target.world != killerLoc.world) continue
 
@@ -209,11 +209,11 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         val isKiller = session?.isKiller(player.uniqueId) ?: false
         var maxHP = 20.0
         if (isKiller) {
-            val killerClass = plugin.asesinoManager.getKillerOfPlayer(player)
+            val killerClass = plugin.killerManager.getKillerOfPlayer(player)
             val customHealth = killerClass?.let { plugin.configManager.getKillerConfig(it.id).getDouble("stats.health", 0.0) } ?: 0.0
             maxHP = if (customHealth > 0.0) customHealth else session?.settings?.killerHealth ?: 160.0
         } else {
-            val survivorClass = plugin.supervivienteManager.getSurvivorClass(player)
+            val survivorClass = plugin.survivorManager.getSurvivorClass(player)
             val customHealth = survivorClass?.let { plugin.configManager.getSurvivorConfig(it.id).getDouble("stats.health", 0.0) } ?: 0.0
             maxHP = if (customHealth > 0.0) customHealth else session?.settings?.survivorHealth ?: 20.0
         }
@@ -238,7 +238,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             return
         }
 
-        // ?? MULTIARENA: Obtenemos la sesi�n donde ocurre la pelea
+        // ?? MULTIARENA: Obtenemos la sesiï¿½n donde ocurre la pelea
         val session = plugin.sessionManager.getSession(victim) ?: return
         if (session.currentState != GameState.INGAME) return
 
@@ -283,7 +283,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 return
             }
 
-            val killerClass = plugin.asesinoManager.getKillerOfPlayer(attacker)
+            val killerClass = plugin.killerManager.getKillerOfPlayer(attacker)
             val customDamage = killerClass?.let { plugin.configManager.getKillerConfig(it.id).getDouble("stats.damage", 0.0) } ?: 0.0
             
             var dmg = if (isAssassinPvpMode) 4.0 else 3.0
@@ -307,7 +307,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             survivorCooldowns[attacker.uniqueId] = now
             event.damage = 0.0
-            val survivorClass = plugin.supervivienteManager.getSurvivorClass(attacker)
+            val survivorClass = plugin.survivorManager.getSurvivorClass(attacker)
             val customDamage = survivorClass?.let { plugin.configManager.getSurvivorConfig(it.id).getDouble("stats.damage", 0.0) } ?: 0.0
             val dmg = if (customDamage > 0.0) customDamage else 4.0
             
@@ -335,7 +335,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             if (isSurvivor && nextHP <= 4.0 && nextHP > 0.0) {
                 if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {
-                    val msg = PumpkingServiceManager.messages.getRawString(victim, "combat.critical-wound", "<red><bold>�HERIDA CRÍTICA!</bold>")
+                    val msg = PumpkingServiceManager.messages.getRawString(victim, "combat.critical-wound", "<red><bold>ï¿½HERIDA CRÃTICA!</bold>")
                     victim.sendMessage(ColorTranslator.translate(msg))
                     victim.addPotionEffect(
                         PotionEffect(
@@ -362,7 +362,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                 victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
                 frozenPlayers.remove(victim.uniqueId)
 
-                currentSession.getCurrentAsesino()?.let { killer ->
+                currentSession.getCurrentKiller()?.let { killer ->
                     try { plugin.glowingAPI.unsetGlowing(victim, killer) } catch (_: Exception) {}
                 }
 
@@ -374,8 +374,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     override fun takeDamage(victim: Player, amount: Double, sourceName: String?) {
         val clamped = amount.coerceIn(MIN_SCRIPT_DAMAGE, MAX_SCRIPT_DAMAGE)
         if (amount != clamped) {
-            val sourceStr = sourceName?.let { "Script '$it'" } ?: "Código nativo"
-            plugin.componentLogger.warn("$sourceStr intentó aplicar daño fuera de rango: $amount. Se ajustó a $clamped.")
+            val sourceStr = sourceName?.let { "Script '$it'" } ?: "CÃ³digo nativo"
+            plugin.componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>$sourceStr attempted to apply out-of-bounds damage: $amount. Clamped to $clamped.</gray>"))
         }
         processTrueDamage(victim, null, clamped)
     }
@@ -401,7 +401,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
     // ?? FIX: Adaptado a Multiarena
     fun giveWinRewards(killerWon: Boolean, session: GameSession) {
-        val killers = session.asesinosUUIDs
+        val killers = session.killersUUIDs
         val winners = if (killerWon) {
             session.getPlayers().filter { killers.contains(it.uniqueId) }
         } else {

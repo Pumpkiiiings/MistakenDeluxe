@@ -24,7 +24,7 @@ class ShopSelector : MenuBase("tienda_principal") {
         val clickSound = Sounds.of(soundName, Sound.BLOCK_NOTE_BLOCK_XYLOPHONE)
 
         // --- ITEM: ASESINOS ---
-        // Nombre y lore desde messages.yml del jugador (menus.tienda_principal.items.asesinos.*)
+        // Nombre y lore desde messages.yml del player (menus.tienda_principal.items.killers.*)
         val matA = Material.matchMaterial(
             config.getString("items.asesinos.material", "NETHERITE_SWORD")!!.uppercase()
         ) ?: Material.NETHERITE_SWORD
@@ -41,7 +41,7 @@ class ShopSelector : MenuBase("tienda_principal") {
             .flags(*ItemFlag.entries.toTypedArray())
             .asGuiItem {
                 player.playSound(player.location, clickSound, 1f, 1f)
-                plugin.asesinoTienda.abrir(player)
+                plugin.killerTienda.abrir(player)
             }
 
         // --- ITEM: SUPERVIVIENTES ---
@@ -61,7 +61,7 @@ class ShopSelector : MenuBase("tienda_principal") {
             .flags(*ItemFlag.entries.toTypedArray())
             .asGuiItem {
                 player.playSound(player.location, clickSound, 1f, 1f)
-                plugin.supervivienteTienda.abrir(player)
+                plugin.survivorTienda.abrir(player)
             }
 
         gui.setItem(config.getInt("items.killers.slot", 11), itemKillers)

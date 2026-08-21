@@ -21,7 +21,7 @@ import java.util.function.Consumer
 
 /**
  * Efecto de proyectil volador con detección de hit.
- * Generaliza habilidadBloqueHielo, habilidadInfeccionSistema, habilidadNetherStar.
+ * Generaliza abilityBloqueHielo, abilityInfeccionSistema, abilityNetherStar.
  * Corre en regionScheduler del plugin (el proyectil puede cruzar regiones).
  */
 class ProjectileEffect(

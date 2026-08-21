@@ -14,7 +14,7 @@ interface ModelComponent : CharacterComponent {
     val modelId: String
 
     /**
-     * Spawnea o hace visible el modelo en el mundo.
+     * Spawnea o hace visible el modelo en el world.
      */
     fun spawn()
 

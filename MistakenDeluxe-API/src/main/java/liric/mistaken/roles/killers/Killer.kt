@@ -27,7 +27,7 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
 
 
     /**
-     * Verifica el cooldown buscando el tiempo en la raÃƒ­z y el nombre en el idioma del jugador.
+     * Verifica el cooldown buscando el tiempo en la raÃƒ­z y el nombre en el idioma del player.
      */
     fun checkCooldown(player: Player, slot: Int): Boolean {
         // 1. Obtenemos el tiempo del archivo raÃƒ­z (LÃƒ³gica global)
@@ -47,7 +47,7 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
         if (now < expireTime) {
             val remaining = (expireTime - now) / 1000.0
 
-            // Mensaje de error traducido desde es/messages.yml o en/messages.yml
+            // Message de error traducido desde es/messages.yml o en/messages.yml
             val msg = api.messages.getComponent(player, "errors.ability-cooldown",
                 Placeholder.parsed("skill", nombreHab),
                 Placeholder.parsed("time", "%.1f".format(remaining))
@@ -65,7 +65,7 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
 
 
     /**
-     * Reproduce el sonido de la habilidad desde el archivo raÃƒ­z.
+     * Reproduce el sonido de la ability desde el archivo raÃƒ­z.
      */
     fun playSkillEffects(player: Player, slot: Int) {
         val config = api.configManager.getKillerConfig(this.id)
@@ -82,12 +82,12 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
     }
 
     /**
-     * Limpieza profunda del asesino (Mantenido el fix de espectador).
+     * Limpieza profunda del killer (Mantenido el fix de espectador).
      */
     open fun clearGlobalData() {}
     
     /**
-     * Limpia los recursos globales asociados a este asesino y previene su uso futuro.
+     * Limpia los recursos globales asociados a este killer y previene su uso futuro.
      */
     open fun dispose() {
         clearGlobalData()
@@ -153,30 +153,30 @@ abstract class Killer(override val id: String, override val nombre: String) : Ga
     }
 
     /**
-     * Ã°Å¸â€¥ Verifica de forma segura y central si una habilidad le debe hacer daÃƒ±o a este jugador.
+     * Ã°Å¸â€¥ Verifica de forma segura y central si una ability le debe hacer daÃƒ±o a este player.
      * MULTIARENA FIX: Toma en cuenta el Fuego Amigo leyendo la sesiÃƒ³n especÃƒ­fica de la vÃƒ­ctima.
      */
-    protected fun isValidTarget(atacante: Player, victima: Player): Boolean {
+    protected fun isValidTarget(atacante: Player, victim: Player): Boolean {
         // 1. Inmortales o Espectadores ignorados
-        if (victima.gameMode != GameMode.SURVIVAL) return false
-        if (api.isIgnored(victima)) return false
-        if (victima.isInvisible) return false
+        if (victim.gameMode != GameMode.SURVIVAL) return false
+        if (api.isIgnored(victim)) return false
+        if (victim.isInvisible) return false
 
         // 2. No se puede pegar a sÃƒ­ mismo con un Ãƒ¡rea
-        if (atacante.uniqueId == victima.uniqueId) return false
+        if (atacante.uniqueId == victim.uniqueId) return false
 
-        // 3. RevisiÃƒ³n de Fuego Amigo basada en la sesiÃƒ³n del jugador atacado
-        val session = api.sessionManager.getSession(victima) ?: return false
+        // 3. RevisiÃƒ³n de Fuego Amigo basada en la sesiÃƒ³n del player atacado
+        val session = api.sessionManager.getSession(victim) ?: return false
 
         
         if (api.sessionManager.getSession(atacante) != session) return false
 
-        val atacanteEsAsesino = session.isKiller(atacante.uniqueId)
-        val victimaEsAsesino = session.isKiller(victima.uniqueId)
+        val atacanteEsKiller = session.isKiller(atacante.uniqueId)
+        val victimEsKiller = session.isKiller(victim.uniqueId)
 
 
         
-        if (atacanteEsAsesino && victimaEsAsesino) {
+        if (atacanteEsKiller && victimEsKiller) {
             return false
         }
 

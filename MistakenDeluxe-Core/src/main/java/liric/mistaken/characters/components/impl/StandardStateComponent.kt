@@ -93,7 +93,7 @@ class StandardStateComponent : StateComponent {
 
         val animationComponent = character.getComponent(AnimationComponent::class.java)
         
-        // Si la prioridad es >= 30 (ej. Ataque, Habilidad), no loopea y vuelve a Idle al terminar
+        // Si la prioridad es >= 30 (ej. Ataque, Ability), no loopea y vuelve a Idle al terminar
         val loop = state.priority < 30 
         
         if (animationComponent == null) {

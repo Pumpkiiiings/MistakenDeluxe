@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 class TensionDirector(private val plugin: Mistaken) {
 
     enum class State {
-        /** Asesino lejos. No puede pasar nada: es el silencio que da valor al resto. */
+        /** Killer lejos. No puede pasar nada: es el silencio que da valor al resto. */
         CALMA,
         /** Se acerca, o la partida entra en su fase final. */
         INQUIETUD,
@@ -24,7 +24,7 @@ class TensionDirector(private val plugin: Mistaken) {
     /**
      * Foto inmutable de la sesión tomada una vez por tick en el hilo principal.
      * Los datos compartidos (vivos, generadores) se calculan aquí y no por
-     * superviviente: hacerlo dentro del bucle era O(supervivientes²) por tick.
+     * survivor: hacerlo dentro del bucle era O(survivors²) por tick.
      */
     data class KillerSnapshot(
         val location: Location,
@@ -58,14 +58,14 @@ class TensionDirector(private val plugin: Mistaken) {
     fun escalationOf(uuid: UUID): Int = tensions[uuid]?.escalation ?: 0
 
     /**
-     * Recalcula el estado del superviviente. Debe llamarse desde el hilo principal
-     * (o la región del superviviente): lee estado de Bukkit del propio jugador.
-     * Del asesino solo usa el [snapshot], nunca el objeto vivo.
+     * Recalcula el estado del survivor. Debe llamarse desde el hilo principal
+     * (o la región del survivor): lee estado de Bukkit del propio player.
+     * Del killer solo usa el [snapshot], nunca el objeto vivo.
      */
     fun evaluate(survivor: Player, snapshot: KillerSnapshot): State {
         val tension = tensions.getOrPut(survivor.uniqueId) { Tension() }
 
-        // Otro mundo = fuera de juego para efectos de tensión.
+        // Otro world = fuera de juego para efectos de tensión.
         if (survivor.world.uid != snapshot.worldUid) {
             return applyState(tension, State.CALMA)
         }
@@ -81,11 +81,11 @@ class TensionDirector(private val plugin: Mistaken) {
         val next = when {
             // Último vivo: máxima presión pase lo que pase.
             snapshot.aliveSurvivors <= 1 -> State.CAZA
-            // Cerca, con visión, y el asesino mirando hacia ti.
+            // Cerca, con visión, y el killer mirando hacia ti.
             distSq < 400.0 && hasLineOfSight(survivor, snapshot) && isLookedAt(survivor, snapshot) -> State.CAZA
             distSq < 400.0 && hasLineOfSight(survivor, snapshot) -> State.ACECHO
             distSq < 1600.0 -> State.INQUIETUD
-            // La recta final aprieta aunque el asesino esté lejos.
+            // La recta final aprieta aunque el killer esté lejos.
             snapshot.generatorsLeft in 1..2 -> State.INQUIETUD
             else -> State.CALMA
         }
@@ -93,7 +93,7 @@ class TensionDirector(private val plugin: Mistaken) {
         return applyState(tension, next)
     }
 
-    /** Supervivientes vivos de la sesión. Calcular una vez por tick, no por jugador. */
+    /** Survivors vivos de la sesión. Calcular una vez por tick, no por player. */
     fun countAliveSurvivors(session: GameSession): Int =
         session.getPlayers().count { p ->
             !session.isKiller(p.uniqueId) && !plugin.spectatorManager.isSpectator(p)
@@ -101,7 +101,7 @@ class TensionDirector(private val plugin: Mistaken) {
 
     private fun applyState(tension: Tension, next: State): State {
         // La escalada solo sube dentro de la persecución. Bajarla a mitad le enseña
-        // al jugador que ya sobrevivió y lo relaja justo cuando no debe.
+        // al player que ya sobrevivió y lo relaja justo cuando no debe.
         if (next == State.CALMA) {
             tension.escalation = 0
         } else if (next.ordinal > tension.state.ordinal) {
@@ -133,7 +133,7 @@ class TensionDirector(private val plugin: Mistaken) {
             survivor.eyeLocation.distance(snapshot.location)
         ) == null
 
-    /** ¿El asesino tiene al superviviente dentro de su cono de visión? */
+    /** ¿El killer tiene al survivor dentro de su cono de visión? */
     private fun isLookedAt(survivor: Player, snapshot: KillerSnapshot): Boolean {
         val toSurvivor = survivor.location.toVector().subtract(snapshot.location.toVector())
         if (toSurvivor.lengthSquared() < 0.001) return true

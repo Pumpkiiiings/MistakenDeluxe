@@ -2,9 +2,9 @@ package liric.mistaken.listeners.survivors
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.roles.survivors.clases.RaincoatKid
-import liric.mistaken.roles.survivors.clases.KasaneTeto
-import liric.mistaken.roles.survivors.clases.Jesse
+import liric.mistaken.roles.survivors.classes.RaincoatKid
+import liric.mistaken.roles.survivors.classes.KasaneTeto
+import liric.mistaken.roles.survivors.classes.Jesse
 import org.bukkit.GameMode
 import org.bukkit.NamespacedKey
 import org.bukkit.Sound
@@ -29,7 +29,7 @@ import pumpking.lib.color.ColorTranslator
 import pumpking.lib.service.PumpkingServiceManager
 
 
-class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
+class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
 
     companion object {
         val bloquesDerrame = ConcurrentHashMap.newKeySet<String>()
@@ -58,7 +58,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         if (event.hand != EquipmentSlot.HAND) return
         val player = event.player
 
-        // ?? MULTIARENA: Buscamos la sesi�n del jugador
+        // ?? MULTIARENA: Buscamos la sesi�n del player
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
 
@@ -69,15 +69,15 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         val slot = player.inventory.heldItemSlot
         if (slot > 2) return
 
-        // Verifica que NO sea el asesino de SU sesi�n
+        // Verifica que NO sea el killer de SU sesi�n
         if (session.isKiller(player.uniqueId)) return
 
-        val clase = plugin.supervivienteManager.getSurvivorClass(player) ?: return
+        val clase = plugin.survivorManager.getSurvivorClass(player) ?: return
         if (player.inventory.itemInMainHand.type.isAir) return
 
         when (event.action) {
             Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> {
-                // El RaincoatKid y Jesse usan melee en ciertos slots, saltamos el mensaje de habilidad
+                // El RaincoatKid y Jesse usan melee en ciertos slots, saltamos el message de ability
                 if (clase is RaincoatKid && slot == 2) return
                 if (clase is Jesse && slot == 1) return
 
@@ -92,7 +92,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
                     plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
                     clase.useSkill(player, slot)
                 } else if (slot == 1) {
-                    // Otros supervivientes usan rastreador en slot 1
+                    // Otros survivors usan rastreador en slot 1
                     event.isCancelled = true
                     plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
                     clase.trackearHeridos(player)
@@ -111,7 +111,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         val session = plugin.sessionManager.getSession(attacker) ?: return
         if (session.currentState != GameState.INGAME) return
 
-        // Reglas de equipo: El atacante debe ser humano y la v�ctima asesino en la MISMA sesi�n
+        // Reglas de equipo: El atacante debe ser humano y la v�ctima killer en la MISMA sesi�n
         if (session.isKiller(attacker.uniqueId)) return
         if (!session.isKiller(victim.uniqueId)) return
 
@@ -121,13 +121,13 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         if (!item.hasItemMeta()) return
         val pdc = item.itemMeta.persistentDataContainer
 
-        val clase = plugin.supervivienteManager.getSurvivorClass(attacker) ?: return
+        val clase = plugin.survivorManager.getSurvivorClass(attacker) ?: return
 
         // 1. Raincoat Kid (Palo)
         if (pdc.has(STICK_KEY, PersistentDataType.BYTE) && clase is RaincoatKid) {
             val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("supervivientes.raincoatkid.items.skill3_cooldown", 40)
             if (!clase.checkCooldown(attacker, 2, cooldownTime)) {
-                clase.aplicarGolpePalo(victim)
+                clase.applyGolpePalo(victim)
                 attacker.sendMessage(ColorTranslator.translate("<green><bold>�BAM!</bold> <gray>Killer aturdido."))
                 attacker.playSound(attacker.location, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.5f, 1.2f)
             }
@@ -138,7 +138,7 @@ class SurvivorHabilidadListener(private val plugin: Mistaken) : Listener {
         if (pdc.has(JESSE_PUNCH_KEY, PersistentDataType.BYTE) && clase is Jesse) {
             val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("supervivientes.jesse.items.skill2_cooldown", 15)
             if (!clase.checkCooldown(attacker, 1, cooldownTime)) {
-                clase.aplicarGolpePuno(victim)
+                clase.applyGolpePuno(victim)
                 attacker.sendMessage(ColorTranslator.translate("<gold><b>�TOMA ESO!</b></gold>"))
             }
             return

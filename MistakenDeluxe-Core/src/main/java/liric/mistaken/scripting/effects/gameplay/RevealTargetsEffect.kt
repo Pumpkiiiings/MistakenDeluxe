@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 
 /**
- * Revela a todos los jugadores cercanos aplicándoles glowing a través de PacketEvents,
+ * Revela a todos los players cercanos aplicándoles glowing a través de PacketEvents,
  * usando el color especificado. El color requiere un Team.
  * Generaliza AdminVision de Romeo.
  */

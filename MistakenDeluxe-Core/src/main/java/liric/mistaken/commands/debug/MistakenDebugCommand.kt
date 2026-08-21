@@ -196,7 +196,7 @@ object MistakenDebugCommand {
                     // Música (asume default)
                     p.playSound(p.location, "mistaken:lms", org.bukkit.SoundCategory.RECORDS, 1f, 1f)
                     
-                    // Aplicar el filtro rojo constante después del flash blanco
+                    // Apply el filtro rojo constante después del flash blanco
                     p.scheduler.runDelayed(plugin, Consumer { _ ->
                         liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) // 1 minuto
                     }, null, 30L)
@@ -225,7 +225,7 @@ object MistakenDebugCommand {
                 val p = ctx.source.sender as? Player ?: return@executes 0
                 
                 p.stopSound("mistaken:lms", org.bukkit.SoundCategory.RECORDS)
-                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 0, 0, 0, 0f, 1) // Limpiar filtro
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 0, 0, 0, 0f, 1) // Clear filtro
                 p.sendMessage("§c[!] Efectos de LMS detenidos.")
                 1
             })

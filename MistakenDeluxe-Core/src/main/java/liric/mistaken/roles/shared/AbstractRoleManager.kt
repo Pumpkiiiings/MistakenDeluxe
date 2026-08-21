@@ -27,7 +27,7 @@ abstract class AbstractRoleManager<T : GameRole>(protected val plugin: Mistaken)
     abstract fun registerClass(role: T)
 
     /**
-     * Limpia la data base de un rol del jugador.
+     * Limpia la data base de un rol del player.
      */
     protected open fun removeRoleLogic(uuid: UUID, player: Player?) {
         val role = activeRoles.remove(uuid) ?: return
@@ -44,7 +44,7 @@ abstract class AbstractRoleManager<T : GameRole>(protected val plugin: Mistaken)
     }
 
     /**
-     * Hook para lógicas adicionales luego de limpiar el rol base.
+     * Hook para lógicas adicionales luego de clear el rol base.
      */
     protected open fun onRoleRemoved(player: Player) {}
 

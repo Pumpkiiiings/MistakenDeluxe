@@ -17,7 +17,7 @@ class FakeEntityAPI {
     /**
      * Spawnea una entidad falsa (Client-Side).
      * Ãštil para crear hitboxes invisibles o efectos decorativos.
-     * @param player Jugador objetivo
+     * @param player Player objetivo
      * @param location UbicaciÃ³n
      * @param type Tipo de Entidad (PacketEvents EntityType)
      * @return El ID de Entidad generado.

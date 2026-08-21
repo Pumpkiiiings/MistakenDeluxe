@@ -9,7 +9,7 @@ import liric.mistaken.characters.core.CharacterComponent
 interface CombatComponent : CharacterComponent {
     
     /**
-     * Inicia un ataque (por ejemplo, cuando el jugador hace clic izquierdo).
+     * Inicia un ataque (por ejemplo, cuando el player hace clic izquierdo).
      */
     fun performAttack(attackId: String = "attack")
 

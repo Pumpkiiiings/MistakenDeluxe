@@ -32,9 +32,9 @@ class AmbientManager(private val plugin: Mistaken) {
 
     private fun startGlobalTask() {
         // globalRegionScheduler, no asyncScheduler: aquí se lee estado de Bukkit
-        // (posición del asesino, mundo, línea de visión) y esas llamadas no son
+        // (posición del killer, world, línea de visión) y esas llamadas no son
         // thread-safe fuera del hilo principal. Mismo criterio que el motor de
-        // partículas en Mistaken.iniciarMotorDeParticulas().
+        // partículas en Mistaken.iniciarMotorDeParticles().
         // 2 ticks = 100 ms, el intervalo original.
         plugin.server.globalRegionScheduler.runAtFixedRate(plugin, { _ ->
             if (!plugin.isReady) return@runAtFixedRate
@@ -43,12 +43,12 @@ class AmbientManager(private val plugin: Mistaken) {
             for (session in plugin.sessionManager.activeSessions.values) {
                 if (session.currentState != GameState.INGAME) continue
 
-                val killer = session.getCurrentAsesino() ?: continue
+                val killer = session.getCurrentKiller() ?: continue
                 if (!killer.isOnline) continue
 
-                // Foto inmutable de la sesión, una vez por tick: los supervivientes
-                // no vuelven a tocar el objeto Player del asesino, y los datos
-                // compartidos no se recalculan por jugador.
+                // Foto inmutable de la sesión, una vez por tick: los survivors
+                // no vuelven a tocar el objeto Player del killer, y los datos
+                // compartidos no se recalculan por player.
                 val world = killer.world
                 val snapshot = TensionDirector.KillerSnapshot(
                     location = killer.location.clone(),
@@ -76,7 +76,7 @@ class AmbientManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Lógica individual por superviviente. El asesino llega como [snapshot]:
+     * Lógica individual por survivor. El killer llega como [snapshot]:
      * nunca se lee su objeto Player desde aquí.
      */
     private fun processSurvivorLogic(survivor: Player, snapshot: TensionDirector.KillerSnapshot, session: GameSession) {

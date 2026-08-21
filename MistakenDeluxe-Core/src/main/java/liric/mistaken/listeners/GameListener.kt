@@ -132,7 +132,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                 victim.spigot().respawn()
                 victim.scheduler.runDelayed(plugin, Consumer { _ ->
                     if (session.currentState == GameState.INGAME) {
-                        // ?? FIX: En infecci�n el jugador se convierte en asesino, nunca espectador
+                        // ?? FIX: En infecci�n el player se convierte en killer, nunca espectador
                         if (!session.isKiller(victim.uniqueId)) {
                             plugin.spectatorManager.setCustomSpectator(victim)
                         }
@@ -250,7 +250,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                 player.updateInventory()
             })
             
-            // Curación de supervivientes
+            // Curación de survivors
             if (!session.isKiller(player.uniqueId) && !plugin.spectatorManager.isSpectator(player)) {
                 val uuid = player.uniqueId
                 val now = System.currentTimeMillis()
@@ -362,7 +362,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                             isHealing[uuid] = false
                             healCooldowns[uuid] = System.currentTimeMillis()
                             
-                            // Programar notificación de habilidad lista
+                            // Programar notificación de ability lista
                             plugin.server.scheduler.runTaskLater(plugin, Runnable {
                                 if (player.isOnline && plugin.sessionManager.getSession(player)?.currentState == GameState.INGAME) {
                                     player.sendActionBar(ColorTranslator.translate("<green>¡Tu habilidad de curación está lista!"))

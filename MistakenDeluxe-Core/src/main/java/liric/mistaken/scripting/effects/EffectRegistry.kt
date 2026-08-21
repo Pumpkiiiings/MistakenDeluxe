@@ -26,14 +26,14 @@ object EffectRegistry {
         byOwner.entries.removeIf { it.value.isEmpty() }
     }
 
-    /** Detiene todos los efectos de un jugador (quit/death/removeKiller). */
+    /** Detiene todos los efectos de un player (quit/death/removeKiller). */
     fun stopAll(ownerUuid: UUID) {
         byOwner.remove(ownerUuid)?.forEach { it.stop() }
         byScript.values.forEach { list -> list.removeIf { it.ownerUuid == ownerUuid } }
         byScript.entries.removeIf { it.value.isEmpty() }
     }
 
-    /** Detiene efectos de un jugador específico dentro de un script. */
+    /** Detiene efectos de un player específico dentro de un script. */
     fun stopAll(scriptId: String, ownerUuid: UUID) {
         byScript[scriptId]?.let { list ->
             val toRemove = list.filter { it.ownerUuid == ownerUuid }

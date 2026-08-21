@@ -12,8 +12,8 @@ import java.util.function.Consumer
 
 /**
  * Spawn de líneas de colmillos (EvokerFangs) con delay.
- * Generaliza TripleColmillo de Romeo, Charlie, NullAsesino.
- * Corre usando runDelayed en la región del jugador atacante, que luego spawnea entidades.
+ * Generaliza TripleColmillo de Romeo, Charlie, NullKiller.
+ * Corre usando runDelayed en la región del player atacante, que luego spawnea entidades.
  */
 class LineSpawnEffect(
     override val scriptId: String,

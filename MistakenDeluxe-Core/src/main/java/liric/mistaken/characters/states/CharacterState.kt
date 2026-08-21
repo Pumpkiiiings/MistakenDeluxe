@@ -39,7 +39,7 @@ interface CharacterState {
 
     /**
      * Llamado cuando el Character entra en este estado.
-     * Aquí se puede ejecutar lógica como iniciar cooldowns, aplicar lentitud, etc.
+     * Aquí se puede ejecutar lógica como iniciar cooldowns, apply lentitud, etc.
      */
     fun onEnter(character: Character) {
         // Implementación vacía por defecto
@@ -47,7 +47,7 @@ interface CharacterState {
 
     /**
      * Llamado cuando el Character sale de este estado.
-     * Aquí se deben limpiar timers o efectos temporales aplicados en onEnter.
+     * Aquí se deben clear timers o efectos temporales aplicados en onEnter.
      */
     fun onExit(character: Character) {
         // Implementación vacía por defecto

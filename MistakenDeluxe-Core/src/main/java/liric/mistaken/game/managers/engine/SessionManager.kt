@@ -58,7 +58,7 @@ class SessionManager(private val plugin: Mistaken) : ISessionManager {
             Bukkit.getPluginManager().callEvent(event)
         }
 
-        // 🔥 FIX: Al salir de la sesión, aseguramos que el jugador se limpie completamente
+        // 🔥 FIX: Al salir de la sesión, aseguramos que el player se limpie completamente
         // del modo espectador y se vuelva a modo supervivencia (vital para Multiarena)
         plugin.spectatorManager.removeCustomSpectator(player)
         PlayerListener.resetPlayerStatus(player)

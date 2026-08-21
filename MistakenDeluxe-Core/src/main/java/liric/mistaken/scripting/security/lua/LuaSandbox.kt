@@ -14,7 +14,7 @@ import org.luaj.vm2.lib.jse.JseMathLib
 
 /**
  * Sandboxing estricto para LuaJ.
- * - Bloquea instanciaciÃ³n de clases Java (sin luajava).
+ * - Bloquea instanciaciÃ³n de classes Java (sin luajava).
  * - Bloquea acceso a IO y OS.
  * - LÃ­mite estricto de instrucciones para evitar cuelgues (Billion Laughs / while true).
  */

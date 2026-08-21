@@ -76,7 +76,7 @@ class BukkitMovementComponent : MovementComponent {
         val stateComponent = character.getComponent(StateComponent::class.java) ?: return
 
         // Aquí viene la magia: Notificamos a la máquina de estados basándonos en la física pura.
-        // La máquina de estados decidirá si acepta esta transición (por ejemplo, si el jugador 
+        // La máquina de estados decidirá si acepta esta transición (por ejemplo, si el player 
         // está STUN, la máquina de estados ignorará el WalkState o RunState).
         
         if (!isGrounded && entity.velocity.y < -0.1) {

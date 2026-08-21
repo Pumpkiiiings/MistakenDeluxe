@@ -1,8 +1,8 @@
-package liric.mistaken.roles.killers
+﻿package liric.mistaken.roles.killers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.scripting.engine.groovy.KillerScriptEngine
-import liric.mistaken.roles.killers.clases.*
+import liric.mistaken.roles.killers.classes.*
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
@@ -42,7 +42,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             CharlieInferno(), CharlieJazz(), Mariachi(),
             Sowoul(), StillLife(), WardenKiller(), SmilerKiller(), PiglinBigKiller()
         ).forEach { registerClass(it) }
-        plugin.componentLogger.info(ColorTranslator.translate("[INFO] [KillerManager] Cargados asesinos nativos (Hardcodeados)."))
+        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Loaded native killers (Hardcoded).</gray>"))
     }
 
     fun loadScripts() {
@@ -60,7 +60,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                 }
             }
         } catch (e: Exception) {
-            plugin.componentLogger.warn("No se pudieron copiar los scripts por defecto.")
+            plugin.componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Failed to copy default scripts.</gray>"))
         }
 
         val files = scriptsFolder.listFiles() ?: return
@@ -87,7 +87,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                 }
             }
         }
-        plugin.componentLogger.info(ColorTranslator.translate("[INFO] [KillerManager] Cargados $loadedCount asesinos desde scripts."))
+        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Loaded $loadedCount killers from scripts.</gray>"))
     }
 
     override fun registerClass(role: Killer) {
@@ -104,17 +104,17 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         }
         val clase = getClassById(claseId) ?: return
 
-        // ?? FIX: Ejecutamos el cleanup de forma segura en el hilo del jugador (Entity Scheduler)
+        // ?? FIX: Ejecutamos el cleanup de forma segura en el hilo del player (Entity Scheduler)
         player.scheduler.run(plugin, Consumer { _ ->
             clase.cleanup(player)
-            plugin.componentLogger.info(ColorTranslator.translate("[INFO] [Manager] ${player.name} synchronized with ${clase.nombre}"))
+            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>${player.name} synchronized with ${clase.nombre}</gray>"))
         }, null)
     }
 
-    fun registerKiller(player: Player, asesino: Killer) {
+    fun registerKiller(player: Player, killer: Killer) {
         val uuid = player.uniqueId
 
-        // Si ya tenía un asesino, limpiarlo primero
+        // Si ya tenÃƒÂ­a un killer, clearlo primero
         if (activeRoles.containsKey(uuid)) {
             removeRoleLogic(uuid, player)
         }
@@ -122,25 +122,25 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         // 1. Limpieza total inmediata (Hilo Principal)
         player.inventory.clear()
         player.inventory.armorContents = arrayOfNulls(4)
-        activeRoles[uuid] = asesino
+        activeRoles[uuid] = killer
 
         // Feedback
         player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "killer.transform",
-            Placeholder.component("name", ColorTranslator.translate(asesino.nombre))))
+            Placeholder.component("name", ColorTranslator.translate(killer.nombre))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
-        // 2. ?? FIX: EntityScheduler de Paper con runDelayed y Consumer explï¿½cito
+        // 2. ?? FIX: EntityScheduler de Paper con runDelayed y Consumer explÃƒÂ¯Ã‚Â¿Ã‚Â½cito
         player.scheduler.runDelayed(
             plugin,
             Consumer { _ ->
                 if (!player.isOnline || !activeRoles.containsKey(uuid)) return@Consumer
 
-                asesino.equip(player)
+                killer.equip(player)
 
-                // ReorganizaciÃ³n dinÃ¡mica de slots basada en config
-                val config = plugin.configManager.getKillerConfig(asesino.id)
+                // ReorganizaciÃƒÆ’Ã‚Â³n dinÃƒÆ’Ã‚Â¡mica de slots basada en config
+                val config = plugin.configManager.getKillerConfig(killer.id)
                 
-                // Aplicar vida mÃ¡xima del asesino
+                // Apply vida mÃƒÆ’Ã‚Â¡xima del killer
                 val maxHealth = config.getDouble("stats.health", 40.0)
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = maxHealth
                 player.health = maxHealth
@@ -168,7 +168,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                     player.inventory.setItem(weaponSlot, weaponItem)
                 }
 
-                asesino.showTrail(player)
+                killer.showTrail(player)
                 player.inventory.heldItemSlot = weaponSlot
             },
             null,
@@ -186,10 +186,10 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
     }
 
     override fun removeRoleLogic(uuid: UUID, player: Player?) {
-        val asesino = activeRoles.remove(uuid) ?: return
+        val killer = activeRoles.remove(uuid) ?: return
 
         // Limpiamos los datos del Killer
-        asesino.cleanup(player)
+        killer.cleanup(player)
 
         if (player != null && player.isOnline) {
             player.inventory.clear()
@@ -205,14 +205,14 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
     fun removeAllKillers() {
         cleanAll()
-        // Le decimos a todos los asesinos que vacÃ­en su memoria RAM interna
-        availableClasses.values.forEach { asesino ->
-            asesino.dispose()
+        // Le decimos a todos los killers que vacÃƒÆ’Ã‚Â­en su memoria RAM interna
+        availableClasses.values.forEach { killer ->
+            killer.dispose()
         }
     }
 
     /**
-     * Hot-Reload individual para un asesino (Especialmente Scripts).
+     * Hot-Reload individual para un killer (Especialmente Scripts).
      */
     fun reloadKiller(id: String) {
         val lowerId = id.lowercase()
@@ -247,7 +247,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             if (newKiller != null) {
                 registerClass(newKiller)
                 
-                // Actualizar jugadores en vivo
+                // Actualizar players en vivo
                 val affectedPlayers = mutableListOf<Player>()
                 activeRoles.forEach { (uuid, activeKiller) ->
                     if (activeKiller.id.equals(lowerId, ignoreCase = true)) {
@@ -265,13 +265,13 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                     equipKiller(p, lowerId)
                 }
                 
-                plugin.componentLogger.info(ColorTranslator.translate("[INFO] [KillerManager] Asesino $lowerId recargado exitosamente."))
+                plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Killer $lowerId reloaded successfully.</gray>"))
             } else {
                 availableClasses.remove(lowerId)
-                plugin.componentLogger.warn("Error recargando $lowerId. El asesino ha sido deshabilitado.")
+                plugin.componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Error reloading $lowerId. The killer has been disabled.</gray>"))
             }
         } else {
-            plugin.componentLogger.warn("[INFO] [KillerManager] No se encontrÃ³ el script $lowerId.groovy o .lua para recargar.")
+            plugin.componentLogger.warn(pumpking.lib.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Could not find script $lowerId.groovy or .lua to reload.</gray>"))
         }
     }
 

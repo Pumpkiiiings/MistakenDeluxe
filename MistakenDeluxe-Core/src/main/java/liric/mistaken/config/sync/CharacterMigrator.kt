@@ -1,4 +1,4 @@
-package liric.mistaken.config.sync
+﻿package liric.mistaken.config.sync
 
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
@@ -6,11 +6,11 @@ import java.io.File
 
 object CharacterMigrator {
     fun migrate(plugin: JavaPlugin) {
-        val asesinosFile = File(plugin.dataFolder, "asesinos.yml")
-        val supervivientesFile = File(plugin.dataFolder, "supervivientes.yml")
+        val killersFile = File(plugin.dataFolder, "asesinos.yml")
+        val survivorsFile = File(plugin.dataFolder, "supervivientes.yml")
 
-        if (asesinosFile.exists()) {
-            val config = YamlConfiguration.loadConfiguration(asesinosFile)
+        if (killersFile.exists()) {
+            val config = YamlConfiguration.loadConfiguration(killersFile)
             val keys = config.getConfigurationSection("asesinos")?.getKeys(false) ?: emptySet()
             
             val killersDir = File(plugin.dataFolder, "characters/killers")
@@ -30,13 +30,13 @@ object CharacterMigrator {
                 }
             }
             
-            // Renombrar a .old para evitar re-migración
-            asesinosFile.renameTo(File(plugin.dataFolder, "asesinos.yml.old"))
-            plugin.logger.info("Migrados ${keys.size} asesinos a archivos individuales.")
+            // Renombrar a .old para evitar re-migraciÃ³n
+            killersFile.renameTo(File(plugin.dataFolder, "asesinos.yml.old"))
+            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Migrated ${keys.size} killers to individual files.</gray>"))
         }
 
-        if (supervivientesFile.exists()) {
-            val config = YamlConfiguration.loadConfiguration(supervivientesFile)
+        if (survivorsFile.exists()) {
+            val config = YamlConfiguration.loadConfiguration(survivorsFile)
             val keys = config.getConfigurationSection("supervivientes")?.getKeys(false) ?: emptySet()
             
             val survivorsDir = File(plugin.dataFolder, "characters/survivors")
@@ -56,9 +56,9 @@ object CharacterMigrator {
                 }
             }
             
-            // Renombrar a .old para evitar re-migración
-            supervivientesFile.renameTo(File(plugin.dataFolder, "supervivientes.yml.old"))
-            plugin.logger.info("Migrados ${keys.size} supervivientes a archivos individuales.")
+            // Renombrar a .old para evitar re-migraciÃ³n
+            survivorsFile.renameTo(File(plugin.dataFolder, "supervivientes.yml.old"))
+            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Migrated ${keys.size} survivors to individual files.</gray>"))
         }
     }
 }

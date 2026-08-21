@@ -1,4 +1,4 @@
-package liric.mistaken.level.integration
+﻿package liric.mistaken.level.integration
 
 import liric.mistaken.level.LevelAddonPlugin
 import org.bukkit.Bukkit
@@ -23,7 +23,7 @@ class UltimateAdvancementHook(private val plugin: LevelAddonPlugin) {
     init {
         if (Bukkit.getPluginManager().isPluginEnabled("UltimateAdvancementAPI")) {
             isEnabled = true
-            plugin.logger.info("UltimateAdvancementAPI hooked via reflection.")
+            plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>UltimateAdvancementAPI hooked via reflection.</gray>"))
             try {
                 setupReflection()
                 registerConfiguredAdvancements()

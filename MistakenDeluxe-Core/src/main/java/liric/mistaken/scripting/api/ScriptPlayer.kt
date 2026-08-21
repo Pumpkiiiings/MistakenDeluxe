@@ -1,7 +1,7 @@
 package liric.mistaken.scripting.api
 
 /**
- * Contrato seguro para un Jugador.
+ * Contrato seguro para un Player.
  * Hereda de ScriptEntity.
  */
 interface ScriptPlayer : ScriptEntity {

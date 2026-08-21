@@ -25,8 +25,8 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         if (!session.isKiller(player.uniqueId)) return null
         if (player.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(player)) return null
 
-        val asesino = plugin.asesinoManager.getKillerOfPlayer(player) ?: return null
-        return asesino as? CoreKiller
+        val killer = plugin.killerManager.getKillerOfPlayer(player) ?: return null
+        return killer as? CoreKiller
     }
 
     private fun handleInput(player: Player, input: InputTrigger): Boolean {

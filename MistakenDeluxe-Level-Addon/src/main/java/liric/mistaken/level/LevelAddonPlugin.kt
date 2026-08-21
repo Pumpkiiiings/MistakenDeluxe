@@ -1,4 +1,4 @@
-package liric.mistaken.level
+﻿package liric.mistaken.level
 
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.plugin.ServicePriority
@@ -58,7 +58,7 @@ class LevelAddonPlugin : JavaPlugin() {
     private lateinit var databaseProvider: HikariDatabaseManager
 
     override fun onEnable() {
-        logger.info("[MistakenDeluxe-Level-Addon] Starting up...")
+        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Starting up...</gray>"))
 
         // Init config
         saveDefaultConfig()
@@ -149,14 +149,14 @@ class LevelAddonPlugin : JavaPlugin() {
         // Register PAPI
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             MistakenLevelExpansion(this).register()
-            logger.info("[MistakenDeluxe-Level-Addon] Registered PlaceholderAPI Expansion.")
+            componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Registered PlaceholderAPI Expansion.</gray>"))
         }
 
-        logger.info("[MistakenDeluxe-Level-Addon] Successfully registered Level & Experience API Services.")
+        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Successfully registered Level & Experience API Services.</gray>"))
     }
 
     override fun onDisable() {
-        logger.info("[MistakenDeluxe-Level-Addon] Shutting down...")
+        componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Shutting down...</gray>"))
         
         // Save data
         if (this::manager.isInitialized) {

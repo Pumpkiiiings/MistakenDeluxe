@@ -33,7 +33,7 @@ object HitboxVisualizer {
     }
     /**
      * Crea una Hitbox 3D usando BlockDisplays (Cristal tintado).
-     * Ideal para habilidades continuas o proyectiles (debes borrarla manualmente con hitbox.remove()).
+     * Ideal para abilities continuas o proyectiles (debes borrarla manualmente con hitbox.remove()).
      *
      * @param loc UbicaciÃ³n inicial.
      * @param x, y, z El radio de expansiÃ³n (Los mismos nÃºmeros de getNearbyEntities).
@@ -54,7 +54,7 @@ object HitboxVisualizer {
             val sizeY = (y * 2).toFloat()
             val sizeZ = (z * 2).toFloat()
 
-            // Para que la caja quede perfectamente centrada en el jugador/proyectil
+            // Para que la caja quede perfectamente centrada en el player/proyectil
             val translation = Vector3f(-x.toFloat(), -y.toFloat(), -z.toFloat())
             val scale = Vector3f(sizeX, sizeY, sizeZ)
 

@@ -44,8 +44,8 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
         val settings = session.settings ?: PrivateGameSettings().also { session.settings = it }
 
         var slot = startSlot
-        val allKillers = plugin.asesinoManager.catalogo.values.toList()
-        val allSurvivors = plugin.supervivienteManager.catalogo.values.toList()
+        val allKillers = plugin.killerManager.catalogo.values.toList()
+        val allSurvivors = plugin.survivorManager.catalogo.values.toList()
 
         // For killers
         for (killer in allKillers) {

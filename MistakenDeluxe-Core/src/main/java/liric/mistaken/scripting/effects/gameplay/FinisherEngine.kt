@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Motor de finishers centralizado.
- * Escucha la muerte de jugadores y despacha callbacks Lua registrados por los asesinos.
+ * Escucha la muerte de players y despacha callbacks Lua registrados por los killers.
  * Elimina la necesidad de registrar listeners Bukkit desde Lua o duplicar la lógica de anti-spam.
  */
 object FinisherEngine : Listener {

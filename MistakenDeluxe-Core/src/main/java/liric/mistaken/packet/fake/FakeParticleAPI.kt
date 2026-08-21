@@ -15,7 +15,7 @@ import org.bukkit.entity.Player
 class FakeParticleAPI {
 
     /**
-     * Envía una partícula visual simple a un grupo de jugadores usando PacketEvents.
+     * Envía una partícula visual simple a un grupo de players usando PacketEvents.
      */
     fun sendParticle(
         viewers: Collection<Player>,
@@ -37,7 +37,7 @@ class FakeParticleAPI {
     }
 
     /**
-     * Envía una partícula de polvo (REDSTONE) coloreada a un grupo de jugadores usando PacketEvents.
+     * Envía una partícula de polvo (REDSTONE) coloreada a un grupo de players usando PacketEvents.
      */
     fun sendDustParticle(
         viewers: Collection<Player>,

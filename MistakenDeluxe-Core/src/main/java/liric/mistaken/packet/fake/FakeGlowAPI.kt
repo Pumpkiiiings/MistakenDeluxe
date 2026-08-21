@@ -12,9 +12,9 @@ class FakeGlowAPI {
     /**
      * Aplica o remueve un efecto de Glowing Client-Side a una entidad existente.
      * Esto NO requiere que la entidad real esté brillando en Bukkit.
-     * @param viewer El jugador que verá el brillo.
+     * @param viewer El player que verá el brillo.
      * @param target La entidad que brillará.
-     * @param isGlowing true para activar, false para limpiar el estado forzado.
+     * @param isGlowing true para activar, false para clear el estado forzado.
      */
     fun setGlowing(viewer: Player, target: Entity, isGlowing: Boolean) {
         // En Minecraft, el Status Flag (índice 0, Byte) maneja estado como fuego, sneaking y glowing.

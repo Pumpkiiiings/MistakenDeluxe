@@ -1,4 +1,4 @@
-package liric.mistaken.data.stats
+﻿package liric.mistaken.data.stats
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -18,8 +18,8 @@ class StatsManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Carga inicial del jugador.
-     * Se ejecuta de forma asíncrona al entrar al servidor.
+     * Carga inicial del player.
+     * Se ejecuta de forma asÃ­ncrona al entrar al servidor.
      */
     fun loadStats(uuid: UUID, name: String) {
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
@@ -27,7 +27,7 @@ class StatsManager(private val plugin: Mistaken) {
             if (stats != null) {
                 cache[uuid] = stats
             } else {
-                cache[uuid] = PlayerStats() // Fallback a vacío
+                cache[uuid] = PlayerStats() // Fallback a vacÃ­o
             }
         }
     }
@@ -41,7 +41,7 @@ class StatsManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Guarda y elimina al jugador de la RAM (QuitEvent).
+     * Guarda y elimina al player de la RAM (QuitEvent).
      */
     fun unloadPlayer(uuid: UUID) {
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
@@ -51,7 +51,7 @@ class StatsManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Guarda un jugador específico en la DB.
+     * Guarda un player especÃ­fico en la DB.
      * Consolida todos los cambios de una sola vez.
      */
     private fun saveToDatabaseSync(uuid: UUID) {
@@ -60,20 +60,20 @@ class StatsManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Ciclo de autoguardado asíncrono.
+     * Ciclo de autoguardado asÃ­ncrono.
      * Se suspende sin bloquear hilos.
      */
     private fun startAutoSave() {
         autoSaveTask = plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             if (cache.isNotEmpty()) {
-                plugin.logger.info("Sincronizando estadísticas de ${cache.size} jugadores con MySQL...")
+                plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Synchronizing statistics for ${cache.size} players with MySQL...</gray>"))
                 saveAllToDatabaseAsync()
             }
         }, 5L, 5L, TimeUnit.MINUTES)
     }
 
     /**
-     * Guarda a todos los jugadores en caché.
+     * Guarda a todos los players en cachÃ©.
      */
     fun saveAllToDatabaseAsync() {
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
@@ -82,7 +82,7 @@ class StatsManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Guardado síncrono para el apagado del servidor.
+     * Guardado sÃ­ncrono para el apagado del servidor.
      */
     fun saveConfigSync() {
         cache.keys.forEach { uuid ->
@@ -91,14 +91,14 @@ class StatsManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Obtiene una estadística específica desde la RAM.
+     * Obtiene una estadÃ­stica especÃ­fica desde la RAM.
      */
     fun getStat(uuid: UUID, statName: String): Int {
         return cache[uuid]?.getStatValue(statName) ?: 0
     }
 
     /**
-     * Obtiene el objeto completo de estadísticas.
+     * Obtiene el objeto completo de estadÃ­sticas.
      */
     fun getStats(uuid: UUID): PlayerStats {
         return cache[uuid] ?: PlayerStats()

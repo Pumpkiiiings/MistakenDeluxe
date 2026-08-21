@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.roles.killers.CoreKiller
 import org.bukkit.entity.Player

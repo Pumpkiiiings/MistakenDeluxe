@@ -59,7 +59,7 @@ class PlayerDataManager(private val plugin: Mistaken) : IPlayerDataManager {
     }
 
     /**
-     * Guarda el estado actual del jugador en MySQL asíncronamente.
+     * Guarda el estado actual del player en MySQL asíncronamente.
      */
     private fun saveDataAsync(uuid: UUID, user: MistakenUser? = null) {
         val u = user ?: userDataCache[uuid] ?: return

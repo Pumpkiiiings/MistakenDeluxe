@@ -16,7 +16,7 @@ class IsolationManager(private val plugin: Mistaken) : Listener {
 
     /**
      * 🔥 AISLAMIENTO DE TAB Y VISIBILIDAD
-     * Oculta a los jugadores que no están en tu misma partida/lobby.
+     * Oculta a los players que no están en tu misma partida/lobby.
      * Al usar hidePlayer, Paper automáticamente los borra del TAB.
      */
     fun updateVisibility(target: Player) {
@@ -41,13 +41,13 @@ class IsolationManager(private val plugin: Mistaken) : Listener {
 
     /**
      * 🔥 AISLAMIENTO DE CHAT
-     * Si mandas un mensaje, solo los de tu partida lo leen.
+     * Si mandas un message, solo los de tu partida lo leen.
      */
     @EventHandler(priority = EventPriority.LOWEST)
     fun onIsolatedChat(event: AsyncChatEvent) {
         val senderSessionId = plugin.sessionManager.playerSessions[event.player.uniqueId]
 
-        // Filtramos a quién le llega el mensaje
+        // Filtramos a quién le llega el message
         event.viewers().removeIf { viewer ->
             if (viewer is Player) {
                 val viewerSessionId = plugin.sessionManager.playerSessions[viewer.uniqueId]

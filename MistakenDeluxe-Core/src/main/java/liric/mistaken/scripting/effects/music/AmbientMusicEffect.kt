@@ -14,7 +14,7 @@ import java.util.function.Consumer
 /**
  * Efecto de música ambiental.
  * Generaliza la música de CharlieJazz, ColorAndElectricity.
- * Corre en el scheduler del jugador y actualiza el sonido para todos los jugadores.
+ * Corre en el scheduler del player y actualiza el sonido para todos los players.
  */
 class AmbientMusicEffect(
     override val scriptId: String,

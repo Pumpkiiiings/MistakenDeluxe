@@ -37,7 +37,7 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
     open fun onInterceptChat(player: Player, message: String): String? { return null }
 
     /**
-     * Se llama cuando el asesino mata a un jugador (lo pone en espectador).
+     * Se llama cuando el killer mata a un player (lo pone en espectador).
      */
     open fun onKill(killer: Player, victim: Player) {}
 

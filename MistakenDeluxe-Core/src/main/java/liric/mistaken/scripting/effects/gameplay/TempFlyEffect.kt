@@ -11,7 +11,7 @@ import java.util.function.Consumer
 
 /**
  * Efecto de vuelo temporal.
- * Habilita el vuelo del jugador y lo deshabilita automáticamente tras un tiempo
+ * Habilita el vuelo del player y lo deshabilita automáticamente tras un tiempo
  * o si se llama a stop() (útil para cuando el killer cambia de rol).
  */
 class TempFlyEffect(

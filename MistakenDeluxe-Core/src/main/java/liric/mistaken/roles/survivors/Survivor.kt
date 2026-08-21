@@ -21,15 +21,15 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
     protected val activeJobs = ConcurrentHashMap.newKeySet<Job>()
 
     /**
-     * Habilidad secundaria (Clic Izquierdo / Interacciones especiales).
-     * Se mantiene 'open' para que clases como Jesse puedan sobreescribirla.
+     * Ability secundaria (Clic Izquierdo / Interacciones especiales).
+     * Se mantiene 'open' para que classes como Jesse puedan sobreescribirla.
      */
     open fun trackearHeridos(player: Player) {
-        // Por defecto no hace nada, evitando errores en clases básicas como Civilian.
+        // Por defecto no hace nada, evitando errores en classes básicas como Civilian.
     }
 
     /**
-     * Verifica el enfriamiento de una habilidad y envía feedback visual.
+     * Verifica el enfriamiento de una ability y envía feedback visual.
      * @return true si aún está en cooldown, false si se puede usar.
      */
     fun checkCooldown(player: Player, slot: Int, seconds: Int): Boolean {
@@ -65,15 +65,15 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
 
         player?.let { p ->
             if (p.isOnline) {
-                // 2. Limpiar inventario
+                // 2. Clear inventario
                 p.inventory.clear()
 
-                // 3. Quitar efectos de poción que la clase haya podido aplicar
+                // 3. Quitar efectos de poción que la clase haya podido apply
                 p.activePotionEffects.forEach { effect ->
                     p.removePotionEffect(effect.type)
                 }
 
-                // 4. Limpiar cooldowns de la memoria RAM
+                // 4. Clear cooldowns de la memoria RAM
                 val prefix = p.uniqueId.toString()
                 cooldowns.keys.removeIf { it.startsWith(prefix) }
 

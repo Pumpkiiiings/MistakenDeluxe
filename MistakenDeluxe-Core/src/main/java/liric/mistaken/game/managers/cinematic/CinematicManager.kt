@@ -59,13 +59,13 @@ class CinematicManager(private val plugin: Mistaken) {
     }
 
 
-    fun playKillerIntro(killer: Player, asesino: Killer, viewers: List<Player>) {
-        val id = asesino.id.lowercase()
+    fun playKillerIntro(player: Player, killer: Killer, viewers: List<Player>) {
+        val id = killer.id.lowercase()
         val profile = getProfile(id)
         val duracionTicks = profile.introDuration
         
         val yOffset = if (id == "charlie") 15.0 else if (profile.isFloating) 2.5 else 0.0
-        val centerLoc = killer.location.clone().add(0.0, yOffset, 0.0)
+        val centerLoc = player.location.clone().add(0.0, yOffset, 0.0)
 
         val visualDummy = centerLoc.world.spawn(centerLoc, ArmorStand::class.java) { dummy ->
             dummy.isInvisible = false
@@ -74,10 +74,10 @@ class CinematicManager(private val plugin: Mistaken) {
             dummy.setArms(true)
             dummy.setBasePlate(false)
             profile.applyPose(dummy, isIntro = true)
-            profile.applyEquipment(killer, dummy, isIntro = true)
+            profile.applyEquipment(player, dummy, isIntro = true)
         }
 
-        val titlePair = profile.getIntroTexts(plugin, asesino.nombre)
+        val titlePair = profile.getIntroTexts(plugin, killer.nombre)
         val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(6), Duration.ofMillis(1000))
 
         val originalLocations = mutableMapOf<Player, Location>()
@@ -115,7 +115,7 @@ class CinematicManager(private val plugin: Mistaken) {
             if (ticks >= duracionTicks || !visualDummy.isValid) {
                 task.cancel()
                 visualDummy.remove()
-                killer.isInvisible = false
+                player.isInvisible = false
                 cameras.forEach { it.stopSpectating() }
                 viewers.forEach { p ->
                     originalGameModes[p]?.let { gm -> p.gameMode = gm }
@@ -148,12 +148,12 @@ class CinematicManager(private val plugin: Mistaken) {
         }, 1L, 1L)
     }
 
-    fun playKillerOutro(killer: Player, asesino: Killer, viewers: List<Player>) {
-        val id = asesino.id.lowercase()
+    fun playKillerOutro(player: Player, killer: Killer, viewers: List<Player>) {
+        val id = killer.id.lowercase()
         val profile = getProfile(id)
         val duracionTicks = profile.outroDuration
         
-        val centerLoc = killer.location.clone().add(0.0, if (profile.isFloating) 2.5 else 0.0, 0.0)
+        val centerLoc = player.location.clone().add(0.0, if (profile.isFloating) 2.5 else 0.0, 0.0)
 
         val visualDummy = centerLoc.world.spawn(centerLoc, ArmorStand::class.java) { dummy ->
             dummy.isInvisible = false
@@ -162,10 +162,10 @@ class CinematicManager(private val plugin: Mistaken) {
             dummy.setArms(true)
             dummy.setBasePlate(false)
             profile.applyPose(dummy, isIntro = false)
-            profile.applyEquipment(killer, dummy, isIntro = false)
+            profile.applyEquipment(player, dummy, isIntro = false)
         }
 
-        val titlePair = profile.getOutroTexts(plugin, asesino.nombre)
+        val titlePair = profile.getOutroTexts(plugin, killer.nombre)
         val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(8), Duration.ofMillis(1000))
 
         val originalLocations = mutableMapOf<Player, Location>()
@@ -200,7 +200,7 @@ class CinematicManager(private val plugin: Mistaken) {
             if (ticks >= duracionTicks || !visualDummy.isValid) {
                 task.cancel()
                 visualDummy.remove()
-                killer.isInvisible = false
+                player.isInvisible = false
                 cameras.forEach { it.stopSpectating() }
                 viewers.forEach { p ->
                     originalGameModes[p]?.let { gm -> p.gameMode = gm }

@@ -1,7 +1,7 @@
 package liric.mistaken.scripting.api
 
 /**
- * Contrato seguro para un Mundo.
+ * Contrato seguro para un World.
  */
 interface ScriptWorld {
     fun name(): String

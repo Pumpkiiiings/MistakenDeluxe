@@ -15,7 +15,7 @@ object ParticleShapesUtils {
     private val plugin = JavaPlugin.getPlugin(Mistaken::class.java)
 
     /**
-     * Envía un paquete de partículas a todos los jugadores en un radio de 50 bloques.
+     * Envía un paquete de partículas a todos los players en un radio de 50 bloques.
      * Ideal para efectos visuales sin sobrecargar el servidor (Bukkit API bypass).
      */
     @JvmStatic
@@ -206,7 +206,7 @@ object ParticleShapesUtils {
     }
 
     /**
-     * Dibuja alas angélicas o demoníacas estáticas detrás del jugador, alineadas a su mirada.
+     * Dibuja alas angélicas o demoníacas estáticas detrás del player, alineadas a su mirada.
      */
     @JvmStatic
     @JvmOverloads

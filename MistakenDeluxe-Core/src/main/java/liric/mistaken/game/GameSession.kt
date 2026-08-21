@@ -1,4 +1,4 @@
-package liric.mistaken.game
+﻿package liric.mistaken.game
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -24,7 +24,7 @@ class GameSession(
 
     var settings: PrivateGameSettings? = if (isPrivate) PrivateGameSettings() else null
 
-    // --- JUGADORES AISLADOS DE ESTA SESIÓN ---
+    // --- JUGADORES AISLADOS DE ESTA SESIÃ“N ---
     val players = ConcurrentHashMap.newKeySet<UUID>()
 
     // --- ESTADO DEL JUEGO ---
@@ -41,8 +41,8 @@ class GameSession(
     var currentKillerUUID: UUID? = null
     var lastKillerWon: Boolean = false
 
-    override val asesinosUUIDs = ConcurrentHashMap.newKeySet<UUID>()
-    val yaJugaronAsesino = ConcurrentHashMap.newKeySet<UUID>()
+    override val killersUUIDs = ConcurrentHashMap.newKeySet<UUID>()
+    val yaJugaronKiller = ConcurrentHashMap.newKeySet<UUID>()
     val changedBlocks = ConcurrentHashMap<Location, Material>()
 
     // --- MANAGERS GLOBALES (Compartidos) ---
@@ -50,7 +50,7 @@ class GameSession(
     val ambientManager = plugin.ambientManager
     val combatManager = plugin.combatManager
 
-    // --- CONTROLADORES DE LÓGICA (Instanciados POR SESIÓN) ---
+    // --- CONTROLADORES DE LÃ“GICA (Instanciados POR SESIÃ“N) ---
     val stateController = GameStateController(this)
     val playerController = GamePlayerController(this)
     val uiController = GameUIController(this)
@@ -59,17 +59,17 @@ class GameSession(
 
     init {
         loopTask.start()
-        plugin.componentLogger.info(ColorTranslator.translate("[INFO] [Session] Session $id started."))
+        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Session $id started.</gray>"))
     }
 
-    // --- MÉTODOS DE JUGADORES ---
+    // --- MÃ‰TODOS DE JUGADORES ---
     fun addPlayer(player: Player) {
         players.add(player.uniqueId)
     }
 
     fun removePlayer(player: Player) {
         players.remove(player.uniqueId)
-        asesinosUUIDs.remove(player.uniqueId)
+        killersUUIDs.remove(player.uniqueId)
         if (currentKillerUUID == player.uniqueId) currentKillerUUID = null
         uiController.hideBossBar(player)
         plugin.observerHUDManager.clearPlayer(player)
@@ -79,11 +79,11 @@ class GameSession(
         return players.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
     }
 
-    // --- GETTERS ÚTILES ---
-    fun getCurrentAsesino(): Player? = currentKillerUUID?.let { plugin.server.getPlayer(it) }
-    override fun isKiller(uuid: UUID): Boolean = asesinosUUIDs.contains(uuid)
+    // --- GETTERS ÃšTILES ---
+    fun getCurrentKiller(): Player? = currentKillerUUID?.let { plugin.server.getPlayer(it) }
+    override fun isKiller(uuid: UUID): Boolean = killersUUIDs.contains(uuid)
 
-    // Solo envía mensajes a los jugadores DE ESTA SESIÓN
+    // Solo envÃ­a messages a los players DE ESTA SESIÃ“N
     fun broadcastLocalized(path: String, vararg tags: TagResolver) {
         val message = PumpkingServiceManager.messages.getComponent(null, path, *tags)
         getPlayers().forEach { p -> p.sendMessage(message) }
@@ -92,14 +92,14 @@ class GameSession(
     fun shutdown() {
         loopTask.stop()
         // FIX #7: Snapshot the player list before iterating.
-        // leaveSession() → removePlayer() modifies `players` concurrently.
+        // leaveSession() â†’ removePlayer() modifies `players` concurrently.
         // Taking a snapshot first makes the iteration deterministic and prevents
         // any ambiguous state between leaveSession and the final players.clear().
         val snapshot = getPlayers().toList()
         snapshot.forEach { plugin.sessionManager.leaveSession(it) }
         players.clear()       // defensive clear for any UUIDs whose Player was offline
         changedBlocks.clear()
-        plugin.componentLogger.info(ColorTranslator.translate("[INFO] [Session] Session $id destroyed."))
+        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Session $id destroyed.</gray>"))
     }
 }
 

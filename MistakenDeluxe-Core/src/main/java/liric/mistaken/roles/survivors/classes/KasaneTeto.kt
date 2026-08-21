@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.classes
 
 import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
@@ -47,7 +47,7 @@ class KasaneTeto : Survivor(
     private val pathBase = "supervivientes.teto"
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
 
-    // Guardamos las piezas individuales para aplicarles la matemática de rotación
+    // Guardamos las piezas individuales para applyles la matemática de rotación
     private val tetoAccesorios = ConcurrentHashMap<UUID, MutableList<VirtualBlockDisplay>>()
 
     override fun useSkill(player: Player, slot: Int) {
@@ -240,7 +240,7 @@ class KasaneTeto : Survivor(
 
         // BUCLE ACTUALIZADOR
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!player.isOnline || player?.isValid == false || !plugin.supervivienteManager.esSurvivorActivo(player)) {
+            if (!player.isOnline || player?.isValid == false || !plugin.survivorManager.esSurvivorActivo(player)) {
                 borrarCosmeticos(uuid)
                 task.cancel()
                 return@Consumer
@@ -265,7 +265,7 @@ class KasaneTeto : Survivor(
 
         val headRot = Quaternionf().rotateY(yawRad).rotateX(-pitchRad)
 
-        // Función para aplicar offset a un bloque basado en la rotación de la cabeza
+        // Función para apply offset a un bloque basado en la rotación de la cabeza
         fun applyOffset(index: Int, rightOff: Double, upOff: Double, fwdOff: Double, rotExtra: Quaternionf? = null) {
             val pLoc = baseHead.clone()
                 .add(right.clone().multiply(rightOff))

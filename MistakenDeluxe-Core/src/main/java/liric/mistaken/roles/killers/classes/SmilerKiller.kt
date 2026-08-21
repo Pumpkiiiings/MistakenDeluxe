@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.characters.components.CombatComponent
 import liric.mistaken.characters.core.Character
@@ -58,6 +58,6 @@ class SmilerKiller : BaseKiller("smiler", "Smiler") {
     }
 
     override fun useSkill(player: Player, slot: Int) {
-        // No tiene habilidades por defecto
+        // No tiene abilities por defecto
     }
 }

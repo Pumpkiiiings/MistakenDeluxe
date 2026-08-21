@@ -2,7 +2,7 @@ package liric.mistaken.game.managers.cinematic
 
 enum class CameraStyle {
     /**
-     * El clásico: orbita alrededor del asesino cambiando el radio y la altura.
+     * El clásico: orbita alrededor del killer cambiando el radio y la altura.
      */
     ORBIT_ZOOM_IN,
 

@@ -1,4 +1,4 @@
-package liric.mistaken.utils.proxy
+﻿package liric.mistaken.utils.proxy
 
 import liric.mistaken.Mistaken
 import org.bukkit.entity.Player
@@ -21,7 +21,7 @@ object BungeeUtils {
             }, null)
 
         } catch (e: Exception) {
-            plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [Proxy] Failed to send ${player.name} to proxy: ${e.message}"))
+            plugin.componentLogger.error(pumpking.lib.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Failed to send ${player.name} to proxy: ${e.message}</gray>"))
         }
     }
 }

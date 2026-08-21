@@ -12,7 +12,7 @@ import java.util.function.Consumer
 
 /**
  * Efecto de dash/impulso con detección de colisión.
- * Generaliza habilidadDashCodigo, habilidadAdminDash, habilidadVividTrace.
+ * Generaliza abilityDashCodigo, abilityAdminDash, abilityVividTrace.
  * Corre en player.scheduler (Folia-safe).
  */
 class DashEffect(

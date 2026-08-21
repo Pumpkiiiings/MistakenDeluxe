@@ -39,7 +39,7 @@ abstract class MenuBase(
     // Fallback si no se encuentra la clave en messages.yml
     protected open val titleFallback: String get() = "<red>Menu: $menuName"
 
-    // Cache de decoraciones procesadas, agrupadas por idioma del jugador.
+    // Cache de decoraciones procesadas, agrupadas por idioma del player.
     // El título está incluido porque varía por idioma.
     private val langCache = ConcurrentHashMap<String, MenuBakedData>()
 
@@ -47,7 +47,7 @@ abstract class MenuBase(
     private var globalConfig: FileConfiguration? = null
 
     
-    // API PÚBLICA — para subclases y acceso externo
+    // API PÚBLICA — para subclasses y acceso externo
     
 
     /**
@@ -59,7 +59,7 @@ abstract class MenuBase(
     }
 
     /**
-     * Abre el menú al jugador resolviendo su idioma automáticamente.
+     * Abre el menú al player resolviendo su idioma automáticamente.
      */
     open fun abrir(player: Player) {
         val baked = getBakedData(player)
@@ -71,7 +71,7 @@ abstract class MenuBase(
             .disableAllInteractions()
             .create()
 
-        // Aplicar decoraciones desde caché
+        // Apply decoraciones desde caché
         baked.decorations.forEach { (slots, item) -> gui.setItem(slots, item) }
 
         // Lógica de items dinámicos (implementada por cada subclase)
@@ -81,9 +81,9 @@ abstract class MenuBase(
     }
 
     /**
-     * Método que las subclases implementan para añadir sus items dinámicos.
+     * Método que las subclasses implementan para añadir sus items dinámicos.
      *
-     * @param player El jugador que abre el menú.
+     * @param player El player que abre el menú.
      * @param gui    La instancia de GUI ya decorada.
      * @param config El FileConfiguration global del menú (menus/<nombre>.yml).
      *               Use [getTranslatedString] para obtener textos localizados.
@@ -91,10 +91,10 @@ abstract class MenuBase(
     abstract fun setupItems(player: Player, gui: Gui, config: FileConfiguration)
 
     /**
-     * Obtiene un texto traducido desde messages.yml del jugador.
+     * Obtiene un texto traducido desde messages.yml del player.
      * Reemplaza la antigua necesidad de tener un YAML de menú por idioma.
      *
-     * @param player El jugador cuyo idioma se usará.
+     * @param player El player cuyo idioma se usará.
      * @param path   La ruta en messages.yml, ej: "menus.tienda_principal.items.asesinos.nombre"
      * @param def    Valor por defecto si no se encuentra la clave.
      */
@@ -103,7 +103,7 @@ abstract class MenuBase(
     }
 
     /**
-     * Obtiene una lista de strings traducidos desde messages.yml del jugador.
+     * Obtiene una lista de strings traducidos desde messages.yml del player.
      */
     fun getTranslatedList(player: Player, path: String): List<String> {
         return PumpkingServiceManager.messages.getRawStringList(player, path, "messages")
@@ -130,7 +130,7 @@ abstract class MenuBase(
     )
 
     /**
-     * Obtiene (o genera y cachea) los datos decorativos del menú para el idioma del jugador.
+     * Obtiene (o genera y cachea) los datos decorativos del menú para el idioma del player.
      * El título se resuelve desde messages.yml usando [titleMessageKey].
      */
     private fun getBakedData(player: Player): MenuBakedData {

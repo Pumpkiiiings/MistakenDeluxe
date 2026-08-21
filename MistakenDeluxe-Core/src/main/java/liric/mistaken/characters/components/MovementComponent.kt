@@ -3,7 +3,7 @@ package liric.mistaken.characters.components
 import liric.mistaken.characters.core.CharacterComponent
 
 /**
- * Componente que detecta los cambios físicos del jugador o entidad.
+ * Componente que detecta los cambios físicos del player o entidad.
  * No reproduce animaciones directamente; su trabajo es notificar al StateComponent
  * cuando detecta que el Character empezó a correr, caminar, saltar, etc.
  */

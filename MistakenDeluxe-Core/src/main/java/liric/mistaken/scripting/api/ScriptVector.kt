@@ -1,7 +1,7 @@
 package liric.mistaken.scripting.api
 
 /**
- * Contrato seguro para representar un vector (dirección o velocidad) en el mundo.
+ * Contrato seguro para representar un vector (dirección o velocidad) en el world.
  * No expone org.bukkit.util.Vector directamente a Lua.
  */
 interface ScriptVector {

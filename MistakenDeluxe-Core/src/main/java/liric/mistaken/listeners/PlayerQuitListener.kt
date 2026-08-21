@@ -12,7 +12,7 @@ import net.luckperms.api.node.types.PrefixNode
 /**
  * [LIRIC-MISTAKEN 2.0]
  * PlayerQuitListener: Limpieza profunda adaptada a MULTIARENA.
- * FIX: Ahora detecta la sesión específica del jugador para procesar su salida.
+ * FIX: Ahora detecta la sesión específica del player para procesar su salida.
  */
 class PlayerQuitListener(private val plugin: Mistaken) : Listener {
 
@@ -28,30 +28,30 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
         if (session != null) {
             if (session.currentState == GameState.INGAME) {
 
-                // Si el jugador es un asesino en SU sesión
+                // Si el player es un killer en SU sesión
                 if (session.isKiller(uuid)) {
-                    // Limpiar visuales
-                    plugin.asesinoManager.removeKiller(player)
+                    // Clear visuales
+                    plugin.killerManager.removeKiller(player)
                     // Quitar de la lista de la sesión
-                    session.asesinosUUIDs.remove(uuid)
+                    session.killersUUIDs.remove(uuid)
 
-                    // Si ya no quedan asesinos en esa partida, termina
-                    if (session.asesinosUUIDs.isEmpty()) {
+                    // Si ya no quedan killers en esa partida, termina
+                    if (session.killersUUIDs.isEmpty()) {
                         session.stateController.endGame("game.killer-disconnected", false)
                     }
                 } else {
-                    // Si era superviviente, procesamos su "muerte" por desconexión en esa partida
+                    // Si era survivor, procesamos su "muerte" por desconexión en esa partida
                     session.playerController.handlePlayerDeath(player)
                 }
             }
 
             // Limpieza interna de la sesión
-            session.asesinosUUIDs.remove(uuid)
+            session.killersUUIDs.remove(uuid)
             if (session.currentKillerUUID == uuid) {
                 session.currentKillerUUID = null
             }
 
-            // 🔥 IMPORTANTE: Notificar al SessionManager que el jugador abandonó la instancia
+            // 🔥 IMPORTANTE: Notificar al SessionManager que el player abandonó la instancia
             plugin.sessionManager.leaveSession(player)
         }
 
@@ -65,7 +65,7 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
 
         // 4. PERSISTENCIA DE DATOS (LuckPerms y Archivos)
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
-            // Limpiar Prefijos de LuckPerms
+            // Clear Prefijos de LuckPerms
             try {
                 if (plugin.server.pluginManager.isPluginEnabled("LuckPerms")) {
                     val lp = LuckPermsProvider.get()

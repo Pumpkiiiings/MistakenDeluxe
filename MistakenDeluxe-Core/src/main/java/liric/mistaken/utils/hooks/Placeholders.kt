@@ -16,7 +16,7 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
     override fun onRequest(player: OfflinePlayer?, params: String): String? {
         if (player == null) return ""
 
-        val p = player.player // Jugador online (puede ser null)
+        val p = player.player // Player online (puede ser null)
         val param = params.lowercase()
 
         fun formatTime(seconds: Int): String {
@@ -27,7 +27,7 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
             else String.format("%02d:%02d", m, s)
         }
 
-        // 1. BUSCAR SESIÓN (Solo si el jugador está online)
+        // 1. BUSCAR SESIÓN (Solo si el player está online)
         val session = p?.let { plugin.sessionManager.getSession(it) }
 
         return when (param) {
@@ -56,8 +56,8 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
                 }
             }
 
-            // --- GENERADORES (Contextuales a la arena del jugador) ---
-            // Nota: Se asume que generatorManager puede filtrar por el mundo/sesión del jugador
+            // --- GENERADORES (Contextuales a la arena del player) ---
+            // Nota: Se asume que generatorManager puede filtrar por el world/sesión del player
             "gens_repaired" -> {
                 if (p == null) "0"
                 else plugin.generatorManager.getCompletedCountInWorld(p.world).toString()
@@ -72,12 +72,12 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
 
             "killer_name" -> {
                 if (p == null) return "N/A"
-                plugin.asesinoManager.getKillerOfPlayer(p)?.nombre ?: "None"
+                plugin.killerManager.getKillerOfPlayer(p)?.nombre ?: "None"
             }
 
             "killer_id" -> {
                 if (p == null) return "none"
-                plugin.asesinoManager.getKillerOfPlayer(p)?.id ?: "none"
+                plugin.killerManager.getKillerOfPlayer(p)?.id ?: "none"
             }
 
             // --- ESTADÍSTICAS GLOBALES (Independientes de la sesión) ---

@@ -21,7 +21,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val uuid = player.uniqueId
 
-        // 🔥 Ocultamos el mensaje por defecto de Minecraft para no romper la inmersión del lobby aislado
+        // 🔥 Ocultamos el message por defecto de Minecraft para no romper la inmersión del lobby aislado
         event.joinMessage(null)
 
         // 1. SINCRONIZACIÓN INICIAL
@@ -72,7 +72,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
                 }
             }
 
-            // Checamos si la sesión ya puede empezar el contador (Ej: Llegaron a 4 jugadores)
+            // Checamos si la sesión ya puede empezar el contador (Ej: Llegaron a 4 players)
             val minPlayers = plugin.config.getInt("settings.min-players", 4)
             if (targetSession.getPlayers().size >= minPlayers && targetSession.currentState == GameState.LOBBY) {
                 targetSession.stateController.startBreakProcess()
@@ -96,7 +96,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     fun onPlayerQuit(event: PlayerQuitEvent) {
-        // 🔥 Ocultamos el mensaje por defecto de Minecraft al salir
+        // 🔥 Ocultamos el message por defecto de Minecraft al salir
         event.quitMessage(null)
 
         plugin.nameTagManager.removePlayer(event.player)
@@ -150,7 +150,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
             status == PlayerResourcePackStatusEvent.Status.FAILED_DOWNLOAD) {
             
             // Fix: Cuando el resource pack se carga (o falla), la música se corta.
-            // Limpiamos al jugador para que el MusicManager se la vuelva a poner.
+            // Limpiamos al player para que el MusicManager se la vuelva a poner.
             plugin.server.scheduler.runTaskLater(plugin, Runnable {
                 plugin.musicManager.stopMusicForPlayer(event.player)
             }, 20L) // 1 seg extra para asegurar que el cliente terminó

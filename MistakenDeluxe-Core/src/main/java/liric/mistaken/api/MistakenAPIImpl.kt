@@ -15,8 +15,8 @@ import pumpking.lib.service.PumpkingServiceManager
 class MistakenAPIImpl(private val _plugin: Mistaken) : MistakenAPI {
     override val plugin: Plugin
         get() = _plugin
-    override val asesinoManager: IKillerManager
-        get() = _plugin.asesinoManager
+    override val killerManager: IKillerManager
+        get() = _plugin.killerManager
     override val sessionManager: ISessionManager
         get() = _plugin.sessionManager
     override val configManager: IConfigManager

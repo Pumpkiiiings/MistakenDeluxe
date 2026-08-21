@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.audio
+﻿package liric.mistaken.game.managers.audio
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +31,7 @@ class MusicManager(private val plugin: Mistaken) {
     private var currentLobbyTrack: Track? = null
     private var trackStartTime: Long = 0
 
-    // Registro de qué canción está escuchando cada jugador (para no solapar)
+    // Registro de quÃ© canciÃ³n estÃ¡ escuchando cada player (para no solapar)
     private val playersPlaying = ConcurrentHashMap.newKeySet<UUID>()
 
     private var cachedVolume: Float = 0.6f
@@ -59,7 +59,7 @@ class MusicManager(private val plugin: Mistaken) {
             playlist.add(Track(id, duration))
         }
 
-        plugin.componentLogger.info(ColorTranslator.translate("[INFO] [Music] Multiarena System loaded with ${playlist.size} tracks."))
+        plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Multiarena System loaded with ${playlist.size} tracks.</gray>"))
     }
 
     private fun startMusicLoop() {
@@ -67,17 +67,17 @@ class MusicManager(private val plugin: Mistaken) {
             while (isActive && !plugin.isReady) delay(1000L)
 
             while (isActive) {
-                // 1. Decidir la canción actual para los que están en "espera" (Lobby/Votación/Break)
+                // 1. Decidir la canciÃ³n actual para los que estÃ¡n en "espera" (Lobby/VotaciÃ³n/Break)
                 if (currentLobbyTrack == null && playlist.isNotEmpty()) {
                     currentLobbyTrack = playlist.random()
                     trackStartTime = System.currentTimeMillis()
                 }
 
-                // 2. Evaluar a cada jugador individualmente
+                // 2. Evaluar a cada player individualmente
                 for (player in plugin.server.onlinePlayers) {
                     val session = plugin.sessionManager.getSession(player)
 
-                    // Si no tiene sesión (Lobby) o la sesión está en fase de espera
+                    // Si no tiene sesiÃ³n (Lobby) o la sesiÃ³n estÃ¡ en fase de espera
                     val state = session?.currentState ?: GameState.LOBBY
                     val shouldHearMusic = state == GameState.LOBBY || state == GameState.VOTING || state == GameState.BREAK
 
@@ -93,11 +93,11 @@ class MusicManager(private val plugin: Mistaken) {
                     }
                 }
 
-                // 3. Manejar el tiempo de la canción actual (Global)
+                // 3. Manejar el tiempo de la canciÃ³n actual (Global)
                 currentLobbyTrack?.let { track ->
                     val elapsed = (System.currentTimeMillis() - trackStartTime) / 1000
                     if (elapsed >= track.duration) {
-                        // Cambiar la canción para todos
+                        // Cambiar la canciÃ³n para todos
                         currentLobbyTrack = playlist.random()
                         trackStartTime = System.currentTimeMillis()
                         // Vaciamos el set para que en el siguiente tick todos empiecen a escuchar la nueva
@@ -107,7 +107,7 @@ class MusicManager(private val plugin: Mistaken) {
                 
                 delay(1000L)
 
-                // Limpiar rastro de jugadores desconectados
+                // Clear rastro de players desconectados
                 playersPlaying.removeIf { plugin.server.getPlayer(it) == null }
             }
         }
@@ -121,15 +121,15 @@ class MusicManager(private val plugin: Mistaken) {
 
         player.playSound(soundPacket)
 
-        // Ya no removemos al jugador de playersPlaying asincrónicamente aquí,
+        // Ya no removemos al player de playersPlaying asincrÃ³nicamente aquÃ­,
         // ya que el bucle principal se encarga de reiniciar todo el set 
-        // cuando la canción global termina.
+        // cuando la canciÃ³n global termina.
     }
 
     fun stopMusicForPlayer(player: Player) {
         playersPlaying.remove(player.uniqueId)
 
-        // Kyori detiene todos los sonidos de la categoría RECORD para este jugador
+        // Kyori detiene todos los sonidos de la categorÃ­a RECORD para este player
         player.stopSound(SoundStop.source(Sound.Source.RECORD))
     }
 
@@ -146,7 +146,7 @@ class MusicManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Fuerza el cambio de canción (útil para comandos de admin).
+     * Fuerza el cambio de canciÃ³n (Ãºtil para comandos de admin).
      */
     fun skipTrack() {
         val oldTrack = currentLobbyTrack
@@ -156,7 +156,7 @@ class MusicManager(private val plugin: Mistaken) {
         plugin.server.onlinePlayers.forEach { p ->
             if (playersPlaying.contains(p.uniqueId)) {
                 stopMusicForPlayer(p)
-                // El bucle principal lo volverá a poner en el siguiente segundo
+                // El bucle principal lo volverÃ¡ a poner en el siguiente segundo
             }
         }
     }

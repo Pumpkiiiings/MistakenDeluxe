@@ -3,7 +3,7 @@ package liric.mistaken.scripting.api
 import org.bukkit.Location
 
 /**
- * Interfaz marcadora para cualquier wrapper del DSL que posea una ubicación en el mundo.
+ * Interfaz marcadora para cualquier wrapper del DSL que posea una ubicación en el world.
  * Implementada por BukkitPlayerAdapter (location = player.location) y
  * BukkitLocationAdapter (location = la propia location envuelta).
  *

@@ -6,12 +6,12 @@ import org.bukkit.entity.Player
 interface HealthAPI {
 
     /**
-     * Obtiene la cantidad de vidas actuales del jugador.
+     * Obtiene la cantidad de vidas actuales del player.
      */
     fun getHealth(player: Player): Int
 
     /**
-     * Establece manualmente la cantidad de vidas de un jugador.
+     * Establece manualmente la cantidad de vidas de un player.
      * @param health Cantidad de vidas (usualmente entre 0 y 6).
      */
     fun setHealth(player: Player, health: Int)
@@ -22,19 +22,19 @@ interface HealthAPI {
     fun takeDamage(victim: Player, amount: Double = 3.0, sourceName: String? = null)
 
     /**
-     * Verifica si el jugador se encuentra congelado (Modo Freeze Tag).
+     * Verifica si el player se encuentra congelado (Modo Freeze Tag).
      */
     fun isFrozen(player: Player): Boolean
 
     /**
-     * Ejecuta el proceso de rescate para un jugador congelado.
-     * @param victim Jugador a ser descongelado.
-     * @param rescuer Jugador que realiza la acción de rescate.
+     * Ejecuta el proceso de rescate para un player congelado.
+     * @param victim Player a ser descongelado.
+     * @param rescuer Player que realiza la acción de rescate.
      */
     fun unfreeze(victim: Player, rescuer: Player)
 
     /**
-     * Resetea completamente el estado del jugador (Vida máxima y limpieza de estados).
+     * Resetea completamente el estado del player (Vida máxima y limpieza de estados).
      */
     fun resetPlayer(player: Player)
 }

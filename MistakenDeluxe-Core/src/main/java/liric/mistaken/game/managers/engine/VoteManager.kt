@@ -49,7 +49,7 @@ class VoteManager {
 
     fun getTotalVotes(): Int = votes.size
 
-    // 🔥 NUEVO: Función para limpiar la memoria si el jugador se desconecta en pleno lobby
+    // 🔥 NUEVO: Función para clear la memoria si el player se desconecta en pleno lobby
     fun removeVote(uuid: UUID) {
         votes.remove(uuid)
     }

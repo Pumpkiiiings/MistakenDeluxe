@@ -6,7 +6,7 @@ import java.util.UUID
 interface ISession {
     val id: String
     var currentState: GameState
-    val asesinosUUIDs: Set<UUID>
+    val killersUUIDs: Set<UUID>
 
     fun isKiller(uuid: UUID): Boolean
 }

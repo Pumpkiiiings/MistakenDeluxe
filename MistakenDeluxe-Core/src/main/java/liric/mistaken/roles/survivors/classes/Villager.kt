@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.classes
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -40,7 +40,7 @@ class Villager : Survivor(
     private fun preLoadKit() {
         val config = plugin.configManager.getSurvivorConfig(this.id)
 
-        // 1. Cargar Habilidades
+        // 1. Cargar Abilities
         listOf("skill1", "skill2", "skill3").forEach { key ->
             config.getString("items.$key")?.let { id ->
                 if (id != "none" && id.isNotEmpty()) {
@@ -154,7 +154,7 @@ class Villager : Survivor(
         player.world.playSound(player.location, Sound.ENTITY_IRON_GOLEM_ATTACK, 1f, 0.5f)
         player.world.spawnParticle(Particle.BLOCK_CRUMBLE, player.location, 30, 2.0, 0.5, 2.0, Material.IRON_BLOCK.createBlockData())
 
-        // Empujar al asesino si está cerca (5 bloques)
+        // Empujar al killer si está cerca (5 bloques)
         player.world.getNearbyPlayers(player.location, 5.0).forEach { victim ->
             val session = plugin.sessionManager.getSession(victim)
             if (session?.isKiller(victim.uniqueId) == true) {

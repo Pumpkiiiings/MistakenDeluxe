@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.characters.components.CombatComponent
 import liric.mistaken.characters.core.Character
@@ -20,7 +20,7 @@ abstract class WardenSwipeState(override val id: String) : CharacterState {
         val player = character.entity as? org.bukkit.entity.Player ?: return
         val session = liric.mistaken.Mistaken.instance.sessionManager.getSession(player) ?: return
         
-        // Buscamos un bloque de aire cerca de la cabeza del jugador para iluminarlo
+        // Buscamos un bloque de aire cerca de la cabeza del player para iluminarlo
         val loc = player.eyeLocation
         val block = loc.block
         if (block.type == org.bukkit.Material.AIR || block.type == org.bukkit.Material.CAVE_AIR) {
@@ -76,7 +76,7 @@ object WardenSniffWalkState : CharacterState {
     override val id = "sniff_walk"
     override val priority = 90
     
-    // Evitar que el jugador se mueva durante el estado
+    // Evitar que el player se mueva durante el estado
     override fun onEnter(character: Character) {
         val player = character.entity as? org.bukkit.entity.Player ?: return
         player.walkSpeed = 0.0f
@@ -94,7 +94,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
     
     override fun getModelId(): String = "warden"
 
-    // Registra en qué parte del combo está cada jugador y su último ataque
+    // Registra en qué parte del combo está cada player y su último ataque
     private val comboSteps = ConcurrentHashMap<UUID, Int>()
     private val lastAttackTimes = ConcurrentHashMap<UUID, Long>()
 
@@ -278,7 +278,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
     }
 
     /**
-     * Lógica de combo simple por jugador: Alterna entre swipe 1, 2 y 3.
+     * Lógica de combo simple por player: Alterna entre swipe 1, 2 y 3.
      */
     fun attack(player: Player) {
         val uuid = player.uniqueId

@@ -41,7 +41,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         }
 
         // SOLUCIÓN PARA F5: Usamos un Dummy en lugar del Player directamente.
-        // Esto permite forzar que el propio jugador vea el modelo.
+        // Esto permite forzar que el propio player vea el modelo.
         dummy = Dummy(player)
         dummy?.setLocation(player.location)
         dummy?.yHeadRot = player.location.yaw
@@ -51,7 +51,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
 
         modeledEntity = ModelEngineAPI.createModeledEntity(dummy)
         
-        // FIX RUBBERBAND: Evitar que el jugador colisione con el hitbox de su propio modelo
+        // FIX RUBBERBAND: Evitar que el player colisione con el hitbox de su propio modelo
         modeledEntity?.base?.setCollidableWith(player, false)
         
         activeModel = ModelEngineAPI.createActiveModel(blueprint)
@@ -63,7 +63,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         
         modeledEntity?.base?.setMaxStepHeight(1.5)
 
-        // Esconder al jugador real para que no se sobreponga
+        // Esconder al player real para que no se sobreponga
         player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, Int.MAX_VALUE, 0, false, false))
 
         // Sincronizar Dummy cada tick para animaciones y movimiento
@@ -77,7 +77,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         val loc = player.location
         val lastLoc = lastLocation ?: loc
 
-        // FIX VISIBILIDAD: Asegurar que el jugador siga invisible aunque otro plugin limpie los efectos
+        // FIX VISIBILIDAD: Asegurar que el player siga invisible aunque otro plugin limpie los efectos
         if (!player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
             player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, Int.MAX_VALUE, 0, false, false))
         }

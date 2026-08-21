@@ -53,7 +53,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             return
         }
 
-        // Obtenemos la sesión del jugador
+        // Obtenemos la sesión del player
         val gm = player?.let { plugin.sessionManager.getSession(it) }
 
         when (sub) {
@@ -135,10 +135,10 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     plugin.musicManager.loadMusicConfig()
 
                     plugin.server.globalRegionScheduler.execute(plugin) {
-                        plugin.asesinoManager.reloadAll()
+                        plugin.killerManager.reloadAll()
                         plugin.shopSelector.reload()
-                        plugin.asesinoTienda.reload()
-                        plugin.supervivienteTienda.reload()
+                        plugin.killerTienda.reload()
+                        plugin.survivorTienda.reload()
                         sender.sendMessage(PumpkingServiceManager.messages.getComponent(player, "admin.reload-success"))
                         player?.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f)
                     }
@@ -234,33 +234,33 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "setasesino" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (player == null || args.size < 2) return
-                val asesino = plugin.asesinoManager.getClassById(args[1])
-                if (asesino == null) {
+                val killer = plugin.killerManager.getClassById(args[1])
+                if (killer == null) {
                     player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.killer-not-found", Placeholder.parsed("type", args[1])))
                 } else {
-                    plugin.asesinoManager.registerKiller(player, asesino)
+                    plugin.killerManager.registerKiller(player, killer)
                 }
             }
 
             "setsuperviviente" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (player == null || args.size < 2) return
-                val clase = plugin.supervivienteManager.getClassById(args[1])
+                val clase = plugin.survivorManager.getClassById(args[1])
                 if (clase == null) {
                     player.sendMessage(ColorTranslator.translate("<red>Esa clase no existe, bro."))
                 } else {
-                    plugin.supervivienteManager.registrarSurvivor(player, clase)
+                    plugin.survivorManager.registrarSurvivor(player, clase)
                 }
             }
 
             "removekiller" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (args.size == 1) {
-                    player?.let { plugin.asesinoManager.removeKiller(it) }
+                    player?.let { plugin.killerManager.removeKiller(it) }
                 } else {
                     val target = Bukkit.getPlayer(args[1])
                     if (target != null) {
-                        plugin.asesinoManager.removeKiller(target)
+                        plugin.killerManager.removeKiller(target)
                         val msg = PumpkingServiceManager.messages.getRawString(player, Messages.ADMIN_REMOVEKILLER_SUCCESS, "<green>Killer removido: {player}", "messages")
                             .replace("{player}", target.name)
                         sender.sendMessage(ColorTranslator.translate(msg))
@@ -275,7 +275,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     return
                 }
                 val id = args[1]
-                plugin.asesinoManager.reloadKiller(id)
+                plugin.killerManager.reloadKiller(id)
                 sender.sendMessage(ColorTranslator.translate("<green>Comando enviado al manager para recargar el killer: <aqua>$id"))
             }
 
@@ -345,8 +345,8 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             2 -> {
                 when (args[0].lowercase()) {
                     "setmode" -> if (isAdmin) MistakenMode.entries.map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
-                    "setasesino", "reloadkiller" -> if (isAdmin) plugin.asesinoManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
-                    "setsuperviviente" -> if (isAdmin) plugin.supervivienteManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
+                    "setasesino", "reloadkiller" -> if (isAdmin) plugin.killerManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
+                    "setsuperviviente" -> if (isAdmin) plugin.survivorManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "stats", "forcekiller", "removekiller" -> if (isAdmin) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
                     "langs", "language" -> PumpkingServiceManager.messages.getLoadedLanguages().toList()
                     else -> emptyList()

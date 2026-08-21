@@ -58,7 +58,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
             if (!plugin.isReady) return@runAtFixedRate
 
             for (player in plugin.server.onlinePlayers) {
-                // 🔥 MULTIARENA: Buscamos la sesión del jugador
+                // 🔥 MULTIARENA: Buscamos la sesión del player
                 val session = plugin.sessionManager.getSession(player)
 
                 // Si no tiene sesión o no están en juego, resetear barra de exp
@@ -88,7 +88,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
 
                 // --- Cálculo de pérdida/recuperación ---
                 if (isSprinting && currentStamina > 0.0) {
-                    // 🏟 MULTIARENA: Verificamos si es asesino en SU sesión
+                    // 🏟 MULTIARENA: Verificamos si es killer en SU sesión
                     var loss = if (session.isKiller(uuid)) lossKiller else lossSurvivor
                     if (session.currentMode == MistakenMode.ONE_BOUNCE && !session.isKiller(uuid)) {
                         loss /= 2.0
@@ -118,7 +118,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                         player.exp = newExpProgress
 
                         if (justExhausted) {
-                            aplicarAgotamiento(player)
+                            applyAgotamiento(player)
                         }
 
                         if (currentStamina in 1.0..25.0 && isSprinting) {
@@ -130,7 +130,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
         }, 1L, 250L, TimeUnit.MILLISECONDS)
     }
 
-    private fun aplicarAgotamiento(player: Player) {
+    private fun applyAgotamiento(player: Player) {
         player.isSprinting = false
         player.addPotionEffect(exhaustionEffect)
         player.sendActionBar(exhaustedMsg)

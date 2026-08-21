@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.clases
+package liric.mistaken.roles.survivors.classes
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -130,13 +130,13 @@ class DeliveryMan : Survivor(
 
     private fun usarDerrame(player: Player) {
         val blockLoc = player.location.block.location
-        // SurvivorHabilidadListener.marcarBloque(blockLoc)
+        // SurvivorAbilityListener.marcarBloque(blockLoc)
 
         player.world.spawnParticle(Particle.ITEM_SLIME, player.location.add(0.0, 0.1, 0.0), 40, 0.5, 0.0, 0.5, 0.1)
         player.playSound(player.location, Sound.BLOCK_SLIME_BLOCK_PLACE, 1f, 0.5f)
 
         val task = plugin.server.regionScheduler.runDelayed(plugin, blockLoc, {
-            // SurvivorHabilidadListener.desmarcarBloque(blockLoc)
+            // SurvivorAbilityListener.desmarcarBloque(blockLoc)
             blockLoc.world.spawnParticle(Particle.DRIPPING_WATER, blockLoc.clone().add(0.5, 0.1, 0.5), 15, 0.2, 0.1, 0.2)
         }, 200L)
 

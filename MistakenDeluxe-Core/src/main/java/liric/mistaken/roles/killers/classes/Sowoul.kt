@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.clases
+package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
@@ -91,27 +91,27 @@ class Sowoul : CoreKiller(
         if (checkCooldown(player, slot)) return
 
         when (slot) {
-            1 -> { habilidadDashMagico(player); dibujarCirculoMagico(player, org.bukkit.Particle.PORTAL, 2.0) }
-            2 -> { habilidadLanzarCartas(player); dibujarEspiral(player, org.bukkit.Particle.ENCHANT, 1.5) }
-            3 -> { habilidadFaucesTriples(player); dibujarPentagrama(player, org.bukkit.Particle.WITCH, 3.0) }
-            4 -> { habilidadManoAtraccion(player) }
+            1 -> { abilityDashMagico(player); drawCirculoMagico(player, org.bukkit.Particle.PORTAL, 2.0) }
+            2 -> { abilityLanzarCartas(player); drawEspiral(player, org.bukkit.Particle.ENCHANT, 1.5) }
+            3 -> { abilityFaucesTriples(player); drawPentagrama(player, org.bukkit.Particle.WITCH, 3.0) }
+            4 -> { abilityManoAtraccion(player) }
         }
         playSkillEffects(player, slot)
     }
 
-    private fun dibujarCirculoMagico(player: Player, particula: org.bukkit.Particle, radio: Double) {
+    private fun drawCirculoMagico(player: Player, particle: org.bukkit.Particle, radio: Double) {
         val loc = player.location.clone().add(0.0, 0.1, 0.0)
         plugin.server.regionScheduler.run(plugin, loc, Consumer { _ ->
             for (i in 0 until 360 step 10) {
                 val angulo = Math.toRadians(i.toDouble())
                 val x = radio * cos(angulo)
                 val z = radio * sin(angulo)
-                loc.world.spawnParticle(particula, loc.clone().add(x, 0.0, z), 1, 0.0, 0.0, 0.0, 0.0)
+                loc.world.spawnParticle(particle, loc.clone().add(x, 0.0, z), 1, 0.0, 0.0, 0.0, 0.0)
             }
         })
     }
 
-    private fun dibujarEspiral(player: Player, particula: org.bukkit.Particle, radioMax: Double) {
+    private fun drawEspiral(player: Player, particle: org.bukkit.Particle, radioMax: Double) {
         val loc = player.location.clone().add(0.0, 0.1, 0.0)
         plugin.server.regionScheduler.run(plugin, loc, Consumer { _ ->
             var radioActual = 0.0
@@ -120,14 +120,14 @@ class Sowoul : CoreKiller(
                 val angulo = Math.toRadians(i.toDouble())
                 val x = radioActual * cos(angulo)
                 val z = radioActual * sin(angulo)
-                loc.world.spawnParticle(particula, loc.clone().add(x, yOffset, z), 1, 0.0, 0.0, 0.0, 0.0)
+                loc.world.spawnParticle(particle, loc.clone().add(x, yOffset, z), 1, 0.0, 0.0, 0.0, 0.0)
                 radioActual += (radioMax / (360 * 3 / 20.0))
                 yOffset += 0.05
             }
         })
     }
 
-    private fun dibujarPentagrama(player: Player, particula: org.bukkit.Particle, radio: Double) {
+    private fun drawPentagrama(player: Player, particle: org.bukkit.Particle, radio: Double) {
         val loc = player.location.clone().add(0.0, 0.2, 0.0)
         val puntas = 5
         plugin.server.regionScheduler.run(plugin, loc, Consumer { _ ->
@@ -144,16 +144,16 @@ class Sowoul : CoreKiller(
                 var length = 0.0
                 val currentP = p1.clone()
                 while (length < distance) {
-                    loc.world.spawnParticle(particula, currentP, 1, 0.0, 0.0, 0.0, 0.0)
+                    loc.world.spawnParticle(particle, currentP, 1, 0.0, 0.0, 0.0, 0.0)
                     currentP.add(vector)
                     length += 0.2
                 }
             }
-            dibujarCirculoMagico(player, particula, radio)
+            drawCirculoMagico(player, particle, radio)
         })
     }
 
-    private fun habilidadDashMagico(player: Player) {
+    private fun abilityDashMagico(player: Player) {
         val dir = player.location.direction.normalize().multiply(3.0).setY(0.4)
         player.velocity = dir
         player.playSound(player.location, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.2f)
@@ -191,7 +191,7 @@ class Sowoul : CoreKiller(
         }, null, 1L, 1L)
     }
 
-    private fun habilidadLanzarCartas(player: Player) {
+    private fun abilityLanzarCartas(player: Player) {
         val carta = PacketFactory.displays.buildItemDisplay(player.sessionViewers(), player.eyeLocation) { id ->
             id.setItemStack(ItemStack(Material.PAPER))
             id.transformation = Transformation(JomlVector3f(), Quaternionf(), JomlVector3f(0.5f, 0.5f, 0.5f), Quaternionf())
@@ -237,7 +237,7 @@ class Sowoul : CoreKiller(
         }, null, 1L, 1L)
     }
 
-    private fun habilidadFaucesTriples(player: Player) {
+    private fun abilityFaucesTriples(player: Player) {
         player.playSound(player.location, Sound.ENTITY_EVOKER_PREPARE_ATTACK, 1f, 1f)
         val startLoc = player.location
         val angles = listOf(-25.0, 0.0, 25.0)
@@ -284,7 +284,7 @@ class Sowoul : CoreKiller(
         }
     }
 
-    private fun habilidadManoAtraccion(player: Player) {
+    private fun abilityManoAtraccion(player: Player) {
         val target = player.world.getNearbyPlayers(player.location, 25.0).firstOrNull { isValidTarget(player, it) }
 
         if (target == null) {
@@ -491,9 +491,9 @@ class Sowoul : CoreKiller(
 
     override fun showPhysicalTrail(player: Player) {
         val uuid = player.uniqueId
-        if (!plugin.asesinoManager.isKiller(player)) { limpiarVisuales(uuid); return }
+        if (!plugin.killerManager.isKiller(player)) { clearVisuales(uuid); return }
 
-        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) limpiarVisuales(uuid)
+        if (orbitadores[uuid]?.firstOrNull()?.world != player.world) clearVisuales(uuid)
 
         val entidades = orbitadores.getOrPut(uuid) {
             mutableListOf<VirtualItemDisplay>().apply {
@@ -547,7 +547,7 @@ class Sowoul : CoreKiller(
         }
     }
 
-    private fun limpiarVisuales(uuid: UUID) {
+    private fun clearVisuales(uuid: UUID) {
         orbitadores.remove(uuid)?.forEach { it.remove() }
         angulos.remove(uuid)
     }
@@ -555,7 +555,7 @@ class Sowoul : CoreKiller(
     override fun cleanup(player: Player?) {
         super.cleanup(player)
         player?.let {
-            limpiarVisuales(it.uniqueId)
+            clearVisuales(it.uniqueId)
         }
         fakeEntities.forEach { it.remove() }
         fakeEntities.clear()

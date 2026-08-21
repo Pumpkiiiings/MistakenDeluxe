@@ -21,7 +21,7 @@ class FakeNPCAPI {
 
     /**
      * Crea un NPC completamente Client-Side.
-     * @param player El jugador que lo verÃƒÂ¡.
+     * @param player El player que lo verÃƒÂ¡.
      * @param location UbicaciÃƒÂ³n del NPC.
      * @param name Nombre (mostrarÃƒÂ¡ la tag si no estÃƒÂ¡ oculta por Scoreboard Teams).
      * @param textureValue Textura de skin (Base64).

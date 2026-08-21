@@ -28,7 +28,7 @@ import liric.mistaken.game.objectives.ObjectiveType
 /**
  * [LIRIC-MISTAKEN 2.0]
  * GeneratorManager: Gesti鏮 de generadores adaptada a MULTIARENA.
- * FIX: M彋odos de conteo por mundo a鎙didos para evitar mezcla de datos entre arenas.
+ * FIX: M彋odos de conteo por world a鎙didos para evitar mezcla de datos entre arenas.
  */
 class GeneratorManager(private val plugin: Mistaken) : Listener {
 
@@ -77,7 +77,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
     fun prepareArenaGenerators(locations: List<Location>) {
         // ?? MULTIARENA FIX: Ya no usamos clearGenerators() global.
-        // Solo limpiamos los que pertenezcan al mundo que estamos cargando ahora.
+        // Solo limpiamos los que pertenezcan al world que estamos cargando ahora.
         val targetWorld = locations.firstOrNull()?.world
         if (targetWorld != null) {
             clearGeneratorsInWorld(targetWorld)
@@ -140,7 +140,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
         updateHologramVisual(state)
 
-        // Buscamos la sesi鏮 del mundo actual para el check de victoria
+        // Buscamos la sesi鏮 del world actual para el check de victoria
         val session = plugin.sessionManager.activeSessions.values.find { s ->
             s.getPlayers().any { p -> p.world == loc.world }
         }
@@ -211,7 +211,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     // =========================================================================
 
     /**
-     * Cuenta cu嫕tos generadores han sido completados en un mundo espec璗ico.
+     * Cuenta cu嫕tos generadores han sido completados en un world espec璗ico.
      */
     fun getCompletedCountInWorld(world: World): Int {
         return generators.entries.count { (loc, state) ->
@@ -220,7 +220,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     }
 
     /**
-     * Devuelve el total de generadores registrados en un mundo espec璗ico.
+     * Devuelve el total de generadores registrados en un world espec璗ico.
      */
     fun getTotalGeneratorsInWorld(world: World): Int {
         return generators.keys.count { it.world == world }

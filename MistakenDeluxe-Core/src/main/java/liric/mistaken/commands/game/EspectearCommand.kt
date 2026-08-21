@@ -14,7 +14,7 @@ class EspectearCommand(private val plugin: Mistaken) : BasicCommand {
     override fun execute(stack: CommandSourceStack, args: Array<String>) {
         val player = stack.sender as? Player ?: return
 
-        // 🔥 MULTIARENA: Buscamos la sesión específica del jugador
+        // 🔥 MULTIARENA: Buscamos la sesión específica del player
         val session = plugin.sessionManager.getSession(player)
 
         if (session == null) {
@@ -28,7 +28,7 @@ class EspectearCommand(private val plugin: Mistaken) : BasicCommand {
             return
         }
 
-        // Si el jugador no está en modo espectador (es decir, sigue vivo)
+        // Si el player no está en modo espectador (es decir, sigue vivo)
         val isSpectator = plugin.spectatorManager.isSpectator(player)
 
         if (!isSpectator) {

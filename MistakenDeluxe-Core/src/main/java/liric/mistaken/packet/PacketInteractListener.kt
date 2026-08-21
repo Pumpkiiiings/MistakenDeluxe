@@ -19,7 +19,7 @@ class PacketInteractListener : PacketListenerAbstract() {
         private val clickCallbacks = ConcurrentHashMap<Int, (Player, WrapperPlayClientInteractEntity.InteractAction) -> Unit>()
 
         /**
-         * Registra una acciÃ³n a ejecutarse cuando un jugador interactÃºa con una entidad falsa.
+         * Registra una acciÃ³n a ejecutarse cuando un player interactÃºa con una entidad falsa.
          */
         fun registerCallback(entityId: Int, callback: (Player, WrapperPlayClientInteractEntity.InteractAction) -> Unit) {
             clickCallbacks[entityId] = callback
