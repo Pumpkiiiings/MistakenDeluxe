@@ -38,6 +38,12 @@ class LuaKillerAdapter(
     override fun equip(player: Player) {
         super.equip(player) // Configura ECS, modelo y utilidades del Core
         
+        val config = plugin.configManager.getKillerConfig(id)
+        if (!config.isConfigurationSection("triggers")) {
+            val msgEn = pumpking.lib.color.ColorTranslator.translate("<red>Warning! This killer has no configured triggers so their abilities won't work. Please notify an admin.</red>")
+            org.bukkit.Bukkit.broadcast(msgEn)
+        }
+
         val scriptPlayer = BukkitPlayerAdapter(player)
         scriptKiller.on_equip(scriptPlayer)
     }
@@ -48,6 +54,18 @@ class LuaKillerAdapter(
             val scriptPlayer = BukkitPlayerAdapter(player)
             scriptKiller.on_unequip(scriptPlayer)
         }
+    }
+
+    override fun useSkill(player: Player, slot: Int) {
+        val config = plugin.configManager.getKillerConfig(id)
+        val cooldown = config.getInt("items.skill${slot}_cooldown", 0)
+        
+        if (triggerRegistry.checkCooldown(player, "skill_$slot", cooldown)) {
+            return
+        }
+
+        val scriptPlayer = BukkitPlayerAdapter(player)
+        scriptKiller.on_trigger(scriptPlayer, "skill_$slot")
     }
 
     override fun onDispose() {

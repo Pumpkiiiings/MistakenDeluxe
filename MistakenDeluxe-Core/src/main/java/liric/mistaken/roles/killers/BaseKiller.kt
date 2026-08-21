@@ -35,6 +35,7 @@ abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
      * usesStateMachine()). Por ahora, un solo condicional es suficiente.
      */
     open override fun equip(player: Player) {
+        super.equip(player)
         val character = Character(player)
         activeCharacters[player.uniqueId] = character
 

@@ -112,7 +112,10 @@ class LuaKillerWrapper(
     }
 
     private fun callFunction(funcName: String, vararg args: LuaValue) {
-        val func = luaTable.get(funcName)
+        var func = env.globals.get(funcName)
+        if (!func.isfunction()) {
+            func = luaTable.get(funcName)
+        }
         if (func.isfunction()) {
             try {
                 env.debugHook.resetCounter()

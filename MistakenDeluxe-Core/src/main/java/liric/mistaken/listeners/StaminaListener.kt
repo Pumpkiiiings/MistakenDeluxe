@@ -82,21 +82,25 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                 var currentStamina = user.stamina
                 val isSprinting = player.isSprinting
 
+                val isOneBounceSurvivor = session.currentMode == MistakenMode.ONE_BOUNCE && !session.isKiller(uuid)
+                val maxStamina = if (isOneBounceSurvivor) 500.0 else 100.0
+                val currentRecoveryRate = if (isOneBounceSurvivor) recoveryRate * 2 else recoveryRate
+
                 // --- Cálculo de pérdida/recuperación ---
                 if (isSprinting && currentStamina > 0.0) {
-                    // 🔥 MULTIARENA: Verificamos si es asesino en SU sesión
+                    // 🏟 MULTIARENA: Verificamos si es asesino en SU sesión
                     var loss = if (session.isKiller(uuid)) lossKiller else lossSurvivor
                     if (session.currentMode == MistakenMode.ONE_BOUNCE && !session.isKiller(uuid)) {
                         loss /= 2.0
                     }
                     currentStamina = (currentStamina - loss).coerceAtLeast(0.0)
-                } else if (currentStamina < 100.0) {
+                } else if (currentStamina < maxStamina) {
                     // Recupera estamina siempre que no esté corriendo
                     // (SLOWNESS no debe bloquear la regeneración, solo el agotamiento activo lo hace)
                     val isExhausted = player.hasPotionEffect(PotionEffectType.SLOWNESS) &&
                         (player.getPotionEffect(PotionEffectType.SLOWNESS)?.amplifier ?: -1) >= 2
                     if (!isExhausted) {
-                        currentStamina = (currentStamina + recoveryRate).coerceAtMost(100.0)
+                        currentStamina = (currentStamina + currentRecoveryRate).coerceAtMost(maxStamina)
                     }
                 }
 
@@ -104,7 +108,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
 
                 val justExhausted = currentStamina <= 0.0 && !player.hasPotionEffect(PotionEffectType.SLOWNESS)
                 val newLevel = currentStamina.toInt()
-                val newExpProgress = (currentStamina / 100.0).toFloat().coerceIn(0.0f, 1.0f)
+                val newExpProgress = (currentStamina / maxStamina).toFloat().coerceIn(0.0f, 1.0f)
 
                 player.scheduler.execute(plugin, {
                     if (player.isOnline) {

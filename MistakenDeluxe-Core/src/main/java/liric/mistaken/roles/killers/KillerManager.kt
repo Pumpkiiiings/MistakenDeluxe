@@ -39,28 +39,28 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
     private fun loadHardcodedKillers() {
         listOf(
-            CharlieInferno(), CharlieJazz(), Romeo(), Mariachi(),
+            CharlieInferno(), CharlieJazz(), Mariachi(),
             Sowoul(), StillLife(), WardenKiller(), SmilerKiller(), PiglinBigKiller()
         ).forEach { registerClass(it) }
         plugin.componentLogger.info(ColorTranslator.translate("[INFO] [KillerManager] Cargados asesinos nativos (Hardcodeados)."))
     }
 
     fun loadScripts() {
-        val scriptsFolder = java.io.File(plugin.dataFolder, "killers")
+        val scriptsFolder = java.io.File(plugin.dataFolder, "characters/scripts")
         if (!scriptsFolder.exists()) {
             scriptsFolder.mkdirs()
         }
 
         // Copiar scripts por defecto si no existen
         try {
-            if (!java.io.File(scriptsFolder, "slasher.groovy").exists() && !java.io.File(scriptsFolder, "slasher.lua").exists()) {
-                plugin.saveResource("killers/slasher.lua", false)
-            }
-            if (!java.io.File(scriptsFolder, "herobrine.groovy").exists() && !java.io.File(scriptsFolder, "herobrine.lua").exists()) {
-                plugin.saveResource("killers/herobrine.lua", false)
+            val defaults = listOf("slasher", "herobrine", "romeo", "entity303", "colorandelectricity", "null", "tinkywinky")
+            for (script in defaults) {
+                if (!java.io.File(scriptsFolder, "$script.lua").exists() && !java.io.File(scriptsFolder, "$script.groovy").exists()) {
+                    plugin.saveResource("characters/scripts/$script.lua", false)
+                }
             }
         } catch (e: Exception) {
-            plugin.componentLogger.warn("No se pudieron copiar los scripts por defecto (slasher/herobrine).")
+            plugin.componentLogger.warn("No se pudieron copiar los scripts por defecto.")
         }
 
         val files = scriptsFolder.listFiles() ?: return
@@ -113,6 +113,11 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
     fun registerKiller(player: Player, asesino: Killer) {
         val uuid = player.uniqueId
+
+        // Si ya tenía un asesino, limpiarlo primero
+        if (activeRoles.containsKey(uuid)) {
+            removeRoleLogic(uuid, player)
+        }
 
         // 1. Limpieza total inmediata (Hilo Principal)
         player.inventory.clear()
@@ -187,11 +192,14 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         asesino.cleanup(player)
 
         if (player != null && player.isOnline) {
+            player.inventory.clear()
+            player.inventory.armorContents = arrayOfNulls(4)
             
             player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
             player.health = 20.0
             player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
             player.isGlowing = false
+            player.activePotionEffects.forEach { effect -> player.removePotionEffect(effect.type) }
         }
     }
 
@@ -215,7 +223,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             KillerScriptEngine.unloadKillerScript(lowerId)
         }
 
-        val scriptsFolder = java.io.File(plugin.dataFolder, "killers")
+        val scriptsFolder = java.io.File(plugin.dataFolder, "characters/scripts")
         val groovyScript = java.io.File(scriptsFolder, "$lowerId.groovy")
         val luaScript = java.io.File(scriptsFolder, "$lowerId.lua")
         

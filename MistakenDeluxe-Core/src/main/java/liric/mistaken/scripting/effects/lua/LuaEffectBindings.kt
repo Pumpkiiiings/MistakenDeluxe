@@ -41,6 +41,8 @@ import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.ThreeArgFunction
 import org.luaj.vm2.lib.VarArgFunction
 import org.luaj.vm2.lib.jse.CoerceJavaToLua
+import java.util.function.Consumer
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 
 /**
  * Registra TODAS las funciones DSL en el sandbox Globals de un script.
@@ -300,9 +302,9 @@ object LuaEffectBindings {
         // ──────────── play_entity_sound(player, sound_name, source_entity, volume, pitch) ────────────
         globals.set("play_entity_sound", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
-                val viewer = (args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).bukkitPlayer()
+                val viewer = (args.arg(1).checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).getPlayer()
                 val sound = args.checkjstring(2)
-                val source = (args.arg(3).checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).bukkitPlayer()
+                val source = (args.arg(3).checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).getPlayer()
                 val volume = args.checkdouble(4).toFloat()
                 val pitch = args.checkdouble(5).toFloat()
                 liric.mistaken.utils.hooks.ObserverHook.playEntitySound(viewer, sound, source, volume, pitch)
@@ -313,7 +315,7 @@ object LuaEffectBindings {
         // ──────────── stop_sound(player, sound_name) ────────────
         globals.set("stop_sound", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, soundArg: LuaValue): LuaValue {
-                val viewer = (playerArg.checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).bukkitPlayer()
+                val viewer = (playerArg.checkuserdata(liric.mistaken.scripting.adapter.BukkitPlayerAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitPlayerAdapter).getPlayer()
                 val sound = soundArg.checkjstring()
                 liric.mistaken.utils.hooks.ObserverHook.stopSound(viewer, sound)
                 return LuaValue.NIL
@@ -401,7 +403,7 @@ object LuaEffectBindings {
                 skull.yield = yield
                 var life = 0
                 val plugin = liric.mistaken.Mistaken.instance
-                skull.scheduler.runAtFixedRate(plugin, Consumer { task ->
+                skull.scheduler.runAtFixedRate(plugin, Consumer<ScheduledTask> { task ->
                     if (life >= maxTicks || !skull.isValid) {
                         task.cancel()
                         return@Consumer
@@ -410,7 +412,7 @@ object LuaEffectBindings {
                     val hit = skull.world.getNearbyPlayers(skull.location, 1.2).firstOrNull { liric.mistaken.scripting.effects.gameplay.GameplayFunctions.isValidTarget(player, it) }
                     if (hit != null) {
                         if (onHitCallback != null) {
-                            hit.scheduler.run(plugin, Consumer { _ ->
+                            hit.scheduler.run(plugin, Consumer<ScheduledTask> { _ ->
                                 onHitCallback.call(org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce(liric.mistaken.scripting.adapter.BukkitPlayerAdapter(hit)))
                             }, null)
                         }
@@ -492,10 +494,12 @@ object LuaEffectBindings {
         })
 
         // ──────────── damage(victim) ────────────
-        globals.set("damage", object : OneArgFunction() {
-            override fun call(victimArg: LuaValue): LuaValue {
+        globals.set("damage", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val victimArg = args.arg(1)
                 val victim = unwrapPlayer(victimArg) ?: return LuaValue.NIL
-                GameplayFunctions.damage(victim)
+                val amount = if (args.narg() >= 2) args.checkdouble(2) else 3.0
+                GameplayFunctions.damage(victim, amount, scriptId)
                 return LuaValue.NIL
             }
         })
@@ -530,6 +534,22 @@ object LuaEffectBindings {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.FALSE
                 val victim = unwrapPlayer(victimArg) ?: return LuaValue.FALSE
                 return LuaValue.valueOf(GameplayFunctions.isValidTarget(player, victim))
+            }
+        })
+
+        // ------------- spawn_particle(location, name, offsetX, offsetY, offsetZ, speed, count) -------------
+        globals.set("spawn_particle", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val loc = unwrapLocation(args.arg(1)) ?: return LuaValue.NIL
+                val particleName = args.arg(2).checkjstring()
+                val offsetX = args.arg(3).optdouble(0.0)
+                val offsetY = args.arg(4).optdouble(0.0)
+                val offsetZ = args.arg(5).optdouble(0.0)
+                val speed = args.arg(6).optdouble(0.0)
+                val count = args.arg(7).optint(1)
+                
+                GameplayFunctions.spawnParticleBurst(loc, particleName, count, offsetX, offsetY, offsetZ, speed)
+                return LuaValue.NIL
             }
         })
 
@@ -728,6 +748,17 @@ object LuaEffectBindings {
         // All builder methods accept (self, value) because of ':' syntax
         t.set("count", TwoArg(t) { _, v -> count = v.checkint().coerceIn(1, 20) })
         t.set("material", TwoArg(t) { _, v -> materialNames.clear(); materialNames.add(v.checkjstring()); isItem = false })
+        t.set("materials", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                isItem = false
+                materialNames.clear()
+                for (i in 2..args.narg()) {
+                    val mat = args.arg(i).optjstring(null)
+                    if (mat != null) materialNames.add(mat)
+                }
+                return args.arg(1)
+            }
+        })
         t.set("virtual_item", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 isItem = true
@@ -816,6 +847,7 @@ object LuaEffectBindings {
                 return args.arg(1)
             }
         })
+        t.set("item", TwoArg(t) { _, v -> material = v.checkjstring(); isBlock = false })
         t.set("speed", TwoArg(t) { _, v -> speed = v.checkdouble().coerceIn(0.1, 5.0) })
         t.set("max_ticks", TwoArg(t) { _, v -> maxTicks = v.checkint().coerceIn(1, 200) })
         t.set("hit_radius", TwoArg(t) { _, v -> hitRadius = v.checkdouble().coerceIn(0.5, 15.0) })
@@ -1379,49 +1411,7 @@ object LuaEffectBindings {
     // Builder method helpers for ':' syntax
     // ═══════════════════════════════════════════════════════
 
-    private fun buildDashTable(scriptId: String, player: Player): LuaTable {
-        val t = LuaTable()
-        var speed = 1.0; var maxTicks = 20; var hitRadius = 1.5; var stopOnBlock = true
-        var trailParticleName: String? = null
-        var onHitCallback: ((Player) -> Unit)? = null
-        var onBlockHitCallback: (() -> Unit)? = null
 
-        t.set("speed", TwoArg(t) { _, v -> speed = v.checkdouble() })
-        t.set("max_ticks", TwoArg(t) { _, v -> maxTicks = v.checkint() })
-        t.set("hit_radius", TwoArg(t) { _, v -> hitRadius = v.checkdouble() })
-        t.set("stop_on_block", TwoArg(t) { _, v -> stopOnBlock = v.optboolean(true) })
-        t.set("trail_particle", TwoArg(t) { _, v -> trailParticleName = v.checkjstring() })
-        
-        t.set("on_hit", object : TwoArgFunction() {
-            override fun call(self: LuaValue, func: LuaValue): LuaValue {
-                val f = func.checkfunction()
-                onHitCallback = { victim ->
-                    f.call(org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce(liric.mistaken.scripting.adapter.BukkitPlayerAdapter(victim)))
-                }
-                return self
-            }
-        })
-        
-        t.set("on_block_hit", object : TwoArgFunction() {
-            override fun call(self: LuaValue, func: LuaValue): LuaValue {
-                val f = func.checkfunction()
-                onBlockHitCallback = { f.call() }
-                return self
-            }
-        })
-        
-        t.set("start", object : OneArgFunction() {
-            override fun call(self: LuaValue): LuaValue {
-                val effect = liric.mistaken.scripting.effects.dash.DashEffect(
-                    scriptId, player.uniqueId, player, speed, maxTicks, hitRadius, stopOnBlock, trailParticleName, onHitCallback, onBlockHitCallback
-                )
-                effect.start()
-                EffectRegistry.register(effect)
-                return buildHandle(effect)
-            }
-        })
-        return t
-    }
 
     /** Two-arg function that returns self (the builder table) */
     private class TwoArg(

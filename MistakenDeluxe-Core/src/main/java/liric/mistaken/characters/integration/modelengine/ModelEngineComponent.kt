@@ -127,8 +127,11 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         player?.removePotionEffect(PotionEffectType.INVISIBILITY)
 
         if (modeledEntity != null) {
-            dummy?.let { ModelEngineAPI.removeModeledEntity(it.uuid) }
-            modeledEntity?.destroy()
+            try {
+                modeledEntity?.destroy()
+            } catch (e: Exception) {
+                org.bukkit.Bukkit.getLogger().warning("[ModelEngineComponent] Error destruyendo entidad: ${e.message}")
+            }
             modeledEntity = null
             activeModel = null
             dummy = null

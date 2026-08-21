@@ -19,7 +19,7 @@ interface HealthAPI {
     /**
      * Aplica la lógica de daño personalizado (resta una vida, aplica sangre, sonidos, etc.).
      */
-    fun takeDamage(victim: Player)
+    fun takeDamage(victim: Player, amount: Double = 3.0, sourceName: String? = null)
 
     /**
      * Verifica si el jugador se encuentra congelado (Modo Freeze Tag).

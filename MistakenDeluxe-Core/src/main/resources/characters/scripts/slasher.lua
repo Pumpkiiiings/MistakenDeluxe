@@ -56,7 +56,7 @@ local function on_skill_2(player)
         :trail_particle("REDSTONE", 3)
         :max_ticks(30)
         :on_hit(function(victim)
-            victim:damage()
+            damage(victim)
             sound(victim, "ENTITY_ZOMBIE_ATTACK_IRON_DOOR", 1.0, 0.8)
             screen_tint(victim):color(255, 0, 0):alpha(0.6):duration(20):show()
             screen_shake(victim):intensity(1.5):duration(15):show()
@@ -132,3 +132,5 @@ function on_trigger(player, trigger_id)
         sound(player, sound_name, 3.0, 1.0)
     end
 end
+
+return killer

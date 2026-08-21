@@ -17,6 +17,10 @@ class BukkitLocationAdapter(
     override fun pitch(): Float = location.pitch
     override fun world_name(): String = location.world?.name ?: "unknown"
     
+    override fun direction(): liric.mistaken.scripting.api.ScriptVector {
+        return BukkitVectorAdapter(location.direction)
+    }
+    
     override fun distance(other: ScriptLocation): Double {
         val otherLoc = Location(location.world, other.x(), other.y(), other.z(), other.yaw(), other.pitch())
         return location.distance(otherLoc)

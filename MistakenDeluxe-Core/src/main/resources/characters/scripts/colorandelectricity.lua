@@ -62,7 +62,7 @@ function on_skill_1(player)
         :hit_radius(2.5)
         :trail_particle("ELECTRIC_SPARK", 10)
         :on_hit(function(victim)
-            victim:damage()
+            damage(victim)
             apply_knockback(player, victim, 1.5, 0.4)
             sound(victim, "ENTITY_ZOMBIE_ATTACK_IRON_DOOR", 1.0, 1.5)
             screen_tint(victim):color(0, 255, 255):alpha(0.4):duration(15):show()
@@ -83,9 +83,9 @@ function on_skill_2(player)
     local nearby = player:world():get_players()
     for _, victim in pairs(nearby) do
         if victim:id() ~= player:id() and player:location():distance_squared(victim:location()) < 64 then
-            victim:add_potion_effect("DARKNESS", 0, 100)
-            victim:add_potion_effect("BLINDNESS", 0, 100)
-            victim:add_potion_effect("SLOWNESS", 2, 100)
+            apply_effect(victim, "DARKNESS", 0, 100)
+            apply_effect(victim, "BLINDNESS", 0, 100)
+            apply_effect(victim, "SLOWNESS", 2, 100)
             victim:send_message("<color:#aaaaaa>Dame tus colores...</color>")
             screen_tint(victim):color(128, 128, 128):alpha(0.6):duration(100):show()
         end
@@ -104,7 +104,7 @@ function on_skill_3(player)
         local nearby = player:world():get_players()
         for _, victim in pairs(nearby) do
             if victim:id() ~= player:id() and player:location():distance_squared(victim:location()) < 36 then
-                victim:damage()
+                damage(victim)
                 apply_knockback(player, victim, 0.8, 0.3)
                 screen_tint(victim):color(255, 255, 0):alpha(0.4):duration(5):show()
             end
@@ -151,6 +151,15 @@ end
 function on_finisher(player, victim)
     -- ColorAndElectricity doesn't have any custom finisher logic in Kotlin.
     -- I'll leave it empty.
+end
+
+
+function on_trigger(player, trigger_id)
+    if trigger_id == "skill_1" and on_skill_1 then on_skill_1(player)
+    elseif trigger_id == "skill_2" and on_skill_2 then on_skill_2(player)
+    elseif trigger_id == "skill_3" and on_skill_3 then on_skill_3(player)
+    elseif trigger_id == "skill_4" and on_skill_4 then on_skill_4(player)
+    end
 end
 
 return killer

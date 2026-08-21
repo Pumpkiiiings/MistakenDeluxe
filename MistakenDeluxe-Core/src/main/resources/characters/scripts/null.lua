@@ -53,7 +53,7 @@ function on_skill_2(player)
         :trigger_radius(3.5)
         :max_ticks(400)
         :on_trigger(function(victim)
-            victim:damage()
+            damage(victim)
             sound(victim, "ENTITY_ENDERMAN_SCREAM", 1.0, 0.1)
         end)
         :spawn()
@@ -77,7 +77,7 @@ function on_skill_4(player)
         :delay_ticks(1)
         :snap_to_ground(true)
         :on_hit(function(victim)
-            victim:damage()
+            damage(victim)
             apply_effect(victim, "DARKNESS", 0, 40)
         end)
         :start()
@@ -143,5 +143,7 @@ function on_finisher(player, victim)
             :show()
     end
 end
+
+return killer
 
 return killer

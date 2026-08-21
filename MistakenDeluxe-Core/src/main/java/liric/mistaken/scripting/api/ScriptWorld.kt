@@ -1,4 +1,4 @@
-﻿package liric.mistaken.scripting.api
+package liric.mistaken.scripting.api
 
 /**
  * Contrato seguro para un Mundo.
@@ -10,5 +10,7 @@ interface ScriptWorld {
     
     fun play_sound(location: ScriptLocation, sound: String, volume: Float, pitch: Float)
     fun spawn_particle(particle: String, location: ScriptLocation, count: Int)
+    
+    fun get_players(): Array<ScriptPlayer>
 }
 

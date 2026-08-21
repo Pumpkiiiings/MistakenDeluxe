@@ -3,12 +3,7 @@ local killer = {
 }
 
 local function loop_wings(player)
-    draw_wings(player, "FLAME")
-    delay_ticks(5, function()
-        if player:is_valid() then
-            loop_wings(player)
-        end
-    end)
+    -- Deprecated draw_wings removed to prevent memory leaks
 end
 
 function on_equip(player)
@@ -39,8 +34,7 @@ function on_skill_1(player)
         :max_ticks(10)
         :hit_radius(2.0)
         :on_hit(function(victim)
-            victim:damage()
-            -- victim:set_velocity(player:location():direction():multiply(1.5):set_y(0.4))
+            damage(victim)
             sound(victim, "ENTITY_ZOMBIE_ATTACK_IRON_DOOR", 1.0, 0.5)
         end)
         :start()
@@ -56,10 +50,10 @@ function on_skill_2(player)
         :trail_particle("ENCHANT", 5)
         :on_impact_particle("EXPLOSION")
         :on_hit(function(victim)
-            draw_shockwave(victim:location(), "EXPLOSION", 3.0)
-            victim:damage()
-            victim:add_potion_effect("SLOWNESS", 2, 60)
-            victim:add_potion_effect("HUNGER", 1, 100)
+            shape("shockwave"):center(victim:location()):particle("EXPLOSION"):radius(3.0):draw()
+            damage(victim)
+            apply_effect(victim, "SLOWNESS", 2, 60)
+            apply_effect(victim, "HUNGER", 1, 100)
         end)
         :launch()
 end
@@ -71,7 +65,7 @@ function on_skill_3(player)
         :start_sound("BLOCK_BEACON_ACTIVATE")
         :end_sound("BLOCK_BEACON_DEACTIVATE")
         :on_end(function(p)
-            p:add_potion_effect("WEAKNESS", 0, 60)
+            apply_effect(p, "WEAKNESS", 0, 60)
         end)
         :start()
 end
@@ -82,7 +76,7 @@ function on_skill_4(player)
     for _, victim in pairs(targets) do
         if victim:id() ~= player:id() then
             if player:location():distance_squared(victim:location()) < 1600 then
-                victim:add_potion_effect("BLINDNESS", 0, 100)
+                apply_effect(victim, "BLINDNESS", 0, 100)
                 sound(victim, "BLOCK_GLASS_BREAK", 1.0, 0.1)
                 victim:send_message("<color:#ff0000>[ERROR] SYSTEM_ERROR: CONNECTION LOST</color>")
             end
@@ -121,22 +115,34 @@ function on_finisher(player, victim)
         sound(loc, "BLOCK_ANVIL_LAND", 2.0, 0.1)
         spawn_particle(loc, "EXPLOSION", 0, 0, 0, 0, 1)
         
-        spawn_temp_item(loc:clone():add(0, 1, 0), "BARRIER", 2.0, 2.0, 2.0, "RED", 40)
-        
         delay_ticks(40, function()
             sound(loc, "BLOCK_GLASS_BREAK", 1.0, 0.5)
-            draw_tornado(loc, "CRIT", 4.0, 2.0)
+            shape("tornado"):center(loc):particle("CRIT"):radius(4.0):draw()
         end)
         
     else
         -- FORCE EXIT
         sound(loc, "ENTITY_TNT_PRIMED", 1.0, 1.0)
-        spawn_spinning_tnt(loc, 21)
+        
+        sinking_block(player, loc)
+            :material("TNT")
+            :sink_ticks(21)
+            :duration(21)
+            :show()
         
         delay_ticks(21, function()
             sound(loc, "ENTITY_GENERIC_EXPLODE", 2.0, 1.0)
             spawn_particle(loc:clone():add(0, 3, 0), "EXPLOSION", 0, 0, 0, 0, 2)
         end)
+    end
+end
+
+
+function on_trigger(player, trigger_id)
+    if trigger_id == "skill_1" and on_skill_1 then on_skill_1(player)
+    elseif trigger_id == "skill_2" and on_skill_2 then on_skill_2(player)
+    elseif trigger_id == "skill_3" and on_skill_3 then on_skill_3(player)
+    elseif trigger_id == "skill_4" and on_skill_4 then on_skill_4(player)
     end
 end
 

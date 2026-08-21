@@ -63,21 +63,6 @@ class BukkitPlayerAdapter(
         player.getAttribute(org.bukkit.attribute.Attribute.SCALE)?.baseValue = 1.0
     }
 
-    override fun get_nearby_players(radius: Double): List<ScriptPlayer> {
-        return player.getNearbyEntities(radius, radius, radius)
-            .filterIsInstance<Player>()
-            .filter { it.uniqueId != player.uniqueId } // Exclude self
-            .map { BukkitPlayerAdapter(it) }
-    }
-
-    override fun ray_trace_player(distance: Double): ScriptPlayer? {
-        val result = player.world.rayTraceEntities(player.eyeLocation, player.location.direction, distance) {
-            it is Player && it.uniqueId != player.uniqueId
-        }
-        val targetPlayer = result?.hitEntity as? Player
-        return if (targetPlayer != null) BukkitPlayerAdapter(targetPlayer) else null
-    }
-
     internal fun getPlayer(): Player = player
 }
 

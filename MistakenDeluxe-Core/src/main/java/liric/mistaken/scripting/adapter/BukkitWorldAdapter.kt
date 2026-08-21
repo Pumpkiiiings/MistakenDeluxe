@@ -1,4 +1,4 @@
-﻿package liric.mistaken.scripting.adapter
+package liric.mistaken.scripting.adapter
 
 import liric.mistaken.scripting.api.ScriptWorld
 import liric.mistaken.scripting.api.ScriptLocation
@@ -38,6 +38,10 @@ class BukkitWorldAdapter(
                 // Soft ignore
             }
         }
+    }
+    
+    override fun get_players(): Array<liric.mistaken.scripting.api.ScriptPlayer> {
+        return world.players.map { BukkitPlayerAdapter(it) }.toTypedArray()
     }
 }
 

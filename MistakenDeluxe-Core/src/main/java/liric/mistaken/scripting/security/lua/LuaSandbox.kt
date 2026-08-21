@@ -31,6 +31,12 @@ class LuaSandbox {
         fun createEnvironment(scriptId: String = "unknown"): LuaEnvironment {
             val globals = Globals()
             
+            // LuaJ libraries attempt to register themselves in package.loaded
+            // Since we omit PackageLib for security, we must mock package.loaded to avoid NPEs
+            val packageTable = org.luaj.vm2.LuaTable()
+            packageTable.set("loaded", org.luaj.vm2.LuaTable())
+            globals.set("package", packageTable)
+            
             globals.load(JseBaseLib())
             globals.load(TableLib())
             globals.load(StringLib())
@@ -42,6 +48,7 @@ class LuaSandbox {
             globals.set("loadfile", LuaValue.NIL)
             globals.set("load", LuaValue.NIL)
             
+            org.luaj.vm2.LoadState.install(globals)
             LuaC.install(globals)
             
             val debugHook = InstructionLimitDebugLib(MAX_INSTRUCTIONS_PER_TICK)

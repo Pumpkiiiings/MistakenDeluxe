@@ -1,4 +1,4 @@
-﻿package liric.mistaken.scripting.adapter
+package liric.mistaken.scripting.adapter
 
 import liric.mistaken.scripting.api.ScriptEntity
 import liric.mistaken.scripting.api.ScriptLocation
@@ -25,6 +25,10 @@ open class BukkitEntityAdapter(
 
     override fun velocity_add(x: Double, y: Double, z: Double) {
         entity.velocity = entity.velocity.add(Vector(x, y, z))
+    }
+    
+    override fun world(): liric.mistaken.scripting.api.ScriptWorld {
+        return BukkitWorldAdapter(entity.world)
     }
 
     override fun remove() {

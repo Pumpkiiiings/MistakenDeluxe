@@ -27,7 +27,7 @@ class GamePlayerController(private val game: GameSession) {
         val globalRecentKillers = mutableListOf<String>()
     }
 
-    private var lmsActivado = false
+    var lmsActivado = false
     private var activeLmsMusic = "mistaken:lms"
 
     fun setupPlayers(arena: Arena) {
@@ -179,7 +179,9 @@ class GamePlayerController(private val game: GameSession) {
                                 game.plugin.supervivienteManager.registrarSurvivor(p, clase)
 
                                 if (game.currentMode == MistakenMode.ONE_BOUNCE) {
-                                    p.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, 0, false, false, false))
+                                    p.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, 1, false, false, false))
+                                    p.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = 100.0
+                                    p.health = 100.0
                                 } else if (game.currentMode == MistakenMode.HIDE_AND_SEEK) {
                                     p.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>¡Tienes 1 minuto para esconderte antes de que el asesino sea liberado!"))
                                     p.scheduler.runDelayed(game.plugin, Consumer { _ ->
@@ -457,6 +459,8 @@ class GamePlayerController(private val game: GameSession) {
             p.inventory.clear()
             p.inventory.armorContents = arrayOfNulls(4)
             p.activePotionEffects.forEach { p.removePotionEffect(it.type) }
+            p.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = 20.0
+            p.health = 20.0
 
             if (game.isKiller(p.uniqueId)) {
                 game.plugin.asesinoManager.getKillerOfPlayer(p)?.cleanup(p)

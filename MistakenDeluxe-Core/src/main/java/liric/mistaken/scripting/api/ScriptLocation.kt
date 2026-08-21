@@ -1,4 +1,4 @@
-﻿package liric.mistaken.scripting.api
+package liric.mistaken.scripting.api
 
 /**
  * Contrato seguro para representar una ubicaciÃ³n en el mundo.
@@ -11,6 +11,8 @@ interface ScriptLocation {
     fun yaw(): Float
     fun pitch(): Float
     fun world_name(): String
+    
+    fun direction(): ScriptVector
     
     fun distance(other: ScriptLocation): Double
     fun distance_squared(other: ScriptLocation): Double

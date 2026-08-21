@@ -4,6 +4,7 @@ import liric.mistaken.Mistaken
 import liric.mistaken.utils.hooks.ObserverHook
 import org.bukkit.Color
 import org.bukkit.Location
+import liric.mistaken.utils.worldViewers
 import org.bukkit.Particle
 import org.bukkit.Sound
 import org.bukkit.entity.Player
@@ -18,7 +19,7 @@ object SkillService {
     }
 
     fun drawStar(player: Player, color: Color, radius: Double, points: Int) {
-        liric.mistaken.utils.visuals.ParticleShapesUtils.drawStar(player.location, Particle.REDSTONE, radius, points)
+        liric.mistaken.utils.visuals.ParticleShapesUtils.drawStar(player.location, Particle.DUST, radius, points)
     }
 
     fun playScreenTint(player: Player, r: Int, g: Int, b: Int, alpha: Float, durationTicks: Int) {
@@ -58,7 +59,7 @@ object SkillService {
     }
 
     fun spawnVirtualTempBlock(loc: Location, material: org.bukkit.Material, tx: Float, ty: Float, tz: Float, sx: Float, sy: Float, sz: Float, durationTicks: Long) {
-        val display = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(liric.mistaken.utils.worldViewers(loc), loc) { bd ->
+        val display = liric.mistaken.packet.PacketFactory.displays.buildBlockDisplay(loc.worldViewers(), loc) { bd ->
             bd.block = material.createBlockData()
             bd.transformation = org.bukkit.util.Transformation(
                 org.joml.Vector3f(tx, ty, tz),
@@ -187,7 +188,7 @@ object SkillService {
     }
 
     fun spawnTrackingHitbox(player: liric.mistaken.scripting.adapter.BukkitPlayerAdapter, sx: Double, sy: Double, sz: Double, material: org.bukkit.Material, durationTicks: Long) {
-        val bukkitPlayer = player.bukkitPlayer()
+        val bukkitPlayer = player.getPlayer()
         val hitbox = liric.mistaken.utils.misc.HitboxVisualizer.createHitbox(bukkitPlayer.location, sx, sy, sz, material)
         var ticks = 0L
         plugin.server.regionScheduler.runAtFixedRate(plugin, bukkitPlayer.location, Consumer { task ->

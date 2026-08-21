@@ -34,6 +34,11 @@ import pumpking.lib.service.PumpkingServiceManager
 
 class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
+    companion object {
+        const val MIN_SCRIPT_DAMAGE = 1.0
+        const val MAX_SCRIPT_DAMAGE = 8.0
+    }
+
     private val frozenPlayers = ConcurrentHashMap.newKeySet<UUID>()
     private val killerCooldowns = ConcurrentHashMap<UUID, Long>()
     private val survivorCooldowns = ConcurrentHashMap<UUID, Long>()
@@ -366,8 +371,13 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         }
     }
 
-    override fun takeDamage(victim: Player) {
-        processTrueDamage(victim, null, 3.0)
+    override fun takeDamage(victim: Player, amount: Double, sourceName: String?) {
+        val clamped = amount.coerceIn(MIN_SCRIPT_DAMAGE, MAX_SCRIPT_DAMAGE)
+        if (amount != clamped) {
+            val sourceStr = sourceName?.let { "Script '$it'" } ?: "Código nativo"
+            plugin.componentLogger.warn("$sourceStr intentó aplicar daño fuera de rango: $amount. Se ajustó a $clamped.")
+        }
+        processTrueDamage(victim, null, clamped)
     }
 
     override fun unfreeze(victim: Player, rescuer: Player) {

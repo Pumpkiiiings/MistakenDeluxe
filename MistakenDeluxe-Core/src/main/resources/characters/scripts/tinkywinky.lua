@@ -7,7 +7,7 @@ local function pasiva_loop(player)
     local nearby = player:world():get_players()
     for _, victim in pairs(nearby) do
         if victim:id() ~= player:id() and player:location():distance_squared(victim:location()) < 64 then
-            victim:add_potion_effect("DARKNESS", 0, 30)
+            apply_effect(victim, "DARKNESS", 0, 30)
             sound(victim, "AMBIENT_CAVE", 0.4, 0.5)
         end
     end
@@ -46,8 +46,8 @@ function on_skill_1(player)
         :hit_radius(1.0)
         :trail_particle("WITCH", 2)
         :on_hit(function(victim)
-            victim:add_potion_effect("GLOWING", 0, 100)
-            victim:add_potion_effect("SLOWNESS", 0, 40)
+            apply_effect(victim, "GLOWING", 0, 100)
+            apply_effect(victim, "SLOWNESS", 0, 40)
             sound(victim, "ENTITY_ENDERMAN_STARE", 1.0, 0.3)
             victim:send_message("<color:#ff0000>Has sido marcado por Tinky Winky...</color>")
             spawn_particle(victim:location():clone():add(0, 1, 0), "WITCH", 0.5, 0.5, 0.5, 0.1, 30)
@@ -57,8 +57,8 @@ end
 
 function on_skill_2(player)
     -- Paso Silencioso
-    player:add_potion_effect("INVISIBILITY", 0, 60)
-    player:add_potion_effect("SPEED", 1, 60)
+    apply_effect(player, "INVISIBILITY", 0, 60)
+    apply_effect(player, "SPEED", 1, 60)
     sound(player, "ENTITY_ENDERMAN_TELEPORT", 0.8, 1.5)
     spawn_particle(player:location():clone():add(0, 1, 0), "LARGE_SMOKE", 0.3, 0.5, 0.3, 0.02, 20)
     
@@ -74,9 +74,9 @@ function on_skill_3(player)
     local nearby = player:world():get_players()
     for _, victim in pairs(nearby) do
         if victim:id() ~= player:id() and player:location():distance_squared(victim:location()) < 100 then
-            victim:add_potion_effect("BLINDNESS", 0, 60)
-            victim:add_potion_effect("NAUSEA", 0, 80)
-            victim:add_potion_effect("DARKNESS", 0, 80)
+            apply_effect(victim, "BLINDNESS", 0, 60)
+            apply_effect(victim, "NAUSEA", 0, 80)
+            apply_effect(victim, "DARKNESS", 0, 80)
             sound(victim, "BLOCK_NOTE_BLOCK_BASS", 2.0, 0.1)
             victim:send_message("<color:#800080>La señal te distorsiona...</color>")
             afectados = afectados + 1
@@ -114,8 +114,8 @@ function on_skill_4(player)
         local nearby = player:world():get_players()
         for _, victim in pairs(nearby) do
             if victim:id() ~= player:id() and spawn_loc:distance_squared(victim:location()) < 2.25 then
-                victim:damage()
-                victim:add_potion_effect("DARKNESS", 0, 60)
+                damage(victim)
+                apply_effect(victim, "DARKNESS", 0, 60)
                 sound(victim, "ENTITY_ENDERMAN_SCREAM", 1.0, 0.2)
             end
         end
@@ -162,7 +162,7 @@ function on_finisher(player, victim)
     elseif type == 2 then
         -- SEÑAL PERDIDA
         sound(loc, "BLOCK_BEACON_ACTIVATE", 1.5, 0.3)
-        spawn_blinking_ritual(loc, "CRYING_OBSIDIAN", 4, 1.8, 35)
+        shape("vortex"):center(loc):particle("WITCH"):radius(4.0):draw()
         
         delay_ticks(35, function()
             sound(loc, "ENTITY_ENDERMAN_DEATH", 1.0, 0.5)
@@ -193,6 +193,15 @@ function on_finisher(player, victim)
         end
         
         melody_loop(0)
+    end
+end
+
+
+function on_trigger(player, trigger_id)
+    if trigger_id == "skill_1" and on_skill_1 then on_skill_1(player)
+    elseif trigger_id == "skill_2" and on_skill_2 then on_skill_2(player)
+    elseif trigger_id == "skill_3" and on_skill_3 then on_skill_3(player)
+    elseif trigger_id == "skill_4" and on_skill_4 then on_skill_4(player)
     end
 end
 

@@ -101,7 +101,7 @@ class TrailEffect(
             val viewRadiusSq = viewRadius * viewRadius
             val mgr = PacketEvents.getAPI().playerManager
             loc.world.players.forEach { viewer ->
-                if (viewer != player && viewer.location.distanceSquared(loc) < viewRadiusSq) {
+                if (viewer.location.distanceSquared(loc) < viewRadiusSq) {
                     mgr.sendPacket(viewer, packet)
                 }
             }

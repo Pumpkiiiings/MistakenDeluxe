@@ -1,4 +1,4 @@
-﻿package liric.mistaken.scripting.api
+package liric.mistaken.scripting.api
 
 /**
  * Contrato base para entidades en Lua.
@@ -12,6 +12,8 @@ interface ScriptEntity {
     fun location(): ScriptLocation
     fun teleport(location: ScriptLocation)
     fun velocity_add(x: Double, y: Double, z: Double)
+    
+    fun world(): ScriptWorld
     
     fun remove()
 }

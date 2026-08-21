@@ -20,8 +20,8 @@ object GameplayFunctions {
     /**
      * Inflige daño a través del CombatManager (respeta las reglas de sesión).
      */
-    fun damage(victim: Player) {
-        plugin.combatManager.takeDamage(victim)
+    fun damage(victim: Player, amount: Double = 3.0, sourceName: String? = null) {
+        plugin.combatManager.takeDamage(victim, amount, sourceName)
     }
 
     /**
