@@ -14,9 +14,9 @@ import org.luaj.vm2.lib.jse.JseMathLib
 
 /**
  * Sandboxing estricto para LuaJ.
- * - Bloquea instanciaciÃ³n de classes Java (sin luajava).
+ * - Bloquea instanciación de classes Java (sin luajava).
  * - Bloquea acceso a IO y OS.
- * - LÃ­mite estricto de instrucciones para evitar cuelgues (Billion Laughs / while true).
+ * - Límite estricto de instrucciones para evitar cuelgues (Billion Laughs / while true).
  */
 class LuaEnvironment(val globals: Globals, val debugHook: InstructionLimitDebugLib)
 
@@ -65,7 +65,7 @@ class LuaSandbox {
 }
 
 /**
- * Custom DebugLib para restringir el tiempo de ejecuciÃ³n (instrucciones CPU).
+ * Custom DebugLib para restringir el tiempo de ejecución (instrucciones CPU).
  */
 class InstructionLimitDebugLib(private val instructionLimit: Int) : DebugLib() {
     private var instructionsExecuted = 0

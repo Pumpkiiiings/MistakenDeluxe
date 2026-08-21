@@ -15,7 +15,7 @@ import liric.mistaken.scripting.security.lua.LuaSandbox
 object LuaScriptEngine {
 
     /**
-     * Carga y aÃ­sla un script Lua desde un archivo.
+     * Carga y aísla un script Lua desde un archivo.
      */
     fun loadScript(file: File, killerId: String): ScriptKiller? {
         if (!file.exists() || !file.name.endsWith(".lua")) return null

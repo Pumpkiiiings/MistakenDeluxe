@@ -14,9 +14,9 @@ import com.github.retrooper.packetevents.util.Vector3i
 class FakeBlockAPI {
 
     /**
-     * EnvÃ­a un bloque falso (Client-Side) a un player especÃ­fico.
-     * @param player El player que verÃ¡ el bloque falso.
-     * @param location La ubicaciÃ³n en el world.
+     * Envía un bloque falso (Client-Side) a un player específico.
+     * @param player El player que verá el bloque falso.
+     * @param location La ubicación en el world.
      * @param material El material falso.
      */
     fun sendBlockChange(player: Player, location: Location, material: Material) {
@@ -43,19 +43,19 @@ class FakeBlockAPI {
     }
 
     /**
-     * EnvÃ­a mÃºltiples bloques falsos de forma optimizada.
-     * @param player El player que verÃ¡ los bloques.
+     * Envía múltiples bloques falsos de forma optimizada.
+     * @param player El player que verá los bloques.
      * @param blocks Un mapa de ubicaciones y materiales a cambiar.
      */
     fun sendMultiBlockChange(player: Player, blocks: Map<Location, Material>) {
         if (blocks.isEmpty()) return
 
         // PacketEvents WrapperPlayServerMultiBlockChange requiere agrupar por Chunk
-        // Para simplificar esta API, simplemente enviamos mÃºltiples block changes individuales 
-        // si los bloques estÃ¡n esparcidos, o usar el wrapper oficial si estÃ¡n en un mismo chunk.
-        // Como optimizaciÃ³n genÃ©rica y fÃ¡cil de usar, enviamos individuales. 
+        // Para simplificar esta API, simplemente enviamos múltiples block changes individuales 
+        // si los bloques están esparcidos, o usar el wrapper oficial si están en un mismo chunk.
+        // Como optimización genérica y fácil de usar, enviamos individuales. 
         // Nota: Para cambios masivos en el mismo chunk, se recomienda MultiBlockChange, 
-        // pero para evitar cÃ¡lculos de chunks, el bucle suele ser igual de rÃ¡pido para menos de 500 bloques.
+        // pero para evitar cálculos de chunks, el bucle suele ser igual de rápido para menos de 500 bloques.
         
         blocks.forEach { (loc, mat) ->
             sendBlockChange(player, loc, mat)

@@ -3,7 +3,7 @@ package liric.mistaken.scripting.api
 /**
  * Contrato que representa el script de un Killer cargado en el Sandbox.
  * Permite al motor (KillerManager) notificar al script sobre el ciclo de vida y eventos
- * sin exponer la implementaciÃ³n de Lua.
+ * sin exponer la implementación de Lua.
  */
 interface ScriptKiller {
     fun id(): String
@@ -16,7 +16,7 @@ interface ScriptKiller {
     fun on_tick()
     fun on_disable()
     
-    // Event dispatching genÃ©rico
+    // Event dispatching genérico
     fun dispatch_event(event: ScriptEvent)
 
     // Triggers y Chat
@@ -28,7 +28,7 @@ interface ScriptKiller {
 
 /**
  * El contexto que se le entrega al killer al cargarse,
- * dÃ¡ndole acceso a los servicios autorizados (Scheduler, Log, etc.)
+ * dándole acceso a los servicios autorizados (Scheduler, Log, etc.)
  */
 interface ScriptContext {
     fun scheduler(): ScriptScheduler

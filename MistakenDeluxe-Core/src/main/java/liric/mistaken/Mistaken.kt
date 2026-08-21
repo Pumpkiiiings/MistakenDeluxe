@@ -448,6 +448,8 @@ class Mistaken : JavaPlugin() {
         val b5 = "<#004488>"
         val info = "<#00d4ff>"
 
+        val dbType = try { databaseManager.javaClass.simpleName.replace("DatabaseManager", "").replace("Manager", "") } catch (e: Exception) { "Unknown" }
+
         componentLogger.info(ColorTranslator.translate("""
             <newline>
              $b1<bold>███╗   ███╗██╗███████╗████████╗ █████╗ ██╗  ██╗███████╗███╗   ██╗</bold>$b1
@@ -456,12 +458,13 @@ class Mistaken : JavaPlugin() {
              $b3<bold>██║╚██╔╝██║██║╚════██║   ██║   ██╔══██║██╔═██╗ ██╔══╝  ██║╚██╗██║</bold>$b3
              $b4<bold>██║ ╚═╝ ██║██║███████║   ██║   ██║  ██║██║  ██╗███████╗██║ ╚████║</bold>$b4
              $b5<bold>╚═╝     ╚═╝╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝</bold>$b5
-             $b4<bold>               ___  ____ _    _  _ _  _ ____ </bold>$b4
-             $b5<bold>               |  \ |___ |    |  |  \/  |___ </bold>$b5
-             $b5<bold>               |__/ |___ |___ |__| _/\_ |___ </bold>$b5
             <newline>
-               <white>Autor:</white> $info Pumpkingz$info
-               <white>Modo Red:</white> <green>● $serverMode</green>
+               <gray>Thank you for using Mistaken!</gray>
+               <yellow>Source Code:</yellow> <click:open_url:'https://github.com/Pumpkiiiings/MistakenDeluxe'><hover:show_text:'<gray>Click to open repository</gray>'><yellow><underlined>https://github.com/Pumpkiiiings/MistakenDeluxe</underlined></yellow></hover></click>
+            <newline>
+               <white>Author:</white> $info Pumpkingz$info
+               <white>Network Mode:</white> <green>● $serverMode</green>
+               <white>Database:</white> <green>● $dbType</green>
             <newline>
         """.trimIndent()))
     }

@@ -12,7 +12,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent
 
 /**
  * Dispatcher global que intercepta eventos de Bukkit, los empaqueta 
- * en Adapters seguros (ScriptAPI) y los envÃ­a a los Lua Scripts.
+ * en Adapters seguros (ScriptAPI) y los envía a los Lua Scripts.
  */
 class LuaKillerEventDispatcher(private val plugin: Mistaken) : Listener {
 
@@ -33,7 +33,7 @@ class LuaKillerEventDispatcher(private val plugin: Mistaken) : Listener {
             }
         }
         
-        // 2. Si la vÃ­ctima es un Killer manejado por Script
+        // 2. Si la víctima es un Killer manejado por Script
         if (victim is Player && plugin.killerManager.isKiller(victim)) {
             val killer = plugin.killerManager.getKillerOfPlayer(victim)
             if (killer is liric.mistaken.scripting.adapter.LuaKillerAdapter) {

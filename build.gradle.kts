@@ -114,3 +114,13 @@ tasks {
         dependsOn(shadowJar)
     }
 }
+
+tasks.register("fixUtf8", Exec::class) {
+    commandLine("py", "8UTFFix.py")
+    workingDir = rootProject.projectDir
+    isIgnoreExitValue = true
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    dependsOn("fixUtf8")
+}

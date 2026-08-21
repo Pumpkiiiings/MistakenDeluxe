@@ -18,7 +18,7 @@ class PacketVisibilityListener(private val manager: VisibilityManager) : PacketL
         // 1. Interceptar Spawn
         if (packetType == PacketType.Play.Server.SPAWN_ENTITY) {
             val spawn = WrapperPlayServerSpawnEntity(event)
-            // Se debe buscar por UUID porque los Fake Displays usarÃ¡n la lista de UUIDs
+            // Se debe buscar por UUID porque los Fake Displays usarán la lista de UUIDs
             if (manager.isHidden(spawn.uuid.get(), viewer.uniqueId)) {
                 event.isCancelled = true
             }

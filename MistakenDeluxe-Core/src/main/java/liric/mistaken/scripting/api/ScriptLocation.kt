@@ -1,7 +1,7 @@
 package liric.mistaken.scripting.api
 
 /**
- * Contrato seguro para representar una ubicaciÃ³n en el world.
+ * Contrato seguro para representar una ubicación en el world.
  * No expone org.bukkit.Location.
  */
 interface ScriptLocation {
