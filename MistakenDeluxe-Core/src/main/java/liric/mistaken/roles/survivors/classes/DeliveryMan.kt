@@ -22,8 +22,8 @@ import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * DeliveryMan: Soporte táctico y control de área.
- * OPTIMIZADO: Separación Mecánica/Info + Schedulers.
+ * DeliveryMan: Soporte t�ctico y control de �rea.
+ * OPTIMIZADO: Separaci�n Mec�nica/Info + Schedulers.
  */
 class DeliveryMan : Survivor(
     "repartidor",

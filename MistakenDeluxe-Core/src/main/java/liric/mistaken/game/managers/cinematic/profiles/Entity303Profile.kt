@@ -24,11 +24,11 @@ class Entity303Profile : CinematicProfile {
     override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.JUMPSCARE_RUSH
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<red><bold>ERROR CRÍTICO</bold>"), ColorTranslator.translate("<dark_red>SYSTEM ERROR: 303 FOUND"))
+        return Pair(ColorTranslator.translate("<red><bold>ERROR CR�TICO</bold>"), ColorTranslator.translate("<dark_red>SYSTEM ERROR: 303 FOUND"))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>�MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

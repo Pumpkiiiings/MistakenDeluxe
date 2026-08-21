@@ -1,4 +1,4 @@
-﻿package liric.mistaken.data.stats
+package liric.mistaken.data.stats
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -19,7 +19,7 @@ class StatsManager(private val plugin: Mistaken) {
 
     /**
      * Carga inicial del player.
-     * Se ejecuta de forma asÃ­ncrona al entrar al servidor.
+     * Se ejecuta de forma as�ncrona al entrar al servidor.
      */
     fun loadStats(uuid: UUID, name: String) {
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
@@ -27,7 +27,7 @@ class StatsManager(private val plugin: Mistaken) {
             if (stats != null) {
                 cache[uuid] = stats
             } else {
-                cache[uuid] = PlayerStats() // Fallback a vacÃ­o
+                cache[uuid] = PlayerStats() // Fallback a vac�o
             }
         }
     }
@@ -51,7 +51,7 @@ class StatsManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Guarda un player especÃ­fico en la DB.
+     * Guarda un player espec�fico en la DB.
      * Consolida todos los cambios de una sola vez.
      */
     private fun saveToDatabaseSync(uuid: UUID) {
@@ -60,7 +60,7 @@ class StatsManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Ciclo de autoguardado asÃ­ncrono.
+     * Ciclo de autoguardado as�ncrono.
      * Se suspende sin bloquear hilos.
      */
     private fun startAutoSave() {
@@ -73,7 +73,7 @@ class StatsManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Guarda a todos los players en cachÃ©.
+     * Guarda a todos los players en cach�.
      */
     fun saveAllToDatabaseAsync() {
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
@@ -82,7 +82,7 @@ class StatsManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Guardado sÃ­ncrono para el apagado del servidor.
+     * Guardado s�ncrono para el apagado del servidor.
      */
     fun saveConfigSync() {
         cache.keys.forEach { uuid ->
@@ -91,14 +91,14 @@ class StatsManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Obtiene una estadÃ­stica especÃ­fica desde la RAM.
+     * Obtiene una estad�stica espec�fica desde la RAM.
      */
     fun getStat(uuid: UUID, statName: String): Int {
         return cache[uuid]?.getStatValue(statName) ?: 0
     }
 
     /**
-     * Obtiene el objeto completo de estadÃ­sticas.
+     * Obtiene el objeto completo de estad�sticas.
      */
     fun getStats(uuid: UUID): PlayerStats {
         return cache[uuid] ?: PlayerStats()

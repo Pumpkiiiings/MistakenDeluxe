@@ -24,11 +24,11 @@ object LeaveCommand {
                     return@executes 0
                 }
 
-                // 1. Buscamos si el player está en alguna sesión activa
+                // 1. Buscamos si el player est� en alguna sesi�n activa
                 val session = plugin.sessionManager.getSession(player)
 
                 if (session == null) {
-                    player.sendMessage(ColorTranslator.translate("<red>No estás en ninguna partida activa en este momento."))
+                    player.sendMessage(ColorTranslator.translate("<red>No est�s en ninguna partida activa en este momento."))
                     return@executes 0
                 }
 
@@ -50,8 +50,8 @@ object LeaveCommand {
                     }
                 }
 
-                // 3. LIMPIEZA FÍSICA PARA EL LOBBY
-                // Evita que lleguen al lobby del Multiarena volando, con pociones o con ítems del juego
+                // 3. LIMPIEZA F�SICA PARA EL LOBBY
+                // Evita que lleguen al lobby del Multiarena volando, con pociones o con �tems del juego
                 if (plugin.spectatorManager.isSpectator(player)) {
                     plugin.spectatorManager.removeCustomSpectator(player)
                 }
@@ -63,7 +63,7 @@ object LeaveCommand {
                 player.isGlowing = false
                 player.isSwimming = false
 
-                // 4. SALIDA OFICIAL DE LA SESIÓN
+                // 4. SALIDA OFICIAL DE LA SESI�N
                 // Esto dispara el BungeeUtils (Velocity) o el Teleport al Lobby (Multiarena)
                 plugin.sessionManager.leaveSession(player)
 

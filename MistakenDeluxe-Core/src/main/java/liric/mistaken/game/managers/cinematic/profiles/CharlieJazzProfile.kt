@@ -25,16 +25,16 @@ class CharlieJazzProfile : CinematicProfile {
     override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.DRONE_SPIRAL
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<gradient:#e0b0ff:#ffd700>ESTRELLA CAÍDA</gradient>"), ColorTranslator.translate("<gold>Que comience el espectáculo."))
+        return Pair(ColorTranslator.translate("<gradient:#e0b0ff:#ffd700>ESTRELLA CA�DA</gradient>"), ColorTranslator.translate("<gold>Que comience el espect�culo."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_purple><bold>TELÓN</bold>"), ColorTranslator.translate("<gold>El show terminó."))
+        return Pair(ColorTranslator.translate("<dark_purple><bold>TEL�N</bold>"), ColorTranslator.translate("<gold>El show termin�."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {
-        return if (isIntro) listOf("<gold>El jazz nunca muere.", "<light_purple>¡Y ustedes tampoco sobrevivirán!")
-        else listOf("<gold>Silencio...", "<dark_gray>La música se detuvo.")
+        return if (isIntro) listOf("<gold>El jazz nunca muere.", "<light_purple>�Y ustedes tampoco sobrevivir�n!")
+        else listOf("<gold>Silencio...", "<dark_gray>La m�sica se detuvo.")
     }
 
     override fun applyPose(dummy: ArmorStand, isIntro: Boolean) {

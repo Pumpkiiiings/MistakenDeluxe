@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.survivors
+package liric.mistaken.roles.survivors
 
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.survivors.classes.*
@@ -17,7 +17,7 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
 
     init {
         // Registro de Classes (Singletons)
-        // AquÃ­ agregas las demÃ¡s classes cuando las tengas listas (Jesse, Petra, etc.)
+        // Aqu� agregas las dem�s classes cuando las tengas listas (Jesse, Petra, etc.)
         listOf(
             Civilian(),
             DeliveryMan(),
@@ -40,22 +40,22 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
     /**
      * ?? REGISTRO OPTIMIZADO (Paper 1.21.4+):
      * Usamos 'player.scheduler'. Si el player se desconecta antes de los 5 ticks,
-     * la tarea se cancela sola automÃ¡ticamente.
+     * la tarea se cancela sola autom�ticamente.
      */
     fun registrarSurvivor(player: Player, clase: Survivor) {
         val uuid = player.uniqueId
 
-        // 1. AsignaciÃ³n inmediata en RAM
+        // 1. Asignaci�n inmediata en RAM
         activeRoles[uuid] = clase
 
         // 2. Tarea diferida anclada a la entidad (Safe)
-        // Se ejecuta 5 ticks (250ms) despuÃ©s para asegurar que el inventario estÃ© listo
+        // Se ejecuta 5 ticks (250ms) despu�s para asegurar que el inventario est� listo
         player.scheduler.runDelayed(plugin, { task ->
             
             if (activeRoles[uuid] == clase) {
                 clase.equip(player)
 
-                // Apply vida mÃ¡xima especÃ­fica del survivor
+                // Apply vida m�xima espec�fica del survivor
                 val config = plugin.configManager.getSurvivorConfig(clase.id)
                 val maxHealth = config.getDouble("stats.health", 20.0)
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = maxHealth
@@ -92,14 +92,14 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
         if (player != null && player.isOnline) {
             // ?? FOLIA FIX: Modificar inventario/efectos DEBE hacerse en el hilo de la entidad
             player.scheduler.run(plugin, { _ ->
-                // 1. Limpieza lÃ³gica de la clase
+                // 1. Limpieza l�gica de la clase
                 clase.cleanup(player)
 
-                // 2. Limpieza fÃ­sica
+                // 2. Limpieza f�sica
                 player.inventory.clear()
                 player.inventory.armorContents = arrayOfNulls(4)
                 
-                // Restaurar vida mÃ¡xima por defecto (20.0 = 10 corazones)
+                // Restaurar vida m�xima por defecto (20.0 = 10 corazones)
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = 20.0
 
                 // Limpieza de pociones eficiente
@@ -111,7 +111,7 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<Survivor>(plugin) 
                 player.walkSpeed = 0.2f
             }, null)
         } else {
-            // Si estÃ¡ offline, solo limpiamos la lÃ³gica interna de la clase (si aplica)
+            // Si est� offline, solo limpiamos la l�gica interna de la clase (si aplica)
             clase.cleanup(null)
         }
     }

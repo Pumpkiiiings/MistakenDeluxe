@@ -42,7 +42,7 @@ class Jesse : Survivor(
                 usarHeroDash(player)
                 sendAbilityMessage(player, langConfig, mechConfig, "skill1")
             }
-            1 -> { /* H2: Puñetazo (Lógica en Listener Melee) */ }
+            1 -> { /* H2: Pu�etazo (L�gica en Listener Melee) */ }
             2 -> if (!checkCooldown(player, 2, mechConfig.getInt("items.skill3_cooldown", 35))) {
                 usarBloqueoSonic(player)
                 sendAbilityMessage(player, langConfig, mechConfig, "skill3")
@@ -105,7 +105,7 @@ class Jesse : Survivor(
         player.updateInventory()
     }
 
-    // --- H1: HERO DASH (Daño al impactar) ---
+    // --- H1: HERO DASH (Da�o al impactar) ---
     private fun usarHeroDash(player: Player) {
         val dir = player.location.direction.normalize().multiply(2.2).setY(0.3)
         player.velocity = dir
@@ -147,14 +147,14 @@ class Jesse : Survivor(
         }, null, 1L, 1L) // 50ms = 1 tick
     }
 
-    // --- H2: PUÑETAZO (Lógica en Listener) ---
+    // --- H2: PU�ETAZO (L�gica en Listener) ---
     fun applyGolpePuno(victim: Player) {
         victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 120, 0)) // 6s
         victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 120, 1))    // 6s
         victim.world.playSound(victim.location, Sound.ENTITY_PLAYER_ATTACK_CRIT, 1f, 0.8f)
     }
 
-    // --- H3: BLOQUEO SÓNICO (Warden Boom) ---
+    // --- H3: BLOQUEO S�NICO (Warden Boom) ---
     private fun usarBloqueoSonic(player: Player) {
         val startLoc = player.eyeLocation
         val direction = startLoc.direction.normalize()

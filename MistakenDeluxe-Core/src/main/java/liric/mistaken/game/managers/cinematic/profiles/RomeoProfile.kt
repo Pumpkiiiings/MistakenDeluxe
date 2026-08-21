@@ -27,12 +27,12 @@ class RomeoProfile : CinematicProfile {
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>�MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {
-        return if (isIntro) listOf("<dark_red>¿Creen que pueden vencerme?", "<red>Yo escribí las reglas de este mundo.")
-        else listOf("<dark_red>Patético.", "<red>Nadie supera a un Admin.")
+        return if (isIntro) listOf("<dark_red>�Creen que pueden vencerme?", "<red>Yo escrib� las reglas de este mundo.")
+        else listOf("<dark_red>Pat�tico.", "<red>Nadie supera a un Admin.")
     }
 
     override fun applyPose(dummy: ArmorStand, isIntro: Boolean) {

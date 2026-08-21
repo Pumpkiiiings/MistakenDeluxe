@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.engine
+package liric.mistaken.game.managers.engine
 
 import com.infernalsuite.asp.api.AdvancedSlimePaperAPI
 import com.infernalsuite.asp.api.loaders.SlimeLoader
@@ -32,7 +32,7 @@ class MapManager(private val plugin: Mistaken) {
         val future = CompletableFuture<World?>()
         val instanceName = "${templateName}_${System.currentTimeMillis()}"
 
-        // --- FASE 1: DISCO (Hilo AsÃ­ncrono de Paper para no laguear el server) ---
+        // --- FASE 1: DISCO (Hilo Asíncrono de Paper para no laguear el server) ---
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
             try {
                 if (!fileLoader.worldExists(templateName)) {
@@ -62,7 +62,7 @@ class MapManager(private val plugin: Mistaken) {
                             return@execute
                         }
 
-                        // --- CONFIGURACIÃ“N DE AMBIENTE (Tu lÃ³gica intacta) ---
+                        // --- CONFIGURACIÓN DE AMBIENTE (Tu lógica intacta) ---
                         bukkitWorld.apply {
                             isAutoSave = false
                             time = 18000L // Noche
@@ -74,7 +74,7 @@ class MapManager(private val plugin: Mistaken) {
                             setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false)
                             setGameRule(GameRule.DO_FIRE_TICK, false)
 
-                            // ðŸ”¥ TU CAMBIO: Anulamos el daÃ±o de caÃ­da globalmente
+                            // 🔥 TU CAMBIO: Anulamos el daño de caída globalmente
                             setGameRule(GameRule.FALL_DAMAGE, false)
 
                             setStorm(false)
@@ -115,6 +115,6 @@ class MapManager(private val plugin: Mistaken) {
 
     fun shutdown() {
         // En Paper 1.21.4 ya no ocupamos cancelar corrutinas porque los schedulers
-        // del servidor se limpian solos al apagar el plugin. Â¡Menos RAM gastada!
+        // del servidor se limpian solos al apagar el plugin. ¡Menos RAM gastada!
     }
 }

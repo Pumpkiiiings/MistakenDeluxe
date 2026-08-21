@@ -1,4 +1,4 @@
-﻿package liric.mistaken.level.listener
+package liric.mistaken.level.listener
 
 import liric.mistaken.api.level.event.PlayerLevelUpEvent
 import liric.mistaken.level.LevelAddonPlugin

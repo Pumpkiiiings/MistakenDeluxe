@@ -27,12 +27,12 @@ class PizzanoProfile : CinematicProfile {
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>�MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {
-        return if (isIntro) listOf("<yellow>¡Demasiada energía!", "<gold>¡Corran, corran, corran!")
-        else listOf("<yellow>Ufff... eso fue un buen ejercicio.", "<gold>¿Alguien tiene un poco de azúcar?")
+        return if (isIntro) listOf("<yellow>�Demasiada energ�a!", "<gold>�Corran, corran, corran!")
+        else listOf("<yellow>Ufff... eso fue un buen ejercicio.", "<gold>�Alguien tiene un poco de az�car?")
     }
 
     override fun applyPose(dummy: ArmorStand, isIntro: Boolean) {

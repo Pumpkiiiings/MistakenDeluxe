@@ -1,4 +1,4 @@
-﻿package liric.mistaken.config.sync
+package liric.mistaken.config.sync
 
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
@@ -30,7 +30,7 @@ object CharacterMigrator {
                 }
             }
             
-            // Renombrar a .old para evitar re-migraciÃ³n
+            // Renombrar a .old para evitar re-migraci�n
             killersFile.renameTo(File(plugin.dataFolder, "asesinos.yml.old"))
             plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Migrated ${keys.size} killers to individual files.</gray>"))
         }
@@ -56,7 +56,7 @@ object CharacterMigrator {
                 }
             }
             
-            // Renombrar a .old para evitar re-migraciÃ³n
+            // Renombrar a .old para evitar re-migraci�n
             survivorsFile.renameTo(File(plugin.dataFolder, "supervivientes.yml.old"))
             plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Migrated ${keys.size} survivors to individual files.</gray>"))
         }

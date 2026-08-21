@@ -22,16 +22,16 @@ class SlasherProfile : CinematicProfile {
     override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.PAN_UP_REVEAL
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_red>LA EJECUCIÓN"), ColorTranslator.translate("<red>Nadie escapa de White Pumpkin."))
+        return Pair(ColorTranslator.translate("<dark_red>LA EJECUCI�N"), ColorTranslator.translate("<red>Nadie escapa de White Pumpkin."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_red><bold>¡LO TENGO!</bold>"), ColorTranslator.translate("<red>Por fin... mi pedernal y acero."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>�LO TENGO!</bold>"), ColorTranslator.translate("<red>Por fin... mi pedernal y acero."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {
-        return if (isIntro) listOf("<dark_red>Más sangre para mi hacha...", "<red>Griten todo lo que quieran.") 
-        else listOf("<white>¡JAJAJAJA!", "<white>¡El pedernal y acero por fin es MÍO!")
+        return if (isIntro) listOf("<dark_red>M�s sangre para mi hacha...", "<red>Griten todo lo que quieran.") 
+        else listOf("<white>�JAJAJAJA!", "<white>�El pedernal y acero por fin es M�O!")
     }
 
     override fun applyPose(dummy: ArmorStand, isIntro: Boolean) {

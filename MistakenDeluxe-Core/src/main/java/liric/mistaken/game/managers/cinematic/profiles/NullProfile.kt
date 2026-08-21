@@ -27,7 +27,7 @@ class NullProfile : CinematicProfile {
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>�MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {

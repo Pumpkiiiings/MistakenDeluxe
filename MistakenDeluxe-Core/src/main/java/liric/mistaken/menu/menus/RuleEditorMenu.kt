@@ -155,7 +155,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
 
         // Game Duration
         val currentDuration = settings.gameDuration ?: 300 // default 5 minutes in seconds
-        val durationName = config.getString("menus.rule_editor.items.duration.name", "<gold><bold>Duración de Partida") ?: "<gold><bold>Duración de Partida"
+        val durationName = config.getString("menus.rule_editor.items.duration.name", "<gold><bold>Duraci�n de Partida") ?: "<gold><bold>Duraci�n de Partida"
         val durationLore = config.getString("menus.rule_editor.items.duration.lore_time", "<gray>Tiempo: <yellow>{time}") ?: "<gray>Tiempo: <yellow>{time}"
         val minutes = currentDuration / 60
         val seconds = currentDuration % 60
@@ -180,7 +180,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 val newMins = newDuration / 60
                 val newSecs = newDuration % 60
                 val newFormatted = String.format("%02d Minutos, %02d Segundos", newMins, newSecs)
-                player.sendActionBar(ColorTranslator.translate("<yellow>Duración ajustada a: $newFormatted"))
+                player.sendActionBar(ColorTranslator.translate("<yellow>Duraci�n ajustada a: $newFormatted"))
                 abrir(player)
             })
 
@@ -190,7 +190,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
         val charactersLore = if (charactersLoreList.isNotEmpty()) {
             charactersLoreList.map { ColorTranslator.translate("<!italic>$it") }
         } else {
-            listOf(ColorTranslator.translate("<!italic><gray>Selecciona qué asesinos y"), ColorTranslator.translate("<!italic><gray>supervivientes se pueden usar."))
+            listOf(ColorTranslator.translate("<!italic><gray>Selecciona qu� asesinos y"), ColorTranslator.translate("<!italic><gray>supervivientes se pueden usar."))
         }
         gui.setItem(charactersSlot, ItemBuilder.from(Material.ZOMBIE_HEAD)
             .name(ColorTranslator.translate("<!italic>$charactersName"))

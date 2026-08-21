@@ -1,4 +1,4 @@
-﻿package liric.mistaken.level
+package liric.mistaken.level
 
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.plugin.ServicePriority

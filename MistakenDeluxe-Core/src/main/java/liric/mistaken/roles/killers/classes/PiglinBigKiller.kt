@@ -26,7 +26,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 object PiglinBigCinematicState : CharacterState {
-    override val id = "stat_battle" // Usa la animación del modelo
+    override val id = "stat_battle" // Usa la animaci�n del modelo
     override val priority = 100
 }
 
@@ -60,7 +60,7 @@ class PiglinBigKiller : BaseKiller("piglinbig", "PiglinBig") {
     override fun equip(player: Player) {
         super.equip(player) // Inicializa el ECS (modelo, animaciones)
         
-        // Ejecutar animación de spawn/cinemática
+        // Ejecutar animaci�n de spawn/cinem�tica
         transitionTo(player, PiglinBigCinematicState, force = true)
         
         val inv = player.inventory
@@ -115,7 +115,7 @@ class PiglinBigKiller : BaseKiller("piglinbig", "PiglinBig") {
         
         var comboStep = comboSteps.getOrDefault(uuid, 0)
         
-        // Resetea el combo si pasó mucho tiempo (ej: más de 1.5 segundos) sin atacar
+        // Resetea el combo si pas� mucho tiempo (ej: m�s de 1.5 segundos) sin atacar
         if (now - lastAttackTime > 1500) {
             comboStep = 0
         }
@@ -178,7 +178,7 @@ class PiglinBigKiller : BaseKiller("piglinbig", "PiglinBig") {
                     fb.dropItem = false
                     fb.setHurtEntities(false)
 
-                    // Restauramos el bloque original después de 1.5 segundos
+                    // Restauramos el bloque original despu�s de 1.5 segundos
                     Bukkit.getScheduler().runTaskLater(Mistaken.instance, Runnable {
                         if (fb.isValid) fb.remove()
                         for (p in session.getPlayers()) {
@@ -193,7 +193,7 @@ class PiglinBigKiller : BaseKiller("piglinbig", "PiglinBig") {
         for (victim in session.getPlayers()) {
             if (victim == player) continue
             if (!session.isKiller(victim.uniqueId)) {
-                // Checar si están dentro del área 10x10
+                // Checar si est�n dentro del �rea 10x10
                 val distanceX = Math.abs(victim.location.x - loc.x)
                 val distanceZ = Math.abs(victim.location.z - loc.z)
                 
@@ -202,7 +202,7 @@ class PiglinBigKiller : BaseKiller("piglinbig", "PiglinBig") {
                     victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 20 * 3, 5))
                     victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 20 * 3, 1))
                     victim.playSound(victim.location, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1.0f, 0.5f)
-                    victim.sendMessage(ColorTranslator.translate("<red>¡Has sido aturdido por el terremoto!</red>"))
+                    victim.sendMessage(ColorTranslator.translate("<red>�Has sido aturdido por el terremoto!</red>"))
                 }
             }
         }
@@ -234,15 +234,15 @@ class PiglinBigKiller : BaseKiller("piglinbig", "PiglinBig") {
                     return
                 }
 
-                // Partículas mientras vuela
+                // Part�culas mientras vuela
                 axeItem.world.spawnParticle(Particle.CRIT, axeItem.location, 2, 0.1, 0.1, 0.1, 0.0)
 
                 // Detectar impacto
                 for (victim in session.getPlayers()) {
                     if (victim == player || session.isKiller(victim.uniqueId)) continue
                     
-                    if (victim.location.distanceSquared(axeItem.location) < 2.5) { // Hitbox pequeña
-                        // Apply daño
+                    if (victim.location.distanceSquared(axeItem.location) < 2.5) { // Hitbox peque�a
+                        // Apply da�o
                         Mistaken.instance.combatManager.takeDamage(victim)
                         victim.world.spawnParticle(Particle.BLOCK_CRUMBLE, victim.location.add(0.0, 1.0, 0.0), 10, 0.5, 0.5, 0.5, Material.REDSTONE_BLOCK.createBlockData())
                         victim.playSound(victim.location, Sound.ENTITY_PLAYER_HURT, 1.0f, 1.0f)

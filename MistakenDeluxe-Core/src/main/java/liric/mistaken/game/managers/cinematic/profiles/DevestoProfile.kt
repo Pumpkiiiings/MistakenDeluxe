@@ -21,7 +21,7 @@ class DevestoProfile : CinematicProfile {
     override val isFloating: Boolean = true
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_purple><bold>[F3X]</bold>"), ColorTranslator.translate("<gray>Cargando herramientas de construcción..."))
+        return Pair(ColorTranslator.translate("<dark_purple><bold>[F3X]</bold>"), ColorTranslator.translate("<gray>Cargando herramientas de construcci�n..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {

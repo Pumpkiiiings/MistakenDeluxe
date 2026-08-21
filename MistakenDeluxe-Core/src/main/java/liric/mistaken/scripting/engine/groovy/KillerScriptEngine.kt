@@ -23,12 +23,12 @@ object KillerScriptEngine {
 
         val content = file.readText(Charsets.UTF_8)
         
-        // 1. EscÃ¡ner de seguridad
+        // 1. Esc�ner de seguridad
         if (!ScriptSecurityScanner.isSafe(content, file.name)) {
             return null
         }
 
-        // 2. ClassLoader Aislado con ConfiguraciÃ³n Personalizada
+        // 2. ClassLoader Aislado con Configuraci�n Personalizada
         val config = CompilerConfiguration()
         config.addCompilationCustomizers(GroovyBukkitCompatibilityCustomizer())
         val loader = groovy.lang.GroovyClassLoader(KillerScriptEngine::class.java.classLoader, config)
@@ -56,7 +56,7 @@ object KillerScriptEngine {
     }
     
     /**
-     * Limpia el ClassLoader asociado a un Killer especÃ­fico.
+     * Limpia el ClassLoader asociado a un Killer espec�fico.
      */
     fun unloadKillerScript(id: String) {
         val loader = activeLoaders.remove(id)

@@ -11,7 +11,7 @@ import pumpking.lib.color.ColorTranslator
 /**
  * [LIRIC-MISTAKEN 2.0]
  * Clase base para manejar los roles (Killers y Survivors).
- * Centraliza la inicialización, limpieza e iteración segura.
+ * Centraliza la inicializaci�n, limpieza e iteraci�n segura.
  */
 abstract class AbstractRoleManager<T : GameRole>(protected val plugin: Mistaken) {
 
@@ -44,7 +44,7 @@ abstract class AbstractRoleManager<T : GameRole>(protected val plugin: Mistaken)
     }
 
     /**
-     * Hook para lógicas adicionales luego de clear el rol base.
+     * Hook para l�gicas adicionales luego de clear el rol base.
      */
     protected open fun onRoleRemoved(player: Player) {}
 

@@ -20,7 +20,7 @@ import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Minty: El Survivor Licántropo.
+ * Minty: El Survivor Lic�ntropo.
  * Rol: Control de Masas (CC) y Huida.
  * FIX: Null-Safety en activeTasks.add()
  */
@@ -100,7 +100,7 @@ class Minty : Survivor(
             player.world.spawnParticle(Particle.CLOUD, player.location, 2, 0.2, 0.1, 0.2, 0.05)
         }, null, 1L, 5L)
 
-        // SOLUCIÓN AL ERROR: Guardar solo si la tarea no es nula
+        // SOLUCI�N AL ERROR: Guardar solo si la tarea no es nula
         task?.let { activeTasks.add(it) }
 
         // Cancelar a los 5 segundos

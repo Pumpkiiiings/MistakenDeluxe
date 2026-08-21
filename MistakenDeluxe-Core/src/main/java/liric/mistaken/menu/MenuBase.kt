@@ -17,7 +17,7 @@ import pumpking.lib.service.PumpkingServiceManager
 
 
 abstract class MenuBase(
-    /** Nombre del archivo YAML sin extensión, ej: "killers_shop" */
+    /** Nombre del archivo YAML sin extensi�n, ej: "killers_shop" */
     private val menuName: String
 ) {
 
@@ -32,7 +32,7 @@ abstract class MenuBase(
         return ColorTranslator.translate("<!italic>$text")
     }
 
-    // Clave en messages.yml donde se lee el título traducido.
+    // Clave en messages.yml donde se lee el t�tulo traducido.
     // Por defecto: menus.<menuName>.titulo
     protected open val titleMessageKey: String get() = "menus.$menuName.titulo"
 
@@ -40,18 +40,18 @@ abstract class MenuBase(
     protected open val titleFallback: String get() = "<red>Menu: $menuName"
 
     // Cache de decoraciones procesadas, agrupadas por idioma del player.
-    // El título está incluido porque varía por idioma.
+    // El t�tulo est� incluido porque var�a por idioma.
     private val langCache = ConcurrentHashMap<String, MenuBakedData>()
 
-    // Config global del menú (cargada una sola vez desde menus/<nombre>.yml)
+    // Config global del men� (cargada una sola vez desde menus/<nombre>.yml)
     private var globalConfig: FileConfiguration? = null
 
     
-    // API PÚBLICA — para subclasses y acceso externo
+    // API P�BLICA � para subclasses y acceso externo
     
 
     /**
-     * Obtiene la configuración global del menú (layout, slots, decoraciones).
+     * Obtiene la configuraci�n global del men� (layout, slots, decoraciones).
      * Carga lazy desde disco: menus/<menuName>.yml dentro del dataFolder del plugin.
      */
     fun getGlobalConfig(): FileConfiguration {
@@ -59,7 +59,7 @@ abstract class MenuBase(
     }
 
     /**
-     * Abre el menú al player resolviendo su idioma automáticamente.
+     * Abre el men� al player resolviendo su idioma autom�ticamente.
      */
     open fun abrir(player: Player) {
         val baked = getBakedData(player)
@@ -71,30 +71,30 @@ abstract class MenuBase(
             .disableAllInteractions()
             .create()
 
-        // Apply decoraciones desde caché
+        // Apply decoraciones desde cach�
         baked.decorations.forEach { (slots, item) -> gui.setItem(slots, item) }
 
-        // Lógica de items dinámicos (implementada por cada subclase)
+        // L�gica de items din�micos (implementada por cada subclase)
         setupItems(player, gui, config)
 
         gui.open(player)
     }
 
     /**
-     * Método que las subclasses implementan para añadir sus items dinámicos.
+     * M�todo que las subclasses implementan para a�adir sus items din�micos.
      *
-     * @param player El player que abre el menú.
+     * @param player El player que abre el men�.
      * @param gui    La instancia de GUI ya decorada.
-     * @param config El FileConfiguration global del menú (menus/<nombre>.yml).
+     * @param config El FileConfiguration global del men� (menus/<nombre>.yml).
      *               Use [getTranslatedString] para obtener textos localizados.
      */
     abstract fun setupItems(player: Player, gui: Gui, config: FileConfiguration)
 
     /**
      * Obtiene un texto traducido desde messages.yml del player.
-     * Reemplaza la antigua necesidad de tener un YAML de menú por idioma.
+     * Reemplaza la antigua necesidad de tener un YAML de men� por idioma.
      *
-     * @param player El player cuyo idioma se usará.
+     * @param player El player cuyo idioma se usar�.
      * @param path   La ruta en messages.yml, ej: "menus.tienda_principal.items.asesinos.nombre"
      * @param def    Valor por defecto si no se encuentra la clave.
      */
@@ -111,7 +111,7 @@ abstract class MenuBase(
 
 
     /**
-     * Invalida el caché del menú para que los cambios en YAML y messages.yml
+     * Invalida el cach� del men� para que los cambios en YAML y messages.yml
      * se reflejen sin reiniciar el servidor (utilizado en /mistaken reload).
      */
     fun reload() {
@@ -130,8 +130,8 @@ abstract class MenuBase(
     )
 
     /**
-     * Obtiene (o genera y cachea) los datos decorativos del menú para el idioma del player.
-     * El título se resuelve desde messages.yml usando [titleMessageKey].
+     * Obtiene (o genera y cachea) los datos decorativos del men� para el idioma del player.
+     * El t�tulo se resuelve desde messages.yml usando [titleMessageKey].
      */
     private fun getBakedData(player: Player): MenuBakedData {
         val lang = plugin.playerDataManager.getLanguage(player.uniqueId)
@@ -139,7 +139,7 @@ abstract class MenuBase(
         return langCache.getOrPut(lang) {
             val config = getGlobalConfig()
 
-            // Resolver el título desde messages.yml (no desde el YAML del menú)
+            // Resolver el t�tulo desde messages.yml (no desde el YAML del men�)
             val rawTitle = PumpkingServiceManager.messages.getRawString(player, titleMessageKey, titleFallback, "messages")
 
             val filas = config.getInt("filas", 3)
@@ -163,7 +163,7 @@ abstract class MenuBase(
     }
 
     /**
-     * Carga el YAML global del menú usando PumpkingLib ConfigManager
+     * Carga el YAML global del men� usando PumpkingLib ConfigManager
      */
     private fun loadGlobalConfig(): FileConfiguration {
         return ConfigManager.getMenuConfig(menuName)

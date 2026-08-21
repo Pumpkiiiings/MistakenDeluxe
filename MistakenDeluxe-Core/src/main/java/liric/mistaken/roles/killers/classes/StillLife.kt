@@ -147,7 +147,7 @@ class StillLife : CoreKiller(
                     }, 20L * 15L)
                 }
                 
-                player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>¡Clones invocados!"))
+                player.sendMessage(pumpking.lib.color.ColorTranslator.translate("<green>�Clones invocados!"))
                 playSkillEffects(player, 4)
             }
             "disguise_toggle" -> {

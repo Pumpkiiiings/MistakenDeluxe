@@ -1,4 +1,4 @@
-﻿package liric.mistaken.level.integration
+package liric.mistaken.level.integration
 
 import liric.mistaken.level.LevelAddonPlugin
 import org.bukkit.Bukkit

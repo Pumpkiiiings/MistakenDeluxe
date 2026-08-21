@@ -37,7 +37,7 @@ import pumpking.lib.service.PumpkingServiceManager
 /**
  *[LIRIC-MISTAKEN 2.0]
  * Kasane Teto: La Comandante.
- * FIX: Rotación Trigonométrica Absoluta. Sombrero y Drills giran 100% pegados a la cabeza sin desarmarse.
+ * FIX: Rotaci�n Trigonom�trica Absoluta. Sombrero y Drills giran 100% pegados a la cabeza sin desarmarse.
  */
 class KasaneTeto : Survivor(
     "teto",
@@ -47,7 +47,7 @@ class KasaneTeto : Survivor(
     private val pathBase = "supervivientes.teto"
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
 
-    // Guardamos las piezas individuales para applyles la matemática de rotación
+    // Guardamos las piezas individuales para applyles la matem�tica de rotaci�n
     private val tetoAccesorios = ConcurrentHashMap<UUID, MutableList<VirtualBlockDisplay>>()
 
     override fun useSkill(player: Player, slot: Int) {
@@ -125,7 +125,7 @@ class KasaneTeto : Survivor(
     }
 
     // =========================================================================================
-    // =                             SISTEMA DE ARMAS (REVÓLVER)                               =
+    // =                             SISTEMA DE ARMAS (REV�LVER)                               =
     // =========================================================================================
 
     private fun disparoParalizador(player: Player) {
@@ -199,7 +199,7 @@ class KasaneTeto : Survivor(
     }
 
     // =========================================================================================
-    // =                     SISTEMA DE GEOMETRÍA ABSOLUTA (SIN DEFORMACIONES)                 =
+    // =                     SISTEMA DE GEOMETR�A ABSOLUTA (SIN DEFORMACIONES)                 =
     // =========================================================================================
 
     private fun crearCosmeticosTeto(player: Player) {
@@ -209,7 +209,7 @@ class KasaneTeto : Survivor(
         val startLoc = player.location
         val displays = mutableListOf<VirtualBlockDisplay>()
 
-        // Helper para crear un bloque con la escala centrada en -50% (Para que rote desde el medio de sí mismo)
+        // Helper para crear un bloque con la escala centrada en -50% (Para que rote desde el medio de s� mismo)
         fun spawnBlock(mat: Material, scale: JomlVector3f): VirtualBlockDisplay {
             return PacketFactory.displays.buildBlockDisplay(player.sessionViewers(), startLoc) { bd ->
                 bd.block = mat.createBlockData()
@@ -220,18 +220,18 @@ class KasaneTeto : Survivor(
             }.also { displays.add(it) }
         }
 
-        // --- 1. SOMBRERO COMANDANTE (Índices 0, 1, 2, 3) ---
+        // --- 1. SOMBRERO COMANDANTE (�ndices 0, 1, 2, 3) ---
         spawnBlock(Material.BLACK_CONCRETE, JomlVector3f(0.7f, 0.05f, 0.7f)) // Visera
         spawnBlock(Material.ORANGE_TERRACOTTA, JomlVector3f(0.42f, 0.1f, 0.42f)) // Banda
         spawnBlock(Material.BLACK_CONCRETE, JomlVector3f(0.4f, 0.35f, 0.4f)) // Copa
         spawnBlock(Material.GOLD_BLOCK, JomlVector3f(0.1f, 0.1f, 0.02f)) // Logo
 
-        // --- 2. DRILL IZQUIERDO (Índices 4, 5, 6) ---
+        // --- 2. DRILL IZQUIERDO (�ndices 4, 5, 6) ---
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.25f, 0.25f, 0.25f))
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.2f, 0.2f, 0.2f))
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.15f, 0.15f, 0.15f))
 
-        // --- 3. DRILL DERECHO (Índices 7, 8, 9) ---
+        // --- 3. DRILL DERECHO (�ndices 7, 8, 9) ---
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.25f, 0.25f, 0.25f))
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.2f, 0.2f, 0.2f))
         spawnBlock(Material.RED_CONCRETE, JomlVector3f(0.15f, 0.15f, 0.15f))
@@ -254,7 +254,7 @@ class KasaneTeto : Survivor(
 
         val eyeLoc = player.eyeLocation
         val yawRad = -Math.toRadians(eyeLoc.yaw.toDouble()).toFloat()
-        val pitchRad = Math.toRadians(eyeLoc.pitch.coerceIn(-30f, 45f).toDouble()).toFloat() // Límite de inclinación
+        val pitchRad = Math.toRadians(eyeLoc.pitch.coerceIn(-30f, 45f).toDouble()).toFloat() // L�mite de inclinaci�n
 
         val forward = eyeLoc.direction.clone().setY(0).normalize()
         val right = forward.clone().crossProduct(Vector(0, 1, 0)).normalize()
@@ -265,7 +265,7 @@ class KasaneTeto : Survivor(
 
         val headRot = Quaternionf().rotateY(yawRad).rotateX(-pitchRad)
 
-        // Función para apply offset a un bloque basado en la rotación de la cabeza
+        // Funci�n para apply offset a un bloque basado en la rotaci�n de la cabeza
         fun applyOffset(index: Int, rightOff: Double, upOff: Double, fwdOff: Double, rotExtra: Quaternionf? = null) {
             val pLoc = baseHead.clone()
                 .add(right.clone().multiply(rightOff))
@@ -274,7 +274,7 @@ class KasaneTeto : Survivor(
 
             displays[index].teleport(pLoc)
 
-            // Mantiene su centro, y rota con la cabeza (más una rotación extra si se requiere)
+            // Mantiene su centro, y rota con la cabeza (m�s una rotaci�n extra si se requiere)
             val currentTrans = displays[index].transformation
             val finalRot = if (rotExtra != null) Quaternionf(headRot).mul(rotExtra) else headRot
             displays[index].transformation = Transformation(currentTrans!!.translation, finalRot, currentTrans!!.scale, Quaternionf())

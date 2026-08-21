@@ -23,16 +23,16 @@ class CharlieProfile : CinematicProfile {
     override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.DRONE_SPIRAL
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<gold>CAÍDO DEL CIELO"), ColorTranslator.translate("<red>Bienvenido a mi infierno."))
+        return Pair(ColorTranslator.translate("<gold>CA�DO DEL CIELO"), ColorTranslator.translate("<red>Bienvenido a mi infierno."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_red><bold>CENIZAS</bold>"), ColorTranslator.translate("<gold>¿Es este el fin de Charlie?"))
+        return Pair(ColorTranslator.translate("<dark_red><bold>CENIZAS</bold>"), ColorTranslator.translate("<gold>�Es este el fin de Charlie?"))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {
-        return if (isIntro) listOf("<gold>Charlie ha aterrizado.", "<red>¡Y ustedes arderán conmigo!")
-        else listOf("<gold>Todo arde...", "<dark_gray>¿Acaso este es el final del camino?")
+        return if (isIntro) listOf("<gold>Charlie ha aterrizado.", "<red>�Y ustedes arder�n conmigo!")
+        else listOf("<gold>Todo arde...", "<dark_gray>�Acaso este es el final del camino?")
     }
 
     override fun applyPose(dummy: ArmorStand, isIntro: Boolean) {

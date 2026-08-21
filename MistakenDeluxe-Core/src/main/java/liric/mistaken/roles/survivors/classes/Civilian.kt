@@ -21,8 +21,8 @@ import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * Civilian: La clase balanceada y versátil.
- * OPTIMIZADO: Separación Mecánica/Info + Schedulers.
+ * Civilian: La clase balanceada y vers�til.
+ * OPTIMIZADO: Separaci�n Mec�nica/Info + Schedulers.
  */
 class Civilian : Survivor(
     "civil",

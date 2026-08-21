@@ -31,8 +31,8 @@ class TriggerRegistry(val killerId: String) {
     }
 
     /**
-     * Revisa si el trigger está en cooldown. 
-     * Retorna true si está en cooldown, false si se puede usar (y automáticamente lo pone en cooldown si no lo estaba).
+     * Revisa si el trigger est� en cooldown. 
+     * Retorna true si est� en cooldown, false si se puede usar (y autom�ticamente lo pone en cooldown si no lo estaba).
      */
     fun checkCooldown(player: Player, triggerId: String, cooldownSeconds: Int): Boolean {
         if (cooldownSeconds <= 0) return false

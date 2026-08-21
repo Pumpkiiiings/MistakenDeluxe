@@ -142,7 +142,7 @@ class PacketEventsRenderer : IScoreboardRenderer {
     private fun stripColors(text: String): String {
         return text
             .replace(Regex("<[^>]+>"), "")
-            .replace(Regex("§[0-9a-fklmnor]"), "")
+            .replace(Regex("�[0-9a-fklmnor]"), "")
             .replace(Regex("&#[0-9A-Fa-f]{6}"), "")
             .replace(Regex("#[0-9A-Fa-f]{6}"), "")
             .trim()

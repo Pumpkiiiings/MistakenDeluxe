@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.engine
+package liric.mistaken.game.managers.engine
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -60,7 +60,7 @@ class ArenaManager(private val plugin: Mistaken) {
                 tempArenas[key] = arena
             }
 
-            // Reemplazo atÃ³mico para no causar tirones
+            // Reemplazo atómico para no causar tirones
             arenas.clear()
             arenas.putAll(tempArenas)
             plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>${arenas.size} templates loaded into secure memory.</gray>"))
@@ -140,7 +140,7 @@ class ArenaManager(private val plugin: Mistaken) {
         saveAsync()
     }
 
-    // --- UTILS DE LOCALIZACIÃ“N ---
+    // --- UTILS DE LOCALIZACIÓN ---
 
     private fun loadLocationList(path: String): List<Location> {
         val list = mutableListOf<Location>()
@@ -156,9 +156,9 @@ class ArenaManager(private val plugin: Mistaken) {
         
         if (!config.contains("$path.x")) return null
 
-        // ðŸ”¥ LA MAGIA ANTI-LEAKS: Retornamos la Location con World en NULL.
+        // 🔥 LA MAGIA ANTI-LEAKS: Retornamos la Location con World en NULL.
         // Esto garantiza que el ArenaManager NUNCA sostenga un world descargado en la RAM.
-        // El GameManager le inyectarÃ¡ el world activo al clonar la Location.
+        // El GameManager le inyectará el world activo al clonar la Location.
         return Location(
             null,
             config.getDouble("$path.x"),

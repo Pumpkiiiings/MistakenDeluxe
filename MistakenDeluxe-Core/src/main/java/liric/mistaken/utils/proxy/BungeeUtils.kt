@@ -1,4 +1,4 @@
-﻿package liric.mistaken.utils.proxy
+package liric.mistaken.utils.proxy
 
 import liric.mistaken.Mistaken
 import org.bukkit.entity.Player

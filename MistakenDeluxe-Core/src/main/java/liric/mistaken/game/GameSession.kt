@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game
+package liric.mistaken.game
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -24,7 +24,7 @@ class GameSession(
 
     var settings: PrivateGameSettings? = if (isPrivate) PrivateGameSettings() else null
 
-    // --- JUGADORES AISLADOS DE ESTA SESIÃ“N ---
+    // --- JUGADORES AISLADOS DE ESTA SESIÓN ---
     val players = ConcurrentHashMap.newKeySet<UUID>()
 
     // --- ESTADO DEL JUEGO ---
@@ -50,7 +50,7 @@ class GameSession(
     val ambientManager = plugin.ambientManager
     val combatManager = plugin.combatManager
 
-    // --- CONTROLADORES DE LÃ“GICA (Instanciados POR SESIÃ“N) ---
+    // --- CONTROLADORES DE LÓGICA (Instanciados POR SESIÓN) ---
     val stateController = GameStateController(this)
     val playerController = GamePlayerController(this)
     val uiController = GameUIController(this)
@@ -62,7 +62,7 @@ class GameSession(
         plugin.componentLogger.info(pumpking.lib.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Session $id started.</gray>"))
     }
 
-    // --- MÃ‰TODOS DE JUGADORES ---
+    // --- MÉTODOS DE JUGADORES ---
     fun addPlayer(player: Player) {
         players.add(player.uniqueId)
     }
@@ -79,11 +79,11 @@ class GameSession(
         return players.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
     }
 
-    // --- GETTERS ÃšTILES ---
+    // --- GETTERS ÚTILES ---
     fun getCurrentKiller(): Player? = currentKillerUUID?.let { plugin.server.getPlayer(it) }
     override fun isKiller(uuid: UUID): Boolean = killersUUIDs.contains(uuid)
 
-    // Solo envÃ­a messages a los players DE ESTA SESIÃ“N
+    // Solo envía messages a los players DE ESTA SESIÓN
     fun broadcastLocalized(path: String, vararg tags: TagResolver) {
         val message = PumpkingServiceManager.messages.getComponent(null, path, *tags)
         getPlayers().forEach { p -> p.sendMessage(message) }
@@ -92,7 +92,7 @@ class GameSession(
     fun shutdown() {
         loopTask.stop()
         // FIX #7: Snapshot the player list before iterating.
-        // leaveSession() â†’ removePlayer() modifies `players` concurrently.
+        // leaveSession() → removePlayer() modifies `players` concurrently.
         // Taking a snapshot first makes the iteration deterministic and prevents
         // any ambiguous state between leaveSession and the final players.clear().
         val snapshot = getPlayers().toList()

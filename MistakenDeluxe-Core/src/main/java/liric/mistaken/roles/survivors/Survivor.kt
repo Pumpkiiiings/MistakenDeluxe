@@ -17,7 +17,7 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
     // Cooldowns: UUID_Slot -> Timestamp (ms)
     private val cooldowns = ConcurrentHashMap<String, Long>()
 
-    // Rastrero de tareas asíncronas (Jobs) para limpieza profunda
+    // Rastrero de tareas as�ncronas (Jobs) para limpieza profunda
     protected val activeJobs = ConcurrentHashMap.newKeySet<Job>()
 
     /**
@@ -25,12 +25,12 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
      * Se mantiene 'open' para que classes como Jesse puedan sobreescribirla.
      */
     open fun trackearHeridos(player: Player) {
-        // Por defecto no hace nada, evitando errores en classes básicas como Civilian.
+        // Por defecto no hace nada, evitando errores en classes b�sicas como Civilian.
     }
 
     /**
-     * Verifica el enfriamiento de una ability y envía feedback visual.
-     * @return true si aún está en cooldown, false si se puede usar.
+     * Verifica el enfriamiento de una ability y env�a feedback visual.
+     * @return true si a�n est� en cooldown, false si se puede usar.
      */
     fun checkCooldown(player: Player, slot: Int, seconds: Int): Boolean {
         if (seconds <= 0) return false
@@ -51,7 +51,7 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
     }
 
     /**
-     * Registra una corrutina (Job) para ser cancelada automáticamente al finalizar la partida.
+     * Registra una corrutina (Job) para ser cancelada autom�ticamente al finalizar la partida.
      */
     protected fun trackJob(job: Job) {
         activeJobs.add(job)
@@ -59,7 +59,7 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
     }
 
     open override fun cleanup(player: Player?) {
-        // 1. Detener todas las corrutinas de la clase (rastreos, partículas, etc.)
+        // 1. Detener todas las corrutinas de la clase (rastreos, part�culas, etc.)
         activeJobs.forEach { it.cancel() }
         activeJobs.clear()
 
@@ -68,7 +68,7 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
                 // 2. Clear inventario
                 p.inventory.clear()
 
-                // 3. Quitar efectos de poción que la clase haya podido apply
+                // 3. Quitar efectos de poci�n que la clase haya podido apply
                 p.activePotionEffects.forEach { effect ->
                     p.removePotionEffect(effect.type)
                 }
@@ -82,7 +82,7 @@ abstract class Survivor(override val id: String, override val nombre: String) : 
         }
     }
 
-    // --- MÉTODOS ABSTRACTOS ---
+    // --- M�TODOS ABSTRACTOS ---
 
     abstract override fun equip(player: Player)
     abstract fun useSkill(player: Player, slot: Int)

@@ -23,16 +23,16 @@ class TetoProfile : CinematicProfile {
     override val isFloating: Boolean = false
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<red>TERRITORY</red>"), ColorTranslator.translate("<white>¡Eres tan tonto!"))
+        return Pair(ColorTranslator.translate("<red>TERRITORY</red>"), ColorTranslator.translate("<white>�Eres tan tonto!"))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>�MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {
-        return if (isIntro) listOf("<red>¡Baka baka baka!", "<white>El pan es mío.")
-        else listOf("<red>¿Ves? Te lo dije.", "<white>Nadie me gana.")
+        return if (isIntro) listOf("<red>�Baka baka baka!", "<white>El pan es m�o.")
+        else listOf("<red>�Ves? Te lo dije.", "<white>Nadie me gana.")
     }
 
     override fun applyPose(dummy: ArmorStand, isIntro: Boolean) {

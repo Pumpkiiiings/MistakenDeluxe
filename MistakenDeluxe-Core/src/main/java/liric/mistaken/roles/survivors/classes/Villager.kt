@@ -131,7 +131,7 @@ class Villager : Survivor(
         player.updateInventory()
     }
 
-    // --- H1: PÁNICO (Velocidad Explosiva) ---
+    // --- H1: P�NICO (Velocidad Explosiva) ---
     private fun usarPanico(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 60, 2)) // Speed III por 3s
         player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
@@ -154,11 +154,11 @@ class Villager : Survivor(
         player.world.playSound(player.location, Sound.ENTITY_IRON_GOLEM_ATTACK, 1f, 0.5f)
         player.world.spawnParticle(Particle.BLOCK_CRUMBLE, player.location, 30, 2.0, 0.5, 2.0, Material.IRON_BLOCK.createBlockData())
 
-        // Empujar al killer si está cerca (5 bloques)
+        // Empujar al killer si est� cerca (5 bloques)
         player.world.getNearbyPlayers(player.location, 5.0).forEach { victim ->
             val session = plugin.sessionManager.getSession(victim)
             if (session?.isKiller(victim.uniqueId) == true) {
-                // Vector de empuje fuerte hacia atrás
+                // Vector de empuje fuerte hacia atr�s
                 val knockback = victim.location.toVector().subtract(player.location.toVector()).normalize().multiply(2.5).setY(0.5)
                 victim.velocity = knockback
 

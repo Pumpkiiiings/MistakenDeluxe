@@ -23,16 +23,16 @@ class BendyProfile : CinematicProfile {
     override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.ZIG_ZAG_GLITCH
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<black><bold>LA TINTA LLAMA</bold>"), ColorTranslator.translate("<dark_gray>Él ha sido liberado..."))
+        return Pair(ColorTranslator.translate("<black><bold>LA TINTA LLAMA</bold>"), ColorTranslator.translate("<dark_gray>�l ha sido liberado..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<black><bold>CONSUMIDOS</bold>"), ColorTranslator.translate("<dark_gray>El estudio reclamó lo que es suyo."))
+        return Pair(ColorTranslator.translate("<black><bold>CONSUMIDOS</bold>"), ColorTranslator.translate("<dark_gray>El estudio reclam� lo que es suyo."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {
-        return if (isIntro) listOf("<black>T i n t a . . .", "<dark_gray>V e n  a q u í . . .")
-        else listOf("<black>T o d o   e s   m í o .", "<dark_gray>J a j a j a . . .")
+        return if (isIntro) listOf("<black>T i n t a . . .", "<dark_gray>V e n  a q u � . . .")
+        else listOf("<black>T o d o   e s   m � o .", "<dark_gray>J a j a j a . . .")
     }
 
     override fun applyPose(dummy: ArmorStand, isIntro: Boolean) {

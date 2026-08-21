@@ -33,7 +33,7 @@ class ErrorStaticProfile : CinematicProfile {
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {
-        return if (isIntro) listOf("<gray>*Estática de Televisión*", "<white>E-E-Error 404.")
+        return if (isIntro) listOf("<gray>*Est�tica de Televisi�n*", "<white>E-E-Error 404.")
         else listOf("<aqua>Cerrando sistema.", "<dark_gray>This is how it should be.")
     }
 

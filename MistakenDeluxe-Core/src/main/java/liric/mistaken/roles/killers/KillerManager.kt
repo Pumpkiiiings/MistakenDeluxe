@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers
+package liric.mistaken.roles.killers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.scripting.engine.groovy.KillerScriptEngine
@@ -114,7 +114,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
     fun registerKiller(player: Player, killer: Killer) {
         val uuid = player.uniqueId
 
-        // Si ya tenÃƒÂ­a un killer, clearlo primero
+        // Si ya tenía un killer, clearlo primero
         if (activeRoles.containsKey(uuid)) {
             removeRoleLogic(uuid, player)
         }
@@ -129,7 +129,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             Placeholder.component("name", ColorTranslator.translate(killer.nombre))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
-        // 2. ?? FIX: EntityScheduler de Paper con runDelayed y Consumer explÃƒÂ¯Ã‚Â¿Ã‚Â½cito
+        // 2. ?? FIX: EntityScheduler de Paper con runDelayed y Consumer explï¿½cito
         player.scheduler.runDelayed(
             plugin,
             Consumer { _ ->
@@ -137,10 +137,10 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
                 killer.equip(player)
 
-                // ReorganizaciÃƒÆ’Ã‚Â³n dinÃƒÆ’Ã‚Â¡mica de slots basada en config
+                // ReorganizaciÃ³n dinÃ¡mica de slots basada en config
                 val config = plugin.configManager.getKillerConfig(killer.id)
                 
-                // Apply vida mÃƒÆ’Ã‚Â¡xima del killer
+                // Apply vida mÃ¡xima del killer
                 val maxHealth = config.getDouble("stats.health", 40.0)
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = maxHealth
                 player.health = maxHealth
@@ -205,7 +205,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
     fun removeAllKillers() {
         cleanAll()
-        // Le decimos a todos los killers que vacÃƒÆ’Ã‚Â­en su memoria RAM interna
+        // Le decimos a todos los killers que vacÃ­en su memoria RAM interna
         availableClasses.values.forEach { killer ->
             killer.dispose()
         }

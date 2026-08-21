@@ -22,16 +22,16 @@ class MikuProfile : CinematicProfile {
     override val isFloating: Boolean = true
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<aqua>DOMINACIÓN MUNDIAL</aqua>"), ColorTranslator.translate("<white>¡El mundo es mío!"))
+        return Pair(ColorTranslator.translate("<aqua>DOMINACI�N MUNDIAL</aqua>"), ColorTranslator.translate("<white>�El mundo es m�o!"))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<aqua><bold>CONCIERTO FINAL</bold>"), ColorTranslator.translate("<white>¡Gracias a todos por venir!"))
+        return Pair(ColorTranslator.translate("<aqua><bold>CONCIERTO FINAL</bold>"), ColorTranslator.translate("<white>�Gracias a todos por venir!"))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {
-        return if (isIntro) listOf("<aqua>¿Están listos para cantar?", "<white>¡Aki Miku-chan!")
-        else listOf("<aqua>¡Miku Miku BEEEEEEAAAM!", "<white>Nos vemos en la próxima función~")
+        return if (isIntro) listOf("<aqua>�Est�n listos para cantar?", "<white>�Aki Miku-chan!")
+        else listOf("<aqua>�Miku Miku BEEEEEEAAAM!", "<white>Nos vemos en la pr�xima funci�n~")
     }
 
     override fun applyPose(dummy: ArmorStand, isIntro: Boolean) {

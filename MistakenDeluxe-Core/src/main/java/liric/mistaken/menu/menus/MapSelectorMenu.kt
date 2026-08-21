@@ -60,12 +60,12 @@ class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSes
                 .asGuiItem {
                     settings.forcedMap = if (isSelected) null else map.name
                     player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                    player.sendActionBar(ColorTranslator.translate("<green>Mapa seleccionado: ${settings.forcedMap ?: "AUTOMÁTICO"}"))
+                    player.sendActionBar(ColorTranslator.translate("<green>Mapa seleccionado: ${settings.forcedMap ?: "AUTOM�TICO"}"))
                     abrir(player)
                 }
 
             gui.setItem(slot++, item)
-            // Lógica simple de filas (salta a la siguiente fila si llega al borde derecho asumiendo centrado estándar)
+            // L�gica simple de filas (salta a la siguiente fila si llega al borde derecho asumiendo centrado est�ndar)
             if (slot == 26) slot = 28 
             
             if (slot > maxSlots) break // Max maps shown

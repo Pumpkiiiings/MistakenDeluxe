@@ -15,7 +15,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
 
     fun abrir(player: Player) {
         val config = pumpking.lib.config.ConfigManager.getMenuConfig("private_lobby")
-        val titleText = config.getString("title", "<dark_gray>Configuración de Partida Privada") ?: "<dark_gray>Configuración de Partida Privada"
+        val titleText = config.getString("title", "<dark_gray>Configuraci�n de Partida Privada") ?: "<dark_gray>Configuraci�n de Partida Privada"
         val startName = config.getString("items.start.name", "<green><bold>Iniciar Partida") ?: "<green><bold>Iniciar Partida"
         val startLoreRaw = config.getStringList("items.start.lore").ifEmpty { listOf("<gray>Inicia la partida forzosamente.") }
         
@@ -63,7 +63,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
                 gui.close(player)
                 if (session.isPrivate) {
                     session.forceStart = true
-                    player.sendMessage(ColorTranslator.translate("<green><bold>¡Iniciando partida privada!"))
+                    player.sendMessage(ColorTranslator.translate("<green><bold>�Iniciando partida privada!"))
                 }
             }
         

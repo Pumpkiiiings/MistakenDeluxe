@@ -8,7 +8,7 @@ import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-// --- Definición de Estados Exclusivos del Warden ---
+// --- Definici�n de Estados Exclusivos del Warden ---
 
 abstract class WardenSwipeState(override val id: String) : CharacterState {
     override val priority = 50
@@ -88,13 +88,13 @@ object WardenSniffWalkState : CharacterState {
     }
 }
 
-// --- Implementación del Personaje ---
+// --- Implementaci�n del Personaje ---
 
 class WardenKiller : BaseKiller("warden", "Warden") {
     
     override fun getModelId(): String = "warden"
 
-    // Registra en qué parte del combo está cada player y su último ataque
+    // Registra en qu� parte del combo est� cada player y su �ltimo ataque
     private val comboSteps = ConcurrentHashMap<UUID, Int>()
     private val lastAttackTimes = ConcurrentHashMap<UUID, Long>()
 
@@ -270,7 +270,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
                 for (victim in session.getPlayers()) {
                     if (!session.isKiller(victim.uniqueId)) {
                         victim.addPotionEffect(org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.GLOWING, 20 * 15, 0))
-                        victim.sendMessage("§c¡El Warden te ha olfateado!")
+                        victim.sendMessage("�c�El Warden te ha olfateado!")
                     }
                 }
             }
@@ -278,7 +278,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
     }
 
     /**
-     * Lógica de combo simple por player: Alterna entre swipe 1, 2 y 3.
+     * L�gica de combo simple por player: Alterna entre swipe 1, 2 y 3.
      */
     fun attack(player: Player) {
         val uuid = player.uniqueId
@@ -287,7 +287,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
         
         var comboStep = comboSteps.getOrDefault(uuid, 0)
         
-        // Resetea el combo si pasó mucho tiempo (ej: más de 1.5 segundos) sin atacar
+        // Resetea el combo si pas� mucho tiempo (ej: m�s de 1.5 segundos) sin atacar
         if (now - lastAttackTime > 1500) {
             comboStep = 0
         }
@@ -298,7 +298,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
             else -> WardenSwipe3State
         }
 
-        // Forzamos la transición al estado de ataque.
+        // Forzamos la transici�n al estado de ataque.
         transitionTo(player, state, force = true)
         
         lastAttackTimes[uuid] = now

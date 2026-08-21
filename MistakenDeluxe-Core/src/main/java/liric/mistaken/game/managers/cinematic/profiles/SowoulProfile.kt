@@ -24,16 +24,16 @@ class SowoulProfile : CinematicProfile {
     override val outroCameraStyle = liric.mistaken.game.managers.cinematic.CameraStyle.ZIG_ZAG_GLITCH
 
     override fun getIntroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_purple>EL MAGO HA LLEGADO"), ColorTranslator.translate("<light_purple>Que comience el espectáculo..."))
+        return Pair(ColorTranslator.translate("<dark_purple>EL MAGO HA LLEGADO"), ColorTranslator.translate("<light_purple>Que comience el espect�culo..."))
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_red><bold>¡MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>�MASCARADA FINAL!</bold>"), ColorTranslator.translate("<gray><b>\$realName</b> <white>ha reclamado todas las almas."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {
-        return if (isIntro) listOf("<light_purple>Damas y caballeros...", "<light_purple>¡Bienvenidos a la función final!")
-        else listOf("<light_purple>¡Muchas gracias audiencia!", "<light_purple>¡Gracias por ver mi gran espectáculo!")
+        return if (isIntro) listOf("<light_purple>Damas y caballeros...", "<light_purple>�Bienvenidos a la funci�n final!")
+        else listOf("<light_purple>�Muchas gracias audiencia!", "<light_purple>�Gracias por ver mi gran espect�culo!")
     }
 
     override fun applyPose(dummy: ArmorStand, isIntro: Boolean) {

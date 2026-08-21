@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.audio
+package liric.mistaken.game.managers.audio
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +31,7 @@ class MusicManager(private val plugin: Mistaken) {
     private var currentLobbyTrack: Track? = null
     private var trackStartTime: Long = 0
 
-    // Registro de quÃ© canciÃ³n estÃ¡ escuchando cada player (para no solapar)
+    // Registro de qu� canci�n est� escuchando cada player (para no solapar)
     private val playersPlaying = ConcurrentHashMap.newKeySet<UUID>()
 
     private var cachedVolume: Float = 0.6f
@@ -67,7 +67,7 @@ class MusicManager(private val plugin: Mistaken) {
             while (isActive && !plugin.isReady) delay(1000L)
 
             while (isActive) {
-                // 1. Decidir la canciÃ³n actual para los que estÃ¡n en "espera" (Lobby/VotaciÃ³n/Break)
+                // 1. Decidir la canci�n actual para los que est�n en "espera" (Lobby/Votaci�n/Break)
                 if (currentLobbyTrack == null && playlist.isNotEmpty()) {
                     currentLobbyTrack = playlist.random()
                     trackStartTime = System.currentTimeMillis()
@@ -77,7 +77,7 @@ class MusicManager(private val plugin: Mistaken) {
                 for (player in plugin.server.onlinePlayers) {
                     val session = plugin.sessionManager.getSession(player)
 
-                    // Si no tiene sesiÃ³n (Lobby) o la sesiÃ³n estÃ¡ en fase de espera
+                    // Si no tiene sesi�n (Lobby) o la sesi�n est� en fase de espera
                     val state = session?.currentState ?: GameState.LOBBY
                     val shouldHearMusic = state == GameState.LOBBY || state == GameState.VOTING || state == GameState.BREAK
 
@@ -93,11 +93,11 @@ class MusicManager(private val plugin: Mistaken) {
                     }
                 }
 
-                // 3. Manejar el tiempo de la canciÃ³n actual (Global)
+                // 3. Manejar el tiempo de la canci�n actual (Global)
                 currentLobbyTrack?.let { track ->
                     val elapsed = (System.currentTimeMillis() - trackStartTime) / 1000
                     if (elapsed >= track.duration) {
-                        // Cambiar la canciÃ³n para todos
+                        // Cambiar la canci�n para todos
                         currentLobbyTrack = playlist.random()
                         trackStartTime = System.currentTimeMillis()
                         // Vaciamos el set para que en el siguiente tick todos empiecen a escuchar la nueva
@@ -121,15 +121,15 @@ class MusicManager(private val plugin: Mistaken) {
 
         player.playSound(soundPacket)
 
-        // Ya no removemos al player de playersPlaying asincrÃ³nicamente aquÃ­,
+        // Ya no removemos al player de playersPlaying asincr�nicamente aqu�,
         // ya que el bucle principal se encarga de reiniciar todo el set 
-        // cuando la canciÃ³n global termina.
+        // cuando la canci�n global termina.
     }
 
     fun stopMusicForPlayer(player: Player) {
         playersPlaying.remove(player.uniqueId)
 
-        // Kyori detiene todos los sonidos de la categorÃ­a RECORD para este player
+        // Kyori detiene todos los sonidos de la categor�a RECORD para este player
         player.stopSound(SoundStop.source(Sound.Source.RECORD))
     }
 
@@ -146,7 +146,7 @@ class MusicManager(private val plugin: Mistaken) {
     }
 
     /**
-     * Fuerza el cambio de canciÃ³n (Ãºtil para comandos de admin).
+     * Fuerza el cambio de canci�n (�til para comandos de admin).
      */
     fun skipTrack() {
         val oldTrack = currentLobbyTrack
@@ -156,7 +156,7 @@ class MusicManager(private val plugin: Mistaken) {
         plugin.server.onlinePlayers.forEach { p ->
             if (playersPlaying.contains(p.uniqueId)) {
                 stopMusicForPlayer(p)
-                // El bucle principal lo volverÃ¡ a poner en el siguiente segundo
+                // El bucle principal lo volver� a poner en el siguiente segundo
             }
         }
     }

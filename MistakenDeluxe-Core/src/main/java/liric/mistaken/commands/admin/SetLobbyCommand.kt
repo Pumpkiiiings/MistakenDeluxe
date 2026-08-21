@@ -13,9 +13,9 @@ import pumpking.lib.service.PumpkingServiceManager
 /**
  * SetLobbyCommand - Kotlin Edition (Paper 1.21.4+)
  *
- * Optimización:
- * - Usa Brigadier Node para inyección directa en el Dispatcher.
- * - Validación de permisos nativa (.requires).
+ * Optimizaci�n:
+ * - Usa Brigadier Node para inyecci�n directa en el Dispatcher.
+ * - Validaci�n de permisos nativa (.requires).
  * - Cero "reflection" de Bukkit antiguo.
  */
 object SetLobbyCommand {
@@ -24,43 +24,43 @@ object SetLobbyCommand {
 
     fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {
         return Commands.literal("setlobby")
-            // 1. Validación de Permisos (Nativa y rápida)
+            // 1. Validaci�n de Permisos (Nativa y r�pida)
             // Si no tiene permiso, el comando ni siquiera aparece en el autocompletado.
             .requires { source ->
                 source.sender.hasPermission("mistaken.admin")
             }
-            // 2. Ejecución
+            // 2. Ejecuci�n
             .executes { ctx ->
                 val sender = ctx.source.sender
 
-                // Casting seguro de Kotlin. Si no es Player, 'player' será null.
+                // Casting seguro de Kotlin. Si no es Player, 'player' ser� null.
                 val player = sender as? Player
 
-                // Validación de ejecutor técnico
+                // Validaci�n de ejecutor t�cnico
                 if (player == null) {
                     sender.sendMessage(ColorTranslator.translate("<red>Este comando solo puede ser ejecutado por jugadores."))
-                    return@executes 0 // Retornamos 0 para indicar fallo/no acción
+                    return@executes 0 // Retornamos 0 para indicar fallo/no acci�n
                 }
 
-                // --- LÓGICA DEL COMANDO ---
+                // --- L�GICA DEL COMANDO ---
 
-                // 3. Persistencia (La lógica interna de tu plugin)
+                // 3. Persistencia (La l�gica interna de tu plugin)
                 plugin.setLobbyLocationConfig(player.location)
 
-                // 4. Feedback Visual (Multilingüe)
+                // 4. Feedback Visual (Multiling�e)
                 val message = PumpkingServiceManager.messages.getComponent(player, "admin.lobby-set")
                 player.sendMessage(message)
 
                 // 5. Feedback Auditivo
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.2f)
 
-                // 6. Registro de Auditoría (Logger de Paper)
-                // Usamos Templates de Kotlin ($) para máxima legibilidad y rendimiento
+                // 6. Registro de Auditor�a (Logger de Paper)
+                // Usamos Templates de Kotlin ($) para m�xima legibilidad y rendimiento
                 plugin.componentLogger.info(ColorTranslator.translate(
                     "<gray>[Mistaken]</gray> <green>Lobby actualizado en </green><white>${player.world.name}</white><green> por </green><white>${player.name}</white>"
                 ))
 
-                1 // Retornamos 1 para indicar éxito (Command.SINGLE_SUCCESS)
+                1 // Retornamos 1 para indicar �xito (Command.SINGLE_SUCCESS)
             }
             .build()
     }

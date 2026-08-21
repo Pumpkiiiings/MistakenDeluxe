@@ -96,7 +96,7 @@ class PlayerSelectorMenu(private val plugin: Mistaken, private val session: Game
                 }
 
             gui.setItem(slot++, item)
-            // Lógica simple de filas (salta a la siguiente fila si llega al borde derecho asumiendo centrado estándar)
+            // L�gica simple de filas (salta a la siguiente fila si llega al borde derecho asumiendo centrado est�ndar)
             if (slot == 26) slot = 28
             if (slot > maxSlots) break // Max players shown
         }

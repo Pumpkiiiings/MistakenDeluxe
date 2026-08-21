@@ -12,7 +12,7 @@ import pumpking.lib.service.PumpkingServiceManager
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * ArenaCommand: Gestión administrativa de mapas.
+ * ArenaCommand: Gesti�n administrativa de mapas.
  * Optimizado con la API de Brigadier para Paper 1.21.4.
  */
 class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
@@ -45,7 +45,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
         val arenaName = args[1]
         val arena = plugin.arenaManager.getArena(arenaName)
 
-        // Validar existencia excepto para creación
+        // Validar existencia excepto para creaci�n
         if (arena == null && sub != "create") {
             player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.arena-not-found",
                 Placeholder.parsed("name", arenaName)))
@@ -58,7 +58,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
                 player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "arena.created",
                     Placeholder.parsed("name", arenaName)))
                 player.playSound(player.location, Sound.ENTITY_VILLAGER_YES, 1f, 1f)
-                player.sendMessage(ColorTranslator.translate("<gray>Nota: Asegúrate de tener el archivo <white>$arenaName.slime</white> en su carpeta."))
+                player.sendMessage(ColorTranslator.translate("<gray>Nota: Aseg�rate de tener el archivo <white>$arenaName.slime</white> en su carpeta."))
             }
 
             "delete" -> {
@@ -152,7 +152,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
                     player.sendMessage(ColorTranslator.translate("<green>Tiempo de la arena <white>$arenaName</white> establecido a <yellow>$mode</yellow>."))
                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
                 } else {
-                    player.sendMessage(ColorTranslator.translate("<red>Modo de tiempo inválido. Opciones: day, night, afternoon, morning, dynamic."))
+                    player.sendMessage(ColorTranslator.translate("<red>Modo de tiempo inv�lido. Opciones: day, night, afternoon, morning, dynamic."))
                 }
             }
             else -> sendHelp(player)

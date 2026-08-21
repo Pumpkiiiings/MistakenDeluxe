@@ -31,7 +31,7 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
     open fun onTrigger(player: Player, triggerId: String) {}
 
     /**
-     * Interceptación de chat para Killers nativos. 
+     * Interceptaci�n de chat para Killers nativos. 
      * Retorna un string para reescribir el broadcast, o null para no tocarlo.
      */
     open fun onInterceptChat(player: Player, message: String): String? { return null }
@@ -49,7 +49,7 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
         val langInfo = PumpkingServiceManager.messages.getSpecificFile(player, "killers_info")
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
         
-        // Cargar triggers desde YAML (si existe la sección)
+        // Cargar triggers desde YAML (si existe la secci�n)
         triggerRegistry.loadFromConfig(configMecanica)
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {

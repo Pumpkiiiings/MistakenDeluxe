@@ -32,12 +32,12 @@ class ColorAndElectricityProfile : CinematicProfile {
     }
 
     override fun getOutroTexts(plugin: Mistaken, realName: String): Pair<Component, Component> {
-        return Pair(ColorTranslator.translate("<dark_red><bold>¡QUÉ HE HECHO!</bold>"), ColorTranslator.translate("<red>M-Mi color... todo se deforma..."))
+        return Pair(ColorTranslator.translate("<dark_red><bold>�QU� HE HECHO!</bold>"), ColorTranslator.translate("<red>M-Mi color... todo se deforma..."))
     }
 
     override fun getDialogs(isIntro: Boolean): List<String> {
-        return if (isIntro) listOf("<yellow>*Comiendo colores rápidamente*", "<aqua>Aún tengo hambre...")
-        else listOf("<red>Oh no... m-me comí a uno...", "<dark_red>M-Me estoy volviendo rojo... quiero ser normal...")
+        return if (isIntro) listOf("<yellow>*Comiendo colores r�pidamente*", "<aqua>A�n tengo hambre...")
+        else listOf("<red>Oh no... m-me com� a uno...", "<dark_red>M-Me estoy volviendo rojo... quiero ser normal...")
     }
 
     override fun applyPose(dummy: ArmorStand, isIntro: Boolean) {

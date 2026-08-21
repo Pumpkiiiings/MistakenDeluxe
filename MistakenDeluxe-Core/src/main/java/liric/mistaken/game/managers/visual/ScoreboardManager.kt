@@ -79,7 +79,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
 
         val rawLines = config.getStringList(path)
         if (rawLines.isEmpty()) {
-            return listOf("§cError: $path", "§cvacío en YAML")
+            return listOf("�cError: $path", "�cvac�o en YAML")
         }
 
         val lives = plugin.combatManager.getHealth(player).toString()
@@ -118,7 +118,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
         return ids.mapNotNull { id ->
             val killer = plugin.server.getPlayer(id)
             if (killer != null && killer.isOnline)
-                legacy.serialize(ColorTranslator.translate(" <white>• <red>${killer.name}"))
+                legacy.serialize(ColorTranslator.translate(" <white>� <red>${killer.name}"))
             else null
         }
     }
