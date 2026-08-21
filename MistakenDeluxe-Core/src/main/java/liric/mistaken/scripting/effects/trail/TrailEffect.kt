@@ -81,28 +81,30 @@ class TrailEffect(
 
             val particleLoc = loc.clone().add(0.0, 1.0, 0.0)
 
-            // Build particle - use DUST if color specified, else named particle
-            val particle = if (dustR != null && dustG != null && dustB != null) {
-                Particle(ParticleTypes.DUST, ParticleDustData(dustR, dustG, dustB, dustSize))
-            } else {
-                val type = try {
-                    ParticleTypes.getByName("minecraft:${particleName.lowercase()}")
-                } catch (_: Exception) { null } ?: ParticleTypes.END_ROD
-                Particle(type)
-            }
-
-            val packet = WrapperPlayServerParticle(
-                particle, false,
-                Vector3d(particleLoc.x, particleLoc.y, particleLoc.z),
-                Vector3f(offsetX, offsetY, offsetZ),
-                0.02f, particleCount
-            )
-
             val viewRadiusSq = viewRadius * viewRadius
-            val mgr = PacketEvents.getAPI().playerManager
-            loc.world.players.forEach { viewer ->
-                if (viewer.location.distanceSquared(loc) < viewRadiusSq) {
-                    mgr.sendPacket(viewer, packet)
+            
+            if (dustR != null && dustG != null && dustB != null) {
+                // Use standard Bukkit API for dust particle
+                val dustOptions = org.bukkit.Particle.DustOptions(
+                    org.bukkit.Color.fromRGB((dustR*255).toInt(), (dustG*255).toInt(), (dustB*255).toInt()), 
+                    dustSize
+                )
+                loc.world.players.forEach { viewer ->
+                    if (viewer.location.distanceSquared(loc) < viewRadiusSq) {
+                        viewer.spawnParticle(org.bukkit.Particle.DUST, particleLoc.x, particleLoc.y, particleLoc.z, particleCount, offsetX.toDouble(), offsetY.toDouble(), offsetZ.toDouble(), 0.02, dustOptions)
+                    }
+                }
+            } else {
+                val bukkitParticle = try { 
+                    org.bukkit.Particle.valueOf(particleName.uppercase()) 
+                } catch(e: Exception) { 
+                    org.bukkit.Particle.END_ROD 
+                }
+                
+                loc.world.players.forEach { viewer ->
+                    if (viewer.location.distanceSquared(loc) < viewRadiusSq) {
+                        viewer.spawnParticle(bukkitParticle, particleLoc.x, particleLoc.y, particleLoc.z, particleCount, offsetX.toDouble(), offsetY.toDouble(), offsetZ.toDouble(), 0.02)
+                    }
                 }
             }
 

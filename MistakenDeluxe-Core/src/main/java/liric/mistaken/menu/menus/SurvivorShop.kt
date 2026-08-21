@@ -33,15 +33,15 @@ class SurvivorShop : MenuBase("survivors_shop") {
         val selected = data.getSelectedSurvivor(uuid)
 
         // Labels generales desde messages.yml
-        val labelHumano = PumpkingServiceManager.messages.getComponent(player, "tienda.clase-humana")
-        val labelSeleccionado = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-seleccionado")
-        val labelPoseido = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-poseido")
-        val labelComprar = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-comprar-superviviente")
-        val labelAbilityes = PumpkingServiceManager.messages.getComponent(player, "tienda.abilityes-titulo")
+        val labelHumano = PumpkingServiceManager.messages.getComponent(player, "shop.clase-humana")
+        val labelSeleccionado = PumpkingServiceManager.messages.getComponent(player, "shop.estado-seleccionado")
+        val labelPoseido = PumpkingServiceManager.messages.getComponent(player, "shop.estado-poseido")
+        val labelComprar = PumpkingServiceManager.messages.getComponent(player, "shop.estado-comprar-survivor")
+        val labelAbilityes = PumpkingServiceManager.messages.getComponent(player, "shop.abilityes-titulo")
 
         var slotIndex = 0
 
-        for (survivorId in plugin.supervivienteManager.catalogo.keys) {
+        for (survivorId in plugin.survivorManager.catalogo.keys) {
             if (slotIndex >= slots.size) break
 
             val survivorConfig = plugin.configManager.getSurvivorConfig(survivorId)
@@ -49,15 +49,15 @@ class SurvivorShop : MenuBase("survivors_shop") {
             if (permisoRequerido != null && !player.hasPermission(permisoRequerido)) continue
 
             // --- 🎨 DATOS VISUALES (Desde survivors_info.yml) ---
-            // Ruta: supervivientes.<id>.nombre
-            val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "supervivientes.$survivorId.nombre", "survivors_info")
+            // Ruta: survivors.<id>.nombre
+            val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "survivors.$survivorId.nombre", "survivors_info")
             
-            val loreTienda = PumpkingServiceManager.messages.getStrictStringList(player, "supervivientes.$survivorId.lore_tienda", "survivors_info")
+            val loreShop = PumpkingServiceManager.messages.getStrictStringList(player, "survivors.$survivorId.lore_shop", "survivors_info")
 
-            // --- ⚙️ DATOS MECÁNICOS (Desde supervivientes.yml) ---
-            // Ruta: supervivientes.<id>.precio
+            // --- ⚙️ DATOS MECÁNICOS (Desde survivors.yml) ---
+            // Ruta: survivors.<id>.precio
             val precio = survivorConfig.getInt("precio", 0)
-            // Ruta: supervivientes.<id>.icono_material
+            // Ruta: survivors.<id>.icono_material
             val matStr = survivorConfig.getString("icono_material", "IRON_CHESTPLATE")!!
             val iconoMat = Material.matchMaterial(matStr.uppercase()) ?: Material.IRON_CHESTPLATE
 
@@ -67,7 +67,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
                 add(Component.empty())
 
                 // DescripciÃ³n del personaje
-                loreTienda.forEach { line ->
+                loreShop.forEach { line ->
                     add(parseSafe(line))
                 }
 
@@ -75,9 +75,9 @@ class SurvivorShop : MenuBase("survivors_shop") {
                 add(labelAbilityes)
 
                 // Listar abilityes (Nombres desde INFO)
-                // Ruta: supervivientes.<id>.skill_names.abilityX
+                // Ruta: survivors.<id>.skill_names.abilityX
                 for (i in 1..3) {
-                    val habName = PumpkingServiceManager.messages.getRawString(player, "supervivientes.$survivorId.skill_names.ability$i", "", "survivors_info")
+                    val habName = PumpkingServiceManager.messages.getRawString(player, "survivors.$survivorId.skill_names.ability$i", "", "survivors_info")
                     if (habName.isNotEmpty()) {
                         add(parseSafe(" <dark_gray>â€¢</dark_gray> <white>$habName</white>"))
                     }
@@ -96,7 +96,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
                 esSeleccionado -> fullLore.add(labelSeleccionado)
                 tiene -> fullLore.add(labelPoseido)
                 else -> {
-                    fullLore.add(PumpkingServiceManager.messages.getComponent(player, "tienda.estado-precio", Placeholder.parsed("amount", precio.toString())))
+                    fullLore.add(PumpkingServiceManager.messages.getComponent(player, "shop.estado-precio", Placeholder.parsed("amount", precio.toString())))
                     fullLore.add(labelComprar)
                 }
             }
@@ -109,7 +109,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
                 .asGuiItem { event ->
                     event.isCancelled = true
                     if (reqMessages.isNotEmpty()) {
-                        player.sendMessage(parseSafe("<red>No cumples los requisitos para este superviviente.</red>"))
+                        player.sendMessage(parseSafe("<red>No cumples los requisitos para este survivor.</red>"))
                         player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
                         return@asGuiItem
                     }
@@ -138,7 +138,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
 
         // 1. Ya seleccionado
         if (id.equals(actual, ignoreCase = true)) {
-            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda.ya-seleccionado"))
+            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "shop.ya-seleccionado"))
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
             return
         }
@@ -149,9 +149,9 @@ class SurvivorShop : MenuBase("survivors_shop") {
             player.persistentDataContainer.set(survivorKey, PersistentDataType.STRING, id)
 
             // Obtenemos el nombre bonito para el mensaje de confirmaciÃ³n
-            val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "supervivientes.$id.nombre", "survivors_info")
+            val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "survivors.$id.nombre", "survivors_info")
 
-            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda.seleccionado", Placeholder.component("name", parseSafe(nombreVisual))))
+            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "shop.seleccionado", Placeholder.component("name", parseSafe(nombreVisual))))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
             abrir(player)
             return
@@ -171,13 +171,13 @@ class SurvivorShop : MenuBase("survivors_shop") {
             if (response.transactionSuccess()) {
                 data.comprarSurvivor(uuid, id)
 
-                val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "supervivientes.$id.nombre", "survivors_info")
+                val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "survivors.$id.nombre", "survivors_info")
 
-                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda.comprado", Placeholder.component("name", parseSafe(nombreVisual))))
+                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "shop.comprado", Placeholder.component("name", parseSafe(nombreVisual))))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
                 abrir(player)
             } else {
-                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda_errores.error_bancario", Placeholder.parsed("error", response.errorMessage ?: "Unknown error")))
+                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "shop_errores.error_bancario", Placeholder.parsed("error", response.errorMessage ?: "Unknown error")))
             }
         } else {
             player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "errors.no-money"))

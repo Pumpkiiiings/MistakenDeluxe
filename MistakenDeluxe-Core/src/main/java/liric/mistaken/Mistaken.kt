@@ -34,10 +34,10 @@ import liric.mistaken.listeners.*
 import liric.mistaken.listeners.killers.KillerGeneralListener
 import liric.mistaken.listeners.killers.KillerSkillListener
 import liric.mistaken.listeners.survivors.FlashlightListener
-import liric.mistaken.listeners.survivors.SurvivorHabilidadListener
+import liric.mistaken.listeners.survivors.SurvivorAbilityListener
 import liric.mistaken.menu.menus.ShopSelector
 import liric.mistaken.roles.survivors.SurvivorManager
-import liric.mistaken.menu.menus.SurvivorTienda
+import liric.mistaken.menu.menus.SurvivorShop
 import liric.mistaken.utils.hooks.Placeholders
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.milkbowl.vault.economy.Economy
@@ -85,7 +85,7 @@ class Mistaken : JavaPlugin() {
         private set
 
     // FIX #12: mutableSetOf<UUID>() returns a LinkedHashSet which is NOT thread-safe.
-    // iniciarMotorDeParticulas() runs on the async scheduler and reads these sets via isIgnored().
+    // iniciarMotorDeParticles() runs on the async scheduler and reads these sets via isIgnored().
     // ConcurrentHashMap.newKeySet() provides a thread-safe, lock-free Set backed by CHM.
     val staffEditMode: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
     val afkPlayers: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
@@ -120,10 +120,10 @@ class Mistaken : JavaPlugin() {
     lateinit var observerHUDManager: ObserverHUDManager
 
     lateinit var spectatorManager: SpectatorManager
-    lateinit var asesinoManager: KillerManager
-    lateinit var supervivienteManager: SurvivorManager
-    lateinit var asesinoTienda: KillerShop
-    lateinit var supervivienteTienda: SurvivorTienda
+    lateinit var killerManager: KillerManager
+    lateinit var survivorManager: SurvivorManager
+    lateinit var killerTienda: KillerShop
+    lateinit var survivorTienda: SurvivorShop
     lateinit var shopSelector: ShopSelector
     lateinit var glowingAPI: liric.mistaken.utils.misc.SafeGlowingManager
 
@@ -181,7 +181,7 @@ class Mistaken : JavaPlugin() {
         statsManager = StatsManager(this)
         playerDataManager = PlayerDataManager(this)
 
-        // 🔥 FIX 3: Inicializamos la API ANTES de cargar los managers y asesinos
+        // 🔥 FIX 3: Inicializamos la API ANTES de cargar los managers y killers
         val apiImpl = MistakenAPIImpl(this)
         MistakenProvider.register(apiImpl)
 
@@ -207,8 +207,8 @@ class Mistaken : JavaPlugin() {
         nameTagManager = liric.mistaken.game.managers.visual.NameTagManager(this)
         ambientManager = AmbientManager(this)
         arenaManager = ArenaManager(this)
-        asesinoManager = KillerManager(this)
-        supervivienteManager = SurvivorManager(this)
+        killerManager = KillerManager(this)
+        survivorManager = SurvivorManager(this)
         webHook = WebHook(this)
         musicManager = MusicManager(this)
         spectatorManager = SpectatorManager(this)
@@ -216,8 +216,8 @@ class Mistaken : JavaPlugin() {
 
         server.pluginManager.registerEvents(spectatorManager, this)
 
-        asesinoTienda = KillerShop()
-        supervivienteTienda = SurvivorTienda()
+        killerTienda = KillerShop()
+        survivorTienda = SurvivorShop()
         shopSelector = ShopSelector()
         scoreboardManager = ScoreboardManager(this)
         observerHUDManager = ObserverHUDManager(this)
@@ -240,7 +240,7 @@ class Mistaken : JavaPlugin() {
                 combatManager.resetHealth(player)
                 musicManager.syncPlayer(player)
             }
-            iniciarMotorDeParticulas()
+            iniciarMotorDeParticles()
         }
 
         sendLogo()
@@ -263,8 +263,8 @@ class Mistaken : JavaPlugin() {
         if (::scoreboardManager.isInitialized) runCatching { scoreboardManager.removeAll() }
         if (::nameTagManager.isInitialized) runCatching { nameTagManager.removeAll() }
         PumpkingLib.shutdown()
-        if (::asesinoManager.isInitialized) runCatching { asesinoManager.shutdown() }
-        if (::supervivienteManager.isInitialized) runCatching { supervivienteManager.shutdown() }
+        if (::killerManager.isInitialized) runCatching { killerManager.shutdown() }
+        if (::survivorManager.isInitialized) runCatching { survivorManager.shutdown() }
         if (::observerHUDManager.isInitialized) runCatching { observerHUDManager.shutdown() }
         if (::visualUpdateService.isInitialized) runCatching { visualUpdateService.stop() }
         if (::glowingAPI.isInitialized) runCatching { glowingAPI.disable() }
@@ -314,7 +314,7 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(KillerSkillListener(this), this)
         pm.registerEvents(KillerGeneralListener(this), this)
         pm.registerEvents(antiBlockListener, this)
-        pm.registerEvents(SurvivorHabilidadListener(this), this)
+        pm.registerEvents(SurvivorAbilityListener(this), this)
         pm.registerEvents(FlashlightListener(this), this)
         pm.registerEvents(GeneratorListener(this), this)
         pm.registerEvents(liric.mistaken.listeners.HackTerminalListener(this), this)
@@ -344,7 +344,7 @@ class Mistaken : JavaPlugin() {
         }
     }
 
-    private fun iniciarMotorDeParticulas() {
+    private fun iniciarMotorDeParticles() {
         // FIX #13: asyncScheduler runs on an IO thread where Bukkit API calls like
         // server.getPlayer(), player.isOnline, player.velocity, player.isSprinting
         // are NOT thread-safe and can cause IllegalStateException / data corruption.
@@ -356,15 +356,15 @@ class Mistaken : JavaPlugin() {
             sessionManager.activeSessions.values.forEach { session ->
                 if (session.currentState != GameState.INGAME) return@forEach
 
-                session.asesinosUUIDs.forEach { uuid ->
+                session.killersUUIDs.forEach { uuid ->
                     val p = server.getPlayer(uuid) ?: return@forEach
-                    val asesino = asesinoManager.getKillerOfPlayer(p) ?: return@forEach
+                    val killer = killerManager.getKillerOfPlayer(p) ?: return@forEach
 
                     if (p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
                         // Both trail calls are now safe on the main thread — no need for the
                         // inner globalRegionScheduler.run() dispatch that was required before.
-                        asesino.showTrail(p)
-                        asesino.showPhysicalTrail(p)
+                        killer.showTrail(p)
+                        killer.showPhysicalTrail(p)
                     }
                 }
             }
@@ -373,7 +373,7 @@ class Mistaken : JavaPlugin() {
         // ECS Character Tick (1 tick rate for smooth movement and animations)
         server.globalRegionScheduler.runAtFixedRate(this, { _ ->
             if (!isReady) return@runAtFixedRate
-            asesinoManager.getAvailableClasses().values.forEach { killer ->
+            killerManager.getAvailableClasses().values.forEach { killer ->
                 if (killer is liric.mistaken.roles.killers.BaseKiller) {
                     killer.tickAll()
                 }

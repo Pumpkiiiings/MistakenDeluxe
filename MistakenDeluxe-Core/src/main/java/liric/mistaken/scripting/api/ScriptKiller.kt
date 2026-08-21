@@ -20,6 +20,7 @@ interface ScriptKiller {
     fun dispatch_event(event: ScriptEvent)
 
     // Triggers y Chat
+    fun has_trigger(): Boolean
     fun on_trigger(player: ScriptPlayer, triggerId: String)
     fun on_intercept_chat(player: ScriptPlayer, message: String): String?
     fun on_kill(killer: ScriptPlayer, victim: ScriptPlayer)

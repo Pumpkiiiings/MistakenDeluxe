@@ -317,10 +317,9 @@ class CharlieInferno : CoreKiller(
 
     override fun showTrail(player: Player) {
         val loc = player.location
-        val packet = WrapperPlayServerParticle(Particle(ParticleTypes.FLAME), false, Vector3d(loc.x, loc.y + 1.0, loc.z), Vector3f(0.15f, 0.15f, 0.15f), 0.02f, 2)
         loc.world.players.forEach {
-            if (it != player && it.location.distanceSquared(loc) < 400.0) {
-                PacketEvents.getAPI().playerManager.sendPacket(it, packet)
+            if (it.location.distanceSquared(loc) < 2500) {
+                it.spawnParticle(org.bukkit.Particle.FLAME, loc.x, loc.y + 1.0, loc.z, 2, 0.15, 0.15, 0.15, 0.02)
             }
         }
     }

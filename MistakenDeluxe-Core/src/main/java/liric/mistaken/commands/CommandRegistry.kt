@@ -8,7 +8,7 @@ import liric.mistaken.commands.admin.ArenaCommand
 import liric.mistaken.commands.other.DataCommand
 import liric.mistaken.commands.admin.SetLobbyCommand
 import liric.mistaken.commands.other.UnlinkCommand
-import liric.mistaken.commands.debug.CinematicaCommand
+import liric.mistaken.commands.debug.CinematicCommand
 import liric.mistaken.commands.debug.HitboxCommand
 import liric.mistaken.commands.debug.MistakenDebugCommand
 import liric.mistaken.commands.game.EspectearCommand
@@ -42,7 +42,7 @@ class CommandRegistry(private val plugin: Mistaken) {
             registrar.register(SetLobbyCommand.get(plugin), "Establecer el spawn del lobby", emptyList())
             registrar.register(LinkCommand.get(plugin), "Vincular Discord", emptyList())
             registrar.register(MistakenDebugCommand.get(plugin), "Comando de pruebas", listOf("mdebug"))
-            registrar.register(CinematicaCommand.get(plugin), "Reproducir cinemáticas", listOf("cine"))
+            registrar.register(CinematicCommand.get(plugin), "Reproducir cinemáticas", listOf("cine"))
             registrar.register(HitboxCommand.get(plugin), "Alternar el visor de hitboxes 3D", listOf("hitboxes"))
 
             // --- GRUPO B: COMANDOS BÁSICOS (Clases BasicCommand) ---

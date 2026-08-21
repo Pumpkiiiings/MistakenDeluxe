@@ -78,6 +78,14 @@ class LuaKillerWrapper(
         callFunction("on_$eventName", CoerceJavaToLua.coerce(event))
     }
 
+    override fun has_trigger(): Boolean {
+        var func = env.globals.get("on_trigger")
+        if (!func.isfunction()) {
+            func = luaTable.get("on_trigger")
+        }
+        return func.isfunction()
+    }
+
     override fun on_trigger(player: ScriptPlayer, triggerId: String) {
         var func = env.globals.get("on_trigger")
         if (!func.isfunction()) {

@@ -190,6 +190,9 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
         // Limpiamos los datos del Killer
         killer.cleanup(player)
+        
+        // Stop all active Lua/ECS effects for this player
+        liric.mistaken.scripting.effects.EffectRegistry.stopAll(uuid)
 
         if (player != null && player.isOnline) {
             player.inventory.clear()
@@ -200,6 +203,9 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
             player.isGlowing = false
             player.activePotionEffects.forEach { effect -> player.removePotionEffect(effect.type) }
+            
+            // Remove invisibility if they had it
+            plugin.visibilityManager.removePlayer(player.uniqueId)
         }
     }
 

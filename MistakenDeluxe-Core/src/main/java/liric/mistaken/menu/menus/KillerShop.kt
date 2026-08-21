@@ -37,10 +37,10 @@ class KillerShop : MenuBase("killers_shop") {
         val uuid = player.uniqueId
         val selected = data.getSelectedKiller(uuid)
 
-        val labelSeleccionado = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-seleccionado")
-        val labelPoseido = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-poseido")
-        val labelComprar = PumpkingServiceManager.messages.getComponent(player, "tienda.estado-comprar")
-        val labelAbilityes = PumpkingServiceManager.messages.getComponent(player, "tienda.abilityes-titulo")
+        val labelSeleccionado = PumpkingServiceManager.messages.getComponent(player, "shop.estado-seleccionado")
+        val labelPoseido = PumpkingServiceManager.messages.getComponent(player, "shop.estado-poseido")
+        val labelComprar = PumpkingServiceManager.messages.getComponent(player, "shop.estado-comprar")
+        val labelAbilityes = PumpkingServiceManager.messages.getComponent(player, "shop.abilityes-titulo")
 
         val killersCatalogo = plugin.killerManager.catalogo.keys
 
@@ -70,7 +70,7 @@ class KillerShop : MenuBase("killers_shop") {
 
             val nombreVisual = PumpkingServiceManager.messages.getStrictString(player, "killers.$killerId.nombre", "killers_info")
             val descripcion = PumpkingServiceManager.messages.getStrictStringList(player, "killers.$killerId.descripcion", "killers_info")
-            val loreTienda = PumpkingServiceManager.messages.getStrictStringList(player, "killers.$killerId.lore_tienda", "killers_info")
+            val loreShop = PumpkingServiceManager.messages.getStrictStringList(player, "killers.$killerId.lore_shop", "killers_info")
 
             val precio = killerConfig.getInt("precio", 0)
             val matStr = killerConfig.getString("icono_material", "STONE")!!
@@ -81,7 +81,7 @@ class KillerShop : MenuBase("killers_shop") {
             descripcion.forEach { fullLore.add(parseSafe(it)) }
             fullLore.add(Component.empty())
 
-            loreTienda.forEach { fullLore.add(parseSafe(it)) }
+            loreShop.forEach { fullLore.add(parseSafe(it)) }
             fullLore.add(Component.empty())
 
             fullLore.add(labelAbilityes)
@@ -103,7 +103,7 @@ class KillerShop : MenuBase("killers_shop") {
                 esSeleccionado -> fullLore.add(labelSeleccionado)
                 tiene -> fullLore.add(labelPoseido)
                 else -> {
-                    fullLore.add(PumpkingServiceManager.messages.getComponent(player, "tienda.estado-precio", Placeholder.parsed("amount", precio.toString())))
+                    fullLore.add(PumpkingServiceManager.messages.getComponent(player, "shop.estado-precio", Placeholder.parsed("amount", precio.toString())))
                     fullLore.add(labelComprar)
                 }
             }
@@ -142,7 +142,7 @@ class KillerShop : MenuBase("killers_shop") {
         val actual = data.getSelectedKiller(uuid)
 
         if (killerId.equals(actual, ignoreCase = true)) {
-            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda.ya-seleccionado"))
+            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "shop.ya-seleccionado"))
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
             return
         }
@@ -150,7 +150,7 @@ class KillerShop : MenuBase("killers_shop") {
         if (tiene) {
             data.setSelectedKiller(uuid, killerId)
             player.persistentDataContainer.set(plugin.assassinKey, PersistentDataType.STRING, killerId)
-            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda.seleccionado", Placeholder.parsed("name", killerId)))
+            player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "shop.seleccionado", Placeholder.parsed("name", killerId)))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
             abrir(player)
             return
@@ -171,11 +171,11 @@ class KillerShop : MenuBase("killers_shop") {
 
             if (response.transactionSuccess()) {
                 data.buyKiller(uuid, killerId)
-                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda.comprado", Placeholder.parsed("name", killerId)))
+                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "shop.comprado", Placeholder.parsed("name", killerId)))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.5f)
                 abrir(player)
             } else {
-                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "tienda_errores.error_bancario", Placeholder.parsed("error", response.errorMessage ?: "Unknown error")))
+                player.sendMessage(PumpkingServiceManager.messages.getComponent(player, "shop_errores.error_bancario", Placeholder.parsed("error", response.errorMessage ?: "Unknown error")))
                 player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
             }
 
