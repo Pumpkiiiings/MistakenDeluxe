@@ -17,7 +17,7 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent
  */
 class FlashlightListener(private val plugin: Mistaken) : Listener {
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     fun onSwapHands(event: PlayerSwapHandItemsEvent) {
         val player = event.player
         if (!plugin.flashlightManager.canUse(player)) return

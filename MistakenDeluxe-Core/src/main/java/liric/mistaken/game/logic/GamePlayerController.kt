@@ -43,11 +43,7 @@ class GamePlayerController(private val game: GameSession) {
             !game.forcedSurvivorUUIDs.contains(it.uniqueId)
         }.toMutableList()
 
-        val killersToSelect = when (game.currentMode) {
-            MistakenMode.DOUBLE_KILLER -> if (sessionPlayers.size >= 4) 2 else 1
-            MistakenMode.ONE_BOUNCE -> (sessionPlayers.size - 1).coerceAtLeast(1)
-            else -> 1
-        }
+        val killersToSelect = game.activeModeHandler.calculateKillersCount(sessionPlayers.size)
         
         var selectedCount = 0
         
@@ -146,11 +142,7 @@ class GamePlayerController(private val game: GameSession) {
                                     p.removePotionEffect(PotionEffectType.SLOWNESS)
                                     p.removePotionEffect(PotionEffectType.JUMP_BOOST)
                                     p.removePotionEffect(PotionEffectType.MINING_FATIGUE)
-                                    p.playSound(p.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 1f)
-                                    p.showTitle(Title.title(
-                                        MessageService.getComponent(p, "game.killer-released-title"),
-                                        MessageService.getComponent(p, "game.killer-released-subtitle")
-                                    ))
+                                    game.activeModeHandler.onPlayerSpawn(p, true)
                                 }
                             }, null, 1200L)
                         }
@@ -180,22 +172,7 @@ class GamePlayerController(private val game: GameSession) {
                                     game.plugin.survivorManager.registrarSurvivor(p, clase as liric.mistaken.roles.survivors.Survivor)
                                 }
 
-                                if (game.currentMode == MistakenMode.ONE_BOUNCE) {
-                                    p.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, 1, false, false, false))
-                                    p.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = 100.0
-                                    p.health = 100.0
-                                } else if (game.currentMode == MistakenMode.HIDE_AND_SEEK) {
-                                    p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<green>¡Tienes 1 minuto para esconderte antes de que el asesino sea liberado!"))
-                                    p.scheduler.runDelayed(game.plugin, Consumer { _ ->
-                                        if (p.isOnline && game.currentState == GameState.INGAME) {
-                                            p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 0.5f, 0.8f)
-                                            p.showTitle(Title.title(
-                                                MessageService.getComponent(p, "game.killer-released-title"),
-                                                MessageService.getComponent(p, "game.killer-released-subtitle")
-                                            ))
-                                        }
-                                    }, null, 1200L)
-                                }
+                                game.activeModeHandler.onPlayerSpawn(p, false)
                             }
                         }
                     },

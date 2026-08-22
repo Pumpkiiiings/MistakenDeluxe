@@ -30,6 +30,12 @@ class GameSession(
     
     override var currentState = GameState.LOBBY
     var currentMode = MistakenMode.CLASSIC
+        set(value) {
+            field = value
+            activeModeHandler = liric.mistaken.game.modes.ModeHandlerFactory.create(plugin, this, value)
+        }
+    var activeModeHandler: liric.mistaken.game.modes.ModeHandler = liric.mistaken.game.modes.ModeHandlerFactory.create(plugin, this, currentMode)
+    
     var timer = 0
     var currentMapName = mapName
     var modeForced = false

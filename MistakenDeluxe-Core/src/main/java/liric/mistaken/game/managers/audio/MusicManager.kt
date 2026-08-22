@@ -98,6 +98,13 @@ class MusicManager(private val plugin: Mistaken) {
                     val elapsed = (System.currentTimeMillis() - trackStartTime) / 1000
                     if (elapsed >= track.duration) {
                         
+                        // Stop music for everyone before changing track to avoid overlap for late-joiners
+                        plugin.server.onlinePlayers.forEach { p ->
+                            if (playersPlaying.contains(p.uniqueId)) {
+                                stopMusicForPlayer(p)
+                            }
+                        }
+                        
                         currentLobbyTrack = playlist.random()
                         trackStartTime = System.currentTimeMillis()
                         
@@ -151,14 +158,13 @@ class MusicManager(private val plugin: Mistaken) {
     fun skipTrack() {
         val oldTrack = currentLobbyTrack
         currentLobbyTrack = null
-        playersPlaying.clear()
-
+        
         plugin.server.onlinePlayers.forEach { p ->
             if (playersPlaying.contains(p.uniqueId)) {
                 stopMusicForPlayer(p)
-                
             }
         }
+        playersPlaying.clear()
     }
 
     fun shutdown() {

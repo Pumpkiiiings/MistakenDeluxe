@@ -25,13 +25,12 @@ function on_trigger(player, trigger_id)
         apply_effect(player, "SPEED", 100, 2)
         particle_burst(player, "CLOUD", 5, 0.2, 0.1, 0.2, 0.05)
         
-        sequence(player, player)
-            :delay(100)
-            :on_execute(function(p, loc)
-                if p:is_online() then
-                    apply_effect(p, "SLOWNESS", 60, 0)
-                    p:play_sound("ENTITY_PLAYER_BREATH", 1.0, 0.8)
-                    send_action_bar_translated(p, "survivors.raincoatkid.habilidades.jadeo", "survivors_info")
+        sequence(player, location(player))
+            :delay(100, function()
+                if player:is_online() then
+                    apply_effect(player, "SLOWNESS", 60, 0)
+                    player:play_sound("ENTITY_PLAYER_BREATH", 1.0, 0.8)
+                    send_action_bar_translated(player, "survivors.raincoatkid.habilidades.jadeo", "survivors_info")
                 end
             end)
             :play()
@@ -56,7 +55,7 @@ function on_melee_attack(attacker, victim, slot)
         victim:play_sound("ENTITY_ZOMBIE_ATTACK_WOODEN_DOOR", 1.0, 0.5)
         particle_burst(victim, "CRIT", 10, 0.5, 0.5, 0.5, 0.1)
         
-        send_translated(attacker, "<green><bold>BAM!</bold> <gray>Killer aturdido.")
+        attacker:send_message("<green><bold>BAM!</bold> <gray>Killer aturdido.")
         attacker:play_sound("ENTITY_FIREWORK_ROCKET_BLAST", 0.5, 1.2)
     end
 end

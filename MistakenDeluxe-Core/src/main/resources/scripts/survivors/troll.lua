@@ -51,7 +51,7 @@ function on_skill_2(player)
             launch_entity(victim, 0.0, 0.6, 0.0)
             rotate_entity(victim, yaw(victim) + 180.0, -45.0)
             
-            send_translated(victim, "survivors.troll.habilidades.resbalaste_platano")
+            send_translated(victim, "survivors.troll.habilidades.resbalaste_platano", "survivors_info")
             particle_burst(victim):type("DUST"):color(1.0, 1.0, 0.0):count(10):spread(0.2):show()
         end)
         :register()
@@ -72,7 +72,7 @@ function on_skill_3(player)
             apply_effect(victim, "BLINDNESS", 0, 80)
             apply_effect(victim, "NAUSEA", 1, 140)
             
-            send_translated(victim, "survivors.troll.habilidades.boom_trampa")
+            send_translated(victim, "survivors.troll.habilidades.boom_trampa", "survivors_info")
         end)
         :register()
 end

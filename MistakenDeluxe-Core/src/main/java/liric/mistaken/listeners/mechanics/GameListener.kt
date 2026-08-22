@@ -51,7 +51,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val session = plugin.sessionManager.getSession(player) ?: return 
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
-        if (session.currentMode != MistakenMode.FREEZE_TAG) return
+        if (session.activeModeHandler !is liric.mistaken.game.modes.handlers.FreezeTagModeHandler) return
 
         val victim = event.rightClicked as? Player ?: return
 
@@ -120,7 +120,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
         
         
-        if (session.currentMode == MistakenMode.INFECTION) {
+        if (session.activeModeHandler is liric.mistaken.game.modes.handlers.InfectionModeHandler) {
             infectionDeathLocs[victim.uniqueId] = deathLoc
         }
 
@@ -148,7 +148,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val session = plugin.sessionManager.getSession(player) ?: return
 
-        if (session.currentState == GameState.INGAME && session.currentMode == MistakenMode.INFECTION) {
+        if (session.currentState == GameState.INGAME && session.activeModeHandler is liric.mistaken.game.modes.handlers.InfectionModeHandler) {
             val loc = infectionDeathLocs.remove(player.uniqueId)
             if (loc != null) {
                 event.respawnLocation = loc

@@ -230,6 +230,8 @@ class GameStateController(private val game: GameSession) {
 
         this.lastKillerWon = killerWon
         game.lastKillerWon = killerWon
+        
+        game.activeModeHandler.onGameEnd(killerWon)
 
         game.timer = 12
 

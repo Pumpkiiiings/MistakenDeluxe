@@ -104,6 +104,16 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
         plugin.scoreboardManager.removePlayer(event.player)
     }
 
+    @EventHandler(priority = EventPriority.NORMAL)
+    fun onPlayerTeleport(event: org.bukkit.event.player.PlayerTeleportEvent) {
+        plugin.nameTagManager.resetViewers(event.player)
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    fun onPlayerChangedWorld(event: org.bukkit.event.player.PlayerChangedWorldEvent) {
+        plugin.nameTagManager.resetViewers(event.player)
+    }
+
     companion object {
         fun resetPlayerStatus(player: Player) {
             player.gameMode = GameMode.SURVIVAL

@@ -58,6 +58,14 @@ class NameTagManager(private val plugin: Mistaken) {
         }
     }
 
+    fun resetViewers(player: Player) {
+        val tag = nametags[player.uniqueId]
+        if (tag != null) {
+            tag.confirmedViewers.clear()
+        }
+        nametags.values.forEach { it.confirmedViewers.remove(player.uniqueId) }
+    }
+
     fun removeAll() {
         nametags.keys.toList().forEach { uuid ->
             val player = Bukkit.getPlayer(uuid)

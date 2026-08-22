@@ -62,7 +62,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             for (session in sessions) {
                 if (session.currentState != GameState.INGAME) continue
-                if (session.currentMode == MistakenMode.HIDE_AND_SEEK) continue
+                // No check needed here for HIDE_AND_SEEK as stamina is handled by activeModeHandler onStaminaTick
 
                 val killersOnline = session.killersUUIDs.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
                 if (killersOnline.isEmpty()) continue
@@ -104,8 +104,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
                                 if (targetLoc.world != killerLoc.world) {
                                     if (session.isKiller(target.uniqueId)) {
-                                        val mode = session.currentMode
-                                        if (mode != MistakenMode.DOUBLE_KILLER && mode != MistakenMode.ONE_BOUNCE) {
+                                        val killersCount = session.activeModeHandler.calculateKillersCount(session.getPlayers().size)
+                                        if (killersCount < 2) {
                                             try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
                                         }
                                     } else {
@@ -115,8 +115,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                                     val distSq = killerLoc.distanceSquared(targetLoc)
                                     
                                     if (session.isKiller(target.uniqueId)) {
-                                        val mode = session.currentMode
-                                        if (mode == MistakenMode.DOUBLE_KILLER || mode == MistakenMode.ONE_BOUNCE) {
+                                        val killersCount = session.activeModeHandler.calculateKillersCount(session.getPlayers().size)
+                                        if (killersCount >= 2) {
                                             if (session.currentState == GameState.INGAME) {
                                                 try { plugin.glowingAPI.setGlowing(target, killer, ChatColor.YELLOW) } catch (_: Exception) {}
                                             } else {
@@ -208,11 +208,11 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         if (isKiller) {
             val killerClass = plugin.killerManager.getKillerOfPlayer(player)
             val customHealth = killerClass?.let { plugin.configManager.getKillerConfig(it.id).getDouble("stats.health", 0.0) } ?: 0.0
-            maxHP = if (customHealth > 0.0) customHealth else session?.settings?.killerHealth ?: 160.0
+            maxHP = session?.settings?.killerHealth ?: if (customHealth > 0.0) customHealth else 160.0
         } else {
             val survivorClass = plugin.survivorManager.getSurvivorClass(player)
             val customHealth = survivorClass?.let { plugin.configManager.getSurvivorConfig(it.id).getDouble("stats.health", 0.0) } ?: 0.0
-            maxHP = if (customHealth > 0.0) customHealth else session?.settings?.survivorHealth ?: 20.0
+            maxHP = session?.settings?.survivorHealth ?: if (customHealth > 0.0) customHealth else 20.0
         }
 
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
@@ -243,17 +243,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         val isVictimKiller = session.isKiller(victim.uniqueId)
         if (isFrozen(attacker)) { event.isCancelled = true; return }
         
-        if (isFrozen(victim)) {
-            if (!isAttackerKiller && !isVictimKiller && session.currentMode == MistakenMode.FREEZE_TAG) {
-                event.isCancelled = true
-                unfreeze(victim, attacker)
-                return
-            }
-            event.isCancelled = true
-            return
-        }
+        session.activeModeHandler.onPlayerHit(attacker, victim, event)
+        if (event.isCancelled) return
 
-        val isAssassinPvpMode = session.currentMode == MistakenMode.DOUBLE_KILLER
         if (isAttackerKiller == isVictimKiller) {
             event.isCancelled = true
             return
@@ -274,15 +266,12 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             killerCooldowns[attacker.uniqueId] = now
             event.damage = 0.1
 
-            if (session.currentMode == MistakenMode.FREEZE_TAG && !isFrozen(victim)) {
-                event.isCancelled = true
-                freezePlayer(victim, session)
-                return
-            }
+
 
             val killerClass = plugin.killerManager.getKillerOfPlayer(attacker)
             val customDamage = killerClass?.let { plugin.configManager.getKillerConfig(it.id).getDouble("stats.damage", 0.0) } ?: 0.0
             
+            val isAssassinPvpMode = session.activeModeHandler is liric.mistaken.game.modes.handlers.DoubleKillerModeHandler
             var dmg = if (isAssassinPvpMode) 4.0 else 3.0
             if (customDamage > 0.0) {
                 dmg = customDamage
@@ -322,7 +311,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             if (victim.gameMode == GameMode.SPECTATOR || plugin.spectatorManager.isSpectator(victim) || victim.gameMode == GameMode.ADVENTURE) return@runOnMain
 
             val isSurvivor = !currentSession.isKiller(victim.uniqueId)
-            if (isSurvivor && currentSession.currentMode == MistakenMode.FREEZE_TAG) {
+            if (isSurvivor && currentSession.activeModeHandler is liric.mistaken.game.modes.handlers.FreezeTagModeHandler) {
                 freezePlayer(victim, currentSession)
                 return@runOnMain
             }

@@ -39,7 +39,7 @@ function on_skill_1(player)
     for i, target in ipairs(targets) do
         apply_effect(target, "DARKNESS", 0, 200)
         apply_effect(target, "BLINDNESS", 0, 200)
-        send_translated(target, "roles.killer.abilities.null_asesino.sistema_corrupto")
+        send_translated(target, "infection-hit", "messages")
     end
 end
 

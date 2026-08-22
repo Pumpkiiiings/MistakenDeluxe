@@ -764,11 +764,17 @@ object LuaEffectBindings {
 
         
         
-        globals.set("send_translated", object : TwoArgFunction() {
-            override fun call(playerArg: LuaValue, keyArg: LuaValue): LuaValue {
+        globals.set("send_translated", object : ThreeArgFunction() {
+            override fun call(playerArg: LuaValue, keyArg: LuaValue, fileArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
                 val key = keyArg.checkjstring()
-                GameplayFunctions.sendTranslated(player, key)
+                val file = fileArg.optjstring("messages")
+                
+                if (file == "messages") {
+                    GameplayFunctions.sendTranslated(player, key)
+                } else {
+                    player.sendMessage(liric.mistaken.config.engine.core.MessageService.getComponentFromFile(player, file, key))
+                }
                 return LuaValue.NIL
             }
         })
