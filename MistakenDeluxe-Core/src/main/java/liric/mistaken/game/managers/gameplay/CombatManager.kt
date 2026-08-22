@@ -271,8 +271,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             val killerClass = plugin.killerManager.getKillerOfPlayer(attacker)
             val customDamage = killerClass?.let { plugin.configManager.getKillerConfig(it.id).getDouble("stats.damage", 0.0) } ?: 0.0
             
-            val isAssassinPvpMode = session.activeModeHandler is liric.mistaken.game.modes.handlers.DoubleKillerModeHandler
-            var dmg = if (isAssassinPvpMode) 4.0 else 3.0
+            var dmg = session.activeModeHandler.getKillerBaseDamage()
             if (customDamage > 0.0) {
                 dmg = customDamage
             }
@@ -311,8 +310,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             if (victim.gameMode == GameMode.SPECTATOR || plugin.spectatorManager.isSpectator(victim) || victim.gameMode == GameMode.ADVENTURE) return@runOnMain
 
             val isSurvivor = !currentSession.isKiller(victim.uniqueId)
-            if (isSurvivor && currentSession.activeModeHandler is liric.mistaken.game.modes.handlers.FreezeTagModeHandler) {
-                freezePlayer(victim, currentSession)
+            if (isSurvivor && currentSession.activeModeHandler.onLethalHit(victim)) {
                 return@runOnMain
             }
 
@@ -405,53 +403,11 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         }
     }
 
-    fun freezePlayer(victim: Player, session: GameSession) {
-        if (!frozenPlayers.add(victim.uniqueId)) return
-        runOnMain {
-            victim.inventory.helmet = ItemStack(Material.ICE)
-            victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.0
-            victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.0
-            victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, false))
-            victim.world.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
-
-            startFreezeTimer(victim, session)
-
-            session.broadcastLocalized("game.player-frozen", Placeholder.parsed("player", victim.name))
-            session.playerController.checkWinCondition()
-        }
-    }
-
-    private fun startFreezeTimer(victim: Player, session: GameSession) {
-        var timeLeft = 60
-        victim.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!isFrozen(victim) || !victim.isOnline) {
-                task.cancel()
-                return@Consumer
-            }
-            
-            
-            victim.world.spawnParticle(Particle.SOUL_FIRE_FLAME, victim.location.add(0.0, 1.0, 0.0), 10, 0.3, 0.5, 0.3, 0.02)
-            
-            val timeFormatted = String.Companion.format(Locale.US, "%d:%02d", timeLeft / 60, timeLeft % 60)
-            victim.showTitle(
-                Title.title(
-                    MessageService.getComponent(victim, "game.freeze-title"),
-                    MessageService.getComponent(
-                        victim,
-                        "game.freeze-subtitle",
-                        Placeholder.parsed("time", timeFormatted)
-                    )
-                )
-            )
-            timeLeft--
-            if (timeLeft <= 0) {
-                task.cancel()
-                runOnMain {
-                    session.playerController.handlePlayerDeath(victim)
-                }
-            }
-        }, null, 0L, 20L)
-    }
+    /**
+     * Agrega un jugador al set de congelados. Retorna true si fue agregado (no estaba ya).
+     * La lógica visual/timer de congelamiento vive en FreezeTagModeHandler.
+     */
+    fun addFrozen(uuid: UUID): Boolean = frozenPlayers.add(uuid)
 
     fun removePlayerData(uuid: UUID) {
         val p = Bukkit.getPlayer(uuid)

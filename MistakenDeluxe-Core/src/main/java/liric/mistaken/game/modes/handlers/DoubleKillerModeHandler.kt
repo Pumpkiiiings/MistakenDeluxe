@@ -8,5 +8,7 @@ class DoubleKillerModeHandler(plugin: Mistaken, session: GameSession) : ModeHand
     
     override fun calculateKillersCount(onlineCount: Int): Int = if (onlineCount >= 4) 2 else 1
     
+    override fun getKillerBaseDamage(): Double = 4.0
+    
     // Fuego amigo entre killers permitido (Double Killer original)
 }

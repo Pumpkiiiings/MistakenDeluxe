@@ -110,6 +110,8 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = maxHealth
                 player.health = maxHealth
 
+                player.inventory.setItemInOffHand(org.bukkit.inventory.ItemStack(org.bukkit.Material.STRUCTURE_VOID))
+
                 player.updateInventory()
 
                 plugin.componentLogger.info(ColorTranslator.translate(

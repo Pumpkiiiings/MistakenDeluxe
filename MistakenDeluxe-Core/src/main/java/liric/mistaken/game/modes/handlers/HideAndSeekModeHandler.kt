@@ -11,6 +11,8 @@ import org.bukkit.entity.Player
 
 class HideAndSeekModeHandler(plugin: Mistaken, session: GameSession) : ModeHandler(plugin, session) {
     
+    override val enableHeartbeat = false
+
     override fun onPlayerSpawn(player: Player, isKiller: Boolean) {
         if (isKiller) {
             player.addPotionEffect(org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS, 1200, 1, false, false, false))

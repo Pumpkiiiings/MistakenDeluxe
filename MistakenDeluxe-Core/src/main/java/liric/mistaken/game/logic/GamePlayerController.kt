@@ -2,7 +2,6 @@ package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.game.enums.MistakenMode
 import liric.mistaken.utils.misc.BungeeUtils
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.title.Title
@@ -127,25 +126,7 @@ class GamePlayerController(private val game: GameSession) {
                             p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Slasher."))
                         }
                         game.plugin.killerManager.equipKiller(p, claseID)
-
-                        if (game.currentMode == MistakenMode.HIDE_AND_SEEK) {
-                            p.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 1200, 0, false, false, false))
-                            p.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 1200, 255, false, false, false))
-                            p.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, 1200, 250, false, false, false))
-                            p.addPotionEffect(PotionEffect(PotionEffectType.MINING_FATIGUE, 1200, 255, false, false, false))
-                            
-                            p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<red>¡Espera 1 minuto mientras los supervivientes se esconden!"))
-                            
-                            p.scheduler.runDelayed(game.plugin, Consumer { _ ->
-                                if (p.isOnline && game.currentState == GameState.INGAME) {
-                                    p.removePotionEffect(PotionEffectType.BLINDNESS)
-                                    p.removePotionEffect(PotionEffectType.SLOWNESS)
-                                    p.removePotionEffect(PotionEffectType.JUMP_BOOST)
-                                    p.removePotionEffect(PotionEffectType.MINING_FATIGUE)
-                                    game.activeModeHandler.onPlayerSpawn(p, true)
-                                }
-                            }, null, 1200L)
-                        }
+                        game.activeModeHandler.onPlayerSpawn(p, true)
                     }
                 }
             } else {
@@ -234,7 +215,7 @@ class GamePlayerController(private val game: GameSession) {
                 game.uiController.playAmbientForPlayer(p, killersOnline)
             }
 
-            if (ticks % 10 == 0 && killersOnline.isNotEmpty() && game.currentMode != MistakenMode.HIDE_AND_SEEK) {
+            if (ticks % 10 == 0 && killersOnline.isNotEmpty() && game.activeModeHandler.enableHeartbeat) {
                 val closestKiller = killersOnline[0]
                 game.uiController.checkHeartbeat(p, closestKiller)
 
@@ -243,7 +224,7 @@ class GamePlayerController(private val game: GameSession) {
                 }
             }
 
-            if (ticks % 2 == 0 && game.currentMode != MistakenMode.FREEZE_TAG && game.combatManager.getHealth(p) == 1 && p.vehicle == null) {
+            if (ticks % 2 == 0 && game.activeModeHandler.enableCriticalSwimming && game.combatManager.getHealth(p) == 1 && p.vehicle == null) {
                 if (!p.isSwimming) p.isSwimming = true
                 if (ticks % 40 == 0) {
                     p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 45, 0, false, false, false))
@@ -305,7 +286,7 @@ class GamePlayerController(private val game: GameSession) {
             !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !game.plugin.spectatorManager.isSpectator(it)
         }
 
-        if (survivorsVivos.size == 1 && game.currentMode != MistakenMode.FREEZE_TAG) {
+        if (survivorsVivos.size == 1 && game.activeModeHandler.enableLastManStanding) {
             lmsActivado = true
             val ultimoHeroe = survivorsVivos[0]
             triggerLMS(ultimoHeroe)

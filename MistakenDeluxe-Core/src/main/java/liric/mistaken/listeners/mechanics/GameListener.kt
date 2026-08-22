@@ -50,7 +50,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val session = plugin.sessionManager.getSession(player) ?: return 
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
-        if (session.activeModeHandler !is liric.mistaken.game.modes.handlers.FreezeTagModeHandler) return
+        if (!session.activeModeHandler.enableRescueInteraction) return
 
         val victim = event.rightClicked as? Player ?: return
 
