@@ -202,6 +202,53 @@ object LuaEffectBindings {
             }
         })
         
+        globals.set("ray_trace_players", object : TwoArgFunction() {
+            override fun call(playerArg: LuaValue, distanceArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                val dist = distanceArg.optdouble(4.0)
+                val ray = player.world.rayTraceEntities(player.eyeLocation, player.location.direction, dist) { it is org.bukkit.entity.Player && it != player }
+                if (ray != null && ray.hitEntity is org.bukkit.entity.Player) {
+                    val target = ray.hitEntity as org.bukkit.entity.Player
+                    return org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce(liric.mistaken.scripting.adapter.BukkitPlayerAdapter(target))
+                }
+                return LuaValue.NIL
+            }
+        })
+
+        globals.set("get_nearby_players", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val loc = unwrapHasLocation(args.arg(1)) ?: return LuaValue.NIL
+                val rx = args.arg(2).optdouble(5.0)
+                val ry = args.arg(3).optdouble(5.0)
+                val rz = args.arg(4).optdouble(5.0)
+                
+                val targets = loc.world?.getNearbyEntities(loc, rx, ry, rz)?.filterIsInstance<org.bukkit.entity.Player>() ?: emptyList()
+                val table = LuaTable()
+                targets.forEachIndexed { i, target ->
+                    table.set(i + 1, org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce(liric.mistaken.scripting.adapter.BukkitPlayerAdapter(target)))
+                }
+                return table
+            }
+        })
+
+        globals.set("push_from_location", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val entity = unwrapEntity(args.arg(1)) ?: return LuaValue.NIL
+                val sourceLoc = unwrapHasLocation(args.arg(2)) ?: return LuaValue.NIL
+                val mult = args.arg(3).optdouble(1.0)
+                val yOff = args.arg(4).optdouble(0.0)
+
+                val p = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+                entity.scheduler.run(p, java.util.function.Consumer<io.papermc.paper.threadedregions.scheduler.ScheduledTask> {
+                    var dir = entity.location.toVector().subtract(sourceLoc.toVector())
+                    if (dir.lengthSquared() == 0.0) dir = org.bukkit.util.Vector(0, 1, 0)
+                    dir = dir.normalize().multiply(mult).setY(yOff)
+                    entity.velocity = dir
+                }, null)
+                return LuaValue.NIL
+            }
+        })
+        
         globals.set("draw_star", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
@@ -1496,6 +1543,7 @@ object LuaEffectBindings {
         var count = 3
         var offsetX = 0.5; var offsetY = 0.5; var offsetZ = 0.5
         var speed = 0.0
+        var materialName: String? = null
 
         t.set("type", TwoArg(t) { _, v -> particleName = v.checkjstring() })
         t.set("count", TwoArg(t) { _, v -> count = v.checkint().coerceIn(1, 100) })
@@ -1508,10 +1556,11 @@ object LuaEffectBindings {
             }
         })
         t.set("spread", TwoArg(t) { _, v -> speed = v.checkdouble().coerceIn(0.0, 5.0) })
+        t.set("material", TwoArg(t) { _, v -> materialName = v.checkjstring() })
 
         t.set("show", object : OneArgFunction() {
             override fun call(self: LuaValue): LuaValue {
-                GameplayFunctions.spawnParticleBurst(location, particleName, count, offsetX, offsetY, offsetZ, speed)
+                GameplayFunctions.spawnParticleBurst(location, particleName, count, offsetX, offsetY, offsetZ, speed, materialName)
                 return LuaValue.NIL
             }
         })

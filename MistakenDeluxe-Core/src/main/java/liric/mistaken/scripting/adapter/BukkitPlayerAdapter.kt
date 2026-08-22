@@ -62,6 +62,22 @@ class BukkitPlayerAdapter(
     override fun reset_scale() {
         player.getAttribute(org.bukkit.attribute.Attribute.SCALE)?.baseValue = 1.0
     }
+    
+    override fun max_health(): Double {
+        return player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.value ?: 20.0
+    }
+    
+    override fun is_killer(): Boolean {
+        val plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+        val session = plugin.sessionManager.getSession(player) ?: return false
+        return session.isKiller(player.uniqueId)
+    }
+    
+    override fun is_survivor(): Boolean {
+        val plugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+        val session = plugin.sessionManager.getSession(player) ?: return false
+        return !session.isKiller(player.uniqueId) && session.currentState == liric.mistaken.game.enums.GameState.INGAME
+    }
 
     internal fun getPlayer(): Player = player
 }

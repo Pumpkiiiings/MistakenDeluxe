@@ -159,10 +159,22 @@ object GameplayFunctions {
         offsetX: Double,
         offsetY: Double,
         offsetZ: Double,
-        speed: Double
+        speed: Double,
+        materialName: String? = null
     ) {
         try {
             val particle = org.bukkit.Particle.valueOf(particleName.uppercase())
+            if (materialName != null && (particle == org.bukkit.Particle.BLOCK || particle == org.bukkit.Particle.ITEM || particle.name == "FALLING_DUST" || particle.name == "BLOCK_DUST")) {
+                val material = org.bukkit.Material.matchMaterial(materialName.uppercase())
+                if (material != null) {
+                    if (particle == org.bukkit.Particle.ITEM) {
+                        location.world?.spawnParticle(particle, location, count, offsetX, offsetY, offsetZ, speed, org.bukkit.inventory.ItemStack(material))
+                    } else {
+                        location.world?.spawnParticle(particle, location, count, offsetX, offsetY, offsetZ, speed, material.createBlockData())
+                    }
+                    return
+                }
+            }
             location.world?.spawnParticle(particle, location, count, offsetX, offsetY, offsetZ, speed)
         } catch (_: Exception) {}
     }

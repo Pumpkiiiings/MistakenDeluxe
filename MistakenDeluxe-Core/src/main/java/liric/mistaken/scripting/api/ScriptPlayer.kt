@@ -20,5 +20,8 @@ interface ScriptPlayer : ScriptEntity {
     fun set_scale(scale: Double)
     fun reset_scale()
     
+    fun max_health(): Double
+    fun is_killer(): Boolean
+    fun is_survivor(): Boolean
 }
 

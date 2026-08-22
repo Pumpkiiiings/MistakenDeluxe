@@ -20,10 +20,8 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
         
         listOf(
             DeliveryMan(),
-            Minty(),
             Jesse(),
-            Villager(),
-            Notch()
+            Villager()
         ).forEach { registerClass(it) }
 
         loadScripts()
@@ -34,10 +32,8 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
         availableClasses.clear()
         listOf(
             DeliveryMan(),
-            Minty(),
             Jesse(),
-            Villager(),
-            Notch()
+            Villager()
         ).forEach { registerClass(it) }
         loadScripts()
     }
