@@ -23,10 +23,10 @@ import liric.mistaken.config.engine.core.MessageService
 
 class Villager : Survivor(
     "aldeano",
-    MessageService.getStrictString(null, "supervivientes.aldeano.nombre", "survivors_info")
+    MessageService.getStrictString(null, "survivors.aldeano.nombre", "survivors_info")
 ) {
 
-    private val pathBase = "supervivientes.aldeano"
+    private val pathBase = "survivors.aldeano"
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
     private val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
 
@@ -164,7 +164,7 @@ class Villager : Survivor(
 
                 victim.playSound(victim.location, Sound.ENTITY_IRON_GOLEM_HURT, 1f, 1f)
                 victim.sendMessage(ColorTranslator.translate(
-                    liric.mistaken.config.engine.core.MessageService.getStrictString(victim, "supervivientes.aldeano.habilidades.golem_rechazado", "survivors_info")
+                    liric.mistaken.config.engine.core.MessageService.getStrictString(victim, "survivors.aldeano.habilidades.golem_rechazado", "survivors_info")
                 ))
             }
         }

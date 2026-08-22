@@ -35,10 +35,10 @@ import liric.mistaken.config.engine.core.MessageService
 
 class Mariachi : CoreKiller(
     "mariachi",
-    MessageService.getStrictString(null, "asesinos.mariachi.nombre", "killers_info")
+    MessageService.getStrictString(null, "killers.mariachi.nombre", "killers_info")
 ) {
 
-    private val pathBase = "asesinos.mariachi"
+    private val pathBase = "killers.mariachi"
     override val defaultMusic = "mistaken:jarabetapatio"
     private val sonidoMúsicaId = defaultMusic!!
 
@@ -91,7 +91,7 @@ class Mariachi : CoreKiller(
 
         fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
             val item = itemKitCache[key]?.clone() ?: return
-            val namePath = if (key == "weapon") "asesinos.mariachi.skill_names.weapon" else "asesinos.mariachi.skill_names.$key"
+            val namePath = if (key == "weapon") "killers.mariachi.skill_names.weapon" else "killers.mariachi.skill_names.$key"
 
             langInfo.getString(namePath)?.let { item.editMeta { m -> m.displayName(ColorTranslator.translate(it)) } }
 
@@ -120,7 +120,7 @@ class Mariachi : CoreKiller(
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 1))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 2))
                 victim.sendMessage(ColorTranslator.translate(
-                    liric.mistaken.config.engine.core.MessageService.getStrictString(victim, "asesinos.mariachi.habilidades.grito_corrompido", "killers_info")
+                    liric.mistaken.config.engine.core.MessageService.getStrictString(victim, "killers.mariachi.habilidades.grito_corrompido", "killers_info")
                 ))
                 victim.playSound(victim.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 1.8f)
             }
@@ -130,7 +130,7 @@ class Mariachi : CoreKiller(
     private fun abilityJarabe(player: Player) {
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 120, 3))
         player.sendMessage(ColorTranslator.translate(
-            liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.mariachi.habilidades.a_zapatear", "killers_info")
+            liric.mistaken.config.engine.core.MessageService.getStrictString(player, "killers.mariachi.habilidades.a_zapatear", "killers_info")
         ))
     }
 
@@ -149,7 +149,7 @@ class Mariachi : CoreKiller(
         player.addPotionEffect(PotionEffect(PotionEffectType.RESISTANCE, 120, 4))
         player.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 160, 0))
         player.sendMessage(ColorTranslator.translate(
-            liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.mariachi.habilidades.salud_inmune", "killers_info")
+            liric.mistaken.config.engine.core.MessageService.getStrictString(player, "killers.mariachi.habilidades.salud_inmune", "killers_info")
         ))
     }
 

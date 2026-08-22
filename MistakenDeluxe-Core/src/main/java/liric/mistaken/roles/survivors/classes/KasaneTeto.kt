@@ -41,10 +41,10 @@ import liric.mistaken.config.engine.core.MessageService
  */
 class KasaneTeto : Survivor(
     "teto",
-    MessageService.getStrictString(null, "supervivientes.teto.nombre", "survivors_info")
+    MessageService.getStrictString(null, "survivors.teto.nombre", "survivors_info")
 ) {
 
-    private val pathBase = "supervivientes.teto"
+    private val pathBase = "survivors.teto"
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
 
     
@@ -154,7 +154,7 @@ class KasaneTeto : Survivor(
             hitEntity.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 60, 3))
 
             player.sendMessage(ColorTranslator.translate(
-                liric.mistaken.config.engine.core.MessageService.getStrictString(player, "supervivientes.teto.habilidades.impacto_directo", "survivors_info")
+                liric.mistaken.config.engine.core.MessageService.getStrictString(player, "survivors.teto.habilidades.impacto_directo", "survivors_info")
             ))
         }
     }

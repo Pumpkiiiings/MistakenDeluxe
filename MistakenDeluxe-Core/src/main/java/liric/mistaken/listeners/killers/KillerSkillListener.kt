@@ -112,7 +112,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         val killer = plugin.killerManager.getKillerOfPlayer(player) ?: return
 
         val config = plugin.configManager.getKillerConfig(killer.id)
-        val pathBase = "asesinos.${killer.id}"
+        val pathBase = "killers.${killer.id}"
 
         var abilityEjecutada = -1
         for (i in 1..4) {

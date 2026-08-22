@@ -47,10 +47,10 @@ import liric.mistaken.config.engine.core.MessageService
  */
 class Sowoul : CoreKiller(
     "sowoul",
-    MessageService.getStrictString(null, "asesinos.sowoul.nombre", "killers_info")
+    MessageService.getStrictString(null, "killers.sowoul.nombre", "killers_info")
 ), Listener {
 
-    private val pathBase = "asesinos.sowoul"
+    private val pathBase = "killers.sowoul"
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
 
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<VirtualItemDisplay>>()
@@ -289,7 +289,7 @@ class Sowoul : CoreKiller(
 
         if (target == null) {
             player.sendActionBar(ColorTranslator.translate(
-                liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.sowoul.habilidades.nadie_rango", "killers_info")
+                liric.mistaken.config.engine.core.MessageService.getStrictString(player, "killers.sowoul.habilidades.nadie_rango", "killers_info")
             ))
             return
         }
@@ -297,7 +297,7 @@ class Sowoul : CoreKiller(
         player.playSound(player.location, Sound.ENTITY_ILLUSIONER_CAST_SPELL, 1.5f, 0.5f)
         target.playSound(target.location, Sound.ENTITY_ENDERMAN_STARE, 1.5f, 0.1f)
         target.sendActionBar(ColorTranslator.translate(
-            liric.mistaken.config.engine.core.MessageService.getStrictString(target, "asesinos.sowoul.habilidades.mano_magica", "killers_info")
+            liric.mistaken.config.engine.core.MessageService.getStrictString(target, "killers.sowoul.habilidades.mano_magica", "killers_info")
         ))
 
         val manoDisplay = target.world.spawn(target.location.clone().add(0.0, 1.0, 0.0), BlockDisplay::class.java) { bd ->
@@ -459,8 +459,8 @@ class Sowoul : CoreKiller(
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            val namePath = if (key == "weapon") "asesinos.sowoul.skill_names.weapon"
-            else "asesinos.sowoul.skill_names.$key"
+            val namePath = if (key == "weapon") "killers.sowoul.skill_names.weapon"
+            else "killers.sowoul.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
                 item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }

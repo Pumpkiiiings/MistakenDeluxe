@@ -105,7 +105,7 @@ object ConfigManager : IConfigManager {
         return MessageService.getRawString(
             player = player,
             fileName = "killers_info",
-            path = "asesinos.$assassinId.nombre",
+            path = "killers.$assassinId.nombre",
             def = assassinId.uppercase()
         )
     }

@@ -11,7 +11,7 @@ object AutoApplyService {
         
         
         Bukkit.getScheduler().runTask(MistakenLib.plugin, Runnable {
-            if (fileName == "asesinos.yml" || fileName == "supervivientes.yml" || fileName.startsWith("menus")) {
+            if (fileName == "killers.yml" || fileName == "survivors.yml" || fileName.startsWith("menus")) {
                 ConfigManager.loadAllConfigs()
                 if (fileName.startsWith("menus")) {
                     ConfigManager.reloadMenus()

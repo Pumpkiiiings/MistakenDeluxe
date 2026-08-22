@@ -26,18 +26,18 @@ function on_skill_1(player)
         sound(player, "ENTITY_HORSE_BREATHE", 0.8, 0.6)
     end):start()
     sound(player, "ENTITY_PLAYER_BREATH", 1.0, 1.0)
-    send_translated(player, "supervivientes.civil.habilidades_mensajes.skill1")
+    send_translated(player, "survivors.civil.habilidades_mensajes.skill1")
 end
 
 function on_skill_2(player)
     -- Invisibilidad
     apply_effect(player, "INVISIBILITY", 0, 100)
     sequence(player, player):delay(100):execute(function()
-        send_translated(player, "supervivientes.civil.habilidades_mensajes.skill2_fin")
+        send_translated(player, "survivors.civil.habilidades_mensajes.skill2_fin")
         sound(player, "BLOCK_BEACON_DEACTIVATE", 0.5, 1.5)
     end):start()
     sound(player, "ENTITY_ILLUSIONER_MIRROR_MOVE", 1.0, 1.0)
-    send_translated(player, "supervivientes.civil.habilidades_mensajes.skill2")
+    send_translated(player, "survivors.civil.habilidades_mensajes.skill2")
 end
 
 function on_skill_3(player)
@@ -46,7 +46,7 @@ function on_skill_3(player)
         damage(victim, 4.5)
     end):launch()
     sound(player, "ENTITY_SNOWBALL_THROW", 1.0, 0.5)
-    send_translated(player, "supervivientes.civil.habilidades_mensajes.skill3")
+    send_translated(player, "survivors.civil.habilidades_mensajes.skill3")
 end
 
 -- Trigger

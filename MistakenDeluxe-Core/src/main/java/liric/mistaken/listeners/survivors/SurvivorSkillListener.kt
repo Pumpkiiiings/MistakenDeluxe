@@ -126,7 +126,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
         } else {
             
             if (pdc.has(JESSE_PUNCH_KEY, PersistentDataType.BYTE) && clase is Jesse) {
-                val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("supervivientes.jesse.items.skill2_cooldown", 15)
+                val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("survivors.jesse.items.skill2_cooldown", 15)
                 if (!clase.checkCooldown(attacker, 1, cooldownTime)) {
                     clase.applyGolpePuno(victim)
                     attacker.sendMessage(ColorTranslator.translate("<gold><b>TOMA ESO!</b></gold>"))

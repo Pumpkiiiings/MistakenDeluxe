@@ -26,13 +26,13 @@ class ShopSelector : MenuBase("tienda_principal") {
         
         
         val matA = Material.matchMaterial(
-            config.getString("items.asesinos.material", "NETHERITE_SWORD")!!.uppercase()
+            config.getString("items.killers.material", "NETHERITE_SWORD")!!.uppercase()
         ) ?: Material.NETHERITE_SWORD
 
-        val nombreA = getTranslatedString(player, "menus.tienda_principal.items.asesinos.nombre",
+        val nombreA = getTranslatedString(player, "menus.tienda_principal.items.killers.nombre",
             "<gradient:red:dark_red><b>ASSASSIN SHOP</b></gradient>")
 
-        val loreA = getTranslatedList(player, "menus.tienda_principal.items.asesinos.lore")
+        val loreA = getTranslatedList(player, "menus.tienda_principal.items.killers.lore")
             .map { parseSafe(it) }
 
         val itemKillers = ItemBuilder.from(matA)
@@ -46,13 +46,13 @@ class ShopSelector : MenuBase("tienda_principal") {
 
         
         val matS = Material.matchMaterial(
-            config.getString("items.supervivientes.material", "IRON_CHESTPLATE")!!.uppercase()
+            config.getString("items.survivors.material", "IRON_CHESTPLATE")!!.uppercase()
         ) ?: Material.IRON_CHESTPLATE
 
-        val nombreS = getTranslatedString(player, "menus.tienda_principal.items.supervivientes.nombre",
+        val nombreS = getTranslatedString(player, "menus.tienda_principal.items.survivors.nombre",
             "<gradient:#00d4ff:#004d99><b>SURVIVOR SHOP</b></gradient>")
 
-        val loreS = getTranslatedList(player, "menus.tienda_principal.items.supervivientes.lore")
+        val loreS = getTranslatedList(player, "menus.tienda_principal.items.survivors.lore")
             .map { parseSafe(it) }
 
         val itemSurvivors = ItemBuilder.from(matS)
@@ -65,6 +65,6 @@ class ShopSelector : MenuBase("tienda_principal") {
             }
 
         gui.setItem(config.getInt("items.killers.slot", 11), itemKillers)
-        gui.setItem(config.getInt("items.supervivientes.slot", 15), itemSurvivors)
+        gui.setItem(config.getInt("items.survivors.slot", 15), itemSurvivors)
     }
 }

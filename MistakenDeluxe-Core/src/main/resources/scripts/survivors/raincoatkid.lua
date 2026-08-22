@@ -31,7 +31,7 @@ function on_trigger(player, trigger_id)
                 if p:is_online() then
                     apply_effect(p, "SLOWNESS", 60, 0)
                     p:play_sound("ENTITY_PLAYER_BREATH", 1.0, 0.8)
-                    send_action_bar_translated(p, "supervivientes.raincoatkid.habilidades.jadeo", "survivors_info")
+                    send_action_bar_translated(p, "survivors.raincoatkid.habilidades.jadeo", "survivors_info")
                 end
             end)
             :play()
@@ -60,3 +60,5 @@ function on_melee_attack(attacker, victim, slot)
         attacker:play_sound("ENTITY_FIREWORK_ROCKET_BLAST", 0.5, 1.2)
     end
 end
+
+return survivor

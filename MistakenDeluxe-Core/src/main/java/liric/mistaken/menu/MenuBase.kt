@@ -95,7 +95,7 @@ abstract class MenuBase(
      * Reemplaza la antigua necesidad de tener un YAML de men� por idioma.
      *
      * @param player El player cuyo idioma se usar�.
-     * @param path   La ruta en messages.yml, ej: "menus.tienda_principal.items.asesinos.nombre"
+     * @param path   La ruta en messages.yml, ej: "menus.tienda_principal.items.killers.nombre"
      * @param def    Valor por defecto si no se encuentra la clave.
      */
     fun getTranslatedString(player: Player, path: String, def: String = "<red>Missing: $path"): String {

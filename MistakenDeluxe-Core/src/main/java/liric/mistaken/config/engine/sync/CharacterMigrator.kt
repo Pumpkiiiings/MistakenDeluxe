@@ -6,8 +6,8 @@ import java.io.File
 
 object CharacterMigrator {
     fun migrate(plugin: JavaPlugin) {
-        val killersFile = File(plugin.dataFolder, "asesinos.yml")
-        val survivorsFile = File(plugin.dataFolder, "supervivientes.yml")
+        val killersFile = File(plugin.dataFolder, "killers.yml")
+        val survivorsFile = File(plugin.dataFolder, "survivors.yml")
 
         if (killersFile.exists()) {
             val config = YamlConfiguration.loadConfiguration(killersFile)
@@ -17,7 +17,7 @@ object CharacterMigrator {
             if (!killersDir.exists()) killersDir.mkdirs()
 
             keys.forEach { id ->
-                val section = config.getConfigurationSection("asesinos.$id")
+                val section = config.getConfigurationSection("killers.$id")
                 if (section != null) {
                     val individualFile = File(killersDir, "$id.yml")
                     val individualConfig = YamlConfiguration.loadConfiguration(individualFile)
@@ -31,7 +31,7 @@ object CharacterMigrator {
             }
             
             
-            killersFile.renameTo(File(plugin.dataFolder, "asesinos.yml.old"))
+            killersFile.renameTo(File(plugin.dataFolder, "killers.yml.old"))
             plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Migrated ${keys.size} killers to individual files.</gray>"))
         }
 
@@ -43,7 +43,7 @@ object CharacterMigrator {
             if (!survivorsDir.exists()) survivorsDir.mkdirs()
 
             keys.forEach { id ->
-                val section = config.getConfigurationSection("supervivientes.$id")
+                val section = config.getConfigurationSection("survivors.$id")
                 if (section != null) {
                     val individualFile = File(survivorsDir, "$id.yml")
                     val individualConfig = YamlConfiguration.loadConfiguration(individualFile)
@@ -57,7 +57,7 @@ object CharacterMigrator {
             }
             
             
-            survivorsFile.renameTo(File(plugin.dataFolder, "supervivientes.yml.old"))
+            survivorsFile.renameTo(File(plugin.dataFolder, "survivors.yml.old"))
             plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Migrated ${keys.size} survivors to individual files.</gray>"))
         }
     }

@@ -66,3 +66,5 @@ function on_trigger(player, trigger_id)
         end
     end
 end
+
+return survivor

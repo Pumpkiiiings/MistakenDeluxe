@@ -115,8 +115,8 @@ class WardenKiller : BaseKiller("warden", "Warden") {
                 if (mat != null) org.bukkit.inventory.ItemStack(mat) else null
             } ?: return
 
-            val namePath = if (key == "weapon") "asesinos.warden.skill_names.weapon"
-            else "asesinos.warden.skill_names.$key"
+            val namePath = if (key == "weapon") "killers.warden.skill_names.weapon"
+            else "killers.warden.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
                 item.editMeta { meta -> meta.displayName(liric.mistaken.utils.color.ColorTranslator.translate(it)) }

@@ -41,10 +41,10 @@ import liric.mistaken.config.engine.core.MessageService
 
 class CharlieInferno : CoreKiller(
     "charlie",
-    MessageService.getStrictString(null, "asesinos.charlie.nombre", "killers_info")
+    MessageService.getStrictString(null, "killers.charlie.nombre", "killers_info")
 ) {
 
-    private val pathBase = "asesinos.charlie"
+    private val pathBase = "killers.charlie"
     override val defaultMusic = "mistaken:charlieinferno"
     private val sonidoId = defaultMusic!!
 
@@ -108,8 +108,8 @@ class CharlieInferno : CoreKiller(
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            val namePath = if (key == "weapon") "asesinos.charlie.skill_names.weapon"
-            else "asesinos.charlie.skill_names.$key"
+            val namePath = if (key == "weapon") "killers.charlie.skill_names.weapon"
+            else "killers.charlie.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
                 item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }

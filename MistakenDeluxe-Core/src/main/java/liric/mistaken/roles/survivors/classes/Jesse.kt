@@ -27,10 +27,10 @@ import liric.mistaken.config.engine.core.MessageService
 
 class Jesse : Survivor(
     "jesse",
-    MessageService.getStrictString(null, "supervivientes.jesse.nombre", "survivors_info")
+    MessageService.getStrictString(null, "survivors.jesse.nombre", "survivors_info")
 ) {
 
-    private val pathBase = "supervivientes.jesse"
+    private val pathBase = "survivors.jesse"
     val MELEE_PUNCH_KEY = NamespacedKey("mistaken", "jesse_punch")
 
     override fun useSkill(player: Player, slot: Int) {

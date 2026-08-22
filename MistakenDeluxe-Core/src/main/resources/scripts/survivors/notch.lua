@@ -54,7 +54,7 @@ function on_trigger(player, trigger_id)
         for i, target in ipairs(targets) do
             if target:is_killer() then
                 push_from_location(target, player, 2.5, 0.4)
-                send_translated(target, "supervivientes.notch.habilidades.denied")
+                send_translated(target, "survivors.notch.habilidades.denied")
                 target:play_sound("ENTITY_VILLAGER_NO", 1.0, 0.8)
             end
         end
@@ -81,3 +81,5 @@ function on_trigger(player, trigger_id)
         player:set_health(new_health)
     end
 end
+
+return survivor

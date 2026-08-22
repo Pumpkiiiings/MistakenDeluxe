@@ -17,7 +17,7 @@ import java.util.function.Consumer
 
 class StillLife : CoreKiller(
     "still_life",
-    MessageService.getStrictString(null, "asesinos.still_life.nombre", "killers_info")
+    MessageService.getStrictString(null, "killers.still_life.nombre", "killers_info")
 ), Listener {
 
     override val defaultMusic = "mistaken:still_life"
@@ -99,7 +99,7 @@ class StillLife : CoreKiller(
                     com.github.retrooper.packetevents.PacketEvents.getAPI().playerManager.sendPacket(p, packet)
                 }
                 player.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate(
-                    liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.still_life.habilidades.generador_colocado", "killers_info")
+                    liric.mistaken.config.engine.core.MessageService.getStrictString(player, "killers.still_life.habilidades.generador_colocado", "killers_info")
                 ))
                 playSkillEffects(player, 3)
             }
@@ -160,7 +160,7 @@ class StillLife : CoreKiller(
                         player.customName = last
                         player.isCustomNameVisible = true
                         player.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate(
-                            liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.still_life.habilidades.disfrazado", "killers_info")
+                            liric.mistaken.config.engine.core.MessageService.getStrictString(player, "killers.still_life.habilidades.disfrazado", "killers_info")
                                 .replace("%last%", last)
                         ))
                     }
@@ -186,7 +186,7 @@ class StillLife : CoreKiller(
         
         Bukkit.getPlayer(killerUuid)?.let {
             it.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate(
-                liric.mistaken.config.engine.core.MessageService.getStrictString(it, "asesinos.still_life.habilidades.generador_interactuado", "killers_info")
+                liric.mistaken.config.engine.core.MessageService.getStrictString(it, "killers.still_life.habilidades.generador_interactuado", "killers_info")
             ))
         }
     }
@@ -200,7 +200,7 @@ class StillLife : CoreKiller(
         if (session.isKiller(killer.uniqueId) && plugin.playerDataManager.getSelectedKiller(killer.uniqueId) == this.id) {
             lastKilled[killer.uniqueId] = victim.name
             killer.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate(
-                liric.mistaken.config.engine.core.MessageService.getStrictString(killer, "asesinos.still_life.habilidades.asesinado", "killers_info")
+                liric.mistaken.config.engine.core.MessageService.getStrictString(killer, "killers.still_life.habilidades.asesinado", "killers_info")
                     .replace("%victim%", victim.name)
             ))
         }
@@ -211,14 +211,14 @@ class StillLife : CoreKiller(
         player.customName = null
         player.isCustomNameVisible = false
         player.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate(
-            liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.still_life.habilidades.disfraz_quitado", "killers_info")
+            liric.mistaken.config.engine.core.MessageService.getStrictString(player, "killers.still_life.habilidades.disfraz_quitado", "killers_info")
         ))
     }
 
     override fun onInterceptChat(player: Player, message: String): String? {
         val disguiseName = disguisedAs[player.uniqueId]
         if (disguiseName != null) {
-            return liric.mistaken.config.engine.core.MessageService.getStrictString(player, "asesinos.still_life.habilidades.chat_disfraz", "killers_info")
+            return liric.mistaken.config.engine.core.MessageService.getStrictString(player, "killers.still_life.habilidades.chat_disfraz", "killers_info")
                 .replace("%disguisename%", disguiseName)
                 .replace("%message%", message)
         }

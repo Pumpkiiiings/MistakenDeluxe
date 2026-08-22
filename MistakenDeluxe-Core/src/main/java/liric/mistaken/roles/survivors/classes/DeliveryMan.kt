@@ -27,10 +27,10 @@ import liric.mistaken.config.engine.core.MessageService
  */
 class DeliveryMan : Survivor(
     "repartidor",
-    MessageService.getStrictString(null, "supervivientes.repartidor.nombre", "survivors_info")
+    MessageService.getStrictString(null, "survivors.repartidor.nombre", "survivors_info")
 ) {
 
-    private val pathBase = "supervivientes.repartidor"
+    private val pathBase = "survivors.repartidor"
     private val itemCache = ConcurrentHashMap<String, ItemStack>()
     private val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
     private val pedidoKey = NamespacedKey("mistaken", "pedido")

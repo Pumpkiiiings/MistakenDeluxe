@@ -61,8 +61,8 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
                 if (mat != null) ItemStack(mat) else null
             } ?: return
 
-            val namePath = if (key == "weapon") "asesinos.${this.id}.skill_names.weapon"
-            else "asesinos.${this.id}.skill_names.$key"
+            val namePath = if (key == "weapon") "killers.${this.id}.skill_names.weapon"
+            else "killers.${this.id}.skill_names.$key"
 
             langInfo.getString(namePath)?.let {
                 item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
