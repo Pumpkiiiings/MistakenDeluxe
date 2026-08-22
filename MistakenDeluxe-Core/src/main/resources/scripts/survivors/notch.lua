@@ -24,11 +24,10 @@ function on_trigger(player, trigger_id)
         particle_burst(player, "CLOUD", 15, 0.3, 0.1, 0.3, 0.05)
         particle_burst(player, "WAX_OFF", 10, 0.5, 0.5, 0.5, 0.0)
         
-        sequence(player, player)
-            :delay(15)
-            :on_execute(function(p, loc)
-                if p:is_online() then
-                    apply_effect(p, "SLOW_FALLING", 60, 0)
+        sequence(player, location(player))
+            :delay(15, function()
+                if player:is_online() then
+                    apply_effect(player, "SLOW_FALLING", 60, 0)
                 end
             end)
             :play()
@@ -54,7 +53,7 @@ function on_trigger(player, trigger_id)
         for i, target in ipairs(targets) do
             if target:is_killer() then
                 push_from_location(target, player, 2.5, 0.4)
-                send_translated(target, "survivors.notch.habilidades.denied")
+                send_translated(target, "survivors.notch.habilidades.denied", "survivors_info")
                 target:play_sound("ENTITY_VILLAGER_NO", 1.0, 0.8)
             end
         end

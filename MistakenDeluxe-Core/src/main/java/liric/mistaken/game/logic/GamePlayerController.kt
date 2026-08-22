@@ -2,7 +2,6 @@ package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.game.enums.MistakenMode
 import liric.mistaken.utils.misc.BungeeUtils
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.title.Title
@@ -43,11 +42,7 @@ class GamePlayerController(private val game: GameSession) {
             !game.forcedSurvivorUUIDs.contains(it.uniqueId)
         }.toMutableList()
 
-        val killersToSelect = when (game.currentMode) {
-            MistakenMode.DOUBLE_KILLER -> if (sessionPlayers.size >= 4) 2 else 1
-            MistakenMode.ONE_BOUNCE -> (sessionPlayers.size - 1).coerceAtLeast(1)
-            else -> 1
-        }
+        val killersToSelect = game.activeModeHandler.calculateKillersCount(sessionPlayers.size)
         
         var selectedCount = 0
         
@@ -131,29 +126,7 @@ class GamePlayerController(private val game: GameSession) {
                             p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<red>Tu clase fue deshabilitada por el Host, usando Slasher."))
                         }
                         game.plugin.killerManager.equipKiller(p, claseID)
-
-                        if (game.currentMode == MistakenMode.HIDE_AND_SEEK) {
-                            p.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 1200, 0, false, false, false))
-                            p.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 1200, 255, false, false, false))
-                            p.addPotionEffect(PotionEffect(PotionEffectType.JUMP_BOOST, 1200, 250, false, false, false))
-                            p.addPotionEffect(PotionEffect(PotionEffectType.MINING_FATIGUE, 1200, 255, false, false, false))
-                            
-                            p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<red>¡Espera 1 minuto mientras los supervivientes se esconden!"))
-                            
-                            p.scheduler.runDelayed(game.plugin, Consumer { _ ->
-                                if (p.isOnline && game.currentState == GameState.INGAME) {
-                                    p.removePotionEffect(PotionEffectType.BLINDNESS)
-                                    p.removePotionEffect(PotionEffectType.SLOWNESS)
-                                    p.removePotionEffect(PotionEffectType.JUMP_BOOST)
-                                    p.removePotionEffect(PotionEffectType.MINING_FATIGUE)
-                                    p.playSound(p.location, Sound.ENTITY_ENDER_DRAGON_GROWL, 1f, 1f)
-                                    p.showTitle(Title.title(
-                                        MessageService.getComponent(p, "game.killer-released-title"),
-                                        MessageService.getComponent(p, "game.killer-released-subtitle")
-                                    ))
-                                }
-                            }, null, 1200L)
-                        }
+                        game.activeModeHandler.onPlayerSpawn(p, true)
                     }
                 }
             } else {
@@ -180,22 +153,7 @@ class GamePlayerController(private val game: GameSession) {
                                     game.plugin.survivorManager.registrarSurvivor(p, clase as liric.mistaken.roles.survivors.Survivor)
                                 }
 
-                                if (game.currentMode == MistakenMode.ONE_BOUNCE) {
-                                    p.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, 1, false, false, false))
-                                    p.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = 100.0
-                                    p.health = 100.0
-                                } else if (game.currentMode == MistakenMode.HIDE_AND_SEEK) {
-                                    p.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<green>¡Tienes 1 minuto para esconderte antes de que el asesino sea liberado!"))
-                                    p.scheduler.runDelayed(game.plugin, Consumer { _ ->
-                                        if (p.isOnline && game.currentState == GameState.INGAME) {
-                                            p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 0.5f, 0.8f)
-                                            p.showTitle(Title.title(
-                                                MessageService.getComponent(p, "game.killer-released-title"),
-                                                MessageService.getComponent(p, "game.killer-released-subtitle")
-                                            ))
-                                        }
-                                    }, null, 1200L)
-                                }
+                                game.activeModeHandler.onPlayerSpawn(p, false)
                             }
                         }
                     },
@@ -257,7 +215,7 @@ class GamePlayerController(private val game: GameSession) {
                 game.uiController.playAmbientForPlayer(p, killersOnline)
             }
 
-            if (ticks % 10 == 0 && killersOnline.isNotEmpty() && game.currentMode != MistakenMode.HIDE_AND_SEEK) {
+            if (ticks % 10 == 0 && killersOnline.isNotEmpty() && game.activeModeHandler.enableHeartbeat) {
                 val closestKiller = killersOnline[0]
                 game.uiController.checkHeartbeat(p, closestKiller)
 
@@ -266,7 +224,7 @@ class GamePlayerController(private val game: GameSession) {
                 }
             }
 
-            if (ticks % 2 == 0 && game.currentMode != MistakenMode.FREEZE_TAG && game.combatManager.getHealth(p) == 1 && p.vehicle == null) {
+            if (ticks % 2 == 0 && game.activeModeHandler.enableCriticalSwimming && game.combatManager.getHealth(p) == 1 && p.vehicle == null) {
                 if (!p.isSwimming) p.isSwimming = true
                 if (ticks % 40 == 0) {
                     p.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 45, 0, false, false, false))
@@ -328,7 +286,7 @@ class GamePlayerController(private val game: GameSession) {
             !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !game.plugin.spectatorManager.isSpectator(it)
         }
 
-        if (survivorsVivos.size == 1 && game.currentMode != MistakenMode.FREEZE_TAG) {
+        if (survivorsVivos.size == 1 && game.activeModeHandler.enableLastManStanding) {
             lmsActivado = true
             val ultimoHeroe = survivorsVivos[0]
             triggerLMS(ultimoHeroe)
@@ -373,43 +331,7 @@ class GamePlayerController(private val game: GameSession) {
             return
         }
 
-        if (game.currentMode == MistakenMode.INFECTION) {
-            game.plugin.survivorManager.getSurvivorClass(player)?.cleanup(player)
-            game.killersUUIDs.add(player.uniqueId)
-            player.isSwimming = false
-            game.ambientManager.stopAmbience(player)
-            game.combatManager.resetHealth(player)
-
-            
-            liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(player, false)
-
-            game.uiController.setLuckPermsPrefix(player, "<red>")
-
-            game.plugin.lobbyLocation?.let { loc ->
-                player.teleportAsync(loc)
-            }
-
-            player.scheduler.runDelayed(
-                game.plugin,
-                Consumer { _ ->
-                    val claseID = game.plugin.playerDataManager.getSelectedKiller(player.uniqueId)
-                    game.plugin.killerManager.equipKiller(player, claseID)
-                    game.uiController.playRoleTitle(player, true)
-                },
-                null,
-                5L
-            )
-
-            game.getPlayers().forEach { it.sendMessage(MiniMessage.miniMessage().deserialize("<dark_red>Infección</dark_red> <dark_gray>»</dark_gray> <red>¡${player.name} ha sido infectado y ahora es un asesino!</red>")) }
-            player.world.playSound(player.location, Sound.ENTITY_ZOMBIE_VILLAGER_CONVERTED, 1f, 1f)
-
-            game.getCurrentKiller()?.let { killer ->
-                game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
-                    game.plugin.statsManager.incrementStat(killer.uniqueId, "kills")
-                }
-            }
-
-            checkWinCondition()
+        if (game.activeModeHandler.onPlayerDeath(player)) {
             return
         }
 

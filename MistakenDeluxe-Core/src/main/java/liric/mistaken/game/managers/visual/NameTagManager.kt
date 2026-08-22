@@ -58,6 +58,18 @@ class NameTagManager(private val plugin: Mistaken) {
         }
     }
 
+    fun resetViewers(player: Player) {
+        val tag = nametags[player.uniqueId]
+        if (tag != null) {
+            val destroyPacket = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities(tag.entityId)
+            Bukkit.getOnlinePlayers().forEach { viewer ->
+                com.github.retrooper.packetevents.PacketEvents.getAPI().playerManager.sendPacket(viewer, destroyPacket)
+            }
+            tag.confirmedViewers.clear()
+        }
+        nametags.values.forEach { it.confirmedViewers.remove(player.uniqueId) }
+    }
+
     fun removeAll() {
         nametags.keys.toList().forEach { uuid ->
             val player = Bukkit.getPlayer(uuid)

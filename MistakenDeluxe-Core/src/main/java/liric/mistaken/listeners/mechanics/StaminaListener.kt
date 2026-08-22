@@ -13,7 +13,6 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
-import liric.mistaken.game.enums.MistakenMode
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.config.engine.core.MessageService
@@ -82,17 +81,14 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                 var currentStamina = user.stamina
                 val isSprinting = player.isSprinting
 
-                val isOneBounceSurvivor = session.currentMode == MistakenMode.ONE_BOUNCE && !session.isKiller(uuid)
-                val maxStamina = if (isOneBounceSurvivor) 500.0 else 100.0
-                val currentRecoveryRate = if (isOneBounceSurvivor) recoveryRate * 2 else recoveryRate
+                val maxStamina = session.activeModeHandler.getMaxStamina(player)
+                val currentRecoveryRate = if (maxStamina > 100.0) recoveryRate * 2 else recoveryRate
 
-                
+                // Consumo (Sprinting)
                 if (isSprinting && currentStamina > 0.0) {
                     
                     var loss = if (session.isKiller(uuid)) lossKiller else lossSurvivor
-                    if (session.currentMode == MistakenMode.ONE_BOUNCE && !session.isKiller(uuid)) {
-                        loss /= 2.0
-                    }
+                    if (maxStamina > 100.0) loss /= 2.0
                     currentStamina = (currentStamina - loss).coerceAtLeast(0.0)
                 } else if (currentStamina < maxStamina) {
                     
@@ -104,6 +100,7 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
                     }
                 }
 
+                currentStamina = session.activeModeHandler.onStaminaTick(user, currentStamina)
                 user.stamina = currentStamina
 
                 val justExhausted = currentStamina <= 0.0 && !player.hasPotionEffect(PotionEffectType.SLOWNESS)

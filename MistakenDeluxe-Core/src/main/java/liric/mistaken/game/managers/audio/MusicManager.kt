@@ -12,20 +12,16 @@ import liric.mistaken.game.enums.GameState
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.sound.SoundStop
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
-import java.io.File
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.get
 import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.config.engine.core.ConfigManager
-
+import org.bukkit.scheduler.BukkitTask
 
 class MusicManager(private val plugin: Mistaken) {
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    private var musicJob: Job? = null
+    private var musicTask: BukkitTask? = null
 
     private val playlist = mutableListOf<Track>()
     private var currentLobbyTrack: Track? = null
@@ -63,54 +59,64 @@ class MusicManager(private val plugin: Mistaken) {
     }
 
     private fun startMusicLoop() {
-        musicJob = scope.launch {
-            while (isActive && !plugin.isReady) delay(1000L)
+        musicTask = plugin.server.scheduler.runTaskTimer(plugin, Runnable {
+            if (!plugin.isReady) return@Runnable
 
-            while (isActive) {
+            
+            if (currentLobbyTrack == null && playlist.isNotEmpty()) {
+                currentLobbyTrack = playlist.random()
+                trackStartTime = System.currentTimeMillis()
+            }
+
+            
+            for (player in plugin.server.onlinePlayers) {
+                val session = plugin.sessionManager.getSession(player)
+
                 
-                if (currentLobbyTrack == null && playlist.isNotEmpty()) {
+                val state = session?.currentState ?: GameState.LOBBY
+                val shouldHearMusic = state == GameState.LOBBY || state == GameState.VOTING || state == GameState.BREAK
+
+                if (shouldHearMusic) {
+                    if (!playersPlaying.contains(player.uniqueId)) {
+                        
+                        val track = currentLobbyTrack
+                        if (track != null) {
+                            val elapsed = (System.currentTimeMillis() - trackStartTime) / 1000
+                            if (track.duration - elapsed > 3) {
+                                playTrackForPlayer(player, track)
+                            }
+                        }
+                    }
+                } else {
+                    
+                    if (playersPlaying.contains(player.uniqueId)) {
+                        stopMusicForPlayer(player)
+                    }
+                }
+            }
+
+            
+            currentLobbyTrack?.let { track ->
+                val elapsed = (System.currentTimeMillis() - trackStartTime) / 1000
+                if (elapsed >= track.duration) {
+                    
+                    // Stop music for everyone before changing track to avoid overlap for late-joiners
+                    plugin.server.onlinePlayers.forEach { p ->
+                        if (playersPlaying.contains(p.uniqueId)) {
+                            stopMusicForPlayer(p)
+                        }
+                    }
+                    
                     currentLobbyTrack = playlist.random()
                     trackStartTime = System.currentTimeMillis()
-                }
-
-                
-                for (player in plugin.server.onlinePlayers) {
-                    val session = plugin.sessionManager.getSession(player)
-
                     
-                    val state = session?.currentState ?: GameState.LOBBY
-                    val shouldHearMusic = state == GameState.LOBBY || state == GameState.VOTING || state == GameState.BREAK
-
-                    if (shouldHearMusic) {
-                        if (!playersPlaying.contains(player.uniqueId)) {
-                            playTrackForPlayer(player, currentLobbyTrack)
-                        }
-                    } else {
-                        
-                        if (playersPlaying.contains(player.uniqueId)) {
-                            stopMusicForPlayer(player)
-                        }
-                    }
+                    playersPlaying.clear()
                 }
-
-                
-                currentLobbyTrack?.let { track ->
-                    val elapsed = (System.currentTimeMillis() - trackStartTime) / 1000
-                    if (elapsed >= track.duration) {
-                        
-                        currentLobbyTrack = playlist.random()
-                        trackStartTime = System.currentTimeMillis()
-                        
-                        playersPlaying.clear()
-                    }
-                }
-                
-                delay(1000L)
-
-                
-                playersPlaying.removeIf { plugin.server.getPlayer(it) == null }
             }
-        }
+            
+            
+            playersPlaying.removeIf { plugin.server.getPlayer(it) == null }
+        }, 20L, 20L) 
     }
 
     private fun playTrackForPlayer(player: Player, track: Track?) {
@@ -120,10 +126,6 @@ class MusicManager(private val plugin: Mistaken) {
         val soundPacket = Sound.sound(Key.key(track.id), Sound.Source.RECORD, cachedVolume, cachedPitch)
 
         player.playSound(soundPacket)
-
-        
-        
-        
     }
 
     fun stopMusicForPlayer(player: Player) {
@@ -141,28 +143,32 @@ class MusicManager(private val plugin: Mistaken) {
         val state = session?.currentState ?: GameState.LOBBY
 
         if (state == GameState.LOBBY || state == GameState.VOTING || state == GameState.BREAK) {
-            playTrackForPlayer(player, currentLobbyTrack)
-        }
-    }
-
-    /**
-     * Fuerza el cambio de canci�n (�til para comandos de admin).
-     */
-    fun skipTrack() {
-        val oldTrack = currentLobbyTrack
-        currentLobbyTrack = null
-        playersPlaying.clear()
-
-        plugin.server.onlinePlayers.forEach { p ->
-            if (playersPlaying.contains(p.uniqueId)) {
-                stopMusicForPlayer(p)
-                
+            val track = currentLobbyTrack ?: return
+            val elapsed = (System.currentTimeMillis() - trackStartTime) / 1000
+            
+            if (track.duration - elapsed > 3) {
+                playTrackForPlayer(player, track)
             }
         }
     }
 
+    /**
+     * Fuerza el cambio de cancin (til para comandos de admin).
+     */
+    fun skipTrack() {
+        val oldTrack = currentLobbyTrack
+        currentLobbyTrack = null
+        
+        plugin.server.onlinePlayers.forEach { p ->
+            if (playersPlaying.contains(p.uniqueId)) {
+                stopMusicForPlayer(p)
+            }
+        }
+        playersPlaying.clear()
+    }
+
     fun shutdown() {
-        musicJob?.cancel()
+        musicTask?.cancel()
         plugin.server.onlinePlayers.forEach { stopMusicForPlayer(it) }
         playersPlaying.clear()
     }

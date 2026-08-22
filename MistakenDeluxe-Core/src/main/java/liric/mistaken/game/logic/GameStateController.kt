@@ -116,36 +116,7 @@ class GameStateController(private val game: GameSession) {
 
     
     fun checkGeoffreySpawn() {
-        
-        if (game.currentMode == MistakenMode.INITIALIZES && game.timer == 290) {
-
-            
-            val title = ColorTranslator.translate("<dark_red><bold><obfuscated>||</obfuscated> ¡GEOFFREY ESTÃ AQUÃ! <obfuscated>||</obfuscated>")
-            val subtitle = ColorTranslator.translate("<dark_gray>Nadie sobrevivirá...")
-            val times = Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(4), Duration.ofMillis(500))
-
-            game.plugin.server.onlinePlayers.forEach { p ->
-                p.showTitle(Title.title(title, subtitle, times))
-                p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1.5f, 0.5f)
-                p.playSound(p.location, Sound.ENTITY_ENDERMAN_SCREAM, 1f, 0.5f)
-
-                
-                p.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0, false, false, false))
-                p.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 100, 1, false, false, false))
-            }
-
-            
-            val spawnLoc = game.getCurrentKiller()?.location ?: game.plugin.server.onlinePlayers.firstOrNull()?.location
-
-            if (spawnLoc != null) {
-                val geoffreyLoc = spawnLoc.clone().add(0.0, 15.0, 0.0)
-                geoffreyLoc.world.spawnParticle(Particle.EXPLOSION_EMITTER, geoffreyLoc, 2)
-                geoffreyLoc.world.playSound(geoffreyLoc, Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 2f, 0.5f)
-
-                geoffreyEntity = GeoffreyEXE(game.plugin).apply { assignedSession = game }
-                geoffreyEntity?.spawn(geoffreyLoc)
-            }
-        }
+        game.activeModeHandler.checkSpecialSpawn(game.timer)
     }
 
     fun startInGame() {
@@ -230,6 +201,8 @@ class GameStateController(private val game: GameSession) {
 
         this.lastKillerWon = killerWon
         game.lastKillerWon = killerWon
+        
+        game.activeModeHandler.onGameEnd(killerWon)
 
         game.timer = 12
 

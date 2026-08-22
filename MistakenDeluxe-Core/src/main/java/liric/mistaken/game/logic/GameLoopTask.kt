@@ -3,7 +3,6 @@ package liric.mistaken.game.logic
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.game.enums.MistakenMode
 
 class GameLoopTask(private val game: GameSession) {
     private var gameTask: ScheduledTask? = null

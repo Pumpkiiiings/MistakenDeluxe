@@ -62,7 +62,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             for (session in sessions) {
                 if (session.currentState != GameState.INGAME) continue
-                if (session.currentMode == MistakenMode.HIDE_AND_SEEK) continue
+                // No check needed here for HIDE_AND_SEEK as stamina is handled by activeModeHandler onStaminaTick
 
                 val killersOnline = session.killersUUIDs.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
                 if (killersOnline.isEmpty()) continue
@@ -104,8 +104,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
                                 if (targetLoc.world != killerLoc.world) {
                                     if (session.isKiller(target.uniqueId)) {
-                                        val mode = session.currentMode
-                                        if (mode != MistakenMode.DOUBLE_KILLER && mode != MistakenMode.ONE_BOUNCE) {
+                                        val killersCount = session.activeModeHandler.calculateKillersCount(session.getPlayers().size)
+                                        if (killersCount < 2) {
                                             try { plugin.glowingAPI.unsetGlowing(target, killer) } catch (_: Exception) {}
                                         }
                                     } else {
@@ -115,8 +115,8 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
                                     val distSq = killerLoc.distanceSquared(targetLoc)
                                     
                                     if (session.isKiller(target.uniqueId)) {
-                                        val mode = session.currentMode
-                                        if (mode == MistakenMode.DOUBLE_KILLER || mode == MistakenMode.ONE_BOUNCE) {
+                                        val killersCount = session.activeModeHandler.calculateKillersCount(session.getPlayers().size)
+                                        if (killersCount >= 2) {
                                             if (session.currentState == GameState.INGAME) {
                                                 try { plugin.glowingAPI.setGlowing(target, killer, ChatColor.YELLOW) } catch (_: Exception) {}
                                             } else {
@@ -208,11 +208,11 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         if (isKiller) {
             val killerClass = plugin.killerManager.getKillerOfPlayer(player)
             val customHealth = killerClass?.let { plugin.configManager.getKillerConfig(it.id).getDouble("stats.health", 0.0) } ?: 0.0
-            maxHP = if (customHealth > 0.0) customHealth else session?.settings?.killerHealth ?: 160.0
+            maxHP = session?.settings?.killerHealth ?: if (customHealth > 0.0) customHealth else 160.0
         } else {
             val survivorClass = plugin.survivorManager.getSurvivorClass(player)
             val customHealth = survivorClass?.let { plugin.configManager.getSurvivorConfig(it.id).getDouble("stats.health", 0.0) } ?: 0.0
-            maxHP = if (customHealth > 0.0) customHealth else session?.settings?.survivorHealth ?: 20.0
+            maxHP = session?.settings?.survivorHealth ?: if (customHealth > 0.0) customHealth else 20.0
         }
 
         player.getAttribute(Attribute.MAX_HEALTH)?.baseValue = maxHP
@@ -243,17 +243,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         val isVictimKiller = session.isKiller(victim.uniqueId)
         if (isFrozen(attacker)) { event.isCancelled = true; return }
         
-        if (isFrozen(victim)) {
-            if (!isAttackerKiller && !isVictimKiller && session.currentMode == MistakenMode.FREEZE_TAG) {
-                event.isCancelled = true
-                unfreeze(victim, attacker)
-                return
-            }
-            event.isCancelled = true
-            return
-        }
+        session.activeModeHandler.onPlayerHit(attacker, victim, event)
+        if (event.isCancelled) return
 
-        val isAssassinPvpMode = session.currentMode == MistakenMode.DOUBLE_KILLER
         if (isAttackerKiller == isVictimKiller) {
             event.isCancelled = true
             return
@@ -274,16 +266,12 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             killerCooldowns[attacker.uniqueId] = now
             event.damage = 0.1
 
-            if (session.currentMode == MistakenMode.FREEZE_TAG && !isFrozen(victim)) {
-                event.isCancelled = true
-                freezePlayer(victim, session)
-                return
-            }
+
 
             val killerClass = plugin.killerManager.getKillerOfPlayer(attacker)
             val customDamage = killerClass?.let { plugin.configManager.getKillerConfig(it.id).getDouble("stats.damage", 0.0) } ?: 0.0
             
-            var dmg = if (isAssassinPvpMode) 4.0 else 3.0
+            var dmg = session.activeModeHandler.getKillerBaseDamage()
             if (customDamage > 0.0) {
                 dmg = customDamage
             }
@@ -322,8 +310,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             if (victim.gameMode == GameMode.SPECTATOR || plugin.spectatorManager.isSpectator(victim) || victim.gameMode == GameMode.ADVENTURE) return@runOnMain
 
             val isSurvivor = !currentSession.isKiller(victim.uniqueId)
-            if (isSurvivor && currentSession.currentMode == MistakenMode.FREEZE_TAG) {
-                freezePlayer(victim, currentSession)
+            if (isSurvivor && currentSession.activeModeHandler.onLethalHit(victim)) {
                 return@runOnMain
             }
 
@@ -416,53 +403,11 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         }
     }
 
-    fun freezePlayer(victim: Player, session: GameSession) {
-        if (!frozenPlayers.add(victim.uniqueId)) return
-        runOnMain {
-            victim.inventory.helmet = ItemStack(Material.ICE)
-            victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.0
-            victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.0
-            victim.addPotionEffect(PotionEffect(PotionEffectType.DARKNESS, 60, 0, false, false, false))
-            victim.world.playSound(victim.location, Sound.BLOCK_GLASS_BREAK, 1f, 0.5f)
-
-            startFreezeTimer(victim, session)
-
-            session.broadcastLocalized("game.player-frozen", Placeholder.parsed("player", victim.name))
-            session.playerController.checkWinCondition()
-        }
-    }
-
-    private fun startFreezeTimer(victim: Player, session: GameSession) {
-        var timeLeft = 60
-        victim.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!isFrozen(victim) || !victim.isOnline) {
-                task.cancel()
-                return@Consumer
-            }
-            
-            
-            victim.world.spawnParticle(Particle.SOUL_FIRE_FLAME, victim.location.add(0.0, 1.0, 0.0), 10, 0.3, 0.5, 0.3, 0.02)
-            
-            val timeFormatted = String.Companion.format(Locale.US, "%d:%02d", timeLeft / 60, timeLeft % 60)
-            victim.showTitle(
-                Title.title(
-                    MessageService.getComponent(victim, "game.freeze-title"),
-                    MessageService.getComponent(
-                        victim,
-                        "game.freeze-subtitle",
-                        Placeholder.parsed("time", timeFormatted)
-                    )
-                )
-            )
-            timeLeft--
-            if (timeLeft <= 0) {
-                task.cancel()
-                runOnMain {
-                    session.playerController.handlePlayerDeath(victim)
-                }
-            }
-        }, null, 0L, 20L)
-    }
+    /**
+     * Agrega un jugador al set de congelados. Retorna true si fue agregado (no estaba ya).
+     * La lógica visual/timer de congelamiento vive en FreezeTagModeHandler.
+     */
+    fun addFrozen(uuid: UUID): Boolean = frozenPlayers.add(uuid)
 
     fun removePlayerData(uuid: UUID) {
         val p = Bukkit.getPlayer(uuid)

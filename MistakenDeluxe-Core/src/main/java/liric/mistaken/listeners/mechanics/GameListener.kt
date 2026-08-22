@@ -40,7 +40,6 @@ class GameListener(private val plugin: Mistaken) : Listener {
     private val mm = plugin.mm
     private val plain = PlainTextComponentSerializer.plainText()
     private val stunSoundsQueue = ConcurrentHashMap<UUID, MutableList<Int>>()
-    private val infectionDeathLocs = ConcurrentHashMap<UUID, Location>()
 
     /**
      * 🧊 SISTEMA DE RESCATE (Freeze Tag)
@@ -51,7 +50,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val session = plugin.sessionManager.getSession(player) ?: return 
 
         if (!plugin.isReady || session.currentState != GameState.INGAME) return
-        if (session.currentMode != MistakenMode.FREEZE_TAG) return
+        if (!session.activeModeHandler.enableRescueInteraction) return
 
         val victim = event.rightClicked as? Player ?: return
 
@@ -118,11 +117,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         event.droppedExp = 0
         event.deathMessage(null)
 
-        
-        
-        if (session.currentMode == MistakenMode.INFECTION) {
-            infectionDeathLocs[victim.uniqueId] = deathLoc
-        }
+        session.activeModeHandler.onPlayerDeathEvent(event)
 
         
         session.playerController.handlePlayerDeath(victim)
@@ -148,12 +143,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val session = plugin.sessionManager.getSession(player) ?: return
 
-        if (session.currentState == GameState.INGAME && session.currentMode == MistakenMode.INFECTION) {
-            val loc = infectionDeathLocs.remove(player.uniqueId)
-            if (loc != null) {
-                event.respawnLocation = loc
-            }
-        }
+        session.activeModeHandler.onPlayerRespawnEvent(event)
     }
 
     private fun applyStunToKiller(killer: Player, damager: Player) {
