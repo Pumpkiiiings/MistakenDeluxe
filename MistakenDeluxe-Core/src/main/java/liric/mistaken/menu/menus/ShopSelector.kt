@@ -38,7 +38,7 @@ class ShopSelector : MenuBase("tienda_principal") {
         val itemKillers = ItemBuilder.from(matA)
             .name(parseSafe(nombreA))
             .lore(loreA)
-            .flags(*ItemFlag.entries.toTypedArray())
+            .flags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS)
             .asGuiItem {
                 player.playSound(player.location, clickSound, 1f, 1f)
                 plugin.killerTienda.abrir(player)
@@ -58,7 +58,7 @@ class ShopSelector : MenuBase("tienda_principal") {
         val itemSurvivors = ItemBuilder.from(matS)
             .name(parseSafe(nombreS))
             .lore(loreS)
-            .flags(*ItemFlag.entries.toTypedArray())
+            .flags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS)
             .asGuiItem {
                 player.playSound(player.location, clickSound, 1f, 1f)
                 plugin.survivorTienda.abrir(player)

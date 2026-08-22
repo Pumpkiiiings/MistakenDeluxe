@@ -115,7 +115,7 @@ class KillerShop : MenuBase("killers_shop") {
             gui.setItem(targetSlot, ItemBuilder.from(iconoMat)
                 .name(parseSafe(nombreVisual))
                 .lore(fullLore.toList())
-                .flags(*ItemFlag.entries.toTypedArray())
+                .flags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS)
                 .asGuiItem { event ->
                     event.isCancelled = true
                     if (reqMessages.isNotEmpty()) {
