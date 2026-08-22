@@ -22,6 +22,7 @@ interface ScriptRole {
     fun on_trigger(player: ScriptPlayer, triggerId: String)
     fun on_intercept_chat(player: ScriptPlayer, message: String): String?
     fun on_kill(killer: ScriptPlayer, victim: ScriptPlayer)
+    fun on_melee_attack(attacker: ScriptPlayer, victim: ScriptPlayer, slot: Int)
 }
 
 /**

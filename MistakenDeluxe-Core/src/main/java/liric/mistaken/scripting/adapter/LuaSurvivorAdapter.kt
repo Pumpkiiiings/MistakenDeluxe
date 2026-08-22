@@ -64,6 +64,12 @@ class LuaSurvivorAdapter(
         scriptRole.on_trigger(scriptPlayer, triggerId)
     }
 
+    fun onMeleeAttack(attacker: Player, victim: Player, slot: Int) {
+        val scriptAttacker = BukkitPlayerAdapter(attacker)
+        val scriptVictim = BukkitPlayerAdapter(victim)
+        scriptRole.on_melee_attack(scriptAttacker, scriptVictim, slot)
+    }
+
     fun dispatchEvent(event: liric.mistaken.scripting.api.ScriptEvent) {
         scriptRole.dispatch_event(event)
     }

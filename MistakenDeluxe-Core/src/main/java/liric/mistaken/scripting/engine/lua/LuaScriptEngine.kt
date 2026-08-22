@@ -119,6 +119,24 @@ class LuaRoleWrapper(
         }
     }
 
+    override fun on_melee_attack(attacker: ScriptPlayer, victim: ScriptPlayer, slot: Int) {
+        val func = luaTable.get("on_melee_attack")
+        if (func.isfunction()) {
+            try {
+                env.debugHook.resetCounter()
+                func.invoke(
+                    arrayOf(
+                        org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce(attacker),
+                        org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce(victim),
+                        LuaValue.valueOf(slot)
+                    )
+                )
+            } catch (e: Exception) {
+                org.bukkit.Bukkit.getLogger().severe("[Mistaken Script Engine] Error ejecutando on_melee_attack en $id: ${e.message}")
+            }
+        }
+    }
+
     private fun callFunction(funcName: String, vararg args: LuaValue) {
         var func = env.globals.get(funcName)
         if (!func.isfunction()) {

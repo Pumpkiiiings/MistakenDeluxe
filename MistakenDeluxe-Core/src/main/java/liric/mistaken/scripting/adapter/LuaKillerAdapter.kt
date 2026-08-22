@@ -99,4 +99,10 @@ class LuaKillerAdapter(
         val scriptVictimPlayer = BukkitPlayerAdapter(victim)
         scriptRole.on_kill(scriptKillerPlayer, scriptVictimPlayer)
     }
+
+    fun onMeleeAttack(attacker: Player, victim: Player, slot: Int) {
+        val scriptAttacker = BukkitPlayerAdapter(attacker)
+        val scriptVictim = BukkitPlayerAdapter(victim)
+        scriptRole.on_melee_attack(scriptAttacker, scriptVictim, slot)
+    }
 }

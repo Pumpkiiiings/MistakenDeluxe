@@ -84,6 +84,9 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
                 character.getComponent(liric.mistaken.models.components.StateComponent::class.java)
                     ?.transitionTo(liric.mistaken.models.states.AttackState, force = true)
             }
+        } else if (killer is liric.mistaken.scripting.adapter.LuaKillerAdapter) {
+            val victim = event.entity as? Player ?: return
+            killer.onMeleeAttack(player, victim, player.inventory.heldItemSlot)
         }
     }
 

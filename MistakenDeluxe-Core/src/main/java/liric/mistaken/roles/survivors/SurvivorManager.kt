@@ -21,7 +21,6 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
         listOf(
             DeliveryMan(),
             Minty(),
-            RaincoatKid(),
             Jesse(),
             Villager(),
             Notch()
@@ -36,7 +35,6 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
         listOf(
             DeliveryMan(),
             Minty(),
-            RaincoatKid(),
             Jesse(),
             Villager(),
             Notch()

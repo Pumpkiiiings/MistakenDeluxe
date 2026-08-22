@@ -140,8 +140,67 @@ object LuaEffectBindings {
             }
         })
 
+        globals.set("dash", object : ThreeArgFunction() {
+            override fun call(playerArg: LuaValue, multArg: LuaValue, yOffsetArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                val mult = multArg.optdouble(1.0)
+                val yOff = yOffsetArg.optdouble(0.0)
+                
+                player.scheduler.run(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java), java.util.function.Consumer<io.papermc.paper.threadedregions.scheduler.ScheduledTask> {
+                    val dir = player.location.direction.normalize().multiply(mult).setY(yOff)
+                    player.velocity = dir
+                }, null)
+                return LuaValue.NIL
+            }
+        })
 
+        globals.set("launch_entity", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val entity = unwrapEntity(args.arg(1)) ?: return LuaValue.NIL
+                val x = args.arg(2).optdouble(0.0)
+                val y = args.arg(3).optdouble(0.0)
+                val z = args.arg(4).optdouble(0.0)
+                
+                val p = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+                entity.scheduler.run(p, java.util.function.Consumer<io.papermc.paper.threadedregions.scheduler.ScheduledTask> {
+                    entity.velocity = entity.velocity.add(org.bukkit.util.Vector(x, y, z))
+                }, null)
+                
+                return LuaValue.NIL
+            }
+        })
 
+        globals.set("rotate_entity", object : ThreeArgFunction() {
+            override fun call(entityArg: LuaValue, yawArg: LuaValue, pitchArg: LuaValue): LuaValue {
+                val entity = unwrapEntity(entityArg) ?: return LuaValue.NIL
+                val yaw = yawArg.optdouble(0.0).toFloat()
+                val pitch = pitchArg.optdouble(0.0).toFloat()
+                
+                val p = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+                entity.scheduler.run(p, java.util.function.Consumer<io.papermc.paper.threadedregions.scheduler.ScheduledTask> {
+                    val loc = entity.location.clone()
+                    loc.yaw = yaw
+                    loc.pitch = pitch
+                    entity.teleportAsync(loc)
+                }, null)
+                
+                return LuaValue.NIL
+            }
+        })
+
+        globals.set("yaw", object : OneArgFunction() {
+            override fun call(locArg: LuaValue): LuaValue {
+                val loc = unwrapLocation(locArg) ?: return LuaValue.valueOf(0.0)
+                return LuaValue.valueOf(loc.yaw.toDouble())
+            }
+        })
+
+        globals.set("pitch", object : OneArgFunction() {
+            override fun call(locArg: LuaValue): LuaValue {
+                val loc = unwrapLocation(locArg) ?: return LuaValue.valueOf(0.0)
+                return LuaValue.valueOf(loc.pitch.toDouble())
+            }
+        })
         
         globals.set("draw_star", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
@@ -656,6 +715,23 @@ object LuaEffectBindings {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
                 val key = keyArg.checkjstring()
                 GameplayFunctions.sendTranslated(player, key)
+                return LuaValue.NIL
+            }
+        })
+
+        globals.set("send_action_bar_translated", object : ThreeArgFunction() {
+            override fun call(playerArg: LuaValue, keyArg: LuaValue, fileArg: LuaValue): LuaValue {
+                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
+                val key = keyArg.checkjstring()
+                val file = fileArg.optjstring("messages")
+                
+                val p = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+                player.scheduler.run(p, java.util.function.Consumer<io.papermc.paper.threadedregions.scheduler.ScheduledTask> {
+                    val rawMsg = liric.mistaken.config.engine.core.MessageService.getStrictString(player, key, file)
+                    if (rawMsg != null) {
+                        player.sendActionBar(liric.mistaken.utils.color.ColorTranslator.translate(rawMsg))
+                    }
+                }, null)
                 return LuaValue.NIL
             }
         })
@@ -1449,6 +1525,17 @@ object LuaEffectBindings {
             val adapter = luaVal.checkuserdata(BukkitPlayerAdapter::class.java) as BukkitPlayerAdapter
             adapter.getPlayer()
         } catch (_: Exception) { null }
+    }
+
+    /** Unwraps BukkitEntityAdapter userdata -> Entity */
+    private fun unwrapEntity(luaVal: LuaValue): org.bukkit.entity.Entity? {
+        if (luaVal.isnil()) return null
+        return try {
+            val adapter = luaVal.checkuserdata(liric.mistaken.scripting.adapter.BukkitEntityAdapter::class.java) as liric.mistaken.scripting.adapter.BukkitEntityAdapter
+            adapter.getBukkitEntity()
+        } catch (_: Exception) {
+            unwrapPlayer(luaVal) 
+        }
     }
 
     /** Unwraps BukkitLocationAdapter userdata → Location */

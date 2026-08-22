@@ -2,7 +2,6 @@ package liric.mistaken.listeners.survivors
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.roles.survivors.classes.RaincoatKid
 import liric.mistaken.roles.survivors.classes.KasaneTeto
 import liric.mistaken.roles.survivors.classes.Jesse
 import org.bukkit.GameMode
@@ -77,8 +76,6 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
 
         when (event.action) {
             Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> {
-                
-                if (clase is RaincoatKid && slot == 2) return
                 if (clase is Jesse && slot == 1) return
 
                 event.isCancelled = true
@@ -123,25 +120,19 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
 
         val clase = plugin.survivorManager.getSurvivorClass(attacker) ?: return
 
-        
-        if (pdc.has(STICK_KEY, PersistentDataType.BYTE) && clase is RaincoatKid) {
-            val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("supervivientes.raincoatkid.items.skill3_cooldown", 40)
-            if (!clase.checkCooldown(attacker, 2, cooldownTime)) {
-                clase.applyGolpePalo(victim)
-                attacker.sendMessage(ColorTranslator.translate("<green><bold>�BAM!</bold> <gray>Killer aturdido."))
-                attacker.playSound(attacker.location, Sound.ENTITY_FIREWORK_ROCKET_BLAST, 0.5f, 1.2f)
+        if (clase is liric.mistaken.scripting.adapter.LuaSurvivorAdapter) {
+            clase.onMeleeAttack(attacker, victim, attacker.inventory.heldItemSlot)
+            
+        } else {
+            
+            if (pdc.has(JESSE_PUNCH_KEY, PersistentDataType.BYTE) && clase is Jesse) {
+                val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("supervivientes.jesse.items.skill2_cooldown", 15)
+                if (!clase.checkCooldown(attacker, 1, cooldownTime)) {
+                    clase.applyGolpePuno(victim)
+                    attacker.sendMessage(ColorTranslator.translate("<gold><b>TOMA ESO!</b></gold>"))
+                }
+                return
             }
-            return
-        }
-
-        
-        if (pdc.has(JESSE_PUNCH_KEY, PersistentDataType.BYTE) && clase is Jesse) {
-            val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("supervivientes.jesse.items.skill2_cooldown", 15)
-            if (!clase.checkCooldown(attacker, 1, cooldownTime)) {
-                clase.applyGolpePuno(victim)
-                attacker.sendMessage(ColorTranslator.translate("<gold><b>�TOMA ESO!</b></gold>"))
-            }
-            return
         }
     }
 
