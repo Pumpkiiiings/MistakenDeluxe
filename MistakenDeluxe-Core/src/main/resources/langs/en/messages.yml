@@ -519,7 +519,9 @@ hook:
     enter: "<green>Your party has pulled you into the game."
     leave: "<red>Your party left the game, pulling everyone out..."
     enter-private: "<green>Your party has pulled you into the private game."
-reload-success: "<prefix>&#42F56CConfiguration and languages reloaded."
+
+admin:
+  reload-success: "<prefix>&#42F56CConfiguration and languages reloaded."
   start-forcing: "<prefix>&#42F56CInitiating hunting sequence..."
   start-already-ingame: "<prefix>&#FF3344Error: A game is already in progress."
   stop-broadcast: "&#FF3344&lMATCH CANCELLED &#CCCCCCby staff."

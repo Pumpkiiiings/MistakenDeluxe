@@ -519,6 +519,8 @@ hook:
     enter: "<green>Tu party te ha metido a la partida."
     leave: "<red>Tu party ha salido de la partida, sacando a todos..."
     enter-private: "<green>Tu party te ha metido a la partida privada."
+
+admin:
   reload-success: "<prefix>&#42F56CConfiguración e idiomas recargados."
   start-forcing: "<prefix>&#42F56CIniciando secuencia de caza..."
   start-already-ingame: "<prefix>&#FF3344Error: Ya hay una partida en curso."
