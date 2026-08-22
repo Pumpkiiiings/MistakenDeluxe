@@ -44,6 +44,17 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
             scriptsFolder.mkdirs()
         }
 
+        try {
+            val defaults = listOf("civil", "minty", "notch", "raincoatkid", "troll")
+            for (script in defaults) {
+                if (!java.io.File(scriptsFolder, "$script.lua").exists()) {
+                    plugin.saveResource("scripts/survivors/$script.lua", false)
+                }
+            }
+        } catch (e: Exception) {
+            plugin.componentLogger.warn(liric.mistaken.utils.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Failed to copy default survivor scripts.</gray>"))
+        }
+
         val files = scriptsFolder.listFiles() ?: return
         var loadedCount = 0
         for (file in files) {
