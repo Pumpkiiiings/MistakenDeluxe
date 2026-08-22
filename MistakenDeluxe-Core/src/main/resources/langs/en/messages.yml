@@ -1,31 +1,31 @@
-# ======================================================
+﻿# ======================================================
 #          MISTAKEN - ENGLISH LANGUAGE (US)
 # ======================================================
 
-prefix: "&#3BFFC7&lMISTAKEN &#888888| "
+prefix: "&#3BFFC7ᴍɪꜱᴛᴀᴋᴇɴ &#888888| "
 
 lobby:
   welcome: ""
 
 # --- VOTING ---
 voting:
-  started: "&#42F56CVoting has started! Use &#FFE300/vote <map>"
+  started: "&#42F56CVoting started! Use &#FFE300/vote <map>"
   not-active: "<prefix>&#FF3344There is no active voting right now."
-  already-voted: "<prefix>&#FF3344You have already voted in this match."
+  already-voted: "<prefix>&#FF3344You have already voted in this game."
   usage: "<prefix>&#FF3344Usage: /vote <map>"
   not-found: "<prefix>&#FF3344The map &#FFFFFF{map} &#FF3344does not exist."
   success: "<prefix>&#42F56CYou voted for: &#33CCFF{map}"
-  map-option: "&#888888▪ &#33CCFF{map}"
+  map-option: "&#888888» &#33CCFF{map}"
   not-enough-players: "<prefix>&#FF3344Not enough players to start."
 
 # --- BOSSBAR ---
 bossbar:
-  lobby: "&#FFE300&lWAITING FOR PLAYERS... &#CCCCCC({online})"
-  break: "&#FFE300&lBreak &#888888| &#FFFFFF<time>s"
-  voting: "&#42F56C&lVOTING IN PROGRESS &#888888| &#FFFFFFEnds in: &#FFE300{time}s"
-  starting: "&#FF3344&lGET READY! &#FFFFFFStarting in &#FFE300{time}s"
+  lobby: "&#FFE300ᴡᴀɪᴛɪɴɢ ꜰᴏʀ ᴘʟᴀʏᴇʀꜱ... &#CCCCCC({online})"
+  break: "&#FFE300ʙʀᴇᴀᴋ &#888888| &#FFFFFF<time>s"
+  voting: "&#42F56Cᴠᴏᴛɪɴɢ ɪɴ ᴘʀᴏɢʀᴇꜱꜱ &#888888| &#FFFFFFEnds in: &#FFE300{time}s"
+  starting: "&#FF3344¡ɢᴇᴛ ʀᴇᴀᴅʏ! &#FFFFFFStarting in &#FFE300{time}s"
   ingame: "&#FFFFFFMap: &#FFE300{map} &#888888| &#FFFFFFMode: &#33CCFF{mode} &#888888| &#FFFFFFTime: &#42F56C{time}"
-  ending: "&#FF3344&lMATCH OVER!"
+  ending: "&#FF3344¡ɢᴀᴍᴇ ᴏᴠᴇʀ!"
   colors:
     lobby: "YELLOW"
     break: "YELLOW"
@@ -40,23 +40,23 @@ words:
   survivors: "Survivors"
 
 discord:
-  reason_killer_won: "The killer massacred everyone!"
+  reason_killer_won: "The killer slaughtered everyone!"
   reason_survivors_won: "The survivors managed to escape!"
 
 # --- LMS ---
 lms:
-  title: "&#FF3344&lLAST MAN STANDING"
+  title: "&#FF0033「 ʟᴀꜱᴛ ᴍᴀɴ ꜱᴛᴀɴᴅɪɴɢ 」"
   subtitle:
-    survivor: "&#CCCCCCYou are alone! &#FF3344&lSURVIVE."
-    killer: "&#FF3344Only one left... &#FFE300&lHUNT THEM DOWN!"
+    survivor: "&#CCCCCCYou are alone! &#FF3344ꜱᴜʀᴠɪᴠᴇ."
+    killer: "&#FF3344Only one remains... &#FFE300¡ʜᴜɴᴛ ʜɪᴍ!"
     other: "&#FFE300<player> &#CCCCCCis the last hope."
   chat:
-    survivor: "\n&#FF3344&l[!] &#FFFFFFYour teammates have fallen. You are the &lLAST MAN STANDING&r.\n"
-    other: "\n&#FF3344&l[!] &#FFFFFF<player> is the &lLAST MAN STANDING&r.\n"
+    survivor: "\n&#FF3344[!] &#FFFFFFYour teammates have fallen. You are the &#FF3344ʟᴀꜱᴛ ᴍᴀɴ ꜱᴛᴀɴᴅɪɴɢ&#FFFFFF.\n"
+    other: "\n&#FF3344[!] &#FFFFFF<player> is the &#FF3344ʟᴀꜱᴛ ᴍᴀɴ ꜱᴛᴀɴᴅɪɴɢ&#FFFFFF.\n"
 
-# --- ABILITIES ---
+# --- SKILLS ---
 habilidades:
-  pedido-impacto-asesino: "&#42F56CWell done! &#FFFFFFThe package has reached the killer."
+  pedido-impacto-asesino: "&#42F56CWell done! &#FFFFFFThe order has reached the killer."
 
 # --- COMBAT ---
 combat:
@@ -65,12 +65,12 @@ combat:
   hunters-mark: "&#FF3344"
   health-bar: "&#FF3344{hearts_on}&#888888{hearts_off}"
   cooldown: "&#FF3344Wait &#FFFFFF{time}s &#FF3344to attack again!"
-  critical-wound: "&#FF3344&lYOUR LEGS ARE FAILING! &#CCCCCCSeek help or crawl."
-  kill-reward-actionbar: "&#FF3344&l+40 HEALTH &#888888| &#FFE300&l+${reward} CREDITS"
-  kill-reward-chat: "<prefix>&#CCCCCCYou received &#42F56C${reward} &#CCCCCCfor eliminating a player."
+  critical-wound: "&#FF3344¡ʏᴏᴜʀ ʟᴇɢꜱ ꜰᴀɪʟ! &#CCCCCCLook for help or crawl."
+  kill-reward-actionbar: "&#FF3344+40 ʜᴇᴀʟᴛʜ &#888888| &#FFE300+${reward} ᴄʀᴇᴅɪᴛꜱ"
+  kill-reward-chat: "<prefix>&#CCCCCCYou have received &#42F56C${reward} &#CCCCCCfor eliminating a player."
   rescue-start-carrier: "<prefix>&#42F56CYou picked up &#FFFFFF{target}&#42F56C! Take them to a safe place."
   rescue-start-victim: "<prefix>&#42F56C&#FFFFFF{carrier} &#42F56Cis carrying you."
-  rescue-dropped-carrier: "<prefix>&#FFE300You dropped your teammate."
+  rescue-dropped-carrier: "<prefix>&#FFE300You dropped your teammate on the ground."
   rescue-dropped-victim: "<prefix>&#FFE300You have been dropped."
   rescue-interrupted: "<prefix>&#FF3344You dropped your teammate due to the impact!"
   win-reward-killer: "<prefix>&#FFAA00Complete massacre! &#FFFFFFYou received &#42F56C${amount} &#FFFFFFfor your victory."
@@ -78,7 +78,7 @@ combat:
 
 # --- SCOREBOARD ---
 scoreboard:
-  title: "&#3BFFC7&lMISTAKEN"
+  title: "&#3BFFC7ᴍɪꜱᴛᴀᴋᴇɴ"
   lobby:
     - ""
     - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
@@ -93,7 +93,7 @@ scoreboard:
     - ""
     - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
     - ""
-    - " &#58D0FF⚙ &#FFFFFFPhase: &#33CCFFVOTING"
+    - " &#58D0FF⚙ &#FFFFFFPhase: &#33CCFFᴠᴏᴛɪɴɢ"
     - " &#ABC9FF⌚ &#FFFFFFTime: &#FFE300%timer%s"
     - ""
     - " &#31FF60✎ &#FFFFFFUse /vote"
@@ -115,7 +115,7 @@ scoreboard:
     - " &#FF9B00✎ &#FFFFFFMap: &#42F56C%map%"
     - " &#ABC9FF⌚ &#FFFFFFStarts in: &#FFE300%timer%s"
     - ""
-    - " &#FF3344&lGET READY!"
+    - " &#FF3344¡ʀᴇᴀᴅʏ!"
     - ""
   ingame_classic:
     - ""
@@ -207,80 +207,79 @@ scoreboard:
     - ""
     - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
     - ""
-    - " &#58D0FF⚙ &#FFFFFFStatus: &#FF3344&lENDED"
+    - " &#58D0FF⚙ &#FFFFFFStatus: &#FF3344ᴛᴇʀᴍɪɴᴀᴛᴇᴅ"
     - " &#FFD031☀ &#FFFFFFWinner(s): %killers%"
     - ""
 
 # --- GENERATORS ---
 generators:
   names:
-    RAW_IRON_BLOCK: "&#FFAA00&lSCRAP GENERATOR"
-    IRON_BLOCK: "&#FFFFFF&lELECTRICAL SYSTEM"
-    AMETHYST_BLOCK: "&#9933FF&lMEMORY CORE"
+    RAW_IRON_BLOCK: "&#FFAA00「 ꜱᴄʀᴀᴘ ɢᴇɴᴇʀᴀᴛᴏʀ 」"
+    IRON_BLOCK: "&#FFFFFF「 ᴇʟᴇᴄᴛʀɪᴄᴀʟ ꜱʏꜱᴛᴇᴍ 」"
+    AMETHYST_BLOCK: "&#9933FF「 ᴍᴇᴍᴏʀʏ ᴄᴏʀᴇ 」"
   hologram:
     lines-idle:
-      - "&#FFAA00&l{name}"
+      - "&#FFAA00{name}"
       - "&#FFFFFFProgress: &#CCCCCC{progress}%"
-      - "&#FFE300&lClick to repair!"
+      - "&#FFE300¡Click to repair!"
     lines-completed:
-      - "&#42F56C&l✔ POWER RESTORED ✔"
+      - "&#42F56C✔ ᴇɴᴇʀɢʏ ʀᴇꜱᴛᴏʀᴇᴅ ✔"
       - "&#CCCCCCGood job!"
 
 listeners:
   generators:
-    gui_title: "&#FFAA00&l🛠 REPAIRING GENERATOR"
+    gui_title: "&#555555🛠 ʀᴇᴘᴀɪʀɪɴɢ ɢᴇɴᴇʀᴀᴛᴏʀ"
     progress_lore: "&#FFFFFFCurrent progress: &#42F56C<progress>%"
     progress_loss_lore: "&#FF3344You lose 10% progress for failing!"
-    not_this_one: "&#FF3344&lFAKE INGOT!"
-    repair_item_name: "&#FFE300&lQUICK CLICK!"
+    not_this_one: "&#FF3344¡ꜰᴀᴋᴇ ɪɴɢᴏᴛ!"
+    repair_item_name: "&#FFE300¡ǫᴜɪᴄᴋ ᴄʟɪᴄᴋ!"
     repair_item_lore: "&#CCCCCCHelp your teammates!"
-    fake_item_name: "{color}&lQUICK CLICK!"
+    fake_item_name: "{color}¡ǫᴜɪᴄᴋ ᴄʟɪᴄᴋ!"
     fake_item_lore: "&#CCCCCCDo you really want to help?"
     killer_error: "&#FF3344You are the killer! You cannot repair generators."
   keypad:
-    killer_error: "&#FF3344Killers cannot use the code panels!"
-    already_solved: "&#FF3344This code panel is already solved."
-    already_typing: "&#FFE300You are already hacking a panel. Type the code in chat or '<cancel>'."
-    header: "&#00CED1--- SECURITY PANEL ---"
-    instructions: "&#FFFFFFTo unlock the progress, sort these numbers from &#FFE300&l<mode>&#FFFFFF:"
+    killer_error: "&#FF3344Killers cannot use code panels!"
+    already_solved: "&#FF3344Code panel already solved."
+    already_typing: "&#FFE300You are already trying to hack a panel. Type the code in chat or '<cancel>'."
+    header: "&#00CED1「 ꜱᴇᴄᴜʀɪᴛʏ ᴘᴀɴᴇʟ 」"
+    instructions: "&#FFFFFFTo unlock progress, sort these numbers from &#FFE300<mode>&#FFFFFF:"
     digits: "&#CCCCCC[ <digits> ]"
-    input_hint: "&#FFFFFFType the 4-digit code in chat (e.g. 1234) or type '<cancel>'."
-    mode_ascending: "LOWEST to HIGHEST"
-    mode_descending: "HIGHEST to LOWEST"
+    input_hint: "&#FFFFFFType the 4-digit code in chat (Ex: 1234) or type '<cancel>'."
+    mode_ascending: "ʟᴇꜱꜱ ᴛᴏ ᴍᴏʀᴇ"
+    mode_descending: "ᴍᴏʀᴇ ᴛᴏ ʟᴇꜱꜱ"
     cancel_word: "cancel"
-    cancelled: "&#FF3344You cancelled the panel hack."
+    cancelled: "&#FF3344You have canceled the panel hack."
     success: "&#42F56CCorrect code! Panel unlocked. (+100%)"
-    fail: "&#FF3344Wrong code. The panel has been temporarily locked."
+    fail: "&#FF3344Incorrect code. The panel has been temporarily locked."
   hack_terminal:
     killer_error: "&#FF3344Killers cannot hack terminals!"
-    already_hacked: "&#FF3344This terminal is already hacked."
-    gui_title: "&#00CED1&lHacking Terminal"
+    already_hacked: "&#FF3344Terminal already hacked."
+    gui_title: "&#555555ʜᴀᴄᴋɪɴɢ ᴛᴇʀᴍɪɴᴀʟ"
     color_red: "&#FF3344Red"
     color_green: "&#42F56CGreen"
     color_blue: "&#5599FFBlue"
     color_yellow: "&#FFE300Yellow"
     memorize: "&#FFFFFFMemorize..."
     waiting: "&#CCCCCC..."
-    enter_sequence: "&#42F56C&lENTER THE SEQUENCE!"
+    enter_sequence: "&#42F56C¡ᴇɴᴛᴇʀ ᴛʜᴇ ꜱᴇǫᴜᴇɴᴄᴇ!"
     success: "&#42F56CPartial hack successful! (+25%)"
-    fail: "&#FF3344Wrong sequence. Connection closed."
+    fail: "&#FF3344Incorrect sequence. Connection closed."
   flashlight:
-    # NOTE: do not use 'on'/'off' as keys, YAML 1.1 turns them into booleans.
     enabled: "&#FFE300Flashlight on"
     disabled: "&#888888Flashlight off"
 
 # --- ROLES ---
 roles:
   survivor:
-    title: "&#42F56C&lSURVIVOR"
+    title: "&#00FF33ꜱᴜʀᴠɪᴠᴏʀ"
     subtitle: "&#FFFFFFRepair generators and escape."
     chat:
-      - "&#42F56CFind &#FFAA00Raw Iron &#42F56Cblocks."
-      - "&#FF3344Don't fail the skill checks!"
+      - "&#42F56CLook for blocks of &#FFAA00Raw Iron&#42F56C."
+      - "&#FF3344Do not fail the skill checks!"
   killer:
-    title: "&#FF3344&lKILLER"
+    title: "&#FF0033ᴋɪʟʟᴇʀ"
     subtitle: "&#FFFFFFEliminate everyone before time runs out."
-    transform: "<prefix>&#CCCCCCYour humanity fades... You awoke as: &#FFFFFF{name}"
+    transform: "<prefix>&#CCCCCCYour humanity fades... You awakened as: &#FFFFFF{name}"
     chat:
       - "&#42F56CKill all players one by one."
       - "&#FF3344No mercy..."
@@ -290,34 +289,34 @@ killer:
   transform: "&#FFFFFFYou have awakened as: &#FFFFFF{name}"
   killer-no-regen: "<prefix>&#FF3344⚠ No natural regeneration. Kill to heal!"
 
-# --- SHOP ---
+# --- STORE ---
 tienda:
   clase-especial: "&#888888Special Class Entity"
   clase-humana: "&#CCCCCCClass: &#FFFFFFHuman Survivor"
-  habilidades-titulo: "&#CCCCCC▶ &#FFFFFFAbilities:"
-  estado-seleccionado: "&#42F56C✔ &lSELECTED"
-  estado-poseido: "&#FFE300» Click to select"
+  habilidades-titulo: "&#CCCCCC▶ &#FFFFFFSkills:"
+  estado-seleccionado: "&#42F56C✔ ꜱᴇʟᴇᴄᴛᴇᴅ"
+  estado-poseido: "&#FFE300» ᴄʟɪᴄᴋ ᴛᴏ ꜱᴇʟᴇᴄᴛ"
   estado-precio: "&#FFFFFFCost: &#FFE300● {amount} coins"
-  estado-comprar: "&#42F56CClick to purchase killer"
-  estado-comprar-superviviente: "&#33CCFFClick to purchase survivor"
+  estado-comprar: "&#42F56Cᴄʟɪᴄᴋ ᴛᴏ ᴀᴄǫᴜɪʀᴇ ᴋɪʟʟᴇʀ"
+  estado-comprar-superviviente: "&#33CCFFᴄʟɪᴄᴋ ᴛᴏ ᴀᴄǫᴜɪʀᴇ ꜱᴜʀᴠɪᴠᴏʀ"
   seleccionado: "<prefix>&#42F56CSelected: &#FFFFFF{name}"
-  comprado: "<prefix>&#FFAA00Congratulations! You unlocked: &#FFFFFF{name}"
-  ya-seleccionado: "&#FFE300&l[!] &#FFE300This class is already selected."
+  comprado: "<prefix>&#FFAA00Congratulations! You have unlocked: &#FFFFFF{name}"
+  ya-seleccionado: "&#FFE300[!] This class is already selected."
 
 # --- COMMANDS AND HELP ---
 help:
-  header: "   &#3BFFC7&lMISTAKEN &#888888| &#FFE300Help"
-  shop: "&#CCCCCC» &#FFE300/mistaken shop &#888888- &#FFFFFFKillers Shop."
+  header: "   &#3BFFC7ᴍɪꜱᴛᴀᴋᴇɴ &#888888| &#FFE300ʜᴇʟᴘ"
+  shop: "&#CCCCCC» &#FFE300/mistaken shop &#888888- &#FFFFFFKillers Store."
   stats: "&#CCCCCC» &#FFE300/mistaken stats &#888888- &#FFFFFFYour global stats."
   langs: "&#CCCCCC» &#FFE300/mistaken langs <id> &#888888- &#FFFFFFChange your language."
   afk: "&#CCCCCC» &#FFE300/mistaken afk &#888888- &#FFFFFFToggle AFK mode."
   edit: "&#CCCCCC» &#FFE300/mistaken edit &#888888- &#FFFFFFStaff build mode."
-  start: "&#CCCCCC» &#FFE300/mistaken start &#888888- &#FFFFFFForce start match."
-  stop: "&#CCCCCC» &#FFE300/mistaken stop &#888888- &#FFFFFFStop match."
+  start: "&#CCCCCC» &#FFE300/mistaken start &#888888- &#FFFFFFForce start."
+  stop: "&#CCCCCC» &#FFE300/mistaken stop &#888888- &#FFFFFFStop game."
   reload: "&#CCCCCC» &#FFE300/mistaken reload &#888888- &#FFFFFFReload config."
   setstamina: "&#CCCCCC» &#FFE300/mistaken setstamina <val> &#888888- &#FFFFFFAdjust stamina."
-  setasesino: "&#CCCCCC» &#FFE300/mistaken setasesino <id> &#888888- &#FFFFFFTest a killer."
-  setsuperviviente: "&#CCCCCC» &#FFE300/mistaken setsuperviviente <id> &#888888- &#FFFFFFTest a survivor."
+  setasesino: "&#CCCCCC» &#FFE300/mistaken setasesino <id> &#888888- &#FFFFFFKiller test."
+  setsuperviviente: "&#CCCCCC» &#FFE300/mistaken setsuperviviente <id> &#888888- &#FFFFFFSurvivor test."
   removekiller: "&#CCCCCC» &#FFE300/mistaken removekiller <p> &#888888- &#FFFFFFRemove test role."
   reloadkiller: "&#CCCCCC» &#FFE300/mistaken reloadkiller &#888888- &#FFFFFFReload killers."
   setmode: "&#CCCCCC» &#FFE300/mistaken setmode <id> &#888888- &#FFFFFFForce a mode."
@@ -325,56 +324,56 @@ help:
 
 admin:
   reload-success: "<prefix>&#42F56CConfiguration and languages reloaded."
-  start-forcing: "<prefix>&#42F56CInitiating hunting sequence..."
-  start-already-ingame: "<prefix>&#FF3344Error: A game is already in progress."
-  stop-broadcast: "&#FF3344&lMATCH CANCELLED &#CCCCCCby staff."
-  stop-success: "&#42F56CMatch force-stopped."
-  lobby-set: "<prefix>&#42F56CLobby point saved successfully."
+  start-forcing: "<prefix>&#42F56CInitiating hunt sequence..."
+  start-already-ingame: "<prefix>&#FF3344Error: There is already a game in progress."
+  stop-broadcast: "&#FF3344ɢᴀᴍᴇ ᴄᴀɴᴄᴇʟᴇᴅ &#CCCCCCby staff."
+  stop-success: "&#42F56CGame forcefully finished."
+  lobby-set: "<prefix>&#42F56CLobby point successfully saved."
   lang-set: "<prefix>&#42F56CLanguage changed to: &#33CCFF{langs}"
   usage-lang: "<prefix>&#FF3344Usage: /mistaken langs <es/en/fr/jp/zh>"
-  stamina-set: "<prefix>&#42F56CStamina of &#FFFFFF{player} &#42F56Cset to &#FFE300{amount}%"
+  stamina-set: "<prefix>&#42F56CStamina of &#FFFFFF{player} &#42F56Cadjusted to &#FFE300{amount}%"
   removekiller-success: "<prefix>&#42F56CRole removed from &#FFFFFF{player}&#42F56C."
   removekiller-target: "<prefix>&#FF3344Your role has been removed."
   mode-forced: "<prefix>&#FFE300An admin forced the mode: &#33CCFF{mode}"
   forcekiller-usage: "<prefix>&#FF3344Usage: /mistaken forcekiller <player>"
   forcekiller-not-in-game: "<prefix>&#FF3344You must be in a game to force a killer."
   forcekiller-already-started: "<prefix>&#FF3344You cannot force the role because the game already started."
-  forcekiller-success: "<prefix>&#42F56CYou forced &#FFFFFF{player} &#42F56Cto be the killer in the next match of &#33CCFF{arena}&#42F56C."
+  forcekiller-success: "<prefix>&#42F56CYou have forced &#FFFFFF{player} &#42F56Cto be the killer in the next game of &#33CCFF{arena}&#42F56C."
   afk-enabled: "<prefix>&#FFE300AFK mode enabled. The game engine will ignore you."
   afk-disabled: "<prefix>&#42F56CAFK mode disabled. Welcome back to the hunt!"
-  edit-enabled: "<prefix>&#33CCFFEdit mode enabled. You are invisible to game logic."
-  edit-disabled: "<prefix>&#FF3344Edit mode disabled. Game logic applies to you again."
+  edit-enabled: "<prefix>&#33CCFFEdit mode enabled. You are invisible to the game logic."
+  edit-disabled: "<prefix>&#FF3344Edit mode disabled. The game logic affects you again."
 
 stats:
-  header: "&#888888&m            &r &#FFAA00STATS: &#FFFFFF{player} &#888888&m            &r "
+  header: "&#888888&m            &r &#FFAA00ꜱᴛᴀᴛɪꜱᴛɪᴄꜱ: &#FFFFFF{player} &#888888&m            &r "
   wins-survivor: "&#CCCCCCSurvivor Wins: &#42F56C<value>"
   wins-assassin: "&#CCCCCCKiller Wins: &#FF3344<value>"
-  kills: "&#CCCCCCTotal Kills: &#AA0000<value>"
-  deaths: "&#CCCCCCTotal Deaths: &#888888<value>"
+  kills: "&#CCCCCCKills Total: &#AA0000<value>"
+  deaths: "&#CCCCCCDeaths Total: &#888888<value>"
   footer: "&#888888&m                                                 &r"
 
 # --- MODES ---
 modes:
   classic:
-    title: "&#FF3344&lCLASSIC MODE"
+    title: "&#FF0033ᴄʟᴀꜱꜱɪᴄ ᴍᴏᴅᴇ"
     subtitle: "&#FFFFFFA killer lurks in the shadows..."
   double_killer:
-    title: "&#FF3344&lDOUBLE KILLER"
-    subtitle: "&#FFFFFFTWO ENTITIES AWAKENED! Death is inevitable."
+    title: "&#FF0000ᴅᴏᴜʙʟᴇ ᴋɪʟʟᴇʀ"
+    subtitle: "&#FFFFFFTWO ENTITIES HAVE AWOKEN! Death is inevitable."
   one_bounce:
-    title: "&#AA0000&lONE BOUNCE"
+    title: "&#FF00FFᴏɴᴇ ʙᴏᴜɴᴄᴇ"
     subtitle: "&#FFFFFFYOU ARE THE ONLY SURVIVOR! Everyone else is a killer."
   freeze_tag:
-    title: "&#33CCFF&lFREEZE TAG"
+    title: "&#00FFFFꜰʀᴇᴇᴢᴇ ᴛᴀɢ"
     subtitle: "&#FFFFFFThe entities will freeze you. Rescue your teammates!"
   infection:
-    title: "&#42F56C&lINFECTION"
-    subtitle: "&#FFFFFFEvery survivor who falls joins the killers."
+    title: "&#33FF00ɪɴꜰᴇᴄᴛɪᴏɴ"
+    subtitle: "&#FFFFFFEvery fallen survivor will join the killers."
   hide_and_seek:
-    title: "&#42F56C&lHIDE AND SEEK"
+    title: "&#FFFF00ʜɪᴅᴇ ᴀɴᴅ ꜱᴇᴇᴋ"
     subtitle: "&#FFFFFFYou have 1 minute to hide."
   initializes:
-    title: "&#AA0000&lINITIALIZES"
+    title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
 
 # --- GAME ---
@@ -384,26 +383,26 @@ game:
   player-died: "&#FF3344&#FFFFFF{player} &#FF3344has been eliminated."
   player-frozen-death: "&#FF3344&#FFFFFF{player} &#FF3344froze to death."
   killer-disconnected: "<prefix>&#FF3344The Killer fled!"
-  killer-died-victory: "&#FF3344The Killer has died!"
-  victory-killer: "&#FF3344&lEVIL HAS TRIUMPHED."
-  victory-survivors: "&#42F56C&lYOU SURVIVED!"
+  killer-died-victory: "&#FF3344The Killer is dead!"
+  victory-killer: "&#FF3344ᴇᴠɪʟ ʜᴀꜱ ᴛʀɪᴜᴍᴘʜᴇᴅ."
+  victory-survivors: "&#42F56C¡ʏᴏᴜ ꜱᴜʀᴠɪᴠᴇᴅ!"
   killer-hit-actionbar: "&#FF3344❤ &#FFFFFFKiller's Health: &#FFE300{health}"
   killer-stunned-damager: "&#FF3344You stunned the killer!"
   killer-stunned-victim: "&#FFE300You have been stunned!"
-  killer-title: "&#FF3344&lVICTORY!"
+  killer-title: "&#FF0033¡ᴠɪᴄᴛᴏʀʏ!"
   killer-subtitle: "&#FFFFFFNo one was left alive."
-  killer-defeat-title: "&#FF3344&lYOU SURVIVED!"
+  killer-defeat-title: "&#FF0033¡ʏᴏᴜ ꜱᴜʀᴠɪᴠᴇᴅ!"
   killer-defeat-subtitle: "&#FFFFFFThe survivors escaped..."
-  survivor-title: "&#42F56C&lVICTORY!"
+  survivor-title: "&#00FF33¡ᴠɪᴄᴛᴏʀʏ!"
   survivor-subtitle: "&#FFFFFFYou managed to escape alive."
-  survivor-defeat-title: "&#FF3344&lDEFEAT!"
+  survivor-defeat-title: "&#FF0033¡ᴅᴇꜰᴇᴀᴛ!"
   survivor-defeat-subtitle: "&#FFFFFFThe killer massacred everyone."
-  killer-released-title: "&#FF3344&lKILLER RELEASED!"
+  killer-released-title: "&#FF0000¡ᴋɪʟʟᴇʀ ʀᴇʟᴇᴀꜱᴇᴅ!"
   killer-released-subtitle: "&#FFFFFFThe killer can now move and see."
-  join-as-spectator: "<prefix>&#CCCCCCThe match has already started. You are spectating."
+  join-as-spectator: "<prefix>&#CCCCCCThe game already started. You are spectating."
   rejoin-msg: "<prefix>&#FF3344Welcome back, killer. Continue the massacre."
-  infection-hit: "<prefix>&#FF3344CORRUPT SYSTEM! The Error Star infected you."
-  hunt-start: "&#FF3344&lTHE KILLER HAS APPEARED! &#FFFFFFDon't let them find you..."
+  infection-hit: "<prefix>&#FF3344SYSTEM CORRUPTED! Error Star infected you."
+  hunt-start: "&#FF3344¡ᴛʜᴇ ᴋɪʟʟᴇʀ ʜᴀꜱ ᴀᴘᴘᴇᴀʀᴇᴅ! &#FFFFFFDon't let him find you..."
   class-selected: "&#FF3344"
   time-extended: "&#42F56CWell done! For the kill, &#FFE300{seconds}s &#42F56Cwere added to the clock."
   mode-reveal-start: "&#FFE300Analyzing anomalies in the area... &kaa&r"
@@ -411,30 +410,30 @@ game:
   player-frozen: "&#33CCFF{player} &#FFFFFFwas frozen by the killer."
   unfrozen-victim: "&#42F56C{player} has freed you from the ice."
   unfrozen-rescuer: "&#42F56CYou have freed {player} from the ice."
-  freeze-title: "&#33CCFF&lFROZEN!"
+  freeze-title: "&#00FFFF¡ꜰʀᴏᴢᴇɴ!"
   freeze-subtitle: "&#FFFFFFYou have &{color}{time} &#FFFFFFseconds to be rescued."
-  edit-enable: "<prefix>&#33CCFFEdit Mode enabled. You are invisible to game logic."
-  edit-disable: "<prefix>&#FF3344Edit Mode disabled. Game logic applies to you again."
-  afk-enable: "<prefix>&#FFE300AFK Mode enabled. The game engine will now ignore you."
+  edit-enable: "<prefix>&#33CCFFEdit Mode enabled. You are invisible to the game logic."
+  edit-disable: "<prefix>&#FF3344Edit Mode disabled. The game logic applies again."
+  afk-enable: "<prefix>&#FFE300AFK Mode enabled. The game engine will ignore you now."
   afk-disable: "<prefix>&#42F56CAFK Mode disabled. Welcome back!"
 
 # --- ARENA ---
 arena:
-  created: "<prefix>&#FFFFFFArena &#FFE300{name} &#FFFFFFcreated."
-  deleted: "<prefix>&#FF3344Arena &#FFE300{name} &#FF3344deleted."
+  created: "<prefix>&#FFFFFF&#FFE300{name} &#FFFFFFArena created."
+  deleted: "<prefix>&#FF3344&#FFE300{name} &#FF3344Arena deleted."
   setpaste: "<prefix>&#FFFFFFSchematic point saved."
-  setspawn: "<prefix>&#FFFFFFSpawn for &#FFE300{type} &#FFFFFFsaved for &#FFE300{name}&#FFFFFF."
+  setspawn: "<prefix>&#FFFFFF&#FFE300{type} &#FFFFFFspawn saved for &#FFE300{name}&#FFFFFF."
   setgenerator: "<prefix>&#FFFFFFGenerator added."
   delgenerator: "<prefix>&#FF3344Generator removed."
   delgenerators: "<prefix>&#FF3344Generators cleared."
-  usage-setspawn: "<prefix>&#FF3344Usage: /arena setspawn {name} <killer/survivor>"
-  status-ready: "&#42F56CREADY"
-  status-incomplete: "&#FF3344INCOMPLETE"
+  usage-setspawn: "<prefix>&#FF3344Usage: /arena setspawn {name} <asesino/survivor>"
+  status-ready: "&#42F56Cʀᴇᴀᴅʏ"
+  status-incomplete: "&#FF3344ɪɴᴄᴏᴍᴘʟᴇᴛᴇ"
   check-header: "&#888888» &#CCCCCCStatus of &#FFE300{name}&#CCCCCC: {status}"
   check-survivors: "&#CCCCCC - Survivor Spawns: &#FFFFFF{count}"
   check-generators: "&#CCCCCC - Generators: &#FFFFFF{count}"
   check-killer: "&#CCCCCC - Killer Spawn: {icon}"
-  help-header: "&#3BFFC7&lMISTAKEN &#888888| &#CCCCCCArenas"
+  help-header: "&#3BFFC7ᴍɪꜱᴛᴀᴋᴇɴ &#888888| &#CCCCCCᴀʀᴇɴᴀꜱ"
   help-line-create: " &#FFE300/arena create <name>"
   help-line-delete: " &#FFE300/arena delete <name>"
   help-line-check: " &#FFE300/arena check <name>"
@@ -447,18 +446,18 @@ arena:
 # --- ERRORS ---
 errors:
   no-permission: "<prefix>&#FF3344You don't have permission for this."
-  only-players: "&#FF3344Players only."
-  ability-cooldown: "&#FF3344The ability &#FFAA00<skill> &#FF3344is not ready. Cooldown remaining: &#FFE300<time>s"
+  only-players: "&#FF3344Only for players."
+  ability-cooldown: "&#FF3344The skill &#FFAA00<skill> &#FF3344is not ready. Cooldown remaining: &#FFE300<time>s"
   lang-not-found: "<prefix>&#FF3344That language does not exist."
   no-money: "<prefix>&#FF3344You don't have enough coins."
   arena-not-found: "<prefix>&#FF3344The arena &#FFFFFF{name} &#FF3344does not exist."
-  voting-not-active: "<prefix>&#FF3344Voting is not active right now."
-  already-voted: "<prefix>&#FF3344You have already voted."
-  player-not-found: "<prefix>&#FF3344Player is offline."
+  voting-not-active: "<prefix>&#FF3344Voting is not active."
+  already-voted: "<prefix>&#FF3344You already voted."
+  player-not-found: "<prefix>&#FF3344Offline player."
   player-not-killer: "<prefix>&#FF3344Not a killer."
   unknown-command: "<prefix>&#FF3344Unknown command."
   invalid-number: "<prefix>&#FF3344Use a valid number."
-  invalid-spawn-type: "<prefix>&#FF3344Use 'killer' or 'survivor'."
+  invalid-spawn-type: "<prefix>&#FF3344Use 'asesino' or 'survivor'."
   invalid-gen-block: "<prefix>&#FF3344Look at an iron or amethyst block."
   not-a-generator: "<prefix>&#FF3344That is not a generator."
   killer-not-found: "<prefix>&#FF3344That class does not exist."
@@ -468,20 +467,20 @@ paranoia:
   - "&#888888&k||&r &#888888Did you hear that? &k||&r"
   - "&#888888SOMEONE IS WATCHING YOU..."
   - "&#FF3344HE IS CLOSE."
-  - "&#888888DO NOT LOOK BACK."
+  - "&#888888DO NOT TURN AROUND."
 
 # --- STAMINA ---
 stamina:
-  exhausted: "&#FF3344&lEXHAUSTED! &#CCCCCC Catch your breath..."
+  exhausted: "&#FF3344¡ʏᴏᴜ ᴀʀᴇ ᴇxʜᴀᴜꜱᴛᴇᴅ! &#CCCCCCCatch your breath..."
   low_warning: "&#FFAA00⚠ You are losing stamina quickly!"
 
 # --- ANOMALIES ---
 anomalies:
   geoffrey:
-    spawn: "&#FF3344&l[!] &#AA0000ANOMALY DETECTED: &lTHE ABYSS HAS AWAKENED."
-    title-comes: "&#AA0000&l!!! IT'S COMING !!!"
-    subtitle-comes: "&#FF3344run!!!!"
-    rage: "&#AA0000&l!!! GEOFFREY IS FURIOUS !!!"
+    spawn: "&#FF3344[!] &#AA0000ᴀɴᴏᴍᴀʟʏ ᴅᴇᴛᴇᴄᴛᴇᴅ: ᴛʜᴇ ᴀʙʏꜱꜱ ʜᴀꜱ ᴀᴡᴀᴋᴇɴᴇᴅ."
+    title-comes: "&#FF0000¡¡¡ ɪᴛ ᴄᴏᴍᴇꜱ !!!"
+    subtitle-comes: "&#FF3344¡run!!!!"
+    rage: "&#AA0000¡¡¡ ɢᴇᴏꜰꜰʀᴇʏ ɪꜱ ꜰᴜʀɪᴏᴜꜱ !!!"
     death: "<prefix>&#FFFFFF{player} &#FF3344was torn apart by Geoffrey."
 
 # ==========================================
@@ -489,249 +488,52 @@ anomalies:
 # ==========================================
 menus:
   killers_shop:
-    titulo: "&#FF3344&l» Killers Shop"
+    titulo: "&#555555「 ᴋɪʟʟᴇʀꜱ ꜱᴛᴏʀᴇ 」"
   survivors_shop:
-    titulo: "&#33CCFF&l» Survivors Shop"
+    titulo: "&#555555「 ꜱᴜʀᴠɪᴠᴏʀꜱ ꜱᴛᴏʀᴇ 」"
   tienda_principal:
-    titulo: "&#001A33&l» Main Shop"
+    titulo: "&#555555「 ᴍᴀɪɴ ꜱᴛᴏʀᴇ 」"
     items:
       asesinos:
-        nombre: "&#FF3344&lKILLERS SHOP"
+        nombre: "&#FF3344「 ᴋɪʟʟᴇʀꜱ 」"
         lore:
           - ""
           - "&#CCCCCCUnleash your killer instinct."
-          - "&#CCCCCCBuy characters and special abilities"
-          - "&#CCCCCCfor the hunt."
+          - "&#CCCCCCBuy characters and special"
+          - "&#CCCCCCskills for the hunt."
           - ""
           - "&#FF3344» Click to enter"
       supervivientes:
-        nombre: "&#33CCFF&lSURVIVORS SHOP"
+        nombre: "&#33CCFF「 ꜱᴜʀᴠɪᴠᴏʀꜱ 」"
         lore:
           - ""
           - "&#CCCCCCImprove your chances of success."
           - "&#CCCCCCAcquire classes with unique perks"
           - "&#CCCCCCto cheat death."
           - ""
-          - "&#33CCFF Click to enter"
+          - "&#33CCFF» Click to enter"
 
 hook:
   party:
-    enter: "<green>Your party has pulled you into the game."
-    leave: "<red>Your party left the game, pulling everyone out..."
-    enter-private: "<green>Your party has pulled you into the private game."
-
-admin:
-  reload-success: "<prefix>&#42F56CConfiguration and languages reloaded."
-  start-forcing: "<prefix>&#42F56CInitiating hunting sequence..."
-  start-already-ingame: "<prefix>&#FF3344Error: A game is already in progress."
-  stop-broadcast: "&#FF3344&lMATCH CANCELLED &#CCCCCCby staff."
-  stop-success: "&#42F56CMatch force-stopped."
-  lobby-set: "<prefix>&#42F56CLobby point saved successfully."
-  lang-set: "<prefix>&#42F56CLanguage changed to: &#33CCFF{langs}"
-  usage-lang: "<prefix>&#FF3344Usage: /mistaken langs <es/en/fr/jp/zh>"
-  stamina-set: "<prefix>&#42F56CStamina of &#FFFFFF{player} &#42F56Cset to &#FFE300{amount}%"
-  removekiller-success: "<prefix>&#42F56CRole removed from &#FFFFFF{player}&#42F56C."
-  removekiller-target: "<prefix>&#FF3344Your role has been removed."
-  mode-forced: "<prefix>&#FFE300An admin forced the mode: &#33CCFF{mode}"
-  forcekiller-usage: "<prefix>&#FF3344Usage: /mistaken forcekiller <player>"
-  forcekiller-not-in-game: "<prefix>&#FF3344You must be in a game to force a killer."
-  forcekiller-already-started: "<prefix>&#FF3344You cannot force the role because the game already started."
-  forcekiller-success: "<prefix>&#42F56CYou forced &#FFFFFF{player} &#42F56Cto be the killer in the next match of &#33CCFF{arena}&#42F56C."
-  afk-enabled: "<prefix>&#FFE300AFK mode enabled. The game engine will ignore you."
-  afk-disabled: "<prefix>&#42F56CAFK mode disabled. Welcome back to the hunt!"
-  edit-enabled: "<prefix>&#33CCFFEdit mode enabled. You are invisible to game logic."
-  edit-disabled: "<prefix>&#FF3344Edit mode disabled. Game logic applies to you again."
-
-stats:
-  header: "&#888888&m            &r &#FFAA00STATS: &#FFFFFF{player} &#888888&m            &r "
-  wins-survivor: "&#CCCCCCSurvivor Wins: &#42F56C<value>"
-  wins-assassin: "&#CCCCCCKiller Wins: &#FF3344<value>"
-  kills: "&#CCCCCCTotal Kills: &#AA0000<value>"
-  deaths: "&#CCCCCCTotal Deaths: &#888888<value>"
-  footer: "&#888888&m                                                 &r"
-
-# --- MODES ---
-modes:
-  classic:
-    title: "&#FF3344&lCLASSIC MODE"
-    subtitle: "&#FFFFFFA killer lurks in the shadows..."
-  double_killer:
-    title: "&#FF3344&lDOUBLE KILLER"
-    subtitle: "&#FFFFFFTWO ENTITIES AWAKENED! Death is inevitable."
-  one_bounce:
-    title: "&#AA0000&lONE BOUNCE"
-    subtitle: "&#FFFFFFYOU ARE THE ONLY SURVIVOR! Everyone else is a killer."
-  freeze_tag:
-    title: "&#33CCFF&lFREEZE TAG"
-    subtitle: "&#FFFFFFThe entities will freeze you. Rescue your teammates!"
-  infection:
-    title: "&#42F56C&lINFECTION"
-    subtitle: "&#FFFFFFEvery survivor who falls joins the killers."
-  hide_and_seek:
-    title: "&#42F56C&lHIDE AND SEEK"
-    subtitle: "&#FFFFFFYou have 1 minute to hide."
-  initializes:
-    title: "&#AA0000&lINITIALIZES"
-    subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
-
-# --- GAME ---
-game:
-  break-start: "&#42F56CBreak for &#FFE30010s&#42F56C. Voting will start after the break."
-  map-loaded: "&#42F56CMap &#FFE300{map} &#42F56Cselected."
-  player-died: "&#FF3344&#FFFFFF{player} &#FF3344has been eliminated."
-  player-frozen-death: "&#FF3344&#FFFFFF{player} &#FF3344froze to death."
-  killer-disconnected: "<prefix>&#FF3344The Killer fled!"
-  killer-died-victory: "&#FF3344The Killer has died!"
-  victory-killer: "&#FF3344&lEVIL HAS TRIUMPHED."
-  victory-survivors: "&#42F56C&lYOU SURVIVED!"
-  killer-hit-actionbar: "&#FF3344❤ &#FFFFFFKiller's Health: &#FFE300{health}"
-  killer-stunned-damager: "&#FF3344You stunned the killer!"
-  killer-stunned-victim: "&#FFE300You have been stunned!"
-  killer-title: "&#FF3344&lVICTORY!"
-  killer-subtitle: "&#FFFFFFNo one was left alive."
-  killer-defeat-title: "&#FF3344&lYOU SURVIVED!"
-  killer-defeat-subtitle: "&#FFFFFFThe survivors escaped..."
-  survivor-title: "&#42F56C&lVICTORY!"
-  survivor-subtitle: "&#FFFFFFYou managed to escape alive."
-  survivor-defeat-title: "&#FF3344&lDEFEAT!"
-  survivor-defeat-subtitle: "&#FFFFFFThe killer massacred everyone."
-  killer-released-title: "&#FF3344&lKILLER RELEASED!"
-  killer-released-subtitle: "&#FFFFFFThe killer can now move and see."
-  join-as-spectator: "<prefix>&#CCCCCCThe match has already started. You are spectating."
-  rejoin-msg: "<prefix>&#FF3344Welcome back, killer. Continue the massacre."
-  infection-hit: "<prefix>&#FF3344CORRUPT SYSTEM! The Error Star infected you."
-  hunt-start: "&#FF3344&lTHE KILLER HAS APPEARED! &#FFFFFFDon't let them find you..."
-  class-selected: "&#FF3344"
-  time-extended: "&#42F56CWell done! For the kill, &#FFE300{seconds}s &#42F56Cwere added to the clock."
-  mode-reveal-start: "&#FFE300Analyzing anomalies in the area... &kaa&r"
-  mode-selected: "&#FFFFFFDetected mode: &#33CCFF{mode}"
-  player-frozen: "&#33CCFF{player} &#FFFFFFwas frozen by the killer."
-  unfrozen-victim: "&#42F56C{player} has freed you from the ice."
-  unfrozen-rescuer: "&#42F56CYou have freed {player} from the ice."
-  freeze-title: "&#33CCFF&lFROZEN!"
-  freeze-subtitle: "&#FFFFFFYou have &{color}{time} &#FFFFFFseconds to be rescued."
-  edit-enable: "<prefix>&#33CCFFEdit Mode enabled. You are invisible to game logic."
-  edit-disable: "<prefix>&#FF3344Edit Mode disabled. Game logic applies to you again."
-  afk-enable: "<prefix>&#FFE300AFK Mode enabled. The game engine will now ignore you."
-  afk-disable: "<prefix>&#42F56CAFK Mode disabled. Welcome back!"
-
-# --- ARENA ---
-arena:
-  created: "<prefix>&#FFFFFFArena &#FFE300{name} &#FFFFFFcreated."
-  deleted: "<prefix>&#FF3344Arena &#FFE300{name} &#FF3344deleted."
-  setpaste: "<prefix>&#FFFFFFSchematic point saved."
-  setspawn: "<prefix>&#FFFFFFSpawn for &#FFE300{type} &#FFFFFFsaved for &#FFE300{name}&#FFFFFF."
-  setgenerator: "<prefix>&#FFFFFFGenerator added."
-  delgenerator: "<prefix>&#FF3344Generator removed."
-  delgenerators: "<prefix>&#FF3344Generators cleared."
-  usage-setspawn: "<prefix>&#FF3344Usage: /arena setspawn {name} <killer/survivor>"
-  status-ready: "&#42F56CREADY"
-  status-incomplete: "&#FF3344INCOMPLETE"
-  check-header: "&#888888» &#CCCCCCStatus of &#FFE300{name}&#CCCCCC: {status}"
-  check-survivors: "&#CCCCCC - Survivor Spawns: &#FFFFFF{count}"
-  check-generators: "&#CCCCCC - Generators: &#FFFFFF{count}"
-  check-killer: "&#CCCCCC - Killer Spawn: {icon}"
-  help-header: "&#3BFFC7&lMISTAKEN &#888888| &#CCCCCCArenas"
-  help-line-create: " &#FFE300/arena create <name>"
-  help-line-delete: " &#FFE300/arena delete <name>"
-  help-line-check: " &#FFE300/arena check <name>"
-  help-line-setpaste: " &#FFE300/arena setpaste <name>"
-  help-line-setspawn: " &#FFE300/arena setspawn <name> <type>"
-  help-line-setgenerator: " &#FFE300/arena setgenerator <name>"
-  help-line-delgenerator: " &#FFE300/arena delgenerator <name>"
-  help-line-delgenerators: " &#FFE300/arena delgenerators <name>"
-
-# --- ERRORS ---
-errors:
-  no-permission: "<prefix>&#FF3344You don't have permission for this."
-  only-players: "&#FF3344Players only."
-  ability-cooldown: "&#FF3344The ability &#FFAA00<skill> &#FF3344is not ready. Cooldown remaining: &#FFE300<time>s"
-  lang-not-found: "<prefix>&#FF3344That language does not exist."
-  no-money: "<prefix>&#FF3344You don't have enough coins."
-  arena-not-found: "<prefix>&#FF3344The arena &#FFFFFF{name} &#FF3344does not exist."
-  voting-not-active: "<prefix>&#FF3344Voting is not active right now."
-  already-voted: "<prefix>&#FF3344You have already voted."
-  player-not-found: "<prefix>&#FF3344Player is offline."
-  player-not-killer: "<prefix>&#FF3344Not a killer."
-  unknown-command: "<prefix>&#FF3344Unknown command."
-  invalid-number: "<prefix>&#FF3344Use a valid number."
-  invalid-spawn-type: "<prefix>&#FF3344Use 'killer' or 'survivor'."
-  invalid-gen-block: "<prefix>&#FF3344Look at an iron or amethyst block."
-  not-a-generator: "<prefix>&#FF3344That is not a generator."
-  killer-not-found: "<prefix>&#FF3344That class does not exist."
-
-# --- PARANOIA ENGINE ---
-paranoia:
-  - "&#888888&k||&r &#888888Did you hear that? &k||&r"
-  - "&#888888SOMEONE IS WATCHING YOU..."
-  - "&#FF3344HE IS CLOSE."
-  - "&#888888DO NOT LOOK BACK."
-
-# --- STAMINA ---
-stamina:
-  exhausted: "&#FF3344&lEXHAUSTED! &#CCCCCC Catch your breath..."
-  low_warning: "&#FFAA00⚠ You are losing stamina quickly!"
-
-# --- ANOMALIES ---
-anomalies:
-  geoffrey:
-    spawn: "&#FF3344&l[!] &#AA0000ANOMALY DETECTED: &lTHE ABYSS HAS AWAKENED."
-    title-comes: "&#AA0000&l!!! IT'S COMING !!!"
-    subtitle-comes: "&#FF3344run!!!!"
-    rage: "&#AA0000&l!!! GEOFFREY IS FURIOUS !!!"
-    death: "<prefix>&#FFFFFF{player} &#FF3344was torn apart by Geoffrey."
-
-# ==========================================
-# --- MENU TITLES ---
-# ==========================================
-menus:
-  killers_shop:
-    titulo: "&#FF3344&l» Killers Shop"
-  survivors_shop:
-    titulo: "&#33CCFF&l» Survivors Shop"
-  tienda_principal:
-    titulo: "&#001A33&l» Main Shop"
-    items:
-      asesinos:
-        nombre: "&#FF3344&lKILLERS SHOP"
-        lore:
-          - ""
-          - "&#CCCCCCUnleash your killer instinct."
-          - "&#CCCCCCBuy characters and special abilities"
-          - "&#CCCCCCfor the hunt."
-          - ""
-          - "&#FF3344» Click to enter"
-      supervivientes:
-        nombre: "&#33CCFF&lSURVIVORS SHOP"
-        lore:
-          - ""
-          - "&#CCCCCCImprove your chances of success."
-          - "&#CCCCCCAcquire classes with unique perks"
-          - "&#CCCCCCto cheat death."
-          - ""
-          - "&#33CCFF Click to enter"
-
-hook:
-  party:
-    enter: "<green>Your party has pulled you into the game."
-    leave: "<red>Your party left the game, pulling everyone out..."
-    enter-private: "<green>Your party has pulled you into the private game."
-    created-private: "<yellow>You created a private game! Use the panel to configure it."
+    enter: "<green>Your party has brought you into the game."
+    leave: "<red>Your party has left the game, pulling everyone out..."
+    enter-private: "<green>Your party has brought you into the private game."
+    created-private: "<yellow>You have created a private game! Use the panel to configure it."
     only-leader: "<red>Only the party leader can create private games."
     not-in: "<red>You are not in a party."
-    no-maps: "<red>No maps configured to start the game."
+    no-maps: "<red>There are no maps configured to start the game."
   alessio:
-    enter: "<green>Your party leader has pulled you into the game."
-    leave: "<red>Your party leader left the game, pulling everyone out..."
+    enter: "<green>Your party leader has brought you into the game."
+    leave: "<red>Your party leader has left the game, pulling everyone out..."
 
 shop:
-  estado-seleccionado: "<dark_gray>[ <green>✔ SELECTED <dark_gray>]"
-  estado-poseido: "<dark_gray>[ <yellow>★ OWNED <dark_gray>]"
-  estado-comprar: "<dark_gray>[ <aqua>» CLICK TO BUY « <dark_gray>]"
-  estado-precio: "<gray>Price: <gold><bold>{amount} <yellow>Coins"
-  abilityes-titulo: "<dark_purple><b><obfuscated>||</obfuscated> <light_purple>ABILITIES <dark_purple><obfuscated>||</obfuscated></b>"
-  clase-humana: "<gray>✦ <white>Human Class"
-  estado-comprar-survivor: "<dark_gray>[ <aqua>» BUY SURVIVOR « <dark_gray>]"
-  comprado: "<green><b>✔ SUCCESSFUL PURCHASE!</b> <gray>You have acquired this class."
-  seleccionado: "<green><b>✔ SELECTED!</b>"
-  ya-seleccionado: "<red><b>⚠</b> <gray>You already have this selected."
+  estado-seleccionado: "<#00FF30>✔ ꜱᴇʟᴇᴄᴛᴇᴅ"
+  estado-poseido: "<#FCFF00>★ ᴘᴏꜱꜱᴇꜱꜱᴇᴅ"
+  estado-comprar: "<#FCFF00>» ᴄʟɪᴄᴋ ᴛᴏ ʙᴜʏ «"
+  estado-precio: "<white>Price<dark_gray>: <#00FF30>${amount}"
+  abilityes-titulo: "<gray>「 ꜱᴋɪʟʟꜱ 」"
+  clase-humana: "<dark_gray>「 ꜱᴜʀᴠɪᴠᴏʀ 」"
+  estado-comprar-survivor: "<aqua>» ʙᴜʏ ꜱᴜʀᴠɪᴠᴏʀ «"
+  comprado: "<green>✔ ¡ᴘᴜʀᴄʜᴀꜱᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ! <gray>You have acquired this class."
+  seleccionado: "<#00FF30>✔ ᴄʜᴀʀᴀᴄᴛᴇʀ ꜱᴇʟᴇᴄᴛᴇᴅ."
+  ya-seleccionado: "<red>⚠ <gray>You already have this selected."
