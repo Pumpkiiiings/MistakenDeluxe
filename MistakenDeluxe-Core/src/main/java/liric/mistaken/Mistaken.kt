@@ -84,6 +84,7 @@ class Mistaken : JavaPlugin() {
     val mm = MiniMessage.miniMessage()
     lateinit var assassinKey: NamespacedKey
     var craftEngineEnabled: Boolean = false
+    var nexoEnabled: Boolean = false
         private set
     var serverMode: String = "GAME_SERVER"
         private set
@@ -303,8 +304,7 @@ class Mistaken : JavaPlugin() {
         }
         economy = rsp.provider
 
-        craftEngineEnabled = server.pluginManager.isPluginEnabled("CraftEngine")
-        if (craftEngineEnabled) componentLogger.info(ColorTranslator.translate("[SUCCESS] CraftEngine detected and hooked."))
+        liric.mistaken.utils.resourcepack.CustomItemManager.init()
 
         return true
     }

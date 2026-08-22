@@ -45,7 +45,7 @@ class LuaSurvivorAdapter(
             val itemId = config.getString("armor.$key") ?: config.getString("items.$key")
             if (itemId == null || itemId == "none" || itemId.isEmpty()) return
 
-            val item = liric.mistaken.utils.hooks.CraftEngine.getCustomItem(itemId) ?: run {
+            val item = liric.mistaken.utils.resourcepack.CustomItemManager.getCustomItem(itemId) ?: run {
                 val mat = org.bukkit.Material.matchMaterial(itemId.replace(".*:".toRegex(), "").uppercase())
                 if (mat != null) org.bukkit.inventory.ItemStack(mat) else null
             } ?: return

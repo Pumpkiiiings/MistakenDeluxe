@@ -402,11 +402,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             vehicle.removePassenger(it)
         }
     }
-
-    /**
-     * Agrega un jugador al set de congelados. Retorna true si fue agregado (no estaba ya).
-     * La lógica visual/timer de congelamiento vive en FreezeTagModeHandler.
-     */
+    
     fun addFrozen(uuid: UUID): Boolean = frozenPlayers.add(uuid)
 
     fun removePlayerData(uuid: UUID) {

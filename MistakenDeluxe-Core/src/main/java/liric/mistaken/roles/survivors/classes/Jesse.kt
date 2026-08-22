@@ -9,7 +9,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPa
 import liric.mistaken.Mistaken
 import liric.mistaken.api.util.Sounds
 import liric.mistaken.roles.survivors.Survivor
-import liric.mistaken.utils.hooks.CraftEngine
+import liric.mistaken.utils.resourcepack.CustomItemManager
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.Sound
@@ -72,7 +72,7 @@ class Jesse : Survivor(
 
             if (id == null || id == "none") return
 
-            val item = CraftEngine.getCustomItem(id) ?: run {
+            val item = CustomItemManager.getCustomItem(id) ?: run {
                 val matName = id.replace(".*:".toRegex(), "").uppercase()
                 val mat = Material.matchMaterial(matName)
                 if (mat != null) ItemStack(mat) else null
