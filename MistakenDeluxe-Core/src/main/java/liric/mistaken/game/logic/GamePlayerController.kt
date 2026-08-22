@@ -350,43 +350,7 @@ class GamePlayerController(private val game: GameSession) {
             return
         }
 
-        if (game.currentMode == MistakenMode.INFECTION) {
-            game.plugin.survivorManager.getSurvivorClass(player)?.cleanup(player)
-            game.killersUUIDs.add(player.uniqueId)
-            player.isSwimming = false
-            game.ambientManager.stopAmbience(player)
-            game.combatManager.resetHealth(player)
-
-            
-            liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(player, false)
-
-            game.uiController.setLuckPermsPrefix(player, "<red>")
-
-            game.plugin.lobbyLocation?.let { loc ->
-                player.teleportAsync(loc)
-            }
-
-            player.scheduler.runDelayed(
-                game.plugin,
-                Consumer { _ ->
-                    val claseID = game.plugin.playerDataManager.getSelectedKiller(player.uniqueId)
-                    game.plugin.killerManager.equipKiller(player, claseID)
-                    game.uiController.playRoleTitle(player, true)
-                },
-                null,
-                5L
-            )
-
-            game.getPlayers().forEach { it.sendMessage(MiniMessage.miniMessage().deserialize("<dark_red>Infección</dark_red> <dark_gray>»</dark_gray> <red>¡${player.name} ha sido infectado y ahora es un asesino!</red>")) }
-            player.world.playSound(player.location, Sound.ENTITY_ZOMBIE_VILLAGER_CONVERTED, 1f, 1f)
-
-            game.getCurrentKiller()?.let { killer ->
-                game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
-                    game.plugin.statsManager.incrementStat(killer.uniqueId, "kills")
-                }
-            }
-
-            checkWinCondition()
+        if (game.activeModeHandler.onPlayerDeath(player)) {
             return
         }
 

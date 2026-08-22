@@ -5,6 +5,8 @@ import liric.mistaken.game.GameSession
 import liric.mistaken.data.PlayerDataManager.MistakenUser
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.player.PlayerRespawnEvent
 
 abstract class ModeHandler(val plugin: Mistaken, val session: GameSession) {
     /**
@@ -43,4 +45,20 @@ abstract class ModeHandler(val plugin: Mistaken, val session: GameSession) {
      * Evento al finalizar el juego.
      */
     open fun onGameEnd(killerWon: Boolean) {}
+
+    /**
+     * Lógica cuando un jugador muere dentro del controlador (GamePlayerController).
+     * @return true si el modo maneja la muerte y cancela la lógica por defecto (espectador).
+     */
+    open fun onPlayerDeath(player: Player): Boolean = false
+
+    /**
+     * Hook para el evento de Bukkit PlayerDeathEvent.
+     */
+    open fun onPlayerDeathEvent(event: PlayerDeathEvent) {}
+
+    /**
+     * Hook para el evento de Bukkit PlayerRespawnEvent.
+     */
+    open fun onPlayerRespawnEvent(event: PlayerRespawnEvent) {}
 }
