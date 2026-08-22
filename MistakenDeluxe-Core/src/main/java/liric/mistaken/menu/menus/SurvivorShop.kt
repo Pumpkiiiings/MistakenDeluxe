@@ -102,10 +102,9 @@ class SurvivorShop : MenuBase("survivors_shop") {
             }
 
             
-            gui.setItem(slots[slotIndex], ItemBuilder.from(iconoMat)
+            val guiItem = ItemBuilder.from(iconoMat)
                 .name(parseSafe(nombreVisual))
                 .lore(fullLore.toList())
-                .flags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS)
                 .asGuiItem { event ->
                     event.isCancelled = true
                     if (reqMessages.isNotEmpty()) {
@@ -114,8 +113,9 @@ class SurvivorShop : MenuBase("survivors_shop") {
                         return@asGuiItem
                     }
                     handleLogic(player, survivorId, precio, tiene)
-                }
-            )
+                }.also { it.itemStack.editMeta { meta -> meta.addItemFlags(*ItemFlag.entries.toTypedArray()) } }
+                
+            gui.setItem(slots[slotIndex], guiItem)
             slotIndex++
         }
 
@@ -123,12 +123,14 @@ class SurvivorShop : MenuBase("survivors_shop") {
         val botonAtrasNombre = config.getString("ajustes.atras.nombre", "Atrás")!!
         val botonAtrasSlot = config.getInt("ajustes.atras.slot", 40)
         val matAtras = Material.matchMaterial(botonAtrasMat.uppercase()) ?: Material.ARROW
-        gui.setItem(botonAtrasSlot, ItemBuilder.from(matAtras)
+        val backItem = ItemBuilder.from(matAtras)
             .name(parseSafe(botonAtrasNombre))
             .asGuiItem { event ->
                 event.isCancelled = true
                 ShopSelector().abrir(player)
-            })
+            }.also { it.itemStack.editMeta { meta -> meta.addItemFlags(*ItemFlag.entries.toTypedArray()) } }
+            
+        gui.setItem(botonAtrasSlot, backItem)
     }
 
     private fun handleLogic(player: Player, id: String, precio: Int, tiene: Boolean) {

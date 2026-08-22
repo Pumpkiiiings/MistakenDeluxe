@@ -112,10 +112,9 @@ class KillerShop : MenuBase("killers_shop") {
                 }
             }
 
-            gui.setItem(targetSlot, ItemBuilder.from(iconoMat)
+            val guiItem = ItemBuilder.from(iconoMat)
                 .name(parseSafe(nombreVisual))
                 .lore(fullLore.toList())
-                .flags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS)
                 .asGuiItem { event ->
                     event.isCancelled = true
                     if (reqMessages.isNotEmpty()) {
@@ -124,20 +123,24 @@ class KillerShop : MenuBase("killers_shop") {
                         return@asGuiItem
                     }
                     handlePurchaseLogic(player, killerId, precio, tiene)
-                }
-            )
+                }.also { it.itemStack.editMeta { meta -> meta.addItemFlags(*ItemFlag.entries.toTypedArray()) } }
+
+            gui.setItem(targetSlot, guiItem)
         }
         
         val botonAtrasSlot = config.getInt("ajustes.boton-atras.slot", 49)
         val botonAtrasMat = config.getString("ajustes.boton-atras.material", "ARROW")!!
         val botonAtrasNombre = config.getString("ajustes.boton-atras.nombre", "<red>Volver")!!
         val matAtras = Material.matchMaterial(botonAtrasMat.uppercase()) ?: Material.ARROW
-        gui.setItem(botonAtrasSlot, ItemBuilder.from(matAtras)
+        
+        val backItem = ItemBuilder.from(matAtras)
             .name(parseSafe(botonAtrasNombre))
             .asGuiItem { event ->
                 event.isCancelled = true
                 ShopSelector().abrir(player)
-            })
+            }.also { it.itemStack.editMeta { meta -> meta.addItemFlags(*ItemFlag.entries.toTypedArray()) } }
+            
+        gui.setItem(botonAtrasSlot, backItem)
     }
 
     private fun handlePurchaseLogic(player: Player, killerId: String, precio: Int, tiene: Boolean) {

@@ -38,11 +38,10 @@ class ShopSelector : MenuBase("tienda_principal") {
         val itemKillers = ItemBuilder.from(matA)
             .name(parseSafe(nombreA))
             .lore(loreA)
-            .flags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS)
             .asGuiItem {
                 player.playSound(player.location, clickSound, 1f, 1f)
                 plugin.killerTienda.abrir(player)
-            }
+            }.also { it.itemStack.editMeta { meta -> meta.addItemFlags(*ItemFlag.entries.toTypedArray()) } }
 
         
         val matS = Material.matchMaterial(
@@ -58,11 +57,10 @@ class ShopSelector : MenuBase("tienda_principal") {
         val itemSurvivors = ItemBuilder.from(matS)
             .name(parseSafe(nombreS))
             .lore(loreS)
-            .flags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS)
             .asGuiItem {
                 player.playSound(player.location, clickSound, 1f, 1f)
                 plugin.survivorTienda.abrir(player)
-            }
+            }.also { it.itemStack.editMeta { meta -> meta.addItemFlags(*ItemFlag.entries.toTypedArray()) } }
 
         gui.setItem(config.getInt("items.killers.slot", 11), itemKillers)
         gui.setItem(config.getInt("items.survivors.slot", 15), itemSurvivors)
