@@ -1,204 +1,203 @@
 killers:
   slasher:
-    nombre: "<white><b>PUMPKIN WHITE</b>"
+    nombre: "<white>「 ᴘᴜᴍᴘᴋɪɴ ᴡʜɪᴛᴇ 」"
     descripcion:
       - "<gray>Un asesino clásico y brutal."
       - "<gray>Especialista en persecución física."
       - "<red>Mecánica: <white>Causa hemorragias constantes."
     lore_shop:
       - "<gray>\"Su sed de sangre no tiene fin...\""
-      - "<white>Dificultad: <green>Fácil"
+      - "<white>Dificultad: <#00FF33>Fácil"
     skill_names:
-      weapon: "<red>Hacha"
-      skill1: "<red>Sed de Sangre"
-      skill2: "<gold>Machete Lanzable"
-      skill3: "<dark_purple>Presencia Aterradora"
-      skill4: "<dark_red><bold>MODO EJECUCIÓN</bold>"
+      weapon: "<#FF0033>Hacha"
+      skill1: "<#FF3333>Sed de Sangre"
+      skill2: "<#FF9900>Machete Lanzable"
+      skill3: "<#9900FF>Presencia Aterradora"
+      skill4: "<#CC0000>ᴍᴏᴅᴏ ᴇᴊᴇᴄᴜᴄɪóɴ"
 
   herobrine:
-    nombre: "<white><b>HEROBRINE</b>"
+    nombre: "<white>「 ʜᴇʀᴏʙʀɪɴᴇ 」"
     descripcion:
       - "<gray>El mito que corrompe la realidad."
       - "<gray>Especialista en acecho y movilidad."
       - "<white>Mecánica: <white>Teletransporte y revelación."
     lore_shop:
       - "<gray>\"Él no debería estar aquí...\""
-      - "<white>Dificultad: <yellow>Media"
+      - "<white>Dificultad: <#FFCC00>Medio"
     skill_names:
-      weapon: "<white>Hoja del Olvido"
-      skill1: "<white>Dash del Vacío"
-      skill2: "<aqua>Salto Dimensional"
-      skill3: "<dark_gray>Pulso de Terror"
-      skill4: "<red><bold>ERROR DE MUNDO</bold>"
+      weapon: "<#FFFFFF>Hoja del Olvido"
+      skill1: "<#DDDDDD>Dash del Vacío"
+      skill2: "<#00FFFF>Salto Dimensional"
+      skill3: "<#555555>Pulso de Terror"
+      skill4: "<#FF0033>ᴇʀʀᴏʀ ᴅᴇ ᴍᴜɴᴅᴏ"
     habilidades:
-      estampaste: "<red><b>[!]</b> ¡Te estampaste contra el muro!</red>"
-      embestido: "<red><b>[!]</b> Herobrine te ha embestido con el poder del Vacío.</red>"
+      estampaste: "<red>[!] ¡Te estampaste contra el muro!</red>"
+      embestido: "<red>[!] Herobrine te ha embestido con el poder del Vacío.</red>"
 
   entity303:
-    nombre: "<red><b>ENTITY 303</b>"
+    nombre: "<red>「 ᴇɴᴛɪᴛʏ 303 」"
     descripcion:
       - "<gray>Un error crítico en el código."
       - "<gray>Especialista en ataques glitch y fuego."
       - "<red>Mecánica: <white>Infección de datos y vuelo."
     lore_shop:
       - "<gray>\"SYSTEM ERROR: 303 FOUND\""
-      - "<white>Dificultad: <yellow>Media"
+      - "<white>Dificultad: <#FFCC00>Medio"
     skill_names:
-      weapon: "<red>Sable Corrupto"
-      skill1: "<red>Dash de Código"
-      skill2: "<red>Estrella del Error"
-      skill3: "<red>Protocolo de Vuelo"
-      skill4: "<dark_red><bold>CRASH DE SISTEMA</bold>"
+      weapon: "<#FF0033>Sable Corrupto"
+      skill1: "<#FF3333>Dash de Código"
+      skill2: "<#FF3300>Estrella del Error"
+      skill3: "<#FF6600>Protocolo de Vuelo"
+      skill4: "<#CC0000>ᴄʀᴀꜱʜ ᴅᴇ ꜱɪꜱᴛᴇᴍᴀ"
     habilidades:
-      system_error: "<red><bold>SYSTEM ERROR: 303 FOUND</bold></red>"
+      system_error: "<red>ꜱʏꜱᴛᴇᴍ ᴇʀʀᴏʀ: 303 ꜰᴏᴜɴᴅ</red>"
 
   null:
-    nombre: "<dark_gray><b>NULL</b>"
+    nombre: "<dark_gray>「 ɴᴜʟʟ 」"
     descripcion:
       - "<gray>La ausencia absoluta de existencia."
       - "<gray>Especialista en ceguera y trampas."
       - "<dark_gray>Mecánica: <white>Oscuridad total y asfixia."
     lore_shop:
       - "<gray>\"Nada queda donde él camina...\""
-      - "<white>Dificultad: <red>Difícil"
+      - "<white>Dificultad: <#FF0033>Difícil"
     skill_names:
-      weapon: "<dark_gray>Daga del Vacío"
-      skill1: "<red>Error de Renderizado"
-      skill2: "<aqua>Faro de Almas"
-      skill3: "<dark_gray>Prisión del Vacío"
-      skill4: "<gray><bold>COLMILLOS DEL ABISMO</bold>"
+      weapon: "<#444444>Daga del Vacío"
+      skill1: "<#FF0033>Error de Renderizado"
+      skill2: "<#00FFFF>Faro de Almas"
+      skill3: "<#666666>Prisión del Vacío"
+      skill4: "<#AAAAAA>ᴄᴏʟᴍɪʟʟᴏꜱ ᴅᴇʟ ᴀʙɪꜱᴍᴏ"
 
   charlie:
-    nombre: "<gradient:#ff4500:#ff8c00><b>CHARLIE INFERNO</b></gradient>"
+    nombre: "<gradient:#ff4500:#ff8c00>「 ᴄʜᴀʀʟɪᴇ ɪɴꜰᴇʀɴᴏ 」</gradient>"
     descripcion:
       - "<gray>El heraldo del fuego y el hielo eterno."
       - "<gray>Domina el campo con ataques elementales masivos."
-      - "<gradient:#ff4500:#ff8c00>Mecánica:</gradient> <white>Poder devastador vs Agotamiento."
+      - "<#FF5500>Mecánica:</#FF5500> <white>Poder devastador vs Agotamiento."
     lore_shop:
       - "<gray>\"You can run from your demons until you are exhausted...\""
-      - "<white>Dificultad: <red>Experto"
+      - "<white>Dificultad: <#9900FF>Experimentado"
     skill_names:
-      weapon: "<gradient:#ff4500:#ff8c00>Filo del Infierno</gradient>"
-      skill1: "<red><b>¡INFIERNO!</b>"
-      skill2: "<gradient:#ff4500:#000000><b>Demon's Run</b></gradient>"
-      skill3: "<aqua><b>Púas de Glaciar</b>"
-      skill4: "<dark_red><b>Colmillos del Inframundo</b>"
+      weapon: "<#FF4500>Filo del Infierno"
+      skill1: "<#FF0000>¡ɪɴꜰɪᴇʀɴᴏ!"
+      skill2: "<#CC2200>ᴅᴇᴍᴏɴ'ꜱ ʀᴜɴ"
+      skill3: "<#00EEFF>ᴘúᴀꜱ ᴅᴇ ɢʟᴀᴄɪᴀʀ"
+      skill4: "<#8B0000>ᴄᴏʟᴍɪʟʟᴏꜱ ᴅᴇʟ ɪɴꜰʀᴀᴍᴜɴᴅᴏ"
 
   mariachi:
-    nombre: "<gradient:#ff0000:#000000><b>MARIACHI MUERTE</b></gradient>"
+    nombre: "<gradient:#FF0033:#8B0000>「 ᴍᴀʀɪᴀᴄʜɪ ᴍᴜᴇʀᴛᴇ 」</gradient>"
     descripcion:
       - "<gray>El Charro Negro ha llegado por tu alma."
       - "<gray>Especialista en aturdimiento auditivo."
-      - "<red>Mecánica:</red> <white>Música global y mareo."
+      - "<#FF0033>Mecánica:</#FF0033> <white>Música global y mareo."
     lore_shop:
       - "<gray>\"¡Ay ay ay! Canta y no llores...\""
-      - "<white>Dificultad: <red>Experto"
+      - "<white>Dificultad: <#9900FF>Experimentado"
     skill_names:
-      weapon: "<gradient:#ff0000:#000000>La Guitarra del Destino</gradient>"
-      skill1: "<red>Grito Aterrador"
-      skill2: "<gold>Jarabe Tapatío (Zapateado)"
-      skill3: "<white>Guitarrazo Certero"
-      skill4: "<green><bold>TRAGO DE TEQUILA</bold>"
+      weapon: "<#FF0033>La Guitarra del Destino"
+      skill1: "<#FF3333>Grito Aterrador"
+      skill2: "<#FFCC00>Jarabe Tapatío (Zapateado)"
+      skill3: "<#FFFFFF>Guitarrazo Certero"
+      skill4: "<#00FF33>ᴛʀᴀɢᴏ ᴅᴇ ᴛᴇǫᴜɪʟᴀ"
     habilidades:
       grito_corrompido: "<red>¡El grito del Mariachi ha corrompido tus oídos!</red>"
       a_zapatear: "<gold>¡A zapatear! Velocidad aumentada.</gold>"
       salud_inmune: "<green>¡Salud! Eres inmune al dolor por 6 segundos.</green>"
 
   charliejazz:
-    nombre: "<gradient:#e0b0ff:#ffd700><b>CHARLIE INFERNO. VER. JAZZ</b></gradient>"
+    nombre: "<gradient:#e0b0ff:#ffd700>「 ᴄʜᴀʀʟɪᴇ ɪɴꜰᴇʀɴᴏ ᴠᴇʀ. ᴊᴀᴢᴢ 」</gradient>"
     descripcion:
       - "<gray>El heraldo del fuego estelar y el oro."
       - "<gray>Domina el campo con ataques deslumbrantes."
-      - "<gradient:#e0b0ff:#ffd700>Mecánica:</gradient> <white>Poder devastador vs Agotamiento."
+      - "<#E0B0FF>Mecánica:</#E0B0FF> <white>Poder devastador vs Agotamiento."
     lore_shop:
       - "<gray>\"You can run from your demons until you are exhausted...\""
-      - "<white>Dificultad: <red>Experto"
+      - "<white>Dificultad: <#9900FF>Experimentado"
     skill_names:
-      weapon: "<gradient:#e0b0ff:#ffd700>Filo Dorado</gradient>"
-      skill1: "<light_purple><b>¡INFIERNO ESTELAR!</b>"
-      skill2: "<gradient:#e0b0ff:#000000><b>Demon's Run</b></gradient>"
-      skill3: "<gold><b>Cubo de Oro</b>"
-      skill4: "<dark_purple><b>Colmillos Mágicos</b>"
-
+      weapon: "<#FFD700>Filo Dorado"
+      skill1: "<#FF66FF>¡ɪɴꜰɪᴇʀɴᴏ ᴇꜱᴛᴇʟᴀʀ!"
+      skill2: "<#9900CC>ᴅᴇᴍᴏɴ'ꜱ ʀᴜɴ"
+      skill3: "<#FFCC00>ᴄᴜʙᴏ ᴅᴇ ᴏʀᴏ"
+      skill4: "<#9900FF>ᴄᴏʟᴍɪʟʟᴏꜱ ᴍáɢɪᴄᴏꜱ"
 
   romeo:
-    nombre: "<gradient:#ff0000:#ffff00><b>ROMEO</b></gradient> <white>[ADMIN]</white>"
+    nombre: "<gradient:#ff0000:#ffff00>「 ʀᴏᴍᴇᴏ 」</gradient> <white>[ᴀᴅᴍɪɴ]</white>"
     descripcion:
       - "<red>El Administrador del Mundo ha regresado."
       - "<gray>Controla el campo de batalla con el poder del código."
       - "<gold>Mecánica: <white>Dash destructivo y ataques del Vacío."
     lore_shop:
       - "<gray>\"¡Yo hago las reglas aquí!\""
-      - "<white>Dificultad: <dark_red>IMPARABLE"
+      - "<white>Dificultad: <#9900FF>Experimentado"
     skill_names:
-      weapon: "<gradient:#ff0000:#ffff00>Pico del Administrador</gradient>"
-      skill1: "<red><b>Admin Dash</b>"
-      skill2: "<white><b>Visión del Administrador</b>"
-      skill3: "<dark_purple><b>Colmillos del Vacío</b>"
-      skill4: "<gold><b>Estrella del Fin</b>"
+      weapon: "<#FF3300>Pico del Administrador"
+      skill1: "<#FF0000>ᴀᴅᴍɪɴ ᴅᴀꜱʜ"
+      skill2: "<#FFFFFF>ᴠɪꜱɪóɴ ᴅᴇʟ ᴀᴅᴍɪɴɪꜱᴛʀᴀᴅᴏʀ"
+      skill3: "<#9900FF>ᴄᴏʟᴍɪʟʟᴏꜱ ᴅᴇʟ ᴠᴀᴄíᴏ"
+      skill4: "<#FFCC00>ᴇꜱᴛʀᴇʟʟᴀ ᴅᴇʟ ꜰɪɴ"
 
   colorandelectricity:
-    nombre: "<gradient:#ff0080:#00ffff:#ffff00><b>Colorsito</b></gradient>"
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00>「 ᴄᴏʟᴏʀꜱɪᴛᴏ 」</gradient>"
     descripcion:
       - "<gray>Un ser sin cuerpo hecho de pura estática."
       - "<gray>Especialista en robo de visión y velocidad."
-      - "<gradient:#ff0080:#00ffff>Mecánica:</gradient> <white>Sobrecarga cromática."
+      - "<#FF00AA>Mecánica:</#FF00AA> <white>Sobrecarga cromática."
     lore_shop:
       - "<gray>\"Quiero colores... dame tus colores.\""
-      - "<white>Dificultad: <red>Difícil"
+      - "<white>Dificultad: <#FF0033>Difícil"
     skill_names:
-      weapon: "<gradient:#ff0080:#00ffff>Cuchilla de Alto Voltaje</gradient>"
-      skill1: "<gradient:#ff0080:#ffffff>Vivid Trace (Dash)</gradient>"
-      skill2: "<gradient:#00ffff:#ffffff>Color Drain</gradient>"
-      skill3: "<gradient:#ffff00:#ffffff>Pulse Static</gradient>"
-      skill4: "<gradient:#ff0080:#00ffff><bold>SHIKISAI END</bold></gradient>"
+      weapon: "<#FF00AA>Cuchilla de Alto Voltaje"
+      skill1: "<#FF0066>Vivid Trace (Dash)"
+      skill2: "<#00EEFF>Color Drain"
+      skill3: "<#FFEE00>Pulse Static"
+      skill4: "<#CC00FF>ꜱʜɪᴋɪꜱᴀɪ ᴇɴᴅ"
     habilidades:
-      sobrecarga_cromatica: "<red><b>[!] SOBRECARGA CROMÁTICA</b></red>"
+      sobrecarga_cromatica: "<red>[!] ꜱᴏʙʀᴇᴄᴀʀɢᴀ ᴄʀᴏᴍáᴛɪᴄᴀ</red>"
 
   sowoul:
-    nombre: "<gradient:#5b00ff:#ff00ff><b>SOWOUL</b></gradient>"
+    nombre: "<gradient:#5b00ff:#ff00ff>「 ꜱᴏᴡᴏᴜʟ 」</gradient>"
     descripcion:
       - "<gray>Un misterioso ilusionista que domina"
       - "<gray>el arte del engaño y la magia oscura."
     lore_shop:
       - "<gray>\"Nada de lo que ves es real...\""
-      - "<white>Dificultad: <red>Alta"
+      - "<white>Dificultad: <#FF0033>Difícil"
     skill_names:
-      weapon: "<dark_purple>Grimorio de las Ilusiones</dark_purple>"
-      skill1: "<light_purple>Dash Mágico</light_purple>"
-      skill2: "<white>Lluvia de Cartas</white>"
-      skill3: "<dark_aqua>Fauces de Evocador</dark_aqua>"
-      skill4: "<dark_red><bold>INVENCIÓN: GEOFFREY 3.0</bold></dark_red>"
+      weapon: "<#9900FF>Grimorio de las Ilusiones"
+      skill1: "<#FF66FF>Dash Mágico"
+      skill2: "<#FFFFFF>Lluvia de Cartas"
+      skill3: "<#00AAAA>Fauces de Evocador"
+      skill4: "<#CC0000>ɪɴᴠᴇɴᴄɪóɴ: ɢᴇᴏꜰꜰʀᴇʏ 3.0"
     habilidades:
       nadie_rango: "<red>Nadie en tu rango de visión. Se gastó la habilidad.</red>"
-      mano_magica: "<dark_purple><b>¡UNA MANO MÁGICA TE HA ATRAPADO!</b></dark_purple>"
+      mano_magica: "<#9900FF>¡ᴜɴᴀ ᴍᴀɴᴏ ᴍáɢɪᴄᴀ ᴛᴇ ʜᴀ ᴀᴛʀᴀᴘᴀᴅᴏ!</#9900FF>"
 
   tinkywinky:
-    nombre: "<gradient:#6b00b5:#cc00ff><b>TINKY WINKY</b></gradient>"
+    nombre: "<gradient:#6b00b5:#cc00ff>「 ᴛɪɴᴋʏ ᴡɪɴᴋʏ 」</gradient>"
     descripcion:
       - "<gray>Una criatura perturbadora que ronda"
       - "<gray>los generadores con su bolsa mágica."
     lore_shop:
-      - "<dark_purple>\"Eh-oh... ¿dónde estás?\""
-      - "<white>Dificultad: <red>Alta"
+      - "<#9900FF>\"Eh-oh... ¿dónde estás?\""
+      - "<white>Dificultad: <#FF0033>Difícil"
     skill_names:
-      weapon: "<dark_purple>Bolsa Mágica</dark_purple>"
-      skill1: "<light_purple>Lanzamiento de Bolsa</light_purple>"
-      skill2: "<gray>Paso Silencioso</gray>"
-      skill3: "<dark_aqua>Señal de TV</dark_aqua>"
-      skill4: "<dark_red><bold>LA ÚLTIMA CANCIÓN</bold></dark_red>"
+      weapon: "<#9900FF>Bolsa Mágica"
+      skill1: "<#FF66FF>Lanzamiento de Bolsa"
+      skill2: "<#AAAAAA>Paso Silencioso"
+      skill3: "<#00AAAA>Señal de TV"
+      skill4: "<#CC0000>ʟᴀ úʟᴛɪᴍᴀ ᴄᴀɴᴄɪóɴ"
     habilidades:
-      bolsa_marcado: "<dark_purple><b>[!]</b> La Bolsa Mágica de TinkyWinky te ha marcado...</dark_purple>"
-      senal_distorsiona: "<dark_purple><b>[!]</b> La señal de TinkyWinky distorsiona tu mente...</dark_purple>"
+      bolsa_marcado: "<#9900FF>[!] La Bolsa Mágica de TinkyWinky te ha marcado...</#9900FF>"
+      senal_distorsiona: "<#9900FF>[!] La señal de TinkyWinky distorsiona tu mente...</#9900FF>"
       nadie_cerca: "<gray>[!] No hay nadie cerca para afectar.</gray>"
 
   still_life:
-    nombre: "<yellow><b>STILL LIFE</b></yellow>"
+    nombre: "<yellow>「 ꜱᴛɪʟʟ ʟɪꜰᴇ 」</yellow>"
     descripcion:
       - "<gray>Mecánica de disfraz y engaño."
     lore_shop:
       - "<gray>\"Alguien entre nosotros...\""
-      - "<white>Dificultad: <red>Alta"
+      - "<white>Dificultad: <#FF0033>Difícil"
     habilidades:
       generador_colocado: "<green>Generador falso colocado.</green>"
       generador_interactuado: "<red>¡Un superviviente interactuó con tu generador falso!</red>"
@@ -208,31 +207,31 @@ killers:
       chat_disfraz: "<gray>%disguisename%: <white>%message%</white></gray>"
 
   smiler:
-    nombre: "<yellow><b>SMILER</b></yellow>"
+    nombre: "<yellow>「 ꜱᴍɪʟᴇʀ 」</yellow>"
     descripcion:
       - "<gray>La sonrisa en la oscuridad."
     lore_shop:
       - "<gray>\"Siempre sonriendo...\""
-      - "<white>Dificultad: <yellow>Media"
+      - "<white>Dificultad: <#FFCC00>Medio"
 
   warden:
-    nombre: "<dark_aqua><b>WARDEN</b></dark_aqua>"
+    nombre: "<dark_aqua>「 ᴡᴀʀᴅᴇɴ 」</dark_aqua>"
     descripcion:
       - "<gray>El guardián de las profundidades."
     lore_shop:
       - "<gray>\"Escucha tus pasos...\""
-      - "<white>Dificultad: <red>Difícil"
+      - "<white>Dificultad: <#FF0033>Difícil"
 
   piglinbig:
-    nombre: "<gold><b>EL GRAN CERDO</b></gold>"
+    nombre: "<gold>「 ᴇʟ ɢʀᴀɴ ᴄᴇʀᴅᴏ 」</gold>"
     descripcion:
       - "<gray>Una bestia del inframundo."
       - "<gray>Especialista en levantar la tierra y lanzar hachas."
       - "<gold>Mecánica: <white>Fuerza bruta y aturdimiento."
     lore_shop:
       - "<gray>\"Oink...\""
-      - "<white>Dificultad: <red>Difícil"
+      - "<white>Dificultad: <#FF0033>Difícil"
     skill_names:
-      weapon: "<gold>Hacha de Oro"
-      skill1: "<yellow>Terremoto de Aturdimiento"
-      skill2: "<gold>Lanzar Hacha"
+      weapon: "<#FFCC00>Hacha de Oro"
+      skill1: "<#FFEE00>Terremoto de Aturdimiento"
+      skill2: "<#FFCC00>Lanzar Hacha"
