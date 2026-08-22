@@ -41,16 +41,15 @@ class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSes
 
         val settings = session.settings ?: PrivateGameSettings().also { session.settings = it }
 
-        
         val allMaps = plugin.arenaManager.getArenas()
 
         var slot = startSlot
         for (map in allMaps) {
             val isSelected = settings.forcedMap == map.name
-            val mat = if (isSelected) Material.MAP else Material.PAPER
+            val defaultMat = if (isSelected) Material.MAP else Material.PAPER
             val color = if (isSelected) "<green><bold>" else "<yellow>"
             
-            val item = ItemBuilder.from(mat)
+            val item = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.map_selector.items.map", defaultMat)
                 .name(ColorTranslator.translate("<!italic>$color${map.name}"))
                 .lore(
                     ColorTranslator.translate("<!italic>${loreId.replace("{map}", map.name)}"),
@@ -60,7 +59,7 @@ class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSes
                 .asGuiItem {
                     settings.forcedMap = if (isSelected) null else map.name
                     player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                    player.sendActionBar(ColorTranslator.translate("<green>Mapa seleccionado: ${settings.forcedMap ?: "AUTOM�TICO"}"))
+                    player.sendActionBar(ColorTranslator.translate("<green>Mapa seleccionado: ${settings.forcedMap ?: "AUTOMÁTICO"}"))
                     abrir(player)
                 }
 
@@ -71,8 +70,11 @@ class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSes
             if (slot > maxSlots) break 
         }
 
-        gui.setItem(backSlot, ItemBuilder.from(Material.ARROW)
-            .name(ColorTranslator.translate("<!italic>$backName"))
+        val backNameFallback = config.getString("menus.private_lobby.items.back.name", "<red>Volver") ?: "<red>Volver"
+        val backNameFinal = config.getString("menus.map_selector.items.back.name", backNameFallback) ?: backNameFallback
+        
+        gui.setItem(backSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.map_selector.items.back", Material.ARROW)
+            .name(ColorTranslator.translate("<!italic>$backNameFinal"))
             .asGuiItem {
                 player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 0.8f)
                 PrivateLobbyMenu(plugin, session).abrir(player)

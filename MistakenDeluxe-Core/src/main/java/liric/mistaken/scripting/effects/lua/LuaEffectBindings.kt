@@ -188,6 +188,13 @@ object LuaEffectBindings {
             }
         })
 
+        globals.set("location", object : org.luaj.vm2.lib.OneArgFunction() {
+            override fun call(entityArg: org.luaj.vm2.LuaValue): org.luaj.vm2.LuaValue {
+                val entity = unwrapEntity(entityArg) ?: return org.luaj.vm2.LuaValue.NIL
+                return org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce(liric.mistaken.scripting.adapter.BukkitLocationAdapter(entity.location.clone()))
+            }
+        })
+
         globals.set("yaw", object : OneArgFunction() {
             override fun call(locArg: LuaValue): LuaValue {
                 val loc = unwrapLocation(locArg) ?: return LuaValue.valueOf(0.0)

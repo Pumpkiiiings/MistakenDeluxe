@@ -32,8 +32,51 @@ class LuaSurvivorAdapter(
     }
 
     override fun equip(player: Player) {
+        val inv = player.inventory
+        inv.clear()
+        inv.armorContents = arrayOfNulls(4)
+
         val config = plugin.configManager.getSurvivorConfig(id)
         triggerRegistry.loadFromConfig(config)
+
+        val langInfo = liric.mistaken.config.engine.core.MessageService.getSpecificFile(player, "survivors_info")
+
+        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
+            val itemId = config.getString("armor.$key") ?: config.getString("items.$key")
+            if (itemId == null || itemId == "none" || itemId.isEmpty()) return
+
+            val item = liric.mistaken.utils.hooks.CraftEngine.getCustomItem(itemId) ?: run {
+                val mat = org.bukkit.Material.matchMaterial(itemId.replace(".*:".toRegex(), "").uppercase())
+                if (mat != null) org.bukkit.inventory.ItemStack(mat) else null
+            } ?: return
+
+            val namePath = "survivors.${this.id}.skill_names.$key"
+
+            langInfo.getString(namePath)?.let {
+                item.editMeta { meta -> meta.displayName(liric.mistaken.utils.color.ColorTranslator.translate(it)) }
+            }
+
+            if (isArmor) {
+                when(key) {
+                    "helmet" -> inv.helmet = item
+                    "chestplate" -> inv.chestplate = item
+                    "leggings" -> inv.leggings = item
+                    "boots" -> inv.boots = item
+                }
+            } else inv.setItem(slot, item)
+        }
+
+        deliver("helmet", 0, true)
+        deliver("chestplate", 0, true)
+        deliver("leggings", 0, true)
+        deliver("boots", 0, true)
+        
+        deliver("skill1", 0)
+        deliver("skill2", 1)
+        deliver("skill3", 2)
+        deliver("skill4", 3)
+
+        player.updateInventory()
 
         val scriptPlayer = BukkitPlayerAdapter(player)
         scriptRole.on_equip(scriptPlayer)

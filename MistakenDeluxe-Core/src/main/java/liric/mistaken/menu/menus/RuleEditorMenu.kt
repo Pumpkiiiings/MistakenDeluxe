@@ -53,7 +53,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
         val glowingColor = if (settings.glowingEnabled) "<green>" else "<red>"
         val glowingName = config.getString("menus.rule_editor.items.glowing.name", "<gold><bold>Glowing Constante") ?: "<gold><bold>Glowing Constante"
         val glowingLore = config.getString("menus.rule_editor.items.glowing.lore_state", "<gray>Estado: {color}{state}") ?: "<gray>Estado: {color}{state}"
-        gui.setItem(glowingSlot, ItemBuilder.from(glowingMat)
+        gui.setItem(glowingSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.rule_editor.items.glowing", glowingMat)
             .name(ColorTranslator.translate("<!italic>$glowingName"))
             .lore(ColorTranslator.translate("<!italic>${glowingLore.replace("{color}", glowingColor).replace("{state}", settings.glowingEnabled.toString())}"))
             .asGuiItem {
@@ -68,7 +68,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
         val hbColor = if (settings.heartbeatsEnabled != false) "<green>" else "<red>"
         val hbName = config.getString("menus.rule_editor.items.heartbeats.name", "<gold><bold>Latidos (Heartbeats)") ?: "<gold><bold>Latidos (Heartbeats)"
         val hbLore = config.getString("menus.rule_editor.items.heartbeats.lore_state", "<gray>Estado: {color}{state}") ?: "<gray>Estado: {color}{state}"
-        gui.setItem(heartbeatsSlot, ItemBuilder.from(hbMat)
+        gui.setItem(heartbeatsSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.rule_editor.items.heartbeats", hbMat)
             .name(ColorTranslator.translate("<!italic>$hbName"))
             .lore(ColorTranslator.translate("<!italic>${hbLore.replace("{color}", hbColor).replace("{state}", (settings.heartbeatsEnabled != false).toString())}"))
             .asGuiItem {
@@ -82,7 +82,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
         val speedVal = settings.speedMultiplier ?: 0
         val speedName = config.getString("menus.rule_editor.items.speed.name", "<gold><bold>Velocidad Base") ?: "<gold><bold>Velocidad Base"
         val speedLore = config.getString("menus.rule_editor.items.speed.lore_level", "<gray>Nivel: <yellow>{level}") ?: "<gray>Nivel: <yellow>{level}"
-        gui.setItem(speedSlot, ItemBuilder.from(Material.SUGAR)
+        gui.setItem(speedSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.rule_editor.items.speed", Material.SUGAR)
             .name(ColorTranslator.translate("<!italic>$speedName"))
             .lore(ColorTranslator.translate("<!italic>${speedLore.replace("{level}", speedVal.toString())}"))
             .asGuiItem {
@@ -96,7 +96,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
         val jumpVal = settings.jumpMultiplier ?: 0
         val jumpName = config.getString("menus.rule_editor.items.jump.name", "<gold><bold>Salto Base") ?: "<gold><bold>Salto Base"
         val jumpLore = config.getString("menus.rule_editor.items.jump.lore_level", "<gray>Nivel: <yellow>{level}") ?: "<gray>Nivel: <yellow>{level}"
-        gui.setItem(jumpSlot, ItemBuilder.from(Material.RABBIT_FOOT)
+        gui.setItem(jumpSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.rule_editor.items.jump", Material.RABBIT_FOOT)
             .name(ColorTranslator.translate("<!italic>$jumpName"))
             .lore(ColorTranslator.translate("<!italic>${jumpLore.replace("{level}", jumpVal.toString())}"))
             .asGuiItem {
@@ -115,7 +115,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
         }
         val blindName = config.getString("menus.rule_editor.items.blindness.name", "<gold><bold>Ceguera Permanente") ?: "<gold><bold>Ceguera Permanente"
         val blindLore = config.getString("menus.rule_editor.items.blindness.lore_role", "<gray>Aplica a: <yellow>{role}") ?: "<gray>Aplica a: <yellow>{role}"
-        gui.setItem(blindnessSlot, ItemBuilder.from(Material.ENDER_EYE)
+        gui.setItem(blindnessSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.rule_editor.items.blindness", Material.ENDER_EYE)
             .name(ColorTranslator.translate("<!italic>$blindName"))
             .lore(ColorTranslator.translate("<!italic>${blindLore.replace("{role}", blindnessVal)}"))
             .asGuiItem {
@@ -129,7 +129,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
         val kHealth = settings.killerHealth ?: 160.0
         val khealthName = config.getString("menus.rule_editor.items.khealth.name", "<gold><bold>Vida Asesino") ?: "<gold><bold>Vida Asesino"
         val khealthLore = config.getString("menus.rule_editor.items.khealth.lore_hearts", "<gray>Corazones: <red>{hearts}") ?: "<gray>Corazones: <red>{hearts}"
-        gui.setItem(khealthSlot, ItemBuilder.from(Material.REDSTONE_BLOCK)
+        gui.setItem(khealthSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.rule_editor.items.khealth", Material.REDSTONE_BLOCK)
             .name(ColorTranslator.translate("<!italic>$khealthName"))
             .lore(ColorTranslator.translate("<!italic>${khealthLore.replace("{hearts}", (kHealth / 2).toString())}"))
             .asGuiItem {
@@ -143,7 +143,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
         val sHealth = settings.survivorHealth ?: 20.0
         val shealthName = config.getString("menus.rule_editor.items.shealth.name", "<gold><bold>Vida Superviviente") ?: "<gold><bold>Vida Superviviente"
         val shealthLore = config.getString("menus.rule_editor.items.shealth.lore_hearts", "<gray>Corazones: <red>{hearts}") ?: "<gray>Corazones: <red>{hearts}"
-        gui.setItem(shealthSlot, ItemBuilder.from(Material.APPLE)
+        gui.setItem(shealthSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.rule_editor.items.shealth", Material.APPLE)
             .name(ColorTranslator.translate("<!italic>$shealthName"))
             .lore(ColorTranslator.translate("<!italic>${shealthLore.replace("{hearts}", (sHealth / 2).toString())}"))
             .asGuiItem {
@@ -155,13 +155,13 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
 
         
         val currentDuration = settings.gameDuration ?: 300 
-        val durationName = config.getString("menus.rule_editor.items.duration.name", "<gold><bold>Duraci�n de Partida") ?: "<gold><bold>Duraci�n de Partida"
+        val durationName = config.getString("menus.rule_editor.items.duration.name", "<gold><bold>Duración de Partida") ?: "<gold><bold>Duración de Partida"
         val durationLore = config.getString("menus.rule_editor.items.duration.lore_time", "<gray>Tiempo: <yellow>{time}") ?: "<gray>Tiempo: <yellow>{time}"
         val minutes = currentDuration / 60
         val seconds = currentDuration % 60
         val formattedTime = String.format("%02d Minutos, %02d Segundos", minutes, seconds)
 
-        gui.setItem(durationSlot, ItemBuilder.from(Material.CLOCK)
+        gui.setItem(durationSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.rule_editor.items.duration", Material.CLOCK)
             .name(ColorTranslator.translate("<!italic>$durationName"))
             .lore(ColorTranslator.translate("<!italic>${durationLore.replace("{time}", formattedTime)}"))
             .asGuiItem { event ->
@@ -180,7 +180,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 val newMins = newDuration / 60
                 val newSecs = newDuration % 60
                 val newFormatted = String.format("%02d Minutos, %02d Segundos", newMins, newSecs)
-                player.sendActionBar(ColorTranslator.translate("<yellow>Duraci�n ajustada a: $newFormatted"))
+                player.sendActionBar(ColorTranslator.translate("<yellow>Duración ajustada a: $newFormatted"))
                 abrir(player)
             })
 
@@ -190,9 +190,9 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
         val charactersLore = if (charactersLoreList.isNotEmpty()) {
             charactersLoreList.map { ColorTranslator.translate("<!italic>$it") }
         } else {
-            listOf(ColorTranslator.translate("<!italic><gray>Selecciona qu� asesinos y"), ColorTranslator.translate("<!italic><gray>supervivientes se pueden usar."))
+            listOf(ColorTranslator.translate("<!italic><gray>Selecciona qu asesinos y"), ColorTranslator.translate("<!italic><gray>supervivientes se pueden usar."))
         }
-        gui.setItem(charactersSlot, ItemBuilder.from(Material.ZOMBIE_HEAD)
+        gui.setItem(charactersSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.rule_editor.items.characters", Material.ZOMBIE_HEAD)
             .name(ColorTranslator.translate("<!italic>$charactersName"))
             .lore(charactersLore)
             .asGuiItem {
@@ -200,9 +200,11 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 CharacterSelectorMenu(plugin, session).abrir(player)
             })
 
+        val backNameFallback = config.getString("menus.private_lobby.items.back.name", "<red>Volver") ?: "<red>Volver"
+        val backNameFinal = config.getString("menus.rule_editor.items.back.name", backNameFallback) ?: backNameFallback
         
-        val backItem = ItemBuilder.from(Material.ARROW)
-            .name(ColorTranslator.translate("<!italic>$backName"))
+        val backItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.rule_editor.items.back", Material.ARROW)
+            .name(ColorTranslator.translate("<!italic>$backNameFinal"))
             .asGuiItem {
                 player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 0.8f)
                 PrivateLobbyMenu(plugin, session).abrir(player)

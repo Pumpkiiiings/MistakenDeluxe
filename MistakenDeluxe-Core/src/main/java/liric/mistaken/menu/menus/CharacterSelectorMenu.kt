@@ -53,7 +53,7 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
             val color = if (isEnabled) "<green>" else "<red>"
             val stateText = if (isEnabled) stateEnabled else stateDisabled
             
-            val item = ItemBuilder.from(Material.ZOMBIE_HEAD)
+            val item = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.character_selector.items.character", Material.ZOMBIE_HEAD)
                 .name(ColorTranslator.translate("<!italic><red>${killer.nombre}"))
                 .lore(
                     ColorTranslator.translate("<!italic>${loreState.replace("{color}", color).replace("{state}", stateText)}"),
@@ -87,7 +87,7 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
             val color = if (isEnabled) "<green>" else "<red>"
             val stateText = if (isEnabled) stateEnabled else stateDisabled
             
-            val item = ItemBuilder.from(Material.APPLE)
+            val item = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.character_selector.items.character", Material.APPLE)
                 .name(ColorTranslator.translate("<!italic><green>${survivor.nombre}"))
                 .lore(
                     ColorTranslator.translate("<!italic>${loreState.replace("{color}", color).replace("{state}", stateText)}"),
@@ -116,8 +116,11 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
         }
 
         
-        val backItem = ItemBuilder.from(Material.ARROW)
-            .name(ColorTranslator.translate("<!italic>$backName"))
+        val backNameFallback = config.getString("menus.private_lobby.items.back.name", "<red>Volver") ?: "<red>Volver"
+        val backNameFinal = config.getString("menus.character_selector.items.back.name", backNameFallback) ?: backNameFallback
+        
+        val backItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.character_selector.items.back", Material.ARROW)
+            .name(ColorTranslator.translate("<!italic>$backNameFinal"))
             .asGuiItem {
                 player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 0.8f)
                 RuleEditorMenu(plugin, session).abrir(player)

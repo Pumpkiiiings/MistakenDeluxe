@@ -15,21 +15,21 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
 
     fun abrir(player: Player) {
         val config = liric.mistaken.config.engine.core.ConfigManager.getMenuConfig("private_lobby")
-        val titleText = config.getString("title", "<dark_gray>Configuraci�n de Partida Privada") ?: "<dark_gray>Configuraci�n de Partida Privada"
-        val startName = config.getString("items.start.name", "<green><bold>Iniciar Partida") ?: "<green><bold>Iniciar Partida"
-        val startLoreRaw = config.getStringList("items.start.lore").ifEmpty { listOf("<gray>Inicia la partida forzosamente.") }
+        val titleText = config.getString("menus.private_lobby.title", "<dark_gray>Configuración de Partida Privada") ?: "<dark_gray>Configuración de Partida Privada"
+        val startName = config.getString("menus.private_lobby.items.start.name", "<green><bold>Iniciar Partida") ?: "<green><bold>Iniciar Partida"
+        val startLoreRaw = config.getStringList("menus.private_lobby.items.start.lore").ifEmpty { listOf("<gray>Inicia la partida forzosamente.") }
         
-        val rulesName = config.getString("items.rules.name", "<gold><bold>Reglas de Juego") ?: "<gold><bold>Reglas de Juego"
-        val rulesLoreRaw = config.getStringList("items.rules.lore").ifEmpty { listOf("<gray>Modifica las reglas de la partida.") }
+        val rulesName = config.getString("menus.private_lobby.items.rules.name", "<gold><bold>Reglas de Juego") ?: "<gold><bold>Reglas de Juego"
+        val rulesLoreRaw = config.getStringList("menus.private_lobby.items.rules.lore").ifEmpty { listOf("<gray>Modifica las reglas de la partida.") }
 
-        val mapName = config.getString("items.map.name", "<gold><bold>Selector de Mapa") ?: "<gold><bold>Selector de Mapa"
-        val mapLoreRaw = config.getStringList("items.map.lore").ifEmpty { listOf("<gray>Elige el mapa a jugar.") }
+        val mapName = config.getString("menus.private_lobby.items.map.name", "<gold><bold>Selector de Mapa") ?: "<gold><bold>Selector de Mapa"
+        val mapLoreRaw = config.getStringList("menus.private_lobby.items.map.lore").ifEmpty { listOf("<gray>Elige el mapa a jugar.") }
 
-        val modeName = config.getString("items.mode.name", "<gold><bold>Selector de Modo") ?: "<gold><bold>Selector de Modo"
-        val modeLoreRaw = config.getStringList("items.mode.lore").ifEmpty { listOf("<gray>Elige el modo de juego.") }
+        val modeName = config.getString("menus.private_lobby.items.mode.name", "<gold><bold>Selector de Modo") ?: "<gold><bold>Selector de Modo"
+        val modeLoreRaw = config.getStringList("menus.private_lobby.items.mode.lore").ifEmpty { listOf("<gray>Elige el modo de juego.") }
 
-        val playersName = config.getString("items.players.name", "<gold><bold>Selector de Jugadores") ?: "<gold><bold>Selector de Jugadores"
-        val playersLoreRaw = config.getStringList("items.players.lore").ifEmpty { listOf("<gray>Elige roles de jugadores.") }
+        val playersName = config.getString("menus.private_lobby.items.players.name", "<gold><bold>Selector de Jugadores") ?: "<gold><bold>Selector de Jugadores"
+        val playersLoreRaw = config.getStringList("menus.private_lobby.items.players.lore").ifEmpty { listOf("<gray>Elige roles de jugadores.") }
 
         val rows = config.getInt("menus.private_lobby.rows", 5)
         val fillerMatStr = config.getString("menus.private_lobby.filler_material", "BLACK_STAINED_GLASS_PANE") ?: "BLACK_STAINED_GLASS_PANE"
@@ -55,7 +55,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
         }
 
         
-        val startItem = ItemBuilder.from(Material.EMERALD_BLOCK)
+        val startItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.private_lobby.items.start", Material.EMERALD_BLOCK)
             .name(ColorTranslator.translate("<!italic>$startName"))
             .lore(startLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
@@ -63,14 +63,14 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
                 gui.close(player)
                 if (session.isPrivate) {
                     session.forceStart = true
-                    player.sendMessage(ColorTranslator.translate("<green><bold>�Iniciando partida privada!"))
+                    player.sendMessage(ColorTranslator.translate("<green><bold>¡Iniciando partida privada!"))
                 }
             }
         
         gui.setItem(startSlot, startItem)
 
         
-        val rulesItem = ItemBuilder.from(Material.COMPARATOR)
+        val rulesItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.private_lobby.items.rules", Material.COMPARATOR)
             .name(ColorTranslator.translate("<!italic>$rulesName"))
             .lore(rulesLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
@@ -81,7 +81,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
         gui.setItem(rulesSlot, rulesItem)
 
         
-        val mapItem = ItemBuilder.from(Material.MAP)
+        val mapItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.private_lobby.items.map", Material.MAP)
             .name(ColorTranslator.translate("<!italic>$mapName"))
             .lore(mapLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
@@ -92,7 +92,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
         gui.setItem(mapSlot, mapItem)
 
         
-        val modeItem = ItemBuilder.from(Material.DIAMOND_SWORD)
+        val modeItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.private_lobby.items.mode", Material.DIAMOND_SWORD)
             .name(ColorTranslator.translate("<!italic>$modeName"))
             .lore(modeLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {
@@ -103,7 +103,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
         gui.setItem(modeSlot, modeItem)
 
         
-        val playersItem = ItemBuilder.from(Material.PLAYER_HEAD)
+        val playersItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.private_lobby.items.players", Material.PLAYER_HEAD)
             .name(ColorTranslator.translate("<!italic>$playersName"))
             .lore(playersLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
             .asGuiItem {

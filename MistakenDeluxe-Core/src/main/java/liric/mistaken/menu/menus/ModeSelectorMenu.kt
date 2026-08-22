@@ -44,10 +44,10 @@ class ModeSelectorMenu(private val plugin: Mistaken, private val session: GameSe
         var slot = startSlot
         for (mode in MistakenMode.values()) {
             val isSelected = settings.forcedMode == mode
-            val mat = if (isSelected) Material.DIAMOND_SWORD else Material.IRON_SWORD
+            val defaultMat = if (isSelected) Material.DIAMOND_SWORD else Material.IRON_SWORD
             val color = if (isSelected) "<green><bold>" else "<yellow>"
             
-            val item = ItemBuilder.from(mat)
+            val item = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.mode_selector.items.mode", defaultMat)
                 .name(ColorTranslator.translate("<!italic>$color${mode.name}"))
                 .lore(
                     net.kyori.adventure.text.Component.empty(),
@@ -56,7 +56,7 @@ class ModeSelectorMenu(private val plugin: Mistaken, private val session: GameSe
                 .asGuiItem {
                     settings.forcedMode = if (isSelected) null else mode
                     player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                    player.sendActionBar(ColorTranslator.translate("<green>Modo seleccionado: ${settings.forcedMode?.name ?: "AUTOM�TICO"}"))
+                    player.sendActionBar(ColorTranslator.translate("<green>Modo seleccionado: ${settings.forcedMode?.name ?: "AUTOMÁTICO"}"))
                     abrir(player)
                 }
 
@@ -64,8 +64,11 @@ class ModeSelectorMenu(private val plugin: Mistaken, private val session: GameSe
             if (slot > maxSlots) break
         }
 
-        gui.setItem(backSlot, ItemBuilder.from(Material.ARROW)
-            .name(ColorTranslator.translate("<!italic>$backName"))
+        val backNameFallback = config.getString("menus.private_lobby.items.back.name", "<red>Volver") ?: "<red>Volver"
+        val backNameFinal = config.getString("menus.mode_selector.items.back.name", backNameFallback) ?: backNameFallback
+
+        gui.setItem(backSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.mode_selector.items.back", Material.ARROW)
+            .name(ColorTranslator.translate("<!italic>$backNameFinal"))
             .asGuiItem {
                 player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 0.8f)
                 PrivateLobbyMenu(plugin, session).abrir(player)

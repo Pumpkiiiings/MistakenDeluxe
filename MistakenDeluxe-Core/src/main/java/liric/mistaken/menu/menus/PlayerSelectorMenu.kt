@@ -80,7 +80,7 @@ class PlayerSelectorMenu(private val plugin: Mistaken, private val session: Game
                 mat = Material.APPLE
             }
 
-            val item = ItemBuilder.from(mat)
+            val item = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.player_selector.items.player", mat)
                 .name(ColorTranslator.translate("<!italic><yellow>$name"))
                 .lore(
                     ColorTranslator.translate("<!italic>${loreRole.replace("{role}", roleText)}"),
@@ -115,16 +115,19 @@ class PlayerSelectorMenu(private val plugin: Mistaken, private val session: Game
             gui.addItem(item)
         }
 
-        gui.setItem(nextSlot, ItemBuilder.from(Material.ARROW)
+        gui.setItem(nextSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.player_selector.items.next", Material.ARROW)
             .name(ColorTranslator.translate("<!italic>$nextName"))
             .asGuiItem { gui.next() })
             
-        gui.setItem(prevSlot, ItemBuilder.from(Material.ARROW)
+        gui.setItem(prevSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.player_selector.items.prev", Material.ARROW)
             .name(ColorTranslator.translate("<!italic>$prevName"))
             .asGuiItem { gui.previous() })
 
-        gui.setItem(backSlot, ItemBuilder.from(Material.ARROW)
-            .name(ColorTranslator.translate("<!italic>$backName"))
+        val backNameFallback = config.getString("menus.private_lobby.items.back.name", "<red>Volver") ?: "<red>Volver"
+        val backNameFinal = config.getString("menus.player_selector.items.back.name", backNameFallback) ?: backNameFallback
+
+        gui.setItem(backSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.player_selector.items.back", Material.ARROW)
+            .name(ColorTranslator.translate("<!italic>$backNameFinal"))
             .asGuiItem {
                 player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 0.8f)
                 PrivateLobbyMenu(plugin, session).abrir(player)
