@@ -1,8 +1,12 @@
-﻿local survivor = {
+-- --------------------------------------------------------
+-- RaincoatKid Script (LUA)
+-- --------------------------------------------------------
+
+local survivor = {
     id = "raincoatkid"
 }
 
--- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ on_equip / on_unequip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- ------------ on_equip / on_unequip ------------
 function on_equip(player)
     player:set_scale(0.8)
 end
@@ -11,7 +15,7 @@ function on_unequip(player)
     player:reset_scale()
 end
 
--- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ on_trigger (Skills) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- ------------ on_trigger (Skills) ------------
 function on_trigger(player, trigger_id)
 
     -- Habilidad 1: Sprint (Slot 0)
@@ -43,7 +47,7 @@ function on_trigger(player, trigger_id)
     end
 end
 
--- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ on_melee_attack â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- ------------ on_melee_attack ------------
 function on_melee_attack(attacker, victim, slot)
     -- Habilidad 3: Palo (Slot 2)
     if slot == 2 then

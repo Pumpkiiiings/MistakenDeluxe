@@ -1,4 +1,8 @@
-﻿local survivor = {
+-- --------------------------------------------------------
+-- Notch Script (LUA)
+-- --------------------------------------------------------
+
+local survivor = {
     id = "notch"
 }
 
@@ -35,7 +39,7 @@ function on_trigger(player, trigger_id)
         player:play_sound("BLOCK_ANVIL_LAND", 0.8, 0.5)
         player:play_sound("BLOCK_PISTON_EXTEND", 1.0, 0.5)
         
-        -- PartÃ­culas de BEDROCK
+        -- Partículas de BEDROCK
         -- Usamos el nuevo sistema de materials
         local p_table = particle_burst(player)
         p_table:type("BLOCK")

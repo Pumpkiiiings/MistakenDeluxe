@@ -1,8 +1,12 @@
-﻿local survivor = {
+-- --------------------------------------------------------
+-- Minty Script (LUA)
+-- --------------------------------------------------------
+
+local survivor = {
     id = "minty"
 }
 
--- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ on_equip / on_unequip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- ------------ on_equip / on_unequip ------------
 function on_equip(player)
     -- No special setup needed
 end
@@ -11,7 +15,7 @@ function on_unequip(player)
     -- Cleanup is handled automatically by effect bindings
 end
 
--- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ on_trigger (Skills) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+-- ------------ on_trigger (Skills) ------------
 function on_trigger(player, trigger_id)
 
     -- Habilidad 1: Sarpazo (Slot 0)
@@ -21,7 +25,7 @@ function on_trigger(player, trigger_id)
         -- Raytrace para buscar a un Killer
         local target = ray_trace_players(player, 4.0)
         
-        -- Generar partÃ­culas de Sweep Attack
+        -- Generar partículas de Sweep Attack
         particle_burst(player, "SWEEP_ATTACK", 1, 0.0, 1.2, 1.5, 0.0)
         
         if target ~= nil and target:is_killer() then
