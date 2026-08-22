@@ -1,11 +1,11 @@
-﻿supervivientes:
+survivors:
   civil:
     nombre: "<gradient:#ffffff:#aaaaaa><b>CIVILIAN</b></gradient>"
     descripcion:
       - "<gray>A citizen trapped in the chaos."
       - "<gray>Balanced stats across the board."
       - "<white>Mechanic: <aqua>Stealth & Self-Defense</aqua>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"I just want to go home...\"</gray></italic>"
       - "<white>Difficulty: <green>Easy"
     skill_names:
@@ -23,7 +23,7 @@
     descripcion:
       - "<gray>Not even Herobrine stops this delivery."
       - "<white>Mechanic: <gold>Support & Extreme Speed</gold>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"Five stars or nothing!\"</gray></italic>"
       - "<white>Difficulty: <green>Easy"
     skill_names:
@@ -40,7 +40,7 @@
     descripcion:
       - "<gray>A survivor with animal instincts."
       - "<white>Mechanic: <green>Stun & Escape</green>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"I am not easy prey...\"</gray></italic>"
       - "<white>Difficulty: <yellow>Medium"
     skill_names:
@@ -57,7 +57,7 @@
     descripcion:
       - "<gray>Un niño pequeño con un impermeable amarillo."
       - "<white>Mecánica: <yellow>Agilidad y Sigilo</yellow>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"¡No puedes atraparme!\"</gray></italic>"
       - "<white>Dificultad: <green>Fácil"
     skill_names:
@@ -74,7 +74,7 @@
     descripcion:
       - "<gray>Quimera virtual con un arsenal de pan."
       - "<white>Mecánica: <light_purple>Control y Distancia</light_purple>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"¿De verdad eres quimera?\"</gray></italic>"
       - "<white>Dificultad: <red>Difícil"
     skill_names:
@@ -91,7 +91,7 @@
     descripcion:
       - "<gray>El líder de la Orden de la Piedra."
       - "<white>Mecánica: <aqua>Protección y Empuje</aqua>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"Nada se interpondrá en mi camino.\"</gray></italic>"
       - "<white>Dificultad: <yellow>Media"
     skill_names:

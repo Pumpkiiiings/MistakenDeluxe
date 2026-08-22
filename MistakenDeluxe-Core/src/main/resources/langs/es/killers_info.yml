@@ -1,11 +1,11 @@
-asesinos:
+killers:
   slasher:
     nombre: "<white><b>PUMPKIN WHITE</b>"
     descripcion:
       - "<gray>Un asesino clásico y brutal."
       - "<gray>Especialista en persecución física."
       - "<red>Mecánica: <white>Causa hemorragias constantes."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Su sed de sangre no tiene fin...\""
       - "<white>Dificultad: <green>Fácil"
     skill_names:
@@ -21,7 +21,7 @@ asesinos:
       - "<gray>El mito que corrompe la realidad."
       - "<gray>Especialista en acecho y movilidad."
       - "<white>Mecánica: <white>Teletransporte y revelación."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Él no debería estar aquí...\""
       - "<white>Dificultad: <yellow>Media"
     skill_names:
@@ -40,7 +40,7 @@ asesinos:
       - "<gray>Un error crítico en el código."
       - "<gray>Especialista en ataques glitch y fuego."
       - "<red>Mecánica: <white>Infección de datos y vuelo."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"SYSTEM ERROR: 303 FOUND\""
       - "<white>Dificultad: <yellow>Media"
     skill_names:
@@ -58,7 +58,7 @@ asesinos:
       - "<gray>La ausencia absoluta de existencia."
       - "<gray>Especialista en ceguera y trampas."
       - "<dark_gray>Mecánica: <white>Oscuridad total y asfixia."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Nada queda donde él camina...\""
       - "<white>Dificultad: <red>Difícil"
     skill_names:
@@ -74,7 +74,7 @@ asesinos:
       - "<gray>El heraldo del fuego y el hielo eterno."
       - "<gray>Domina el campo con ataques elementales masivos."
       - "<gradient:#ff4500:#ff8c00>Mecánica:</gradient> <white>Poder devastador vs Agotamiento."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"You can run from your demons until you are exhausted...\""
       - "<white>Dificultad: <red>Experto"
     skill_names:
@@ -89,8 +89,8 @@ asesinos:
     descripcion:
       - "<gray>El Charro Negro ha llegado por tu alma."
       - "<gray>Especialista en aturdimiento auditivo."
-      - "<red>Mecánica:</gradient> <white>Música global y mareo."
-    lore_tienda:
+      - "<red>Mecánica:</red> <white>Música global y mareo."
+    lore_shop:
       - "<gray>\"¡Ay ay ay! Canta y no llores...\""
       - "<white>Dificultad: <red>Experto"
     skill_names:
@@ -110,7 +110,7 @@ asesinos:
       - "<gray>El heraldo del fuego estelar y el oro."
       - "<gray>Domina el campo con ataques deslumbrantes."
       - "<gradient:#e0b0ff:#ffd700>Mecánica:</gradient> <white>Poder devastador vs Agotamiento."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"You can run from your demons until you are exhausted...\""
       - "<white>Dificultad: <red>Experto"
     skill_names:
@@ -127,7 +127,7 @@ asesinos:
       - "<red>El Administrador del Mundo ha regresado."
       - "<gray>Controla el campo de batalla con el poder del código."
       - "<gold>Mecánica: <white>Dash destructivo y ataques del Vacío."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"¡Yo hago las reglas aquí!\""
       - "<white>Dificultad: <dark_red>IMPARABLE"
     skill_names:
@@ -143,7 +143,7 @@ asesinos:
       - "<gray>Un ser sin cuerpo hecho de pura estática."
       - "<gray>Especialista en robo de visión y velocidad."
       - "<gradient:#ff0080:#00ffff>Mecánica:</gradient> <white>Sobrecarga cromática."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Quiero colores... dame tus colores.\""
       - "<white>Dificultad: <red>Difícil"
     skill_names:
@@ -160,7 +160,7 @@ asesinos:
     descripcion:
       - "<gray>Un misterioso ilusionista que domina"
       - "<gray>el arte del engaño y la magia oscura."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Nada de lo que ves es real...\""
       - "<white>Dificultad: <red>Alta"
     skill_names:
@@ -178,7 +178,7 @@ asesinos:
     descripcion:
       - "<gray>Una criatura perturbadora que ronda"
       - "<gray>los generadores con su bolsa mágica."
-    lore_tienda:
+    lore_shop:
       - "<dark_purple>\"Eh-oh... ¿dónde estás?\""
       - "<white>Dificultad: <red>Alta"
     skill_names:
@@ -196,7 +196,7 @@ asesinos:
     nombre: "<yellow><b>STILL LIFE</b></yellow>"
     descripcion:
       - "<gray>Mecánica de disfraz y engaño."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Alguien entre nosotros...\""
       - "<white>Dificultad: <red>Alta"
     habilidades:
@@ -211,7 +211,7 @@ asesinos:
     nombre: "<yellow><b>SMILER</b></yellow>"
     descripcion:
       - "<gray>La sonrisa en la oscuridad."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Siempre sonriendo...\""
       - "<white>Dificultad: <yellow>Media"
 
@@ -219,7 +219,7 @@ asesinos:
     nombre: "<dark_aqua><b>WARDEN</b></dark_aqua>"
     descripcion:
       - "<gray>El guardián de las profundidades."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Escucha tus pasos...\""
       - "<white>Dificultad: <red>Difícil"
 
@@ -229,7 +229,7 @@ asesinos:
       - "<gray>Una bestia del inframundo."
       - "<gray>Especialista en levantar la tierra y lanzar hachas."
       - "<gold>Mecánica: <white>Fuerza bruta y aturdimiento."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Oink...\""
       - "<white>Dificultad: <red>Difícil"
     skill_names:

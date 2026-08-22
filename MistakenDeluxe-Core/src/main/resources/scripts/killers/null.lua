@@ -145,5 +145,3 @@ function on_finisher(player, victim)
 end
 
 return killer
-
-return killer

@@ -519,6 +519,201 @@ hook:
     enter: "<green>Tu party te ha metido a la partida."
     leave: "<red>Tu party ha salido de la partida, sacando a todos..."
     enter-private: "<green>Tu party te ha metido a la partida privada."
+  reload-success: "<prefix>&#42F56CConfiguración e idiomas recargados."
+  start-forcing: "<prefix>&#42F56CIniciando secuencia de caza..."
+  start-already-ingame: "<prefix>&#FF3344Error: Ya hay una partida en curso."
+  stop-broadcast: "&#FF3344&lPARTIDA CANCELADA &#CCCCCCpor el staff."
+  stop-success: "&#42F56CPartida finalizada a la fuerza."
+  lobby-set: "<prefix>&#42F56CPunto del lobby guardado con éxito."
+  lang-set: "<prefix>&#42F56CIdioma cambiado a: &#33CCFF{langs}"
+  usage-lang: "<prefix>&#FF3344Uso: /mistaken langs <es/en/fr/jp/zh>"
+  stamina-set: "<prefix>&#42F56CEnergía de &#FFFFFF{player} &#42F56Cajustada al &#FFE300{amount}%"
+  removekiller-success: "<prefix>&#42F56CSe le quitó el rol a &#FFFFFF{player}&#42F56C."
+  removekiller-target: "<prefix>&#FF3344Tu rol ha sido removido."
+  mode-forced: "<prefix>&#FFE300Un admin forzó el modo: &#33CCFF{mode}"
+  forcekiller-usage: "<prefix>&#FF3344Uso: /mistaken forcekiller <jugador>"
+  forcekiller-not-in-game: "<prefix>&#FF3344Debes estar en una partida para forzar un asesino."
+  forcekiller-already-started: "<prefix>&#FF3344No puedes forzar el rol porque la partida ya inició."
+  forcekiller-success: "<prefix>&#42F56CHas forzado a &#FFFFFF{player} &#42F56Ca ser el asesino en la siguiente partida de &#33CCFF{arena}&#42F56C."
+  afk-enabled: "<prefix>&#FFE300Modo AFK activado. El motor del juego te ignorará."
+  afk-disabled: "<prefix>&#42F56CModo AFK desactivado. ¡Bienvenido de vuelta a la caza!"
+  edit-enabled: "<prefix>&#33CCFFModo edición activado. Eres invisible para la lógica del juego."
+  edit-disabled: "<prefix>&#FF3344Modo edición desactivado. La lógica del juego vuelve a afectarte."
+
+stats:
+  header: "&#888888&m            &r &#FFAA00ESTADÍSTICAS: &#FFFFFF{player} &#888888&m            &r "
+  wins-survivor: "&#CCCCCCVictorias Survivor: &#42F56C<value>"
+  wins-assassin: "&#CCCCCCVictorias Killer: &#FF3344<value>"
+  kills: "&#CCCCCCKills Totales: &#AA0000<value>"
+  deaths: "&#CCCCCCMuertes Totales: &#888888<value>"
+  footer: "&#888888&m                                                 &r"
+
+# --- MODOS ---
+modes:
+  classic:
+    title: "&#FF3344&lMODO CLÁSICO"
+    subtitle: "&#FFFFFFUn asesino acecha en las sombras..."
+  double_killer:
+    title: "&#FF3344&lDOBLE ASESINO"
+    subtitle: "&#FFFFFF¡DOS ENTIDADES DESPERTARON! La muerte es inevitable."
+  one_bounce:
+    title: "&#AA0000&lONE BOUNCE"
+    subtitle: "&#FFFFFF¡ERES EL ÚNICO SUPERVIVIENTE! Todos son asesinos."
+  freeze_tag:
+    title: "&#33CCFF&lFREEZE TAG"
+    subtitle: "&#FFFFFFLas entidades te congelarán. ¡Rescata a tus compañeros!"
+  infection:
+    title: "&#42F56C&lINFECCIÓN"
+    subtitle: "&#FFFFFFCada superviviente que caiga se unirá a los asesinos."
+  hide_and_seek:
+    title: "&#42F56C&lESCONDITE"
+    subtitle: "&#FFFFFFTienes 1 minuto para esconderte."
+  initializes:
+    title: "&#AA0000&lINITIALIZES"
+    subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
+
+# --- JUEGO ---
+game:
+  break-start: "&#42F56CDescanso de &#FFE30010s&#42F56C. Después del descanso comenzará la votación."
+  map-loaded: "&#42F56CMapa &#FFE300{map} &#42F56Cseleccionado."
+  player-died: "&#FF3344&#FFFFFF{player} &#FF3344ha sido eliminado."
+  player-frozen-death: "&#FF3344&#FFFFFF{player} &#FF3344murió congelado."
+  killer-disconnected: "<prefix>&#FF3344¡El Killer se dio a la fuga!"
+  killer-died-victory: "&#FF3344¡El Killer ha muerto!"
+  victory-killer: "&#FF3344&lEL MAL HA TRIUNFADO."
+  victory-survivors: "&#42F56C&l¡SOBREVIVISTE!"
+  killer-hit-actionbar: "&#FF3344❤ &#FFFFFFVida del Killer: &#FFE300{health}"
+  killer-stunned-damager: "&#FF3344¡Aturdiste al asesino!"
+  killer-stunned-victim: "&#FFE300¡Has sido aturdido!"
+  killer-title: "&#FF3344&l¡VICTORIA!"
+  killer-subtitle: "&#FFFFFFNadie quedó vivo."
+  killer-defeat-title: "&#FF3344&l¡SOBREVIVISTE!"
+  killer-defeat-subtitle: "&#FFFFFFLos supervivientes escaparon..."
+  survivor-title: "&#42F56C&l¡VICTORIA!"
+  survivor-subtitle: "&#FFFFFFLograste escapar con vida."
+  survivor-defeat-title: "&#FF3344&l¡DERROTA!"
+  survivor-defeat-subtitle: "&#FFFFFFEl asesino masacró a todos."
+  killer-released-title: "&#FF3344&l¡ASESINO LIBERADO!"
+  killer-released-subtitle: "&#FFFFFFEl asesino ya puede moverse y ver."
+  join-as-spectator: "<prefix>&#CCCCCCLa partida ya empezó. Estás de espectador."
+  rejoin-msg: "<prefix>&#FF3344Bienvenido de nuevo, asesino. Continúa la masacre."
+  infection-hit: "<prefix>&#FF3344¡SISTEMA CORRUPTO! Te infectó la Error Star."
+  hunt-start: "&#FF3344&l¡EL ASESINO HA APARECIDO! &#FFFFFFQue no te encuentre..."
+  class-selected: "&#FF3344"
+  time-extended: "&#42F56C¡Bien hecho! Por la kill, se sumaron &#FFE300{seconds}s &#42F56Cal reloj."
+  mode-reveal-start: "&#FFE300Analizando anomalías en la zona... &kaa&r"
+  mode-selected: "&#FFFFFFModo detectado: &#33CCFF{mode}"
+  player-frozen: "&#33CCFF{player} &#FFFFFFfue congelado por el asesino."
+  unfrozen-victim: "&#42F56C{player} te ha liberado del hielo."
+  unfrozen-rescuer: "&#42F56CHas liberado a {player} del hielo."
+  freeze-title: "&#33CCFF&l¡CONGELADO!"
+  freeze-subtitle: "&#FFFFFFTienes &{color}{time} &#FFFFFFsegundos para que te rescaten."
+  edit-enable: "<prefix>&#33CCFFModo Edición activado. Eres invisible para la lógica del juego."
+  edit-disable: "<prefix>&#FF3344Modo Edición desactivado. La lógica del juego vuelve a aplicar."
+  afk-enable: "<prefix>&#FFE300Modo AFK activado. El motor del juego ahora te ignorará."
+  afk-disable: "<prefix>&#42F56CModo AFK desactivado. ¡Bienvenido de vuelta!"
+
+# --- ARENA ---
+arena:
+  created: "<prefix>&#FFFFFFArena &#FFE300{name} &#FFFFFFcreada."
+  deleted: "<prefix>&#FF3344Arena &#FFE300{name} &#FF3344borrada."
+  setpaste: "<prefix>&#FFFFFFPunto de schematic guardado."
+  setspawn: "<prefix>&#FFFFFFSpawn de &#FFE300{type} &#FFFFFFguardado para &#FFE300{name}&#FFFFFF."
+  setgenerator: "<prefix>&#FFFFFFGenerador añadido."
+  delgenerator: "<prefix>&#FF3344Generador removido."
+  delgenerators: "<prefix>&#FF3344Generadores limpiados."
+  usage-setspawn: "<prefix>&#FF3344Uso: /arena setspawn {name} <asesino/survivor>"
+  status-ready: "&#42F56CLISTO"
+  status-incomplete: "&#FF3344INCOMPLETO"
+  check-header: "&#888888» &#CCCCCCEstado de &#FFE300{name}&#CCCCCC: {status}"
+  check-survivors: "&#CCCCCC - Spawns Survivors: &#FFFFFF{count}"
+  check-generators: "&#CCCCCC - Generadores: &#FFFFFF{count}"
+  check-killer: "&#CCCCCC - Spawn Killer: {icon}"
+  help-header: "&#3BFFC7&lMISTAKEN &#888888| &#CCCCCCArenas"
+  help-line-create: " &#FFE300/arena create <name>"
+  help-line-delete: " &#FFE300/arena delete <name>"
+  help-line-check: " &#FFE300/arena check <name>"
+  help-line-setpaste: " &#FFE300/arena setpaste <name>"
+  help-line-setspawn: " &#FFE300/arena setspawn <name> <type>"
+  help-line-setgenerator: " &#FFE300/arena setgenerator <name>"
+  help-line-delgenerator: " &#FFE300/arena delgenerator <name>"
+  help-line-delgenerators: " &#FFE300/arena delgenerators <name>"
+
+# --- ERRORES ---
+errors:
+  no-permission: "<prefix>&#FF3344No tienes permiso para esto."
+  only-players: "&#FF3344Solo para jugadores."
+  ability-cooldown: "&#FF3344La habilidad &#FFAA00<skill> &#FF3344no está lista. Tiempo de recarga restante: &#FFE300<time>s"
+  lang-not-found: "<prefix>&#FF3344Ese idioma no existe."
+  no-money: "<prefix>&#FF3344No tienes monedas suficientes."
+  arena-not-found: "<prefix>&#FF3344La arena &#FFFFFF{name} &#FF3344no existe."
+  voting-not-active: "<prefix>&#FF3344La votación no está activa."
+  already-voted: "<prefix>&#FF3344Ya votaste."
+  player-not-found: "<prefix>&#FF3344Jugador desconectado."
+  player-not-killer: "<prefix>&#FF3344No es un asesino."
+  unknown-command: "<prefix>&#FF3344Comando desconocido."
+  invalid-number: "<prefix>&#FF3344Usa un número válido."
+  invalid-spawn-type: "<prefix>&#FF3344Usa 'asesino' o 'survivor'."
+  invalid-gen-block: "<prefix>&#FF3344Mira un bloque de hierro o amatista."
+  not-a-generator: "<prefix>&#FF3344Eso no es un generador."
+  killer-not-found: "<prefix>&#FF3344Esa clase no existe."
+
+# --- MOTOR DE PARANOIA ---
+paranoia:
+  - "&#888888&k||&r &#888888¿Escuchaste eso? &k||&r"
+  - "&#888888ALGUIEN TE ESTÁ MIRANDO..."
+  - "&#FF3344ÉL ESTÁ CERCA."
+  - "&#888888NO TE VOLTEES."
+
+# --- ESTAMINA ---
+stamina:
+  exhausted: "&#FF3344&l¡ESTÁS AGOTADO! &#CCCCCCRecupera el aliento..."
+  low_warning: "&#FFAA00⚠ ¡Estás perdiendo estamina rápidamente!"
+
+# --- ANOMALÍAS ---
+anomalies:
+  geoffrey:
+    spawn: "&#FF3344&l[!] &#AA0000ANOMALÍA DETECTADA: &lEL ABISMO HA DESPERTADO."
+    title-comes: "&#AA0000&l!!! VIENE !!!"
+    subtitle-comes: "&#FF3344¡corre!!!!"
+    rage: "&#AA0000&l!!! GEOFFREY ESTÁ FURIOSO !!!"
+    death: "<prefix>&#FFFFFF{player} &#FF3344fue destrozado por Geoffrey."
+
+# ==========================================
+# --- TÍTULOS DE MENÚS ---
+# ==========================================
+menus:
+  killers_shop:
+    titulo: "&#FF3344&l» Tienda de Asesinos"
+  survivors_shop:
+    titulo: "&#33CCFF&l» Tienda de Survivors"
+  tienda_principal:
+    titulo: "&#001A33&l» Tienda Principal"
+    items:
+      asesinos:
+        nombre: "&#FF3344&lTIENDA DE ASESINOS"
+        lore:
+          - ""
+          - "&#CCCCCCLibera tu instinto asesino."
+          - "&#CCCCCCCompra personajes y habilidades"
+          - "&#CCCCCCespeciales para la cacería."
+          - ""
+          - "&#FF3344» Click para entrar"
+      supervivientes:
+        nombre: "&#33CCFF&lTIENDA DE SUPERVIVIENTES"
+        lore:
+          - ""
+          - "&#CCCCCCMejora tus probabilidades de éxito."
+          - "&#CCCCCCAdquiere clases con perks únicos"
+          - "&#CCCCCCpara burlar a la muerte."
+          - ""
+          - "&#33CCFF Click para entrar"
+
+hook:
+  party:
+    enter: "<green>Tu party te ha metido a la partida."
+    leave: "<red>Tu party ha salido de la partida, sacando a todos..."
+    enter-private: "<green>Tu party te ha metido a la partida privada."
     created-private: "<yellow>¡Has creado una partida privada! Usa el panel para configurarla."
     only-leader: "<red>Solo el líder de la party puede crear partidas privadas."
     not-in: "<red>No estás en una party."
@@ -526,3 +721,15 @@ hook:
   alessio:
     enter: "<green>Tu líder de party te ha metido a la partida."
     leave: "<red>Tu líder de party ha salido de la partida, sacando a todos..."
+
+shop:
+  estado-seleccionado: "<dark_gray>[ <green>✔ SELECCIONADO <dark_gray>]"
+  estado-poseido: "<dark_gray>[ <yellow>★ POSEÍDO <dark_gray>]"
+  estado-comprar: "<dark_gray>[ <aqua>» CLICK PARA COMPRAR « <dark_gray>]"
+  estado-precio: "<gray>Precio: <gold><bold>{amount} <yellow>Monedas"
+  abilityes-titulo: "<dark_purple><b><obfuscated>||</obfuscated> <light_purple>HABILIDADES <dark_purple><obfuscated>||</obfuscated></b>"
+  clase-humana: "<gray>✦ <white>Clase Humana"
+  estado-comprar-survivor: "<dark_gray>[ <aqua>» COMPRAR SUPERVIVIENTE « <dark_gray>]"
+  comprado: "<green><b>✔ ¡COMPRA EXITOSA!</b> <gray>Has adquirido esta clase."
+  seleccionado: "<green><b>✔ ¡SELECCIONADO!</b>"
+  ya-seleccionado: "<red><b>⚠</b> <gray>Ya tienes esto seleccionado."

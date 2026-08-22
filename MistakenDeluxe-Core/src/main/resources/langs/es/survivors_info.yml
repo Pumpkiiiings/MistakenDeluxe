@@ -1,14 +1,14 @@
 # ======================================================
 #       MISTAKEN - INFORMACIÓN DE SUPERVIVIENTES (ES)
 # ======================================================
-supervivientes:
+survivors:
   civil:
     nombre: "<gradient:#ffffff:#aaaaaa><b>CIVIL</b></gradient>"
     descripcion:
       - "<gray>Un ciudadano atrapado en el caos."
       - "<gray>Equilibrio puro en todas sus estadísticas."
       - "<white>Mecánica: <aqua>Sigilo y Autodefensa</aqua>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"Solo quiero volver a casa...\"</gray></italic>"
       - "<white>Dificultad: <green>Fácil"
     skill_names:
@@ -26,7 +26,7 @@ supervivientes:
     descripcion:
       - "<gray>Ni Herobrine detiene esta entrega."
       - "<white>Mecánica: <gold>Soporte y Velocidad Extrema</gold>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"¡Cinco estrellas o nada, pariente!\"</gray></italic>"
       - "<white>Dificultad: <green>Fácil"
     skill_names:
@@ -43,7 +43,7 @@ supervivientes:
     descripcion:
       - "<gray>Un superviviente con instintos animales."
       - "<white>Mecánica: <green>Aturdimiento y Huida</green>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"No soy una presa fácil...\"</gray></italic>"
       - "<white>Dificultad: <yellow>Media"
     skill_names:
@@ -60,7 +60,7 @@ supervivientes:
     descripcion:
       - "<gray>Un niño pequeño con un impermeable amarillo."
       - "<white>Mecánica: <yellow>Agilidad y Sigilo</yellow>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"¡No puedes atraparme!\"</gray></italic>"
       - "<white>Dificultad: <green>Fácil"
     skill_names:
@@ -79,7 +79,7 @@ supervivientes:
     descripcion:
       - "<gray>Quimera virtual con un arsenal de pan."
       - "<white>Mecánica: <light_purple>Control y Distancia</light_purple>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"¿De verdad eres quimera?\"</gray></italic>"
       - "<white>Dificultad: <red>Difícil"
     skill_names:
@@ -98,7 +98,7 @@ supervivientes:
     descripcion:
       - "<gray>El líder de la Orden de la Piedra."
       - "<white>Mecánica: <aqua>Protección y Empuje</aqua>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"Nada se interpondrá en mi camino.\"</gray></italic>"
       - "<white>Dificultad: <yellow>Media"
     skill_names:
@@ -115,7 +115,7 @@ supervivientes:
     descripcion:
       - "<gray>Un comerciante experto en huir."
       - "<white>Mecánica: <green>Distracción y Evasión</green>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"Hrmmm...\"</gray></italic>"
       - "<white>Dificultad: <green>Fácil"
     skill_names:
@@ -134,7 +134,7 @@ supervivientes:
     descripcion:
       - "<gray>El creador de todo lo cúbico."
       - "<white>Mecánica: <yellow>Defensa y Control Divino</yellow>"
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"¿Al matarlo te dara una manzana?\"</gray></italic>"
       - "<white>Dificultad: <red>Difícil"
     skill_names:
@@ -153,7 +153,7 @@ supervivientes:
     descripcion:
       - "<gray>Un maestro del engaño que"
       - "<gray>disfruta haciendo sufrir al asesino."
-    lore_tienda:
+    lore_shop:
       - "<italic><gray>\"¡Cuidado donde pisas!\"</gray></italic>"
       - "<white>Dificultad: <red>Difícil"
     skill_names:

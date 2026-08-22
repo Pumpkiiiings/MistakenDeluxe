@@ -85,8 +85,12 @@ class KillerShop : MenuBase("killers_shop") {
             fullLore.add(Component.empty())
 
             fullLore.add(labelAbilityes)
+            val weaponName = MessageService.getRawString(player, "killers.$killerId.skill_names.weapon", "", "killers_info")
+            if (weaponName.isNotEmpty()) {
+                fullLore.add(parseSafe(" <dark_gray>•</dark_gray> <white>$weaponName</white>"))
+            }
             for (i in 1..4) {
-                val habName = MessageService.getRawString(player, "killers.$killerId.skill_names.ability$i", "", "killers_info")
+                val habName = MessageService.getRawString(player, "killers.$killerId.skill_names.skill$i", "", "killers_info")
                 if (habName.isNotEmpty()) {
                     fullLore.add(parseSafe(" <dark_gray>•</dark_gray> <white>$habName</white>"))
                 }

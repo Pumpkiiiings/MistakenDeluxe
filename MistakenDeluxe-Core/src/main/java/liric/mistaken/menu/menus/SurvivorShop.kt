@@ -77,7 +77,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
                 
                 
                 for (i in 1..3) {
-                    val habName = MessageService.getRawString(player, "survivors.$survivorId.skill_names.ability$i", "", "survivors_info")
+                    val habName = MessageService.getRawString(player, "survivors.$survivorId.skill_names.skill$i", "", "survivors_info")
                     if (habName.isNotEmpty()) {
                         add(parseSafe(" <dark_gray>•</dark_gray> <white>$habName</white>"))
                     }

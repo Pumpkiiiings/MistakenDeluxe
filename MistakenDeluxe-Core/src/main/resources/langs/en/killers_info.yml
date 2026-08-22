@@ -1,11 +1,11 @@
-asesinos:
+killers:
   slasher:
     nombre: "<white><b>PUMPKIN WHITE</b>"
     descripcion:
       - "<gray>A classic and brutal killer."
       - "<gray>Specialist in physical pursuit."
       - "<red>Mechanic: <white>Causes constant bleeding."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"His bloodlust has no end...\""
       - "<white>Difficulty: <green>Easy"
     skill_names:
@@ -21,7 +21,7 @@ asesinos:
       - "<gray>The myth that corrupts reality."
       - "<gray>Specialist in stalking and mobility."
       - "<white>Mechanic: <white>Teleportation and revelation."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"He shouldn't be here...\""
       - "<white>Difficulty: <yellow>Medium"
     skill_names:
@@ -37,7 +37,7 @@ asesinos:
       - "<gray>A critical error in the code."
       - "<gray>Specialist in glitch and fire attacks."
       - "<red>Mechanic: <white>Data infection and flight."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"SYSTEM ERROR: 303 FOUND\""
       - "<white>Difficulty: <yellow>Medium"
     skill_names:
@@ -53,7 +53,7 @@ asesinos:
       - "<gray>The absolute absence of existence."
       - "<gray>Specialist in blindness and traps."
       - "<dark_gray>Mechanic: <white>Total darkness and suffocation."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Nothing remains where he walks...\""
       - "<white>Difficulty: <red>Hard"
     skill_names:
@@ -69,7 +69,7 @@ asesinos:
       - "<gray>The herald of fire and eternal ice."
       - "<gray>Dominates the field with massive elemental attacks."
       - "<gradient:#ff4500:#ff8c00>Mechanic:</gradient> <white>Devastating power vs Exhaustion."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"You can run from your demons until you are exhausted...\""
       - "<white>Difficulty: <red>Expert"
     skill_names:
@@ -84,8 +84,8 @@ asesinos:
     descripcion:
       - "<gray>The Black Charro has come for your soul."
       - "<gray>Specialist in auditory stun."
-      - "<red>Mechanic:</gradient> <white>Global music and dizziness."
-    lore_tienda:
+      - "<red>Mechanic:</red> <white>Global music and dizziness."
+    lore_shop:
       - "<gray>\"¡Ay ay ay! Sing and don't cry...\""
       - "<white>Difficulty: <red>Expert"
     skill_names:
@@ -101,7 +101,7 @@ asesinos:
       - "<gray>El heraldo del fuego estelar y el oro."
       - "<gray>Domina el campo con ataques deslumbrantes."
       - "<gradient:#e0b0ff:#ffd700>Mecánica:</gradient> <white>Poder devastador vs Agotamiento."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"You can run from your demons until you are exhausted...\""
       - "<white>Dificultad: <red>Experto"
     skill_names:
@@ -118,7 +118,7 @@ asesinos:
       - "<red>The World Admin has returned."
       - "<gray>Controls the battlefield with the power of code."
       - "<gold>Mechanic: <white>Destructive dash and Void attacks."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"I make the rules here!\""
       - "<white>Difficulty: <dark_red>UNSTOPPABLE"
     skill_names:
@@ -134,7 +134,7 @@ asesinos:
       - "<gray>A bodiless being made of pure static."
       - "<gray>Specialist in vision theft and speed."
       - "<gradient:#ff0080:#00ffff>Mechanic:</gradient> <white>Chromatic overload."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"I want colors... give me your colors.\""
       - "<white>Difficulty: <red>Hard"
     skill_names:
@@ -147,7 +147,7 @@ asesinos:
     nombre: "<yellow><b>SMILER</b></yellow>"
     descripcion:
       - "<gray>The smile in the dark."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Always smiling...\""
 
   warden:
@@ -158,7 +158,7 @@ asesinos:
       - "<gray>A classic and brutal killer."
       - "<gray>Specialist in physical pursuit."
       - "<red>Mechanic: <white>Causes constant bleeding."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"His bloodlust has no end...\""
       - "<white>Difficulty: <green>Easy"
     skill_names:
@@ -174,7 +174,7 @@ asesinos:
       - "<gray>The myth that corrupts reality."
       - "<gray>Specialist in stalking and mobility."
       - "<white>Mechanic: <white>Teleportation and revelation."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"He shouldn't be here...\""
       - "<white>Difficulty: <yellow>Medium"
     skill_names:
@@ -190,7 +190,7 @@ asesinos:
       - "<gray>A critical error in the code."
       - "<gray>Specialist in glitch and fire attacks."
       - "<red>Mechanic: <white>Data infection and flight."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"SYSTEM ERROR: 303 FOUND\""
       - "<white>Difficulty: <yellow>Medium"
     skill_names:
@@ -206,7 +206,7 @@ asesinos:
       - "<gray>The absolute absence of existence."
       - "<gray>Specialist in blindness and traps."
       - "<dark_gray>Mechanic: <white>Total darkness and suffocation."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Nothing remains where he walks...\""
       - "<white>Difficulty: <red>Hard"
     skill_names:
@@ -222,7 +222,7 @@ asesinos:
       - "<gray>The herald of fire and eternal ice."
       - "<gray>Dominates the field with massive elemental attacks."
       - "<gradient:#ff4500:#ff8c00>Mechanic:</gradient> <white>Devastating power vs Exhaustion."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"You can run from your demons until you are exhausted...\""
       - "<white>Difficulty: <red>Expert"
     skill_names:
@@ -237,8 +237,8 @@ asesinos:
     descripcion:
       - "<gray>The Black Charro has come for your soul."
       - "<gray>Specialist in auditory stun."
-      - "<red>Mechanic:</gradient> <white>Global music and dizziness."
-    lore_tienda:
+      - "<red>Mechanic:</red> <white>Global music and dizziness."
+    lore_shop:
       - "<gray>\"¡Ay ay ay! Sing and don't cry...\""
       - "<white>Difficulty: <red>Expert"
     skill_names:
@@ -254,7 +254,7 @@ asesinos:
       - "<gray>El heraldo del fuego estelar y el oro."
       - "<gray>Domina el campo con ataques deslumbrantes."
       - "<gradient:#e0b0ff:#ffd700>Mecánica:</gradient> <white>Poder devastador vs Agotamiento."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"You can run from your demons until you are exhausted...\""
       - "<white>Dificultad: <red>Experto"
     skill_names:
@@ -271,7 +271,7 @@ asesinos:
       - "<red>The World Admin has returned."
       - "<gray>Controls the battlefield with the power of code."
       - "<gold>Mechanic: <white>Destructive dash and Void attacks."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"I make the rules here!\""
       - "<white>Difficulty: <dark_red>UNSTOPPABLE"
     skill_names:
@@ -287,7 +287,7 @@ asesinos:
       - "<gray>A bodiless being made of pure static."
       - "<gray>Specialist in vision theft and speed."
       - "<gradient:#ff0080:#00ffff>Mechanic:</gradient> <white>Chromatic overload."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"I want colors... give me your colors.\""
       - "<white>Difficulty: <red>Hard"
     skill_names:
@@ -300,21 +300,21 @@ asesinos:
     nombre: "<yellow><b>SMILER</b></yellow>"
     descripcion:
       - "<gray>The smile in the dark."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Always smiling...\""
 
   warden:
     nombre: "<dark_aqua><b>WARDEN</b></dark_aqua>"
     descripcion:
       - "<gray>The guardian of the depths."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Hears every step...\""
 
   still_life:
     nombre: "<yellow><b>STILL LIFE</b></yellow>"
     descripcion:
       - "<gray>Disguise and deception."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Someone among us...\""
 
   piglinbig:
@@ -323,7 +323,7 @@ asesinos:
       - "<gray>A beast from the nether."
       - "<gray>Specialist in ground lifting and axe throwing."
       - "<gold>Mechanic: <white>Brute force and stun."
-    lore_tienda:
+    lore_shop:
       - "<gray>\"Oink...\""
       - "<white>Difficulty: <red>Hard"
     skill_names:
