@@ -25,17 +25,17 @@ object CinematicCommand {
             .then(
                 Commands.literal("intro")
                     .then(
-                        Commands.argument("asesino", StringArgumentType.word())
+                        Commands.argument("killer", StringArgumentType.word())
                             .suggests { _, builder ->
                                 killersList.forEach { if (it.startsWith(builder.remainingLowerCase)) builder.suggest(it) }
                                 builder.buildFuture()
                             }
                             .executes { context ->
                                 val source = context.source.sender as? Player ?: return@executes 0
-                                val killerId = StringArgumentType.getString(context, "asesino")
+                                val killerId = StringArgumentType.getString(context, "killer")
 
                                 val killerDummy = createDummy(killerId)
-                                source.sendMessage(ColorTranslator.translate("<green>Reproduciendo <bold>INTRO</bold> de: <yellow>$killerId"))
+                                source.sendMessage(ColorTranslator.translate("<green>Playing <bold>INTRO</bold> for: <yellow>$killerId"))
 
                                 plugin.cinematicManager.playKillerIntro(source, killerDummy, listOf(source))
                                 Command.SINGLE_SUCCESS
@@ -46,17 +46,17 @@ object CinematicCommand {
             .then(
                 Commands.literal("outro")
                     .then(
-                        Commands.argument("asesino", StringArgumentType.word())
+                        Commands.argument("killer", StringArgumentType.word())
                             .suggests { _, builder ->
                                 killersList.forEach { if (it.startsWith(builder.remainingLowerCase)) builder.suggest(it) }
                                 builder.buildFuture()
                             }
                             .executes { context ->
                                 val source = context.source.sender as? Player ?: return@executes 0
-                                val killerId = StringArgumentType.getString(context, "asesino")
+                                val killerId = StringArgumentType.getString(context, "killer")
 
                                 val killerDummy = createDummy(killerId)
-                                source.sendMessage(ColorTranslator.translate("<red>Reproduciendo <bold>OUTRO</bold> de: <yellow>$killerId"))
+                                source.sendMessage(ColorTranslator.translate("<red>Playing <bold>OUTRO</bold> for: <yellow>$killerId"))
 
                                 plugin.cinematicManager.playKillerOutro(source, killerDummy, listOf(source))
                                 Command.SINGLE_SUCCESS

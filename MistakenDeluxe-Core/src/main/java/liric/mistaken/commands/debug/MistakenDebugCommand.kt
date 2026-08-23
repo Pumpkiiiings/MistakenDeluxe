@@ -39,17 +39,17 @@ object MistakenDebugCommand {
                     val target = Bukkit.getPlayer(targetName)
 
                     if (target == null) {
-                        sender.sendMessage("§cEse plebe no anda por aquí, pariente.")
+                        sender.sendMessage("§c[!] Player not found or offline.")
                         return@executes 0
                     }
 
                     val uuid = target.uniqueId
                     if (plugin.ignoredTestPlayers.contains(uuid)) {
                         plugin.ignoredTestPlayers.remove(uuid)
-                        sender.sendMessage("§a[!] §e${target.name} §fya no es ignorado por las anomalías.")
+                        sender.sendMessage("§a[!] §e${target.name} §fis no longer ignored by anomalies.")
                     } else {
                         plugin.ignoredTestPlayers.add(uuid)
-                        sender.sendMessage("§c[!] §e${target.name} §fahora es invisible para los entes .EXE")
+                        sender.sendMessage("§c[!] §e${target.name} §fis now invisible to .EXE entities.")
                     }
                     1
                 }
@@ -78,11 +78,11 @@ object MistakenDebugCommand {
                 }
 
                 if (session == null) {
-                    p.sendMessage("§c[!] No estás en ninguna sesión, plebe.")
+                    p.sendMessage("§c[!] You are not in any active session.")
                     return@executes 0
                 }
                 session.forceStart = true
-                p.sendMessage("§a[!] §eInicio forzado activado. La partida comenzará ignorando el límite de jugadores.")
+                p.sendMessage("§a[!] §eForce start activated. The game will begin ignoring the player limit.")
                 1
             }
         )
@@ -109,12 +109,12 @@ object MistakenDebugCommand {
                 }
 
                 if (session == null) {
-                    p.sendMessage("§c[!] No estás en ninguna sesión, plebe.")
+                    p.sendMessage("§c[!] You are not in any active session.")
                     return@executes 0
                 }
                 session.forceStart = true
                 session.isDebugStart = true
-                p.sendMessage("§a[!] §eModo debug activado. La partida no terminará sola hasta usar /mistakendebug endgame.")
+                p.sendMessage("§a[!] §eDebug mode activated. The game will not end on its own until /mistakendebug endgame is used.")
                 1
             }
         )
@@ -135,25 +135,25 @@ object MistakenDebugCommand {
                     val session = plugin.sessionManager.getSession(p)
 
                     if (session == null) {
-                        p.sendMessage("§c[!] No estás en ninguna sesión, plebe.")
+                        p.sendMessage("§c[!] You are not in any active session.")
                         return@executes 0
                     }
                     
                     if (session.currentState != GameState.LOBBY && session.currentState != GameState.VOTING && session.currentState != GameState.BREAK) {
-                        p.sendMessage("§c[!] Solo puedes forzar tu rol antes de que inicie la partida.")
+                        p.sendMessage("§c[!] You can only force your role before the game starts.")
                         return@executes 0
                     }
 
                     if (roleType == "killer") {
                         session.forcedKillerUUID = p.uniqueId
                         session.forcedSurvivorUUIDs.remove(p.uniqueId)
-                        p.sendMessage("§a[!] §eSerás el §cASESINO §een esta partida.")
+                        p.sendMessage("§a[!] §eYou will be the §cKILLER §ein this game.")
                     } else if (roleType == "survivor") {
                         session.forcedSurvivorUUIDs.add(p.uniqueId)
                         if (session.forcedKillerUUID == p.uniqueId) session.forcedKillerUUID = null
-                        p.sendMessage("§a[!] §eSerás §aSUPERVIVIENTE §een esta partida.")
+                        p.sendMessage("§a[!] §eYou will be a §aSURVIVOR §ein this game.")
                     } else {
-                        p.sendMessage("§c[!] Rol inválido. Usa 'killer' o 'survivor'.")
+                        p.sendMessage("§c[!] Invalid role. Use 'killer' or 'survivor'.")
                     }
                     1
                 }
@@ -168,15 +168,15 @@ object MistakenDebugCommand {
                 val session = plugin.sessionManager.getSession(p)
 
                 if (session == null) {
-                    p.sendMessage("§c[!] No estás en ninguna sesión, plebe.")
+                    p.sendMessage("§c[!] You are not in any active session.")
                     return@executes 0
                 }
                 
                 if (session.currentState == GameState.INGAME) {
                     session.stateController.endGame("game.victory-survivors", false, forceDebugEnd = true)
-                    p.sendMessage("§a[!] §ePartida terminada a la fuerza.")
+                    p.sendMessage("§a[!] §eGame forcefully ended.")
                 } else {
-                    p.sendMessage("§c[!] La partida no está en curso.")
+                    p.sendMessage("§c[!] The game is not currently in progress.")
                 }
                 1
             }
@@ -201,7 +201,7 @@ object MistakenDebugCommand {
                         liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) 
                     }, null, 30L)
                     
-                    p.sendMessage("§a[!] Efectos y música de LMS iniciados (Duración prueba: 1 min).")
+                    p.sendMessage("§a[!] LMS effects and music started (Test duration: 1 min).")
                     1
                 }
                 .then(Commands.literal("all").executes { ctx ->
@@ -217,7 +217,7 @@ object MistakenDebugCommand {
                             }, null, 30L)
                         }, null, 20L)
                     }
-                    sender.sendMessage("§a[!] Efectos y música de LMS iniciados para todos.")
+                    sender.sendMessage("§a[!] LMS effects and music started for all players.")
                     1
                 })
             )
@@ -226,7 +226,7 @@ object MistakenDebugCommand {
                 
                 p.stopSound("mistaken:lms", org.bukkit.SoundCategory.RECORDS)
                 liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 0, 0, 0, 0f, 1) 
-                p.sendMessage("§c[!] Efectos de LMS detenidos.")
+                p.sendMessage("§c[!] LMS effects stopped.")
                 1
             })
         )
@@ -238,7 +238,7 @@ object MistakenDebugCommand {
                 val p = ctx.source.sender as? Player ?: return@executes 0
                 val entity = GeoffreyEXE(plugin).apply { spawn(p.location.add(p.location.direction.multiply(-5))) }
                 activeGeoffreys[instanceCounter++] = entity
-                p.sendMessage("§4[!] §cAnomalía §lGEOFFREY.EXE §r§ciniciada.")
+                p.sendMessage("§4[!] §cAnomaly §lGEOFFREY.EXE §r§cspawned.")
                 1
             })
         )
@@ -249,11 +249,11 @@ object MistakenDebugCommand {
             .executes { ctx ->
                 val p = ctx.source.sender as? Player ?: return@executes 0
                 val loc = p.location
-                p.sendMessage("§4§l[!] ADVERTENCIA: §cIniciando colapso de realidad... 1 ANOMALÍA DETECTADA.")
+                p.sendMessage("§4§l[!] WARNING: §cInitiating reality collapse... 1 ANOMALY DETECTED.")
 
                 activeGeoffreys[instanceCounter++] = GeoffreyEXE(plugin).apply { spawn(loc.clone().add(5.0, 0.0, 0.0)) }
 
-                p.sendMessage(ColorTranslator.translate("<dark_red><bold>APOCALIPSIS EXE <reset><red>GEOFFREY.EXE HA APARECIDO. No sobrevivirás..."))
+                p.sendMessage(ColorTranslator.translate("<dark_red><bold>EXE APOCALYPSE <reset><red>GEOFFREY.EXE HAS APPEARED. You will not survive..."))
                 1
             }
         )
@@ -266,7 +266,7 @@ object MistakenDebugCommand {
 
                 activeGeoffreys.values.forEach { it.remove() }; activeGeoffreys.clear()
 
-                sender.sendMessage("§a§l[✔] §aProtocolo de contención exitoso. Todas las anomalías eliminadas.")
+                sender.sendMessage("§a§l[✔] §aContainment protocol successful. All anomalies eliminated.")
                 1
             }
         )

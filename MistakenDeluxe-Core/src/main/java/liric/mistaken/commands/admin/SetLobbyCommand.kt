@@ -38,7 +38,7 @@ object SetLobbyCommand {
 
                 
                 if (player == null) {
-                    sender.sendMessage(ColorTranslator.translate("<red>Este comando solo puede ser ejecutado por jugadores."))
+                    sender.sendMessage(MessageService.getComponent(null, "errors.player-only"))
                     return@executes 0 
                 }
 
@@ -57,7 +57,7 @@ object SetLobbyCommand {
                 
                 
                 plugin.componentLogger.info(ColorTranslator.translate(
-                    "<gray>[Mistaken]</gray> <green>Lobby actualizado en </green><white>${player.world.name}</white><green> por </green><white>${player.name}</white>"
+                    "<gray>[Mistaken]</gray> <green>Lobby location updated in </green><white>${player.world.name}</white><green> by </green><white>${player.name}</white>"
                 ))
 
                 1 

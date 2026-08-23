@@ -26,7 +26,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
     override fun execute(stack: CommandSourceStack, args: Array<String>) {
         val sender = stack.sender
         val player = sender as? Player ?: run {
-            sender.sendMessage("Este comando es exclusivo para jugadores.")
+            sender.sendMessage(MessageService.getComponent(null, "errors.player-only"))
             return
         }
 
@@ -58,7 +58,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
                 player.sendMessage(MessageService.getComponent(player, "arena.created",
                     Placeholder.parsed("name", arenaName)))
                 player.playSound(player.location, Sound.ENTITY_VILLAGER_YES, 1f, 1f)
-                player.sendMessage(ColorTranslator.translate("<gray>Nota: Aseg�rate de tener el archivo <white>$arenaName.slime</white> en su carpeta."))
+                player.sendMessage(ColorTranslator.translate("<gray>Note: Make sure you have the <white>$arenaName.slime</white> file in its folder."))
             }
 
             "delete" -> {
@@ -142,17 +142,17 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
             }
             "settime" -> {
                 if (args.size < 3) {
-                    player.sendMessage(ColorTranslator.translate("<red>Uso: /arena settime <mapa> <day|night|afternoon|morning|dynamic>"))
+                    player.sendMessage(ColorTranslator.translate("<red>Usage: /arena settime <map> <day|night|afternoon|morning|dynamic>"))
                     return
                 }
                 val mode = args[2].lowercase()
                 val validModes = listOf("day", "night", "afternoon", "morning", "dynamic")
                 if (mode in validModes) {
                     plugin.arenaManager.setTimeMode(arenaName, mode)
-                    player.sendMessage(ColorTranslator.translate("<green>Tiempo de la arena <white>$arenaName</white> establecido a <yellow>$mode</yellow>."))
+                    player.sendMessage(ColorTranslator.translate("<green>Time mode for arena <white>$arenaName</white> set to <yellow>$mode</yellow>."))
                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
                 } else {
-                    player.sendMessage(ColorTranslator.translate("<red>Modo de tiempo inv�lido. Opciones: day, night, afternoon, morning, dynamic."))
+                    player.sendMessage(ColorTranslator.translate("<red>Invalid time mode. Options: day, night, afternoon, morning, dynamic."))
                 }
             }
             else -> sendHelp(player)
@@ -180,7 +180,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
                 .filter { it.startsWith(args[1], true) }
             3 -> {
                 if (args[0].equals("setspawn", true)) {
-                    listOf("asesino", "survivor").filter { it.startsWith(args[2], true) }
+                    listOf("killer", "survivor").filter { it.startsWith(args[2], true) }
                 } else if (args[0].equals("settime", true)) {
                     listOf("day", "night", "afternoon", "morning", "dynamic").filter { it.startsWith(args[2], true) }
                 } else emptyList()

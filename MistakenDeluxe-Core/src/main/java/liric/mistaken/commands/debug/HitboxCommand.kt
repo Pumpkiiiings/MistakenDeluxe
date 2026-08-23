@@ -21,8 +21,8 @@ object HitboxCommand {
                 val isNowEnabled = HitboxVisualizer.toggle()
 
                 
-                val estado = if (isNowEnabled) "<green><bold>ACTIVADO</bold></green>" else "<red><bold>DESACTIVADO</bold></red>"
-                sender.sendMessage(ColorTranslator.translate("<gray>[<yellow>DEBUG</yellow>] <white>Visor de Hitboxes: $estado"))
+                val state = if (isNowEnabled) "<green><bold>ENABLED</bold></green>" else "<red><bold>DISABLED</bold></red>"
+                sender.sendMessage(ColorTranslator.translate("<gray>[<yellow>DEBUG</yellow>] <white>Hitbox Visualizer: $state"))
 
                 Command.SINGLE_SUCCESS
             }
