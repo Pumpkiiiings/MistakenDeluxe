@@ -105,8 +105,10 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
             }
             "survivor" -> {
                 val cleanLoc = Location(null, loc.x, loc.y, loc.z, loc.yaw, loc.pitch)
-                arena.addSurvivorSpawn(cleanLoc)
-                saveSafeLocation("arenas.$name.survivorSpawns.${UUID.randomUUID()}", loc)
+                if (cleanLoc !in arena.survivorSpawns) {
+                    arena.addSurvivorSpawn(cleanLoc)
+                    saveSafeLocation("arenas.$name.survivorSpawns.${UUID.randomUUID()}", loc)
+                }
             }
         }
     }
@@ -114,8 +116,10 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
     fun addGenerator(name: String, loc: Location) {
         val arena = arenas[name] ?: return
         val cleanLoc = Location(null, loc.x, loc.y, loc.z, loc.yaw, loc.pitch)
-        arena.addGenerator(cleanLoc)
-        saveSafeLocation("arenas.$name.generators.${UUID.randomUUID()}", loc)
+        if (cleanLoc !in arena.generators) {
+            arena.addGenerator(cleanLoc)
+            saveSafeLocation("arenas.$name.generators.${UUID.randomUUID()}", loc)
+        }
     }
 
     fun saveGenerators(name: String, locations: List<Location>) {
@@ -129,7 +133,7 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
         locations.forEach { loc ->
             val cleanLoc = Location(null, loc.x, loc.y, loc.z, loc.yaw, loc.pitch)
             arena.generators.add(cleanLoc)
-            saveSafeLocation("arenas.$name.generators.${UUID.randomUUID()}", loc)
+            saveSafeLocation("arenas.$name.generators.${UUID.randomUUID()}", loc, triggerSave = false)
         }
         saveAsync()
     }
@@ -172,7 +176,7 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
         )
     }
 
-    private fun saveSafeLocation(path: String, loc: Location) {
+    private fun saveSafeLocation(path: String, loc: Location, triggerSave: Boolean = true) {
         val worldName = loc.world?.name ?: "world"
         synchronized(fileLock) {
             config.set("$path.world", worldName)
@@ -182,7 +186,7 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
             config.set("$path.yaw", loc.yaw)
             config.set("$path.pitch", loc.pitch)
         }
-        saveAsync()
+        if (triggerSave) saveAsync()
     }
 
     private fun saveAsync() {
