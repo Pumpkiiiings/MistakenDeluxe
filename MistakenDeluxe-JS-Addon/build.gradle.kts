@@ -28,7 +28,7 @@ dependencies {
     compileOnly(project(":MistakenDeluxe-Core"))
     compileOnly("org.luaj:luaj-jse:3.0.1")
 
-    implementation("org.graalvm.js:js:22.3.2")
+    implementation("org.graalvm.js:js:22.3.5")
     implementation("org.graalvm.js:js-scriptengine:22.3.2")
 }
 
