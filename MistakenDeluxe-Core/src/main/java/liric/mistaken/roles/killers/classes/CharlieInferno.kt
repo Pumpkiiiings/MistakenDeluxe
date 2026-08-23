@@ -11,7 +11,7 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.killers.Killer
 import liric.mistaken.roles.killers.CoreKiller
-import liric.mistaken.utils.hooks.CraftEngine
+import liric.mistaken.utils.resourcepack.CustomItemManager
 import liric.mistaken.utils.hooks.ObserverHook
 import liric.mistaken.utils.misc.HitboxVisualizer
 import org.bukkit.Bukkit
@@ -65,7 +65,7 @@ class CharlieInferno : CoreKiller(
         armorKeys.forEach { k ->
             config.getString("armor.$k")?.let { id ->
                 if (id != "none") {
-                    itemKitCache[k] = CraftEngine.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.NETHERITE_HELMET)
+                    itemKitCache[k] = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.NETHERITE_HELMET)
                 }
             }
         }
@@ -73,7 +73,7 @@ class CharlieInferno : CoreKiller(
         itemKeys.forEach { k ->
             config.getString("items.$k")?.let { id ->
                 if (id != "none") {
-                    itemKitCache[k] = CraftEngine.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
+                    itemKitCache[k] = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
                 }
             }
         }
@@ -102,7 +102,7 @@ class CharlieInferno : CoreKiller(
 
             if (id == null || id == "none") return
 
-            val item = CraftEngine.getCustomItem(id) ?: run {
+            val item = CustomItemManager.getCustomItem(id) ?: run {
                 val matName = id.replace(".*:".toRegex(), "").uppercase()
                 val mat = Material.matchMaterial(matName)
                 if (mat != null) ItemStack(mat) else null

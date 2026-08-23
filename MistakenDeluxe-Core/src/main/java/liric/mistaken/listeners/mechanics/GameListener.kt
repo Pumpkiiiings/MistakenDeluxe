@@ -340,7 +340,7 @@ class GameListener(private val plugin: Mistaken) : Listener {
                                 ))
                                 
                                 
-                                liric.mistaken.Mistaken.economy?.depositPlayer(player, 100.0)
+                                liric.mistaken.Mistaken.economy?.deposit(player, 100.0)
                                 player.sendMessage(ColorTranslator.translate("<green>+100 monedas por curar a un compañero."))
                             }
                             

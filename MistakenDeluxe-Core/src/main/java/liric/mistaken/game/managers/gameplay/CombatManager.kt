@@ -393,7 +393,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         }
 
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
-            winners.forEach { Mistaken.Companion.economy?.depositPlayer(it, if (killerWon) 500.0 else 200.0) }
+            winners.forEach { Mistaken.Companion.economy?.deposit(it, if (killerWon) 500.0 else 200.0) }
         }
     }
 
@@ -402,11 +402,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             vehicle.removePassenger(it)
         }
     }
-
-    /**
-     * Agrega un jugador al set de congelados. Retorna true si fue agregado (no estaba ya).
-     * La lógica visual/timer de congelamiento vive en FreezeTagModeHandler.
-     */
+    
     fun addFrozen(uuid: UUID): Boolean = frozenPlayers.add(uuid)
 
     fun removePlayerData(uuid: UUID) {

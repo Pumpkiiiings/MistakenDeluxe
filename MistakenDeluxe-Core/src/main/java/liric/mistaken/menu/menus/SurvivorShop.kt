@@ -162,15 +162,15 @@ class SurvivorShop : MenuBase("survivors_shop") {
         
         val econ = Mistaken.Companion.economy
         if (econ == null) {
-            player.sendMessage(parseSafe("<red>Error: Vault no está conectado.</red>"))
+            player.sendMessage(parseSafe("<red>Error: No se encontró ningún sistema de economía.</red>"))
             return
         }
 
         val costo = precio.toDouble()
 
-        if (econ.has(player, costo)) {
-            val response = econ.withdrawPlayer(player, costo)
-            if (response.transactionSuccess()) {
+        if (econ.getBalance(player) >= costo) {
+            val success = econ.withdraw(player, costo)
+            if (success) {
                 data.comprarSurvivor(uuid, id)
 
                 val nombreVisual = MessageService.getStrictString(player, "survivors.$id.nombre", "survivors_info")
@@ -179,7 +179,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
                 abrir(player)
             } else {
-                player.sendMessage(MessageService.getComponent(player, "shop_errores.error_bancario", Placeholder.parsed("error", response.errorMessage ?: "Unknown error")))
+                player.sendMessage(MessageService.getComponent(player, "shop_errores.error_bancario", Placeholder.parsed("error", "Transacción fallida.")))
             }
         } else {
             player.sendMessage(MessageService.getComponent(player, "errors.no-money"))

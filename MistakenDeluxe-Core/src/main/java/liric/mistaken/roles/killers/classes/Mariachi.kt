@@ -10,7 +10,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPa
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.killers.Killer
 import liric.mistaken.roles.killers.CoreKiller
-import liric.mistaken.utils.hooks.CraftEngine
+import liric.mistaken.utils.resourcepack.CustomItemManager
 import liric.mistaken.utils.hooks.ObserverHook
 import org.bukkit.*
 import org.bukkit.entity.ItemDisplay
@@ -58,7 +58,7 @@ class Mariachi : CoreKiller(
         armor.forEach { k ->
             config.getString("armor.$k")?.let { id ->
                 if (id != "none") {
-                    itemKitCache[k] = CraftEngine.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.LEATHER_HELMET)
+                    itemKitCache[k] = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.LEATHER_HELMET)
                 }
             }
         }
@@ -66,7 +66,7 @@ class Mariachi : CoreKiller(
         items.forEach { k ->
             config.getString("items.$k")?.let { id ->
                 if (id != "none") {
-                    itemKitCache[k] = CraftEngine.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.GOLDEN_AXE)
+                    itemKitCache[k] = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.GOLDEN_AXE)
                 }
             }
         }

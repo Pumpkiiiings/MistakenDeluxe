@@ -8,7 +8,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.config.engine.core.MessageService
-import liric.mistaken.utils.hooks.CraftEngine
+import liric.mistaken.utils.resourcepack.CustomItemManager
 
 abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
     protected val plugin: Mistaken
@@ -56,7 +56,7 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
             val itemId = configMecanica.getString("armor.$key") ?: configMecanica.getString("items.$key")
             if (itemId == null || itemId == "none") return
 
-            val item = CraftEngine.getCustomItem(itemId) ?: run {
+            val item = CustomItemManager.getCustomItem(itemId) ?: run {
                 val mat = Material.matchMaterial(itemId.replace(".*:".toRegex(), "").uppercase())
                 if (mat != null) ItemStack(mat) else null
             } ?: return
@@ -91,7 +91,7 @@ abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
     protected fun getWeaponItem(): ItemStack {
         val configMecanica = plugin.configManager.getKillerConfig(this.id)
         val itemId = configMecanica.getString("items.weapon") ?: return ItemStack(Material.IRON_SWORD)
-        return CraftEngine.getCustomItem(itemId) ?: run {
+        return CustomItemManager.getCustomItem(itemId) ?: run {
             val mat = Material.matchMaterial(itemId.replace(".*:".toRegex(), "").uppercase())
             if (mat != null) ItemStack(mat) else ItemStack(Material.IRON_SWORD)
         }

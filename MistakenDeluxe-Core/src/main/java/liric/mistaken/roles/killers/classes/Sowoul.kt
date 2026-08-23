@@ -10,7 +10,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPa
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.killers.Killer
 import liric.mistaken.roles.killers.CoreKiller
-import liric.mistaken.utils.hooks.CraftEngine
+import liric.mistaken.utils.resourcepack.CustomItemManager
 import org.bukkit.*
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Entity
@@ -73,7 +73,7 @@ class Sowoul : CoreKiller(
         armor.forEach { k ->
             config.getString("armor.$k")?.let { id ->
                 if (id != "none") {
-                    itemKitCache[k] = CraftEngine.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.LEATHER_HELMET)
+                    itemKitCache[k] = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.LEATHER_HELMET)
                 }
             }
         }
@@ -81,7 +81,7 @@ class Sowoul : CoreKiller(
         items.forEach { k ->
             config.getString("items.$k")?.let { id ->
                 if (id != "none") {
-                    itemKitCache[k] = CraftEngine.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.PAPER)
+                    itemKitCache[k] = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.PAPER)
                 }
             }
         }
@@ -454,7 +454,7 @@ class Sowoul : CoreKiller(
 
             if (id == null || id == "none") return
 
-            val item = CraftEngine.getCustomItem(id) ?: run {
+            val item = CustomItemManager.getCustomItem(id) ?: run {
                 val mat = Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase())
                 if (mat != null) ItemStack(mat) else null
             } ?: return

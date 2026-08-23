@@ -109,7 +109,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
             val id = configMecanica.getString("items.$key")
             if (id == null || id == "none") return
 
-            val item = liric.mistaken.utils.hooks.CraftEngine.getCustomItem(id) ?: run {
+            val item = liric.mistaken.utils.resourcepack.CustomItemManager.getCustomItem(id) ?: run {
                 val matName = id.replace(".*:".toRegex(), "").uppercase()
                 val mat = org.bukkit.Material.matchMaterial(matName)
                 if (mat != null) org.bukkit.inventory.ItemStack(mat) else null

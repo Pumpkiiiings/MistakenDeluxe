@@ -4,7 +4,7 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
 import liric.mistaken.api.util.Sounds
 import liric.mistaken.roles.survivors.Survivor
-import liric.mistaken.utils.hooks.CraftEngine
+import liric.mistaken.utils.resourcepack.CustomItemManager
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.Particle
@@ -44,7 +44,7 @@ class Villager : Survivor(
         listOf("skill1", "skill2", "skill3").forEach { key ->
             config.getString("items.$key")?.let { id ->
                 if (id != "none" && id.isNotEmpty()) {
-                    val item = CraftEngine.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.EMERALD)
+                    val item = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.EMERALD)
                     itemCache[key] = item
                 }
             }
@@ -61,7 +61,7 @@ class Villager : Survivor(
         armorParts.forEach { (key, fallbackMat) ->
             val id = config.getString("armor.$key")
             if (id != null && id != "none" && id.isNotEmpty()) {
-                val item = CraftEngine.getCustomItem(id)
+                val item = CustomItemManager.getCustomItem(id)
                 if (item != null) {
                     itemCache[key] = item
                 } else {

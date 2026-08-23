@@ -31,6 +31,9 @@ repositories {
     maven("https://repo.alessiodp.com/releases/")
     maven("https://simonsator.de/repo/")
     maven("https://repo.wyck.dev/public/")
+    maven("https://repo.nexomc.com/releases")
+    maven("https://repo.oraxen.com/releases")
+    maven("https://repo.nightexpressdev.com/releases")
     mavenLocal()
 
     flatDir {
@@ -80,10 +83,14 @@ dependencies {
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
     compileOnly(files("../libs/observer-paper.jar"))
+    compileOnly("com.nexomc:nexo:0.6.0")
+    compileOnly("beer.devs:itemsadder-api:4.0.18-beta-10")
+    compileOnly("io.th0rgal:oraxen:1.180.0")
 
     
     compileOnly("com.alessiodp.parties:parties-api:3.2.16")
     compileOnly(files("../../LodestoneParties/LodestoneParties-API/build/libs/LodestoneParties-API-1.0.0-SNAPSHOT.jar"))
+    compileOnly("su.nightexpress.excellenteconomy:ExcellentEconomy:2.8.0")
 
     
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")

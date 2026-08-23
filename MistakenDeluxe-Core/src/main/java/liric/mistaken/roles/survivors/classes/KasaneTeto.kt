@@ -9,7 +9,7 @@ import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.survivors.Survivor
-import liric.mistaken.utils.hooks.CraftEngine
+import liric.mistaken.utils.resourcepack.CustomItemManager
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -91,7 +91,7 @@ class KasaneTeto : Survivor(
 
             if (id == null || id == "none") return
 
-            val item = CraftEngine.getCustomItem(id) ?: run {
+            val item = CustomItemManager.getCustomItem(id) ?: run {
                 val matName = id.replace(".*:".toRegex(), "").uppercase()
                 val mat = Material.matchMaterial(matName)
                 if (mat != null) ItemStack(mat) else if (key == "skill1") ItemStack(Material.IRON_HOE) else null
