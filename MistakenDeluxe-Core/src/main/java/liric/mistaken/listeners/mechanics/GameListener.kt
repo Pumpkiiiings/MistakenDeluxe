@@ -206,14 +206,13 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val type = event.inventory.type
         if (type == InventoryType.PLAYER || type == InventoryType.CRAFTING) return
 
-        val title = plain.serialize(event.view.title())
-        val allowed = listOf(
-            "Reparando", "Skill Check", "ENTES", "Tienda", "Selecciona", "Espectear", "Terminal", "Hackeo", "Código", "Panel",
-            "ʀᴇᴘᴀʀᴀɴᴅᴏ", "ʀᴇᴘᴀɪʀɪɴɢ", "正在修理", "ᴛᴇʀᴍɪɴᴀʟ", "ʜᴀᴄᴋɪɴɢ", "黑客",
-            "ɢᴇɴᴇʀᴀᴅᴏʀ", "ɢᴇɴᴇʀᴀᴛᴏʀ", "发电机",
-            "Shop", "商店", "Select", "选择", "Spectate", "观战"
-        )
-        if (allowed.any { title.contains(it, ignoreCase = true) }) return
+        // Sistema de ID basado en el InventoryHolder (mucho más seguro que el título)
+        val holder = event.inventory.holder
+        if (holder is liric.mistaken.listeners.interactables.GeneratorListener.GeneratorHolder ||
+            holder is liric.mistaken.listeners.interactables.HackTerminalListener.HackTerminalHolder ||
+            holder is liric.mistaken.game.managers.gameplay.SpectatorManager.SpectatorHolder) {
+            return
+        }
 
         event.isCancelled = true
     }
