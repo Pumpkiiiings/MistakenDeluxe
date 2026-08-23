@@ -9,7 +9,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
-import org.bukkit.event.player.AsyncPlayerChatEvent
+import io.papermc.paper.event.player.AsyncChatEvent
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
@@ -85,7 +86,7 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    fun onChat(event: AsyncPlayerChatEvent) {
+    fun onChat(event: AsyncChatEvent) {
         val player = event.player
         val typingData = activeTyping[player.uniqueId] ?: return
 
@@ -93,7 +94,7 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
 
         val loc = typingData.first
         val answer = typingData.second
-        val input = event.message.trim()
+        val input = PlainTextComponentSerializer.plainText().serialize(event.message()).trim()
 
         
         
