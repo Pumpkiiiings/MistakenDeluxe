@@ -56,6 +56,10 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
         }
 
         
+        // Limpieza de estados globales — evita UUIDs fantasma al reconectarse
+        plugin.afkPlayers.remove(uuid)
+        plugin.staffEditMode.remove(uuid)
+
         plugin.observerHUDManager.clearPlayer(player)
         plugin.flashlightManager.clear(uuid)
         plugin.combatManager.removePlayerData(uuid)

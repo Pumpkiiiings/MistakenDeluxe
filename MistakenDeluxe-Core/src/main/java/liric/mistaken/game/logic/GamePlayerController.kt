@@ -34,6 +34,10 @@ class GamePlayerController(private val game: GameSession) {
         val sessionPlayers = game.getPlayers().filter { !game.plugin.isIgnored(it) }.toMutableList()
         if (sessionPlayers.isEmpty()) return
 
+        // Al iniciar partida, quitar AFK de todos los que participan
+        // (evita que alguien entre como ignored sin saberlo)
+        sessionPlayers.forEach { game.plugin.afkPlayers.remove(it.uniqueId) }
+
         game.killersUUIDs.clear()
 
         
@@ -265,7 +269,12 @@ class GamePlayerController(private val game: GameSession) {
         val sessionPlayers = game.getPlayers()
 
 
-        val allSurvivors = sessionPlayers.filter { !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !game.plugin.spectatorManager.isSpectator(it) }
+        val allSurvivors = sessionPlayers.filter {
+            !game.isKiller(it.uniqueId)
+            && it.gameMode == GameMode.SURVIVAL
+            && !game.plugin.spectatorManager.isSpectator(it)
+            && !game.plugin.isIgnored(it)
+        }
 
         if (allSurvivors.isEmpty()) {
             game.stateController.endGame("game.victory-killer", true)
