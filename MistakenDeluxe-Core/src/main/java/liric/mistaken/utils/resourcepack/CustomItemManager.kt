@@ -39,6 +39,25 @@ object CustomItemManager {
             return null
         }
 
+        if (property.startsWith("custom_model_data:", ignoreCase = true)) {
+            val dataStr = property.substringAfter(":")
+            if (dataStr.contains(":")) {
+                val parts = dataStr.split(":")
+                val mat = Material.matchMaterial(parts[0].uppercase()) ?: Material.PAPER
+                return ItemStack(mat).apply {
+                    editMeta { meta ->
+                        meta.setCustomModelData(parts[1].toIntOrNull() ?: 0)
+                    }
+                }
+            } else {
+                return ItemStack(Material.PAPER).apply {
+                    editMeta { meta ->
+                        meta.setCustomModelData(dataStr.toIntOrNull() ?: 0)
+                    }
+                }
+            }
+        }
+
         if (property.contains(":")) {
             val custom = provider?.getItem(property)
             if (custom != null) {
