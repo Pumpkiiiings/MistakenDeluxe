@@ -447,6 +447,7 @@ arena:
   help-line-setgenerator: " &#FFE300/arena setgenerator <名称>"
   help-line-delgenerator: " &#FFE300/arena delgenerator <名称>"
   help-line-delgenerators: " &#FFE300/arena delgenerators <名称>"
+  help-line-settime: " &#FFE300/arena settime <地图> <day|night|afternoon|morning|dynamic>"
 
 # --- ERRORS ---
 errors:
