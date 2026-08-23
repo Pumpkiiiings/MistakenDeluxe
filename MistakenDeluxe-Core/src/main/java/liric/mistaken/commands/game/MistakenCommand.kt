@@ -127,22 +127,57 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
             "reload" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
-                plugin.server.asyncScheduler.runNow(plugin) { _ ->
-                    plugin.reloadConfig()
-                    MessageService.loadAllLanguages()
-                    plugin.configManager.loadAllConfigs()
-                    plugin.configManager.reloadMenus()
-                    plugin.musicManager.loadMusicConfig()
+                val target = if (args.size > 1) args[1].lowercase() else "all"
 
-                    plugin.server.globalRegionScheduler.execute(plugin) {
-                        plugin.killerManager.reloadAll()
-                        plugin.survivorManager.reloadAll()
-                        plugin.shopSelector.reload()
-                        plugin.killerTienda.reload()
-                        plugin.survivorTienda.reload()
-                        sender.sendMessage(MessageService.getComponent(player, "admin.reload-success"))
-                        player?.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f)
+                plugin.server.asyncScheduler.runNow(plugin) { _ ->
+                    var msg = "admin.reload-success"
+                    
+                    when (target) {
+                        "scripts" -> {
+                            plugin.server.globalRegionScheduler.execute(plugin) {
+                                plugin.killerManager.reloadAll()
+                                plugin.survivorManager.reloadAll()
+                            }
+                            msg = "admin.reload-success" // O un mensaje específico si lo hay
+                        }
+                        "killers" -> {
+                            plugin.server.globalRegionScheduler.execute(plugin) {
+                                plugin.killerManager.reloadAll()
+                            }
+                        }
+                        "survivors" -> {
+                            plugin.server.globalRegionScheduler.execute(plugin) {
+                                plugin.survivorManager.reloadAll()
+                            }
+                        }
+                        "messages" -> {
+                            MessageService.loadAllLanguages()
+                        }
+                        "config" -> {
+                            plugin.reloadConfig()
+                            plugin.configManager.loadAllConfigs()
+                            plugin.configManager.reloadMenus()
+                            plugin.musicManager.loadMusicConfig()
+                        }
+                        else -> {
+                            plugin.reloadConfig()
+                            MessageService.loadAllLanguages()
+                            plugin.configManager.loadAllConfigs()
+                            plugin.configManager.reloadMenus()
+                            plugin.musicManager.loadMusicConfig()
+
+                            plugin.server.globalRegionScheduler.execute(plugin) {
+                                plugin.killerManager.reloadAll()
+                                plugin.survivorManager.reloadAll()
+                                plugin.shopSelector.reload()
+                                plugin.killerTienda.reload()
+                                plugin.survivorTienda.reload()
+                            }
+                        }
                     }
+
+                    sender.sendMessage(MessageService.getComponent(player, msg))
+                    player?.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f)
                 }
             }
 
@@ -346,6 +381,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             2 -> {
                 when (args[0].lowercase()) {
                     "setmode" -> if (isAdmin) MistakenMode.entries.map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
+                    "reload" -> if (isAdmin) listOf("scripts", "killers", "survivors", "messages", "config", "all").filter { it.startsWith(args[1], true) } else emptyList()
                     "setasesino", "reloadkiller" -> if (isAdmin) plugin.killerManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "setsuperviviente" -> if (isAdmin) plugin.survivorManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "stats", "forcekiller", "removekiller" -> if (isAdmin) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
