@@ -1,4 +1,4 @@
-﻿# ======================================================
+# ======================================================
 #          MISTAKEN - ENGLISH LANGUAGE (US)
 # ======================================================
 
@@ -343,6 +343,11 @@ admin:
   afk-disabled: "<prefix>&#42F56CAFK mode disabled. Welcome back to the hunt!"
   edit-enabled: "<prefix>&#33CCFFEdit mode enabled. You are invisible to the game logic."
   edit-disabled: "<prefix>&#FF3344Edit mode disabled. The game logic affects you again."
+  debug-stats-sync: "<prefix>&#FF3344⚡ &#FFFFFFDebug: Stats injected and syncing..."
+  usage-setmode: "<prefix>&#FF3344Usage: /mistaken setmode <MODE>"
+  usage-reloadkiller: "<prefix>&#FF3344Usage: /mistaken reloadkiller <id>"
+  reloadkiller-success: "<prefix>&#42F56CCommand sent to manager to reload killer: &#33CCFF{id}"
+  usage-forcekiller: "<prefix>&#FF3344Usage: /mistaken forcekiller <player>"
 
 stats:
   header: "&#888888&m            &r &#FFAA00ꜱᴛᴀᴛɪꜱᴛɪᴄꜱ: &#FFFFFF{player} &#888888&m            &r "
@@ -461,6 +466,14 @@ errors:
   invalid-gen-block: "<prefix>&#FF3344Look at an iron or amethyst block."
   not-a-generator: "<prefix>&#FF3344That is not a generator."
   killer-not-found: "<prefix>&#FF3344That class does not exist."
+  lobby-only-command: "<prefix>&#FF3344<b>[!]</b> &#CCCCCCTo use this command, you must return to the <b>Main Lobby</b>."
+  player-only: "<prefix>&#FF3344Command only for players."
+  invalid-mode: "<prefix>&#FF3344Invalid mode."
+  not-in-session: "<prefix>&#FF3344You must be in a session for this."
+  no-active-game: "<prefix>&#FF3344There is no active game in your location."
+  survivor-not-found: "<prefix>&#FF3344That survivor class doesn't exist."
+  forcekiller-not-in-game: "<prefix>&#FF3344You must be in a game to force a killer."
+  forcekiller-already-started: "<prefix>&#FF3344You can't force the role because the game already started."
 
 # --- PARANOIA ENGINE ---
 paranoia:

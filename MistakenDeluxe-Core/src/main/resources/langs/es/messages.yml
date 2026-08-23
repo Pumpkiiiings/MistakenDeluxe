@@ -343,6 +343,11 @@ admin:
   afk-disabled: "<prefix>&#42F56CModo AFK desactivado. ¡Bienvenido de vuelta a la caza!"
   edit-enabled: "<prefix>&#33CCFFModo edición activado. Eres invisible para la lógica del juego."
   edit-disabled: "<prefix>&#FF3344Modo edición desactivado. La lógica del juego vuelve a afectarte."
+  debug-stats-sync: "<prefix>&#FF3344⚡ &#FFFFFFDebug: Stats inyectadas y sincronizando..."
+  usage-setmode: "<prefix>&#FF3344Uso: /mistaken setmode <MODO>"
+  usage-reloadkiller: "<prefix>&#FF3344Uso: /mistaken reloadkiller <id>"
+  reloadkiller-success: "<prefix>&#42F56CComando enviado al manager para recargar el killer: &#33CCFF{id}"
+  usage-forcekiller: "<prefix>&#FF3344Uso: /mistaken forcekiller <jugador>"
 
 stats:
   header: "&#888888&m            &r &#FFAA00ᴇꜱᴛᴀᴅíꜱᴛɪᴄᴀꜱ: &#FFFFFF{player} &#888888&m            &r "
@@ -461,6 +466,14 @@ errors:
   invalid-gen-block: "<prefix>&#FF3344Mira un bloque de hierro o amatista."
   not-a-generator: "<prefix>&#FF3344Eso no es un generador."
   killer-not-found: "<prefix>&#FF3344Esa clase no existe."
+  lobby-only-command: "<prefix>&#FF3344<b>[!]</b> &#CCCCCCPara usar este comando, debes volver al <b>Lobby Principal</b>."
+  player-only: "<prefix>&#FF3344Comando solo para jugadores."
+  invalid-mode: "<prefix>&#FF3344Modo inválido."
+  not-in-session: "<prefix>&#FF3344Debes estar dentro de una sesión para esto."
+  no-active-game: "<prefix>&#FF3344No hay ninguna partida activa en tu ubicación."
+  survivor-not-found: "<prefix>&#FF3344Esa clase de superviviente no existe."
+  forcekiller-not-in-game: "<prefix>&#FF3344Debes estar en una partida para forzar un asesino."
+  forcekiller-already-started: "<prefix>&#FF3344No puedes forzar el rol porque la partida ya inició."
 
 # --- MOTOR DE PARANOIA ---
 paranoia:

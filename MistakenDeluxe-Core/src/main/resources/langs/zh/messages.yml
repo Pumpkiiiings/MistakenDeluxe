@@ -1,0 +1,552 @@
+# ======================================================
+#          MISTAKEN - CHINESE LANGUAGE (SIMPLIFIED)
+# ======================================================
+
+prefix: "&#3BFFC7ᴍɪꜱᴛᴀᴋᴇɴ &#888888| "
+
+lobby:
+  welcome: ""
+
+# --- VOTING ---
+voting:
+  started: "&#42F56C投票开始！使用 &#FFE300/vote <地图>"
+  not-active: "<prefix>&#FF3344目前没有进行中的投票。"
+  already-voted: "<prefix>&#FF3344你已经在此游戏中投过票了。"
+  usage: "<prefix>&#FF3344用法: /vote <地图>"
+  not-found: "<prefix>&#FF3344地图 &#FFFFFF{map} &#FF3344不存在。"
+  success: "<prefix>&#42F56C你投票给了: &#33CCFF{map}"
+  map-option: "&#888888» &#33CCFF{map}"
+  not-enough-players: "<prefix>&#FF3344玩家人数不足，无法开始。"
+
+# --- BOSSBAR ---
+bossbar:
+  lobby: "&#FFE300等待玩家中... &#CCCCCC({online})"
+  break: "&#FFE300休息时间 &#888888| &#FFFFFF<time>s"
+  voting: "&#42F56C投票进行中 &#888888| &#FFFFFF剩余时间: &#FFE300{time}s"
+  starting: "&#FF3344¡准备好！ &#FFFFFF将在 &#FFE300{time}s &#FFFFFF后开始"
+  ingame: "&#FFFFFF地图: &#FFE300{map} &#888888| &#FFFFFF模式: &#33CCFF{mode} &#888888| &#FFFFFF时间: &#42F56C{time}"
+  ending: "&#FF3344¡游戏结束！"
+  colors:
+    lobby: "YELLOW"
+    break: "YELLOW"
+    voting: "WHITE"
+    starting: "PURPLE"
+    ingame: "RED"
+    ending: "PINK"
+
+words:
+  lobby: "主大厅"
+  assassin: "杀手"
+  survivors: "幸存者"
+
+discord:
+  reason_killer_won: "杀手屠杀了所有人！"
+  reason_survivors_won: "幸存者成功逃脱了！"
+
+# --- LMS ---
+lms:
+  title: "&#FF0033「 战至最后一人 」"
+  subtitle:
+    survivor: "&#CCCCCC你孤身一人！ &#FF3344活下去。"
+    killer: "&#FF3344只剩下一个了... &#FFE300¡猎杀他！"
+    other: "&#FFE300<player> &#CCCCCC是最后的希望。"
+  chat:
+    survivor: "\n&#FF3344[!] &#FFFFFF你的队友都倒下了。你是&#FF3344最后幸存的人&#FFFFFF。\n"
+    other: "\n&#FF3344[!] &#FFFFFF<player> 是&#FF3344最后幸存的人&#FFFFFF。\n"
+
+# --- SKILLS ---
+habilidades:
+  pedido-impacto-asesino: "&#42F56C干得好！ &#FFFFFF请求已经送达杀手。"
+
+# --- COMBAT ---
+combat:
+  heart-icon-on: "❤"
+  heart-icon-off: "🖤"
+  hunters-mark: "&#FF3344"
+  health-bar: "&#FF3344{hearts_on}&#888888{hearts_off}"
+  cooldown: "&#FF3344请等待 &#FFFFFF{time}s &#FF3344才能再次攻击！"
+  critical-wound: "&#FF3344¡你的双腿失去了力量！ &#CCCCCC寻找帮助或者爬行。"
+  kill-reward-actionbar: "&#FF3344+40 生命值 &#888888| &#FFE300+${reward} 积分"
+  kill-reward-chat: "<prefix>&#CCCCCC你因为淘汰了一名玩家获得了 &#42F56C${reward}&#CCCCCC。"
+  rescue-start-carrier: "<prefix>&#42F56C你抱起了 &#FFFFFF{target}&#42F56C！带他们去安全的地方。"
+  rescue-start-victim: "<prefix>&#42F56C&#FFFFFF{carrier} &#42F56C正带着你。"
+  rescue-dropped-carrier: "<prefix>&#FFE300你把你的队友放到了地上。"
+  rescue-dropped-victim: "<prefix>&#FFE300你被放下来了。"
+  rescue-interrupted: "<prefix>&#FF3344因为受到攻击，你松开了你的队友！"
+  win-reward-killer: "<prefix>&#FFAA00彻底的屠杀！ &#FFFFFF你因胜利获得了 &#42F56C${amount}&#FFFFFF。"
+  win-reward-survivor: "&#42F56C你在杀手手中存活了下来！ &#FFFFFF你因逃脱获得了 &#42F56C${amount}&#FFFFFF。"
+
+# --- SCOREBOARD ---
+scoreboard:
+  title: "&#3BFFC7ᴍɪꜱᴛᴀᴋᴇɴ"
+  lobby:
+    - ""
+    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
+    - ""
+    - " &#FF9B00✎ &#FFFFFF个人资料: &#FF9B00%player%"
+    - " &#31FF60☀ &#FFFFFF等级: &#FFFFFF%mistakenlevel_level_prefix% "
+    - ""
+    - " &#58D0FF⚙ &#FFFFFF状态: &#FFE300大厅"
+    - " &#ABC9FF⌚ &#FFFFFF玩家: &#42F56C%online%"
+    - ""
+  voting:
+    - ""
+    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFF阶段: &#33CCFF投票"
+    - " &#ABC9FF⌚ &#FFFFFF时间: &#FFE300%timer%s"
+    - ""
+    - " &#31FF60✎ &#FFFFFF使用 /vote"
+    - ""
+  break:
+    - ""
+    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
+    - ""
+    - " &#FF9B00✎ &#FFFFFF个人资料: &#FF9B00%player%"
+    - " &#31FF60☀ &#FFFFFF等级: &#FFFFFF%mistakenlevel_level_prefix% "
+    - ""
+    - " &#58D0FF⚙ &#FFFFFF状态: &#FFE300休息"
+    - " &#ABC9FF⌚ &#FFFFFF玩家: &#42F56C%online%"
+    - ""
+  starting:
+    - ""
+    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
+    - ""
+    - " &#FF9B00✎ &#FFFFFF地图: &#42F56C%map%"
+    - " &#ABC9FF⌚ &#FFFFFF开始倒计时: &#FFE300%timer%s"
+    - ""
+    - " &#FF3344¡准备！"
+    - ""
+  ingame_classic:
+    - ""
+    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
+    - ""
+    - " &#FF9B00✎ &#FFFFFF地图: &#42F56C%map%"
+    - " &#ABC9FF⌚ &#FFFFFF时间: &#FFE300%timer%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFF发电机: &#42F56C%completed%/%total%"
+    - " &#FF4141🗡 &#FFFFFF杀手:"
+    - "  %killers%"
+    - ""
+    - " &#FF3344❤ &#FFFFFF生命: &#FF3344%lives%"
+    - ""
+  ingame_double_killer:
+    - ""
+    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
+    - ""
+    - " &#FF9B00✎ &#FFFFFF地图: &#42F56C%map%"
+    - " &#ABC9FF⌚ &#FFFFFF时间: &#FFE300%timer%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFF发电机: &#42F56C%completed%/%total%"
+    - " &#FF4141🗡 &#FFFFFF杀手:"
+    - "  %killers%"
+    - ""
+    - " &#FF3344❤ &#FFFFFF生命: &#FF3344%lives%"
+    - ""
+  ingame_one_bounce:
+    - ""
+    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
+    - ""
+    - " &#FF9B00✎ &#FFFFFF地图: &#42F56C%map%"
+    - " &#ABC9FF⌚ &#FFFFFF时间: &#FFE300%timer%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFF发电机: &#42F56C%completed%/%total%"
+    - "  %killers%"
+    - ""
+    - " &#FF3344❤ &#FFFFFF生命: &#FF3344%lives%"
+    - ""
+  ingame_freeze_tag:
+    - ""
+    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
+    - ""
+    - " &#FF9B00✎ &#FFFFFF地图: &#42F56C%map%"
+    - " &#ABC9FF⌚ &#FFFFFF时间: &#FFE300%timer%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFF发电机: &#42F56C%completed%/%total%"
+    - " &#FF4141🗡 &#FFFFFF杀手:"
+    - "  %killers%"
+    - ""
+  ingame_hide_and_seek:
+    - ""
+    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
+    - ""
+    - " &#FF9B00✎ &#FFFFFF地图: &#42F56C%map%"
+    - " &#ABC9FF⌚ &#FFFFFF时间: &#FFE300%timer%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFF发电机: &#42F56C%completed%/%total%"
+    - " &#FF4141🗡 &#FFFFFF搜寻者:"
+    - "  %killers%"
+    - ""
+    - " &#FF3344❤ &#FFFFFF生命: &#FF3344%lives%"
+    - ""
+  ingame_infection:
+    - ""
+    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
+    - ""
+    - " &#FF9B00✎ &#FFFFFF地图: &#42F56C%map%"
+    - " &#ABC9FF⌚ &#FFFFFF时间: &#FFE300%timer%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFF发电机: &#42F56C%completed%/%total%"
+    - " &#FF4141🗡 &#FFFFFF感染者:"
+    - "  %killers%"
+    - ""
+    - " &#FF3344❤ &#FFFFFF生命: &#FF3344%lives%"
+    - ""
+  ingame_initializes:
+    - ""
+    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
+    - ""
+    - " &#FF9B00✎ &#FFFFFF地图: &#42F56C%map%"
+    - " &#ABC9FF⌚ &#FFFFFF时间: &#FFE300%timer%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFF发电机: &#42F56C%completed%/%total%"
+    - " &#FF4141🗡 &#FFFFFF杀手:"
+    - "  %killers%"
+    - ""
+  ending:
+    - ""
+    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFF状态: &#FF3344已结束"
+    - " &#FFD031☀ &#FFFFFF获胜者: %killers%"
+    - ""
+
+# --- GENERATORS ---
+generators:
+  names:
+    RAW_IRON_BLOCK: "&#FFAA00「 废料发电机 」"
+    IRON_BLOCK: "&#FFFFFF「 电力系统 」"
+    AMETHYST_BLOCK: "&#9933FF「 记忆核心 」"
+  hologram:
+    lines-idle:
+      - "&#FFAA00{name}"
+      - "&#FFFFFF进度: &#CCCCCC{progress}%"
+      - "&#FFE300¡点击修理！"
+    lines-completed:
+      - "&#42F56C✔ 能量已恢复 ✔"
+      - "&#CCCCCC干得好！"
+
+listeners:
+  generators:
+    gui_title: "&#555555🛠 正在修理发电机"
+    progress_lore: "&#FFFFFF当前进度: &#42F56C<progress>%"
+    progress_loss_lore: "&#FF3344失败将失去 10% 的进度！"
+    not_this_one: "&#FF3344¡假锭！"
+    repair_item_name: "&#FFE300¡快速点击！"
+    repair_item_lore: "&#CCCCCC帮助你的队友！"
+    fake_item_name: "{color}¡快速点击！"
+    fake_item_lore: "&#CCCCCC你真的想帮忙吗？"
+    killer_error: "&#FF3344你是杀手！你不能修理发电机。"
+  keypad:
+    killer_error: "&#FF3344杀手无法使用密码面板！"
+    already_solved: "&#FF3344密码面板已解开。"
+    already_typing: "&#FFE300你已经在尝试破解一个面板了。在聊天栏输入代码或 '<cancel>'。"
+    header: "&#00CED1「 安全面板 」"
+    instructions: "&#FFFFFF为了解锁进度，请将这些数字从&#FFE300<mode>&#FFFFFF排列:"
+    digits: "&#CCCCCC[ <digits> ]"
+    input_hint: "&#FFFFFF在聊天栏输入4位代码 (例如: 1234) 或输入 '<cancel>'。"
+    mode_ascending: "小到大"
+    mode_descending: "大到小"
+    cancel_word: "cancel"
+    cancelled: "&#FF3344你取消了面板破解。"
+    success: "&#42F56C代码正确！面板已解锁。 (+100%)"
+    fail: "&#FF3344代码错误。面板已被暂时锁定。"
+  hack_terminal:
+    killer_error: "&#FF3344杀手无法黑入终端！"
+    already_hacked: "&#FF3344终端已被黑入。"
+    gui_title: "&#555555黑客终端"
+    color_red: "&#FF3344红色"
+    color_green: "&#42F56C绿色"
+    color_blue: "&#5599FF蓝色"
+    color_yellow: "&#FFE300黄色"
+    memorize: "&#FFFFFF请记住..."
+    waiting: "&#CCCCCC..."
+    enter_sequence: "&#42F56C¡输入序列！"
+    success: "&#42F56C部分黑客攻击成功！ (+25%)"
+    fail: "&#FF3344序列错误。连接已关闭。"
+  flashlight:
+    enabled: "&#FFE300手电筒已开启"
+    disabled: "&#888888手电筒已关闭"
+
+# --- ROLES ---
+roles:
+  survivor:
+    title: "&#00FF33幸存者"
+    subtitle: "&#FFFFFF修理发电机并逃脱。"
+    chat:
+      - "&#42F56C寻找&#FFAA00粗铁块&#42F56C。"
+      - "&#FF3344不要在技能检验中失败！"
+  killer:
+    title: "&#FF0033杀手"
+    subtitle: "&#FFFFFF在时间耗尽前消灭所有人。"
+    transform: "<prefix>&#CCCCCC你的人性消逝了... 你觉醒为: &#FFFFFF{name}"
+    chat:
+      - "&#42F56C一个接一个地杀死所有玩家。"
+      - "&#FF3344毫不留情..."
+
+# --- KILLER MESSAGES ---
+killer:
+  transform: "&#FFFFFF你觉醒为: &#FFFFFF{name}"
+  killer-no-regen: "<prefix>&#FF3344⚠ 没有自然生命恢复。通过杀戮来治疗自己！"
+
+# --- STORE ---
+tienda:
+  clase-especial: "&#888888特殊级别实体"
+  clase-humana: "&#CCCCCC职业: &#FFFFFF人类幸存者"
+  habilidades-titulo: "&#CCCCCC▶ &#FFFFFF技能:"
+  estado-seleccionado: "&#42F56C✔ 已选择"
+  estado-poseido: "&#FFE300» 点击选择"
+  estado-precio: "&#FFFFFF价格: &#FFE300● {amount} 金币"
+  estado-comprar: "&#42F56C点击购买杀手"
+  estado-comprar-superviviente: "&#33CCFF点击购买幸存者"
+  seleccionado: "<prefix>&#42F56C已选择: &#FFFFFF{name}"
+  comprado: "<prefix>&#FFAA00恭喜！你解锁了: &#FFFFFF{name}"
+  ya-seleccionado: "&#FFE300[!] 这个角色已经被选择了。"
+
+# --- COMMANDS AND HELP ---
+help:
+  header: "   &#3BFFC7ᴍɪꜱᴛᴀᴋᴇɴ &#888888| &#FFE300帮助"
+  shop: "&#CCCCCC» &#FFE300/mistaken shop &#888888- &#FFFFFF杀手商店。"
+  stats: "&#CCCCCC» &#FFE300/mistaken stats &#888888- &#FFFFFF你的全局统计。"
+  langs: "&#CCCCCC» &#FFE300/mistaken langs <id> &#888888- &#FFFFFF更改你的语言。"
+  afk: "&#CCCCCC» &#FFE300/mistaken afk &#888888- &#FFFFFF切换挂机模式。"
+  edit: "&#CCCCCC» &#FFE300/mistaken edit &#888888- &#FFFFFF管理员建筑模式。"
+  start: "&#CCCCCC» &#FFE300/mistaken start &#888888- &#FFFFFF强制开始。"
+  stop: "&#CCCCCC» &#FFE300/mistaken stop &#888888- &#FFFFFF停止游戏。"
+  reload: "&#CCCCCC» &#FFE300/mistaken reload &#888888- &#FFFFFF重新加载配置。"
+  setstamina: "&#CCCCCC» &#FFE300/mistaken setstamina <val> &#888888- &#FFFFFF调整体力。"
+  setasesino: "&#CCCCCC» &#FFE300/mistaken setkiller <id> &#888888- &#FFFFFF杀手测试。"
+  setsuperviviente: "&#CCCCCC» &#FFE300/mistaken setsurvivor <id> &#888888- &#FFFFFF幸存者测试。"
+  removekiller: "&#CCCCCC» &#FFE300/mistaken removekiller <p> &#888888- &#FFFFFF移除测试身份。"
+  reloadkiller: "&#CCCCCC» &#FFE300/mistaken reloadkiller &#888888- &#FFFFFF重新加载杀手。"
+  setmode: "&#CCCCCC» &#FFE300/mistaken setmode <id> &#888888- &#FFFFFF强制模式。"
+  footer: " "
+
+admin:
+  reload-success: "<prefix>&#42F56C配置和语言已重新加载。"
+  start-forcing: "<prefix>&#42F56C正在启动狩猎序列..."
+  start-already-ingame: "<prefix>&#FF3344错误: 已经有一场游戏正在进行中。"
+  stop-broadcast: "&#FF3344游戏被管理员&#CCCCCC取消。"
+  stop-success: "&#42F56C游戏已被强制结束。"
+  lobby-set: "<prefix>&#42F56C大厅点已成功保存。"
+  lang-set: "<prefix>&#42F56C语言更改为: &#33CCFF{langs}"
+  usage-lang: "<prefix>&#FF3344用法: /mistaken langs <es/en/fr/jp/zh>"
+  stamina-set: "<prefix>&#42F56C&#FFFFFF{player} &#42F56C的体力已调整至 &#FFE300{amount}%"
+  removekiller-success: "<prefix>&#42F56C已移除 &#FFFFFF{player}&#42F56C 的身份。"
+  removekiller-target: "<prefix>&#FF3344你的身份已被移除。"
+  mode-forced: "<prefix>&#FFE300管理员强制启用了模式: &#33CCFF{mode}"
+  forcekiller-usage: "<prefix>&#FF3344用法: /mistaken forcekiller <玩家>"
+  forcekiller-not-in-game: "<prefix>&#FF3344你必须在游戏中才能强制指定杀手。"
+  forcekiller-already-started: "<prefix>&#FF3344你不能强制指定角色，因为游戏已经开始。"
+  forcekiller-success: "<prefix>&#42F56C你已强制 &#FFFFFF{player} &#42F56C在 &#33CCFF{arena}&#42F56C 的下一局游戏中成为杀手。"
+  afk-enabled: "<prefix>&#FFE300挂机模式已启用。游戏引擎将忽略你。"
+  afk-disabled: "<prefix>&#42F56C挂机模式已禁用。欢迎回到狩猎！"
+  edit-enabled: "<prefix>&#33CCFF编辑模式已启用。你对游戏逻辑隐身了。"
+  edit-disabled: "<prefix>&#FF3344编辑模式已禁用。游戏逻辑再次对你生效。"
+  debug-stats-sync: "<prefix>&#FF3344⚡ &#FFFFFF调试: 数据注入并同步中..."
+  usage-setmode: "<prefix>&#FF3344用法: /mistaken setmode <模式>"
+  usage-reloadkiller: "<prefix>&#FF3344用法: /mistaken reloadkiller <id>"
+  reloadkiller-success: "<prefix>&#42F56C指令已发送到管理器以重新加载杀手: &#33CCFF{id}"
+  usage-forcekiller: "<prefix>&#FF3344用法: /mistaken forcekiller <玩家>"
+
+stats:
+  header: "&#888888&m            &r &#FFAA00统计数据: &#FFFFFF{player} &#888888&m            &r "
+  wins-survivor: "&#CCCCCC幸存者胜场: &#42F56C<value>"
+  wins-assassin: "&#CCCCCC杀手胜场: &#FF3344<value>"
+  kills: "&#CCCCCC总击杀数: &#AA0000<value>"
+  deaths: "&#CCCCCC总死亡数: &#888888<value>"
+  footer: "&#888888&m                                                 &r"
+
+# --- MODES ---
+modes:
+  classic:
+    title: "&#FF0033经典模式"
+    subtitle: "&#FFFFFF一个杀手潜伏在暗处..."
+  double_killer:
+    title: "&#FF0000双重杀手"
+    subtitle: "&#FFFFFF两个实体觉醒了！死亡不可避免。"
+  one_bounce:
+    title: "&#FF00FF一触即死"
+    subtitle: "&#FFFFFF你是唯一的幸存者！其他所有人都是杀手。"
+  freeze_tag:
+    title: "&#00FFFF冰冻标签"
+    subtitle: "&#FFFFFF实体会冻结你。拯救你的队友！"
+  infection:
+    title: "&#33FF00感染"
+    subtitle: "&#FFFFFF每个倒下的幸存者都会加入杀手的阵营。"
+  hide_and_seek:
+    title: "&#FFFF00捉迷藏"
+    subtitle: "&#FFFFFF你有1分钟时间躲藏。"
+  initializes:
+    title: "&#FF0055初始化"
+    subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
+
+# --- GAME ---
+game:
+  break-start: "&#42F56C休息 &#FFE30010s&#42F56C。投票将在休息结束后开始。"
+  map-loaded: "&#42F56C地图 &#FFE300{map} &#42F56C已选择。"
+  player-died: "&#FF3344&#FFFFFF{player} &#FF3344已被淘汰。"
+  player-frozen-death: "&#FF3344&#FFFFFF{player} &#FF3344被冻死了。"
+  killer-disconnected: "<prefix>&#FF3344杀手逃跑了！"
+  killer-died-victory: "&#FF3344杀手死了！"
+  victory-killer: "&#FF3344邪恶取得了胜利。"
+  victory-survivors: "&#42F56C¡你活下来了！"
+  killer-hit-actionbar: "&#FF3344❤ &#FFFFFF杀手生命: &#FFE300{health}"
+  killer-stunned-damager: "&#FF3344你击晕了杀手！"
+  killer-stunned-victim: "&#FFE300你被击晕了！"
+  killer-title: "&#FF0033¡胜利！"
+  killer-subtitle: "&#FFFFFF没有人生还。"
+  killer-defeat-title: "&#FF0033¡你活下来了！"
+  killer-defeat-subtitle: "&#FFFFFF幸存者们逃脱了..."
+  survivor-title: "&#00FF33¡胜利！"
+  survivor-subtitle: "&#FFFFFF你成功活着逃脱了。"
+  survivor-defeat-title: "&#FF0033¡失败！"
+  survivor-defeat-subtitle: "&#FFFFFF杀手屠杀了所有人。"
+  killer-released-title: "&#FF0000¡杀手释放！"
+  killer-released-subtitle: "&#FFFFFF杀手现在可以移动和看见了。"
+  join-as-spectator: "<prefix>&#CCCCCC游戏已经开始。你正在旁观。"
+  rejoin-msg: "<prefix>&#FF3344欢迎回来，杀手。继续你的屠杀吧。"
+  infection-hit: "<prefix>&#FF3344系统崩溃！错误之星感染了你。"
+  hunt-start: "&#FF3344¡杀手出现了！ &#FFFFFF不要让他发现你..."
+  class-selected: "&#FF3344"
+  time-extended: "&#42F56C干得好！因为击杀，时间增加了 &#FFE300{seconds}s&#42F56C。"
+  mode-reveal-start: "&#FFE300正在分析区域内的异常... &kaa&r"
+  mode-selected: "&#FFFFFF检测到的模式: &#33CCFF{mode}"
+  player-frozen: "&#33CCFF{player} &#FFFFFF被杀手冻结了。"
+  unfrozen-victim: "&#42F56C{player} 将你从冰块中解救了出来。"
+  unfrozen-rescuer: "&#42F56C你解救了被冰冻的 {player}。"
+  freeze-title: "&#00FFFF¡被冻结！"
+  freeze-subtitle: "&#FFFFFF你还有 &{color}{time} &#FFFFFF秒钟等待被救援。"
+  edit-enable: "<prefix>&#33CCFF编辑模式已启用。你对游戏逻辑隐身了。"
+  edit-disable: "<prefix>&#FF3344编辑模式已禁用。游戏逻辑再次对你生效。"
+  afk-enable: "<prefix>&#FFE300挂机模式已启用。游戏引擎现在将忽略你。"
+  afk-disable: "<prefix>&#42F56C挂机模式已禁用。欢迎回来！"
+
+# --- ARENA ---
+arena:
+  created: "<prefix>&#FFFFFF竞技场 &#FFE300{name} &#FFFFFF已创建。"
+  deleted: "<prefix>&#FF3344竞技场 &#FFE300{name} &#FF3344已删除。"
+  setpaste: "<prefix>&#FFFFFF原理图位置已保存。"
+  setspawn: "<prefix>&#FFFFFF&#FFE300{name} &#FFFFFF的 &#FFE300{type} &#FFFFFF出生点已保存。"
+  setgenerator: "<prefix>&#FFFFFF已添加发电机。"
+  delgenerator: "<prefix>&#FF3344已移除发电机。"
+  delgenerators: "<prefix>&#FF3344发电机已清空。"
+  usage-setspawn: "<prefix>&#FF3344用法: /arena setspawn {name} <asesino/survivor>"
+  status-ready: "&#42F56C准备就绪"
+  status-incomplete: "&#FF3344未完成"
+  check-header: "&#888888» &#CCCCCC竞技场 &#FFE300{name} &#CCCCCC的状态: {status}"
+  check-survivors: "&#CCCCCC - 幸存者出生点: &#FFFFFF{count}"
+  check-generators: "&#CCCCCC - 发电机: &#FFFFFF{count}"
+  check-killer: "&#CCCCCC - 杀手出生点: {icon}"
+  help-header: "&#3BFFC7ᴍɪꜱᴛᴀᴋᴇɴ &#888888| &#CCCCCC竞技场"
+  help-line-create: " &#FFE300/arena create <名称>"
+  help-line-delete: " &#FFE300/arena delete <名称>"
+  help-line-check: " &#FFE300/arena check <名称>"
+  help-line-setpaste: " &#FFE300/arena setpaste <名称>"
+  help-line-setspawn: " &#FFE300/arena setspawn <名称> <类型>"
+  help-line-setgenerator: " &#FFE300/arena setgenerator <名称>"
+  help-line-delgenerator: " &#FFE300/arena delgenerator <名称>"
+  help-line-delgenerators: " &#FFE300/arena delgenerators <名称>"
+
+# --- ERRORS ---
+errors:
+  no-permission: "<prefix>&#FF3344你没有权限这么做。"
+  only-players: "&#FF3344仅限玩家使用。"
+  ability-cooldown: "&#FF3344技能 &#FFAA00<skill> &#FF3344还未准备好。剩余冷却时间: &#FFE300<time>s"
+  lang-not-found: "<prefix>&#FF3344该语言不存在。"
+  no-money: "<prefix>&#FF3344你没有足够的金币。"
+  arena-not-found: "<prefix>&#FF3344竞技场 &#FFFFFF{name} &#FF3344不存在。"
+  voting-not-active: "<prefix>&#FF3344投票未开启。"
+  already-voted: "<prefix>&#FF3344你已经投过票了。"
+  player-not-found: "<prefix>&#FF3344离线玩家。"
+  player-not-killer: "<prefix>&#FF3344不是杀手。"
+  unknown-command: "<prefix>&#FF3344未知命令。"
+  invalid-number: "<prefix>&#FF3344请输入有效的数字。"
+  invalid-spawn-type: "<prefix>&#FF3344请使用 'asesino' 或 'survivor'。"
+  invalid-gen-block: "<prefix>&#FF3344请看向一个铁块或紫水晶块。"
+  not-a-generator: "<prefix>&#FF3344那不是发电机。"
+  killer-not-found: "<prefix>&#FF3344该角色不存在。"
+  lobby-only-command: "<prefix>&#FF3344<b>[!]</b> &#CCCCCC要使用此命令，你必须返回 <b>主大厅</b>。"
+  player-only: "<prefix>&#FF3344此命令仅限玩家使用。"
+  invalid-mode: "<prefix>&#FF3344无效的模式。"
+  not-in-session: "<prefix>&#FF3344你必须在一个游戏会话中才能执行此操作。"
+  no-active-game: "<prefix>&#FF3344你所在的位置没有进行中的游戏。"
+  survivor-not-found: "<prefix>&#FF3344该幸存者职业不存在。"
+  forcekiller-not-in-game: "<prefix>&#FF3344你必须在游戏中才能强制指定杀手。"
+  forcekiller-already-started: "<prefix>&#FF3344你不能强制指定角色，因为游戏已经开始。"
+
+# --- PARANOIA ENGINE ---
+paranoia:
+  - "&#888888&k||&r &#888888你听到了吗？ &k||&r"
+  - "&#888888有人在看着你..."
+  - "&#FF3344他在靠近。"
+  - "&#888888不要回头。"
+
+# --- STAMINA ---
+stamina:
+  exhausted: "&#FF3344¡你精疲力竭了！ &#CCCCCC喘口气吧..."
+  low_warning: "&#FFAA00⚠ 你的体力流失很快！"
+
+# --- ANOMALIES ---
+anomalies:
+  geoffrey:
+    spawn: "&#FF3344[!] &#AA0000检测到异常: 深渊已经觉醒。"
+    title-comes: "&#FF0000¡¡¡ 他来了 !!!"
+    subtitle-comes: "&#FF3344¡快跑!!!!"
+    rage: "&#AA0000¡¡¡ 杰弗里非常愤怒 !!!"
+    death: "<prefix>&#FFFFFF{player} &#FF3344被杰弗里撕成了碎片。"
+
+# ==========================================
+# --- MENU TITLES ---
+# ==========================================
+menus:
+  killers_shop:
+    titulo: "&#555555「 杀手商店 」"
+  survivors_shop:
+    titulo: "&#555555「 幸存者商店 」"
+  tienda_principal:
+    titulo: "&#555555「 主商店 」"
+    items:
+      asesinos:
+        nombre: "&#FF3344「 杀手 」"
+        lore:
+          - ""
+          - "&#CCCCCC释放你的杀手本能。"
+          - "&#CCCCCC购买角色和特殊技能"
+          - "&#CCCCCC为了狩猎做准备。"
+          - ""
+          - "&#FF3344» 点击进入"
+      supervivientes:
+        nombre: "&#33CCFF「 幸存者 」"
+        lore:
+          - ""
+          - "&#CCCCCC提高你成功的几率。"
+          - "&#CCCCCC获取拥有独特技能的角色"
+          - "&#CCCCCC来欺骗死亡。"
+          - ""
+          - "&#33CCFF» 点击进入"
+
+hook:
+  party:
+    enter: "<green>你的队伍带你进入了游戏。"
+    leave: "<red>你的队伍离开了游戏，将所有人拉出..."
+    enter-private: "<green>你的队伍带你进入了私人游戏。"
+    created-private: "<yellow>你创建了一场私人游戏！使用面板来配置它。"
+    only-leader: "<red>只有队长可以创建私人游戏。"
+    not-in: "<red>你不在一个队伍中。"
+    no-maps: "<red>没有配置用来开始游戏的地图。"
+  alessio:
+    enter: "<green>你的队长带你进入了游戏。"
+    leave: "<red>你的队长离开了游戏，将所有人拉出..."
+
+shop:
+  estado-seleccionado: "<#00FF30>✔ 已选择"
+  estado-poseido: "<#FCFF00>★ 已拥有"
+  estado-comprar: "<#FCFF00>» 点击购买 «"
+  estado-precio: "<white>价格<dark_gray>: <#00FF30>${amount}"
+  abilityes-titulo: "<gray>「 技能 」"
+  clase-humana: "<dark_gray>「 幸存者 」"
+  estado-comprar-survivor: "<aqua>» 购买幸存者 «"
+  comprado: "<green>✔ ¡购买成功！ <gray>你已获得该职业。"
+  seleccionado: "<#00FF30>✔ 角色已选择。"
+  ya-seleccionado: "<red>⚠ <gray>你已经选择了这个。"

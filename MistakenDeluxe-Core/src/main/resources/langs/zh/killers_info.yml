@@ -1,0 +1,230 @@
+killers:
+  slasher:
+    nombre: "<white>「 南瓜小白 」"
+    descripcion:
+      - "<gray>一个经典且残暴的杀手。"
+      - "<gray>擅长物理追逐。"
+    lore_shop:
+      - "<gray>\"他的嗜血永无止境...\""
+      - "<white>难度: <#00FF33>简单"
+    skill_names:
+      weapon: "<#FF0033>斧头"
+      skill1: "<#FF3333>嗜血"
+      skill2: "<#FF9900>投掷大砍刀"
+      skill3: "<#9900FF>恐怖威压"
+      skill4: "<#CC0000>处决模式"
+
+  herobrine:
+    nombre: "<white>「 ʜᴇʀᴏʙʀɪɴᴇ 」"
+    descripcion:
+      - "<gray>腐蚀现实的神话。"
+      - "<gray>擅长跟踪和机动。"
+    lore_shop:
+      - "<gray>\"他不该出现在这里...\""
+      - "<white>难度: <#FFCC00>中等"
+    skill_names:
+      weapon: "<#FFFFFF>遗忘之刃"
+      skill1: "<#DDDDDD>虚空冲刺"
+      skill2: "<#00FFFF>维度跳跃"
+      skill3: "<#555555>恐怖脉冲"
+      skill4: "<#FF0033>世界错误"
+    habilidades:
+      estampaste: "<red>[!] 你撞墙了！</red>"
+      embestido: "<red>[!] Herobrine用虚空的力量撞击了你。</red>"
+
+  entity303:
+    nombre: "<red>「 实体 303 」"
+    descripcion:
+      - "<gray>代码中的致命错误。"
+      - "<gray>擅长故障攻击和火焰。"
+    lore_shop:
+      - "<gray>\"系统错误: 发现 303\""
+      - "<white>难度: <#FFCC00>中等"
+    skill_names:
+      weapon: "<#FF0033>腐化军刀"
+      skill1: "<#FF3333>代码冲刺"
+      skill2: "<#FF3300>错误之星"
+      skill3: "<#FF6600>飞行协议"
+      skill4: "<#CC0000>系统崩溃"
+    habilidades:
+      system_error: "<red>系统错误: 发现 303</red>"
+
+  null:
+    nombre: "<dark_gray>「 ɴᴜʟʟ 」"
+    descripcion:
+      - "<gray>存在的绝对缺失。"
+      - "<gray>擅长致盲和陷阱。"
+    lore_shop:
+      - "<gray>\"他走过的地方什么都不剩...\""
+      - "<white>难度: <#FF0033>困难"
+    skill_names:
+      weapon: "<#444444>虚空匕首"
+      skill1: "<#FF0033>渲染错误"
+      skill2: "<#00FFFF>灵魂信标"
+      skill3: "<#666666>虚空监狱"
+      skill4: "<#AAAAAA>深渊之牙"
+
+  charlie:
+    nombre: "<gradient:#ff4500:#ff8c00>「 查理·地狱 」</gradient>"
+    descripcion:
+      - "<gray>火焰与永恒寒冰的先驱。"
+      - "<gray>以大规模元素攻击统治战场。"
+      - "<#FF5500>机制:</#FF5500> <white>毁灭性力量 对抗 疲劳。"
+    lore_shop:
+      - "<gray>\"你可以逃避你的心魔，直到你精疲力竭...\""
+      - "<white>难度: <#9900FF>专家"
+    skill_names:
+      weapon: "<#FF4500>地狱之刃"
+      skill1: "<#FF0000>¡地狱!"
+      skill2: "<#CC2200>恶魔的奔跑"
+      skill3: "<#00EEFF>冰川尖刺"
+      skill4: "<#8B0000>冥界之牙"
+
+  mariachi:
+    nombre: "<gradient:#FF0033:#8B0000>「 死亡流浪乐队 」</gradient>"
+    descripcion:
+      - "<gray>黑骑士来取你的灵魂了。"
+      - "<gray>擅长听觉眩晕。"
+      - "<#FF0033>机制:</#FF0033> <white>全局音乐和眩晕。"
+    lore_shop:
+      - "<gray>\"¡Ay ay ay! 唱吧，别哭...\""
+      - "<white>难度: <#9900FF>专家"
+    skill_names:
+      weapon: "<#FF0033>命运的吉他"
+      skill1: "<#FF3333>恐怖尖叫"
+      skill2: "<#FFCC00>传统踢踏舞 (践踏)"
+      skill3: "<#FFFFFF>精准吉他打击"
+      skill4: "<#00FF33>龙舌兰酒"
+    habilidades:
+      grito_corrompido: "<red>流浪乐队的尖叫腐蚀了你的耳朵！</red>"
+      a_zapatear: "<gold>踢踏舞时间！速度提升。</gold>"
+      guitarrazo: "<white>¡砰！你被吉他击中了。</white>"
+
+  charliejazz:
+    nombre: "<gradient:#e0b0ff:#ffd700>「 查理·地狱 (爵士版) 」</gradient>"
+    descripcion:
+      - "<gray>星火与黄金的先驱。"
+      - "<gray>以令人眼花缭乱的攻击统治战场。"
+      - "<#E0B0FF>机制:</#E0B0FF> <white>毁灭性力量 对抗 疲劳。"
+    lore_shop:
+      - "<gray>\"你可以逃避你的心魔，直到你精疲力竭...\""
+      - "<white>难度: <#9900FF>专家"
+    skill_names:
+      weapon: "<#FFD700>黄金之刃"
+      skill1: "<#FF66FF>¡星辰地狱!"
+      skill2: "<#9900CC>恶魔的奔跑"
+      skill3: "<#FFCC00>黄金魔方"
+      skill4: "<#9900FF>魔法之牙"
+
+  romeo:
+    nombre: "<gradient:#ff0000:#ffff00>「 罗密欧 」</gradient> <white>[管理员]</white>"
+    descripcion:
+      - "<red>世界管理员已回归。"
+      - "<gray>用代码的力量控制战场。"
+    lore_shop:
+      - "<gray>\"我在这里制定规则！\""
+      - "<white>难度: <#9900FF>专家"
+    skill_names:
+      weapon: "<#FF3300>管理员的镐"
+      skill1: "<#FF0000>管理员冲刺"
+      skill2: "<#FFFFFF>管理员视野"
+      skill3: "<#9900FF>虚空之牙"
+      skill4: "<#FFCC00>末日之星"
+
+  colorandelectricity:
+    nombre: "<gradient:#ff0080:#00ffff:#ffff00>「 斑斓 」</gradient>"
+    descripcion:
+      - "<gray>由纯静电组成的无形之物。"
+      - "<gray>擅长偷取视野和速度。"
+      - "<#FF00AA>机制:</#FF00AA> <white>色彩过载。"
+    lore_shop:
+      - "<gray>\"我想要颜色...把你的颜色给我。\""
+      - "<white>难度: <#FF0033>困难"
+    skill_names:
+      weapon: "<#FF00AA>高压之刃"
+      skill1: "<#FF0066>生动轨迹 (冲刺)"
+      skill2: "<#00EEFF>色彩汲取"
+      skill3: "<#FFEE00>静电脉冲"
+      skill4: "<#CC00FF>色彩终结"
+    habilidades:
+      sobrecarga_cromatica: "<red>[!] 色彩过载</red>"
+
+  sowoul:
+    nombre: "<gradient:#5b00ff:#ff00ff>「 索沃尔 」</gradient>"
+    descripcion:
+      - "<gray>一位神秘的幻术师，精通"
+      - "<gray>欺骗和黑魔法艺术。"
+    lore_shop:
+      - "<gray>\"你所看到的一切都不是真实的...\""
+      - "<white>难度: <#FF0033>困难"
+    skill_names:
+      weapon: "<#9900FF>幻象魔典"
+      skill1: "<#FF66FF>魔法冲刺"
+      skill2: "<#FFFFFF>纸牌雨"
+      skill3: "<#00AAAA>唤魔者之颌"
+      skill4: "<#CC0000>发明: 杰弗里 3.0"
+    habilidades:
+      nadie_rango: "<red>视线范围内没有人。技能已消耗。</red>"
+      mano_magica: "<#9900FF>¡一只魔法手抓住了你！</#9900FF>"
+
+  tinkywinky:
+    nombre: "<gradient:#6b00b5:#cc00ff>「 丁丁 」</gradient>"
+    descripcion:
+      - "<gray>一个令人不安的生物，带着"
+      - "<gray>他的魔法袋在发电机周围游荡。"
+    lore_shop:
+      - "<#9900FF>\"呃-哦...你在哪？\""
+      - "<white>难度: <#FF0033>困难"
+    skill_names:
+      weapon: "<#9900FF>魔法袋"
+      skill1: "<#FF66FF>袋子投掷"
+      skill2: "<#AAAAAA>无声步伐"
+      skill3: "<#00AAAA>电视信号"
+      skill4: "<#CC0000>最后一首歌"
+    habilidades:
+      bolsa_marcado: "<#9900FF>[!] 丁丁的魔法袋标记了你...</#9900FF>"
+      senal_distorsiona: "<#9900FF>[!] 丁丁的信号扭曲了你的心智...</#9900FF>"
+      nadie_cerca: "<gray>[!] 附近没有可影响的人。</gray>"
+
+  still_life:
+    nombre: "<yellow>「 静物 」</yellow>"
+    descripcion:
+      - "<gray>伪装和欺骗机制。"
+    lore_shop:
+      - "<gray>\"我是你们中的一员...\""
+      - "<white>难度: <#FF0033>困难"
+    habilidades:
+      generador_colocado: "<green>放置了假发电机。</green>"
+      generador_interactuado: "<red>一名幸存者与您的假发电机进行了交互！</red>"
+      disfraz_activado: "<yellow>你伪装成了 %player%。</yellow>"
+      disfraz_desactivado: "<red>伪装丢失！</red>"
+      chat_disfraz: "<gray>%disguisename%: <white>%message%</white></gray>"
+
+  smiler:
+    nombre: "<yellow>「 微笑者 」</yellow>"
+    descripcion:
+      - "<gray>黑暗中的微笑。"
+    lore_shop:
+      - "<gray>\"=)\""
+      - "<white>难度: <#FFCC00>中等"
+
+  warden:
+    nombre: "<dark_aqua>「 监守者 」</dark_aqua>"
+    descripcion:
+      - "<gray>深渊的守护者。"
+    lore_shop:
+      - "<gray>\"*嗅 嗅*\""
+      - "<white>难度: <#FF0033>困难"
+
+  piglinbig:
+    nombre: "<gold>「 巨猪 」</gold>"
+    descripcion:
+      - "<gray>来自地狱的野兽。"
+      - "<gray>擅长掀起泥土和投掷斧头。"
+    lore_shop:
+      - "<gray>\"呼噜...\""
+      - "<white>难度: <#FF0033>困难"
+    skill_names:
+      weapon: "<#FFCC00>黄金斧"
+      skill1: "<#FFEE00>震晕地震"
+      skill2: "<#FFCC00>投掷斧头"

@@ -16,8 +16,8 @@ import liric.mistaken.config.engine.core.MessageService
 class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
     private val mm = plugin.mm
-    private val publicSubs = setOf("shop", "tienda", "langs", "language", "stats", "estadisticas", "afk")
-    private val lobbyOnlySubs = setOf("shop", "tienda", "stats", "estadisticas")
+    private val publicSubs = setOf("shop", "langs", "language", "stats", "afk")
+    private val lobbyOnlySubs = setOf("shop", "stats")
 
     override fun execute(stack: CommandSourceStack, args: Array<String>) {
         val sender = stack.sender
@@ -35,7 +35,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             player?.let {
                 plugin.statsManager.incrementStat(it.uniqueId, "kills")
                 plugin.statsManager.incrementStat(it.uniqueId, "wins_survivor")
-                it.sendMessage(ColorTranslator.translate("<red>⚡ <white>Debug: Stats inyectadas y sincronizando..."))
+                it.sendMessage(MessageService.getComponent(player, "admin.debug-stats-sync"))
                 it.playSound(it.location, Sound.BLOCK_ANVIL_USE, 1f, 2f)
             }
             return
@@ -43,13 +43,13 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
         
         if (sub !in publicSubs && !sender.hasPermission("mistaken.admin")) {
-            sender.sendMessage(ColorTranslator.translate("<red>Unknown command. Type \"/help\" for help."))
+            sender.sendMessage(MessageService.getComponent(player, "errors.unknown-command"))
             return
         }
 
         
         if (sub in lobbyOnlySubs && plugin.serverMode == "GAME_SERVER") {
-            sender.sendMessage(ColorTranslator.translate("<red><b>[!]</b> <gray>Para usar este comando, debes volver al <b>Lobby Principal</b>.</gray>"))
+            sender.sendMessage(MessageService.getComponent(player, "errors.lobby-only-command"))
             return
         }
 
@@ -59,7 +59,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
         when (sub) {
             "langs", "language" -> {
                 if (player == null) {
-                    sender.sendMessage("Comando solo para jugadores.")
+                    sender.sendMessage(MessageService.getComponent(null, "errors.player-only"))
                     return
                 }
                 if (args.size < 2) {
@@ -76,9 +76,9 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 }
             }
 
-            "stats", "estadisticas" -> {
+            "stats" -> {
                 if (player == null) {
-                    sender.sendMessage("La consola no tiene estadísticas.")
+                    sender.sendMessage(MessageService.getComponent(null, "errors.player-only"))
                     return
                 }
                 val target = if (args.size > 1 && player.hasPermission("mistaken.admin"))
@@ -86,7 +86,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 enviarEstadisticas(player, target)
             }
 
-            "shop", "tienda" -> {
+            "shop" -> {
                 player?.let {
                     plugin.shopSelector.abrir(it)
                     it.playSound(it.location, Sound.BLOCK_CHEST_OPEN, 1f, 1.2f)
@@ -138,7 +138,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                                 plugin.killerManager.reloadAll()
                                 plugin.survivorManager.reloadAll()
                             }
-                            msg = "admin.reload-success" // O un mensaje específico si lo hay
+                            msg = "admin.reload-success"
                         }
                         "killers" -> {
                             plugin.server.globalRegionScheduler.execute(plugin) {
@@ -184,21 +184,23 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "setmode" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (player == null || gm == null) {
-                    sender.sendMessage(ColorTranslator.translate("<red>Debes estar dentro de una sesión para forzar un modo."))
+                    sender.sendMessage(MessageService.getComponent(player, "errors.not-in-session"))
                     return
                 }
                 if (args.size < 2) {
-                    sender.sendMessage(ColorTranslator.translate("<red>Uso: /mistaken setmode <MODO>"))
+                    sender.sendMessage(MessageService.getComponent(player, "admin.usage-setmode"))
                     return
                 }
                 try {
                     val mode = MistakenMode.valueOf(args[1].uppercase())
                     gm.currentMode = mode
                     gm.modeForced = true
-                    sender.sendMessage(ColorTranslator.translate("<green>Modo forzado a: <aqua>${mode.name} <gray>(Sesión: ${gm.id})"))
+                    sender.sendMessage(MessageService.getComponent(player, "admin.mode-forced",
+                        Placeholder.parsed("mode", mode.name),
+                        Placeholder.parsed("session", gm.id)))
                     player.playSound(player.location, Sound.BLOCK_ANVIL_USE, 1f, 1f)
                 } catch (e: Exception) {
-                    sender.sendMessage(ColorTranslator.translate("<red>Modo inválido."))
+                    sender.sendMessage(MessageService.getComponent(player, "errors.invalid-mode"))
                 }
             }
 
@@ -220,7 +222,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 }
 
                 if (session == null) {
-                    sender.sendMessage(ColorTranslator.translate("<red>Debes estar dentro de una sesión para iniciarla."))
+                    sender.sendMessage(MessageService.getComponent(player, "errors.not-in-session"))
                     return
                 }
 
@@ -238,7 +240,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "stop" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (gm == null || gm.currentState == GameState.LOBBY) {
-                    sender.sendMessage(ColorTranslator.translate("<red>No hay ninguna partida activa en tu ubicación."))
+                    sender.sendMessage(MessageService.getComponent(player, "errors.no-active-game"))
                 } else {
                     gm.stateController.endGame("admin.stop-broadcast", false)
                     sender.sendMessage(MessageService.getComponent(player, "admin.stop-success"))
@@ -267,7 +269,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 }
             }
 
-            "setasesino" -> {
+            "setkiller" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (player == null || args.size < 2) return
                 val killer = plugin.killerManager.getClassById(args[1])
@@ -278,12 +280,12 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 }
             }
 
-            "setsuperviviente" -> {
+            "setsurvivor" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (player == null || args.size < 2) return
                 val clase = plugin.survivorManager.getClassById(args[1])
                 if (clase == null) {
-                    player.sendMessage(ColorTranslator.translate("<red>Esa clase no existe, bro."))
+                    player.sendMessage(MessageService.getComponent(player, "errors.survivor-not-found", Placeholder.parsed("type", args[1])))
                 } else {
                     plugin.survivorManager.registrarSurvivor(player, clase as liric.mistaken.roles.survivors.Survivor)
                 }
@@ -297,9 +299,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                     val target = Bukkit.getPlayer(args[1])
                     if (target != null) {
                         plugin.killerManager.removeKiller(target)
-                        val msg = MessageService.getRawString(player, Messages.ADMIN_REMOVEKILLER_SUCCESS, "<green>Killer removido: {player}", "messages")
-                            .replace("{player}", target.name)
-                        sender.sendMessage(ColorTranslator.translate(msg))
+                        sender.sendMessage(MessageService.getComponent(player, "admin.removekiller-success", Placeholder.parsed("player", target.name)))
                     }
                 }
             }
@@ -307,38 +307,37 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
             "reloadkiller" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (args.size < 2) {
-                    sender.sendMessage(ColorTranslator.translate("<red>Uso: /mistaken reloadkiller <id>"))
+                    sender.sendMessage(MessageService.getComponent(player, "admin.usage-reloadkiller"))
                     return
                 }
                 val id = args[1]
                 plugin.killerManager.reloadKiller(id)
-                sender.sendMessage(ColorTranslator.translate("<green>Comando enviado al manager para recargar el killer: <aqua>$id"))
+                sender.sendMessage(MessageService.getComponent(player, "admin.reloadkiller-success", Placeholder.parsed("id", id)))
             }
 
             "forcekiller" -> {
                 if (!sender.hasPermission("mistaken.admin")) return
                 if (args.size < 2) {
-                    sender.sendMessage(ColorTranslator.translate(MessageService.getRawString(player, Messages.ADMIN_FORCEKILLER_USAGE, "<red>Uso: /mistaken forcekiller <jugador>", "messages")))
+                    sender.sendMessage(MessageService.getComponent(player, "admin.usage-forcekiller"))
                     return
                 }
                 val target = Bukkit.getPlayer(args[1])
                 if (target == null) {
-                    sender.sendMessage(ColorTranslator.translate(MessageService.getRawString(player, Messages.ERRORS_PLAYER_NOT_FOUND, "<red>Jugador desconectado.", "messages")))
+                    sender.sendMessage(MessageService.getComponent(player, "errors.player-not-found"))
                     return
                 }
                 if (gm == null) {
-                    sender.sendMessage(ColorTranslator.translate(MessageService.getRawString(player, Messages.ADMIN_FORCEKILLER_NOT_IN_GAME, "<red>Debes estar en una partida para forzar un asesino.", "messages")))
+                    sender.sendMessage(MessageService.getComponent(player, "errors.forcekiller-not-in-game"))
                     return
                 }
                 if (gm.currentState == GameState.INGAME || gm.currentState == GameState.ENDING || gm.currentState == GameState.STARTING) {
-                    sender.sendMessage(ColorTranslator.translate(MessageService.getRawString(player, Messages.ADMIN_FORCEKILLER_ALREADY_STARTED, "<red>No puedes forzar el rol porque la partida ya inició.", "messages")))
+                    sender.sendMessage(MessageService.getComponent(player, "errors.forcekiller-already-started"))
                     return
                 }
                 gm.forcedKillerUUID = target.uniqueId
-                val successMsg = MessageService.getRawString(player, Messages.ADMIN_FORCEKILLER_SUCCESS, "<green>Has forzado a <white>{player}</white> a ser el asesino en la siguiente partida de <aqua>{arena}</aqua>.", "messages")
-                    .replace("{player}", target.name)
-                    .replace("{arena}", gm.id)
-                sender.sendMessage(ColorTranslator.translate(successMsg))
+                sender.sendMessage(MessageService.getComponent(player, "admin.forcekiller-success", 
+                    Placeholder.parsed("player", target.name),
+                    Placeholder.parsed("arena", gm.id)))
             }
 
             else -> sender.sendMessage(MessageService.getComponent(player, "errors.unknown-command"))
@@ -360,7 +359,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
         val player = stack.sender as? Player
         stack.sender.sendMessage(MessageService.getComponent(player, "help.header"))
 
-        val subs = listOf("shop", "langs", "stats", "afk", "edit", "start", "stop", "reload", "setstamina", "setasesino", "setsuperviviente", "removekiller", "reloadkiller", "setmode")
+        val subs = listOf("shop", "langs", "stats", "afk", "edit", "start", "stop", "reload", "setstamina", "setkiller", "setsurvivor", "removekiller", "reloadkiller", "setmode")
         subs.forEach { sub ->
             if (sub in publicSubs || stack.sender.hasPermission("mistaken.admin")) {
                 stack.sender.sendMessage(MessageService.getComponent(player, "help.$sub"))
@@ -374,7 +373,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
         return when (args.size) {
             1 -> {
-                val list = if (isAdmin) listOf("start", "stop", "stats", "setstamina", "setasesino", "setsuperviviente", "reload", "removekiller", "reloadkiller", "forcekiller", "shop", "langs", "setmode", "afk", "edit")
+                val list = if (isAdmin) listOf("start", "stop", "stats", "setstamina", "setkiller", "setsurvivor", "reload", "removekiller", "reloadkiller", "forcekiller", "shop", "langs", "setmode", "afk", "edit")
                 else publicSubs.toList()
                 list.filter { it.startsWith(args[0], true) }
             }
@@ -382,8 +381,8 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                 when (args[0].lowercase()) {
                     "setmode" -> if (isAdmin) MistakenMode.entries.map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
                     "reload" -> if (isAdmin) listOf("scripts", "killers", "survivors", "messages", "config", "all").filter { it.startsWith(args[1], true) } else emptyList()
-                    "setasesino", "reloadkiller" -> if (isAdmin) plugin.killerManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
-                    "setsuperviviente" -> if (isAdmin) plugin.survivorManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
+                    "setkiller", "reloadkiller" -> if (isAdmin) plugin.killerManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
+                    "setsurvivor" -> if (isAdmin) plugin.survivorManager.getAvailableClasses().keys.filter { it.startsWith(args[1], true) } else emptyList()
                     "stats", "forcekiller", "removekiller" -> if (isAdmin) Bukkit.getOnlinePlayers().map { it.name }.filter { it.startsWith(args[1], true) } else emptyList()
                     "langs", "language" -> MessageService.getLoadedLanguages().toList()
                     else -> emptyList()
