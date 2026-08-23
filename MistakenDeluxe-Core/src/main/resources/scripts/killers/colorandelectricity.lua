@@ -18,7 +18,8 @@ end
 
 local function music_loop(player)
     local nearby = player:world():get_players()
-    for _, victim in pairs(nearby) do
+    for i = 1, nearby.length do
+        local victim = nearby[i]
         play_entity_sound(victim, "mistaken:colorsito", player, 2.0, 1.0)
     end
     
@@ -47,7 +48,8 @@ end
 
 function on_unequip(player)
     local nearby = player:world():get_players()
-    for _, victim in pairs(nearby) do
+    for i = 1, nearby.length do
+        local victim = nearby[i]
         stop_sound(victim, "mistaken:colorsito")
     end
 end
@@ -81,7 +83,8 @@ function on_skill_2(player)
     spawn_particle(player:location(), "WITCH", 4.0, 1.0, 4.0, 0.5, 50)
     
     local nearby = player:world():get_players()
-    for _, victim in pairs(nearby) do
+    for i = 1, nearby.length do
+        local victim = nearby[i]
         if victim:id() ~= player:id() and player:location():distance_squared(victim:location()) < 64 then
             apply_effect(victim, "DARKNESS", 0, 100)
             apply_effect(victim, "BLINDNESS", 0, 100)
@@ -102,7 +105,8 @@ function on_skill_3(player)
         spawn_particle(player:location(), "ELECTRIC_SPARK", 2.0, 2.0, 2.0, 0.05, 20)
         
         local nearby = player:world():get_players()
-        for _, victim in pairs(nearby) do
+        for i = 1, nearby.length do
+            local victim = nearby[i]
             if victim:id() ~= player:id() and player:location():distance_squared(victim:location()) < 36 then
                 damage(victim)
                 apply_knockback(player, victim, 0.8, 0.3)
@@ -125,7 +129,8 @@ function on_skill_4(player)
     
     local target = nil
     local nearby = player:world():get_players()
-    for _, victim in pairs(nearby) do
+    for i = 1, nearby.length do
+        local victim = nearby[i]
         if victim:id() ~= player:id() and loc:distance_squared(victim:location()) < 225 then
             target = victim
             break

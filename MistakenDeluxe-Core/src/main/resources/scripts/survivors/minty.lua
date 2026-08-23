@@ -38,15 +38,16 @@ function on_trigger(player, trigger_id)
     
     -- Habilidad 2: Embestida (Slot 1)
     if trigger_id == "skill_1" then
-        apply_effect(player, "SPEED", 100, 1)
+        apply_effect(player, "SPEED", 1, 100)
         dash(player, 1.3, 0.3)
         
-        -- Trail de nubes por 100 ticks (5 seg) a cada 5 ticks
+        -- Trail de nubes por 100 ticks
         trail(player)
             :particle("CLOUD")
+            :offset(0.2, 0.2, 0.2)
             :duration(100)
-            :rate(5)
-            :start()
+            :view_radius(25)
+            :show()
     end
     
     -- Habilidad 3: Aullido Feroz (Slot 2)
@@ -54,14 +55,14 @@ function on_trigger(player, trigger_id)
         particle_burst(player, "SONIC_BOOM", 1, 0.0, 1.5, 0.0, 0.0)
         
         local targets = get_nearby_players(player, 8.0, 8.0, 8.0)
-        for i, target in ipairs(targets) do
+        for i = 1, targets.length do
+            local target = targets[i]
             if target:is_killer() then
-                apply_effect(target, "BLINDNESS", 60, 0)
-                apply_effect(target, "SLOWNESS", 60, 1)
-                apply_effect(target, "DARKNESS", 40, 0)
+                apply_effect(target, "BLINDNESS", 0, 60)
+                apply_effect(target, "SLOWNESS", 1, 60)
+                apply_effect(target, "DARKNESS", 0, 40)
                 
                 launch_entity(target, 0.0, 0.4, 0.0)
-                target:damage(0.0)
             end
         end
     end

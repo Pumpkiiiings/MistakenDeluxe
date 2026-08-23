@@ -52,6 +52,8 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
         }
 
         event.isCancelled = true
+        event.setUseItemInHand(org.bukkit.event.Event.Result.DENY)
+        event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY)
 
         if (activeTyping.containsKey(player.uniqueId)) {
             player.sendMessage(MessageService.getComponent(

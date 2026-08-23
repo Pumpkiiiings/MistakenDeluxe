@@ -83,7 +83,8 @@ function on_skill_4(player)
     local targets = player:world():get_players()
     reveal_targets(player)
     
-    for _, victim in pairs(targets) do
+    for i = 1, targets.length do
+        local victim = targets[i]
         if victim:id() ~= player:id() then
             apply_effect(victim, "DARKNESS", 1, 100)
             apply_effect(victim, "BLINDNESS", 1, 100)

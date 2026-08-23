@@ -24,7 +24,7 @@ function on_trigger(player, trigger_id)
         particle_burst(player, "CLOUD", 15, 0.3, 0.1, 0.3, 0.05)
         particle_burst(player, "WAX_OFF", 10, 0.5, 0.5, 0.5, 0.0)
         
-        sequence(player, location(player))
+        sequence(player, player:location())
             :delay(15, function()
                 if player:is_online() then
                     apply_effect(player, "SLOW_FALLING", 60, 0)
@@ -50,7 +50,8 @@ function on_trigger(player, trigger_id)
         particle_burst(player, "ENCHANT", 30, 2.0, 2.0, 2.0, 1.0)
         
         local targets = get_nearby_players(player, 6.0, 6.0, 6.0)
-        for i, target in ipairs(targets) do
+        for i = 1, targets.length do
+            local target = targets[i]
             if target:is_killer() then
                 push_from_location(target, player, 2.5, 0.4)
                 send_translated(target, "survivors.notch.habilidades.denied", "survivors_info")

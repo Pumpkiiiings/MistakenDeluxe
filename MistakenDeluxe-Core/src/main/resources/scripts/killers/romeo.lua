@@ -49,7 +49,8 @@ function on_skill_2(player)
     local targets = player:world():get_players()
     reveal_targets(player)
     
-    for _, victim in pairs(targets) do
+    for i = 1, targets.length do
+        local victim = targets[i]
         if victim:id() ~= player:id() and player:location():distance_squared(victim:location()) < 10000 then
             apply_effect(victim, "GLOWING", 0, 200)
             spawn_particle(victim:location():clone():add(0, 1, 0), "SONIC_BOOM", 0, 0, 0, 0, 1)
@@ -78,7 +79,8 @@ function on_skill_3(player)
                 spawn_particle(spawn_loc, "PORTAL", 0.2, 0.5, 0.2, 0.5, 15)
                 
                 local nearby = player:world():get_players()
-                for _, victim in pairs(nearby) do
+                for i = 1, nearby.length do
+                    local victim = nearby[i]
                     if victim:id() ~= player:id() and spawn_loc:distance_squared(victim:location()) < 2.25 then
                         damage(victim)
                         victim:velocity_add(0, 0.5, 0)

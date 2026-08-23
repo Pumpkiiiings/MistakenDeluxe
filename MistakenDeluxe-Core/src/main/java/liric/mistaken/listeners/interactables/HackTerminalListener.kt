@@ -77,6 +77,8 @@ class HackTerminalListener(private val plugin: Mistaken) : Listener {
         }
 
         event.isCancelled = true
+        event.setUseItemInHand(org.bukkit.event.Event.Result.DENY)
+        event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY)
         startHackSession(player, loc)
     }
 
