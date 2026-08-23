@@ -90,7 +90,7 @@ dependencies {
     compileOnly("io.th0rgal:oraxen:1.180.0")
 
     
-    compileOnly("com.alessiodp.parties:parties-api:3.2.16")
+    compileOnly("com.alessiodp.parties:parties-api:3.2.18")
     compileOnly(files("../../LodestoneParties/LodestoneParties-API/build/libs/LodestoneParties-API-1.0.0-SNAPSHOT.jar"))
     compileOnly("su.nightexpress.excellenteconomy:ExcellentEconomy:2.8.0")
 
