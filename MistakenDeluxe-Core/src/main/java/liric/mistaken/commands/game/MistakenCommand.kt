@@ -136,6 +136,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
 
                     plugin.server.globalRegionScheduler.execute(plugin) {
                         plugin.killerManager.reloadAll()
+                        plugin.survivorManager.reloadAll()
                         plugin.shopSelector.reload()
                         plugin.killerTienda.reload()
                         plugin.survivorTienda.reload()
