@@ -166,23 +166,23 @@ class KillerShop : MenuBase("killers_shop") {
         val econ = Mistaken.Companion.economy
 
         if (econ == null) {
-            player.sendMessage(parseSafe("<red><b>[!]</b> Error interno: El sistema de economía (Vault) no está conectado.</red>"))
-            plugin.componentLogger.error("Purchase failed due to disconnected Vault: Player ${player.name}, Killer $killerId")
+            player.sendMessage(parseSafe("<red><b>[!]</b> Error interno: El sistema de economía no está conectado.</red>"))
+            plugin.componentLogger.error("Purchase failed due to disconnected Economy: Player ${player.name}, Killer $killerId")
             return
         }
 
         val costo = precio.toDouble()
 
-        if (econ.has(player, costo)) {
-            val response = econ.withdrawPlayer(player, costo)
+        if (econ.getBalance(player) >= costo) {
+            val success = econ.withdraw(player, costo)
 
-            if (response.transactionSuccess()) {
+            if (success) {
                 data.buyKiller(uuid, killerId)
                 player.sendMessage(MessageService.getComponent(player, "shop.comprado", Placeholder.parsed("name", killerId)))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.5f)
                 abrir(player)
             } else {
-                player.sendMessage(MessageService.getComponent(player, "shop_errores.error_bancario", Placeholder.parsed("error", response.errorMessage ?: "Unknown error")))
+                player.sendMessage(MessageService.getComponent(player, "shop_errores.error_bancario", Placeholder.parsed("error", "Transacción fallida.")))
                 player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
             }
 

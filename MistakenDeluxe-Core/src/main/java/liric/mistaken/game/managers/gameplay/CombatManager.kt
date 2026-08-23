@@ -393,7 +393,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         }
 
         plugin.server.asyncScheduler.runNow(plugin) { _ ->
-            winners.forEach { Mistaken.Companion.economy?.depositPlayer(it, if (killerWon) 500.0 else 200.0) }
+            winners.forEach { Mistaken.Companion.economy?.deposit(it, if (killerWon) 500.0 else 200.0) }
         }
     }
 

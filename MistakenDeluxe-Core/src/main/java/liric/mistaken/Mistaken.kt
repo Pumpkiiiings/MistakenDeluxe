@@ -44,7 +44,8 @@ import liric.mistaken.roles.survivors.SurvivorManager
 import liric.mistaken.menu.menus.SurvivorShop
 import liric.mistaken.utils.hooks.Placeholders
 import net.kyori.adventure.text.minimessage.MiniMessage
-import net.milkbowl.vault.economy.Economy
+import liric.mistaken.utils.hooks.economy.EconomyManager
+import liric.mistaken.utils.hooks.economy.IEconomyHook
 import org.bukkit.GameRule
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
@@ -74,8 +75,8 @@ class Mistaken : JavaPlugin() {
             private set
 
         @JvmStatic
-        var economy: Economy? = null
-            internal set
+        val economy: IEconomyHook?
+            get() = EconomyManager.hook
 
         @JvmStatic
         fun getHealthAPI(): HealthAPI? = instance.combatManager
@@ -296,13 +297,7 @@ class Mistaken : JavaPlugin() {
     }
 
     private fun setupIntegrations(): Boolean {
-        val rsp: RegisteredServiceProvider<Economy>? = server.servicesManager.getRegistration(Economy::class.java)
-
-        if (rsp == null) {
-            componentLogger.error(ColorTranslator.translate("[ERROR] Vault found no compatible economy plugin."))
-            return false
-        }
-        economy = rsp.provider
+        EconomyManager.init(this)
 
         liric.mistaken.utils.resourcepack.CustomItemManager.init()
 

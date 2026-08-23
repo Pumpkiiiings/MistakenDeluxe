@@ -33,6 +33,7 @@ repositories {
     maven("https://repo.wyck.dev/public/")
     maven("https://repo.nexomc.com/releases")
     maven("https://repo.oraxen.com/releases")
+    maven("https://repo.nightexpressdev.com/releases")
     mavenLocal()
 
     flatDir {
@@ -89,6 +90,7 @@ dependencies {
     
     compileOnly("com.alessiodp.parties:parties-api:3.2.16")
     compileOnly(files("../../LodestoneParties/LodestoneParties-API/build/libs/LodestoneParties-API-1.0.0-SNAPSHOT.jar"))
+    compileOnly("su.nightexpress.excellenteconomy:ExcellentEconomy:2.8.0")
 
     
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
