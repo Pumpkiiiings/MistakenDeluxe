@@ -43,8 +43,8 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
     }
 
     init {
-        val materialName = plugin.config.getString("settings.generator-block", "RAW_IRON_BLOCK")
-        genBlock = Material.matchMaterial(materialName ?: "RAW_IRON_BLOCK") ?: Material.RAW_IRON_BLOCK
+        // En Mistaken 2.0 GeneratorManager siempre setea RAW_IRON_BLOCK.
+        genBlock = Material.RAW_IRON_BLOCK
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -52,25 +52,15 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         val block = event.clickedBlock ?: return
         
         val player = event.player
-        if (player.hasPermission("mistaken.admin") && (block.type == genBlock || block.type == Material.OBSERVER || block.type == Material.AMETHYST_BLOCK)) {
-            player.sendMessage("<yellow>[DEBUG] Generator click! Block: ${block.type}, Action: ${event.action}, Hand: ${event.hand}".let { ColorTranslator.translate(it) })
-        }
 
-        if (block.type != genBlock) return
+        if (block.type != Material.RAW_IRON_BLOCK) return
 
         if (event.hand != EquipmentSlot.HAND) return
-        if (event.action != Action.RIGHT_CLICK_BLOCK && event.action != Action.LEFT_CLICK_BLOCK) return
+        if (event.action != Action.RIGHT_CLICK_BLOCK) return
 
-        val session = plugin.sessionManager.getSession(player)
-        if (session == null) {
-            if (player.hasPermission("mistaken.admin")) player.sendMessage(ColorTranslator.translate("<red>[DEBUG] Session is NULL"))
-            return
-        }
+        val session = plugin.sessionManager.getSession(player) ?: return
 
-        if (plugin.spectatorManager.isSpectator(player)) {
-            if (player.hasPermission("mistaken.admin")) player.sendMessage(ColorTranslator.translate("<red>[DEBUG] You are spectator"))
-            return
-        }
+        if (plugin.spectatorManager.isSpectator(player)) return
 
         if (session.isKiller(player.uniqueId)) {
             player.sendMessage(killerError)
