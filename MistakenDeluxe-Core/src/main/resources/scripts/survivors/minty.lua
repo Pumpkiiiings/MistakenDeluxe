@@ -29,8 +29,9 @@ function on_trigger(player, trigger_id)
         particle_burst(player, "SWEEP_ATTACK", 1, 0.0, 1.2, 1.5, 0.0)
         
         if target ~= nil and target:is_killer() then
-            apply_effect(target, "BLINDNESS", 60, 0)
-            apply_effect(target, "SLOWNESS", 100, 2)
+            -- amp=0 (BLINDNESS I), ticks=60; amp=2 (SLOWNESS III), ticks=100
+            apply_effect(target, "BLINDNESS", 0, 60)
+            apply_effect(target, "SLOWNESS", 2, 100)
             player:play_sound("ENTITY_WOLF_GROWL", 1.0, 0.8)
             target:play_sound("ENTITY_PLAYER_ATTACK_CRIT", 1.0, 0.5)
         end
@@ -39,7 +40,12 @@ function on_trigger(player, trigger_id)
     -- Habilidad 2: Embestida (Slot 1)
     if trigger_id == "skill_1" then
         apply_effect(player, "SPEED", 1, 100)
-        dash(player, 1.3, 0.3)
+
+        dash(player)
+            :speed(1.3)
+            :max_ticks(10)
+            :trail_particle("CLOUD")
+            :start()
         
         -- Trail de nubes por 100 ticks
         trail(player)

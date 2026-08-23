@@ -16,7 +16,10 @@ function on_trigger(player, trigger_id)
 
     -- Habilidad 1: Salto Creativo (Slot 0)
     if trigger_id == "skill_0" then
-        dash(player, 1.2, 1.1)
+        dash(player)
+            :speed(1.2)
+            :max_ticks(8)
+            :start()
         
         player:play_sound("ENTITY_FIREWORK_ROCKET_LAUNCH", 1.5, 0.8)
         player:play_sound("ENTITY_EXPERIENCE_ORB_PICKUP", 1.0, 0.5)
@@ -27,7 +30,8 @@ function on_trigger(player, trigger_id)
         sequence(player, player:location())
             :delay(15, function()
                 if player:is_online() then
-                    apply_effect(player, "SLOW_FALLING", 60, 0)
+                    -- amp=0 (SLOW_FALLING I), ticks=60
+                    apply_effect(player, "SLOW_FALLING", 0, 60)
                 end
             end)
             :play()
@@ -68,9 +72,10 @@ function on_trigger(player, trigger_id)
         particle_burst(player, "TOTEM_OF_UNDYING", 40, 0.5, 0.5, 0.5, 0.3)
         particle_burst(player, "FIREWORK", 1, 0.0, 1.0, 0.0, 0.0)
         
-        apply_effect(player, "REGENERATION", 100, 2)
-        apply_effect(player, "RESISTANCE", 100, 1)
-        apply_effect(player, "SPEED", 100, 1)
+        -- amp=2 (REGENERATION III), ticks=100; amp=1 (RESISTANCE II), ticks=100; amp=1 (SPEED II), ticks=100
+        apply_effect(player, "REGENERATION", 2, 100)
+        apply_effect(player, "RESISTANCE", 1, 100)
+        apply_effect(player, "SPEED", 1, 100)
         
         local current_health = player:health()
         local max_health = player:max_health()
