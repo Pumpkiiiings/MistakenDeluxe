@@ -315,8 +315,8 @@ help:
   stop: "&#CCCCCC» &#FFE300/mistaken stop &#888888- &#FFFFFFStop game."
   reload: "&#CCCCCC» &#FFE300/mistaken reload &#888888- &#FFFFFFReload config."
   setstamina: "&#CCCCCC» &#FFE300/mistaken setstamina <val> &#888888- &#FFFFFFAdjust stamina."
-  setasesino: "&#CCCCCC» &#FFE300/mistaken setasesino <id> &#888888- &#FFFFFFKiller test."
-  setsuperviviente: "&#CCCCCC» &#FFE300/mistaken setsuperviviente <id> &#888888- &#FFFFFFSurvivor test."
+  setkiller: "&#CCCCCC» &#FFE300/mistaken setkiller <id> &#888888- &#FFFFFFKiller test."
+  setsurvivor: "&#CCCCCC» &#FFE300/mistaken setsurvivor <id> &#888888- &#FFFFFFSurvivor test."
   removekiller: "&#CCCCCC» &#FFE300/mistaken removekiller <p> &#888888- &#FFFFFFRemove test role."
   reloadkiller: "&#CCCCCC» &#FFE300/mistaken reloadkiller &#888888- &#FFFFFFReload killers."
   setmode: "&#CCCCCC» &#FFE300/mistaken setmode <id> &#888888- &#FFFFFFForce a mode."
@@ -419,7 +419,32 @@ game:
   freeze-subtitle: "&#FFFFFFYou have &{color}{time} &#FFFFFFseconds to be rescued."
   edit-enable: "<prefix>&#33CCFFEdit Mode enabled. You are invisible to the game logic."
   edit-disable: "<prefix>&#FF3344Edit Mode disabled. The game logic applies again."
-  afk-enable: "<prefix>&#FFE300AFK Mode enabled. The game engine will ignore you now."
+  message: "<prefix>&#FFE300No one voted for a map. The server will choose one at random."
+  too-injured-to-rescue: "<red>You are too injured to rescue anyone!"
+  heal-cooldown: "<red>You must wait %time% s to heal again."
+  already-max-health-self: "<red>Your health is already at max!"
+  already-max-health-other: "<red>Player %target% is already at max health!"
+  heal-cancelled-movement: "<red>Healing cancelled due to movement."
+  heal-success-self:
+    title: "<green>Healed!"
+    subtitle: "<gray>+%hearts% hearts"
+  heal-success-healer:
+    title: "<green>You healed %target%!"
+    subtitle: "<gray>+%hearts% hearts"
+  heal-success-healed:
+    title: "<green>You have been healed!"
+    subtitle: "<gray>By %player%"
+  heal-reward-coins: "<green>+100 coins for healing a teammate."
+  heal-skill-ready: "<green>Your healing skill is ready!"
+  healing-self:
+    title: "<yellow>Healing..."
+    subtitle: "<gray>%time%s"
+  healing-healer:
+    title: "<yellow>Healing %target%"
+    subtitle: "<gray>Time: %time%s"
+  healing-healed:
+    title: "<yellow>%player% is healing you..."
+    subtitle: "<gray>Do not move. Time: %time%s"
   afk-disable: "<prefix>&#42F56CAFK Mode disabled. Welcome back!"
 
 # --- ARENA ---

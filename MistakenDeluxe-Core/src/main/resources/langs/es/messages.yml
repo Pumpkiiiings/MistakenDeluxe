@@ -315,8 +315,8 @@ help:
   stop: "&#CCCCCC» &#FFE300/mistaken stop &#888888- &#FFFFFFParar partida."
   reload: "&#CCCCCC» &#FFE300/mistaken reload &#888888- &#FFFFFFRecargar config."
   setstamina: "&#CCCCCC» &#FFE300/mistaken setstamina <val> &#888888- &#FFFFFFAjustar estamina."
-  setasesino: "&#CCCCCC» &#FFE300/mistaken setasesino <id> &#888888- &#FFFFFFTest de asesino."
-  setsuperviviente: "&#CCCCCC» &#FFE300/mistaken setsuperviviente <id> &#888888- &#FFFFFFTest de supervivientes."
+  setkiller: "&#CCCCCC» &#FFE300/mistaken setkiller <id> &#888888- &#FFFFFFTest de asesino."
+  setsurvivor: "&#CCCCCC» &#FFE300/mistaken setsurvivor <id> &#888888- &#FFFFFFTest de supervivientes."
   removekiller: "&#CCCCCC» &#FFE300/mistaken removekiller <p> &#888888- &#FFFFFFQuitar rol de test."
   reloadkiller: "&#CCCCCC» &#FFE300/mistaken reloadkiller &#888888- &#FFFFFFRecargar asesinos."
   setmode: "&#CCCCCC» &#FFE300/mistaken setmode <id> &#888888- &#FFFFFFForzar un modo."
@@ -419,8 +419,34 @@ game:
   freeze-subtitle: "&#FFFFFFTienes &{color}{time} &#FFFFFFsegundos para que te rescaten."
   edit-enable: "<prefix>&#33CCFFModo Edición activado. Eres invisible para la lógica del juego."
   edit-disable: "<prefix>&#FF3344Modo Edición desactivado. La lógica del juego vuelve a aplicar."
+  message: "<prefix>&#FFE300Nadie votó por un mapa. El servidor elegirá uno al azar."
   afk-enable: "<prefix>&#FFE300Modo AFK activado. El motor del juego ahora te ignorará."
   afk-disable: "<prefix>&#42F56CModo AFK desactivado. ¡Bienvenido de vuelta!"
+  too-injured-to-rescue: "<red>¡Estás muy herido para rescatar a nadie!"
+  heal-cooldown: "<red>Debes esperar %time% s para volver a curarte."
+  already-max-health-self: "<red>¡Ya tienes la vida al máximo!"
+  already-max-health-other: "<red>¡El jugador %target% ya tiene la vida al máximo!"
+  heal-cancelled-movement: "<red>Curación cancelada por movimiento."
+  heal-success-self:
+    title: "<green>¡Curado!"
+    subtitle: "<gray>+%hearts% corazones"
+  heal-success-healer:
+    title: "<green>¡Has curado a %target%!"
+    subtitle: "<gray>+%hearts% corazones"
+  heal-success-healed:
+    title: "<green>¡Has sido curado!"
+    subtitle: "<gray>Por %player%"
+  heal-reward-coins: "<green>+100 monedas por curar a un compañero."
+  heal-skill-ready: "<green>¡Tu habilidad de curación está lista!"
+  healing-self:
+    title: "<yellow>Curándose..."
+    subtitle: "<gray>%time%s"
+  healing-healer:
+    title: "<yellow>Estás curando a %target%"
+    subtitle: "<gray>Tiempo: %time%s"
+  healing-healed:
+    title: "<yellow>%player% te está curando..."
+    subtitle: "<gray>No te muevas. Tiempo: %time%s"
 
 # --- ARENA ---
 arena:

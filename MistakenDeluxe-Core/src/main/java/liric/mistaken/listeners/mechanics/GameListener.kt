@@ -57,7 +57,8 @@ class GameListener(private val plugin: Mistaken) : Listener {
         if (plugin.combatManager.isFrozen(victim)) {
             if (!session.isKiller(player.uniqueId)) {
                 if (plugin.combatManager.getHealth(player) <= 1) {
-                    player.sendActionBar(ColorTranslator.translate("<red>�Est�s muy herido para rescatar a nadie!"))
+                    val msg = MessageService.getRawString(player, "game.too-injured-to-rescue", "<red>¡Estás muy herido para rescatar a nadie!")
+                    player.sendActionBar(ColorTranslator.translate(msg))
                     return
                 }
 
@@ -69,9 +70,6 @@ class GameListener(private val plugin: Mistaken) : Listener {
         }
     }
 
-    /**
-     * ?? EFECTOS VISUALES Y STUN
-     */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onDamageEffects(event: EntityDamageByEntityEvent) {
         val victim = event.entity as? Player ?: return
@@ -102,9 +100,6 @@ class GameListener(private val plugin: Mistaken) : Listener {
         }
     }
 
-    /**
-     * ?? MUERTE L�GICA POR ARENA
-     */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerDeath(event: PlayerDeathEvent) {
         val victim = event.entity
@@ -206,7 +201,6 @@ class GameListener(private val plugin: Mistaken) : Listener {
         val type = event.inventory.type
         if (type == InventoryType.PLAYER || type == InventoryType.CRAFTING) return
 
-        // Sistema de ID basado en el InventoryHolder (mucho más seguro que el título)
         val holder = event.inventory.holder
         if (holder is liric.mistaken.listeners.interactables.GeneratorListener.GeneratorHolder ||
             holder is liric.mistaken.listeners.interactables.HackTerminalListener.HackTerminalHolder ||
@@ -254,7 +248,9 @@ class GameListener(private val plugin: Mistaken) : Listener {
                 val lastHeal = healCooldowns[uuid] ?: 0L
                 if (now - lastHeal < 30_000L) {
                     val remaining = (30_000L - (now - lastHeal)) / 1000L
-                    player.sendActionBar(ColorTranslator.translate("<red>Debes esperar $remaining s para volver a curarte."))
+                    val msg = MessageService.getRawString(player, "game.heal-cooldown", "<red>Debes esperar %time% s para volver a curarte.")
+                        .replace("%time%", remaining.toString())
+                    player.sendActionBar(ColorTranslator.translate(msg))
                     return
                 }
 
@@ -268,9 +264,12 @@ class GameListener(private val plugin: Mistaken) : Listener {
 
                 if (plugin.combatManager.getHealth(targetToHeal) >= maxHealth) {
                     if (targetToHeal == player) {
-                        player.sendActionBar(ColorTranslator.translate("<red>¡Ya tienes la vida al máximo!"))
+                        val msg = MessageService.getRawString(player, "game.already-max-health-self", "<red>¡Ya tienes la vida al máximo!")
+                        player.sendActionBar(ColorTranslator.translate(msg))
                     } else {
-                        player.sendActionBar(ColorTranslator.translate("<red>¡El jugador ${targetToHeal.name} ya tiene la vida al máximo!"))
+                        val msg = MessageService.getRawString(player, "game.already-max-health-other", "<red>¡El jugador %target% ya tiene la vida al máximo!")
+                            .replace("%target%", targetToHeal.name)
+                        player.sendActionBar(ColorTranslator.translate(msg))
                     }
                     return
                 }
@@ -298,8 +297,8 @@ class GameListener(private val plugin: Mistaken) : Listener {
                         
                         if (player.location.distanceSquared(initialPlayerLoc) > 1.0 || 
                             targetToHeal.location.distanceSquared(initialTargetLoc) > 1.0) {
-                            
-                            val cancelMsg = ColorTranslator.translate("<red>Curación cancelada por movimiento.")
+                            val cancelMsgKey = MessageService.getRawString(player, "game.heal-cancelled-movement", "<red>Curación cancelada por movimiento.")
+                            val cancelMsg = ColorTranslator.translate(cancelMsgKey)
                             player.sendMessage(cancelMsg)
                             if (targetToHeal != player) targetToHeal.sendMessage(cancelMsg)
                             
@@ -326,26 +325,37 @@ class GameListener(private val plugin: Mistaken) : Listener {
                             val times = net.kyori.adventure.title.Title.Times.times(java.time.Duration.ofMillis(250), java.time.Duration.ofMillis(1000), java.time.Duration.ofMillis(250))
                             
                             if (targetToHeal == player) {
+                                val tTitle = MessageService.getRawString(player, "game.heal-success-self.title", "<green>¡Curado!")
+                                val tSub = MessageService.getRawString(player, "game.heal-success-self.subtitle", "<gray>+%hearts% corazones")
+                                    .replace("%hearts%", heartsToHeal.toString())
                                 player.showTitle(net.kyori.adventure.title.Title.title(
-                                    ColorTranslator.translate("<green>¡Curado!"),
-                                    ColorTranslator.translate("<gray>+$heartsToHeal corazones"),
+                                    ColorTranslator.translate(tTitle),
+                                    ColorTranslator.translate(tSub),
                                     times
                                 ))
                             } else {
+                                val hTitle = MessageService.getRawString(player, "game.heal-success-healer.title", "<green>¡Has curado a %target%!")
+                                    .replace("%target%", targetToHeal.name)
+                                val hSub = MessageService.getRawString(player, "game.heal-success-healer.subtitle", "<gray>+%hearts% corazones")
+                                    .replace("%hearts%", heartsToHeal.toString())
                                 player.showTitle(net.kyori.adventure.title.Title.title(
-                                    ColorTranslator.translate("<green>¡Has curado a ${targetToHeal.name}!"),
-                                    ColorTranslator.translate("<gray>+$heartsToHeal corazones"),
-                                    times
-                                ))
-                                targetToHeal.showTitle(net.kyori.adventure.title.Title.title(
-                                    ColorTranslator.translate("<green>¡Has sido curado!"),
-                                    ColorTranslator.translate("<gray>Por ${player.name}"),
+                                    ColorTranslator.translate(hTitle),
+                                    ColorTranslator.translate(hSub),
                                     times
                                 ))
                                 
+                                val htTitle = MessageService.getRawString(targetToHeal, "game.heal-success-healed.title", "<green>¡Has sido curado!")
+                                val htSub = MessageService.getRawString(targetToHeal, "game.heal-success-healed.subtitle", "<gray>Por %player%")
+                                    .replace("%player%", player.name)
+                                targetToHeal.showTitle(net.kyori.adventure.title.Title.title(
+                                    ColorTranslator.translate(htTitle),
+                                    ColorTranslator.translate(htSub),
+                                    times
+                                ))
                                 
                                 liric.mistaken.Mistaken.economy?.deposit(player, 100.0)
-                                player.sendMessage(ColorTranslator.translate("<green>+100 monedas por curar a un compañero."))
+                                val rewardMsg = MessageService.getRawString(player, "game.heal-reward-coins", "<green>+100 monedas por curar a un compañero.")
+                                player.sendMessage(ColorTranslator.translate(rewardMsg))
                             }
                             
                             targetToHeal.playSound(targetToHeal.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f)
@@ -359,7 +369,8 @@ class GameListener(private val plugin: Mistaken) : Listener {
                             
                             plugin.server.scheduler.runTaskLater(plugin, Runnable {
                                 if (player.isOnline && plugin.sessionManager.getSession(player)?.currentState == GameState.INGAME) {
-                                    player.sendActionBar(ColorTranslator.translate("<green>¡Tu habilidad de curación está lista!"))
+                                    val readyMsg = MessageService.getRawString(player, "game.heal-skill-ready", "<green>¡Tu habilidad de curación está lista!")
+                                    player.sendActionBar(ColorTranslator.translate(readyMsg))
                                     player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
                                 }
                             }, 30 * 20L)
@@ -368,21 +379,34 @@ class GameListener(private val plugin: Mistaken) : Listener {
                         } else {
                             val times = net.kyori.adventure.title.Title.Times.times(java.time.Duration.ZERO, java.time.Duration.ofMillis(500), java.time.Duration.ZERO)
                             
+                            val formatTime = String.format(java.util.Locale.US, "%.1f", remainingSecs)
                             if (targetToHeal == player) {
+                                val tTitle = MessageService.getRawString(player, "game.healing-self.title", "<yellow>Curándose...")
+                                val tSub = MessageService.getRawString(player, "game.healing-self.subtitle", "<gray>%time%s")
+                                    .replace("%time%", formatTime)
                                 player.showTitle(net.kyori.adventure.title.Title.title(
-                                    ColorTranslator.translate("<yellow>Curándose..."),
-                                    ColorTranslator.translate("<gray>${String.format(java.util.Locale.US, "%.1f", remainingSecs)}s"),
+                                    ColorTranslator.translate(tTitle),
+                                    ColorTranslator.translate(tSub),
                                     times
                                 ))
                             } else {
+                                val hTitle = MessageService.getRawString(player, "game.healing-healer.title", "<yellow>Estás curando a %target%")
+                                    .replace("%target%", targetToHeal.name)
+                                val hSub = MessageService.getRawString(player, "game.healing-healer.subtitle", "<gray>Tiempo: %time%s")
+                                    .replace("%time%", formatTime)
                                 player.showTitle(net.kyori.adventure.title.Title.title(
-                                    ColorTranslator.translate("<yellow>Estás curando a ${targetToHeal.name}"),
-                                    ColorTranslator.translate("<gray>Tiempo: ${String.format(java.util.Locale.US, "%.1f", remainingSecs)}s"),
+                                    ColorTranslator.translate(hTitle),
+                                    ColorTranslator.translate(hSub),
                                     times
                                 ))
+                                
+                                val htTitle = MessageService.getRawString(targetToHeal, "game.healing-healed.title", "<yellow>%player% te está curando...")
+                                    .replace("%player%", player.name)
+                                val htSub = MessageService.getRawString(targetToHeal, "game.healing-healed.subtitle", "<gray>No te muevas. Tiempo: %time%s")
+                                    .replace("%time%", formatTime)
                                 targetToHeal.showTitle(net.kyori.adventure.title.Title.title(
-                                    ColorTranslator.translate("<yellow>${player.name} te está curando..."),
-                                    ColorTranslator.translate("<gray>No te muevas. Tiempo: ${String.format(java.util.Locale.US, "%.1f", remainingSecs)}s"),
+                                    ColorTranslator.translate(htTitle),
+                                    ColorTranslator.translate(htSub),
                                     times
                                 ))
                             }

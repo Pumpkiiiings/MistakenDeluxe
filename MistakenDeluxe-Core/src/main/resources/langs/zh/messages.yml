@@ -315,8 +315,8 @@ help:
   stop: "&#CCCCCC» &#FFE300/mistaken stop &#888888- &#FFFFFF停止游戏。"
   reload: "&#CCCCCC» &#FFE300/mistaken reload &#888888- &#FFFFFF重新加载配置。"
   setstamina: "&#CCCCCC» &#FFE300/mistaken setstamina <val> &#888888- &#FFFFFF调整体力。"
-  setasesino: "&#CCCCCC» &#FFE300/mistaken setkiller <id> &#888888- &#FFFFFF杀手测试。"
-  setsuperviviente: "&#CCCCCC» &#FFE300/mistaken setsurvivor <id> &#888888- &#FFFFFF幸存者测试。"
+  setkiller: "&#CCCCCC» &#FFE300/mistaken setkiller <id> &#888888- &#FFFFFF杀手测试。"
+  setsurvivor: "&#CCCCCC» &#FFE300/mistaken setsurvivor <id> &#888888- &#FFFFFF幸存者测试。"
   removekiller: "&#CCCCCC» &#FFE300/mistaken removekiller <p> &#888888- &#FFFFFF移除测试身份。"
   reloadkiller: "&#CCCCCC» &#FFE300/mistaken reloadkiller &#888888- &#FFFFFF重新加载杀手。"
   setmode: "&#CCCCCC» &#FFE300/mistaken setmode <id> &#888888- &#FFFFFF强制模式。"
@@ -421,6 +421,32 @@ game:
   edit-disable: "<prefix>&#FF3344编辑模式已禁用。游戏逻辑再次对你生效。"
   afk-enable: "<prefix>&#FFE300挂机模式已启用。游戏引擎现在将忽略你。"
   afk-disable: "<prefix>&#42F56C挂机模式已禁用。欢迎回来！"
+  no-votes: "<prefix>&#FFE300没有人投票选择地图。服务器将随机选择一个。"
+  too-injured-to-rescue: "<red>你受了重伤，无法救援任何人！"
+  heal-cooldown: "<red>你必须等待 %time% 秒才能再次治疗。"
+  already-max-health-self: "<red>你的生命值已经满了！"
+  already-max-health-other: "<red>玩家 %target% 的生命值已经满了！"
+  heal-cancelled-movement: "<red>由于移动，治疗被取消。"
+  heal-success-self:
+    title: "<green>治疗成功！"
+    subtitle: "<gray>+%hearts% 颗心"
+  heal-success-healer:
+    title: "<green>你治愈了 %target%！"
+    subtitle: "<gray>+%hearts% 颗心"
+  heal-success-healed:
+    title: "<green>你已被治愈！"
+    subtitle: "<gray>来自 %player%"
+  heal-reward-coins: "<green>+100 金币（治愈队友奖励）"
+  heal-skill-ready: "<green>你的治疗技能已就绪！"
+  healing-self:
+    title: "<yellow>治疗中..."
+    subtitle: "<gray>%time%秒"
+  healing-healer:
+    title: "<yellow>正在治疗 %target%"
+    subtitle: "<gray>时间: %time%秒"
+  healing-healed:
+    title: "<yellow>%player% 正在治疗你..."
+    subtitle: "<gray>不要移动。时间: %time%秒"
 
 # --- ARENA ---
 arena:
