@@ -10,8 +10,12 @@ import org.bukkit.Material
 import org.bukkit.block.data.BlockData
 import org.bukkit.entity.Player
 import com.github.retrooper.packetevents.util.Vector3i
+import java.util.concurrent.ConcurrentHashMap
 
 class FakeBlockAPI {
+
+    private val blockDataCache = ConcurrentHashMap<String, Int>()
+    private val materialCache = ConcurrentHashMap<Material, Int>()
 
     /**
      * Envía un bloque falso (Client-Side) a un player específico.
@@ -20,10 +24,12 @@ class FakeBlockAPI {
      * @param material El material falso.
      */
     fun sendBlockChange(player: Player, location: Location, material: Material) {
-        val blockState = SpigotConversionUtil.fromBukkitBlockData(material.createBlockData())
+        val globalId = materialCache.getOrPut(material) {
+            SpigotConversionUtil.fromBukkitBlockData(material.createBlockData()).globalId
+        }
         val packet = WrapperPlayServerBlockChange(
             Vector3i(location.blockX, location.blockY, location.blockZ),
-            blockState.globalId
+            globalId
         )
         PacketEvents.getAPI().playerManager.sendPacket(player, packet)
     }
@@ -34,10 +40,24 @@ class FakeBlockAPI {
      * cosa que no se puede hacer solo con el Material.
      */
     fun sendBlockChange(player: Player, location: Location, data: BlockData) {
-        val blockState = SpigotConversionUtil.fromBukkitBlockData(data)
+        val globalId = blockDataCache.getOrPut(data.asString) {
+            SpigotConversionUtil.fromBukkitBlockData(data).globalId
+        }
         val packet = WrapperPlayServerBlockChange(
             Vector3i(location.blockX, location.blockY, location.blockZ),
-            blockState.globalId
+            globalId
+        )
+        PacketEvents.getAPI().playerManager.sendPacket(player, packet)
+    }
+
+    /**
+     * Envía un cambio de bloque directamente con un globalId de PacketEvents.
+     * Útil para optimizaciones extremas (ej. linternas) donde se pre-calcula.
+     */
+    fun sendBlockChange(player: Player, location: Location, globalId: Int) {
+        val packet = WrapperPlayServerBlockChange(
+            Vector3i(location.blockX, location.blockY, location.blockZ),
+            globalId
         )
         PacketEvents.getAPI().playerManager.sendPacket(player, packet)
     }

@@ -165,10 +165,13 @@ class FlashlightManager(private val plugin: Mistaken) {
             lightData.level = 15
         }
         
+        // Obtenemos el ID de PacketEvents directamente para evitar busquedas por cada bloque
+        val lightStateId = io.github.retrooper.packetevents.util.SpigotConversionUtil.fromBukkitBlockData(lightData).globalId
+        
         targets.forEach { loc ->
             restoreData[loc] = loc.block.blockData
             audience.forEach { viewer ->
-                PacketFactory.blocks.sendBlockChange(viewer, loc, lightData)
+                PacketFactory.blocks.sendBlockChange(viewer, loc, lightStateId)
             }
         }
 
