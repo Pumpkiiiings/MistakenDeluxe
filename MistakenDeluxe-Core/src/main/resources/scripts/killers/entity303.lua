@@ -73,7 +73,8 @@ end
 function on_skill_4(player)
     -- Crash Pantalla
     local targets = player:world():get_players()
-    for _, victim in pairs(targets) do
+    for i = 1, targets.length do
+        local victim = targets[i]
         if victim:id() ~= player:id() then
             if player:location():distance_squared(victim:location()) < 1600 then
                 apply_effect(victim, "BLINDNESS", 0, 100)

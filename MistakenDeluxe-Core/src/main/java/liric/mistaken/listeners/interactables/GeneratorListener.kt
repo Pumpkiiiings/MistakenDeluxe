@@ -53,7 +53,7 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         if (event.action != Action.RIGHT_CLICK_BLOCK) return
 
         val block = event.clickedBlock ?: return
-        if (block.type != Material.RAW_IRON_BLOCK) return
+        if (block.type != genBlock) return
 
         val player = event.player
         val session = plugin.sessionManager.getSession(player) ?: return
@@ -75,6 +75,8 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         }
 
         event.isCancelled = true
+        event.setUseItemInHand(org.bukkit.event.Event.Result.DENY)
+        event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY)
 
         val inv = activeMenus.getOrPut(loc) {
             Bukkit.createInventory(GeneratorHolder(loc), 27, menuTitle)

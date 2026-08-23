@@ -5,7 +5,8 @@ local killer = {
 -- ─── PASIVA: MELODÍA CORROMPIDA ───
 local function pasiva_loop(player)
     local nearby = player:world():get_players()
-    for _, victim in pairs(nearby) do
+    for i = 1, nearby.length do
+        local victim = nearby[i]
         if victim:id() ~= player:id() and player:location():distance_squared(victim:location()) < 64 then
             apply_effect(victim, "DARKNESS", 0, 30)
             sound(victim, "AMBIENT_CAVE", 0.4, 0.5)
@@ -23,7 +24,7 @@ function on_equip(player)
     player:set_scale(1.1)
     
     orbit(player)
-        :materials("SLIME_BALL", "PURPLE_DYE", "MUSIC_DISC_CAT")
+        :virtual_item("SLIME_BALL", "PURPLE_DYE", "MUSIC_DISC_CAT")
         :radius(1.4)
         :rotation_speed(0.10)
         :show()
@@ -72,7 +73,8 @@ function on_skill_3(player)
     -- Senial TV
     local afectados = 0
     local nearby = player:world():get_players()
-    for _, victim in pairs(nearby) do
+    for i = 1, nearby.length do
+        local victim = nearby[i]
         if victim:id() ~= player:id() and player:location():distance_squared(victim:location()) < 100 then
             apply_effect(victim, "BLINDNESS", 0, 60)
             apply_effect(victim, "NAUSEA", 0, 80)
@@ -112,7 +114,8 @@ function on_skill_4(player)
         spawn_particle(spawn_loc:clone():add(0, 1, 0), "WITCH", 0.1, 0.1, 0.1, 0.01, 3)
         
         local nearby = player:world():get_players()
-        for _, victim in pairs(nearby) do
+        for i = 1, nearby.length do
+            local victim = nearby[i]
             if victim:id() ~= player:id() and spawn_loc:distance_squared(victim:location()) < 2.25 then
                 damage(victim)
                 apply_effect(victim, "DARKNESS", 0, 60)

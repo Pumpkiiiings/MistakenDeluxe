@@ -82,7 +82,8 @@ local function on_skill_3(player)
     visual_hitbox(player, 8.0, 8.0, 8.0, 20, "PURPLE_STAINED_GLASS")
 
     local nearby = nearby_players(player, 8.0)
-    for _, victim in ipairs(nearby) do
+    for i = 1, nearby.length do
+        local victim = nearby[i]
         apply_effect(victim, "BLINDNESS", 0, 100)
         apply_effect(victim, "HUNGER", 1, 100)
         screen_tint(victim):color(0, 0, 0):alpha(0.7):duration(15):show()

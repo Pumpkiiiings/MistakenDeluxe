@@ -25,7 +25,7 @@ function on_trigger(player, trigger_id)
         apply_effect(player, "SPEED", 100, 2)
         particle_burst(player, "CLOUD", 5, 0.2, 0.1, 0.2, 0.05)
         
-        sequence(player, location(player))
+        sequence(player, player:location())
             :delay(100, function()
                 if player:is_online() then
                     apply_effect(player, "SLOWNESS", 60, 0)

@@ -21,7 +21,7 @@ end
 function on_skill_1(player)
     -- Adrenalina
     apply_effect(player, "SPEED", 1, 100)
-    sequence(player, location(player)):delay(100, function()
+    sequence(player, player:location()):delay(100, function()
         apply_effect(player, "SLOWNESS", 0, 60)
         sound(player, "ENTITY_HORSE_BREATHE", 0.8, 0.6)
     end):play()
@@ -32,7 +32,7 @@ end
 function on_skill_2(player)
     -- Invisibilidad
     apply_effect(player, "INVISIBILITY", 0, 100)
-    sequence(player, location(player)):delay(100, function()
+    sequence(player, player:location()):delay(100, function()
         send_translated(player, "survivors.civil.habilidades_mensajes.skill2_fin", "survivors_info")
         sound(player, "BLOCK_BEACON_DEACTIVATE", 0.5, 1.5)
     end):play()
