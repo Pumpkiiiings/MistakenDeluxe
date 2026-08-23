@@ -49,17 +49,28 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     fun onInteract(event: PlayerInteractEvent) {
-        if (event.hand != EquipmentSlot.HAND) return
-        if (event.action != Action.RIGHT_CLICK_BLOCK) return
-
         val block = event.clickedBlock ?: return
+        
+        val player = event.player
+        if (player.hasPermission("mistaken.admin") && (block.type == genBlock || block.type == Material.OBSERVER || block.type == Material.AMETHYST_BLOCK)) {
+            player.sendMessage("<yellow>[DEBUG] Generator click! Block: ${block.type}, Action: ${event.action}, Hand: ${event.hand}".let { ColorTranslator.translate(it) })
+        }
+
         if (block.type != genBlock) return
 
-        val player = event.player
-        val session = plugin.sessionManager.getSession(player) ?: return
+        if (event.hand != EquipmentSlot.HAND) return
+        if (event.action != Action.RIGHT_CLICK_BLOCK && event.action != Action.LEFT_CLICK_BLOCK) return
 
-        
-        if (plugin.spectatorManager.isSpectator(player)) return
+        val session = plugin.sessionManager.getSession(player)
+        if (session == null) {
+            if (player.hasPermission("mistaken.admin")) player.sendMessage(ColorTranslator.translate("<red>[DEBUG] Session is NULL"))
+            return
+        }
+
+        if (plugin.spectatorManager.isSpectator(player)) {
+            if (player.hasPermission("mistaken.admin")) player.sendMessage(ColorTranslator.translate("<red>[DEBUG] You are spectator"))
+            return
+        }
 
         if (session.isKiller(player.uniqueId)) {
             player.sendMessage(killerError)
