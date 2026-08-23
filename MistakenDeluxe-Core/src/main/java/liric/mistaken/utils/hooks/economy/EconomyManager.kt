@@ -26,12 +26,22 @@ object EconomyManager {
             }
         }
 
-        // Fallback to Vault
+        // Next try VaultUnlockedAPI
         if (server.pluginManager.isPluginEnabled("Vault")) {
-            val rsp: RegisteredServiceProvider<Economy>? = server.servicesManager.getRegistration(Economy::class.java)
-            if (rsp != null) {
-                hook = VaultEconomyHook(rsp.provider)
-                plugin.componentLogger.info(ColorTranslator.translate("[INFO] Vault found! Hooked into Vault economy."))
+            val rspUnlocked: RegisteredServiceProvider<net.milkbowl.vault2.economy.Economy>? = 
+                server.servicesManager.getRegistration(net.milkbowl.vault2.economy.Economy::class.java)
+            if (rspUnlocked != null) {
+                hook = VaultUnlockedEconomyHook(rspUnlocked.provider)
+                plugin.componentLogger.info(ColorTranslator.translate("[INFO] VaultUnlocked found! Hooked into modern economy system."))
+                return true
+            }
+
+            // Fallback to traditional Vault API
+            val rspClassic: RegisteredServiceProvider<net.milkbowl.vault.economy.Economy>? = 
+                server.servicesManager.getRegistration(net.milkbowl.vault.economy.Economy::class.java)
+            if (rspClassic != null) {
+                hook = VaultEconomyHook(rspClassic.provider)
+                plugin.componentLogger.info(ColorTranslator.translate("[INFO] Vault found! Hooked into classic Vault economy."))
                 return true
             }
         }

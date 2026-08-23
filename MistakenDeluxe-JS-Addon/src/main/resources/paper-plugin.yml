@@ -1,0 +1,9 @@
+name: MistakenDeluxe-JS-Addon
+version: '${version}'
+main: liric.mistaken.jsaddon.JsAddonPlugin
+api-version: '1.21'
+dependencies:
+  server:
+    Mistaken:
+      load: BEFORE
+      required: true
