@@ -61,7 +61,7 @@ dependencies {
     compileOnly("com.h2database:h2:2.2.224")
     compileOnly("dev.triumphteam:triumph-gui:3.1.13")
     compileOnly("org.slf4j:slf4j-simple:2.0.18")
-    compileOnly("dev.wyck:wyck:3.3.0-1a0feb5")
+    compileOnly("dev.wyck:wyck:3.3.0-702ca8b")
     implementation("com.infernalsuite.asp:file-loader:4.1.0-SNAPSHOT")
     
     
