@@ -87,7 +87,7 @@ dependencies {
     compileOnly(files("../libs/observer-paper.jar"))
     compileOnly("com.nexomc:nexo:0.6.0")
     compileOnly("beer.devs:itemsadder-api:4.0.18-beta-10")
-    compileOnly("io.th0rgal:oraxen:1.180.0")
+    compileOnly("io.th0rgal:oraxen:1.218.0")
 
     
     compileOnly("com.alessiodp.parties:parties-api:3.2.16")
