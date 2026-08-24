@@ -79,7 +79,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude(group = "org.bukkit", module = "bukkit")
     }
-    compileOnly("net.milkbowl.vault:VaultUnlockedAPI:2.16")
+    compileOnly("net.milkbowl.vault:VaultUnlockedAPI:2.20")
     
     compileOnly(files("../libs/craft-engine-paper-plugin-26.7.4.jar"))
     compileOnly("net.luckperms:api:5.5")
