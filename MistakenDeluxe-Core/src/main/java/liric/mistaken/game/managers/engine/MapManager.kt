@@ -20,7 +20,8 @@ class MapManager(private val plugin: Mistaken) {
     private val fileLoader: SlimeLoader
 
     init {
-        val slimeFolder = File(plugin.dataFolder, "slime_worlds")
+        val customPath = plugin.config.getString("settings.slime-worlds-path")
+        val slimeFolder = if (!customPath.isNullOrEmpty()) File(customPath) else File(plugin.dataFolder, "slime_worlds")
         if (!slimeFolder.exists()) slimeFolder.mkdirs()
         this.fileLoader = FileLoader(slimeFolder)
     }

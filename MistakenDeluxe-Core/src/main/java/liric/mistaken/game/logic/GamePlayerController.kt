@@ -295,6 +295,31 @@ class GamePlayerController(private val game: GameSession) {
             !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL && !game.plugin.spectatorManager.isSpectator(it)
         }
 
+        if (game.currentMode == liric.mistaken.game.enums.MistakenMode.INITIALIZES &&
+            game.stateController.geoffreyEntity != null &&
+            survivorsVivos.size == 2) {
+            
+            lmsActivado = true
+            activeLmsMusic = "mistaken:lms-2"
+            
+            game.plugin.server.onlinePlayers.forEach { p ->
+                p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f)
+                p.playSound(p.location, Sound.AMBIENT_CAVE, 1f, 0.5f)
+                p.playSound(p.location, activeLmsMusic, SoundCategory.RECORDS, 1f, 1f)
+            }
+            
+            survivorsVivos.forEach { p ->
+                p.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 20 * 60, 0))
+                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 255, 255, 0.9f, 30)
+                liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.5f, 40)
+            }
+
+            if (game.timer > 90) {
+                game.timer = 90
+            }
+            return
+        }
+
         if (survivorsVivos.size == 1 && game.activeModeHandler.enableLastManStanding) {
             lmsActivado = true
             val ultimoHeroe = survivorsVivos[0]

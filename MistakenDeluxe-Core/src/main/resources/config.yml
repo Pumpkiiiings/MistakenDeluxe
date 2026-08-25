@@ -133,6 +133,7 @@ messages:
 
 # --- General Settings & Locations ---
 settings:
+  slime-worlds-path: "/home/container/slime_worlds"
   lobby:
     world: Mistaken
     x: 317.49091333512126
