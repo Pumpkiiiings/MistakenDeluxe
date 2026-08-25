@@ -95,7 +95,7 @@ dependencies {
     compileOnly("su.nightexpress.excellenteconomy:ExcellentEconomy:2.8.0")
 
     
-    compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
+    compileOnly("net.kyori:adventure-text-minimessage:5.2.0")
     compileOnly("org.jetbrains:annotations:26.0.1")
 }
 
