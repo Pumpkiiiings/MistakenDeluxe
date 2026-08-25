@@ -70,7 +70,7 @@ end
 
 -- ──────────── SKILL 3: Presencia ────────────
 local function on_skill_3(player)
-    sound(player, "ENTITY_WARDEN_HEARTBEAT", 1.5, 0.8)
+    sound(player, "ENTITY_WARDEN_HEARTBEAT", 1.5, 0.8);
     
     particle_burst(player)
         :type("SCULK_SOUL")
@@ -95,7 +95,7 @@ local function on_skill_4(player)
     apply_effect(player, "DAMAGE_RESISTANCE", 3, 300)
     apply_effect(player, "INCREASE_DAMAGE", 2, 300)
     
-    draw_star(player, "#800000", 2.5, 5)
+    draw_star(player, "#800000", 2.5, 5);
     
     particle_burst(player)
         :type("ASH")

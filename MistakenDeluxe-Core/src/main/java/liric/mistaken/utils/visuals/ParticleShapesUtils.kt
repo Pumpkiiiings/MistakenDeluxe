@@ -20,10 +20,25 @@ object ParticleShapesUtils {
      */
     @JvmStatic
     @JvmOverloads
-    fun broadcastParticle(loc: Location, type: Particle, offsetX: Float = 0f, offsetY: Float = 0f, offsetZ: Float = 0f, count: Int = 1, speed: Float = 0f) {
+    fun broadcastParticle(loc: Location, type: Particle, offsetX: Float = 0f, offsetY: Float = 0f, offsetZ: Float = 0f, count: Int = 1, speed: Float = 0f, data: Any? = null) {
+        var actualData = data
+        if (actualData == null && type.dataType != Void::class.java) {
+            actualData = when (type.dataType) {
+                org.bukkit.Particle.DustOptions::class.java -> org.bukkit.Particle.DustOptions(org.bukkit.Color.RED, 1.0f)
+                org.bukkit.block.data.BlockData::class.java -> org.bukkit.Material.REDSTONE_BLOCK.createBlockData()
+                org.bukkit.inventory.ItemStack::class.java -> org.bukkit.inventory.ItemStack(org.bukkit.Material.REDSTONE_BLOCK)
+                else -> null
+            }
+            if (actualData == null) return
+        }
+        
         loc.world?.players?.forEach { viewer ->
             if (viewer.location.distanceSquared(loc) < 2500.0) { 
-                viewer.spawnParticle(type, loc, count, offsetX.toDouble(), offsetY.toDouble(), offsetZ.toDouble(), speed.toDouble())
+                if (actualData != null) {
+                    viewer.spawnParticle(type, loc, count, offsetX.toDouble(), offsetY.toDouble(), offsetZ.toDouble(), speed.toDouble(), actualData)
+                } else {
+                    viewer.spawnParticle(type, loc, count, offsetX.toDouble(), offsetY.toDouble(), offsetZ.toDouble(), speed.toDouble())
+                }
             }
         }
     }

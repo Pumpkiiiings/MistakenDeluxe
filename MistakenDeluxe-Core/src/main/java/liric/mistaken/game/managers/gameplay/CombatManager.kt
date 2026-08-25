@@ -339,9 +339,9 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
             if (plugin.isReady) plugin.scoreboardManager.updatePlayer(victim)
 
             if (nextHP <= 0.0) {
+                victim.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
                 victim.health = 20.0
                 victim.removePotionEffect(PotionEffectType.DARKNESS)
-                victim.getAttribute(Attribute.MAX_HEALTH)?.baseValue = 20.0
                 victim.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
                 victim.getAttribute(Attribute.JUMP_STRENGTH)?.baseValue = 0.42
                 frozenPlayers.remove(victim.uniqueId)
