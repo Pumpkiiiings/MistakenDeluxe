@@ -85,7 +85,7 @@ dependencies {
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
     compileOnly(files("../libs/observer-paper.jar"))
-    compileOnly("com.nexomc:nexo:0.6.0")
+    compileOnly("com.nexomc:nexo:1.27.0")
     compileOnly("beer.devs:itemsadder-api:4.0.18-beta-10")
     compileOnly("io.th0rgal:oraxen:1.180.0")
 
