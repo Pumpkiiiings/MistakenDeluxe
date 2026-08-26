@@ -57,7 +57,7 @@ dependencies {
     compileOnly("fr.skytasul:glowingentities:1.4.11")
     compileOnly("com.mysql:mysql-connector-j:9.7.0")
     compileOnly("org.postgresql:postgresql:42.7.13")
-    compileOnly("org.xerial:sqlite-jdbc:3.53.2.0")
+    compileOnly("org.xerial:sqlite-jdbc:3.53.4.0")
     compileOnly("dev.triumphteam:triumph-gui:3.1.13")
     compileOnly("org.slf4j:slf4j-simple:2.0.18")
     implementation("com.infernalsuite.asp:file-loader:4.1.0-SNAPSHOT")
