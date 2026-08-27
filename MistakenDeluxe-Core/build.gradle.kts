@@ -65,8 +65,8 @@ dependencies {
     implementation("com.infernalsuite.asp:file-loader:4.1.0-SNAPSHOT")
     
     
-    compileOnly("org.apache.groovy:groovy:5.0.6")
-    compileOnly("org.apache.groovy:groovy-jsr223:5.0.6")
+    compileOnly("org.apache.groovy:groovy:5.1.0")
+    compileOnly("org.apache.groovy:groovy-jsr223:5.1.0")
 
     
     implementation("org.luaj:luaj-jse:3.0.1")
