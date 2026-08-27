@@ -46,7 +46,8 @@ object EconomyManager {
             }
         }
 
-        plugin.componentLogger.error(ColorTranslator.translate("[ERROR] No compatible economy plugin found (ExcellentEconomy or Vault)."))
-        return false
+        hook = MistakenEconomyHook(plugin)
+        plugin.componentLogger.info(ColorTranslator.translate("[INFO] No external economy found. Hooked into internal fallback economy."))
+        return true
     }
 }

@@ -44,8 +44,10 @@ class CommandRegistry(private val plugin: Mistaken) {
             registrar.register(MistakenDebugCommand.get(plugin), "Comando de pruebas", listOf("mdebug"))
             registrar.register(CinematicCommand.get(plugin), "Reproducir cinemáticas", listOf("cine"))
             registrar.register(HitboxCommand.get(plugin), "Alternar el visor de hitboxes 3D", listOf("hitboxes"))
-
-            
+            if (!plugin.server.pluginManager.isPluginEnabled("Vault") && !plugin.server.pluginManager.isPluginEnabled("ExcellentEconomy")) {
+                registrar.register(liric.mistaken.commands.economy.EcoCommand.get(plugin), "Comando de administracion de economia", emptyList())
+                registrar.register(liric.mistaken.commands.economy.BalanceCommand.get(plugin), "Ver balance de jugador", listOf("balance"))
+            }
             registrar.register("mistaken", "Comando principal", listOf("ms", "mt"), MistakenCommand(plugin))
             registrar.register("arena", "Gestión de arenas", ArenaCommand(plugin))
             registrar.register("espectear", "Entrar al modo espectador", listOf("spectate"), EspectearCommand(plugin))

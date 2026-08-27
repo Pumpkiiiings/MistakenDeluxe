@@ -1,11 +1,10 @@
 name: Mistaken
 version: Deluxe-2.0
-main: liric.mistaken.Mistaken # <-- ¡Ojo! Asegúrate que coincida con tu package
+main: liric.mistaken.Mistaken
 loader: liric.mistaken.MistakenPluginLoader
 api-version: '1.21'
 author: Pumpkingz
 
-# Esto es lo que arregla el error de Vault y LuckPerms, pariente
 dependencies:
   server:
     Meowtils:

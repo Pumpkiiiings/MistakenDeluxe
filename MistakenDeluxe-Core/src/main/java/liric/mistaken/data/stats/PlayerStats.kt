@@ -14,6 +14,7 @@ class PlayerStats {
     val deaths = AtomicInteger(0)
     val kills = AtomicInteger(0)
     val generatorsRepaired = AtomicInteger(0)
+    val coins = AtomicInteger(0)
 
     companion object {
         
@@ -33,6 +34,7 @@ class PlayerStats {
             "kills" -> kills.get()
             "deaths" -> deaths.get()
             "generators_repaired" -> generatorsRepaired.get()
+            "coins" -> coins.get()
             else -> 0
         }
     }
@@ -49,6 +51,7 @@ class PlayerStats {
             "kills" -> kills.addAndGet(amount)
             "deaths" -> deaths.addAndGet(amount)
             "generators_repaired" -> generatorsRepaired.addAndGet(amount)
+            "coins" -> coins.addAndGet(amount)
         }
     }
 
@@ -93,7 +96,7 @@ class PlayerStats {
     /**
      * Carga masiva de datos (usado al entrar al servidor).
      */
-    fun load(ws: Int, wa: Int, ls: Int, la: Int, k: Int, d: Int, gr: Int = 0) {
+    fun load(ws: Int, wa: Int, ls: Int, la: Int, k: Int, d: Int, gr: Int = 0, c: Int = 0) {
         winsSurvivor.set(ws)
         winsAssassin.set(wa)
         lossesSurvivor.set(ls)
@@ -101,5 +104,6 @@ class PlayerStats {
         kills.set(k)
         deaths.set(d)
         generatorsRepaired.set(gr)
+        coins.set(c)
     }
 }
