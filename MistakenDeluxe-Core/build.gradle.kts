@@ -76,6 +76,7 @@ dependencies {
     compileOnly(files("../libs/bettermodel-bukkit-api-3.4.1.jar"))
     compileOnly(files("../libs/modelengine-4.1.0.jar"))
     compileOnly("com.infernalsuite.asp:api:4.0.0-SNAPSHOT")
+    compileOnly(files("../libs/arena-api-1.0.0-SNAPSHOT.jar"))
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude(group = "org.bukkit", module = "bukkit")
     }
@@ -144,4 +145,12 @@ tasks {
     build {
         dependsOn(shadowJar)
     }
+
+    test {
+        useJUnitPlatform()
+    }
+}
+
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 }

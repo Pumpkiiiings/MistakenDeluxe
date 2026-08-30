@@ -7,6 +7,10 @@ author: Pumpkingz
 
 dependencies:
   server:
+    ArenaAPI:
+      load: BEFORE
+      required: false
+      join-classpath: true
     Meowtils:
       load: BEFORE
       required: false

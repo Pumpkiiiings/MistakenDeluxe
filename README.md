@@ -45,11 +45,38 @@ To ensure **Mistaken Deluxe** runs flawlessly, your server must have the followi
 
 Mistaken is built to be fast, responsive, and developer-friendly. We achieve this by integrating industry-standard APIs:
 
-* **📄 [Paper API](https://papermc.io/):** The core engine of the server, heavily utilizing Java 21 optimizations and the new Folia-supported Scheduler API.
+* **📄 [Paper API](https://papermc.io/):** The core engine of the server, targeting Java 21 and Paper's modern scheduler APIs.
 * **📦 [PacketEvents](https://github.com/retrooper/packetevents):** Packet management framework handling low-level, lag-free network operations (custom HUDs, visibility manipulation).
 * **✨ [Advanced Slime Paper (ASP)](https://github.com/InfernalSuite/AdvancedSlimePaper):** Ultra-fast world loading system specifically designed for minigame instancing.
 * **🎞️ [Triumph GUI](https://github.com/TriumphTeam/triumph-gui):** UI Framework utilizing **Hybrid Cache** optimizations for blazing-fast inventory menus.
 * **🔐 [HikariCP](https://github.com/brettwooldridge/HikariCP):** The world's fastest SQL connection pool ensuring zero-hiccup database operations for player statistics.
+
+---
+
+## 🌍 Hybrid arena worlds
+
+The default backend belongs in `plugins/Mistaken/config.yml`:
+
+```yaml
+settings:
+  arena-worlds:
+    backend: arena_api # arena_api or slime
+    schematics-path: "/home/container/schematics"
+    slime-worlds-path: "/home/container/slime_worlds"
+```
+
+- `slime`: arena `hospital` loads `hospital.slime` with AdvancedSlimePaper.
+- `arena_api`: arena `hospital` auto-registers `hospital.schem` with ArenaAPI.
+
+Most maps only need gameplay data in `arenas.yml`; both backends use the arena id as their template id:
+
+```yaml
+arenas:
+  hospital:
+    timeMode: night
+```
+
+ArenaAPI is an optional Paper dependency. When that backend creates a match, Mistaken stores its UUID-backed instance and calls `destroy()` after returning players to the lobby. ASP worlds continue using the existing fast clone path.
 
 ---
 

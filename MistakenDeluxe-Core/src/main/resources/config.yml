@@ -133,7 +133,12 @@ messages:
 
 # --- General Settings & Locations ---
 settings:
-  slime-worlds-path: "/home/container/slime_worlds"
+  arena-worlds:
+    # One backend for every arena: arena_api or slime.
+    backend: arena_api
+    # Arena "hospital" resolves to hospital.schem or hospital.slime.
+    schematics-path: "/home/container/schematics"
+    slime-worlds-path: "/home/container/slime_worlds"
   lobby:
     world: Mistaken
     x: 317.49091333512126

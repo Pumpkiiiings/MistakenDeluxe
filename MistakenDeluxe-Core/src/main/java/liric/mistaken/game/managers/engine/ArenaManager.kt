@@ -53,7 +53,7 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
                 val arena = Arena(key)
                 val path = "arenas.$key."
 
-                arena.slimeWorldName = config.getString("${path}slimeWorld", key)
+                arena.slimeWorldName = key
                 arena.timeMode = config.getString("${path}timeMode", "dynamic") ?: "dynamic"
                 arena.killerSpawn = loadSafeLocation("${path}asesinoSpawn")
 
@@ -79,7 +79,6 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
 
         synchronized(fileLock) {
             config.set("arenas.$name.name", name)
-            config.set("arenas.$name.slimeWorld", name)
             config.set("arenas.$name.timeMode", "dynamic")
         }
         saveAsync()

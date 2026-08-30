@@ -1,0 +1,3 @@
+# World files are resolved globally from config.yml using the arena id.
+# This file only contains gameplay data such as time, spawns and generators.
+arenas: {}

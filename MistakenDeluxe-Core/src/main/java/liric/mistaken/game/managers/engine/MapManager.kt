@@ -1,104 +1,89 @@
 package liric.mistaken.game.managers.engine
 
-import com.infernalsuite.asp.api.AdvancedSlimePaperAPI
-import com.infernalsuite.asp.api.loaders.SlimeLoader
-import com.infernalsuite.asp.api.world.properties.SlimeProperties
-import com.infernalsuite.asp.api.world.properties.SlimePropertyMap
-import com.infernalsuite.asp.loaders.file.FileLoader
 import liric.mistaken.Mistaken
+import liric.mistaken.game.Arena
 import org.bukkit.Bukkit
-import org.bukkit.GameRule
 import org.bukkit.World
-import java.io.File
+import java.nio.file.Path
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 import liric.mistaken.utils.color.ColorTranslator
 
 
 class MapManager(private val plugin: Mistaken) {
 
-    private val asp = AdvancedSlimePaperAPI.instance()
-    private val fileLoader: SlimeLoader
+    private val backend: ArenaWorldBackend
+    private val provider: ArenaWorldProvider?
+    private val schematicsFolder: Path
+    private val managedInstances = ConcurrentHashMap<UUID, ManagedArenaWorld>()
 
     init {
-        val customPath = plugin.config.getString("settings.slime-worlds-path")
-        val slimeFolder = if (!customPath.isNullOrEmpty()) File(customPath) else File(plugin.dataFolder, "slime_worlds")
-        if (!slimeFolder.exists()) slimeFolder.mkdirs()
-        this.fileLoader = FileLoader(slimeFolder)
+        backend = ArenaWorldBackend.parse(plugin.config.getString("settings.arena-worlds.backend", "arena_api"))
+        schematicsFolder = configuredPath(
+            plugin.config.getString("settings.arena-worlds.schematics-path"),
+            "schematics"
+        )
+        provider = runCatching {
+            when (backend) {
+                ArenaWorldBackend.SLIME -> SlimeArenaWorldProvider(plugin)
+                ArenaWorldBackend.ARENA_API -> {
+                    check(plugin.server.pluginManager.isPluginEnabled("ArenaAPI")) { "ArenaAPI plugin is not enabled" }
+                    ArenaApiWorldProvider()
+                }
+            }
+        }.onFailure { error ->
+            plugin.componentLogger.error(ColorTranslator.translate(
+                "<red>[ERROR]</red> <gray>${backend.name} backend is unavailable: ${error.message}</gray>"
+            ))
+        }.getOrNull()
+    }
+
+    fun loadArenaWorld(arena: Arena, sessionId: String): CompletableFuture<World?> {
+        val selectedProvider = provider
+        if (selectedProvider == null) {
+            plugin.componentLogger.error(ColorTranslator.translate(
+                "<red>[ERROR]</red> <gray>${backend.name} backend is unavailable.</gray>"
+            ))
+            return CompletableFuture.completedFuture(null)
+        }
+
+        val templateName = arena.name
+        val available = if (selectedProvider is ArenaApiWorldProvider) {
+            selectedProvider.ensureTemplate(templateName, schematicsFolder.resolve("$templateName.schem"))
+        } else {
+            selectedProvider.hasTemplate(templateName)
+        }
+        if (!available) {
+            val extension = if (backend == ArenaWorldBackend.ARENA_API) ".schem" else ".slime"
+            plugin.componentLogger.error(ColorTranslator.translate(
+                "<red>[ERROR]</red> <gray>Missing arena file: $templateName$extension</gray>"
+            ))
+            return CompletableFuture.completedFuture(null)
+        }
+
+        val metadata = mapOf("consumer" to "MistakenDeluxe", "session" to sessionId, "map" to arena.name)
+        return selectedProvider.create(templateName, metadata)
+            .thenApply<World?> { managed ->
+                managedInstances[managed.world.uid] = managed
+                plugin.componentLogger.info(ColorTranslator.translate(
+                    "<green>[SUCCESS]</green> <gray>World ${managed.world.name} instantiated with ${backend.name}.</gray>"
+                ))
+                managed.world
+            }
+            .exceptionally { error ->
+                plugin.componentLogger.error(ColorTranslator.translate(
+                    "<red>[ERROR]</red> <gray>${backend.name} failed for '$templateName': ${error.cause?.message ?: error.message}</gray>"
+                ))
+                null
+            }
     }
 
     /**
-     * Carga un world de arena desde una plantilla .slime.
+     * Compatibility overload for callers that only have the arena id.
      */
     fun loadArenaWorld(templateName: String): CompletableFuture<World?> {
-        val future = CompletableFuture<World?>()
-        val instanceName = "${templateName}_${System.currentTimeMillis()}"
-
-        
-        plugin.server.asyncScheduler.runNow(plugin) { _ ->
-            try {
-                if (!fileLoader.worldExists(templateName)) {
-                    plugin.componentLogger.error(liric.mistaken.utils.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Slime file '$templateName' does not exist.</gray>"))
-                    future.complete(null)
-                    return@runNow
-                }
-
-                val props = SlimePropertyMap().apply {
-                    setValue(SlimeProperties.ALLOW_ANIMALS, false)
-                    setValue(SlimeProperties.ALLOW_MONSTERS, false)
-                    setValue(SlimeProperties.PVP, true)
-                }
-
-                val template = asp.readWorld(fileLoader, templateName, true, props)
-                val worldInstance = template.clone(instanceName)
-
-                
-                plugin.server.globalRegionScheduler.execute(plugin) {
-                    try {
-                        val instance = asp.loadWorld(worldInstance, false)
-                        val bukkitWorld = instance.bukkitWorld
-
-                        if (bukkitWorld == null) {
-                            plugin.componentLogger.error(liric.mistaken.utils.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Bukkit returned a null world.</gray>"))
-                            future.complete(null)
-                            return@execute
-                        }
-
-                        
-                        bukkitWorld.apply {
-                            isAutoSave = false
-                            time = 18000L 
-
-                            setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false)
-                            setGameRule(GameRule.DO_WEATHER_CYCLE, false)
-                            setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true)
-                            setGameRule(GameRule.DO_MOB_SPAWNING, false)
-                            setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false)
-                            setGameRule(GameRule.DO_FIRE_TICK, false)
-
-                            
-                            setGameRule(GameRule.FALL_DAMAGE, false)
-
-                            setStorm(false)
-                            isThundering = false
-                        }
-
-                        plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>World instantiated: ${bukkitWorld.name}</gray>"))
-                        future.complete(bukkitWorld)
-
-                    } catch (e: Exception) {
-                        plugin.componentLogger.error(liric.mistaken.utils.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Failed to register world in Bukkit: ${e.message}</gray>"))
-                        future.complete(null)
-                    }
-                }
-
-            } catch (e: Exception) {
-                plugin.componentLogger.error(liric.mistaken.utils.color.ColorTranslator.translate("<red>[ERROR]</red> <gray>Critical failure loading $templateName: ${e.message}</gray>"))
-                e.printStackTrace()
-                future.complete(null)
-            }
-        }
-
-        return future
+        return loadArenaWorld(Arena(templateName), "unknown")
     }
 
     /**
@@ -106,6 +91,18 @@ class MapManager(private val plugin: Mistaken) {
      */
     fun unloadWorld(world: World?) {
         if (world == null) return
+
+        val managed = managedInstances.remove(world.uid)
+        if (managed != null) {
+            managed.release().whenComplete { _, error ->
+                if (error != null) {
+                    plugin.componentLogger.error(ColorTranslator.translate(
+                        "<red>[ERROR]</red> <gray>Failed to destroy ArenaAPI world ${world.name}: ${error.message}</gray>"
+                    ))
+                }
+            }
+            return
+        }
 
         
         plugin.server.globalRegionScheduler.execute(plugin) {
@@ -115,7 +112,13 @@ class MapManager(private val plugin: Mistaken) {
     }
 
     fun shutdown() {
-        
-        
+        managedInstances.values.toList().forEach { managed -> runCatching { managed.release() } }
+        managedInstances.clear()
+    }
+
+    private fun configuredPath(value: String?, fallback: String): Path {
+        val configured = if (value.isNullOrBlank()) Path.of(fallback) else Path.of(value)
+        return if (configured.isAbsolute) configured.normalize()
+        else plugin.dataFolder.toPath().resolve(configured).toAbsolutePath().normalize()
     }
 }

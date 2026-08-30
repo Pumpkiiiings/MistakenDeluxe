@@ -266,6 +266,7 @@ class Mistaken : JavaPlugin() {
         if (::horrorEnvironmentManager.isInitialized) runCatching { horrorEnvironmentManager.shutdown() }
         if (::musicManager.isInitialized) musicManager.shutdown()
         if (::generatorManager.isInitialized) runCatching { generatorManager.clearGenerators() }
+        if (::mapManager.isInitialized) runCatching { mapManager.shutdown() }
         if (::scoreboardManager.isInitialized) runCatching { scoreboardManager.removeAll() }
         if (::nameTagManager.isInitialized) runCatching { nameTagManager.removeAll() }
         MistakenLib.shutdown()

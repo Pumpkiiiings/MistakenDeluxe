@@ -11,6 +11,7 @@ import liric.mistaken.api.managers.ISession
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.World
 import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.config.engine.core.MessageService
 
@@ -38,6 +39,7 @@ class GameSession(
     
     var timer = 0
     var currentMapName = mapName
+    var arenaWorld: World? = null
     var modeForced = false
     var forceStart = false
     var forcedKillerUUID: UUID? = null
@@ -97,6 +99,8 @@ class GameSession(
 
     fun shutdown() {
         loopTask.stop()
+        arenaWorld?.let { plugin.mapManager.unloadWorld(it) }
+        arenaWorld = null
         
         
         

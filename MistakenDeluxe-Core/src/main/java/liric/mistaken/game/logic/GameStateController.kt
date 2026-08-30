@@ -127,7 +127,7 @@ class GameStateController(private val game: GameSession) {
         game.currentState = GameState.STARTING
         game.currentMapName = winner
 
-        game.plugin.mapManager.loadArenaWorld(winner).thenAccept { aspWorld ->
+        game.plugin.mapManager.loadArenaWorld(arena, game.id).thenAccept { aspWorld ->
             game.plugin.server.globalRegionScheduler.run(game.plugin) { _ ->
                 if (aspWorld == null) {
                     resetToLobby(null)
@@ -135,10 +135,11 @@ class GameStateController(private val game: GameSession) {
                 }
 
                 game.timer = 15
+                game.arenaWorld = aspWorld
                 determineGameMode()
 
                 val timeMode = arena.timeMode
-                aspWorld.setGameRule(org.bukkit.GameRule.DO_DAYLIGHT_CYCLE, false)
+                aspWorld.setGameRule(org.bukkit.GameRules.ADVANCE_TIME, false)
                 when (timeMode.lowercase()) {
                     "day" -> aspWorld.time = 6000
                     "night" -> aspWorld.time = 18000
@@ -295,6 +296,8 @@ class GameStateController(private val game: GameSession) {
             game.playerController.cleanupAllPlayers(lastKillerWon)
             game.worldController.clearMapa()
             game.playerController.teleportAllToLobby()
+            game.arenaWorld?.let { game.plugin.mapManager.unloadWorld(it) }
+            game.arenaWorld = null
         }
 
         game.currentState = GameState.LOBBY
