@@ -194,7 +194,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
 
         if (player.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(player)) return
 
-        val to = event.to ?: return
+        val to = event.to
         val from = event.from
         if (from.blockX == to.blockX && from.blockZ == to.blockZ && from.blockY == to.blockY) return
 

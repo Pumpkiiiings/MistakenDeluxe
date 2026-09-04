@@ -50,4 +50,3 @@ COMMENT_CLEANUP_REPORT.md
 REFACTOR_REPORT.md
 .cleanup-backup/
 Test.kt
-gradle/wrapper/

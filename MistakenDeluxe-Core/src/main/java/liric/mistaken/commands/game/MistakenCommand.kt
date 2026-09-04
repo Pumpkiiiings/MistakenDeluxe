@@ -218,7 +218,7 @@ class MistakenCommand(private val plugin: Mistaken) : BasicCommand {
                         session = plugin.sessionManager.createSession("Votando...")
                     }
                     val playersToJoin = Bukkit.getOnlinePlayers().filter { plugin.sessionManager.getSession(it) == null }
-                    playersToJoin.forEach { plugin.sessionManager.joinSession(it, session!!.id) }
+                    playersToJoin.forEach { plugin.sessionManager.joinSession(it, session.id) }
                 }
 
                 if (session == null) {

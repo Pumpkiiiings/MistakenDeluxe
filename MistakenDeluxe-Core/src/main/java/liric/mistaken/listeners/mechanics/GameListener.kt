@@ -155,11 +155,11 @@ class GameListener(private val plugin: Mistaken) : Listener {
             }
             
             liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(killer, true)
-            plugin.server.scheduler.runTaskLater(plugin, Runnable {
+            killer.scheduler.runDelayed(plugin, java.util.function.Consumer {
                 if (killer.isOnline) {
                     liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(killer, false)
                 }
-            }, 100L)
+            }, null, 100L)
         }
 
         killer.playSound(killer.location, Sound.ENTITY_ZOMBIE_VILLAGER_CONVERTED, 1f, 0.5f)
@@ -234,9 +234,9 @@ class GameListener(private val plugin: Mistaken) : Listener {
             e.isCancelled = true
             
             
-            plugin.server.scheduler.runTask(plugin, Runnable {
+            player.scheduler.run(plugin, java.util.function.Consumer {
                 player.updateInventory()
-            })
+            }, null)
             
             
             if (!session.isKiller(player.uniqueId) && !plugin.spectatorManager.isSpectator(player)) {
@@ -285,141 +285,140 @@ class GameListener(private val plugin: Mistaken) : Listener {
                 val initialPlayerLoc = player.location.clone()
                 val initialTargetLoc = targetToHeal.location.clone()
                 
-                object : org.bukkit.scheduler.BukkitRunnable() {
-                    var ticks = 0
-                    override fun run() {
-                        if (!player.isOnline || session.currentState != GameState.INGAME || plugin.spectatorManager.isSpectator(player) || !targetToHeal.isOnline) {
-                            isHealing[uuid] = false
-                            cancel()
-                            return
-                        }
+                val ticksBox = intArrayOf(0)
+                player.scheduler.runAtFixedRate(plugin, java.util.function.Consumer { task ->
+                    if (!player.isOnline || session.currentState != GameState.INGAME || plugin.spectatorManager.isSpectator(player) || !targetToHeal.isOnline) {
+                        isHealing[uuid] = false
+                        task.cancel()
+                        return@Consumer
+                    }
 
+                    
+                    if (player.location.distanceSquared(initialPlayerLoc) > 1.0 || 
+                        targetToHeal.location.distanceSquared(initialTargetLoc) > 1.0) {
+                        val cancelMsgKey = MessageService.getRawString(player, "game.heal-cancelled-movement", "<red>Curación cancelada por movimiento.")
+                        val cancelMsg = ColorTranslator.translate(cancelMsgKey)
+                        player.sendMessage(cancelMsg)
+                        if (targetToHeal != player) targetToHeal.sendMessage(cancelMsg)
                         
-                        if (player.location.distanceSquared(initialPlayerLoc) > 1.0 || 
-                            targetToHeal.location.distanceSquared(initialTargetLoc) > 1.0) {
-                            val cancelMsgKey = MessageService.getRawString(player, "game.heal-cancelled-movement", "<red>Curación cancelada por movimiento.")
-                            val cancelMsg = ColorTranslator.translate(cancelMsgKey)
-                            player.sendMessage(cancelMsg)
-                            if (targetToHeal != player) targetToHeal.sendMessage(cancelMsg)
-                            
-                            isHealing[uuid] = false
-                            
-                            healCooldowns[uuid] = System.currentTimeMillis() - 25_000L 
-                            cancel()
-                            return
+                        isHealing[uuid] = false
+                        
+                        healCooldowns[uuid] = System.currentTimeMillis() - 25_000L 
+                        task.cancel()
+                        return@Consumer
+                    }
+                    
+                    ticksBox[0] += 5
+                    val ticks = ticksBox[0]
+                    val remainingSecs = (totalTicks - ticks) / 20.0
+                    
+                    if (ticks >= totalTicks) {
+                        val heartsToHeal = java.util.concurrent.ThreadLocalRandom.current().nextInt(2, 8)
+                        val healthToHeal = heartsToHeal * 2.0
+                        
+                        val currentHealth = plugin.combatManager.getHealth(targetToHeal).toDouble()
+                        if (currentHealth < maxHealth) {
+                            val newHealth = (currentHealth + healthToHeal).coerceAtMost(maxHealth)
+                            plugin.combatManager.setHealth(targetToHeal, newHealth.toInt())
                         }
                         
-                        ticks += 5
-                        val remainingSecs = (totalTicks - ticks) / 20.0
+                        val times = net.kyori.adventure.title.Title.Times.times(java.time.Duration.ofMillis(250), java.time.Duration.ofMillis(1000), java.time.Duration.ofMillis(250))
                         
-                        if (ticks >= totalTicks) {
-                            val heartsToHeal = java.util.concurrent.ThreadLocalRandom.current().nextInt(2, 8)
-                            val healthToHeal = heartsToHeal * 2.0
-                            
-                            val currentHealth = plugin.combatManager.getHealth(targetToHeal).toDouble()
-                            if (currentHealth < maxHealth) {
-                                val newHealth = (currentHealth + healthToHeal).coerceAtMost(maxHealth)
-                                plugin.combatManager.setHealth(targetToHeal, newHealth.toInt())
-                            }
-                            
-                            val times = net.kyori.adventure.title.Title.Times.times(java.time.Duration.ofMillis(250), java.time.Duration.ofMillis(1000), java.time.Duration.ofMillis(250))
-                            
-                            if (targetToHeal == player) {
-                                val tTitle = MessageService.getRawString(player, "game.heal-success-self.title", "<green>¡Curado!")
-                                val tSub = MessageService.getRawString(player, "game.heal-success-self.subtitle", "<gray>+%hearts% corazones")
-                                    .replace("%hearts%", heartsToHeal.toString())
-                                player.showTitle(net.kyori.adventure.title.Title.title(
-                                    ColorTranslator.translate(tTitle),
-                                    ColorTranslator.translate(tSub),
-                                    times
-                                ))
-                            } else {
-                                val hTitle = MessageService.getRawString(player, "game.heal-success-healer.title", "<green>¡Has curado a %target%!")
-                                    .replace("%target%", targetToHeal.name)
-                                val hSub = MessageService.getRawString(player, "game.heal-success-healer.subtitle", "<gray>+%hearts% corazones")
-                                    .replace("%hearts%", heartsToHeal.toString())
-                                player.showTitle(net.kyori.adventure.title.Title.title(
-                                    ColorTranslator.translate(hTitle),
-                                    ColorTranslator.translate(hSub),
-                                    times
-                                ))
-                                
-                                val htTitle = MessageService.getRawString(targetToHeal, "game.heal-success-healed.title", "<green>¡Has sido curado!")
-                                val htSub = MessageService.getRawString(targetToHeal, "game.heal-success-healed.subtitle", "<gray>Por %player%")
-                                    .replace("%player%", player.name)
-                                targetToHeal.showTitle(net.kyori.adventure.title.Title.title(
-                                    ColorTranslator.translate(htTitle),
-                                    ColorTranslator.translate(htSub),
-                                    times
-                                ))
-                                
-                                liric.mistaken.Mistaken.economy?.deposit(player, 100.0)
-                                val rewardMsg = MessageService.getRawString(player, "game.heal-reward-coins", "<green>+100 monedas por curar a un compañero.")
-                                player.sendMessage(ColorTranslator.translate(rewardMsg))
-                            }
-                            
-                            targetToHeal.playSound(targetToHeal.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f)
-                            if (targetToHeal != player) {
-                                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f)
-                            }
-                            
-                            isHealing[uuid] = false
-                            healCooldowns[uuid] = System.currentTimeMillis()
-                            
-                            
-                            plugin.server.scheduler.runTaskLater(plugin, Runnable {
-                                if (player.isOnline && plugin.sessionManager.getSession(player)?.currentState == GameState.INGAME) {
-                                    val readyMsg = MessageService.getRawString(player, "game.heal-skill-ready", "<green>¡Tu habilidad de curación está lista!")
-                                    player.sendActionBar(ColorTranslator.translate(readyMsg))
-                                    player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                                }
-                            }, 30 * 20L)
-                            
-                            cancel()
+                        if (targetToHeal == player) {
+                            val tTitle = MessageService.getRawString(player, "game.heal-success-self.title", "<green>¡Curado!")
+                            val tSub = MessageService.getRawString(player, "game.heal-success-self.subtitle", "<gray>+%hearts% corazones")
+                                .replace("%hearts%", heartsToHeal.toString())
+                            player.showTitle(net.kyori.adventure.title.Title.title(
+                                ColorTranslator.translate(tTitle),
+                                ColorTranslator.translate(tSub),
+                                times
+                            ))
                         } else {
-                            val times = net.kyori.adventure.title.Title.Times.times(java.time.Duration.ZERO, java.time.Duration.ofMillis(500), java.time.Duration.ZERO)
+                            val hTitle = MessageService.getRawString(player, "game.heal-success-healer.title", "<green>¡Has curado a %target%!")
+                                .replace("%target%", targetToHeal.name)
+                            val hSub = MessageService.getRawString(player, "game.heal-success-healer.subtitle", "<gray>+%hearts% corazones")
+                                .replace("%hearts%", heartsToHeal.toString())
+                            player.showTitle(net.kyori.adventure.title.Title.title(
+                                ColorTranslator.translate(hTitle),
+                                ColorTranslator.translate(hSub),
+                                times
+                            ))
                             
-                            val formatTime = String.format(java.util.Locale.US, "%.1f", remainingSecs)
-                            if (targetToHeal == player) {
-                                val tTitle = MessageService.getRawString(player, "game.healing-self.title", "<yellow>Curándose...")
-                                val tSub = MessageService.getRawString(player, "game.healing-self.subtitle", "<gray>%time%s")
-                                    .replace("%time%", formatTime)
-                                player.showTitle(net.kyori.adventure.title.Title.title(
-                                    ColorTranslator.translate(tTitle),
-                                    ColorTranslator.translate(tSub),
-                                    times
-                                ))
-                            } else {
-                                val hTitle = MessageService.getRawString(player, "game.healing-healer.title", "<yellow>Estás curando a %target%")
-                                    .replace("%target%", targetToHeal.name)
-                                val hSub = MessageService.getRawString(player, "game.healing-healer.subtitle", "<gray>Tiempo: %time%s")
-                                    .replace("%time%", formatTime)
-                                player.showTitle(net.kyori.adventure.title.Title.title(
-                                    ColorTranslator.translate(hTitle),
-                                    ColorTranslator.translate(hSub),
-                                    times
-                                ))
-                                
-                                val htTitle = MessageService.getRawString(targetToHeal, "game.healing-healed.title", "<yellow>%player% te está curando...")
-                                    .replace("%player%", player.name)
-                                val htSub = MessageService.getRawString(targetToHeal, "game.healing-healed.subtitle", "<gray>No te muevas. Tiempo: %time%s")
-                                    .replace("%time%", formatTime)
-                                targetToHeal.showTitle(net.kyori.adventure.title.Title.title(
-                                    ColorTranslator.translate(htTitle),
-                                    ColorTranslator.translate(htSub),
-                                    times
-                                ))
+                            val htTitle = MessageService.getRawString(targetToHeal, "game.heal-success-healed.title", "<green>¡Has sido curado!")
+                            val htSub = MessageService.getRawString(targetToHeal, "game.heal-success-healed.subtitle", "<gray>Por %player%")
+                                .replace("%player%", player.name)
+                            targetToHeal.showTitle(net.kyori.adventure.title.Title.title(
+                                ColorTranslator.translate(htTitle),
+                                ColorTranslator.translate(htSub),
+                                times
+                            ))
+                            
+                            liric.mistaken.Mistaken.economy?.deposit(player, 100.0)
+                            val rewardMsg = MessageService.getRawString(player, "game.heal-reward-coins", "<green>+100 monedas por curar a un compañero.")
+                            player.sendMessage(ColorTranslator.translate(rewardMsg))
+                        }
+                        
+                        targetToHeal.playSound(targetToHeal.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f)
+                        if (targetToHeal != player) {
+                            player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f)
+                        }
+                        
+                        isHealing[uuid] = false
+                        healCooldowns[uuid] = System.currentTimeMillis()
+                        
+                        
+                        player.scheduler.runDelayed(plugin, java.util.function.Consumer {
+                            if (player.isOnline && plugin.sessionManager.getSession(player)?.currentState == GameState.INGAME) {
+                                val readyMsg = MessageService.getRawString(player, "game.heal-skill-ready", "<green>¡Tu habilidad de curación está lista!")
+                                player.sendActionBar(ColorTranslator.translate(readyMsg))
+                                player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
                             }
+                        }, null, 30 * 20L)
+                        
+                        task.cancel()
+                    } else {
+                        val times = net.kyori.adventure.title.Title.Times.times(java.time.Duration.ZERO, java.time.Duration.ofMillis(500), java.time.Duration.ZERO)
+                        
+                        val formatTime = String.format(java.util.Locale.US, "%.1f", remainingSecs)
+                        if (targetToHeal == player) {
+                            val tTitle = MessageService.getRawString(player, "game.healing-self.title", "<yellow>Curándose...")
+                            val tSub = MessageService.getRawString(player, "game.healing-self.subtitle", "<gray>%time%s")
+                                .replace("%time%", formatTime)
+                            player.showTitle(net.kyori.adventure.title.Title.title(
+                                ColorTranslator.translate(tTitle),
+                                ColorTranslator.translate(tSub),
+                                times
+                            ))
+                        } else {
+                            val hTitle = MessageService.getRawString(player, "game.healing-healer.title", "<yellow>Estás curando a %target%")
+                                .replace("%target%", targetToHeal.name)
+                            val hSub = MessageService.getRawString(player, "game.healing-healer.subtitle", "<gray>Tiempo: %time%s")
+                                .replace("%time%", formatTime)
+                            player.showTitle(net.kyori.adventure.title.Title.title(
+                                ColorTranslator.translate(hTitle),
+                                ColorTranslator.translate(hSub),
+                                times
+                            ))
                             
-                            if (ticks % 10 == 0) {
-                                targetToHeal.playSound(targetToHeal.location, Sound.ENTITY_GENERIC_DRINK, 0.5f, 1.0f)
-                                if (targetToHeal != player) {
-                                    player.playSound(player.location, Sound.ENTITY_GENERIC_DRINK, 0.5f, 1.0f)
-                                }
+                            val htTitle = MessageService.getRawString(targetToHeal, "game.healing-healed.title", "<yellow>%player% te está curando...")
+                                .replace("%player%", player.name)
+                            val htSub = MessageService.getRawString(targetToHeal, "game.healing-healed.subtitle", "<gray>No te muevas. Tiempo: %time%s")
+                                .replace("%time%", formatTime)
+                            targetToHeal.showTitle(net.kyori.adventure.title.Title.title(
+                                ColorTranslator.translate(htTitle),
+                                ColorTranslator.translate(htSub),
+                                times
+                            ))
+                        }
+                        
+                        if (ticks % 10 == 0) {
+                            targetToHeal.playSound(targetToHeal.location, Sound.ENTITY_GENERIC_DRINK, 0.5f, 1.0f)
+                            if (targetToHeal != player) {
+                                player.playSound(player.location, Sound.ENTITY_GENERIC_DRINK, 0.5f, 1.0f)
                             }
                         }
                     }
-                }.runTaskTimer(plugin, 0L, 5L)
+                }, null, 0L, 5L)
             }
         }
     }

@@ -20,7 +20,7 @@ object ScoreboardManager {
     private val templates = ConcurrentHashMap<String, ScoreboardTemplate>()
 
 
-    private var updateTask: ScoreboardUpdateTask? = null
+    private var updateTask: io.papermc.paper.threadedregions.scheduler.ScheduledTask? = null
 
     
     private lateinit var renderer: IScoreboardRenderer
@@ -37,9 +37,8 @@ object ScoreboardManager {
 
     fun init(plugin: JavaPlugin) {
         renderer = detectRenderer()
-        updateTask = ScoreboardUpdateTask()
         val interval = if (supportsAnimations()) 2L else 10L
-        updateTask!!.runTaskTimer(plugin, 10L, interval)
+        updateTask = Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, ScoreboardUpdateTask(), 10L, interval)
     }
 
     fun shutdown() {

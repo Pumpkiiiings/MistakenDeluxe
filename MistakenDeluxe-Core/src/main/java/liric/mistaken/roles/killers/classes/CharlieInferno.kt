@@ -46,7 +46,7 @@ class CharlieInferno : CoreKiller(
 
     private val pathBase = "killers.charlie"
     override val defaultMusic = "mistaken:charlieinferno"
-    private val sonidoId = defaultMusic!!
+    private val sonidoId = defaultMusic
 
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<VirtualBlockDisplay>>()

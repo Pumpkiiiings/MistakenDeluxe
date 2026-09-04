@@ -166,7 +166,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
     private fun updateHologramVisual(state: GeneratorState, directEntity: VirtualTextDisplay? = null) {
         val entity = directEntity ?: state.displayEntity ?: return
-        if (entity?.isValid == false) return
+        if (!entity.isValid) return
 
         val typeName = getFriendlyName(state.type)
         val lines = if (state.completed) completedLines else idleLines

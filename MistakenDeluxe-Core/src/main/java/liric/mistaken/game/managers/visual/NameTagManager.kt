@@ -106,7 +106,7 @@ class NameTagManager(private val plugin: Mistaken) {
             net.kyori.adventure.text.Component.empty()
         } else {
             val colorStr = if (isIngame) {
-                if (session!!.isKiller(player.uniqueId)) "<red>" else "<green>"
+                if (session.isKiller(player.uniqueId)) "<red>" else "<green>"
             } else {
                 "<gray>"
             }

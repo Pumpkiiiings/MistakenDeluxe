@@ -22,7 +22,9 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
             createTables()
             plugin.componentLogger.info(ColorTranslator.translate("[SUCCESS] [Database] Connection established (${this::class.simpleName})."))
         } catch (e: Exception) {
+            close()
             plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [Database] Connection failed: ${e.message}"))
+            throw IllegalStateException("Could not initialize ${this::class.simpleName}", e)
         }
     }
 
@@ -91,16 +93,12 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
     """.trimIndent()
 
     private fun createTables() {
-        try {
-            connection.use { conn ->
-                conn.createStatement().use { stmt ->
-                    stmt.execute(createStatsTableQuery)
-                    stmt.execute(createLinksTableQuery)
-                    stmt.execute(createPlayerDataQuery)
-                }
+        connection.use { conn ->
+            conn.createStatement().use { stmt ->
+                stmt.execute(createStatsTableQuery)
+                stmt.execute(createLinksTableQuery)
+                stmt.execute(createPlayerDataQuery)
             }
-        } catch (e: SQLException) {
-            plugin.componentLogger.error(ColorTranslator.translate("[ERROR] [Database] Failed to create tables: ${e.message}"))
         }
     }
 

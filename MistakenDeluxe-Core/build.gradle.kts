@@ -35,8 +35,6 @@ repositories {
     maven("https://repo.oraxen.com/releases")
     maven("https://repo.nightexpressdev.com/releases")
     maven("https://repo.codemc.io/repository/creatorfromhell/")
-    mavenLocal()
-
     flatDir {
         dirs("../libs")
     }
@@ -92,7 +90,6 @@ dependencies {
 
     
     compileOnly("com.alessiodp.parties:parties-api:3.2.16")
-    compileOnly(files("../../LodestoneParties/LodestoneParties-API/build/libs/LodestoneParties-API-1.0.0-SNAPSHOT.jar"))
     compileOnly("su.nightexpress.excellenteconomy:ExcellentEconomy:2.8.0")
 
     

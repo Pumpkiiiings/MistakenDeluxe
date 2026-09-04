@@ -73,7 +73,9 @@ class DisplayManager(private val plugin: Mistaken) {
             if (!display.isValid) {
                 task.cancel(); return@Consumer
             }
-            val t = display.transformation!!; t!!.leftRotation.rotateY(0.1f); display.transformation = t
+            val t = display.transformation ?: return@Consumer
+            t.leftRotation.rotateY(0.1f)
+            display.transformation = t
         }, 1L, 1L)
     }
 
@@ -89,7 +91,8 @@ class DisplayManager(private val plugin: Mistaken) {
                 display.remove(); task.cancel(); return@Consumer
             }
             yOffset -= 0.15
-            val t = display.transformation!!; t!!.leftRotation.rotateX(0.2f).rotateY(0.1f)
+            val t = display.transformation ?: return@Consumer
+            t.leftRotation.rotateX(0.2f).rotateY(0.1f)
             display.transformation = t; display.teleport(loc.clone().add(0.0, yOffset, 0.0))
         }, 1L, 1L)
     }

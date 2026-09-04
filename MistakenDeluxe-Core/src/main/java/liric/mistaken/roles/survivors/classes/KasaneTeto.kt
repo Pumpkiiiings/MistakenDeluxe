@@ -146,7 +146,7 @@ class KasaneTeto : Survivor(
         val hitEntity = result?.hitEntity as? Player
         if (hitEntity != null) {
             val session = plugin.sessionManager.getSession(hitEntity)
-            if (session?.isKiller(hitEntity.uniqueId) == true)
+            if (session?.isKiller(hitEntity.uniqueId) != true) return
             player.world.spawnParticle(org.bukkit.Particle.EXPLOSION, hitEntity.eyeLocation, 1)
             player.world.playSound(hitEntity.location, Sound.ENTITY_IRON_GOLEM_HURT, 1.0f, 0.5f)
 
@@ -240,7 +240,7 @@ class KasaneTeto : Survivor(
 
         
         player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!player.isOnline || player?.isValid == false || !plugin.survivorManager.esSurvivorActivo(player)) {
+            if (!player.isOnline || !player.isValid || !plugin.survivorManager.esSurvivorActivo(player)) {
                 borrarCosmeticos(uuid)
                 task.cancel()
                 return@Consumer
@@ -275,9 +275,9 @@ class KasaneTeto : Survivor(
             displays[index].teleport(pLoc)
 
             
-            val currentTrans = displays[index].transformation
+            val currentTrans = displays[index].transformation ?: return
             val finalRot = if (rotExtra != null) Quaternionf(headRot).mul(rotExtra) else headRot
-            displays[index].transformation = Transformation(currentTrans!!.translation, finalRot, currentTrans!!.scale, Quaternionf())
+            displays[index].transformation = Transformation(currentTrans.translation, finalRot, currentTrans.scale, Quaternionf())
         }
 
         

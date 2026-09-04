@@ -43,11 +43,11 @@ class SmilerKiller : BaseKiller("smiler", "Smiler") {
                     val player = character.entity
                     transitionTo(player, SmilerAttackState, force = true)
                     
-                    org.bukkit.Bukkit.getScheduler().runTaskLater(liric.mistaken.Mistaken.instance, Runnable {
+                    player.scheduler.runDelayed(plugin, java.util.function.Consumer {
                         if (player.isOnline && getCharacter(player)?.getComponent(liric.mistaken.models.components.StateComponent::class.java)?.currentState == SmilerAttackState) {
                             transitionTo(player, liric.mistaken.models.states.IdleState, force = true)
                         }
-                    }, 15L) 
+                    }, null, 15L) 
                 }
             }
 

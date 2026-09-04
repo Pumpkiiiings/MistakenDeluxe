@@ -12,13 +12,13 @@ class LuaScriptScheduler : ScriptScheduler {
     private val plugin = Mistaken.instance
 
     override fun run_delayed(delayTicks: Long, taskId: String) {
-        Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+        Bukkit.getGlobalRegionScheduler().runDelayed(plugin, {
             
         }, delayTicks)
     }
 
     override fun run_timer(delayTicks: Long, periodTicks: Long, taskId: String) {
-        Bukkit.getScheduler().runTaskTimer(plugin, Runnable {
+        Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, {
             
         }, delayTicks, periodTicks)
     }

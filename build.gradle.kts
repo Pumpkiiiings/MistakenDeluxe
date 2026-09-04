@@ -1,15 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget 
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.ow2.asm:asm:9.10.1")
-    }
-}
-
 plugins {
     java
     kotlin("jvm") version "2.3.0"
@@ -70,8 +61,6 @@ dependencies {
     }
     compileOnly("net.momirealms:craft-engine-core:0.0.67.11")
     compileOnly("net.momirealms:craft-engine-bukkit:0.0.67.11")
-    compileOnly(files("libs/CraftEngine.jar"))
-    compileOnly(files("C:/Users/L900m/OneDrive/Desktop/PkCinematic/build/libs/PkCinematics-1.2-FIX-dev-all.jar"))
     compileOnly("net.luckperms:api:5.5")
     compileOnly("me.clip:placeholderapi:2.12.3")
     compileOnly(files("libs/observer-paper.jar"))
@@ -113,14 +102,4 @@ tasks {
     build {
         dependsOn(shadowJar)
     }
-}
-
-tasks.register("fixUtf8", Exec::class) {
-    commandLine("py", "8UTFFix.py")
-    workingDir = rootProject.projectDir
-    isIgnoreExitValue = true
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    dependsOn("fixUtf8")
 }

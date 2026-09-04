@@ -79,18 +79,22 @@ class PlayerDataManager(private val plugin: Mistaken) : IPlayerDataManager {
     }
 
     
-    fun saveConfigSync() {
+    fun saveAllSync() {
         userDataCache.forEach { (uuid, user) ->
-            plugin.databaseManager.savePlayerDataRaw(
-                uuid.toString(), user.language, user.unlockedKillers.joinToString(","), user.selectedKiller,
-                user.unlockedSurvivors.joinToString(","), user.selectedSurvivor, user.nickname, user.skinName
-            )
+            saveDataSync(uuid, user)
         }
     }
 
-    fun removeData(uuid: UUID) {
-        saveDataAsync(uuid)
-        userDataCache.remove(uuid)
+    fun unloadPlayer(uuid: UUID) {
+        val user = userDataCache.remove(uuid) ?: return
+        saveDataSync(uuid, user)
+    }
+
+    private fun saveDataSync(uuid: UUID, user: MistakenUser) {
+        plugin.databaseManager.savePlayerDataRaw(
+            uuid.toString(), user.language, user.unlockedKillers.joinToString(","), user.selectedKiller,
+            user.unlockedSurvivors.joinToString(","), user.selectedSurvivor, user.nickname, user.skinName
+        )
     }
 
     

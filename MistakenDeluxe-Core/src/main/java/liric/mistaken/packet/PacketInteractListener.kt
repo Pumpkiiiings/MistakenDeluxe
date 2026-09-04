@@ -42,7 +42,7 @@ class PacketInteractListener : PacketListenerAbstract() {
                 
                 
                 
-                Bukkit.getScheduler().runTask(Mistaken.instance, Runnable {
+                Bukkit.getGlobalRegionScheduler().run(Mistaken.instance, {
                     callback.invoke(player, interact.action)
                 })
             }

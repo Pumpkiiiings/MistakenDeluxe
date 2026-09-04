@@ -49,11 +49,11 @@ object WorldTrapRegistry {
                         event.isCancelled = true
                         
                         
-                        Bukkit.getScheduler().runTask(plugin, Runnable {
+                        player.scheduler.run(plugin, java.util.function.Consumer {
                             
                             val trapLoc = Location(player.world, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
                             trap.onTrigger(player, trapLoc)
-                        })
+                        }, null)
                     }
                 }
             }

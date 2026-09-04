@@ -74,7 +74,7 @@ object MistakenDebugCommand {
                     }
                     
                     val playersToJoin = Bukkit.getOnlinePlayers().filter { plugin.sessionManager.getSession(it) == null }
-                    playersToJoin.forEach { plugin.sessionManager.joinSession(it, session!!.id) }
+                    playersToJoin.forEach { plugin.sessionManager.joinSession(it, session.id) }
                 }
 
                 if (session == null) {
@@ -105,7 +105,7 @@ object MistakenDebugCommand {
                     }
                     
                     val playersToJoin = Bukkit.getOnlinePlayers().filter { plugin.sessionManager.getSession(it) == null }
-                    playersToJoin.forEach { plugin.sessionManager.joinSession(it, session!!.id) }
+                    playersToJoin.forEach { plugin.sessionManager.joinSession(it, session.id) }
                 }
 
                 if (session == null) {

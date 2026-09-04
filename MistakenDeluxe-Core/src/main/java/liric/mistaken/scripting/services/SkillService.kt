@@ -134,8 +134,8 @@ object SkillService {
         plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->
             tnt.teleport(loc.clone().add(0.0, 3.0, 0.0))
             val t = tnt.transformation
-            t?.leftRotation?.rotateY(5f)?.rotateX(2f)
-            if (t != null) tnt.transformation = t
+            t.leftRotation.rotateY(5f).rotateX(2f)
+            tnt.transformation = t
         }, 1L)
 
         plugin.server.regionScheduler.runDelayed(plugin, loc, Consumer { _ ->

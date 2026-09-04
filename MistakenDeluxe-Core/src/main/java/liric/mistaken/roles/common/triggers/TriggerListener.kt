@@ -10,7 +10,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
-import org.bukkit.event.player.AsyncPlayerChatEvent
+import io.papermc.paper.event.player.AsyncChatEvent
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
@@ -28,11 +29,9 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         if (session.isKiller(player.uniqueId)) {
             val killer = plugin.killerManager.getKillerOfPlayer(player)
             return killer as? CoreKiller
-        } else if (!session.isKiller(player.uniqueId)) {
-            val survivor = plugin.survivorManager.getSurvivorClass(player)
-            return survivor as? Survivor
+        } else {
+            return plugin.survivorManager.getSurvivorClass(player)
         }
-        return null
     }
 
     private fun getTriggerRegistry(role: Any): TriggerRegistry? {
@@ -147,7 +146,7 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH)
-    fun onChat(event: AsyncPlayerChatEvent) {
+    fun onChat(event: AsyncChatEvent) {
         val player = event.player
         val role = getActiveRole(player) ?: return
         val registry = getTriggerRegistry(role) ?: return
@@ -164,7 +163,8 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
 
         
         if (role is CoreKiller) {
-            val rewritten = role.onInterceptChat(player, event.message)
+            val message = PlainTextComponentSerializer.plainText().serialize(event.message())
+            val rewritten = role.onInterceptChat(player, message)
             if (rewritten != null) {
                 event.isCancelled = true
                 

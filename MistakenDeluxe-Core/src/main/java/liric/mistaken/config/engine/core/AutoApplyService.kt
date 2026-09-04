@@ -10,7 +10,7 @@ object AutoApplyService {
         
         
         
-        Bukkit.getScheduler().runTask(MistakenLib.plugin, Runnable {
+        Bukkit.getGlobalRegionScheduler().run(MistakenLib.plugin, {
             if (fileName == "killers.yml" || fileName == "survivors.yml" || fileName.startsWith("menus")) {
                 ConfigManager.loadAllConfigs()
                 if (fileName.startsWith("menus")) {

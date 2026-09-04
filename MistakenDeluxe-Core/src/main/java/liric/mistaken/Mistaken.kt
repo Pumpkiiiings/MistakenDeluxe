@@ -182,7 +182,11 @@ class Mistaken : JavaPlugin() {
         
         
         setupIntegrations()
-        setupDatabase()
+        if (!setupDatabase()) {
+            componentLogger.error(ColorTranslator.translate("[ERROR] Mistaken cannot start without a working database."))
+            server.pluginManager.disablePlugin(this)
+            return
+        }
 
         statsManager = StatsManager(this)
         playerDataManager = PlayerDataManager(this)
@@ -211,7 +215,6 @@ class Mistaken : JavaPlugin() {
         mapManager = MapManager(this)
         scoreboardManager = ScoreboardManager(this)
         nameTagManager = liric.mistaken.game.managers.visual.NameTagManager(this)
-        ambientManager = AmbientManager(this)
         arenaManager = ArenaManager(this)
         killerManager = KillerManager(this)
         survivorManager = SurvivorManager(this)
@@ -225,7 +228,6 @@ class Mistaken : JavaPlugin() {
         killerTienda = KillerShop()
         survivorTienda = SurvivorShop()
         shopSelector = ShopSelector()
-        scoreboardManager = ScoreboardManager(this)
         observerHUDManager = ObserverHUDManager(this)
         
         visualUpdateService = liric.mistaken.game.managers.visual.VisualUpdateService(this)
@@ -275,6 +277,8 @@ class Mistaken : JavaPlugin() {
         if (::observerHUDManager.isInitialized) runCatching { observerHUDManager.shutdown() }
         if (::visualUpdateService.isInitialized) runCatching { visualUpdateService.stop() }
         if (::glowingAPI.isInitialized) runCatching { glowingAPI.disable() }
+        if (::statsManager.isInitialized) runCatching { statsManager.shutdown() }
+        if (::playerDataManager.isInitialized) runCatching { playerDataManager.saveAllSync() }
         if (::databaseManager.isInitialized) runCatching { databaseManager.close() }
         
         
@@ -292,7 +296,7 @@ class Mistaken : JavaPlugin() {
             databaseManager.setup()
             true
         } catch (e: Exception) {
-            componentLogger.error(ColorTranslator.translate("[ERROR] Could not connect to the database. Data will not be saved."))
+            componentLogger.error(ColorTranslator.translate("[ERROR] Could not initialize the database: ${e.message}"))
             false
         }
     }

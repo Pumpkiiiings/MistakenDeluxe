@@ -29,7 +29,7 @@ class StillLife : CoreKiller(
     init {
         plugin.server.pluginManager.registerEvents(this, plugin)
 
-        plugin.server.scheduler.runTaskTimer(plugin, Runnable {
+        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, java.util.function.Consumer {
             for (uuid in disguisedAs.keys) {
                 val player = Bukkit.getPlayer(uuid)
                 if (player != null && player.isOnline) {
@@ -140,11 +140,11 @@ class StillLife : CoreKiller(
                     }
                     
                     
-                    Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+                    zombie.scheduler.runDelayed(plugin, java.util.function.Consumer {
                         if (!zombie.isDead) {
                             zombie.health = 0.0
                         }
-                    }, 20L * 15L)
+                    }, null, 20L * 15L)
                 }
                 
                 player.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate("<green>�Clones invocados!"))

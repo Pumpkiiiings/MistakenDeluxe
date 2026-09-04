@@ -35,11 +35,11 @@ class AlessioPartiesHook(private val plugin: Mistaken) : Listener {
                         if (memberPlayer != null && memberPlayer.isOnline) {
                             recentlyPulled.add(memberUuid)
                             
-                            Bukkit.getScheduler().runTask(plugin, Runnable {
+                            Bukkit.getGlobalRegionScheduler().run(plugin, {
                                 MistakenProvider.get().sessionManager.joinSession(memberPlayer, sessionId)
                                 liric.mistaken.config.engine.core.MessageService.send(memberPlayer, liric.mistaken.config.Messages.HOOK_ALESSIO_ENTER)
                                 
-                                Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+                                Bukkit.getGlobalRegionScheduler().runDelayed(plugin, {
                                     recentlyPulled.remove(memberUuid)
                                 }, 40L)
                             })
@@ -70,11 +70,11 @@ class AlessioPartiesHook(private val plugin: Mistaken) : Listener {
                         if (memberPlayer != null && memberPlayer.isOnline) {
                             recentlyPulled.add(memberUuid)
                             
-                            Bukkit.getScheduler().runTask(plugin, Runnable {
+                            Bukkit.getGlobalRegionScheduler().run(plugin, {
                                 MistakenProvider.get().sessionManager.leaveSession(memberPlayer)
                                 liric.mistaken.config.engine.core.MessageService.send(memberPlayer, liric.mistaken.config.Messages.HOOK_ALESSIO_LEAVE)
                                 
-                                Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+                                Bukkit.getGlobalRegionScheduler().runDelayed(plugin, {
                                     recentlyPulled.remove(memberUuid)
                                 }, 40L)
                             })

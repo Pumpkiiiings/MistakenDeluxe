@@ -41,9 +41,9 @@ class ModelEngineAnimationComponent : AnimationComponent {
                     val lengthInSeconds = property.blueprintAnimation.length
                     val delayTicks = (lengthInSeconds * 20.0 / speed).toLong().coerceAtLeast(1L)
                     
-                    Bukkit.getScheduler().runTaskLater(liric.mistaken.Mistaken.instance, Runnable {
+                    character.entity.scheduler.runDelayed(liric.mistaken.Mistaken.instance, java.util.function.Consumer {
                         onComplete()
-                    }, delayTicks)
+                    }, null, delayTicks)
                 }
             } else {
                 onComplete?.invoke()

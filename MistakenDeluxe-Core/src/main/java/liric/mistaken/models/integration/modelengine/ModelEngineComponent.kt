@@ -18,7 +18,7 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
     private var modeledEntity: ModeledEntity? = null
     private var activeModel: ActiveModel? = null
     private var dummy: Dummy<Player>? = null
-    private var taskId: Int = -1
+    private var syncTask: io.papermc.paper.threadedregions.scheduler.ScheduledTask? = null
     private var lastLocation: Location? = null
     private var modelAdded: Boolean = false
     private var walkTicks: Int = 0
@@ -67,9 +67,9 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
         player.addPotionEffect(PotionEffect(PotionEffectType.INVISIBILITY, Int.MAX_VALUE, 0, false, false))
 
         
-        taskId = Bukkit.getScheduler().runTaskTimer(liric.mistaken.Mistaken.instance, Runnable {
+        syncTask = player.scheduler.runAtFixedRate(liric.mistaken.Mistaken.instance, java.util.function.Consumer {
             syncDummy(player)
-        }, 0L, 1L).taskId
+        }, null, 1L, 1L)
     }
 
     private fun syncDummy(player: Player) {
@@ -118,10 +118,8 @@ class ModelEngineComponent(override val modelId: String) : ModelComponent {
     }
 
     override fun despawn() {
-        if (taskId != -1) {
-            Bukkit.getScheduler().cancelTask(taskId)
-            taskId = -1
-        }
+        syncTask?.cancel()
+        syncTask = null
         
         val player = character.entity as? Player
         player?.removePotionEffect(PotionEffectType.INVISIBILITY)

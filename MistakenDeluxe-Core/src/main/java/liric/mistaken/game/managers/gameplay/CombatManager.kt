@@ -208,7 +208,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
         if (isKiller) {
             val killerClass = plugin.killerManager.getKillerOfPlayer(player)
             val customHealth = killerClass?.let { plugin.configManager.getKillerConfig(it.id).getDouble("stats.health", 0.0) } ?: 0.0
-            maxHP = session?.settings?.killerHealth ?: if (customHealth > 0.0) customHealth else 160.0
+            maxHP = session.settings?.killerHealth ?: if (customHealth > 0.0) customHealth else 160.0
         } else {
             val survivorClass = plugin.survivorManager.getSurvivorClass(player)
             val customHealth = survivorClass?.let { plugin.configManager.getSurvivorConfig(it.id).getDouble("stats.health", 0.0) } ?: 0.0

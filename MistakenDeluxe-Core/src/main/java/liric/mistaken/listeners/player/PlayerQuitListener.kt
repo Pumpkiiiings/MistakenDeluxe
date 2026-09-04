@@ -80,8 +80,7 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
             } catch (ignored: Exception) {}
 
             
-            plugin.playerDataManager.saveConfigSync()
-            plugin.playerDataManager.removeData(uuid)
+            plugin.playerDataManager.unloadPlayer(uuid)
         }
     }
 }

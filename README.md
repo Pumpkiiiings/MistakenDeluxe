@@ -1,10 +1,10 @@
 ![Mistaken](https://i.ibb.co/6RKZcwQD/mistakendeluxe.png)
 
-![Version](https://img.shields.io/badge/Version-2.0.0-79addc?style=for-the-badge&logo=semver&logoColor=white)
+![Version](https://img.shields.io/badge/Version-2.2.1-79addc?style=for-the-badge&logo=semver&logoColor=white)
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-![Kotlin](https://img.shields.io/badge/Kotlin-2.1.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
-![Platform](https://img.shields.io/badge/Paper%20%7C%20Folia-Supported-00B7EE?style=for-the-badge&logo=google-cloud&logoColor=white)
-![Minecraft](https://img.shields.io/badge/Minecraft-1.21.4-111111?style=for-the-badge&logo=minecraft&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
+![Platform](https://img.shields.io/badge/Paper-Supported-00B7EE?style=for-the-badge&logo=google-cloud&logoColor=white)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.21.11-111111?style=for-the-badge&logo=minecraft&logoColor=white)
 ---
 ## 📄 Overview
 

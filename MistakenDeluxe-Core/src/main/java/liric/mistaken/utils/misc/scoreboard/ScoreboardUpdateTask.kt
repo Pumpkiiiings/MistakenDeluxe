@@ -1,13 +1,14 @@
 package liric.mistaken.utils.scoreboard
 
 import org.bukkit.Bukkit
-import org.bukkit.scheduler.BukkitRunnable
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
+import java.util.function.Consumer
 import liric.mistaken.MistakenLib
 
-class ScoreboardUpdateTask : BukkitRunnable() {
+class ScoreboardUpdateTask : Consumer<ScheduledTask> {
     private var tickCount = 0
 
-    override fun run() {
+    override fun accept(task: ScheduledTask) {
         val renderer = ScoreboardManager.getRenderer()
         val supportsAnimations = ScoreboardManager.supportsAnimations()
 

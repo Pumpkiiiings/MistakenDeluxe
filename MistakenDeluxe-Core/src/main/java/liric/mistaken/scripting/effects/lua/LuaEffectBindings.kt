@@ -116,18 +116,6 @@ object LuaEffectBindings {
         })
 
         
-        globals.set("get_nearby_players", object : TwoArgFunction() {
-            override fun call(playerArg: LuaValue, radiusArg: LuaValue): LuaValue {
-                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
-                val radius = radiusArg.checkdouble()
-                val nearby = player.getNearbyEntities(radius, radius, radius)
-                    .filterIsInstance<org.bukkit.entity.Player>()
-                    .filter { it.uniqueId != player.uniqueId } 
-                return playersToLuaTable(nearby)
-            }
-        })
-
-        
         globals.set("ray_trace_player", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, distArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
@@ -788,9 +776,7 @@ object LuaEffectBindings {
                 val p = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
                 player.scheduler.run(p, java.util.function.Consumer<io.papermc.paper.threadedregions.scheduler.ScheduledTask> {
                     val rawMsg = liric.mistaken.config.engine.core.MessageService.getStrictString(player, key, file)
-                    if (rawMsg != null) {
-                        player.sendActionBar(liric.mistaken.utils.color.ColorTranslator.translate(rawMsg))
-                    }
+                    player.sendActionBar(liric.mistaken.utils.color.ColorTranslator.translate(rawMsg))
                 }, null)
                 return LuaValue.NIL
             }

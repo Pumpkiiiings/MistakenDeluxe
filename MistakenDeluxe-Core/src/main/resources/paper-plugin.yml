@@ -1,9 +1,10 @@
 name: Mistaken
-version: Deluxe-2.0
+version: '${version}'
 main: liric.mistaken.Mistaken
 loader: liric.mistaken.MistakenPluginLoader
 api-version: '1.21'
 author: Pumpkingz
+folia-supported: true
 
 dependencies:
   server:
@@ -32,9 +33,6 @@ dependencies:
     Parties:
       load: BEFORE
       required: false
-    LodestoneParties:
-      load: BEFORE
-      required: false
     packetevents:
       load: BEFORE
       required: true
@@ -51,8 +49,5 @@ dependencies:
       load: BEFORE
       required: false
     Oraxen:
-      load: BEFORE
-      required: false
-    Parties:
       load: BEFORE
       required: false

@@ -169,20 +169,19 @@ class WardenKiller : BaseKiller("warden", "Warden") {
 
         player.world.playSound(player.location, org.bukkit.Sound.ENTITY_ENDER_DRAGON_FLAP, 1.0f, 0.5f)
 
-        object : org.bukkit.scheduler.BukkitRunnable() {
-            override fun run() {
-                if (!player.isOnline || getCharacter(player)?.getComponent(liric.mistaken.models.components.StateComponent::class.java)?.currentState != WardenSlamState) {
-                    cancel()
-                    return
-                }
+        player.scheduler.runAtFixedRate(liric.mistaken.Mistaken.instance, java.util.function.Consumer { task ->
+            if (!player.isOnline || getCharacter(player)?.getComponent(liric.mistaken.models.components.StateComponent::class.java)?.currentState != WardenSlamState) {
+                task.cancel()
+                return@Consumer
+            }
 
-                if ((player.isOnGround || player.location.block.getRelative(org.bukkit.block.BlockFace.DOWN).type.isSolid) && player.velocity.y <= 0) {
-                    cancel()
-                    transitionTo(player, liric.mistaken.models.states.IdleState, force = true)
+            if ((player.isOnGround || player.location.block.getRelative(org.bukkit.block.BlockFace.DOWN).type.isSolid) && player.velocity.y <= 0) {
+                task.cancel()
+                transitionTo(player, liric.mistaken.models.states.IdleState, force = true)
 
                     val loc = player.location
-                    val world = loc.world ?: return
-                    val session = liric.mistaken.Mistaken.instance.sessionManager.getSession(player) ?: return
+                    val world = loc.world ?: return@Consumer
+                    val session = liric.mistaken.Mistaken.instance.sessionManager.getSession(player) ?: return@Consumer
 
                     player.world.playSound(loc, org.bukkit.Sound.ENTITY_GENERIC_EXPLODE, 2.0f, 0.5f)
                     player.world.spawnParticle(org.bukkit.Particle.EXPLOSION, loc, 5)
@@ -196,54 +195,51 @@ class WardenKiller : BaseKiller("warden", "Warden") {
                     }
 
                     
-                    object : org.bukkit.scheduler.BukkitRunnable() {
-                        var radius = 1
-                        val maxRadius = 10
+                    val radiusBox = intArrayOf(1)
+                    val maxRadius = 10
+                    org.bukkit.Bukkit.getRegionScheduler().runAtFixedRate(liric.mistaken.Mistaken.instance, loc, java.util.function.Consumer { task ->
+                        val radius = radiusBox[0]
+                        if (radius > maxRadius) {
+                            task.cancel()
+                            return@Consumer
+                        }
 
-                        override fun run() {
-                            if (radius > maxRadius) {
-                                cancel()
-                                return
-                            }
+                        val cx = loc.blockX
+                        val cy = loc.blockY
+                        val cz = loc.blockZ
 
-                            val cx = loc.blockX
-                            val cy = loc.blockY
-                            val cz = loc.blockZ
+                        for (x in -radius..radius) {
+                            for (z in -radius..radius) {
+                                if (Math.max(Math.abs(x), Math.abs(z)) == radius) {
+                                    val b = world.getBlockAt(cx + x, cy - 1, cz + z)
+                                    if (b.type != org.bukkit.Material.AIR && b.type.isSolid) {
+                                        val data = b.blockData
+                                        val bLoc = b.location
 
-                            for (x in -radius..radius) {
-                                for (z in -radius..radius) {
-                                    if (Math.max(Math.abs(x), Math.abs(z)) == radius) {
-                                        val b = world.getBlockAt(cx + x, cy - 1, cz + z)
-                                        if (b.type != org.bukkit.Material.AIR && b.type.isSolid) {
-                                            val data = b.blockData
-                                            val bLoc = b.location
-
-                                            for (p in session.getPlayers()) {
-                                                liric.mistaken.packet.PacketFactory.blocks.sendBlockChange(p, bLoc, org.bukkit.Material.AIR)
-                                            }
-
-                                            val fb = world.spawnFallingBlock(bLoc.add(0.5, 0.0, 0.5), data)
-                                            fb.velocity = org.bukkit.util.Vector(0.0, 0.4, 0.0)
-                                            fb.dropItem = false
-                                            fb.setHurtEntities(false)
-
-                                            org.bukkit.Bukkit.getScheduler().runTaskLater(liric.mistaken.Mistaken.instance, Runnable {
-                                                if (fb.isValid) fb.remove()
-                                                for (p in session.getPlayers()) {
-                                                    liric.mistaken.packet.PacketFactory.blocks.sendBlockChange(p, bLoc, data)
-                                                }
-                                            }, 20L)
+                                        for (p in session.getPlayers()) {
+                                            liric.mistaken.packet.PacketFactory.blocks.sendBlockChange(p, bLoc, org.bukkit.Material.AIR)
                                         }
+
+                                        val fb = world.spawnFallingBlock(bLoc.add(0.5, 0.0, 0.5), data)
+                                        fb.velocity = org.bukkit.util.Vector(0.0, 0.4, 0.0)
+                                        fb.dropItem = false
+                                        fb.setHurtEntities(false)
+
+                                        fb.scheduler.runDelayed(liric.mistaken.Mistaken.instance, java.util.function.Consumer {
+                                            if (fb.isValid) fb.remove()
+                                            for (p in session.getPlayers()) {
+                                                liric.mistaken.packet.PacketFactory.blocks.sendBlockChange(p, bLoc, data)
+                                            }
+                                        }, null, 20L)
                                     }
                                 }
                             }
-                            player.world.playSound(loc, org.bukkit.Sound.BLOCK_STONE_BREAK, 1.0f, 0.5f)
-                            radius++
                         }
-                    }.runTaskTimer(liric.mistaken.Mistaken.instance, 0L, 2L)
+                        player.world.playSound(loc, org.bukkit.Sound.BLOCK_STONE_BREAK, 1.0f, 0.5f)
+                        radiusBox[0]++
+                    }, 1L, 2L)
                 }
-            }
-        }.runTaskTimer(liric.mistaken.Mistaken.instance, 10L, 1L)
+        }, null, 10L, 1L)
     }
 
     private fun performRage(player: Player) {
@@ -260,11 +256,11 @@ class WardenKiller : BaseKiller("warden", "Warden") {
         transitionTo(player, WardenSniffWalkState, force = true)
         player.world.playSound(player.location, org.bukkit.Sound.ENTITY_WARDEN_SNIFF, 1.5f, 1.0f)
 
-        org.bukkit.Bukkit.getScheduler().runTaskLater(liric.mistaken.Mistaken.instance, Runnable {
+        player.scheduler.runDelayed(liric.mistaken.Mistaken.instance, java.util.function.Consumer {
             if (player.isOnline && getCharacter(player)?.getComponent(liric.mistaken.models.components.StateComponent::class.java)?.currentState == WardenSniffWalkState) {
                 transitionTo(player, liric.mistaken.models.states.IdleState, force = true)
                 
-                val session = liric.mistaken.Mistaken.instance.sessionManager.getSession(player) ?: return@Runnable
+                val session = liric.mistaken.Mistaken.instance.sessionManager.getSession(player) ?: return@Consumer
                 player.world.playSound(player.location, org.bukkit.Sound.ENTITY_WARDEN_HEARTBEAT, 2.0f, 1.0f)
 
                 for (victim in session.getPlayers()) {
@@ -274,7 +270,7 @@ class WardenKiller : BaseKiller("warden", "Warden") {
                     }
                 }
             }
-        }, 100L) 
+        }, null, 100L) 
     }
 
     /**

@@ -107,35 +107,34 @@ class HackTerminalListener(private val plugin: Mistaken) : Listener {
         inv.setItem(25, createItem(Material.YELLOW_STAINED_GLASS_PANE, msg(player, "color_yellow")))
 
         
-        object : BukkitRunnable() {
-            var step = 0
-            override fun run() {
-                if (!player.isOnline || player.openInventory.topInventory.holder !is HackTerminalHolder) {
-                    this.cancel()
-                    return
-                }
-
-                if (step < sequence.size) {
-                    val mat = sequence[step]
-                    inv.setItem(13, createItem(mat, msg(player, "memorize")))
-                    player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f)
-                    
-                    
-                    Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-                        if (player.openInventory.topInventory.holder is HackTerminalHolder) {
-                            inv.setItem(13, createItem(Material.GRAY_STAINED_GLASS_PANE, msg(player, "waiting")))
-                        }
-                    }, 10L)
-
-                    step++
-                } else {
-                    inv.setItem(13, createItem(Material.GREEN_STAINED_GLASS_PANE, msg(player, "enter_sequence")))
-                    player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                    hackSession.isShowing = false
-                    this.cancel()
-                }
+        val stepBox = intArrayOf(0)
+        Bukkit.getRegionScheduler().runAtFixedRate(plugin, loc, java.util.function.Consumer { task ->
+            if (!player.isOnline || player.openInventory.topInventory.holder !is HackTerminalHolder) {
+                task.cancel()
+                return@Consumer
             }
-        }.runTaskTimer(plugin, 10L, 20L)
+            
+            val step = stepBox[0]
+            if (step < sequence.size) {
+                val mat = sequence[step]
+                inv.setItem(13, createItem(mat, msg(player, "memorize")))
+                player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BELL, 1f, 1f)
+                
+                
+                Bukkit.getRegionScheduler().runDelayed(plugin, loc, {
+                    if (player.openInventory.topInventory.holder is HackTerminalHolder) {
+                        inv.setItem(13, createItem(Material.GRAY_STAINED_GLASS_PANE, msg(player, "waiting")))
+                    }
+                }, 10L)
+
+                stepBox[0]++
+            } else {
+                inv.setItem(13, createItem(Material.GREEN_STAINED_GLASS_PANE, msg(player, "enter_sequence")))
+                player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
+                hackSession.isShowing = false
+                task.cancel()
+            }
+        }, 10L, 20L)
     }
 
     @EventHandler

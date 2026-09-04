@@ -1,8 +1,6 @@
 package liric.mistaken.utils.hooks
 
 import liric.mistaken.Mistaken
-import liric.lodestone.parties.api.models.Party
-import liric.lodestone.parties.api.models.PartyMember
 import liric.mistaken.api.MistakenProvider
 import liric.mistaken.api.events.MistakenPlayerJoinSessionEvent
 import liric.mistaken.api.events.MistakenPlayerLeaveSessionEvent
@@ -11,10 +9,12 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
 import java.util.UUID
+import java.util.Optional
+import java.util.concurrent.ConcurrentHashMap
 
 class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
 
-    private val recentlyPulled = mutableSetOf<UUID>()
+    private val recentlyPulled = ConcurrentHashMap.newKeySet<UUID>()
 
     @EventHandler
     fun onSessionJoin(event: MistakenPlayerJoinSessionEvent) {
@@ -24,35 +24,27 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
         if (recentlyPulled.contains(player.uniqueId)) return
 
         try {
-            val lodestonePlugin = Bukkit.getPluginManager().getPlugin("LodestoneParties") ?: return
-            val method = lodestonePlugin.javaClass.getMethod("getPartyService")
-            val partyService = method.invoke(lodestonePlugin) as liric.lodestone.parties.api.services.PartyService
+            val party = findParty(player.uniqueId) ?: return
 
-            val partyOpt = partyService.getPartyByPlayer(player.uniqueId)
-            
-            if (partyOpt.isPresent) {
-                val party = partyOpt.get() as Party
-                
-                party.members.forEach { member ->
-                    if (member.uniqueId != player.uniqueId) {
-                        val memberPlayer = Bukkit.getPlayer(member.uniqueId)
+            party.memberIds.forEach { memberId ->
+                    if (memberId != player.uniqueId) {
+                        val memberPlayer = Bukkit.getPlayer(memberId)
                         if (memberPlayer != null && memberPlayer.isOnline) {
-                            recentlyPulled.add(member.uniqueId)
+                            recentlyPulled.add(memberId)
                             
-                            Bukkit.getScheduler().runTask(plugin, Runnable {
+                            Bukkit.getGlobalRegionScheduler().run(plugin, {
                                 MistakenProvider.get().sessionManager.joinSession(memberPlayer, sessionId)
                                 liric.mistaken.config.engine.core.MessageService.send(memberPlayer, liric.mistaken.config.Messages.HOOK_PARTY_ENTER)
                                 
-                                Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-                                    recentlyPulled.remove(member.uniqueId)
+                                Bukkit.getGlobalRegionScheduler().runDelayed(plugin, {
+                                    recentlyPulled.remove(memberId)
                                 }, 40L)
                             })
                         }
                     }
                 }
-            }
         } catch (e: Exception) {
-            plugin.logger.warning("Error en LodestonePartiesHook: \${e.message}")
+            plugin.logger.warning("Error en LodestonePartiesHook: ${e.message}")
         }
     }
 
@@ -63,35 +55,27 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
         if (recentlyPulled.contains(player.uniqueId)) return
 
         try {
-            val lodestonePlugin = Bukkit.getPluginManager().getPlugin("LodestoneParties") ?: return
-            val method = lodestonePlugin.javaClass.getMethod("getPartyService")
-            val partyService = method.invoke(lodestonePlugin) as liric.lodestone.parties.api.services.PartyService
+            val party = findParty(player.uniqueId) ?: return
 
-            val partyOpt = partyService.getPartyByPlayer(player.uniqueId)
-
-            if (partyOpt.isPresent) {
-                val party = partyOpt.get() as Party
-                
-                party.members.forEach { member ->
-                    if (member.uniqueId != player.uniqueId) {
-                        val memberPlayer = Bukkit.getPlayer(member.uniqueId)
+            party.memberIds.forEach { memberId ->
+                    if (memberId != player.uniqueId) {
+                        val memberPlayer = Bukkit.getPlayer(memberId)
                         if (memberPlayer != null && memberPlayer.isOnline) {
-                            recentlyPulled.add(member.uniqueId)
+                            recentlyPulled.add(memberId)
                             
-                            Bukkit.getScheduler().runTask(plugin, Runnable {
+                            Bukkit.getGlobalRegionScheduler().run(plugin, {
                                 MistakenProvider.get().sessionManager.leaveSession(memberPlayer)
                                 liric.mistaken.config.engine.core.MessageService.send(memberPlayer, liric.mistaken.config.Messages.HOOK_PARTY_LEAVE)
                                 
-                                Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-                                    recentlyPulled.remove(member.uniqueId)
+                                Bukkit.getGlobalRegionScheduler().runDelayed(plugin, {
+                                    recentlyPulled.remove(memberId)
                                 }, 40L)
                             })
                         }
                     }
                 }
-            }
         } catch (e: Exception) {
-             plugin.logger.warning("Error en LodestonePartiesHook: \${e.message}")
+             plugin.logger.warning("Error en LodestonePartiesHook: ${e.message}")
         }
     }
 
@@ -104,15 +88,9 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
             event.isCancelled = true
             
             try {
-                val lodestonePlugin = Bukkit.getPluginManager().getPlugin("LodestoneParties") ?: return
-                val method = lodestonePlugin.javaClass.getMethod("getPartyService")
-                val partyService = method.invoke(lodestonePlugin) as liric.lodestone.parties.api.services.PartyService
-    
-                val partyOpt = partyService.getPartyByPlayer(player.uniqueId)
-                if (partyOpt.isPresent) {
-                    val party = partyOpt.get() as Party
-                    
-                    if (party.leader.uniqueId == player.uniqueId) {
+                val party = findParty(player.uniqueId)
+                if (party != null) {
+                    if (party.leaderId == player.uniqueId) {
                         
                         val arenas = plugin.arenaManager.getArenas()
                         if (arenas.isEmpty()) {
@@ -122,16 +100,16 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                         
                         val session = plugin.sessionManager.createSession(arenas.first().name, true)
                         
-                        party.members.forEach { member ->
-                            val memberPlayer = Bukkit.getPlayer(member.uniqueId)
+                        party.memberIds.forEach { memberId ->
+                            val memberPlayer = Bukkit.getPlayer(memberId)
                             if (memberPlayer != null && memberPlayer.isOnline) {
-                                recentlyPulled.add(member.uniqueId)
+                                recentlyPulled.add(memberId)
                                 
-                                Bukkit.getScheduler().runTask(plugin, Runnable {
+                                Bukkit.getGlobalRegionScheduler().run(plugin, {
                                     MistakenProvider.get().sessionManager.joinSession(memberPlayer, session.id)
                                     liric.mistaken.config.engine.core.MessageService.send(memberPlayer, liric.mistaken.config.Messages.HOOK_PARTY_ENTER_PRIVATE)
                                     
-                                    if (member.uniqueId == player.uniqueId) {
+                                    if (memberId == player.uniqueId) {
                                         val panelItem = org.bukkit.inventory.ItemStack(org.bukkit.Material.COMMAND_BLOCK)
                                         val meta = panelItem.itemMeta
                                         meta.setDisplayName("§6§lPanel de Control")
@@ -139,8 +117,8 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                                         memberPlayer.inventory.setItem(4, panelItem)
                                     }
                                     
-                                    Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-                                        recentlyPulled.remove(member.uniqueId)
+                                    Bukkit.getGlobalRegionScheduler().runDelayed(plugin, {
+                                        recentlyPulled.remove(memberId)
                                     }, 40L)
                                 })
                             }
@@ -155,8 +133,26 @@ class LodestonePartiesHook(private val plugin: Mistaken) : Listener {
                     liric.mistaken.config.engine.core.MessageService.send(player, liric.mistaken.config.Messages.HOOK_PARTY_NOT_IN)
                 }
             } catch (e: Exception) {
-                 plugin.logger.warning("Error al procesar /party private: \${e.message}")
+                 plugin.logger.warning("Error al procesar /party private: ${e.message}")
             }
         }
     }
+
+    private fun findParty(playerId: UUID): PartySnapshot? {
+        val lodestonePlugin = Bukkit.getPluginManager().getPlugin("LodestoneParties") ?: return null
+        val partyService = lodestonePlugin.javaClass.getMethod("getPartyService").invoke(lodestonePlugin)
+        val result = partyService.javaClass
+            .getMethod("getPartyByPlayer", UUID::class.java)
+            .invoke(partyService, playerId) as? Optional<*> ?: return null
+        val party = result.orElse(null) ?: return null
+        val leader = party.javaClass.getMethod("getLeader").invoke(party)
+        val leaderId = leader.javaClass.getMethod("getUniqueId").invoke(leader) as UUID
+        val members = party.javaClass.getMethod("getMembers").invoke(party) as? Collection<*> ?: return null
+        val memberIds = members.mapNotNull { member ->
+            member?.javaClass?.getMethod("getUniqueId")?.invoke(member) as? UUID
+        }
+        return PartySnapshot(leaderId, memberIds)
+    }
+
+    private data class PartySnapshot(val leaderId: UUID, val memberIds: List<UUID>)
 }

@@ -40,7 +40,7 @@ class Mariachi : CoreKiller(
 
     private val pathBase = "killers.mariachi"
     override val defaultMusic = "mistaken:jarabetapatio"
-    private val sonidoMúsicaId = defaultMusic!!
+    private val sonidoMúsicaId = defaultMusic
 
     private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val skullsOrbit = ConcurrentHashMap<UUID, MutableList<VirtualItemDisplay>>()
