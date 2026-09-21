@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers
+package liric.mistaken.roles.killers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.scripting.engine.groovy.KillerScriptEngine
@@ -40,7 +40,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
     private fun loadHardcodedKillers() {
         listOf(
             CharlieInferno(), CharlieJazz(), Mariachi(),
-            Sowoul(), StillLife(), WardenKiller(), SmilerKiller()
+            Sowoul(), StillLife(), SmilerKiller()
         ).forEach { registerClass(it) }
         plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Loaded native killers (Hardcoded).</gray>"))
     }

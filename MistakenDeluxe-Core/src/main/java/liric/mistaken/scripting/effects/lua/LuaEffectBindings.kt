@@ -793,6 +793,88 @@ object LuaEffectBindings {
             }
         })
 
+        globals.set("run_timer", object : org.luaj.vm2.lib.VarArgFunction() {
+            override fun invoke(args: org.luaj.vm2.Varargs): org.luaj.vm2.Varargs {
+                val delay = args.arg(1).optlong(0)
+                val period = args.arg(2).optlong(1)
+                val maxIterations = args.arg(3).optint(10)
+                val func = args.arg(4)
+                
+                if (func.isfunction()) {
+                    val pPlugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+                    val counter = intArrayOf(0)
+                    pPlugin.server.globalRegionScheduler.runAtFixedRate(pPlugin, java.util.function.Consumer { task ->
+                        if (counter[0] >= maxIterations) {
+                            task.cancel()
+                            return@Consumer
+                        }
+                        func.call(org.luaj.vm2.LuaValue.valueOf(counter[0]))
+                        counter[0]++
+                    }, if (delay <= 0) 1L else delay, period)
+                }
+                return org.luaj.vm2.LuaValue.NIL
+            }
+        })
+
+        globals.set("spawn_falling_block", object : org.luaj.vm2.lib.VarArgFunction() {
+            override fun invoke(args: org.luaj.vm2.Varargs): org.luaj.vm2.Varargs {
+                val loc = unwrapLocation(args.arg(1)) ?: return org.luaj.vm2.LuaValue.NIL
+                val matName = args.arg(2).optjstring("DIRT") ?: "DIRT"
+                val vx = args.arg(3).optdouble(0.0)
+                val vy = args.arg(4).optdouble(0.4)
+                val vz = args.arg(5).optdouble(0.0)
+                val duration = args.arg(6).optint(20)
+                
+                val mat = org.bukkit.Material.matchMaterial(matName) ?: return org.luaj.vm2.LuaValue.NIL
+                val data = org.bukkit.Bukkit.createBlockData(mat)
+                
+                val pPlugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+                pPlugin.server.regionScheduler.execute(pPlugin, loc, java.lang.Runnable {
+                    val fb = loc.world.spawnFallingBlock(loc, data)
+                    fb.velocity = org.bukkit.util.Vector(vx, vy, vz)
+                    fb.dropItem = false
+                    fb.setHurtEntities(false)
+                    
+                    fb.scheduler.runDelayed(pPlugin, java.util.function.Consumer {
+                        if (fb.isValid) fb.remove()
+                    }, null, duration.toLong())
+                })
+                
+                return org.luaj.vm2.LuaValue.NIL
+            }
+        })
+
+        globals.set("add_potion_effect", object : org.luaj.vm2.lib.VarArgFunction() {
+            override fun invoke(args: org.luaj.vm2.Varargs): org.luaj.vm2.Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return org.luaj.vm2.LuaValue.NIL
+                val typeName = args.arg(2).checkjstring()
+                val duration = args.arg(3).optint(200)
+                val amplifier = args.arg(4).optint(0)
+                
+                val type = org.bukkit.potion.PotionEffectType.getByName(typeName.uppercase()) ?: return org.luaj.vm2.LuaValue.NIL
+                player.addPotionEffect(org.bukkit.potion.PotionEffect(type, duration, amplifier))
+                return org.luaj.vm2.LuaValue.NIL
+            }
+        })
+
+        globals.set("send_message", object : org.luaj.vm2.lib.VarArgFunction() {
+            override fun invoke(args: org.luaj.vm2.Varargs): org.luaj.vm2.Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return org.luaj.vm2.LuaValue.NIL
+                val msg = args.arg(2).optjstring("") ?: ""
+                player.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate(msg))
+                return org.luaj.vm2.LuaValue.NIL
+            }
+        })
+
+        globals.set("kill_player", object : org.luaj.vm2.lib.VarArgFunction() {
+            override fun invoke(args: org.luaj.vm2.Varargs): org.luaj.vm2.Varargs {
+                val victim = unwrapPlayer(args.arg(1)) ?: return org.luaj.vm2.LuaValue.NIL
+                val session = liric.mistaken.Mistaken.instance.sessionManager.getSession(victim)
+                session?.playerController?.handlePlayerDeath(victim)
+                return org.luaj.vm2.LuaValue.NIL
+            }
+        })
+
         globals.set("play_animation", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
