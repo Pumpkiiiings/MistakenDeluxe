@@ -1,4 +1,4 @@
-﻿package liric.mistaken.scripting.effects.lua
+package liric.mistaken.scripting.effects.lua
 
 import liric.mistaken.scripting.api.HasLocation
 import liric.mistaken.scripting.adapter.BukkitPlayerAdapter
@@ -726,6 +726,73 @@ object LuaEffectBindings {
         })
 
         
+                globals.set("send_fake_block", object : org.luaj.vm2.lib.VarArgFunction() {
+            override fun invoke(args: org.luaj.vm2.Varargs): org.luaj.vm2.Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return org.luaj.vm2.LuaValue.NIL
+                val loc = unwrapLocation(args.arg(2)) ?: return org.luaj.vm2.LuaValue.NIL
+                val matName = args.arg(3).optjstring("LIGHT") ?: "LIGHT"
+                val duration = args.arg(4).optint(60)
+                
+                val mat = org.bukkit.Material.matchMaterial(matName) ?: return org.luaj.vm2.LuaValue.NIL
+                val data = org.bukkit.Bukkit.createBlockData(mat)
+                if (data is org.bukkit.block.data.type.Light) data.level = 15
+                
+                val session = liric.mistaken.Mistaken.instance.sessionManager.getSession(player) ?: return org.luaj.vm2.LuaValue.NIL
+                for (p in session.getPlayers()) {
+                    liric.mistaken.packet.PacketFactory.blocks.sendBlockChange(p, loc, data)
+                }
+                
+                val pPlugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+                pPlugin.server.globalRegionScheduler.runDelayed(pPlugin, java.util.function.Consumer {
+                    val original = loc.block.blockData
+                    for (p in session.getPlayers()) {
+                        liric.mistaken.packet.PacketFactory.blocks.sendBlockChange(p, loc, original)
+                    }
+                }, duration.toLong())
+                return org.luaj.vm2.LuaValue.NIL
+            }
+        })
+
+        globals.set("set_frozen", object : org.luaj.vm2.lib.VarArgFunction() {
+            override fun invoke(args: org.luaj.vm2.Varargs): org.luaj.vm2.Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return org.luaj.vm2.LuaValue.NIL
+                val duration = args.arg(2).optint(40)
+                val oldSpeed = player.walkSpeed
+                player.walkSpeed = 0.0f
+                val pPlugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+                player.scheduler.runDelayed(pPlugin, java.util.function.Consumer {
+                    if (player.isOnline) player.walkSpeed = oldSpeed
+                }, null, duration.toLong())
+                return org.luaj.vm2.LuaValue.NIL
+            }
+        })
+
+        globals.set("leap", object : org.luaj.vm2.lib.VarArgFunction() {
+            override fun invoke(args: org.luaj.vm2.Varargs): org.luaj.vm2.Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return org.luaj.vm2.LuaValue.NIL
+                val fwdSpeed = args.arg(2).optdouble(1.5)
+                val upSpeed = args.arg(3).optdouble(1.0)
+                val onHitCb = args.arg(4)
+                
+                val dir = player.location.direction
+                dir.y = 0.0
+                if (dir.lengthSquared() > 0) dir.normalize()
+                player.velocity = dir.multiply(fwdSpeed).setY(upSpeed)
+                
+                if (onHitCb.isfunction()) {
+                    val pPlugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+                    player.scheduler.runAtFixedRate(pPlugin, java.util.function.Consumer { task ->
+                        if (!player.isOnline) { task.cancel(); return@Consumer }
+                        if ((player.isOnGround || player.location.block.getRelative(org.bukkit.block.BlockFace.DOWN).type.isSolid) && player.velocity.y <= 0) {
+                            task.cancel()
+                            onHitCb.call()
+                        }
+                    }, null, 5L, 1L)
+                }
+                return org.luaj.vm2.LuaValue.NIL
+            }
+        })
+
         globals.set("play_animation", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
@@ -744,8 +811,18 @@ object LuaEffectBindings {
                             override val defaultAnimation = animName
                         }
                         character.getComponent(liric.mistaken.models.components.StateComponent::class.java)?.transitionTo(state, force = true)
+                        return LuaValue.NIL
                     }
                 }
+                
+                
+                val modeledEntity = com.ticxo.modelengine.api.ModelEngineAPI.getModeledEntity(player.uniqueId)
+                if (modeledEntity != null) {
+                    modeledEntity.models.values.forEach { model ->
+                        model.animationHandler.playAnimation(animName, 0.0, 0.0, 1.0, true)
+                    }
+                }
+                
                 return LuaValue.NIL
             }
         })
