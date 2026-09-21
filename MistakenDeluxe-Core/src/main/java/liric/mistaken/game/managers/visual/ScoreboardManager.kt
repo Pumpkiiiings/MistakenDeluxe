@@ -92,18 +92,29 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 continue
             }
             var formatted = line
-                .replace("%player%", player.name)
-                .replace("%timer%", timeStr)
-                .replace("%map%", mapName)
-                .replace("%online%", onlineCount)
-                .replace("%completed%", completed)
-                .replace("%total%", total)
-                .replace("%lives%", lives)
-                .replace("%id%", sessionID)
+                .replace("%player%", "<player>")
+                .replace("%timer%", "<timer>")
+                .replace("%map%", "<map>")
+                .replace("%online%", "<online>")
+                .replace("%completed%", "<completed>")
+                .replace("%total%", "<total>")
+                .replace("%lives%", "<lives>")
+                .replace("%id%", "<id>")
                 .replace("{", "<").replace("}", ">")
 
+            val tags = net.kyori.adventure.text.minimessage.tag.resolver.TagResolver.resolver(
+                net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("player", player.name),
+                net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("timer", timeStr),
+                net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("map", mapName),
+                net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("online", onlineCount),
+                net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("completed", completed),
+                net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("total", total),
+                net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("lives", lives),
+                net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("id", sessionID)
+            )
+
             // Format the string and append MiniPlaceholders tags
-            result.add(legacy.serialize(ColorTranslator.translate(player, formatted)))
+            result.add(legacy.serialize(ColorTranslator.translate(player, formatted, tags)))
         }
 
         return result

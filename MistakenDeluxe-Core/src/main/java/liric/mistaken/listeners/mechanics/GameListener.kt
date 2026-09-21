@@ -1,4 +1,4 @@
-﻿package liric.mistaken.listeners.mechanics
+package liric.mistaken.listeners.mechanics
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -247,10 +247,9 @@ class GameListener(private val plugin: Mistaken) : Listener {
                 
                 val lastHeal = healCooldowns[uuid] ?: 0L
                 if (now - lastHeal < 30_000L) {
-                    val remaining = (30_000L - (now - lastHeal)) / 1000L
                     val msg = MessageService.getRawString(player, "game.heal-cooldown", "<red>Debes esperar %time% s para volver a curarte.")
                         .replace("%time%", remaining.toString())
-                    player.sendActionBar(ColorTranslator.translate(msg))
+                    player.sendActionBar(liric.mistaken.utils.color.ColorTranslator.translate(player, msg))
                     return
                 }
 

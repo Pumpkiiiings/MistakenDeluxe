@@ -112,13 +112,21 @@ class NameTagManager(private val plugin: Mistaken) {
             }
             val health = String.format(java.util.Locale.US, "%.1f", player.health)
 
-            val processedLines = lines.map { line ->
-                line.replace("%name%", player.name)
-                    .replace("%color%", colorStr)
-                    .replace("%health%", health)
-            }.joinToString("\n")
+            val processedLines = lines.joinToString("\n")
 
-            ColorTranslator.translate(player, processedLines)
+            val tags = net.kyori.adventure.text.minimessage.tag.resolver.TagResolver.resolver(
+                net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("name", player.name),
+                net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("color", colorStr),
+                net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.parsed("health", health)
+            )
+
+            // Soporta %name% por retrocompatibilidad
+            val legacyReplaced = processedLines
+                .replace("%name%", "<name>")
+                .replace("%color%", "<color>")
+                .replace("%health%", "<health>")
+
+            ColorTranslator.translate(player, legacyReplaced, tags)
         }
 
         
