@@ -1,4 +1,4 @@
-﻿package liric.mistaken.config.engine.core
+package liric.mistaken.config.engine.core
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -118,10 +118,12 @@ object MessageService : IMessageService {
 
     private fun getGlobalResolvers(player: Player?, config: FileConfiguration): TagResolver {
         val prefixRaw = config.getString("prefix", "<b>PREFIX</b> | ") ?: ""
+        
         return TagResolver.resolver(
             Placeholder.parsed("player", player?.name ?: "Console"),
             Placeholder.parsed("online", Bukkit.getOnlinePlayers().size.toString()),
-            Placeholder.component("prefix", ColorTranslator.translate(parseLegacy(prefixRaw)))
+            Placeholder.component("prefix", ColorTranslator.translate(parseLegacy(prefixRaw))),
+            ColorTranslator.getUniversalTags(player)
         )
     }
 

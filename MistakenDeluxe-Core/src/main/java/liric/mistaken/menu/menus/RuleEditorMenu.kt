@@ -1,4 +1,4 @@
-﻿package liric.mistaken.menu.menus
+package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -39,11 +39,9 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
             .disableAllInteractions()
             .create()
 
-        if (fillerMat != Material.AIR) {
-            val fillerItem = ItemBuilder.from(fillerMat)
-                .name(ColorTranslator.translate(" "))
-                .asGuiItem()
-            gui.filler.fill(fillerItem)
+        val section = config.getConfigurationSection("menus.rule_editor")
+        if (section != null) {
+            liric.mistaken.utils.MenuUtils.applyOverlay(gui, section, player)
         }
 
         val settings = session.settings ?: PrivateGameSettings().also { session.settings = it }
@@ -59,7 +57,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
             .asGuiItem {
                 settings.glowingEnabled = !settings.glowingEnabled
                 player.playSound(player.location, org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f)
-                player.sendActionBar(ColorTranslator.translate("<green>Regla modificada: Glowing ${if (settings.glowingEnabled) "ON" else "OFF"}"))
+                player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.rule_editor.messages.glowing_changed", "<green>Regla modificada: Glowing {state}", "messages").replace("{state}", if (settings.glowingEnabled) "ON" else "OFF")))
                 abrir(player) 
             })
 
@@ -74,7 +72,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
             .asGuiItem {
                 settings.heartbeatsEnabled = (settings.heartbeatsEnabled == false)
                 player.playSound(player.location, org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f)
-                player.sendActionBar(ColorTranslator.translate("<green>Regla modificada: Latidos ${if (settings.heartbeatsEnabled != false) "ON" else "OFF"}"))
+                player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.rule_editor.messages.heartbeats_changed", "<green>Regla modificada: Latidos {state}", "messages").replace("{state}", if (settings.heartbeatsEnabled != false) "ON" else "OFF")))
                 abrir(player)
             })
 
@@ -88,7 +86,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
             .asGuiItem {
                 settings.speedMultiplier = if (speedVal >= 3) null else speedVal + 1
                 player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.5f)
-                player.sendActionBar(ColorTranslator.translate("<yellow>Velocidad base ajustada a: ${settings.speedMultiplier ?: 0}"))
+                player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.rule_editor.messages.speed_changed", "<yellow>Velocidad base ajustada a: {value}", "messages").replace("{value}", (settings.speedMultiplier ?: 0).toString())))
                 abrir(player)
             })
 
@@ -102,7 +100,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
             .asGuiItem {
                 settings.jumpMultiplier = if (jumpVal >= 3) null else jumpVal + 1
                 player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.5f)
-                player.sendActionBar(ColorTranslator.translate("<yellow>Salto base ajustado a: ${settings.jumpMultiplier ?: 0}"))
+                player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.rule_editor.messages.jump_changed", "<yellow>Salto base ajustado a: {value}", "messages").replace("{value}", (settings.jumpMultiplier ?: 0).toString())))
                 abrir(player)
             })
 
@@ -121,7 +119,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
             .asGuiItem {
                 settings.blindnessRole = if (blindnessNext == "NONE") null else blindnessNext
                 player.playSound(player.location, org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f)
-                player.sendActionBar(ColorTranslator.translate("<aqua>Ceguera asignada a: ${settings.blindnessRole ?: "NONE"}"))
+                player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.rule_editor.messages.blindness_changed", "<aqua>Ceguera asignada a: {value}", "messages").replace("{value}", settings.blindnessRole ?: "NONE")))
                 abrir(player)
             })
 
@@ -135,7 +133,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
             .asGuiItem {
                 settings.killerHealth = if (kHealth >= 300.0) 20.0 else kHealth + 20.0
                 player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                player.sendActionBar(ColorTranslator.translate("<red>Vida de Asesino ajustada a: ${settings.killerHealth!! / 2} corazones"))
+                player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.rule_editor.messages.khealth_changed", "<red>Vida de Asesino ajustada a: {value} corazones", "messages").replace("{value}", (settings.killerHealth!! / 2).toString())))
                 abrir(player)
             })
 
@@ -149,7 +147,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
             .asGuiItem {
                 settings.survivorHealth = if (sHealth >= 100.0) 2.0 else sHealth + 2.0
                 player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                player.sendActionBar(ColorTranslator.translate("<red>Vida de Superviviente ajustada a: ${settings.survivorHealth!! / 2} corazones"))
+                player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.rule_editor.messages.shealth_changed", "<red>Vida de Superviviente ajustada a: {value} corazones", "messages").replace("{value}", (settings.survivorHealth!! / 2).toString())))
                 abrir(player)
             })
 
@@ -180,7 +178,7 @@ class RuleEditorMenu(private val plugin: Mistaken, private val session: GameSess
                 val newMins = newDuration / 60
                 val newSecs = newDuration % 60
                 val newFormatted = String.format("%02d Minutos, %02d Segundos", newMins, newSecs)
-                player.sendActionBar(ColorTranslator.translate("<yellow>Duración ajustada a: $newFormatted"))
+                player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.rule_editor.messages.duration_changed", "<yellow>Duración ajustada a: {value}", "messages").replace("{value}", newFormatted)))
                 abrir(player)
             })
 

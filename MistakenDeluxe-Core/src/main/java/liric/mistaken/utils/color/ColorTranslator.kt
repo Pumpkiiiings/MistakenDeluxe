@@ -1,4 +1,4 @@
-﻿package liric.mistaken.utils.color
+package liric.mistaken.utils.color
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -40,5 +40,19 @@ object ColorTranslator {
      */
     fun translate(input: List<String>, vararg tags: TagResolver): List<Component> {
         return input.map { translate(it, *tags) }
+    }
+
+    /**
+     * Gets universal TagResolvers (like MiniPlaceholders) for a player.
+     */
+    fun getUniversalTags(player: org.bukkit.entity.Player?): TagResolver {
+        val resolvers = mutableListOf<TagResolver>()
+        if (org.bukkit.Bukkit.getPluginManager().isPluginEnabled("MiniPlaceholders")) {
+            if (player != null) {
+                resolvers.add(io.github.miniplaceholders.api.MiniPlaceholders.getAudiencePlaceholders(player))
+            }
+            resolvers.add(io.github.miniplaceholders.api.MiniPlaceholders.getGlobalPlaceholders())
+        }
+        return TagResolver.resolver(resolvers)
     }
 }

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.menu.menus
+package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -32,11 +32,9 @@ class ModeSelectorMenu(private val plugin: Mistaken, private val session: GameSe
             .disableAllInteractions()
             .create()
 
-        if (fillerMat != Material.AIR) {
-            val fillerItem = ItemBuilder.from(fillerMat)
-                .name(ColorTranslator.translate(" "))
-                .asGuiItem()
-            gui.filler.fill(fillerItem)
+        val section = config.getConfigurationSection("menus.mode_selector")
+        if (section != null) {
+            liric.mistaken.utils.MenuUtils.applyOverlay(gui, section, player)
         }
 
         val settings = session.settings ?: PrivateGameSettings().also { session.settings = it }
@@ -56,7 +54,7 @@ class ModeSelectorMenu(private val plugin: Mistaken, private val session: GameSe
                 .asGuiItem {
                     settings.forcedMode = if (isSelected) null else mode
                     player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                    player.sendActionBar(ColorTranslator.translate("<green>Modo selected: ${settings.forcedMode?.name ?: "AUTOMÁTICO"}"))
+                    player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.mode_selector.messages.mode_selected", "<green>Modo selected: {mode}", "messages").replace("{mode}", settings.forcedMode?.name ?: "AUTOMÁTICO")))
                     abrir(player)
                 }
 

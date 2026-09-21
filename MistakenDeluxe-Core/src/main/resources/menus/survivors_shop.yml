@@ -1,4 +1,4 @@
-﻿# ==========================================
+# ==========================================
 # Mistaken - Survivor Shop (GLOBAL)
 # ==========================================
 # título resuelto desde messages.yml: menus.survivors_shop.titulo
@@ -16,12 +16,18 @@ settings:
     slot: 49
     name: "<#00d4ff><b>Volver</b>"
 
-decorations:
-  bordes:
+overlay:
+  - "#########"
+  - "#B     B#"
+  - "#       #"
+  - "#       #"
+  - "#B     B#"
+  - "#### ####"
+
+overlay_items:
+  '#':
     material: "GRAY_STAINED_GLASS_PANE"
     name: " "
-    slots: [0,1,2,3,4,5,6,7,8,9,17,18,26,27,35,36,44,45,46,47,48,49,50,51,52,53]
-  detalle_azul:
+  'B':
     material: "LIGHT_BLUE_STAINED_GLASS_PANE"
-    name: "<#00d4ff><b>🛡 SURVIVOR SECTION"
-    slots: [10,16,37,43]
+    name: "<#00d4ff><b>?? SURVIVOR SECTION"

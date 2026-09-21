@@ -1,4 +1,4 @@
-﻿package liric.mistaken.menu.menus
+package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -34,11 +34,9 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
             .disableAllInteractions()
             .create()
 
-        if (fillerMat != Material.AIR) {
-            val fillerItem = ItemBuilder.from(fillerMat)
-                .name(ColorTranslator.translate(" "))
-                .asGuiItem()
-            gui.filler.fill(fillerItem)
+        val section = config.getConfigurationSection("menus.character_selector")
+        if (section != null) {
+            liric.mistaken.utils.MenuUtils.applyOverlay(gui, section, player)
         }
 
         val settings = session.settings ?: PrivateGameSettings().also { session.settings = it }
@@ -63,7 +61,7 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
                 .asGuiItem {
                     
                     if (killer.id.equals("slasher", ignoreCase = true)) {
-                        player.sendMessage(ColorTranslator.translate("<red>No puedes bloquear a Slasher, es la clase por defecto."))
+                        player.sendMessage(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.character_selector.messages.slasher_locked", "<red>No puedes bloquear a Slasher, es la clase por defecto.", "messages")))
                         return@asGuiItem
                     }
                     if (isEnabled) {
@@ -97,7 +95,7 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
                 .asGuiItem {
                     
                     if (survivor.id.equals("civilian", ignoreCase = true) || survivor.id.equals("civil", ignoreCase = true)) {
-                        player.sendMessage(ColorTranslator.translate("<red>No puedes bloquear a Civilian, es la clase por defecto."))
+                        player.sendMessage(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.character_selector.messages.civilian_locked", "<red>No puedes bloquear a Civilian, es la clase por defecto.", "messages")))
                         return@asGuiItem
                     }
                     if (isEnabled) {

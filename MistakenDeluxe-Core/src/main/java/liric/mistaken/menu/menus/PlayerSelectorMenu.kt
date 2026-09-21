@@ -1,4 +1,4 @@
-﻿package liric.mistaken.menu.menus
+package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -50,15 +50,9 @@ class PlayerSelectorMenu(private val plugin: Mistaken, private val session: Game
             .disableAllInteractions()
             .create()
 
-        if (fillerMat != Material.AIR) {
-            val fillerItem = ItemBuilder.from(fillerMat)
-                .name(ColorTranslator.translate(" "))
-                .asGuiItem()
-            for (i in 0 until (rows * 9)) {
-                if (i !in playerSlots) {
-                    gui.setItem(i, fillerItem)
-                }
-            }
+        val section = config.getConfigurationSection("menus.player_selector")
+        if (section != null) {
+            liric.mistaken.utils.MenuUtils.applyOverlay(gui, section, player)
         }
 
         val settings = session.settings ?: PrivateGameSettings().also { session.settings = it }
@@ -97,7 +91,7 @@ class PlayerSelectorMenu(private val plugin: Mistaken, private val session: Game
                             settings.allowedSurvivors.remove(name)
                         }
                         player.playSound(player.location, org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f)
-                        player.sendActionBar(ColorTranslator.translate("<green>Has modificado el rol de: <yellow>$name"))
+                        player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.player_selector.messages.role_changed", "<green>Has modificado el rol de: <yellow>{player}", "messages").replace("{player}", name)))
                         abrir(player)
                     } else if (event.isRightClick) {
                         if (isSurvivor) {
@@ -107,7 +101,7 @@ class PlayerSelectorMenu(private val plugin: Mistaken, private val session: Game
                             settings.allowedKillers.remove(name)
                         }
                         player.playSound(player.location, org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f)
-                        player.sendActionBar(ColorTranslator.translate("<green>Has modificado el rol de: <yellow>$name"))
+                        player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.player_selector.messages.role_changed", "<green>Has modificado el rol de: <yellow>{player}", "messages").replace("{player}", name)))
                         abrir(player)
                     }
                 }

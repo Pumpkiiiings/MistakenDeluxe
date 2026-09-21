@@ -2,13 +2,22 @@ menus:
   private_lobby:
     title: "<dark_gray>Private Game Setup"
     rows: 5
-    filler_material: "BLACK_STAINED_GLASS_PANE"
+    overlay:
+      - "#########"
+      - "#########"
+      - "##     ##"
+      - "#########"
+      - "#########"
+    overlay_items:
+      '#':
+        material: "BLACK_STAINED_GLASS_PANE"
+        name: " "
     slots:
       start: 22
       rules: 20
+      players: 21
       map: 23
       mode: 24
-      players: 21
     items:
       start:
         name: "<green><bold>Start Game"
@@ -36,7 +45,16 @@ menus:
   map_selector:
     title: "<dark_gray>Select Map"
     rows: 5
-    filler_material: "BLACK_STAINED_GLASS_PANE"
+    overlay:
+      - "#########"
+      - "#       #"
+      - "#       #"
+      - "#       #"
+      - "#### ####"
+    overlay_items:
+      '#':
+        material: "BLACK_STAINED_GLASS_PANE"
+        name: " "
     start_slot: 19
     max_slots: 34
     back_slot: 40
@@ -48,7 +66,16 @@ menus:
   mode_selector:
     title: "<dark_gray>Select Mode"
     rows: 5
-    filler_material: "BLACK_STAINED_GLASS_PANE"
+    overlay:
+      - "#########"
+      - "#########"
+      - "##     ##"
+      - "#########"
+      - "#### ####"
+    overlay_items:
+      '#':
+        material: "BLACK_STAINED_GLASS_PANE"
+        name: " "
     start_slot: 20
     max_slots: 24
     back_slot: 40
@@ -59,10 +86,21 @@ menus:
   player_selector:
     title: "<dark_gray>Selector de Jugadores"
     rows: 5
-    filler_material: "BLACK_STAINED_GLASS_PANE"
+    overlay:
+      - "#########"
+      - "#       #"
+      - "#       #"
+      - "#       #"
+      - "###   ###"
+    overlay_items:
+      '#':
+        material: "BLACK_STAINED_GLASS_PANE"
+        name: " "
     start_slot: 19
     max_slots: 34
     back_slot: 40
+    next_slot: 41
+    prev_slot: 39
     items:
       player:
         lore_role: "<gray>Role: {role}"
@@ -76,7 +114,16 @@ menus:
   rule_editor:
     title: "<dark_gray>Rule Editor"
     rows: 5
-    filler_material: "BLACK_STAINED_GLASS_PANE"
+    overlay:
+      - "#########"
+      - "#       #"
+      - "#       #"
+      - "#########"
+      - "#### ####"
+    overlay_items:
+      '#':
+        material: "BLACK_STAINED_GLASS_PANE"
+        name: " "
     slots:
       glowing: 19
       heartbeats: 20
@@ -122,7 +169,17 @@ menus:
   character_selector:
     title: "<dark_gray>Allowed Classes"
     rows: 6
-    filler_material: "BLACK_STAINED_GLASS_PANE"
+    overlay:
+      - "#########"
+      - "#       #"
+      - "#       #"
+      - "#       #"
+      - "#       #"
+      - "#### ####"
+    overlay_items:
+      '#':
+        material: "BLACK_STAINED_GLASS_PANE"
+        name: " "
     start_slot: 10
     max_slots: 43
     back_slot: 49

@@ -1,4 +1,4 @@
-﻿# ==========================================
+# ==========================================
 # Mistaken - Assassin Shop (GLOBAL)
 # ==========================================
 # Este archivo es ÚNICO para todos los idiomas.
@@ -28,15 +28,21 @@ settings:
     name: "<red><b>Volver</b>"
 
 # Decoraciones de la GUI (compartidas para todos los idiomas)
-decorations:
-  bordes_grises:
+overlay:
+  - "#########"
+  - "#R     R#"
+  - "#       #"
+  - "#       #"
+  - "#R     R#"
+  - "#### ####"
+
+overlay_items:
+  '#':
     material: "GRAY_STAINED_GLASS_PANE"
     name: " "
-    slots: [0,1,2,3,4,5,6,7,8,9,17,18,26,27,35,36,44,45,46,47,48,49,50,51,52,53]
-  separador_rojo:
+  'R':
     material: "RED_STAINED_GLASS_PANE"
-    name: "<red><b>⚠ ASSASSIN SECTION</b>"
-    slots: [10,16,37,43]
+    name: "<red><b>? ASSASSIN SECTION</b>"
 
 # Nota: Los items de los asesinos NO se ponen aquí porque
 # el plugin los genera desde killers_info.yml + messages.yml del jugador.

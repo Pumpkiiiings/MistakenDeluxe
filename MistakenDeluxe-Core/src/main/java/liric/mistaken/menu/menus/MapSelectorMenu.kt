@@ -1,4 +1,4 @@
-﻿package liric.mistaken.menu.menus
+package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -32,11 +32,9 @@ class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSes
             .disableAllInteractions()
             .create()
 
-        if (fillerMat != Material.AIR) {
-            val fillerItem = ItemBuilder.from(fillerMat)
-                .name(ColorTranslator.translate(" "))
-                .asGuiItem()
-            gui.filler.fill(fillerItem)
+        val section = config.getConfigurationSection("menus.map_selector")
+        if (section != null) {
+            liric.mistaken.utils.MenuUtils.applyOverlay(gui, section, player)
         }
 
         val settings = session.settings ?: PrivateGameSettings().also { session.settings = it }
@@ -49,7 +47,10 @@ class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSes
             val defaultMat = if (isSelected) Material.MAP else Material.PAPER
             val color = if (isSelected) "<green><bold>" else "<yellow>"
             
-            val item = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.map_selector.items.map", defaultMat)
+            val itemSection = config.getConfigurationSection("menus.map_selector.items.map")
+            val builder = if (itemSection != null) liric.mistaken.utils.MenuUtils.createItemBuilder(itemSection, player, defaultMat) else ItemBuilder.from(defaultMat)
+            
+            val item = builder
                 .name(ColorTranslator.translate("<!italic>$color${map.name}"))
                 .lore(
                     ColorTranslator.translate("<!italic>${loreId.replace("{map}", map.name)}"),
@@ -59,7 +60,7 @@ class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSes
                 .asGuiItem {
                     settings.forcedMap = if (isSelected) null else map.name
                     player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                    player.sendActionBar(ColorTranslator.translate("<green>Mapa selected: ${settings.forcedMap ?: "AUTOMÁTICO"}"))
+                    player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.map_selector.messages.map_selected", "<green>Mapa selected: {map}", "messages").replace("{map}", settings.forcedMap ?: "AUTOMÁTICO")))
                     abrir(player)
                 }
 
@@ -73,7 +74,10 @@ class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSes
         val backNameFallback = config.getString("menus.private_lobby.items.back.name", "<red>Volver") ?: "<red>Volver"
         val backNameFinal = config.getString("menus.map_selector.items.back.name", backNameFallback) ?: backNameFallback
         
-        gui.setItem(backSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.map_selector.items.back", Material.ARROW)
+        val backSection = config.getConfigurationSection("menus.map_selector.items.back")
+        val builderBack = if (backSection != null) liric.mistaken.utils.MenuUtils.createItemBuilder(backSection, player, Material.ARROW) else ItemBuilder.from(Material.ARROW)
+        
+        gui.setItem(backSlot, builderBack
             .name(ColorTranslator.translate("<!italic>$backNameFinal"))
             .asGuiItem {
                 player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 0.8f)

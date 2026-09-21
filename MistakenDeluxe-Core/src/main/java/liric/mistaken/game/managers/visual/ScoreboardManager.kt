@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.visual
+package liric.mistaken.game.managers.visual
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -8,7 +8,7 @@ import liric.mistaken.utils.scoreboard.ScoreboardTemplate
 import liric.mistaken.utils.scoreboard.ScoreboardManager as PumpkingScoreboardManager
 import java.util.UUID
 import liric.mistaken.utils.hooks.ObserverHook
-import me.clip.placeholderapi.PlaceholderAPI
+
 import org.bukkit.Bukkit
 import org.bukkit.scheduler.BukkitTask
 import liric.mistaken.utils.color.ColorTranslator
@@ -102,12 +102,8 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 .replace("%id%", sessionID)
                 .replace("{", "<").replace("}", ">")
 
-            if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-                formatted = PlaceholderAPI.setPlaceholders(player, formatted)
-            }
-
-            
-            result.add(legacy.serialize(ColorTranslator.translate(formatted)))
+            // Format the string and append MiniPlaceholders tags
+            result.add(legacy.serialize(ColorTranslator.translate(formatted, ColorTranslator.getUniversalTags(player))))
         }
 
         return result

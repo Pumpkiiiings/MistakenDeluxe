@@ -47,71 +47,64 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
             .disableAllInteractions()
             .create()
 
-        if (fillerMat != Material.AIR) {
-            val fillerItem = ItemBuilder.from(fillerMat)
-                .name(ColorTranslator.translate(" "))
-                .asGuiItem()
-            gui.filler.fill(fillerItem)
+        val section = config.getConfigurationSection("menus.private_lobby")
+        if (section != null) {
+            liric.mistaken.utils.MenuUtils.applyOverlay(gui, section, player)
         }
 
-        
-        val startItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.private_lobby.items.start", Material.EMERALD_BLOCK)
-            .name(ColorTranslator.translate("<!italic>$startName"))
-            .lore(startLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
-            .asGuiItem {
-                player.playSound(player.location, org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
-                gui.close(player)
-                if (session.isPrivate) {
-                    session.forceStart = true
-                    player.sendMessage(ColorTranslator.translate("<green><bold>¡Iniciando partida privada!"))
+        val startSection = config.getConfigurationSection("menus.private_lobby.items.start")
+        if (startSection != null) {
+            val startItem = liric.mistaken.utils.MenuUtils.createItemBuilder(startSection, player, Material.EMERALD_BLOCK)
+                .asGuiItem {
+                    player.playSound(player.location, org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
+                    gui.close(player)
+                    if (session.isPrivate) {
+                        session.forceStart = true
+                        player.sendMessage(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.private_lobby.messages.start_game", "<green><bold>Iniciando partida privada!", "messages")))
+                    }
                 }
-            }
-        
-        gui.setItem(startSlot, startItem)
+            gui.setItem(startSlot, startItem)
+        }
 
-        
-        val rulesItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.private_lobby.items.rules", Material.COMPARATOR)
-            .name(ColorTranslator.translate("<!italic>$rulesName"))
-            .lore(rulesLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
-            .asGuiItem {
-                player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
-                RuleEditorMenu(plugin, session).abrir(player)
-            }
-        
-        gui.setItem(rulesSlot, rulesItem)
+        val rulesSection = config.getConfigurationSection("menus.private_lobby.items.rules")
+        if (rulesSection != null) {
+            val rulesItem = liric.mistaken.utils.MenuUtils.createItemBuilder(rulesSection, player, Material.COMPARATOR)
+                .asGuiItem {
+                    player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
+                    RuleEditorMenu(plugin, session).abrir(player)
+                }
+            gui.setItem(rulesSlot, rulesItem)
+        }
 
-        
-        val mapItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.private_lobby.items.map", Material.MAP)
-            .name(ColorTranslator.translate("<!italic>$mapName"))
-            .lore(mapLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
-            .asGuiItem {
-                player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
-                MapSelectorMenu(plugin, session).abrir(player)
-            }
-        
-        gui.setItem(mapSlot, mapItem)
+        val mapSection = config.getConfigurationSection("menus.private_lobby.items.map")
+        if (mapSection != null) {
+            val mapItem = liric.mistaken.utils.MenuUtils.createItemBuilder(mapSection, player, Material.MAP)
+                .asGuiItem {
+                    player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
+                    MapSelectorMenu(plugin, session).abrir(player)
+                }
+            gui.setItem(mapSlot, mapItem)
+        }
 
-        
-        val modeItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.private_lobby.items.mode", Material.DIAMOND_SWORD)
-            .name(ColorTranslator.translate("<!italic>$modeName"))
-            .lore(modeLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
-            .asGuiItem {
-                player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
-                ModeSelectorMenu(plugin, session).abrir(player)
-            }
-        
-        gui.setItem(modeSlot, modeItem)
+        val modeSection = config.getConfigurationSection("menus.private_lobby.items.mode")
+        if (modeSection != null) {
+            val modeItem = liric.mistaken.utils.MenuUtils.createItemBuilder(modeSection, player, Material.DIAMOND_SWORD)
+                .asGuiItem {
+                    player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
+                    ModeSelectorMenu(plugin, session).abrir(player)
+                }
+            gui.setItem(modeSlot, modeItem)
+        }
 
-        
-        val playersItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.private_lobby.items.players", Material.PLAYER_HEAD)
-            .name(ColorTranslator.translate("<!italic>$playersName"))
-            .lore(playersLoreRaw.map { ColorTranslator.translate("<!italic>$it") })
-            .asGuiItem {
-                player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
-                PlayerSelectorMenu(plugin, session).abrir(player)
-            }
-        
-        gui.setItem(playersSlot, playersItem)
+        val playersSection = config.getConfigurationSection("menus.private_lobby.items.players")
+        if (playersSection != null) {
+            val playersItem = liric.mistaken.utils.MenuUtils.createItemBuilder(playersSection, player, Material.PLAYER_HEAD)
+                .asGuiItem {
+                    player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
+                    PlayerSelectorMenu(plugin, session).abrir(player)
+                }
+            gui.setItem(playersSlot, playersItem)
+        }
 
         gui.open(player)
     }

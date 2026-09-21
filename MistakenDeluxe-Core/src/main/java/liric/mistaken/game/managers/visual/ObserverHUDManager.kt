@@ -1,11 +1,11 @@
-﻿package liric.mistaken.game.managers.visual
+package liric.mistaken.game.managers.visual
 
 import com.observer.api.model.ComponentAlignment
 import com.observer.api.model.TextAlignment
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
 import liric.mistaken.utils.hooks.ObserverHook
-import me.clip.placeholderapi.PlaceholderAPI
+
 import org.bukkit.Bukkit
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
@@ -168,13 +168,11 @@ class ObserverHUDManager(private val plugin: Mistaken) {
     }
 
     private fun parseContent(player: Player, text: String): String {
-        var parsed = text
+        val parsed = text
             .replace("%player_name%", player.name)
 
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            parsed = PlaceholderAPI.setPlaceholders(player, parsed)
-        }
-        return parsed
+        val component = liric.mistaken.utils.color.ColorTranslator.translate(parsed, liric.mistaken.utils.color.ColorTranslator.getUniversalTags(player))
+        return net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().serialize(component)
     }
 
     private fun getAlignment(name: String?): ComponentAlignment {

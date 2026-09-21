@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.visual
+package liric.mistaken.game.managers.visual
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
@@ -25,7 +25,7 @@ class NameTagManager(private val plugin: Mistaken) {
 
     private val nametags = ConcurrentHashMap<UUID, VirtualNametag>()
     private val entityIdCounter = AtomicInteger(Int.MAX_VALUE / 2)
-    private val hasPAPI by lazy { Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null }
+
 
 
 
@@ -113,17 +113,12 @@ class NameTagManager(private val plugin: Mistaken) {
             val health = String.format(java.util.Locale.US, "%.1f", player.health)
 
             val processedLines = lines.map { line ->
-                var currentLine = line
-                    .replace("%name%", player.name)
+                line.replace("%name%", player.name)
                     .replace("%color%", colorStr)
                     .replace("%health%", health)
-                if (hasPAPI) {
-                    currentLine = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, currentLine)
-                }
-                currentLine
             }.joinToString("\n")
 
-            ColorTranslator.translate(processedLines)
+            ColorTranslator.translate(processedLines, ColorTranslator.getUniversalTags(player))
         }
 
         
