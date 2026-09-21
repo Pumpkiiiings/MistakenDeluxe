@@ -58,13 +58,44 @@ object ColorTranslator {
      * Gets universal TagResolvers (like MiniPlaceholders) for a player.
      */
     fun getUniversalTags(player: org.bukkit.entity.Player?): TagResolver {
-        val resolvers = mutableListOf<TagResolver>()
+        val list = mutableListOf<TagResolver>()
         if (org.bukkit.Bukkit.getPluginManager().isPluginEnabled("MiniPlaceholders")) {
-            if (player != null) {
-                resolvers.add(io.github.miniplaceholders.api.MiniPlaceholders.getAudiencePlaceholders(player))
+            try {
+                // Try 2.x API
+                val clazz = Class.forName("io.github.miniplaceholders.api.MiniPlaceholders")
+                
+                if (player != null) {
+                    try {
+                        val getAudienceMethod = clazz.getMethod("getAudienceGlobalPlaceholders", org.bukkit.entity.Player::class.java)
+                        list.add(getAudienceMethod.invoke(null, player) as TagResolver)
+                    } catch (e: Exception) {
+                        // 3.x API Audience method
+                        try {
+                            val getAudienceMethod = clazz.getMethod("getAudiencePlaceholders", org.bukkit.entity.Player::class.java)
+                            list.add(getAudienceMethod.invoke(null, player) as TagResolver)
+                        } catch (e2: Exception) {
+                            try {
+                                val getAudienceMethod = clazz.getMethod("getAudienceGlobalPlaceholders", net.kyori.adventure.audience.Audience::class.java)
+                                list.add(getAudienceMethod.invoke(null, player) as TagResolver)
+                            } catch (e3: Exception) {}
+                        }
+                    }
+                } else {
+                    try {
+                        val getGlobalMethod = clazz.getMethod("getGlobalPlaceholders")
+                        list.add(getGlobalMethod.invoke(null) as TagResolver)
+                    } catch (e: Exception) {
+                        // 3.x API
+                        try {
+                            val getGlobalMethod = clazz.getMethod("globalPlaceholders")
+                            list.add(getGlobalMethod.invoke(null) as TagResolver)
+                        } catch (e2: Exception) {}
+                    }
+                }
+            } catch (e: Exception) {
+                liric.mistaken.MistakenLib.logError(liric.mistaken.MistakenLib.LogCategory.CORE, "[WARN] Failed to load MiniPlaceholders tags via Reflection.")
             }
-            resolvers.add(io.github.miniplaceholders.api.MiniPlaceholders.getGlobalPlaceholders())
         }
-        return TagResolver.resolver(resolvers)
+        return TagResolver.resolver(list)
     }
 }

@@ -51,3 +51,7 @@ dependencies:
     Oraxen:
       load: BEFORE
       required: false
+
+    MiniPlaceholders:
+      load: BEFORE
+      required: false

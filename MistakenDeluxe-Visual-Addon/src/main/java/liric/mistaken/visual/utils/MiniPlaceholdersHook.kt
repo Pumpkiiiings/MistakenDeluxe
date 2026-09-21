@@ -6,10 +6,27 @@ import org.bukkit.entity.Player
 
 object MiniPlaceholdersHook {
     fun getGlobalPlaceholders(): TagResolver {
-        return MiniPlaceholders.getGlobalPlaceholders()
+        return try {
+            val getGlobalMethod = MiniPlaceholders::class.java.getMethod("getGlobalPlaceholders")
+            getGlobalMethod.invoke(null) as TagResolver
+        } catch (e: Exception) {
+            val getGlobalMethod = MiniPlaceholders::class.java.getMethod("globalPlaceholders")
+            getGlobalMethod.invoke(null) as TagResolver
+        }
     }
 
     fun getAudiencePlaceholders(player: Player): TagResolver {
-        return MiniPlaceholders.getAudiencePlaceholders(player)
+        return try {
+            val getAudienceMethod = MiniPlaceholders::class.java.getMethod("getAudienceGlobalPlaceholders", Player::class.java)
+            getAudienceMethod.invoke(null, player) as TagResolver
+        } catch (e: Exception) {
+            try {
+                val getAudienceMethod = MiniPlaceholders::class.java.getMethod("getAudiencePlaceholders", Player::class.java)
+                getAudienceMethod.invoke(null, player) as TagResolver
+            } catch (e2: Exception) {
+                val getAudienceMethod = MiniPlaceholders::class.java.getMethod("getAudienceGlobalPlaceholders", net.kyori.adventure.audience.Audience::class.java)
+                getAudienceMethod.invoke(null, player) as TagResolver
+            }
+        }
     }
 }

@@ -95,7 +95,7 @@ dependencies {
     
     compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
     compileOnly("org.jetbrains:annotations:26.0.1")
-    compileOnly("io.github.miniplaceholders:miniplaceholders-api:2.2.3")
+    compileOnly("io.github.miniplaceholders:miniplaceholders-api:3.1.0")
 }
 
 tasks {
