@@ -171,7 +171,7 @@ class ObserverHUDManager(private val plugin: Mistaken) {
         val parsed = text
             .replace("%player_name%", player.name)
 
-        val component = liric.mistaken.utils.color.ColorTranslator.translate(parsed, liric.mistaken.utils.color.ColorTranslator.getUniversalTags(player))
+        val component = liric.mistaken.utils.color.ColorTranslator.translate(player, parsed)
         return net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().serialize(component)
     }
 

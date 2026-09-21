@@ -103,7 +103,7 @@ class ScoreboardManager(private val plugin: Mistaken) {
                 .replace("{", "<").replace("}", ">")
 
             // Format the string and append MiniPlaceholders tags
-            result.add(legacy.serialize(ColorTranslator.translate(formatted, ColorTranslator.getUniversalTags(player))))
+            result.add(legacy.serialize(ColorTranslator.translate(player, formatted)))
         }
 
         return result

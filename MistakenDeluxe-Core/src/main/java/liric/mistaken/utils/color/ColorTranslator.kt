@@ -20,19 +20,31 @@ object ColorTranslator {
      * Translates a string with mixed color formats (Legacy, Hex, MiniMessage) into a Component.
      */
     fun translate(input: String, vararg tags: TagResolver): Component {
-        
         if (tags.isNotEmpty()) {
             val normalized = "<!italic>" + ColorNormalizer.normalizeToMiniMessage(input)
             return mm.deserialize(normalized, *tags)
         }
 
-        
-        
-        
         if (cache.size >= 1000) cache.clear()
         return cache.computeIfAbsent(input) { k ->
             mm.deserialize("<!italic>" + ColorNormalizer.normalizeToMiniMessage(k))
         }
+    }
+
+    /**
+     * Translates a string with mixed color formats, applying PlaceholderAPI placeholders first.
+     */
+    fun translate(player: org.bukkit.entity.Player?, input: String, vararg tags: TagResolver): Component {
+        var parsed = input
+        if (player != null && org.bukkit.Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            parsed = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, parsed)
+        }
+        
+        // Include MiniPlaceholders universal tags automatically when player context is provided
+        val allTags = mutableListOf(*tags)
+        allTags.add(getUniversalTags(player))
+
+        return translate(parsed, *allTags.toTypedArray())
     }
 
     /**

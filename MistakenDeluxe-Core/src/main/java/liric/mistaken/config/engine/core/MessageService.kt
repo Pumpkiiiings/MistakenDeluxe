@@ -142,11 +142,11 @@ object MessageService : IMessageService {
         if (raw == null) {
             MistakenLib.logError(MistakenLib.LogCategory.CORE, "[WARN] Missing config path:\nFile: $fileName.yml\nPath: $path")
             val allTags = TagResolver.resolver(getGlobalResolvers(player, config), *extraTags)
-            return ColorTranslator.translate("<red>Missing Path: $fileName -> $path", allTags)
+            return ColorTranslator.translate(player, "<red>Missing Path: $fileName -> $path", allTags)
         }
 
         val allTags = TagResolver.resolver(getGlobalResolvers(player, config), *extraTags)
-        return ColorTranslator.translate(parseLegacy(raw), allTags)
+        return ColorTranslator.translate(player, parseLegacy(raw), allTags)
     }
 
     override fun getComponentList(player: Player?, path: String, fileName: String): List<Component> {
@@ -158,7 +158,7 @@ object MessageService : IMessageService {
         }
 
         val globalTags = getGlobalResolvers(player, config)
-        return rawList.map { ColorTranslator.translate(parseLegacy(it), globalTags) }
+        return rawList.map { ColorTranslator.translate(player, parseLegacy(it), globalTags) }
     }
 
     override fun getRawString(player: Player?, path: String, def: String, fileName: String): String {

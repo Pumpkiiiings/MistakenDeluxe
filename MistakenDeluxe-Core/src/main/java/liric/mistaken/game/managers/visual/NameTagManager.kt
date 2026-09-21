@@ -118,7 +118,7 @@ class NameTagManager(private val plugin: Mistaken) {
                     .replace("%health%", health)
             }.joinToString("\n")
 
-            ColorTranslator.translate(processedLines, ColorTranslator.getUniversalTags(player))
+            ColorTranslator.translate(player, processedLines)
         }
 
         

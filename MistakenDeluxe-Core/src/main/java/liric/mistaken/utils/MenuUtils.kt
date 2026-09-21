@@ -52,13 +52,13 @@ object MenuUtils {
         // Parse Name
         val nameRaw = section.getString("name")
         if (nameRaw != null) {
-            builder.name(ColorTranslator.translate("<!italic>$nameRaw", ColorTranslator.getUniversalTags(player)))
+            builder.name(ColorTranslator.translate(player, "<!italic>$nameRaw"))
         }
 
         // Parse Lore
         val loreRaw = section.getStringList("lore")
         if (loreRaw.isNotEmpty()) {
-            val loreParsed = loreRaw.map { ColorTranslator.translate("<!italic>$it", ColorTranslator.getUniversalTags(player)) }
+            val loreParsed = loreRaw.map { ColorTranslator.translate(player, "<!italic>$it") }
             builder.lore(loreParsed)
         }
 
