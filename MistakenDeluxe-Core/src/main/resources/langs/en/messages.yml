@@ -1,4 +1,4 @@
-# ======================================================
+﻿# ======================================================
 #          MISTAKEN - ENGLISH LANGUAGE (US)
 # ======================================================
 
@@ -774,3 +774,35 @@ perks:
   resilience:
     name: "<#FF3344><bold>🛡 Resilience"
     desc: "<gray>Gain Speed II for 2s after taking damage."
+
+network:
+  connecting: '<green>Connecting to <server>...'
+  no-arenas: '<red><b>[!]</b> No arenas available at the moment. Try again later!'
+
+setup:
+  enter: '<green><b>[!]</b> <white>You have entered Setup Mode for arena: <yellow><arena>'
+  enter-subtitle: '<gray>Use the items in your hotbar to configure the map.'
+  exit: '<green><b>[!]</b> <white>You left Setup Mode and your inventory was restored.'
+  killer-set: '<red><b>[!]</b> <white><b>Killer</b> spawn saved at your current position.'
+  survivor-set: '<green><b>[!]</b> <white><b>Survivor</b> spawn saved at your current position.'
+  gen-invalid: '<red>That block is not a valid generator.'
+  gen-added: '<aqua><b>[!]</b> <white>Generator <b>added</b> at selected coordinates.'
+  gen-removed: '<aqua><b>[!]</b> <white>Generator <b>removed</b>.'
+  items:
+    killer:
+      name: '<red><bold>Killer Spawn'
+      lore:
+      - '<gray>Right Click <dark_gray>| <white>Set spawn point'
+    survivor:
+      name: '<green><bold>Survivor Spawn'
+      lore:
+      - '<gray>Right Click <dark_gray>| <white>Set spawn point'
+    generator:
+      name: '<aqua><bold>Generator Management'
+      lore:
+      - '<gray>Left Click <dark_gray>| <white>Add'
+      - '<gray>Right Click <dark_gray>| <white>Remove'
+    exit:
+      name: '<yellow><bold>Save and Exit'
+      lore:
+      - '<gray>Right Click <dark_gray>| <white>End Setup'

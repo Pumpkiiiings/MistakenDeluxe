@@ -1,4 +1,4 @@
-﻿package liric.mistaken.commands.game
+package liric.mistaken.commands.game
 
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.tree.LiteralCommandNode
@@ -29,10 +29,7 @@ object JoinCommand {
                 val serverMode = plugin.serverMode
 
                 if (serverMode == "NETWORK_LOBBY") {
-                    
-                    val arenaServer = plugin.config.getString("proxy-arena-server", "arenas") ?: "arenas"
-                    player.sendMessage(ColorTranslator.translate("<green>Conectando al servidor de juegos..."))
-                    BungeeUtils.sendToServer(plugin, player, arenaServer)
+                    plugin.networkManager.joinBestServer(player)
                 } else {
                     
                     val currentSession = plugin.sessionManager.getSession(player)
@@ -42,6 +39,12 @@ object JoinCommand {
                     }
 
                     val maxPlayers = plugin.config.getInt("settings.max-players-per-arena", 10)
+
+                    if (plugin.arenaManager.getArenas().isEmpty()) {
+                        liric.mistaken.config.engine.core.MessageService.send(player, "network.no-arenas")
+                        player.playSound(player.location, org.bukkit.Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f)
+                        return@executes 0
+                    }
 
                     
                     var targetSession = plugin.sessionManager.activeSessions.values.firstOrNull {

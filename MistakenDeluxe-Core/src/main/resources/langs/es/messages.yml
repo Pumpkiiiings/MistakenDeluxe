@@ -1,4 +1,4 @@
-# ======================================================
+﻿# ======================================================
 #          MISTAKEN - SPANISH LANGUAGE (MEXICO)
 # ======================================================
 
@@ -847,3 +847,34 @@ perks:
   resilience:
     name: "<#FF3344><bold>🛡 Resiliencia"
     desc: "<gray>Ganas Velocidad II por 2s al recibir daño."
+
+network:
+  connecting: '<green>Conectando a <server>...'
+  no-arenas: '<red><b>[!]</b> No hay arenas disponibles en este momento. Intenta de nuevo mas tarde!'
+setup:
+  enter: '<green><b>[!]</b> <white>Has entrado al Modo Setup para la arena: <yellow><arena>'
+  enter-subtitle: '<gray>Usa los items en tu barra para configurar el mapa.'
+  exit: '<green><b>[!]</b> <white>Has salido del Modo Setup y tu inventario ha sido restaurado.'
+  killer-set: '<red><b>[!]</b> <white>Spawn del <b>Asesino</b> guardado en tu posicion actual.'
+  survivor-set: '<green><b>[!]</b> <white>Spawn de <b>Sobrevivientes</b> guardado en tu posicion actual.'
+  gen-invalid: '<red>Ese bloque no es un generador valido.'
+  gen-added: '<aqua><b>[!]</b> <white>Generador <b>anadido</b> en las coordenadas seleccionadas.'
+  gen-removed: '<aqua><b>[!]</b> <white>Generador <b>eliminado</b>.'
+  items:
+    killer:
+      name: '<red><bold>Spawn del Asesino'
+      lore:
+      - '<gray>Click Derecho <dark_gray>| <white>Fijar punto de spawn'
+    survivor:
+      name: '<green><bold>Spawn de Sobrevivientes'
+      lore:
+      - '<gray>Click Derecho <dark_gray>| <white>Fijar punto de spawn'
+    generator:
+      name: '<aqua><bold>Gestion de Generadores'
+      lore:
+      - '<gray>Click Izquierdo <dark_gray>| <white>Anadir'
+      - '<gray>Click Derecho <dark_gray>| <white>Remover'
+    exit:
+      name: '<yellow><bold>Guardar y Salir'
+      lore:
+      - '<gray>Click Derecho <dark_gray>| <white>Terminar Setup'

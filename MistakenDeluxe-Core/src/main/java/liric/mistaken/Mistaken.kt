@@ -1,4 +1,4 @@
-package liric.mistaken
+﻿package liric.mistaken
 
 import com.github.retrooper.packetevents.PacketEvents
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
@@ -100,6 +100,7 @@ class Mistaken : JavaPlugin() {
     val ignoredTestPlayers: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
 
     val configManager get() = ConfigManager
+    lateinit var setupManager: liric.mistaken.game.managers.setup.SetupManager
     lateinit var statsManager: StatsManager
     lateinit var playerDataManager: PlayerDataManager
     lateinit var databaseManager: DatabaseManager
@@ -116,6 +117,7 @@ class Mistaken : JavaPlugin() {
     lateinit var generatorManager: GeneratorManager
     lateinit var mapManager: MapManager
     lateinit var scoreboardManager: ScoreboardManager
+    lateinit var networkManager: liric.mistaken.network.NetworkManager
     lateinit var visualUpdateService: liric.mistaken.game.managers.visual.VisualUpdateService
     lateinit var nameTagManager: liric.mistaken.game.managers.visual.NameTagManager
     lateinit var ambientManager: AmbientManager
@@ -191,6 +193,7 @@ class Mistaken : JavaPlugin() {
             return
         }
 
+        setupManager = liric.mistaken.game.managers.setup.SetupManager(this)
         statsManager = StatsManager(this)
         playerDataManager = PlayerDataManager(this)
 
@@ -215,6 +218,7 @@ class Mistaken : JavaPlugin() {
         perkManager.registerPerk(liric.mistaken.perks.types.ResiliencePerk())
 
         sessionManager = SessionManager(this)
+        networkManager = liric.mistaken.network.NetworkManager(this)
         isolationManager = IsolationManager(this)
         visibilityManager = VisibilityManager(this)
 
@@ -269,8 +273,7 @@ class Mistaken : JavaPlugin() {
     override fun onDisable() {
         isReady = false
 
-        
-        
+        if (::networkManager.isInitialized) runCatching { networkManager.shutdown() }
         if (::flashlightManager.isInitialized) runCatching { flashlightManager.disableAll() }
         if (::sessionManager.isInitialized) sessionManager.activeSessions.values.forEach { it.shutdown() }
         if (::ambientManager.isInitialized) runCatching { ambientManager.stopAll() }
@@ -321,6 +324,7 @@ class Mistaken : JavaPlugin() {
     private fun registerEvents() {
         val pm = server.pluginManager
         pm.registerEvents(PlayerListener(this), this)
+        pm.registerEvents(liric.mistaken.game.managers.setup.SetupListener(this), this)
         pm.registerEvents(PlayerQuitListener(this), this)
         pm.registerEvents(GameListener(this), this)
         pm.registerEvents(StaminaListener(this), this)

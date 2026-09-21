@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.engine
+package liric.mistaken.game.managers.engine
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.events.MistakenPlayerJoinSessionEvent
@@ -67,7 +67,7 @@ class SessionManager(private val plugin: Mistaken) : ISessionManager {
 
         if (serverMode.equals("GAME_SERVER", ignoreCase = true)) {
             val lobbyName = plugin.config.getString("proxy-lobby-server", "lobby") ?: "lobby"
-            BungeeUtils.sendToServer(plugin, player, lobbyName)
+            plugin.networkManager.provider?.sendPlayer(player, lobbyName)
         } else {
             plugin.lobbyLocation?.let { loc ->
                 player.teleportAsync(loc).thenAccept {

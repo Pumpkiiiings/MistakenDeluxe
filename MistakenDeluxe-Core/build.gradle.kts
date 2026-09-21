@@ -60,6 +60,7 @@ dependencies {
     compileOnly("dev.triumphteam:triumph-gui:3.1.13")
     compileOnly("org.slf4j:slf4j-simple:2.0.18")
     compileOnly("dev.wyck:wyck:3.3.0-1a0feb5")
+    compileOnly("redis.clients:jedis:5.1.0")
     implementation("com.infernalsuite.asp:file-loader:4.1.0-SNAPSHOT")
     
     

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.commands.admin
+package liric.mistaken.commands.admin
 
 import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.command.brigadier.CommandSourceStack
@@ -53,6 +53,14 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
         }
 
         when (sub) {
+            "setup" -> {
+                if (arena != null) {
+                    plugin.setupManager.startSetup(player, arenaName)
+                } else {
+                    player.sendMessage(ColorTranslator.translate("<red>Esa arena no existe. Crea una primero con /mistaken admin arena create <nombre>"))
+                }
+            }
+
             "create" -> {
                 plugin.arenaManager.createArena(arenaName)
                 player.sendMessage(MessageService.getComponent(player, "arena.created",
@@ -161,6 +169,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
 
     private fun sendHelp(p: Player) {
         p.sendMessage(MessageService.getComponent(p, "arena.help-header"))
+        p.sendMessage(ColorTranslator.translate("<yellow>/mistaken admin arena setup <nombre> <gray>- Inicia el asistente visual para configurar una arena."))
         listOf("create", "delete", "check", "setspawn", "setgenerator", "delgenerator", "settime").forEach { sub ->
             p.sendMessage(MessageService.getComponent(p, "arena.help-line-$sub"))
         }
@@ -174,7 +183,7 @@ class ArenaCommand(private val plugin: Mistaken) : BasicCommand {
         if (!stack.sender.hasPermission("mistaken.admin")) return emptyList()
 
         return when (args.size) {
-            1 -> listOf("create", "delete", "check", "setspawn", "setgenerator", "delgenerator", "settime")
+            1 -> listOf("setup", "create", "delete", "check", "setspawn", "setgenerator", "delgenerator", "settime")
                 .filter { it.startsWith(args[0], true) }
             2 -> plugin.arenaManager.getArenas().map { it.name }
                 .filter { it.startsWith(args[1], true) }
