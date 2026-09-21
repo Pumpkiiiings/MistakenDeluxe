@@ -77,7 +77,19 @@ object ColorTranslator {
                             try {
                                 val getAudienceMethod = clazz.getMethod("getAudienceGlobalPlaceholders", net.kyori.adventure.audience.Audience::class.java)
                                 list.add(getAudienceMethod.invoke(null, player) as TagResolver)
-                            } catch (e3: Exception) {}
+                            } catch (e3: Exception) {
+                                // 3.x API no-arg
+                                try {
+                                    val getAudienceMethod = clazz.getMethod("audienceGlobalPlaceholders")
+                                    list.add(getAudienceMethod.invoke(null) as TagResolver)
+                                } catch (e4: Exception) {
+                                    try {
+                                        val getAudienceMethod = clazz.getMethod("audiencePlaceholders")
+                                        list.add(getAudienceMethod.invoke(null) as TagResolver)
+                                    } catch (e5: Exception) {
+                                    }
+                                }
+                            }
                         }
                     }
                 } else {

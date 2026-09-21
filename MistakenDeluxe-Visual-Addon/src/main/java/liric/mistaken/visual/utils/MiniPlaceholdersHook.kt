@@ -10,8 +10,12 @@ object MiniPlaceholdersHook {
             val getGlobalMethod = MiniPlaceholders::class.java.getMethod("getGlobalPlaceholders")
             getGlobalMethod.invoke(null) as TagResolver
         } catch (e: Exception) {
-            val getGlobalMethod = MiniPlaceholders::class.java.getMethod("globalPlaceholders")
-            getGlobalMethod.invoke(null) as TagResolver
+            try {
+                val getGlobalMethod = MiniPlaceholders::class.java.getMethod("globalPlaceholders")
+                getGlobalMethod.invoke(null) as TagResolver
+            } catch (e2: Exception) {
+                TagResolver.empty()
+            }
         }
     }
 
@@ -24,8 +28,22 @@ object MiniPlaceholdersHook {
                 val getAudienceMethod = MiniPlaceholders::class.java.getMethod("getAudiencePlaceholders", Player::class.java)
                 getAudienceMethod.invoke(null, player) as TagResolver
             } catch (e2: Exception) {
-                val getAudienceMethod = MiniPlaceholders::class.java.getMethod("getAudienceGlobalPlaceholders", net.kyori.adventure.audience.Audience::class.java)
-                getAudienceMethod.invoke(null, player) as TagResolver
+                try {
+                    val getAudienceMethod = MiniPlaceholders::class.java.getMethod("getAudienceGlobalPlaceholders", net.kyori.adventure.audience.Audience::class.java)
+                    getAudienceMethod.invoke(null, player) as TagResolver
+                } catch (e3: Exception) {
+                    try {
+                        val getAudienceMethod = MiniPlaceholders::class.java.getMethod("audienceGlobalPlaceholders")
+                        getAudienceMethod.invoke(null) as TagResolver
+                    } catch (e4: Exception) {
+                        try {
+                            val getAudienceMethod = MiniPlaceholders::class.java.getMethod("audiencePlaceholders")
+                            getAudienceMethod.invoke(null) as TagResolver
+                        } catch (e5: Exception) {
+                            TagResolver.empty()
+                        }
+                    }
+                }
             }
         }
     }
