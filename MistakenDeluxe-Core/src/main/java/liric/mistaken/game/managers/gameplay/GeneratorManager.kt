@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.gameplay
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.utils.worldViewers
 import liric.mistaken.Mistaken
@@ -35,7 +35,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     private val mm = MiniMessage.miniMessage()
 
     
-    private val generators = ConcurrentHashMap<Location, GeneratorState>()
+    private val generators = ConcurrentHashMap<String, GeneratorState>()
     private val nameCache = ConcurrentHashMap<Material, String>()
 
     private var idleLines: List<String> = emptyList()
@@ -46,22 +46,25 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         var progress: Int,
         var completed: Boolean,
         var displayEntity: VirtualTextDisplay? = null,
-        var type: ObjectiveType = ObjectiveType.CLASSIC_GENERATOR
+        var type: ObjectiveType = ObjectiveType.CLASSIC_GENERATOR,
+        val location: Location
     )
 
     init {
         loadTemplates()
     }
+    
+    private fun toKey(loc: Location): String = "${loc.world?.name}_${loc.blockX}_${loc.blockY}_${loc.blockZ}"
 
     fun loadTemplates() {
         val langConfig = MessageService.getSpecificFile(null, "messages")
 
         idleLines = langConfig.getStringList("generators.hologram.lines-idle").ifEmpty {
-            listOf("<gold><bold>{name}", "<white>Progreso: <gray>{progress}%", "<yellow>。lick para reparar!")
+            listOf("<gold><bold>{name}", "<white>Progreso: <gray>{progress}%", "<yellow>?lick para reparar!")
         }
 
         completedLines = langConfig.getStringList("generators.hologram.lines-completed").ifEmpty {
-            listOf("<green><bold>? ENERG�A RESTAURADA ?", "<gray>、uen trabajo!")
+            listOf("<green><bold>? ENERG?A RESTAURADA ?", "<gray>?uen trabajo!")
         }
 
         nameCache.clear()
@@ -71,7 +74,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
         return when (type) {
             ObjectiveType.CLASSIC_GENERATOR -> "Generador"
             ObjectiveType.HACK_TERMINAL -> "Terminal de Hackeo"
-            ObjectiveType.KEYPAD_CODE -> "Panel de Código"
+            ObjectiveType.KEYPAD_CODE -> "Panel de Cdigo"
         }
     }
 
@@ -100,7 +103,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
             locations.forEach { loc ->
                 val blockLoc = loc.block.location
                 plugin.server.regionScheduler.execute(plugin, blockLoc, Runnable {
-                    val coordKey = "${blockLoc.world.name}_${blockLoc.blockX}_${blockLoc.blockY}_${blockLoc.blockZ}"
+                    val key = toKey(blockLoc)
 
                     val objType = assignments[loc] ?: ObjectiveType.CLASSIC_GENERATOR
 
@@ -110,8 +113,8 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
                         ObjectiveType.KEYPAD_CODE -> Material.AMETHYST_BLOCK
                     }
 
-                    val state = GeneratorState(requiredMaterial, 0, false, type = objType)
-                    generators[blockLoc] = state
+                    val state = GeneratorState(requiredMaterial, 0, false, type = objType, location = blockLoc)
+                    generators[key] = state
 
                     blockLoc.block.setType(requiredMaterial, false)
 
@@ -122,15 +125,15 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     }
 
     fun addProgress(loc: Location, amount: Int) {
-        val blockLoc = loc.block.location
-        val state = generators[blockLoc] ?: return
+        val key = toKey(loc)
+        val state = generators[key] ?: return
         if (state.completed) return
 
         val oldProgress = state.progress
         state.progress = (state.progress + amount).coerceIn(0, 100)
 
         if (state.progress != oldProgress) updateHologramVisual(state)
-        if (state.progress >= 100) completeGenerator(blockLoc, state)
+        if (state.progress >= 100) completeGenerator(state.location, state)
     }
 
     private fun completeGenerator(loc: Location, state: GeneratorState) {
@@ -184,23 +187,23 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
 
     
     fun clearGeneratorsInWorld(world: World) {
-        generators.entries.removeIf { (loc, state) ->
-            if (loc.world == world) {
+        generators.entries.removeIf { (_, state) ->
+            if (state.location.world?.name == world.name) {
                 state.displayEntity?.remove()
                 true
             } else false
         }
     }
 
-    fun isCompleted(loc: Location) = generators[loc.block.location]?.completed ?: false
-    fun getProgress(loc: Location): Int = generators[loc.block.location]?.progress ?: 0
+    fun isCompleted(loc: Location) = generators[toKey(loc)]?.completed ?: false
+    fun getProgress(loc: Location): Int = generators[toKey(loc)]?.progress ?: 0
 
     fun resetGenerators() {
-        generators.forEach { (loc, state) ->
+        generators.forEach { (_, state) ->
             state.progress = 0
             state.completed = false
-            plugin.server.regionScheduler.execute(plugin, loc, Runnable {
-                loc.block.setType(state.originalMaterial, false)
+            plugin.server.regionScheduler.execute(plugin, state.location, Runnable {
+                state.location.block.setType(state.originalMaterial, false)
                 updateHologramVisual(state)
             })
         }
@@ -211,22 +214,22 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     
 
     /**
-     * Cuenta cu嫕tos generadores han sido completados en un world espec璗ico.
+     * Cuenta cu?tos generadores han sido completados en un world espec?ico.
      */
     fun getCompletedCountInWorld(world: World): Int {
-        return generators.entries.count { (loc, state) ->
-            loc.world == world && state.completed
+        return generators.values.count { state ->
+            state.location.world?.name == world.name && state.completed
         }
     }
 
     /**
-     * Devuelve el total de generadores registrados en un world espec璗ico.
+     * Devuelve el total de generadores registrados en un world espec?ico.
      */
     fun getTotalGeneratorsInWorld(world: World): Int {
-        return generators.keys.count { it.world == world }
+        return generators.values.count { it.location.world?.name == world.name }
     }
 
     fun getCompletedCount(): Int = generators.values.count { it.completed }
     fun getTotalGenerators(): Int = generators.size
-    fun getGeneratorLocations(): List<Location> = generators.keys.toList()
+    fun getGeneratorLocations(): List<Location> = generators.values.map { it.location }.toList()
 }
