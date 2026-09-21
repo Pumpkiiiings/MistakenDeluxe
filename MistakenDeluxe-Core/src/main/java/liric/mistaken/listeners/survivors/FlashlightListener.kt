@@ -1,4 +1,4 @@
-package liric.mistaken.listeners.survivors
+﻿package liric.mistaken.listeners.survivors
 
 import liric.mistaken.Mistaken
 import org.bukkit.event.EventHandler

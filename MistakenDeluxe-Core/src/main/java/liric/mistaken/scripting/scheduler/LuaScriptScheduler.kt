@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.scheduler
+﻿package liric.mistaken.scripting.scheduler
 
 import liric.mistaken.scripting.api.ScriptScheduler
 import liric.mistaken.Mistaken

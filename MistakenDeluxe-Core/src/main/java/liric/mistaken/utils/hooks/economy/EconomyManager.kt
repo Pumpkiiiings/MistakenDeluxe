@@ -1,4 +1,4 @@
-package liric.mistaken.utils.hooks.economy
+﻿package liric.mistaken.utils.hooks.economy
 
 import liric.mistaken.Mistaken
 import liric.mistaken.utils.color.ColorTranslator

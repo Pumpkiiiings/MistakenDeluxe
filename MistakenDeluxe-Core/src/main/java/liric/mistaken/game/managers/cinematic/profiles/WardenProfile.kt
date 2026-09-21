@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic.profiles
+﻿package liric.mistaken.game.managers.cinematic.profiles
 
 import com.ticxo.modelengine.api.ModelEngineAPI
 import com.ticxo.modelengine.api.entity.Dummy

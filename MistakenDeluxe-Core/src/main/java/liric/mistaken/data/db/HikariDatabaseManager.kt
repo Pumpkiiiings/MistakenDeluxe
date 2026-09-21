@@ -1,4 +1,4 @@
-package liric.mistaken.data.db
+﻿package liric.mistaken.data.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource

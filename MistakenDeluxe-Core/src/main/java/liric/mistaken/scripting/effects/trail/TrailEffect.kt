@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.effects.trail
+﻿package liric.mistaken.scripting.effects.trail
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle

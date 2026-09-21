@@ -1,6 +1,6 @@
-survivors:
+﻿survivors:
   civil:
-    nombre: "<gradient:#ffffff:#aaaaaa>「 平民 」</gradient>"
+    name: "<gradient:#ffffff:#aaaaaa>「 平民 」</gradient>"
     descripcion:
       - "<gray>一个陷入混乱的市民。"
       - "<gray>所有属性绝对平衡。"
@@ -19,7 +19,7 @@ survivors:
       skill3: "<#DDDDDD>¡石头扔出去了！</#DDDDDD> <gray>击中可使其<#00FFFF>减速</#00FFFF>。"
 
   repartidor:
-    nombre: "<gradient:#ffaa00:#ffee00>「 外卖员 」</gradient>"
+    name: "<gradient:#ffaa00:#ffee00>「 外卖员 」</gradient>"
     descripcion:
       - "<gray>甚至 Herobrine 也无法阻止这次送货。"
       - "<white>机制: <#FFCC00>支援与极速"
@@ -36,7 +36,7 @@ survivors:
       skill3: "<#FF0033>¡哎呀！</#FF0033> <gray>酱汁洒了！地板很滑。"
 
   minty:
-    nombre: "<gradient:#55ffaa:#00aa55>「 薄荷 」</gradient>"
+    name: "<gradient:#55ffaa:#00aa55>「 薄荷 」</gradient>"
     descripcion:
       - "<gray>拥有动物本能的幸存者。"
       - "<white>机制: <#00FF33>眩晕与逃跑"
@@ -53,7 +53,7 @@ survivors:
       skill3: "<#00FF33>¡嚎叫！</#00FF33> <gray>大地震动！杀手被眩晕。"
 
   raincoatkid:
-    nombre: "<gradient:#ffff55:#ffaa00>「 雨衣小孩 」</gradient>"
+    name: "<gradient:#ffff55:#ffaa00>「 雨衣小孩 」</gradient>"
     descripcion:
       - "<gray>一个穿着黄色雨衣的小孩。"
       - "<white>机制: <#FFFF00>敏捷与潜行"
@@ -68,11 +68,11 @@ survivors:
       skill1: "<#FFFF00>¡跑！</#FFFF00> <gray>速度提升 (5秒后疲劳)。"
       skill2: "<#FFCC00>¡跳！</#FFCC00> <gray>快速冲刺。"
       skill3: ""
-    habilidades:
+    skills:
       jadeo: "<#FF0033><i>*喘气*</i></#FF0033>"
 
   teto:
-    nombre: "<gradient:#ff66cc:#ff0000>「 重音特托 」</gradient>"
+    name: "<gradient:#ff66cc:#ff0000>「 重音特托 」</gradient>"
     descripcion:
       - "<gray>拥有面包武库的虚拟奇美拉。"
       - "<white>机制: <#FF66FF>控制与距离"
@@ -87,11 +87,11 @@ survivors:
       skill1: "<#FF66FF>¡跳！</#FF66FF> <gray>但是你头晕了..."
       skill2: ""
       skill3: "<#FFFF00>¡扔！</#FFFF00> <gray>你的视线模糊了。"
-    habilidades:
+    skills:
       impacto_directo: "<#00FF33>¡直接命中！杀手被瘫痪了。</#00FF33>"
 
   jesse:
-    nombre: "<gradient:#00aaff:#ffffff>「 杰西 」</gradient>"
+    name: "<gradient:#00aaff:#ffffff>「 杰西 」</gradient>"
     descripcion:
       - "<gray>岩石之令的领导者。"
       - "<white>机制: <#00FFFF>保护与击退"
@@ -108,7 +108,7 @@ survivors:
       skill3: "<#00AAAA>¡滚开！</#00AAAA>"
 
   aldeano:
-    nombre: "<gradient:#55ff55:#00aa00>「 村民 」</gradient>"
+    name: "<gradient:#55ff55:#00aa00>「 村民 」</gradient>"
     descripcion:
       - "<gray>一个擅长逃跑的商人。"
       - "<white>机制: <#00FF33>分散注意力与逃避"
@@ -123,11 +123,11 @@ survivors:
       skill1: "<#FF0033>¡快跑！</#FF0033> <gray>杀手来了！"
       skill2: "<#00FF33>¡拿去吧！</#00FF33> <gray>别管我！"
       skill3: "<#AAAAAA>¡魔像！</#AAAAAA> <white>保护我！</white>"
-    habilidades:
+    skills:
       golem_rechazado: "<#FF0033>[!] 魔像拒绝了你！</#FF0033>"
 
   notch:
-    nombre: "<gradient:#ffff55:#ffaa00>「 Notch 」</gradient>"
+    name: "<gradient:#ffff55:#ffaa00>「 Notch 」</gradient>"
     descripcion:
       - "<gray>所有立方体的创造者。"
       - "<white>机制: <#FFFF00>防御与神圣控制"
@@ -142,11 +142,11 @@ survivors:
       skill1: "<#FFFFFF>¡飞行！</#FFFFFF> <gray>临时创造模式已激活。"
       skill2: "<#555555>¡拒绝！</#555555> <gray>杀手被拒绝了。"
       skill3: "<#FFFF00>¡力量！</#FFFF00> <gray>恢复生命与神圣力量。"
-    habilidades:
+    skills:
       denied: "<#FF0033>¡拒绝！</#FF0033> <gray>被管理员拒绝访问。</gray>"
 
   troll:
-    nombre: "<#00FF33>「 巨魔 」"
+    name: "<#00FF33>「 巨魔 」"
     descripcion:
       - "<gray>一个精通欺骗的大师，"
       - "<gray>喜欢让杀手受苦。"
@@ -161,6 +161,6 @@ survivors:
       skill1: "<#00FF33>¡欺骗！</#00FF33> <gray>你留下了一个假全息图。"
       skill2: "<#FFFF00>¡陷阱！</#FFFF00> <gray>已放置一个陷阱。"
       skill3: "<#FFCC00>¡惊喜！</#FFCC00> <gray>盒子准备好吓人了。"
-    habilidades:
+    skills:
       resbalaste_platano: "<#FFFF00>你踩到香蕉皮滑倒了！</#FFFF00>"
       boom_trampa: "<#FF0033>¡轰！</#FF0033> <gray>这是一个陷阱！</gray>"

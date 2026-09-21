@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers
+﻿package liric.mistaken.roles.killers
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 
@@ -15,7 +15,7 @@ import org.bukkit.NamespacedKey
 import liric.mistaken.api.roles.GameRole
 
 
-abstract class Killer(override val id: String, override val nombre: String) : GameRole {
+abstract class Killer(override val id: String, override val name: String) : GameRole {
 
     open val defaultMusic: String? = null
 

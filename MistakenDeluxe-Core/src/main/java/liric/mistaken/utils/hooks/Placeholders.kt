@@ -1,4 +1,4 @@
-package liric.mistaken.utils.hooks
+﻿package liric.mistaken.utils.hooks
 
 import liric.mistaken.Mistaken
 import me.clip.placeholderapi.expansion.PlaceholderExpansion
@@ -72,7 +72,7 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
 
             "killer_name" -> {
                 if (p == null) return "N/A"
-                plugin.killerManager.getKillerOfPlayer(p)?.nombre ?: "None"
+                plugin.killerManager.getKillerOfPlayer(p)?.name ?: "None"
             }
 
             "killer_id" -> {
@@ -92,6 +92,7 @@ class Placeholders(private val plugin: Mistaken) : PlaceholderExpansion() {
                     "wins_survivor" -> stats.winsSurvivor.get().toString()
                     "losses_total" -> stats.totalLosses.toString()
                     "games_played" -> stats.gamesPlayed.toString()
+                    "coins" -> stats.coins.get().toString()
                     "stamina" -> plugin.playerDataManager.getStamina(player.uniqueId).toInt().toString()
                     else -> null
                 }

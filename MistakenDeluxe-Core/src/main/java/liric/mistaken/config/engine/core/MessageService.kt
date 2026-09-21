@@ -1,4 +1,4 @@
-package liric.mistaken.config.engine.core
+﻿package liric.mistaken.config.engine.core
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage

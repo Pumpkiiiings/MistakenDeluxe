@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.effects
+﻿package liric.mistaken.scripting.effects
 
 import java.util.UUID
 

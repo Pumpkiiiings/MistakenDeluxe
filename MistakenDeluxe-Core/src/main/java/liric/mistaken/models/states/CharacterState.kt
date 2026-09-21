@@ -1,4 +1,4 @@
-package liric.mistaken.models.states
+﻿package liric.mistaken.models.states
 
 import liric.mistaken.models.core.Character
 

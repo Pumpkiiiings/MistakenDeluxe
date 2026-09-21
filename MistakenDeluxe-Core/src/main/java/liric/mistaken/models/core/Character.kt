@@ -1,4 +1,4 @@
-package liric.mistaken.models.core
+﻿package liric.mistaken.models.core
 
 import org.bukkit.entity.Entity
 import java.util.concurrent.ConcurrentHashMap

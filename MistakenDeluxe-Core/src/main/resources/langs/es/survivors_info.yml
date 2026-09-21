@@ -1,9 +1,9 @@
-# ======================================================
+﻿# ======================================================
 #       MISTAKEN - INFORMACIÓN DE SUPERVIVIENTES (ES)
 # ======================================================
 survivors:
   civil:
-    nombre: "<gradient:#ffffff:#aaaaaa>「 ᴄɪᴠɪʟ 」</gradient>"
+    name: "<gradient:#ffffff:#aaaaaa>「 ᴄɪᴠɪʟ 」</gradient>"
     descripcion:
       - "<gray>Un ciudadano atrapado en el caos."
       - "<gray>Equilibrio puro en todas sus estadísticas."
@@ -22,7 +22,7 @@ survivors:
       skill3: "<#DDDDDD>¡ʀᴏᴄᴀ ʟᴀɴᴢᴀᴅᴀ!</#DDDDDD> <gray>Impacta para <#00FFFF>ralentizar</#00FFFF>."
 
   repartidor:
-    nombre: "<gradient:#ffaa00:#ffee00>「 ʀᴇᴘᴀʀᴛɪᴅᴏʀ 」</gradient>"
+    name: "<gradient:#ffaa00:#ffee00>「 ʀᴇᴘᴀʀᴛɪᴅᴏʀ 」</gradient>"
     descripcion:
       - "<gray>Ni Herobrine detiene esta entrega."
       - "<white>Mecánica: <#FFCC00>Soporte y Velocidad Extrema"
@@ -39,7 +39,7 @@ survivors:
       skill3: "<#FF0033>¡ᴜᴘꜱ!</#FF0033> <gray>¡Se tiró la salsa! El suelo resbala."
 
   minty:
-    nombre: "<gradient:#55ffaa:#00aa55>「 ᴍɪɴᴛʏ 」</gradient>"
+    name: "<gradient:#55ffaa:#00aa55>「 ᴍɪɴᴛʏ 」</gradient>"
     descripcion:
       - "<gray>Un superviviente con instintos animales."
       - "<white>Mecánica: <#00FF33>Aturdimiento y Huida"
@@ -56,7 +56,7 @@ survivors:
       skill3: "<#00FF33>¡ᴀᴜʟʟɪᴅᴏ!</#00FF33> <gray>¡El suelo tiembla! Killer aturdido."
 
   raincoatkid:
-    nombre: "<gradient:#ffff55:#ffaa00>「 ʀᴀɪɴᴄᴏᴀᴛ ᴋɪᴅ 」</gradient>"
+    name: "<gradient:#ffff55:#ffaa00>「 ʀᴀɪɴᴄᴏᴀᴛ ᴋɪᴅ 」</gradient>"
     descripcion:
       - "<gray>Un niño pequeño con un impermeable amarillo."
       - "<white>Mecánica: <#FFFF00>Agilidad y Sigilo"
@@ -71,11 +71,11 @@ survivors:
       skill1: "<#FFFF00>¡ᴄᴏʀʀᴇ!</#FFFF00> <gray>Velocidad aumentada (Cansancio en 5s)."
       skill2: "<#FFCC00>¡ʜᴏᴘ!</#FFCC00> <gray>Impulso rápido."
       skill3: "" # Sin mensaje, es un ítem de golpe
-    habilidades:
+    skills:
       jadeo: "<#FF0033><i>*jadeo*</i></#FF0033>"
 
   teto:
-    nombre: "<gradient:#ff66cc:#ff0000>「 ᴋᴀꜱᴀɴᴇ ᴛᴇᴛᴏ 」</gradient>"
+    name: "<gradient:#ff66cc:#ff0000>「 ᴋᴀꜱᴀɴᴇ ᴛᴇᴛᴏ 」</gradient>"
     descripcion:
       - "<gray>Quimera virtual con un arsenal de pan."
       - "<white>Mecánica: <#FF66FF>Control y Distancia"
@@ -90,11 +90,11 @@ survivors:
       skill1: "<#FF66FF>¡ꜱᴀʟᴛᴏ!</#FF66FF> <gray>Pero te mareaste..."
       skill2: "" # Es melee, no mensaje
       skill3: "<#FFFF00>¡ʟᴀɴᴢᴀᴍɪᴇɴᴛᴏ!</#FFFF00> <gray>Tu visión se nubla."
-    habilidades:
+    skills:
       impacto_directo: "<#00FF33>¡Impacto directo! El asesino ha sido paralizado.</#00FF33>"
 
   jesse:
-    nombre: "<gradient:#00aaff:#ffffff>「 ᴊᴇꜱꜱᴇ 」</gradient>"
+    name: "<gradient:#00aaff:#ffffff>「 ᴊᴇꜱꜱᴇ 」</gradient>"
     descripcion:
       - "<gray>El líder de la Orden de la Piedra."
       - "<white>Mecánica: <#00FFFF>Protección y Empuje"
@@ -111,7 +111,7 @@ survivors:
       skill3: "<#00AAAA>¡ꜰᴜᴇʀᴀ ᴅᴇ ᴀǫᴜí!</#00AAAA>"
 
   aldeano:
-    nombre: "<gradient:#55ff55:#00aa00>「 ᴀʟᴅᴇᴀɴᴏ 」</gradient>"
+    name: "<gradient:#55ff55:#00aa00>「 ᴀʟᴅᴇᴀɴᴏ 」</gradient>"
     descripcion:
       - "<gray>Un comerciante experto en huir."
       - "<white>Mecánica: <#00FF33>Distracción y Evasión"
@@ -126,11 +126,11 @@ survivors:
       skill1: "<#FF0033>¡ᴄᴏʀʀᴇ!</#FF0033> <gray>¡El asesino viene!"
       skill2: "<#00FF33>¡ᴛᴏᴍᴀ!</#00FF33> <gray>¡Déjame en paz!"
       skill3: "<#AAAAAA>¡ɢᴏʟᴇᴍ!</#AAAAAA> <white>¡Defiéndeme!</white>"
-    habilidades:
+    skills:
       golem_rechazado: "<#FF0033>[!] ¡El Golem te ha rechazado!</#FF0033>"
 
   notch:
-    nombre: "<gradient:#ffff55:#ffaa00>「 ɴᴏᴛᴄʜ 」</gradient>"
+    name: "<gradient:#ffff55:#ffaa00>「 ɴᴏᴛᴄʜ 」</gradient>"
     descripcion:
       - "<gray>El creador de todo lo cúbico."
       - "<white>Mecánica: <#FFFF00>Defensa y Control Divino"
@@ -145,11 +145,11 @@ survivors:
       skill1: "<#FFFFFF>¡ᴠᴜᴇʟᴏ!</#FFFFFF> <gray>Modo creativo temporal activado."
       skill2: "<#555555>¡ᴅᴇɴᴇɢᴀᴅᴏ!</#555555> <gray>El asesino ha sido rechazado."
       skill3: "<#FFFF00>¡ᴘᴏᴅᴇʀ!</#FFFF00> <gray>Regeneración y fuerza sagrada."
-    habilidades:
+    skills:
       denied: "<#FF0033>ᴅᴇɴɪᴇᴅ!</#FF0033> <gray>Acceso denegado por el administrador.</gray>"
 
   troll:
-    nombre: "<#00FF33>「 ᴇʟ ᴛʀᴏʟʟ 」"
+    name: "<#00FF33>「 ᴇʟ ᴛʀᴏʟʟ 」"
     descripcion:
       - "<gray>Un maestro del engaño que"
       - "<gray>disfruta haciendo sufrir al asesino."
@@ -164,6 +164,6 @@ survivors:
       skill1: "<#00FF33>¡ᴇɴɢᴀñᴏ!</#00FF33> <gray>Has dejado un holograma falso."
       skill2: "<#FFFF00>¡ᴛʀᴀᴍᴘᴀ!</#FFFF00> <gray>Una trampa colocada."
       skill3: "<#FFCC00>¡ꜱᴏʀᴘʀᴇꜱᴀ!</#FFCC00> <gray>Caja lista para asustar."
-    habilidades:
+    skills:
       resbalaste_platano: "<#FFFF00>¡Te resbalaste con una cáscara de plátano!</#FFFF00>"
       boom_trampa: "<#FF0033>¡ʙᴏᴏᴍ!</#FF0033> <gray>¡Era una trampa!</gray>"

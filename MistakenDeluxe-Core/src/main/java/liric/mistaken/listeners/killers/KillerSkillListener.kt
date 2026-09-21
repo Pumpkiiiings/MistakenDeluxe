@@ -1,4 +1,4 @@
-package liric.mistaken.listeners.killers
+﻿package liric.mistaken.listeners.killers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState

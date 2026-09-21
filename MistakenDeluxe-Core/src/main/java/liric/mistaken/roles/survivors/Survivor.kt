@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors
+﻿package liric.mistaken.roles.survivors
 
 import kotlinx.coroutines.Job
 import liric.mistaken.Mistaken
@@ -10,7 +10,7 @@ import liric.mistaken.roles.common.triggers.TriggerRegistry
 import liric.mistaken.api.roles.GameRole
 
 
-abstract class Survivor(override val id: String, override val nombre: String) : liric.mistaken.api.roles.ISurvivor {
+abstract class Survivor(override val id: String, override val name: String) : liric.mistaken.api.roles.ISurvivor {
 
     protected val plugin = Mistaken.instance
     protected val mm = plugin.mm

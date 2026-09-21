@@ -1,4 +1,4 @@
-package liric.mistaken.models.integration.modelengine
+﻿package liric.mistaken.models.integration.modelengine
 
 import liric.mistaken.models.components.AnimationComponent
 import liric.mistaken.models.components.ModelComponent

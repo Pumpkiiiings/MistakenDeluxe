@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers
+﻿package liric.mistaken.roles.killers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.common.triggers.TriggerRegistry
@@ -10,7 +10,7 @@ import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.config.engine.core.MessageService
 import liric.mistaken.utils.resourcepack.CustomItemManager
 
-abstract class CoreKiller(id: String, nombre: String) : Killer(id, nombre) {
+abstract class CoreKiller(id: String, name: String) : Killer(id, name) {
     protected val plugin: Mistaken
         get() = Mistaken.instance
 

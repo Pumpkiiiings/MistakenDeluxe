@@ -1,4 +1,4 @@
-package liric.mistaken.listeners.survivors
+﻿package liric.mistaken.listeners.survivors
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -151,7 +151,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
             victim.addPotionEffect(PotionEffect(PotionEffectType.SLOWNESS, 80, 1))
             victim.playSound(victim.location, Sound.BLOCK_STONE_BREAK, 1f, 0.8f)
             (snowball.shooter as? Player)?.let { shooter ->
-                shooter.sendMessage(MessageService.getComponent(shooter, "habilidades.roca-impacto-exito"))
+                shooter.sendMessage(MessageService.getComponent(shooter, "skills.rock-hit-success"))
             }
             return
         }
@@ -162,12 +162,12 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
             if (isKiller) {
                 victim.addPotionEffect(PotionEffect(PotionEffectType.NAUSEA, 140, 0))
                 victim.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 60, 0))
-                victim.sendMessage(MessageService.getComponent(victim, "habilidades.pedido-impacto-asesino"))
+                victim.sendMessage(MessageService.getComponent(victim, "skills.killer-hit-request"))
                 victim.playSound(victim.location, Sound.ENTITY_GENERIC_SPLASH, 1f, 1f)
             } else {
                 val maxHealth = victim.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
                 victim.health = (victim.health + 4.0).coerceAtMost(maxHealth)
-                victim.sendMessage(MessageService.getComponent(victim, "habilidades.pedido-recibido-cura"))
+                victim.sendMessage(MessageService.getComponent(victim, "skills.heal-request-received"))
                 victim.playSound(victim.location, Sound.ENTITY_PLAYER_BURP, 1f, 1f)
             }
             return

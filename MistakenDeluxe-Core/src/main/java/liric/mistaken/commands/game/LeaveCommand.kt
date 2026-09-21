@@ -1,4 +1,4 @@
-package liric.mistaken.commands.game
+﻿package liric.mistaken.commands.game
 
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.tree.LiteralCommandNode
@@ -14,7 +14,7 @@ import liric.mistaken.utils.color.ColorTranslator
 object LeaveCommand {
 
     fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {
-        return Commands.literal("salir")
+        return Commands.literal("leave")
             .executes { context ->
                 val sender = context.source.sender
                 val player = sender as? Player

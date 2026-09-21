@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic
+﻿package liric.mistaken.game.managers.cinematic
 
 import liric.mistaken.utils.worldViewers
 import liric.mistaken.Mistaken

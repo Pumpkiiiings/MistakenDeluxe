@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.api
+﻿package liric.mistaken.scripting.api
 
 /**
  * Representa el contrato que debe cumplir un script Lua.

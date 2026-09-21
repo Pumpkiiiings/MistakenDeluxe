@@ -1,4 +1,4 @@
-package liric.mistaken.game.logic
+﻿package liric.mistaken.game.logic
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.game.GameSession

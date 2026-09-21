@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.engine
+﻿package liric.mistaken.game.managers.engine
 
 import dev.arenaapi.api.ArenaApi
 import dev.arenaapi.api.ArenaProvider

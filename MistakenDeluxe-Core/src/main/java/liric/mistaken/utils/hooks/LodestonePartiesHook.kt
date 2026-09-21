@@ -1,4 +1,4 @@
-package liric.mistaken.utils.hooks
+﻿package liric.mistaken.utils.hooks
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.MistakenProvider

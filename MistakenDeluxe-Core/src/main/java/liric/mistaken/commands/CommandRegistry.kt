@@ -5,18 +5,16 @@ import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent
 import liric.mistaken.Mistaken
 import liric.mistaken.commands.admin.ArenaCommand
-import liric.mistaken.commands.other.DataCommand
-import liric.mistaken.commands.admin.SetLobbyCommand
-import liric.mistaken.commands.other.UnlinkCommand
-import liric.mistaken.commands.debug.CinematicCommand
-import liric.mistaken.commands.debug.HitboxCommand
+import liric.mistaken.commands.admin.MistakenAdminCommand
 import liric.mistaken.commands.debug.MistakenDebugCommand
 import liric.mistaken.commands.game.EspectearCommand
 import liric.mistaken.commands.game.JoinCommand
 import liric.mistaken.commands.game.LeaveCommand
-import liric.mistaken.commands.game.MistakenCommand
 import liric.mistaken.commands.game.VoteCommand
-import liric.mistaken.commands.other.LinkCommand
+import liric.mistaken.commands.player.AfkCommand
+import liric.mistaken.commands.player.LanguageCommand
+import liric.mistaken.commands.player.ShopCommand
+import liric.mistaken.commands.player.StatsCommand
 import liric.mistaken.utils.color.ColorTranslator
 
 class CommandRegistry(private val plugin: Mistaken) {
@@ -24,33 +22,31 @@ class CommandRegistry(private val plugin: Mistaken) {
     fun registerAll() {
         val manager = plugin.lifecycleManager
 
-        
         manager.registerEventHandler(LifecycleEvents.COMMANDS) { event: ReloadableRegistrarEvent<Commands> ->
             val registrar = event.registrar()
 
+            // Top-Level Game Commands
+            registrar.register(JoinCommand.get(plugin), "Join a match", listOf("play"))
+            registrar.register(VoteCommand.get(plugin), "Vote for a map", emptyList())
+            registrar.register(LeaveCommand.get(plugin), "Leave the current match", listOf("quit"))
+            registrar.register("arena", "Arena management", ArenaCommand(plugin))
+            registrar.register("spectate", "Enter spectator mode", emptyList(), EspectearCommand(plugin))
             
+            // Top-Level Player Commands
+            registrar.register(ShopCommand.get(plugin), "Open the shop menu", emptyList())
+            registrar.register(StatsCommand.get(plugin), "View player statistics", emptyList())
+            registrar.register(LanguageCommand.get(plugin), "Change your language", listOf("lang"))
+            registrar.register(AfkCommand.get(plugin), "Toggle AFK mode", emptyList())
 
+            // Admin & Debug Commands
+            registrar.register(MistakenDebugCommand.get(plugin), "Debug commands", listOf("mdebug"))
+            registrar.register(MistakenAdminCommand.get(plugin), "Mistaken Administration", listOf("ms", "mt"))
             
-            
-            
-
-            registrar.register(JoinCommand.get(plugin), "Unirse a una partida", listOf("join", "play"))
-            registrar.register(VoteCommand.get(plugin), "Votar por el mapa", listOf("votar"))
-            registrar.register(DataCommand.get(plugin), "Migrar datos de YML a MySQL", emptyList())
-            registrar.register(LeaveCommand.get(plugin), "Salir de la partida actual", listOf("leave", "quit"))
-            registrar.register(UnlinkCommand.get(plugin), "Desvincular Discord", emptyList())
-            registrar.register(SetLobbyCommand.get(plugin), "Establecer el spawn del lobby", emptyList())
-            registrar.register(LinkCommand.get(plugin), "Vincular Discord", emptyList())
-            registrar.register(MistakenDebugCommand.get(plugin), "Comando de pruebas", listOf("mdebug"))
-            registrar.register(CinematicCommand.get(plugin), "Reproducir cinemáticas", listOf("cine"))
-            registrar.register(HitboxCommand.get(plugin), "Alternar el visor de hitboxes 3D", listOf("hitboxes"))
+            // Economy Commands
             if (!plugin.server.pluginManager.isPluginEnabled("Vault") && !plugin.server.pluginManager.isPluginEnabled("ExcellentEconomy")) {
-                registrar.register(liric.mistaken.commands.economy.EcoCommand.get(plugin), "Comando de administracion de economia", emptyList())
-                registrar.register(liric.mistaken.commands.economy.BalanceCommand.get(plugin), "Ver balance de jugador", listOf("balance"))
+                registrar.register(liric.mistaken.commands.economy.EcoCommand.get(plugin), "Economy administration", emptyList())
+                registrar.register(liric.mistaken.commands.economy.BalanceCommand.get(plugin), "Check your balance", listOf("balance", "bal"))
             }
-            registrar.register("mistaken", "Comando principal", listOf("ms", "mt"), MistakenCommand(plugin))
-            registrar.register("arena", "Gestión de arenas", ArenaCommand(plugin))
-            registrar.register("espectear", "Entrar al modo espectador", listOf("spectate"), EspectearCommand(plugin))
         }
 
         plugin.componentLogger.info(ColorTranslator.translate("[SUCCESS] [CommandRegistry] Commands registered successfully."))

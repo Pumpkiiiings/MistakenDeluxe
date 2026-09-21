@@ -1,4 +1,4 @@
-package liric.mistaken.game
+﻿package liric.mistaken.game
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState

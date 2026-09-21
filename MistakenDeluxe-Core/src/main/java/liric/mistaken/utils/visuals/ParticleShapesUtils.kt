@@ -1,4 +1,4 @@
-package liric.mistaken.utils.visuals
+﻿package liric.mistaken.utils.visuals
 
 import org.bukkit.Particle
 import org.bukkit.Location

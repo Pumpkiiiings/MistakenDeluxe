@@ -1,6 +1,6 @@
-killers:
+﻿killers:
   slasher:
-    nombre: "<white>「 ᴘᴜᴍᴘᴋɪɴ ᴡʜɪᴛᴇ 」"
+    name: "<white>「 ᴘᴜᴍᴘᴋɪɴ ᴡʜɪᴛᴇ 」"
     descripcion:
       - "<gray>A classic and brutal killer."
       - "<gray>Specialist in physical pursuit."
@@ -15,7 +15,7 @@ killers:
       skill4: "<#CC0000>ᴇxᴇᴄᴜᴛɪᴏɴ ᴍᴏᴅᴇ"
 
   herobrine:
-    nombre: "<white>「 ʜᴇʀᴏʙʀɪɴᴇ 」"
+    name: "<white>「 ʜᴇʀᴏʙʀɪɴᴇ 」"
     descripcion:
       - "<gray>The myth that corrupts reality."
       - "<gray>Specialist in stalking and mobility."
@@ -28,12 +28,12 @@ killers:
       skill2: "<#00FFFF>Dimensional Leap"
       skill3: "<#555555>Pulse of Terror"
       skill4: "<#FF0033>ᴡᴏʀʟᴅ ᴇʀʀᴏʀ"
-    habilidades:
+    skills:
       estampaste: "<red>[!] You smashed into the wall!</red>"
       embestido: "<red>[!] Herobrine has rammed you with the power of the Void.</red>"
 
   entity303:
-    nombre: "<red>「 ᴇɴᴛɪᴛʏ 303 」"
+    name: "<red>「 ᴇɴᴛɪᴛʏ 303 」"
     descripcion:
       - "<gray>A critical error in the code."
       - "<gray>Specialist in glitch attacks and fire."
@@ -46,11 +46,11 @@ killers:
       skill2: "<#FF3300>Error Star"
       skill3: "<#FF6600>Flight Protocol"
       skill4: "<#CC0000>ꜱʏꜱᴛᴇᴍ ᴄʀᴀꜱʜ"
-    habilidades:
+    skills:
       system_error: "<red>ꜱʏꜱᴛᴇᴍ ᴇʀʀᴏʀ: 303 ꜰᴏᴜɴᴅ</red>"
 
   null:
-    nombre: "<dark_gray>「 ɴᴜʟʟ 」"
+    name: "<dark_gray>「 ɴᴜʟʟ 」"
     descripcion:
       - "<gray>The absolute absence of existence."
       - "<gray>Specialist in blindness and traps."
@@ -65,7 +65,7 @@ killers:
       skill4: "<#AAAAAA>ꜰᴀɴɢꜱ ᴏꜰ ᴛʜᴇ ᴀʙʏꜱꜱ"
 
   charlie:
-    nombre: "<gradient:#ff4500:#ff8c00>「 ᴄʜᴀʀʟɪᴇ ɪɴꜰᴇʀɴᴏ 」</gradient>"
+    name: "<gradient:#ff4500:#ff8c00>「 ᴄʜᴀʀʟɪᴇ ɪɴꜰᴇʀɴᴏ 」</gradient>"
     descripcion:
       - "<gray>The herald of fire and eternal ice."
       - "<gray>Dominates the field with massive elemental attacks."
@@ -81,7 +81,7 @@ killers:
       skill4: "<#8B0000>ꜰᴀɴɢꜱ ᴏꜰ ᴛʜᴇ ᴜɴᴅᴇʀᴡᴏʀʟᴅ"
 
   mariachi:
-    nombre: "<gradient:#FF0033:#8B0000>「 ᴍᴀʀɪᴀᴄʜɪ ᴍᴜᴇʀᴛᴇ 」</gradient>"
+    name: "<gradient:#FF0033:#8B0000>「 ᴍᴀʀɪᴀᴄʜɪ ᴍᴜᴇʀᴛᴇ 」</gradient>"
     descripcion:
       - "<gray>The Charro Negro has come for your soul."
       - "<gray>Specialist in auditory stun."
@@ -95,13 +95,13 @@ killers:
       skill2: "<#FFCC00>Jarabe Tapatío (Stomp)"
       skill3: "<#FFFFFF>Accurate Guitar Strike"
       skill4: "<#00FF33>ᴛᴇǫᴜɪʟᴀ ꜱʜᴏᴛ"
-    habilidades:
+    skills:
       grito_corrompido: "<red>The Mariachi's scream has corrupted your ears!</red>"
       a_zapatear: "<gold>Time to stomp! Speed increased.</gold>"
       guitarrazo: "<white>¡BAM! You've been hit with the guitar.</white>"
 
   charliejazz:
-    nombre: "<gradient:#e0b0ff:#ffd700>「 ᴄʜᴀʀʟɪᴇ ɪɴꜰᴇʀɴᴏ ᴠᴇʀ. ᴊᴀᴢᴢ 」</gradient>"
+    name: "<gradient:#e0b0ff:#ffd700>「 ᴄʜᴀʀʟɪᴇ ɪɴꜰᴇʀɴᴏ ᴠᴇʀ. ᴊᴀᴢᴢ 」</gradient>"
     descripcion:
       - "<gray>The herald of stellar fire and gold."
       - "<gray>Dominates the field with dazzling attacks."
@@ -117,7 +117,7 @@ killers:
       skill4: "<#9900FF>ᴍᴀɢɪᴄ ꜰᴀɴɢꜱ"
 
   romeo:
-    nombre: "<gradient:#ff0000:#ffff00>「 ʀᴏᴍᴇᴏ 」</gradient> <white>[ᴀᴅᴍɪɴ]</white>"
+    name: "<gradient:#ff0000:#ffff00>「 ʀᴏᴍᴇᴏ 」</gradient> <white>[ᴀᴅᴍɪɴ]</white>"
     descripcion:
       - "<red>The World Administrator has returned."
       - "<gray>Controls the battlefield with the power of code."
@@ -132,7 +132,7 @@ killers:
       skill4: "<#FFCC00>ꜱᴛᴀʀ ᴏꜰ ᴛʜᴇ ᴇɴᴅ"
 
   colorandelectricity:
-    nombre: "<gradient:#ff0080:#00ffff:#ffff00>「 ᴄᴏʟᴏʀꜱɪᴛᴏ 」</gradient>"
+    name: "<gradient:#ff0080:#00ffff:#ffff00>「 ᴄᴏʟᴏʀꜱɪᴛᴏ 」</gradient>"
     descripcion:
       - "<gray>A bodiless being made of pure static."
       - "<gray>Specialist in stealing vision and speed."
@@ -146,11 +146,11 @@ killers:
       skill2: "<#00EEFF>Color Drain"
       skill3: "<#FFEE00>Pulse Static"
       skill4: "<#CC00FF>ꜱʜɪᴋɪꜱᴀɪ ᴇɴᴅ"
-    habilidades:
+    skills:
       sobrecarga_cromatica: "<red>[!] ᴄʜʀᴏᴍᴀᴛɪᴄ ᴏᴠᴇʀʟᴏᴀᴅ</red>"
 
   sowoul:
-    nombre: "<gradient:#5b00ff:#ff00ff>「 ꜱᴏᴡᴏᴜʟ 」</gradient>"
+    name: "<gradient:#5b00ff:#ff00ff>「 ꜱᴏᴡᴏᴜʟ 」</gradient>"
     descripcion:
       - "<gray>A mysterious illusionist who masters"
       - "<gray>the art of deception and dark magic."
@@ -163,12 +163,12 @@ killers:
       skill2: "<#FFFFFF>Card Rain"
       skill3: "<#00AAAA>Evoker's Jaws"
       skill4: "<#CC0000>ɪɴᴠᴇɴᴛɪᴏɴ: ɢᴇᴏꜰꜰʀᴇʏ 3.0"
-    habilidades:
+    skills:
       nadie_rango: "<red>No one in your line of sight. Skill consumed.</red>"
       mano_magica: "<#9900FF>¡ᴀ ᴍᴀɢɪᴄ ʜᴀɴᴅ ʜᴀꜱ ᴄᴀᴜɢʜᴛ ʏᴏᴜ!</#9900FF>"
 
   tinkywinky:
-    nombre: "<gradient:#6b00b5:#cc00ff>「 ᴛɪɴᴋʏ ᴡɪɴᴋʏ 」</gradient>"
+    name: "<gradient:#6b00b5:#cc00ff>「 ᴛɪɴᴋʏ ᴡɪɴᴋʏ 」</gradient>"
     descripcion:
       - "<gray>A disturbing creature that roams"
       - "<gray>the generators with his magic bag."
@@ -181,19 +181,19 @@ killers:
       skill2: "<#AAAAAA>Silent Step"
       skill3: "<#00AAAA>TV Signal"
       skill4: "<#CC0000>ᴛʜᴇ ʟᴀꜱᴛ ꜱᴏɴɢ"
-    habilidades:
+    skills:
       bolsa_marcado: "<#9900FF>[!] TinkyWinky's Magic Bag has marked you...</#9900FF>"
       senal_distorsiona: "<#9900FF>[!] TinkyWinky's signal distorts your mind...</#9900FF>"
       nadie_cerca: "<gray>[!] There is no one nearby to affect.</gray>"
 
   still_life:
-    nombre: "<yellow>「 ꜱᴛɪʟʟ ʟɪꜰᴇ 」</yellow>"
+    name: "<yellow>「 ꜱᴛɪʟʟ ʟɪꜰᴇ 」</yellow>"
     descripcion:
       - "<gray>Disguise and deception mechanics."
     lore_shop:
       - "<gray>\"I am one of you...\""
       - "<white>Difficulty: <#FF0033>Hard"
-    habilidades:
+    skills:
       generador_colocado: "<green>Fake generator placed.</green>"
       generador_interactuado: "<red>A survivor interacted with your fake generator!</red>"
       disfraz_activado: "<yellow>You disguised yourself as %player%.</yellow>"
@@ -201,7 +201,7 @@ killers:
       chat_disfraz: "<gray>%disguisename%: <white>%message%</white></gray>"
 
   smiler:
-    nombre: "<yellow>「 ꜱᴍɪʟᴇʀ 」</yellow>"
+    name: "<yellow>「 ꜱᴍɪʟᴇʀ 」</yellow>"
     descripcion:
       - "<gray>The smile in the darkness."
     lore_shop:
@@ -209,7 +209,7 @@ killers:
       - "<white>Difficulty: <#FFCC00>Medium"
 
   warden:
-    nombre: "<dark_aqua>「 ᴡᴀʀᴅᴇɴ 」</dark_aqua>"
+    name: "<dark_aqua>「 ᴡᴀʀᴅᴇɴ 」</dark_aqua>"
     descripcion:
       - "<gray>The guardian of the depths."
     lore_shop:
@@ -217,7 +217,7 @@ killers:
       - "<white>Difficulty: <#FF0033>Hard"
 
   piglinbig:
-    nombre: "<gold>「 ᴛʜᴇ ɢʀᴇᴀᴛ ᴘɪɢ 」</gold>"
+    name: "<gold>「 ᴛʜᴇ ɢʀᴇᴀᴛ ᴘɪɢ 」</gold>"
     descripcion:
       - "<gray>A beast from the underworld."
       - "<gray>Specialist in lifting the earth and throwing axes."

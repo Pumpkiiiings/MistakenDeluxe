@@ -1,4 +1,4 @@
-package liric.mistaken.utils.scoreboard
+﻿package liric.mistaken.utils.scoreboard
 
 import liric.mistaken.MistakenLib
 import java.util.concurrent.atomic.AtomicInteger

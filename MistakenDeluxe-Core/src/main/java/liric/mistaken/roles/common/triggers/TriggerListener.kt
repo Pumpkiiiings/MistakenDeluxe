@@ -1,4 +1,4 @@
-package liric.mistaken.roles.common.triggers
+﻿package liric.mistaken.roles.common.triggers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState

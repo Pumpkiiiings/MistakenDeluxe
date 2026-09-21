@@ -1,4 +1,4 @@
-package liric.mistaken.utils.hooks.economy
+﻿package liric.mistaken.utils.hooks.economy
 
 import org.bukkit.entity.Player
 import su.nightexpress.excellenteconomy.api.ExcellentEconomyAPI

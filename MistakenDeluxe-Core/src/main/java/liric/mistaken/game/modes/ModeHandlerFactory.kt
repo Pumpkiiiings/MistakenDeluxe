@@ -1,4 +1,4 @@
-package liric.mistaken.game.modes
+﻿package liric.mistaken.game.modes
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession

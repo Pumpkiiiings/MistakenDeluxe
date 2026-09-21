@@ -1,4 +1,4 @@
-package liric.mistaken.utils.scoreboard
+﻿package liric.mistaken.utils.scoreboard
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerScoreboardObjective

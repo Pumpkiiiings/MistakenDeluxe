@@ -1,4 +1,4 @@
-package liric.mistaken.commands.game
+﻿package liric.mistaken.commands.game
 
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.StringArgumentType

@@ -15,21 +15,21 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
 
     fun abrir(player: Player) {
         val config = liric.mistaken.config.engine.core.ConfigManager.getMenuConfig("private_lobby")
-        val titleText = config.getString("menus.private_lobby.title", "<dark_gray>Configuración de Partida Privada") ?: "<dark_gray>Configuración de Partida Privada"
-        val startName = config.getString("menus.private_lobby.items.start.name", "<green><bold>Iniciar Partida") ?: "<green><bold>Iniciar Partida"
-        val startLoreRaw = config.getStringList("menus.private_lobby.items.start.lore").ifEmpty { listOf("<gray>Inicia la partida forzosamente.") }
+        val titleText = config.getString("menus.private_lobby.title", "<dark_gray>Private Game Setup") ?: "<dark_gray>Private Game Setup"
+        val startName = config.getString("menus.private_lobby.items.start.name", "<green><bold>Start Game") ?: "<green><bold>Start Game"
+        val startLoreRaw = config.getStringList("menus.private_lobby.items.start.lore").ifEmpty { listOf("<gray>Force start the game.") }
         
-        val rulesName = config.getString("menus.private_lobby.items.rules.name", "<gold><bold>Reglas de Juego") ?: "<gold><bold>Reglas de Juego"
-        val rulesLoreRaw = config.getStringList("menus.private_lobby.items.rules.lore").ifEmpty { listOf("<gray>Modifica las reglas de la partida.") }
+        val rulesName = config.getString("menus.private_lobby.items.rules.name", "<gold><bold>Game Rules") ?: "<gold><bold>Game Rules"
+        val rulesLoreRaw = config.getStringList("menus.private_lobby.items.rules.lore").ifEmpty { listOf("<gray>Modify game rules.") }
 
-        val mapName = config.getString("menus.private_lobby.items.map.name", "<gold><bold>Selector de Mapa") ?: "<gold><bold>Selector de Mapa"
-        val mapLoreRaw = config.getStringList("menus.private_lobby.items.map.lore").ifEmpty { listOf("<gray>Elige el mapa a jugar.") }
+        val mapName = config.getString("menus.private_lobby.items.map.name", "<gold><bold>Map Selector") ?: "<gold><bold>Map Selector"
+        val mapLoreRaw = config.getStringList("menus.private_lobby.items.map.lore").ifEmpty { listOf("<gray>Choose the map to play.") }
 
-        val modeName = config.getString("menus.private_lobby.items.mode.name", "<gold><bold>Selector de Modo") ?: "<gold><bold>Selector de Modo"
-        val modeLoreRaw = config.getStringList("menus.private_lobby.items.mode.lore").ifEmpty { listOf("<gray>Elige el modo de juego.") }
+        val modeName = config.getString("menus.private_lobby.items.mode.name", "<gold><bold>Mode Selector") ?: "<gold><bold>Mode Selector"
+        val modeLoreRaw = config.getStringList("menus.private_lobby.items.mode.lore").ifEmpty { listOf("<gray>Choose the game mode.") }
 
-        val playersName = config.getString("menus.private_lobby.items.players.name", "<gold><bold>Selector de Jugadores") ?: "<gold><bold>Selector de Jugadores"
-        val playersLoreRaw = config.getStringList("menus.private_lobby.items.players.lore").ifEmpty { listOf("<gray>Elige roles de jugadores.") }
+        val playersName = config.getString("menus.private_lobby.items.players.name", "<gold><bold>Player Selector") ?: "<gold><bold>Player Selector"
+        val playersLoreRaw = config.getStringList("menus.private_lobby.items.players.lore").ifEmpty { listOf("<gray>Choose player roles.") }
 
         val rows = config.getInt("menus.private_lobby.rows", 5)
         val fillerMatStr = config.getString("menus.private_lobby.filler_material", "BLACK_STAINED_GLASS_PANE") ?: "BLACK_STAINED_GLASS_PANE"

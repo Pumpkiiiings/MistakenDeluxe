@@ -1,4 +1,4 @@
-package liric.mistaken.packet.fake
+﻿package liric.mistaken.packet.fake
 
 import org.bukkit.Location
 import org.bukkit.entity.Player

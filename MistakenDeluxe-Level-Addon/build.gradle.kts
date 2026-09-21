@@ -32,7 +32,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     
     
-    implementation(project(":MistakenDeluxe-API"))
+    compileOnly(project(":MistakenDeluxe-API"))
     
     compileOnly(project(":MistakenDeluxe-Core"))
 

@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.classes
+﻿package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.models.components.CombatComponent
 import liric.mistaken.models.core.Character

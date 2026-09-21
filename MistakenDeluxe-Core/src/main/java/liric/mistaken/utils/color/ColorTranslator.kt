@@ -1,4 +1,4 @@
-package liric.mistaken.utils.color
+﻿package liric.mistaken.utils.color
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage

@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic
+﻿package liric.mistaken.game.managers.cinematic
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.profiles.*
@@ -77,7 +77,7 @@ class CinematicManager(private val plugin: Mistaken) {
             profile.applyEquipment(player, dummy, isIntro = true)
         }
 
-        val titlePair = profile.getIntroTexts(plugin, killer.nombre)
+        val titlePair = profile.getIntroTexts(plugin, killer.name)
         val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(6), Duration.ofMillis(1000))
 
         val originalLocations = mutableMapOf<Player, Location>()
@@ -165,7 +165,7 @@ class CinematicManager(private val plugin: Mistaken) {
             profile.applyEquipment(player, dummy, isIntro = false)
         }
 
-        val titlePair = profile.getOutroTexts(plugin, killer.nombre)
+        val titlePair = profile.getOutroTexts(plugin, killer.name)
         val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(8), Duration.ofMillis(1000))
 
         val originalLocations = mutableMapOf<Player, Location>()

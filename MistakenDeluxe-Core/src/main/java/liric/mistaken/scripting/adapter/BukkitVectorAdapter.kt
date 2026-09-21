@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.adapter
+﻿package liric.mistaken.scripting.adapter
 
 import liric.mistaken.scripting.api.ScriptVector
 import org.bukkit.util.Vector

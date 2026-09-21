@@ -1,4 +1,4 @@
-package liric.mistaken.utils.scoreboard
+﻿package liric.mistaken.utils.scoreboard
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor

@@ -30,12 +30,39 @@ class LevelAdminCommand(private val plugin: LevelAddonPlugin) : BasicCommand {
             return
         }
 
+        val action = args[0].lowercase()
+
+        if (action == "booster") {
+            if (args.size < 4) {
+                sendMsg(sender, "messages.admin-booster-usage", "<red>Usage: /leveladmin booster <give|global> <player|amount> <multiplier> [duration_minutes]")
+                return
+            }
+            val subAction = args[1].lowercase()
+            
+            if (subAction == "give") {
+                val targetPlayer = Bukkit.getPlayer(args[2])
+                if (targetPlayer == null) {
+                    sendMsg(sender, "messages.player-not-found", "<red>Player not found.")
+                    return
+                }
+                val multiplier = args[3].toDoubleOrNull() ?: return
+                val durationMins = if (args.size >= 5) args[4].toLongOrNull() ?: 60 else 60
+                plugin.boosterManager.giveBooster(targetPlayer.uniqueId.toString(), multiplier, durationMins * 60 * 1000)
+                sendMsg(sender, "messages.booster-give", "<prefix><green>Given a <gold>%multiplier%x</gold> booster to <yellow>%player%</yellow> for <gold>%duration%m</gold>.", "%multiplier%" to multiplier.toString(), "%player%" to targetPlayer.name, "%duration%" to durationMins.toString())
+            } else if (subAction == "global") {
+                val multiplier = args[2].toDoubleOrNull() ?: return
+                val durationMins = args[3].toLongOrNull() ?: 60
+                plugin.boosterManager.giveBooster("global", multiplier, durationMins * 60 * 1000)
+                sendMsg(sender, "messages.booster-global", "<prefix><green>Global booster of <gold>%multiplier%x</gold> activated for <gold>%duration%m</gold>.", "%multiplier%" to multiplier.toString(), "%duration%" to durationMins.toString())
+            }
+            return
+        }
+
         if (args.size < 3) {
             sendMsg(sender, "messages.admin-usage", "<red>Usage: /leveladmin <addxp|setlevel|addkills|addwins_survivor|addwins_killer|addgenerators> <player> <amount>")
             return
         }
 
-        val action = args[0].lowercase()
         val targetName = args[1]
         val amount = args[2].toLongOrNull() ?: return
 

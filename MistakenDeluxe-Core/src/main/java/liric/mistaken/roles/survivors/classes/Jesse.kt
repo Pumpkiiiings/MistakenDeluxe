@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.classes
+﻿package liric.mistaken.roles.survivors.classes
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -27,7 +27,7 @@ import liric.mistaken.config.engine.core.MessageService
 
 class Jesse : Survivor(
     "jesse",
-    MessageService.getStrictString(null, "survivors.jesse.nombre", "survivors_info")
+    MessageService.getStrictString(null, "survivors.jesse.name", "survivors_info")
 ) {
 
     private val pathBase = "survivors.jesse"

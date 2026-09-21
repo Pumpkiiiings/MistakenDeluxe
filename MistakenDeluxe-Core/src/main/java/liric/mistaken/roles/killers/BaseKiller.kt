@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers
+﻿package liric.mistaken.roles.killers
 
 import liric.mistaken.models.components.AnimationComponent
 import liric.mistaken.models.components.CombatComponent
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
  * Clase base para todos los Killers basados en el nuevo ECS Framework.
  * Al extender de CoreKiller, hereda el comportamiento Singleton que requiere el KillerManager.
  */
-abstract class BaseKiller(id: String, nombre: String) : CoreKiller(id, nombre) {
+abstract class BaseKiller(id: String, name: String) : CoreKiller(id, name) {
 
     
     protected val activeCharacters = ConcurrentHashMap<UUID, Character>()

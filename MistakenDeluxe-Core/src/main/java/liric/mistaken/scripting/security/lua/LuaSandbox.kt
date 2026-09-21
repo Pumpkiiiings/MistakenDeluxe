@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.security.lua
+﻿package liric.mistaken.scripting.security.lua
 
 import org.luaj.vm2.Globals
 import org.luaj.vm2.LuaError

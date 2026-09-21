@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.security.groovy
+﻿package liric.mistaken.scripting.security.groovy
 
 import org.bukkit.Bukkit
 

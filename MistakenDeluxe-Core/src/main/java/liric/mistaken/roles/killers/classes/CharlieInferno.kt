@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.classes
+﻿package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
@@ -41,7 +41,7 @@ import liric.mistaken.config.engine.core.MessageService
 
 class CharlieInferno : CoreKiller(
     "charlie",
-    MessageService.getStrictString(null, "killers.charlie.nombre", "killers_info")
+    MessageService.getStrictString(null, "killers.charlie.name", "killers_info")
 ) {
 
     private val pathBase = "killers.charlie"

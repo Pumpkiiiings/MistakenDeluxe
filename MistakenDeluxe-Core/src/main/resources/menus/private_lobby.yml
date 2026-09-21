@@ -1,6 +1,6 @@
 menus:
   private_lobby:
-    title: "<dark_gray>Configuración de Partida Privada"
+    title: "<dark_gray>Private Game Setup"
     rows: 5
     filler_material: "BLACK_STAINED_GLASS_PANE"
     slots:
@@ -11,30 +11,30 @@ menus:
       players: 21
     items:
       start:
-        name: "<green><bold>Iniciar Partida"
+        name: "<green><bold>Start Game"
         lore:
-          - "<gray>Inicia la partida forzosamente."
+          - "<gray>Force start the game."
       rules:
-        name: "<gold><bold>Reglas de Juego"
+        name: "<gold><bold>Game Rules"
         lore:
-          - "<gray>Modifica las reglas de la partida."
+          - "<gray>Modify game rules."
       map:
-        name: "<gold><bold>Selector de Mapa"
+        name: "<gold><bold>Map Selector"
         lore:
-          - "<gray>Elige el mapa a jugar."
+          - "<gray>Choose the map to play."
       mode:
-        name: "<gold><bold>Selector de Modo"
+        name: "<gold><bold>Mode Selector"
         lore:
-          - "<gray>Elige el modo de juego."
+          - "<gray>Choose the game mode."
       players:
-        name: "<gold><bold>Selector de Jugadores"
+        name: "<gold><bold>Player Selector"
         lore:
-          - "<gray>Elige roles de jugadores."
+          - "<gray>Choose player roles."
       back:
-        name: "<red>Volver"
+        name: "<red>Back"
 
   map_selector:
-    title: "<dark_gray>Seleccionar Mapa"
+    title: "<dark_gray>Select Map"
     rows: 5
     filler_material: "BLACK_STAINED_GLASS_PANE"
     start_slot: 19
@@ -43,10 +43,10 @@ menus:
     items:
       map:
         lore_id: "<gray>ID: {map}"
-        lore_click: "<e>Click para seleccionar"
+        lore_click: "<e>Click to select"
 
   mode_selector:
-    title: "<dark_gray>Seleccionar Modo"
+    title: "<dark_gray>Select Mode"
     rows: 5
     filler_material: "BLACK_STAINED_GLASS_PANE"
     start_slot: 20
@@ -54,7 +54,7 @@ menus:
     back_slot: 40
     items:
       mode:
-        lore_click: "<e>Click para seleccionar"
+        lore_click: "<e>Click to select"
 
   player_selector:
     title: "<dark_gray>Selector de Jugadores"
@@ -65,16 +65,16 @@ menus:
     back_slot: 40
     items:
       player:
-        lore_role: "<gray>Rol: {role}"
-        lore_left: "<e>Click Izq: Toggle Asesino"
-        lore_right: "<e>Click Der: Toggle Superviviente"
+        lore_role: "<gray>Role: {role}"
+        lore_left: "<e>Left Click: Toggle Killer"
+        lore_right: "<e>Right Click: Toggle Survivor"
         roles:
-          random: "<gray>Aleatorio"
-          killer: "<red><bold>Asesino"
-          survivor: "<green><bold>Superviviente"
+          random: "<gray>Random"
+          killer: "<red><bold>Killer"
+          survivor: "<green><bold>Survivor"
 
   rule_editor:
-    title: "<dark_gray>Editor de Reglas"
+    title: "<dark_gray>Rule Editor"
     rows: 5
     filler_material: "BLACK_STAINED_GLASS_PANE"
     slots:
@@ -90,37 +90,37 @@ menus:
       back: 40
     items:
       glowing:
-        name: "<gold><bold>Glowing Constante"
-        lore_state: "<gray>Estado: {color}{state}"
+        name: "<gold><bold>Constant Glowing"
+        lore_state: "<gray>State: {color}{state}"
       heartbeats:
-        name: "<gold><bold>Latidos (Heartbeats)"
-        lore_state: "<gray>Estado: {color}{state}"
+        name: "<gold><bold>Heartbeats"
+        lore_state: "<gray>State: {color}{state}"
       speed:
-        name: "<gold><bold>Velocidad Base"
-        lore_level: "<gray>Nivel: <yellow>{level}"
+        name: "<gold><bold>Base Speed"
+        lore_level: "<gray>Level: <yellow>{level}"
       jump:
-        name: "<gold><bold>Salto Base"
-        lore_level: "<gray>Nivel: <yellow>{level}"
+        name: "<gold><bold>Base Jump"
+        lore_level: "<gray>Level: <yellow>{level}"
       blindness:
-        name: "<gold><bold>Ceguera Permanente"
-        lore_role: "<gray>Aplica a: <yellow>{role}"
+        name: "<gold><bold>Permanent Blindness"
+        lore_role: "<gray>Applies to: <yellow>{role}"
       khealth:
-        name: "<gold><bold>Vida Asesino"
-        lore_hearts: "<gray>Corazones: <red>{hearts}"
+        name: "<gold><bold>Killer Health"
+        lore_hearts: "<gray>Hearts: <red>{hearts}"
       shealth:
-        name: "<gold><bold>Vida Superviviente"
-        lore_hearts: "<gray>Corazones: <red>{hearts}"
+        name: "<gold><bold>Survivor Health"
+        lore_hearts: "<gray>Hearts: <red>{hearts}"
       duration:
-        name: "<gold><bold>Duración de la Partida"
-        lore_time: "<gray>Tiempo: <yellow>{time}"
+        name: "<gold><bold>Game Duration"
+        lore_time: "<gray>Time: <yellow>{time}"
       characters:
-        name: "<gold><bold>Clases Permitidas"
+        name: "<gold><bold>Allowed Classes"
         lore:
-          - "<gray>Selecciona qué asesinos y"
-          - "<gray>supervivientes se pueden usar."
+          - "<gray>Select which killers and"
+          - "<gray>survivors can be used."
 
   character_selector:
-    title: "<dark_gray>Clases Permitidas"
+    title: "<dark_gray>Allowed Classes"
     rows: 6
     filler_material: "BLACK_STAINED_GLASS_PANE"
     start_slot: 10
@@ -128,8 +128,8 @@ menus:
     back_slot: 49
     items:
       character:
-        lore_state: "<gray>Estado: {color}{state}"
-        lore_click: "<e>Click para alternar"
+        lore_state: "<gray>State: {color}{state}"
+        lore_click: "<e>Click to toggle"
         states:
-          enabled: "<green>Permitido"
-          disabled: "<red>Bloqueado"
+          enabled: "<green>Allowed"
+          disabled: "<red>Blocked"

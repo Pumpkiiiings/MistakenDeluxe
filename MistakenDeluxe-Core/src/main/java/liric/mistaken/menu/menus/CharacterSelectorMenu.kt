@@ -1,4 +1,4 @@
-package liric.mistaken.menu.menus
+﻿package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -54,7 +54,7 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
             val stateText = if (isEnabled) stateEnabled else stateDisabled
             
             val item = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.character_selector.items.character", Material.ZOMBIE_HEAD)
-                .name(ColorTranslator.translate("<!italic><red>${killer.nombre}"))
+                .name(ColorTranslator.translate("<!italic><red>${killer.name}"))
                 .lore(
                     ColorTranslator.translate("<!italic>${loreState.replace("{color}", color).replace("{state}", stateText)}"),
                     net.kyori.adventure.text.Component.empty(),
@@ -88,7 +88,7 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
             val stateText = if (isEnabled) stateEnabled else stateDisabled
             
             val item = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.character_selector.items.character", Material.APPLE)
-                .name(ColorTranslator.translate("<!italic><green>${survivor.nombre}"))
+                .name(ColorTranslator.translate("<!italic><green>${survivor.name}"))
                 .lore(
                     ColorTranslator.translate("<!italic>${loreState.replace("{color}", color).replace("{state}", stateText)}"),
                     net.kyori.adventure.text.Component.empty(),

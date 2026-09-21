@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.engine.visibility
+﻿package liric.mistaken.game.managers.engine.visibility
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities

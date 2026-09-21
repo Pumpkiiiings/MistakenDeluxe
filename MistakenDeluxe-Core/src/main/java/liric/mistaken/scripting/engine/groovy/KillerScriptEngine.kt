@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.engine.groovy
+﻿package liric.mistaken.scripting.engine.groovy
 
 import liric.mistaken.roles.killers.Killer
 import org.bukkit.Bukkit

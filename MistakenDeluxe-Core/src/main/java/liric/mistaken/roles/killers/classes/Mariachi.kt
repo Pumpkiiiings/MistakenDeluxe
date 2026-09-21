@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.classes
+﻿package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
@@ -35,7 +35,7 @@ import liric.mistaken.config.engine.core.MessageService
 
 class Mariachi : CoreKiller(
     "mariachi",
-    MessageService.getStrictString(null, "killers.mariachi.nombre", "killers_info")
+    MessageService.getStrictString(null, "killers.mariachi.name", "killers_info")
 ) {
 
     private val pathBase = "killers.mariachi"

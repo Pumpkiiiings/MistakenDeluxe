@@ -1,4 +1,4 @@
-package liric.mistaken.config
+﻿package liric.mistaken.config
 
 object Messages {
     const val ADMIN_AFK_DISABLED = "admin.afk-disabled"
@@ -135,7 +135,7 @@ object Messages {
     const val GENERATORS_NAMES_AMETHYST_BLOCK = "generators.names.AMETHYST_BLOCK"
     const val GENERATORS_NAMES_IRON_BLOCK = "generators.names.IRON_BLOCK"
     const val GENERATORS_NAMES_RAW_IRON_BLOCK = "generators.names.RAW_IRON_BLOCK"
-    const val HABILIDADES_PEDIDO_IMPACTO_ASESINO = "habilidades.pedido-impacto-asesino"
+    const val HABILIDADES_PEDIDO_IMPACTO_ASESINO = "skills.killer-hit-request"
     const val HELP_AFK = "help.afk"
     const val HELP_EDIT = "help.edit"
     const val HOOK_ALESSIO_ENTER = "hook.alessio.enter"
@@ -178,7 +178,7 @@ object Messages {
     const val LMS_SUBTITLE_SURVIVOR = "lms.subtitle.survivor"
     const val LMS_TITLE = "lms.title"
     const val LOBBY_WELCOME = "lobby.welcome"
-    const val MENUS_KILLERS_SHOP_TITULO = "menus.killers_shop.titulo"
+    const val MENUS_KILLERS_SHOP_TITULO = "menus.killers_shop.title"
     const val MENUS_PRIVATE_LOBBY_RULES_LORE = "menus.private_lobby.rules_lore"
     const val MENUS_PRIVATE_LOBBY_RULES_NAME = "menus.private_lobby.rules_name"
     const val MENUS_PRIVATE_LOBBY_START_LORE = "menus.private_lobby.start_lore"
@@ -192,12 +192,12 @@ object Messages {
     const val MENUS_PRIVATE_RULES_BLINDNESS = "menus.private_rules.blindness"
     const val MENUS_PRIVATE_RULES_KHEALTH = "menus.private_rules.khealth"
     const val MENUS_PRIVATE_RULES_SHEALTH = "menus.private_rules.shealth"
-    const val MENUS_SURVIVORS_SHOP_TITULO = "menus.survivors_shop.titulo"
-    const val MENUS_TIENDA_PRINCIPAL_ITEMS_ASESINOS_LORE = "menus.tienda_principal.items.killers.lore"
-    const val MENUS_TIENDA_PRINCIPAL_ITEMS_ASESINOS_NOMBRE = "menus.tienda_principal.items.killers.nombre"
-    const val MENUS_TIENDA_PRINCIPAL_ITEMS_SUPERVIVIENTES_LORE = "menus.tienda_principal.items.survivors.lore"
-    const val MENUS_TIENDA_PRINCIPAL_ITEMS_SUPERVIVIENTES_NOMBRE = "menus.tienda_principal.items.survivors.nombre"
-    const val MENUS_TIENDA_PRINCIPAL_TITULO = "menus.tienda_principal.titulo"
+    const val MENUS_SURVIVORS_SHOP_TITULO = "menus.survivors_shop.title"
+    const val MENUS_TIENDA_PRINCIPAL_ITEMS_ASESINOS_LORE = "menus.main_shop.items.killers.lore"
+    const val MENUS_TIENDA_PRINCIPAL_ITEMS_ASESINOS_name = "menus.main_shop.items.killers.name"
+    const val MENUS_TIENDA_PRINCIPAL_ITEMS_SUPERVIVIENTES_LORE = "menus.main_shop.items.survivors.lore"
+    const val MENUS_TIENDA_PRINCIPAL_ITEMS_SUPERVIVIENTES_name = "menus.main_shop.items.survivors.name"
+    const val MENUS_TIENDA_PRINCIPAL_TITULO = "menus.main_shop.title"
     const val MODES_CLASSIC_SUBTITLE = "modes.classic.subtitle"
     const val MODES_CLASSIC_TITLE = "modes.classic.title"
     const val MODES_DOUBLE_KILLER_SUBTITLE = "modes.double_killer.subtitle"

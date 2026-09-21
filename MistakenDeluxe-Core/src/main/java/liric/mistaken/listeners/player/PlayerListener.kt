@@ -1,4 +1,4 @@
-package liric.mistaken.listeners.player
+﻿package liric.mistaken.listeners.player
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -14,7 +14,16 @@ import liric.mistaken.config.engine.core.MessageService
 import org.bukkit.event.player.PlayerResourcePackStatusEvent
 
 
+import org.spigotmc.event.player.PlayerSpawnLocationEvent
+
 class PlayerListener(private val plugin: Mistaken) : Listener {
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onPlayerSpawnLocation(event: PlayerSpawnLocationEvent) {
+        plugin.lobbyLocation?.let { loc ->
+            event.spawnLocation = loc
+        }
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerJoin(event: PlayerJoinEvent) {

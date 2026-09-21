@@ -1,4 +1,4 @@
-package liric.mistaken.utils.misc
+﻿package liric.mistaken.utils.misc
 
 import liric.mistaken.Mistaken
 import org.bukkit.entity.Player

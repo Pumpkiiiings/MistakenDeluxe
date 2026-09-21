@@ -203,7 +203,6 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
         try {
             connection.use { conn ->
                 conn.prepareStatement(upsertPlayerDataQuery).use { ps ->
-                    
                     bindUpsertVariables(ps, uuid, lang, killersOwned, killerSelected, survOwned, survSelected, nick, skin)
                     ps.executeUpdate()
                 }
@@ -213,14 +212,11 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
         }
     }
 
-    
     protected open fun bindUpsertVariables(ps: PreparedStatement, uuid: String, lang: String, killersOwned: String, killerSelected: String, survOwned: String, survSelected: String, nick: String, skin: String) {
-        
         ps.setString(1, uuid); ps.setString(2, lang); ps.setString(3, killersOwned)
         ps.setString(4, killerSelected); ps.setString(5, survOwned); ps.setString(6, survSelected)
         ps.setString(7, nick); ps.setString(8, skin)
 
-        
         ps.setString(9, lang); ps.setString(10, killersOwned); ps.setString(11, killerSelected)
         ps.setString(12, survOwned); ps.setString(13, survSelected); ps.setString(14, nick); ps.setString(15, skin)
     }

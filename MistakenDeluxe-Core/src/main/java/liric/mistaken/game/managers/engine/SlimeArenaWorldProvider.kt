@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.engine
+﻿package liric.mistaken.game.managers.engine
 
 import com.infernalsuite.asp.api.AdvancedSlimePaperAPI
 import com.infernalsuite.asp.api.loaders.SlimeLoader

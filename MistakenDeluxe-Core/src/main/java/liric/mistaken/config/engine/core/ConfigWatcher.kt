@@ -1,4 +1,4 @@
-package liric.mistaken.config.engine.core
+﻿package liric.mistaken.config.engine.core
 
 import kotlinx.coroutines.*
 import org.bukkit.plugin.java.JavaPlugin

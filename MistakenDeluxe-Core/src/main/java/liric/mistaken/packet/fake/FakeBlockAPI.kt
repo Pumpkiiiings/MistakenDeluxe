@@ -1,4 +1,4 @@
-package liric.mistaken.packet.fake
+﻿package liric.mistaken.packet.fake
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState

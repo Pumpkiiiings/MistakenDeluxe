@@ -1,4 +1,4 @@
-package liric.mistaken.utils.resourcepack
+﻿package liric.mistaken.utils.resourcepack
 
 import org.bukkit.inventory.ItemStack
 

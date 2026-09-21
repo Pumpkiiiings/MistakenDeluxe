@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.adapter
+﻿package liric.mistaken.scripting.adapter
 
 import liric.mistaken.scripting.api.ScriptContext
 import liric.mistaken.scripting.api.ScriptRole
@@ -14,9 +14,9 @@ import org.bukkit.Bukkit
  */
 class LuaKillerAdapter(
     id: String,
-    nombre: String,
+    name: String,
     private val scriptRole: ScriptRole
-) : BaseKiller(id, nombre) {
+) : BaseKiller(id, name) {
 
     
     private val scriptContext by lazy {

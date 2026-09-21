@@ -1,16 +1,13 @@
 package liric.mistaken.data
 
 import liric.mistaken.Mistaken
-import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import liric.mistaken.api.managers.IPlayerDataManager
 
-
 class PlayerDataManager(private val plugin: Mistaken) : IPlayerDataManager {
 
-    
     private val userDataCache = ConcurrentHashMap<UUID, MistakenUser>()
 
     data class MistakenUser(
@@ -21,18 +18,13 @@ class PlayerDataManager(private val plugin: Mistaken) : IPlayerDataManager {
         var selectedSurvivor: String = "civil",
         var nickname: String = "",
         var skinName: String = "",
-        var stamina: Double = 100.0 
+        var stamina: Double = 100.0
     )
 
-    /**
-     * Carga los datos desde MySQL a la memoria RAM.
-     * DEBE llamarse desde un hilo asíncrono (Como en PlayerListener).
-     */
     fun loadPlayerData(player: Player) {
         val uuid = player.uniqueId
         val user = MistakenUser()
 
-        
         val data = plugin.databaseManager.loadPlayerData(uuid.toString())
 
         if (data != null) {
@@ -42,25 +34,19 @@ class PlayerDataManager(private val plugin: Mistaken) : IPlayerDataManager {
             user.nickname = data["nick"] ?: ""
             user.skinName = data["skin_source"] ?: ""
 
-            
             data["killers_owned"]?.split(",")?.filter { it.isNotBlank() }?.forEach { user.unlockedKillers.add(it.lowercase()) }
             data["survivors_owned"]?.split(",")?.filter { it.isNotBlank() }?.forEach { user.unlockedSurvivors.add(it.lowercase()) }
 
-            
             user.unlockedKillers.add("slasher")
             user.unlockedSurvivors.add("civil")
 
         } else {
-            
             saveDataAsync(uuid, user)
         }
 
         userDataCache[uuid] = user
     }
 
-    /**
-     * Guarda el estado actual del player en MySQL asíncronamente.
-     */
     private fun saveDataAsync(uuid: UUID, user: MistakenUser? = null) {
         val u = user ?: userDataCache[uuid] ?: return
 
@@ -78,7 +64,6 @@ class PlayerDataManager(private val plugin: Mistaken) : IPlayerDataManager {
         }
     }
 
-    
     fun saveAllSync() {
         userDataCache.forEach { (uuid, user) ->
             saveDataSync(uuid, user)
@@ -97,8 +82,6 @@ class PlayerDataManager(private val plugin: Mistaken) : IPlayerDataManager {
         )
     }
 
-    
-
     fun consumeStamina(uuid: UUID, amount: Double) {
         userDataCache[uuid]?.let { user ->
             user.stamina = (user.stamina - amount).coerceIn(0.0, 100.0)
@@ -111,8 +94,6 @@ class PlayerDataManager(private val plugin: Mistaken) : IPlayerDataManager {
             saveDataAsync(uuid)
         }
     }
-
-    
 
     override fun hasKiller(uuid: UUID, killerId: String): Boolean {
         val user = userDataCache[uuid] ?: return false
@@ -139,8 +120,6 @@ class PlayerDataManager(private val plugin: Mistaken) : IPlayerDataManager {
         }
     }
 
-    
-
     override fun tieneSurvivor(uuid: UUID, survivorId: String): Boolean {
         val user = userDataCache[uuid] ?: return false
         return survivorId.equals("civil", true) || user.unlockedSurvivors.contains(survivorId.lowercase())
@@ -165,7 +144,6 @@ class PlayerDataManager(private val plugin: Mistaken) : IPlayerDataManager {
         }
     }
 
-    
     fun getStamina(uuid: UUID) = userDataCache[uuid]?.stamina ?: 100.0
     fun getLanguage(uuid: UUID) = userDataCache[uuid]?.language ?: "es"
     fun getUserData(uuid: UUID) = userDataCache[uuid]

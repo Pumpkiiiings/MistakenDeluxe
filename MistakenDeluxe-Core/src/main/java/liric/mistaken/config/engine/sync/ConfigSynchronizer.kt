@@ -1,4 +1,4 @@
-package liric.mistaken.config.engine.sync
+﻿package liric.mistaken.config.engine.sync
 
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin

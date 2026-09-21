@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.effects.lua
+﻿package liric.mistaken.scripting.effects.lua
 
 import liric.mistaken.scripting.api.HasLocation
 import liric.mistaken.scripting.adapter.BukkitPlayerAdapter

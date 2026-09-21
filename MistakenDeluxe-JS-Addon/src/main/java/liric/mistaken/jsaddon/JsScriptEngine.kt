@@ -1,4 +1,4 @@
-package liric.mistaken.jsaddon
+﻿package liric.mistaken.jsaddon
 
 import liric.mistaken.scripting.api.ScriptRole
 import org.graalvm.polyglot.Context
@@ -28,7 +28,7 @@ object JsScriptEngine {
                 if (isKiller) {
                     val adapter = liric.mistaken.scripting.adapter.LuaKillerAdapter(
                         id = scriptId,
-                        nombre = scriptId.replaceFirstChar { it.uppercase() },
+                        name = scriptId.replaceFirstChar { it.uppercase() },
                         scriptRole = role
                     )
                     liric.mistaken.api.MistakenProvider.get().killerManager.registerClass(adapter)

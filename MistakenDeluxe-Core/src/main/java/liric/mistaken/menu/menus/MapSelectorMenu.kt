@@ -1,4 +1,4 @@
-package liric.mistaken.menu.menus
+﻿package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -59,7 +59,7 @@ class MapSelectorMenu(private val plugin: Mistaken, private val session: GameSes
                 .asGuiItem {
                     settings.forcedMap = if (isSelected) null else map.name
                     player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                    player.sendActionBar(ColorTranslator.translate("<green>Mapa seleccionado: ${settings.forcedMap ?: "AUTOMÁTICO"}"))
+                    player.sendActionBar(ColorTranslator.translate("<green>Mapa selected: ${settings.forcedMap ?: "AUTOMÁTICO"}"))
                     abrir(player)
                 }
 

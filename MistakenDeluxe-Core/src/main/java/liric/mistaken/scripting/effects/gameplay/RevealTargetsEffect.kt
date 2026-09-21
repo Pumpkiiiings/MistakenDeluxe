@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.effects.gameplay
+﻿package liric.mistaken.scripting.effects.gameplay
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData

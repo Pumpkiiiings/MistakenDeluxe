@@ -1,4 +1,4 @@
-package liric.mistaken.listeners.world
+﻿package liric.mistaken.listeners.world
 
 import liric.mistaken.Mistaken
 import org.bukkit.World

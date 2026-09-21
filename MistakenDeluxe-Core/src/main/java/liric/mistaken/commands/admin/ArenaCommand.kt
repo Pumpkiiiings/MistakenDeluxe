@@ -1,4 +1,4 @@
-package liric.mistaken.commands.admin
+﻿package liric.mistaken.commands.admin
 
 import io.papermc.paper.command.brigadier.BasicCommand
 import io.papermc.paper.command.brigadier.CommandSourceStack

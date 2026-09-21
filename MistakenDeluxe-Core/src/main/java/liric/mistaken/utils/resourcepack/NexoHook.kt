@@ -1,4 +1,4 @@
-package liric.mistaken.utils.resourcepack
+﻿package liric.mistaken.utils.resourcepack
 
 import com.nexomc.nexo.api.NexoItems
 import org.bukkit.inventory.ItemStack

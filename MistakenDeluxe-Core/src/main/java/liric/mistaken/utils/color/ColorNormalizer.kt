@@ -1,4 +1,4 @@
-package liric.mistaken.utils.color
+﻿package liric.mistaken.utils.color
 
 import java.util.regex.Pattern
 

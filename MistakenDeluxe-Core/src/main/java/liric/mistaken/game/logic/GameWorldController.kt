@@ -20,6 +20,7 @@ class GameWorldController(private val game: GameSession) {
         if (game.plugin.generatorManager.isCompleted(loc)) {
             if (player != null) {
                 game.plugin.statsManager.incrementStat(player.uniqueId, "generators_repaired")
+                org.bukkit.Bukkit.getPluginManager().callEvent(liric.mistaken.api.events.MistakenGeneratorFixEvent(player, loc))
             }
             if (!game.changedBlocks.containsKey(loc)) game.changedBlocks[loc] = block.type
             block.type = Material.SEA_LANTERN

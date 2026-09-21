@@ -1,4 +1,4 @@
-package liric.mistaken.commands.game
+﻿package liric.mistaken.commands.game
 
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.tree.LiteralCommandNode
@@ -18,7 +18,7 @@ import liric.mistaken.utils.color.ColorTranslator
 object JoinCommand {
 
     fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {
-        return Commands.literal("jugar")
+        return Commands.literal("join")
             .executes { context ->
                 val player = context.source.sender as? Player
                 if (player == null) {

@@ -1,4 +1,4 @@
-package liric.mistaken.utils.hooks
+﻿package liric.mistaken.utils.hooks
 
 import io.netty.buffer.Unpooled
 import net.kyori.adventure.key.Key

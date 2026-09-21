@@ -1,4 +1,4 @@
-package liric.mistaken.models.integration.bettermodel
+﻿package liric.mistaken.models.integration.bettermodel
 
 import kr.toxicity.model.api.BetterModel
 import kr.toxicity.model.api.bukkit.platform.BukkitAdapter

@@ -1,4 +1,4 @@
-package liric.mistaken.data.stats
+﻿package liric.mistaken.data.stats
 
 import java.text.DecimalFormat
 import java.util.concurrent.atomic.AtomicInteger

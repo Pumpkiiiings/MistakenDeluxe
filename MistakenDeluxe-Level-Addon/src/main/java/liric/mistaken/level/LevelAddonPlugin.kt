@@ -29,6 +29,9 @@ import liric.mistaken.level.config.XpSourcesConfig
 import liric.mistaken.level.menu.ProgressionMenu
 import org.bukkit.configuration.file.YamlConfiguration
 
+import liric.mistaken.level.manager.BoosterManager
+import liric.mistaken.level.database.BoosterRepository
+
 class LevelAddonPlugin : JavaPlugin() {
 
     lateinit var levelProvider: LevelProviderImpl
@@ -41,6 +44,15 @@ class LevelAddonPlugin : JavaPlugin() {
         private set
 
     lateinit var repository: LevelRepository
+        private set
+
+    lateinit var boosterManager: liric.mistaken.level.manager.BoosterManager
+        private set
+
+    lateinit var boosterBossBarManager: liric.mistaken.level.manager.BoosterBossBarManager
+        private set
+
+    lateinit var boosterRepository: BoosterRepository
         private set
 
     lateinit var levelConfig: LevelConfig
@@ -96,6 +108,14 @@ class LevelAddonPlugin : JavaPlugin() {
         repository = LevelRepository(databaseProvider)
         repository.init()
 
+        boosterRepository = BoosterRepository(databaseProvider)
+        boosterRepository.init()
+
+        boosterManager = BoosterManager(this)
+        boosterManager.loadAll()
+        
+        boosterBossBarManager = liric.mistaken.level.manager.BoosterBossBarManager(this)
+        server.scheduler.runTaskTimer(this, boosterBossBarManager, 20L, 20L)
         
         val advancementHook = UltimateAdvancementHook(this)
 

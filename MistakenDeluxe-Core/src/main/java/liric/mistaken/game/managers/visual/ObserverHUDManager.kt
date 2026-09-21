@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.visual
+﻿package liric.mistaken.game.managers.visual
 
 import com.observer.api.model.ComponentAlignment
 import com.observer.api.model.TextAlignment

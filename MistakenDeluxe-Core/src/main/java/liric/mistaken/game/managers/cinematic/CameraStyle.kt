@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic
+﻿package liric.mistaken.game.managers.cinematic
 
 enum class CameraStyle {
     /**

@@ -1,4 +1,4 @@
-package liric.mistaken.models.components.impl
+﻿package liric.mistaken.models.components.impl
 
 import liric.mistaken.models.components.AnimationComponent
 import liric.mistaken.models.components.StateComponent

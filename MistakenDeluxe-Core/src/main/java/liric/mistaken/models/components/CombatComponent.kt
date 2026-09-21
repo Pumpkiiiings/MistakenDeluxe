@@ -1,4 +1,4 @@
-package liric.mistaken.models.components
+﻿package liric.mistaken.models.components
 
 import liric.mistaken.models.core.CharacterComponent
 

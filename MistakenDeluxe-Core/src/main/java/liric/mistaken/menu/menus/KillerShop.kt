@@ -22,10 +22,10 @@ class KillerShop : MenuBase("killers_shop") {
     override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
         val globalMecanicas = plugin.configManager.getKillerConfig("global")
 
-        val preferredSlots = config.getIntegerList("ajustes.slots-disponibles").toMutableList()
+        val preferredSlots = config.getIntegerList("settings.available-slots").toMutableList()
 
         
-        val fixedSlotsSection = config.getConfigurationSection("ajustes.slots-fijos")
+        val fixedSlotsSection = config.getConfigurationSection("settings.fixed-slots")
         val fixedSlots = mutableMapOf<String, Int>()
         if (fixedSlotsSection != null) {
             for (key in fixedSlotsSection.getKeys(false)) {
@@ -37,10 +37,10 @@ class KillerShop : MenuBase("killers_shop") {
         val uuid = player.uniqueId
         val selected = data.getSelectedKiller(uuid)
 
-        val labelSeleccionado = MessageService.getComponent(player, "shop.estado-seleccionado")
-        val labelPoseido = MessageService.getComponent(player, "shop.estado-poseido")
-        val labelComprar = MessageService.getComponent(player, "shop.estado-comprar")
-        val labelAbilityes = MessageService.getComponent(player, "shop.abilityes-titulo")
+        val labelSeleccionado = MessageService.getComponent(player, "shop.state-selected")
+        val labelPoseido = MessageService.getComponent(player, "shop.state-owned")
+        val labelComprar = MessageService.getComponent(player, "shop.state-buy")
+        val labelAbilityes = MessageService.getComponent(player, "shop.abilities-title")
 
         val killersCatalogo = plugin.killerManager.catalogo.keys
 
@@ -68,7 +68,7 @@ class KillerShop : MenuBase("killers_shop") {
 
             if (targetSlot == -1) continue 
 
-            val nombreVisual = MessageService.getStrictString(player, "killers.$killerId.nombre", "killers_info")
+            val nombreVisual = MessageService.getStrictString(player, "killers.$killerId.name", "killers_info")
             val descripcion = MessageService.getStrictStringList(player, "killers.$killerId.descripcion", "killers_info")
             val loreShop = MessageService.getStrictStringList(player, "killers.$killerId.lore_shop", "killers_info")
 
@@ -107,7 +107,7 @@ class KillerShop : MenuBase("killers_shop") {
                 esSeleccionado -> fullLore.add(labelSeleccionado)
                 tiene -> fullLore.add(labelPoseido)
                 else -> {
-                    fullLore.add(MessageService.getComponent(player, "shop.estado-precio", Placeholder.parsed("amount", precio.toString())))
+                    fullLore.add(MessageService.getComponent(player, "shop.state-price", Placeholder.parsed("amount", precio.toString())))
                     fullLore.add(labelComprar)
                 }
             }
@@ -128,9 +128,9 @@ class KillerShop : MenuBase("killers_shop") {
             gui.setItem(targetSlot, guiItem)
         }
         
-        val botonAtrasSlot = config.getInt("ajustes.boton-atras.slot", 49)
-        val botonAtrasMat = config.getString("ajustes.boton-atras.material", "ARROW")!!
-        val botonAtrasNombre = config.getString("ajustes.boton-atras.nombre", "<red>Volver")!!
+        val botonAtrasSlot = config.getInt("settings.back-button.slot", 49)
+        val botonAtrasMat = config.getString("settings.back-button.material", "ARROW")!!
+        val botonAtrasNombre = config.getString("settings.back-button.name", "<red>Volver")!!
         val matAtras = Material.matchMaterial(botonAtrasMat.uppercase()) ?: Material.ARROW
         
         val backItem = ItemBuilder.from(matAtras)
@@ -149,7 +149,7 @@ class KillerShop : MenuBase("killers_shop") {
         val actual = data.getSelectedKiller(uuid)
 
         if (killerId.equals(actual, ignoreCase = true)) {
-            player.sendMessage(MessageService.getComponent(player, "shop.ya-seleccionado"))
+            player.sendMessage(MessageService.getComponent(player, "shop.already-selected"))
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
             return
         }
@@ -157,7 +157,7 @@ class KillerShop : MenuBase("killers_shop") {
         if (tiene) {
             data.setSelectedKiller(uuid, killerId)
             player.persistentDataContainer.set(plugin.assassinKey, PersistentDataType.STRING, killerId)
-            player.sendMessage(MessageService.getComponent(player, "shop.seleccionado", Placeholder.parsed("name", killerId)))
+            player.sendMessage(MessageService.getComponent(player, "shop.selected", Placeholder.parsed("name", killerId)))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
             abrir(player)
             return
@@ -178,7 +178,7 @@ class KillerShop : MenuBase("killers_shop") {
 
             if (success) {
                 data.buyKiller(uuid, killerId)
-                player.sendMessage(MessageService.getComponent(player, "shop.comprado", Placeholder.parsed("name", killerId)))
+                player.sendMessage(MessageService.getComponent(player, "shop.purchased", Placeholder.parsed("name", killerId)))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.5f)
                 abrir(player)
             } else {

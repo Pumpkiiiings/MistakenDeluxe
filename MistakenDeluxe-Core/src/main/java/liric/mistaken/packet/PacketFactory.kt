@@ -1,4 +1,4 @@
-package liric.mistaken.packet
+﻿package liric.mistaken.packet
 
 import liric.mistaken.packet.fake.*
 import java.util.concurrent.atomic.AtomicInteger

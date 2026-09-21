@@ -2,19 +2,24 @@ package liric.mistaken.api
 
 /**
  * [MistakenDeluxe]
- * Proveedor estático de la API de Mistaken.
+ * Static provider for the Mistaken API.
  */
 object MistakenProvider {
     private var instance: MistakenAPI? = null
 
     @JvmStatic
     fun get(): MistakenAPI {
-        return instance ?: throw IllegalStateException("MistakenAPI aún no ha sido inicializada por el Core.")
+        return instance ?: throw IllegalStateException("MistakenAPI has not been initialized by the Core yet.")
+    }
+
+    @JvmStatic
+    fun isRegistered(): Boolean {
+        return instance != null
     }
 
     fun register(api: MistakenAPI) {
         if (instance != null) {
-            throw IllegalStateException("MistakenAPI ya está registrada.")
+            throw IllegalStateException("MistakenAPI is already registered.")
         }
         instance = api
     }

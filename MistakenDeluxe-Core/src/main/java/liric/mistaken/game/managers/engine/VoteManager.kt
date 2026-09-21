@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.engine
+﻿package liric.mistaken.game.managers.engine
 
 import liric.mistaken.game.Arena
 import java.util.UUID

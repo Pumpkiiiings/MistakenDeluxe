@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.gameplay
+﻿package liric.mistaken.game.managers.gameplay
 
 import dev.wyck.biome.CustomBiome
 import dev.wyck.keys.ResourceKey

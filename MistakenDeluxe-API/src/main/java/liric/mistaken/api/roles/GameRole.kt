@@ -1,4 +1,4 @@
-package liric.mistaken.api.roles
+﻿package liric.mistaken.api.roles
 
 import org.bukkit.entity.Player
 
@@ -7,7 +7,7 @@ import org.bukkit.entity.Player
  */
 interface GameRole {
     val id: String
-    val nombre: String
+    val name: String
     fun equip(player: Player)
     fun cleanup(player: Player?)
 }

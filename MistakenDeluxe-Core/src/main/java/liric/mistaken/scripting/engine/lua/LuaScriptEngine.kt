@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.engine.lua
+﻿package liric.mistaken.scripting.engine.lua
 
 import liric.mistaken.scripting.api.ScriptContext
 import liric.mistaken.scripting.api.ScriptEvent

@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors
+﻿package liric.mistaken.roles.survivors
 
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.survivors.classes.*
@@ -64,7 +64,7 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
                 if (scriptRole != null) {
                     val luaAdapter = liric.mistaken.scripting.adapter.LuaSurvivorAdapter(
                         id = survivorId,
-                        nombre = survivorId.replaceFirstChar { it.uppercase() },
+                        name = survivorId.replaceFirstChar { it.uppercase() },
                         scriptRole = scriptRole
                     )
                     registerClass(luaAdapter)
@@ -113,12 +113,12 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
                 player.updateInventory()
 
                 plugin.componentLogger.info(ColorTranslator.translate(
-                    "<gray>[Survivor]</gray> <white>${player.name}</white> <green>equipado como ${clase.nombre}</green>"
+                    "<gray>[Survivor]</gray> <white>${player.name}</white> <green>equipado como ${clase.name}</green>"
                 ))
 
                 
                 player.sendMessage(MessageService.getComponent(player, "game.class-selected",
-                    Placeholder.component("class", ColorTranslator.translate(clase.nombre))))
+                    Placeholder.component("class", ColorTranslator.translate(clase.name))))
             }
         }, null, 5L)
     }

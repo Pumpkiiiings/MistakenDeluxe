@@ -70,3 +70,12 @@ class MistakenKillerAttackEvent(
         val handlerList = HandlerList()
     }
 }
+
+class MistakenSurvivorHealEvent(val healer: Player, val victim: Player, val session: ISession) : Event() {
+    override fun getHandlers(): HandlerList = handlerList
+
+    companion object {
+        @JvmStatic
+        val handlerList = HandlerList()
+    }
+}

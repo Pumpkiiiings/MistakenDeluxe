@@ -1,4 +1,4 @@
-package liric.mistaken.utils.resourcepack
+﻿package liric.mistaken.utils.resourcepack
 
 import net.momirealms.craftengine.bukkit.api.CraftEngineItems
 import net.momirealms.craftengine.core.util.Key

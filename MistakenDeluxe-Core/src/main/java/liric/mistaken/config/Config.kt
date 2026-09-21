@@ -1,4 +1,4 @@
-package liric.mistaken.config
+﻿package liric.mistaken.config
 
 object Config {
     const val CONFIG_VERSION = "config-version"

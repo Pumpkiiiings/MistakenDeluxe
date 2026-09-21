@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.api
+﻿package liric.mistaken.scripting.api
 
 /**
  * Contrato seguro para representar un vector (dirección o velocidad) en el world.

@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.gameplay
+﻿package liric.mistaken.game.managers.gameplay
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken

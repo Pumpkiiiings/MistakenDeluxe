@@ -1,4 +1,4 @@
-package liric.mistaken.menu.menus
+﻿package liric.mistaken.menu.menus
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -56,7 +56,7 @@ class ModeSelectorMenu(private val plugin: Mistaken, private val session: GameSe
                 .asGuiItem {
                     settings.forcedMode = if (isSelected) null else mode
                     player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                    player.sendActionBar(ColorTranslator.translate("<green>Modo seleccionado: ${settings.forcedMode?.name ?: "AUTOMÁTICO"}"))
+                    player.sendActionBar(ColorTranslator.translate("<green>Modo selected: ${settings.forcedMode?.name ?: "AUTOMÁTICO"}"))
                     abrir(player)
                 }
 

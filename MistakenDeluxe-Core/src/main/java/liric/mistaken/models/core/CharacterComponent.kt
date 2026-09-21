@@ -1,4 +1,4 @@
-package liric.mistaken.models.core
+﻿package liric.mistaken.models.core
 
 /**
  * Interfaz base para todos los componentes del sistema ECS (Entity-Component-System) Lite.

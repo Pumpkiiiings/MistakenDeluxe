@@ -1,4 +1,4 @@
-package liric.mistaken.utils.misc
+﻿package liric.mistaken.utils.misc
 
 import liric.mistaken.utils.worldViewers
 import org.bukkit.Location

@@ -289,74 +289,6 @@ killer:
   transform: "&#FFFFFFYou have awakened as: &#FFFFFF{name}"
   killer-no-regen: "<prefix>&#FF3344⚠ No natural regeneration. Kill to heal!"
 
-# --- STORE ---
-tienda:
-  clase-especial: "&#888888Special Class Entity"
-  clase-humana: "&#CCCCCCClass: &#FFFFFFHuman Survivor"
-  habilidades-titulo: "&#CCCCCC▶ &#FFFFFFSkills:"
-  estado-seleccionado: "&#42F56C✔ ꜱᴇʟᴇᴄᴛᴇᴅ"
-  estado-poseido: "&#FFE300» ᴄʟɪᴄᴋ ᴛᴏ ꜱᴇʟᴇᴄᴛ"
-  estado-precio: "&#FFFFFFCost: &#FFE300● {amount} coins"
-  estado-comprar: "&#42F56Cᴄʟɪᴄᴋ ᴛᴏ ᴀᴄǫᴜɪʀᴇ ᴋɪʟʟᴇʀ"
-  estado-comprar-superviviente: "&#33CCFFᴄʟɪᴄᴋ ᴛᴏ ᴀᴄǫᴜɪʀᴇ ꜱᴜʀᴠɪᴠᴏʀ"
-  seleccionado: "<prefix>&#42F56CSelected: &#FFFFFF{name}"
-  comprado: "<prefix>&#FFAA00Congratulations! You have unlocked: &#FFFFFF{name}"
-  ya-seleccionado: "&#FFE300[!] This class is already selected."
-
-# --- COMMANDS AND HELP ---
-help:
-  header: "   &#3BFFC7ᴍɪꜱᴛᴀᴋᴇɴ &#888888| &#FFE300ʜᴇʟᴘ"
-  shop: "&#CCCCCC» &#FFE300/mistaken shop &#888888- &#FFFFFFKillers Store."
-  stats: "&#CCCCCC» &#FFE300/mistaken stats &#888888- &#FFFFFFYour global stats."
-  langs: "&#CCCCCC» &#FFE300/mistaken langs <id> &#888888- &#FFFFFFChange your language."
-  afk: "&#CCCCCC» &#FFE300/mistaken afk &#888888- &#FFFFFFToggle AFK mode."
-  edit: "&#CCCCCC» &#FFE300/mistaken edit &#888888- &#FFFFFFStaff build mode."
-  start: "&#CCCCCC» &#FFE300/mistaken start &#888888- &#FFFFFFForce start."
-  stop: "&#CCCCCC» &#FFE300/mistaken stop &#888888- &#FFFFFFStop game."
-  reload: "&#CCCCCC» &#FFE300/mistaken reload &#888888- &#FFFFFFReload config."
-  setstamina: "&#CCCCCC» &#FFE300/mistaken setstamina <val> &#888888- &#FFFFFFAdjust stamina."
-  setkiller: "&#CCCCCC» &#FFE300/mistaken setkiller <id> &#888888- &#FFFFFFKiller test."
-  setsurvivor: "&#CCCCCC» &#FFE300/mistaken setsurvivor <id> &#888888- &#FFFFFFSurvivor test."
-  removekiller: "&#CCCCCC» &#FFE300/mistaken removekiller <p> &#888888- &#FFFFFFRemove test role."
-  reloadkiller: "&#CCCCCC» &#FFE300/mistaken reloadkiller &#888888- &#FFFFFFReload killers."
-  setmode: "&#CCCCCC» &#FFE300/mistaken setmode <id> &#888888- &#FFFFFFForce a mode."
-  footer: " "
-
-admin:
-  reload-success: "<prefix>&#42F56CConfiguration and languages reloaded."
-  start-forcing: "<prefix>&#42F56CInitiating hunt sequence..."
-  start-already-ingame: "<prefix>&#FF3344Error: There is already a game in progress."
-  stop-broadcast: "&#FF3344ɢᴀᴍᴇ ᴄᴀɴᴄᴇʟᴇᴅ &#CCCCCCby staff."
-  stop-success: "&#42F56CGame forcefully finished."
-  lobby-set: "<prefix>&#42F56CLobby point successfully saved."
-  lang-set: "<prefix>&#42F56CLanguage changed to: &#33CCFF{langs}"
-  usage-lang: "<prefix>&#FF3344Usage: /mistaken langs <es/en/fr/jp/zh>"
-  stamina-set: "<prefix>&#42F56CStamina of &#FFFFFF{player} &#42F56Cadjusted to &#FFE300{amount}%"
-  removekiller-success: "<prefix>&#42F56CRole removed from &#FFFFFF{player}&#42F56C."
-  removekiller-target: "<prefix>&#FF3344Your role has been removed."
-  mode-forced: "<prefix>&#FFE300An admin forced the mode: &#33CCFF{mode}"
-  forcekiller-usage: "<prefix>&#FF3344Usage: /mistaken forcekiller <player>"
-  forcekiller-not-in-game: "<prefix>&#FF3344You must be in a game to force a killer."
-  forcekiller-already-started: "<prefix>&#FF3344You cannot force the role because the game already started."
-  forcekiller-success: "<prefix>&#42F56CYou have forced &#FFFFFF{player} &#42F56Cto be the killer in the next game of &#33CCFF{arena}&#42F56C."
-  afk-enabled: "<prefix>&#FFE300AFK mode enabled. The game engine will ignore you."
-  afk-disabled: "<prefix>&#42F56CAFK mode disabled. Welcome back to the hunt!"
-  edit-enabled: "<prefix>&#33CCFFEdit mode enabled. You are invisible to the game logic."
-  edit-disabled: "<prefix>&#FF3344Edit mode disabled. The game logic affects you again."
-  debug-stats-sync: "<prefix>&#FF3344⚡ &#FFFFFFDebug: Stats injected and syncing..."
-  usage-setmode: "<prefix>&#FF3344Usage: /mistaken setmode <MODE>"
-  usage-reloadkiller: "<prefix>&#FF3344Usage: /mistaken reloadkiller <id>"
-  reloadkiller-success: "<prefix>&#42F56CCommand sent to manager to reload killer: &#33CCFF{id}"
-  usage-forcekiller: "<prefix>&#FF3344Usage: /mistaken forcekiller <player>"
-
-stats:
-  header: "&#888888&m            &r &#FFAA00ꜱᴛᴀᴛɪꜱᴛɪᴄꜱ: &#FFFFFF{player} &#888888&m            &r "
-  wins-survivor: "&#CCCCCCSurvivor Wins: &#42F56C<value>"
-  wins-assassin: "&#CCCCCCKiller Wins: &#FF3344<value>"
-  kills: "&#CCCCCCKills Total: &#AA0000<value>"
-  deaths: "&#CCCCCCDeaths Total: &#888888<value>"
-  footer: "&#888888&m                                                 &r"
-
 # --- MODES ---
 modes:
   classic:
@@ -501,13 +433,6 @@ errors:
   forcekiller-not-in-game: "<prefix>&#FF3344You must be in a game to force a killer."
   forcekiller-already-started: "<prefix>&#FF3344You can't force the role because the game already started."
 
-# --- PARANOIA ENGINE ---
-paranoia:
-  - "&#888888&k||&r &#888888Did you hear that? &k||&r"
-  - "&#888888SOMEONE IS WATCHING YOU..."
-  - "&#FF3344HE IS CLOSE."
-  - "&#888888DO NOT TURN AROUND."
-
 # --- STAMINA ---
 stamina:
   exhausted: "&#FF3344¡ʏᴏᴜ ᴀʀᴇ ᴇxʜᴀᴜꜱᴛᴇᴅ! &#CCCCCCCatch your breath..."
@@ -560,19 +485,292 @@ hook:
     created-private: "<yellow>You have created a private game! Use the panel to configure it."
     only-leader: "<red>Only the party leader can create private games."
     not-in: "<red>You are not in a party."
+modes:
+  classic:
+    title: "&#FF0033ᴄʟᴀꜱꜱɪᴄ ᴍᴏᴅᴇ"
+    subtitle: "&#FFFFFFA killer lurks in the shadows..."
+  double_killer:
+    title: "&#FF0000ᴅᴏᴜʙʟᴇ ᴋɪʟʟᴇʀ"
+    subtitle: "&#FFFFFFTWO ENTITIES HAVE AWOKEN! Death is inevitable."
+  one_bounce:
+    title: "&#FF00FFᴏɴᴇ ʙᴏᴜɴᴄᴇ"
+    subtitle: "&#FFFFFFYOU ARE THE ONLY SURVIVOR! Everyone else is a killer."
+  freeze_tag:
+    title: "&#00FFFFꜰʀᴇᴇᴢᴇ ᴛᴀɢ"
+    subtitle: "&#FFFFFFThe entities will freeze you. Rescue your teammates!"
+  infection:
+    title: "&#33FF00ɪɴꜰᴇᴄᴛɪᴏɴ"
+    subtitle: "&#FFFFFFEvery fallen survivor will join the killers."
+  hide_and_seek:
+    title: "&#FFFF00ʜɪᴅᴇ ᴀɴᴅ ꜱᴇᴇᴋ"
+    subtitle: "&#FFFFFFYou have 1 minute to hide."
+  initializes:
+    title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
+    subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
+
+# --- GAME ---
+game:
+  break-start: "&#42F56CBreak for &#FFE30010s&#42F56C. Voting will start after the break."
+  map-loaded: "&#42F56CMap &#FFE300{map} &#42F56Cselected."
+  player-died: "&#FF3344&#FFFFFF{player} &#FF3344has been eliminated."
+  player-frozen-death: "&#FF3344&#FFFFFF{player} &#FF3344froze to death."
+  killer-disconnected: "<prefix>&#FF3344The Killer fled!"
+  killer-died-victory: "&#FF3344The Killer is dead!"
+  victory-killer: "&#FF3344ᴇᴠɪʟ ʜᴀꜱ ᴛʀɪᴜᴍᴘʜᴇᴅ."
+  victory-survivors: "&#42F56C¡ʏᴏᴜ ꜱᴜʀᴠɪᴠᴇᴅ!"
+  killer-hit-actionbar: "&#FF3344❤ &#FFFFFFKiller's Health: &#FFE300{health}"
+  killer-stunned-damager: "&#FF3344You stunned the killer!"
+  killer-stunned-victim: "&#FFE300You have been stunned!"
+  killer-title: "&#FF0033¡ᴠɪᴄᴛᴏʀʏ!"
+  killer-subtitle: "&#FFFFFFNo one was left alive."
+  killer-defeat-title: "&#FF0033¡ʏᴏᴜ ꜱᴜʀᴠɪᴠᴇᴅ!"
+  killer-defeat-subtitle: "&#FFFFFFThe survivors escaped..."
+  survivor-title: "&#00FF33¡ᴠɪᴄᴛᴏʀʏ!"
+  survivor-subtitle: "&#FFFFFFYou managed to escape alive."
+  survivor-defeat-title: "&#FF0033¡ᴅᴇꜰᴇᴀᴛ!"
+  survivor-defeat-subtitle: "&#FFFFFFThe killer massacred everyone."
+  killer-released-title: "&#FF0000¡ᴋɪʟʟᴇʀ ʀᴇʟᴇᴀꜱᴇᴅ!"
+  killer-released-subtitle: "&#FFFFFFThe killer can now move and see."
+  join-as-spectator: "<prefix>&#CCCCCCThe game already started. You are spectating."
+  rejoin-msg: "<prefix>&#FF3344Welcome back, killer. Continue the massacre."
+  infection-hit: "<prefix>&#FF3344SYSTEM CORRUPTED! Error Star infected you."
+  hunt-start: "&#FF3344¡ᴛʜᴇ ᴋɪʟʟᴇʀ ʜᴀꜱ ᴀᴘᴘᴇᴀʀᴇᴅ! &#FFFFFFDon't let him find you..."
+  class-selected: "&#FF3344"
+  time-extended: "&#42F56CWell done! For the kill, &#FFE300{seconds}s &#42F56Cwere added to the clock."
+  mode-reveal-start: "&#FFE300Analyzing anomalies in the area... &kaa&r"
+  mode-selected: "&#FFFFFFDetected mode: &#33CCFF{mode}"
+  player-frozen: "&#33CCFF{player} &#FFFFFFwas frozen by the killer."
+  unfrozen-victim: "&#42F56C{player} has freed you from the ice."
+  unfrozen-rescuer: "&#42F56CYou have freed {player} from the ice."
+  freeze-title: "&#00FFFF¡ꜰʀᴏᴢᴇɴ!"
+  freeze-subtitle: "&#FFFFFFYou have &{color}{time} &#FFFFFFseconds to be rescued."
+  edit-enable: "<prefix>&#33CCFFEdit Mode enabled. You are invisible to the game logic."
+  edit-disable: "<prefix>&#FF3344Edit Mode disabled. The game logic applies again."
+  message: "<prefix>&#FFE300No one voted for a map. The server will choose one at random."
+  too-injured-to-rescue: "<red>You are too injured to rescue anyone!"
+  heal-cooldown: "<red>You must wait %time% s to heal again."
+  already-max-health-self: "<red>Your health is already at max!"
+  already-max-health-other: "<red>Player %target% is already at max health!"
+  heal-cancelled-movement: "<red>Healing cancelled due to movement."
+  heal-success-self:
+    title: "<green>Healed!"
+    subtitle: "<gray>+%hearts% hearts"
+  heal-success-healer:
+    title: "<green>You healed %target%!"
+    subtitle: "<gray>+%hearts% hearts"
+  heal-success-healed:
+    title: "<green>You have been healed!"
+    subtitle: "<gray>By %player%"
+  heal-reward-coins: "<green>+100 coins for healing a teammate."
+  heal-skill-ready: "<green>Your healing skill is ready!"
+  healing-self:
+    title: "<yellow>Healing..."
+    subtitle: "<gray>%time%s"
+  healing-healer:
+    title: "<yellow>Healing %target%"
+    subtitle: "<gray>Time: %time%s"
+  healing-healed:
+    title: "<yellow>%player% is healing you..."
+    subtitle: "<gray>Do not move. Time: %time%s"
+  afk-disable: "<prefix>&#42F56CAFK Mode disabled. Welcome back!"
+
+# --- ARENA ---
+arena:
+  created: "<prefix>&#FFFFFF&#FFE300{name} &#FFFFFFArena created."
+  deleted: "<prefix>&#FF3344&#FFE300{name} &#FF3344Arena deleted."
+  setpaste: "<prefix>&#FFFFFFSchematic point saved."
+  setspawn: "<prefix>&#FFFFFF&#FFE300{type} &#FFFFFFspawn saved for &#FFE300{name}&#FFFFFF."
+  setgenerator: "<prefix>&#FFFFFFGenerator added."
+  delgenerator: "<prefix>&#FF3344Generator removed."
+  delgenerators: "<prefix>&#FF3344Generators cleared."
+  usage-setspawn: "<prefix>&#FF3344Usage: /arena setspawn {name} <asesino/survivor>"
+  status-ready: "&#42F56Cʀᴇᴀᴅʏ"
+  status-incomplete: "&#FF3344ɪɴᴄᴏᴍᴘʟᴇᴛᴇ"
+  check-header: "&#888888» &#CCCCCCStatus of &#FFE300{name}&#CCCCCC: {status}"
+  check-survivors: "&#CCCCCC - Survivor Spawns: &#FFFFFF{count}"
+  check-generators: "&#CCCCCC - Generators: &#FFFFFF{count}"
+  check-killer: "&#CCCCCC - Killer Spawn: {icon}"
+  help-header: "&#3BFFC7ᴍɪꜱᴛᴀᴋᴇɴ &#888888| &#CCCCCCᴀʀᴇɴᴀꜱ"
+  help-line-create: " &#FFE300/arena create <name>"
+  help-line-delete: " &#FFE300/arena delete <name>"
+  help-line-check: " &#FFE300/arena check <name>"
+  help-line-setpaste: " &#FFE300/arena setpaste <name>"
+  help-line-setspawn: " &#FFE300/arena setspawn <name> <type>"
+  help-line-setgenerator: " &#FFE300/arena setgenerator <name>"
+  help-line-delgenerator: " &#FFE300/arena delgenerator <name>"
+  help-line-delgenerators: " &#FFE300/arena delgenerators <name>"
+  help-line-settime: " &#FFE300/arena settime <map> <day|night|afternoon|morning|dynamic>"
+
+# --- ERRORS ---
+errors:
+  no-permission: "<prefix>&#FF3344You don't have permission for this."
+  only-players: "&#FF3344Only for players."
+  ability-cooldown: "&#FF3344The skill &#FFAA00<skill> &#FF3344is not ready. Cooldown remaining: &#FFE300<time>s"
+  lang-not-found: "<prefix>&#FF3344That language does not exist."
+  no-money: "<prefix>&#FF3344You don't have enough coins."
+  arena-not-found: "<prefix>&#FF3344The arena &#FFFFFF{name} &#FF3344does not exist."
+  voting-not-active: "<prefix>&#FF3344Voting is not active."
+  already-voted: "<prefix>&#FF3344You already voted."
+  player-not-found: "<prefix>&#FF3344Offline player."
+  player-not-killer: "<prefix>&#FF3344Not a killer."
+  unknown-command: "<prefix>&#FF3344Unknown command."
+  invalid-number: "<prefix>&#FF3344Use a valid number."
+  invalid-spawn-type: "<prefix>&#FF3344Use 'asesino' or 'survivor'."
+  invalid-gen-block: "<prefix>&#FF3344Look at an iron or amethyst block."
+  not-a-generator: "<prefix>&#FF3344That is not a generator."
+  killer-not-found: "<prefix>&#FF3344That class does not exist."
+  lobby-only-command: "<prefix>&#FF3344<b>[!]</b> &#CCCCCCTo use this command, you must return to the <b>Main Lobby</b>."
+  player-only: "<prefix>&#FF3344Command only for players."
+  invalid-mode: "<prefix>&#FF3344Invalid mode."
+  not-in-session: "<prefix>&#FF3344You must be in a session for this."
+  no-active-game: "<prefix>&#FF3344There is no active game in your location."
+  survivor-not-found: "<prefix>&#FF3344That survivor class doesn't exist."
+  forcekiller-not-in-game: "<prefix>&#FF3344You must be in a game to force a killer."
+  forcekiller-already-started: "<prefix>&#FF3344You can't force the role because the game already started."
+
+# --- STAMINA ---
+stamina:
+  exhausted: "&#FF3344¡ʏᴏᴜ ᴀʀᴇ ᴇxʜᴀᴜꜱᴛᴇᴅ! &#CCCCCCCatch your breath..."
+  low_warning: "&#FFAA00⚠ You are losing stamina quickly!"
+
+# --- ANOMALIES ---
+anomalies:
+  geoffrey:
+    spawn: "&#FF3344[!] &#AA0000ᴀɴᴏᴍᴀʟʏ ᴅᴇᴛᴇᴄᴛᴇᴅ: ᴛʜᴇ ᴀʙʏꜱꜱ ʜᴀꜱ ᴀᴡᴀᴋᴇɴᴇᴅ."
+    title-comes: "&#FF0000¡¡¡ ɪᴛ ᴄᴏᴍᴇꜱ !!!"
+    subtitle-comes: "&#FF3344¡run!!!!"
+    rage: "&#AA0000¡¡¡ ɢᴇᴏꜰꜰʀᴇʏ ɪꜱ ꜰᴜʀɪᴏᴜꜱ !!!"
+    death: "<prefix>&#FFFFFF{player} &#FF3344was torn apart by Geoffrey."
+
+# ==========================================
+# --- MENU TITLES ---
+# ==========================================
+menus:
+  killers_shop:
+    title: "&#555555「 ᴋɪʟʟᴇʀꜱ ꜱᴛᴏʀᴇ 」"
+  survivors_shop:
+    title: "&#555555「 ꜱᴜʀᴠɪᴠᴏʀꜱ ꜱᴛᴏʀᴇ 」"
+  main_shop:
+    title: "&#555555「 ᴍᴀɪɴ ꜱᴛᴏʀᴇ 」"
+    items:
+      killers:
+        name: "&#FF3344「 ᴋɪʟʟᴇʀꜱ 」"
+        lore:
+          - ""
+          - "&#CCCCCCUnleash your killer instinct."
+          - "&#CCCCCCBuy characters and special"
+          - "&#CCCCCCskills for the hunt."
+          - ""
+          - "&#FF3344» Click to enter"
+      survivors:
+        name: "&#33CCFF「 ꜱᴜʀᴠɪᴠᴏʀꜱ 」"
+        lore:
+          - ""
+          - "&#CCCCCCImprove your chances of success."
+          - "&#CCCCCCAcquire classes with unique perks"
+          - "&#CCCCCCto cheat death."
+          - ""
+          - "&#33CCFF» Click to enter"
+
+hook:
+  party:
+    enter: "<green>Your party has brought you into the game."
+    leave: "<red>Your party has left the game, pulling everyone out..."
+    enter-private: "<green>Your party has brought you into the private game."
+    created-private: "<yellow>You have created a private game! Use the panel to configure it."
+    only-leader: "<red>Only the party leader can create private games."
+    not-in: "<red>You are not in a party."
     no-maps: "<red>There are no maps configured to start the game."
   alessio:
     enter: "<green>Your party leader has brought you into the game."
     leave: "<red>Your party leader has left the game, pulling everyone out..."
 
 shop:
-  estado-seleccionado: "<#00FF30>✔ ꜱᴇʟᴇᴄᴛᴇᴅ"
-  estado-poseido: "<#FCFF00>★ ᴘᴏꜱꜱᴇꜱꜱᴇᴅ"
-  estado-comprar: "<#FCFF00>» ᴄʟɪᴄᴋ ᴛᴏ ʙᴜʏ «"
-  estado-precio: "<white>Price<dark_gray>: <#00FF30>${amount}"
-  abilityes-titulo: "<gray>「 ꜱᴋɪʟʟꜱ 」"
-  clase-humana: "<dark_gray>「 ꜱᴜʀᴠɪᴠᴏʀ 」"
-  estado-comprar-survivor: "<aqua>» ʙᴜʏ ꜱᴜʀᴠɪᴠᴏʀ «"
-  comprado: "<green>✔ ¡ᴘᴜʀᴄʜᴀꜱᴇ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ! <gray>You have acquired this class."
-  seleccionado: "<#00FF30>✔ ᴄʜᴀʀᴀᴄᴛᴇʀ ꜱᴇʟᴇᴄᴛᴇᴅ."
-  ya-seleccionado: "<red>⚠ <gray>You already have this selected."
+  state-selected: "<#00FF30>✔ sᴇʟᴇᴄᴛᴇᴅ"
+  state-owned: "<#FCFF00>★ ᴏᴡɴᴇᴅ"
+  state-buy: "<#FCFF00>▪ ᴄʟɪᴄᴋ ᴛᴏ ʙᴜʏ ▪"
+  state-price: "<white>Price<dark_gray>: <#00FF30>${amount}"
+  abilities-title: "<gray>✧ ᴀʙɪʟɪᴛɪᴇs ✧"
+  human-class: "<dark_gray>✧ sᴜʀᴠɪᴠᴏʀ ✧"
+  state-buy-survivor: "<aqua>▪ ʙᴜʏ sᴜʀᴠɪᴠᴏʀ ▪"
+  purchased: "<green>✔ ᴘᴜʀᴄʜᴀsᴇ sᴜᴄᴄᴇssғᴜʟ! <gray>You have acquired this class."
+  selected: "<#00FF30>✔ ᴄʜᴀʀᴀᴄᴛᴇʀ sᴇʟᴇᴄᴛᴇᴅ."
+  already-selected: "<red>✖ <gray>You already have this selected."
+
+economy:
+  balance: "<prefix>&#42F56CYour current balance is: &#FFFFFF{amount} coins."
+  balance-other: "<prefix>&#42F56C{player}'s balance is: &#FFFFFF{amount} coins."
+  give: "<prefix>&#42F56CYou gave {amount} coins to {player}."
+  receive: "<prefix>&#42F56CYou received {amount} coins."
+  take: "<prefix>&#FF3344You took {amount} coins from {player}."
+  set: "<prefix>&#FFE300You set {player}'s balance to {amount} coins."
+
+admin:
+  help-player: |
+    <#3BFFC7>Mistaken <#888888>| <#CCCCCC>Player Help
+    <#CCCCCC>» <#FFE300>/join <#888888>- <white>Join a game
+    <#CCCCCC>» <#FFE300>/leave <#888888>- <white>Leave the game
+    <#CCCCCC>» <#FFE300>/vote <map> <#888888>- <white>Vote for a map
+    <#CCCCCC>» <#FFE300>/spectate <#888888>- <white>Enter spectator mode (when dead)
+    <#CCCCCC>» <#FFE300>/shop <#888888>- <white>Open the class shop
+    <#CCCCCC>» <#FFE300>/stats <#888888>- <white>View your statistics
+    <#CCCCCC>» <#FFE300>/lang <#888888>- <white>Change your language
+    <#CCCCCC>» <#FFE300>/afk <#888888>- <white>Enter AFK mode
+  help-admin: |
+    <#3BFFC7>Mistaken <#888888>| <#FF3344>Admin Help
+    <#CCCCCC>» <#FF3344>/ms game start|stop|setmode
+    <#CCCCCC>» <#FF3344>/ms role setkiller|forcekiller|setsurvivor
+    <#CCCCCC>» <#FF3344>/ms config reload|setlobby
+    <#CCCCCC>» <#FF3344>/ms player setstamina|edit|data
+    <#CCCCCC>» <#FF3344>/mdebug help <#888888>- <white>Debug commands
+  reload-success: "<prefix>&#42F56CConfiguration and languages reloaded."
+  start-forcing: "<prefix>&#42F56CInitiating hunt sequence..."
+  start-already-ingame: "<prefix>&#FF3344Error: There is already a game in progress."
+  stop-broadcast: "&#FF3344GAME OVER &#CCCCCCby staff."
+  stop-success: "&#42F56CGame forcefully stopped."
+  lobby-set: "<prefix>&#42F56CLobby spawn point successfully set."
+  lang-set: "<prefix>&#42F56CLanguage changed to: &#33CCFF{langs}"
+  usage-lang: "<prefix>&#FF3344Usage: /mistaken langs <es/en/fr/jp/zh>"
+  stamina-set: "<prefix>&#FFFFFF{player}'s &#42F56Cstamina set to &#FFE300{amount}%"
+  removekiller-success: "<prefix>&#42F56CTest role removed from &#FFFFFF{player}&#42F56C."
+  removekiller-target: "<prefix>&#FF3344Your role was removed."
+  mode-forced: "<prefix>&#FFE300An admin forced mode: &#33CCFF{mode}"
+  forcekiller-usage: "<prefix>&#FF3344Usage: /mistaken forcekiller <player>"
+  forcekiller-not-in-game: "<prefix>&#FF3344You must be in a game to force a killer."
+  forcekiller-already-started: "<prefix>&#FF3344You cannot force the role because the game already started."
+  forcekiller-success: "<prefix>&#42F56CForced &#FFFFFF{player} &#42F56Cto be the killer in the next game of &#33CCFF{arena}&#42F56C."
+
+# ======================
+# PERKS
+# ======================
+perks:
+  # Draft menu
+  draft-title: "<#3BFFC7>ʙᴏɴᴜs ᴘᴇʀᴋ <#888888>| <white>Choose 1"
+  draft-card-name: "<#FFE300><bold>❓ Mystery Perk"
+  draft-card-lore-1: "<gray>Click to reveal and select this perk."
+  draft-card-lore-2: " "
+  draft-card-lore-3: "<dark_gray>You will keep this perk until the game ends."
+  draft-info-name: "<white>ʜᴏᴡ ɪᴛ ᴡᴏʀᴋs"
+  draft-info-lore-1: "<gray>Pick <#3BFFC7>1 mystery card<gray>."
+  draft-info-lore-2: "<gray>Your perk will be revealed on selection."
+  draft-info-lore-3: "<gray>It lasts for <white>this match only<gray>."
+
+  # Perk feedback messages
+  already-selected: "<#FF3344>You already have a perk equipped for this match!"
+  selected: "<#3BFFC7>✦ ᴘᴇʀᴋ <#888888>| <white>{perk} equipped!"
+  auto-assigned: "<gray>✦ Perk auto-assigned since you didn't pick."
+  actionbar-active: "<#3BFFC7>✦ Perk: <white>{perk}"
+
+  # Individual perk names and descriptions
+  adrenaline:
+    name: "<#FFE300><bold>⚡ Adrenaline"
+    desc: "<gray>Gain Speed II for 3s after repairing a generator."
+  stealth:
+    name: "<#3BFFC7><bold>🥷 Stealth"
+    desc: "<gray>Your footsteps and particles are hidden from the killer."
+  premonition:
+    name: "<#FF55FF><bold>👁 Premonition"
+    desc: "<gray>Hear an alert when the killer looks directly at you."
+  resilience:
+    name: "<#FF3344><bold>🛡 Resilience"
+    desc: "<gray>Gain Speed II for 2s after taking damage."

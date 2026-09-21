@@ -21,8 +21,32 @@ object MistakenDebugCommand {
     private var instanceCounter = 0
 
     fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {
-        val rootNode = Commands.literal("mistakendebug")
-            .requires { it.sender.hasPermission("mistaken.admin") }
+        val rootNode = Commands.literal("mdebug")
+            .requires { source -> source.sender.hasPermission("mistaken.admin") }
+            
+        rootNode.then(
+            Commands.literal("help")
+                .executes { ctx ->
+                    val sender = ctx.source.sender
+                    sender.sendMessage(ColorTranslator.translate(
+                        """
+                        <#3BFFC7>Mistaken Debug <#888888>| <#FF3344>Ayuda
+                        <#CCCCCC>» <#FF3344>/mdebug help <#888888>- <white>This menu
+                        <#CCCCCC>» <#FF3344>/mdebug arena (check|setup) <#888888>- <white>Arena debug
+                        <#CCCCCC>» <#FF3344>/mdebug session (list|info) <#888888>- <white>Session debug
+                        <#CCCCCC>» <#FF3344>/mdebug player <name> <#888888>- <white>Player data
+                        <#CCCCCC>» <#FF3344>/mdebug visual (sb|tab) <#888888>- <white>Visuals debug
+                        <#CCCCCC>» <#FF3344>/mdebug lms (start|all|end) <#888888>- <white>Last Man Standing test
+                        <#CCCCCC>» <#FF3344>/mdebug cinematic (intro|outro) <killer> <#888888>- <white>Play cinematics
+                        <#CCCCCC>» <#FF3344>/mdebug hitbox <#888888>- <white>Toggle 3D hitboxes
+                        <#CCCCCC>» <#FF3344>/mdebug geoffrey <#888888>- <white>Boss test
+                        <#CCCCCC>» <#FF3344>/mdebug perks <#888888>- <white>Open perk draft menu (debug)
+                        <#CCCCCC>» <#FF3344>/mdebug gui <menu> <#888888>- <white>Open any GUI by name
+                        """.trimIndent()
+                    ))
+                    1
+                }
+        )
 
         
         rootNode.then(
@@ -184,6 +208,55 @@ object MistakenDebugCommand {
 
         
         rootNode.then(
+            Commands.literal("player")
+            .then(
+                Commands.argument("target", StringArgumentType.word())
+                .suggests { _, builder: SuggestionsBuilder ->
+                    Bukkit.getOnlinePlayers().forEach { builder.suggest(it.name) }
+                    builder.buildFuture()
+                }
+                .executes { ctx ->
+                    val sender = ctx.source.sender
+                    val targetName = StringArgumentType.getString(ctx, "target")
+                    val target = Bukkit.getPlayer(targetName)
+                    
+                    if (target == null) {
+                        sender.sendMessage("§c[!] Player not found.")
+                        return@executes 0
+                    }
+                    
+                    val session = plugin.sessionManager.getSession(target)
+                    val state = session?.currentState?.name ?: "No Session (or Server Lobby)"
+                    
+                    var role = "Unknown"
+                    if (session != null) {
+                        if (session.isKiller(target.uniqueId)) {
+                            val killerClass = plugin.killerManager.getKillerOfPlayer(target)
+                            role = "KILLER (${killerClass?.id ?: "None"})"
+                        } else {
+                            val survivorClass = plugin.survivorManager.getSurvivorClass(target)
+                            role = "SURVIVOR (${survivorClass?.id ?: "None"})"
+                        }
+                    }
+                    
+                    val stats = plugin.statsManager.getStats(target.uniqueId)
+                    val data = plugin.playerDataManager.getUserData(target.uniqueId)
+                    
+                    sender.sendMessage("§e=== Debug Info: §a${target.name} §e===")
+                    sender.sendMessage("§7Status: §f$state")
+                    sender.sendMessage("§7Role: §f$role")
+                    sender.sendMessage("§7Language: §f${data?.language ?: "N/A"}")
+                    sender.sendMessage("§7Stamina: §f${data?.stamina ?: 100.0}")
+                    sender.sendMessage("§7Kills: §f${stats.kills.get()}")
+                    sender.sendMessage("§7Wins (Survivor): §f${stats.winsSurvivor.get()}")
+                    sender.sendMessage("§7Wins (Killer): §f${stats.winsAssassin.get()}")
+                    1
+                }
+            )
+        )
+
+        
+        rootNode.then(
             Commands.literal("lms")
             .then(
                 Commands.literal("start").executes { ctx ->
@@ -269,6 +342,134 @@ object MistakenDebugCommand {
                 sender.sendMessage("§a§l[✔] §aContainment protocol successful. All anomalies eliminated.")
                 1
             }
+        )
+
+        // --- HITBOX AND CINEMATIC (Moved from old commands) ---
+        rootNode.then(
+            Commands.literal("hitbox")
+                .executes { ctx ->
+                    val sender = ctx.source.sender
+                    val isNowEnabled = liric.mistaken.utils.misc.HitboxVisualizer.toggle()
+                    val state = if (isNowEnabled) "<green><bold>ENABLED</bold></green>" else "<red><bold>DISABLED</bold></red>"
+                    sender.sendMessage(ColorTranslator.translate("<gray>[<yellow>DEBUG</yellow>] <white>Hitbox Visualizer: $state"))
+                    1
+                }
+        )
+
+        val killersList = listOf(
+            "sowoul", "pizzano", "errorestatico", "charlieinferno",
+            "colorandelectricity", "rome", "romeodebuff", "slasher",
+            "herobrine", "nullasesino", "entity303", "bendy", "kasaneteto", "mariachi"
+        )
+        
+        rootNode.then(
+            Commands.literal("cinematic")
+                .then(
+                    Commands.literal("intro")
+                        .then(
+                            Commands.argument("killer", StringArgumentType.word())
+                                .suggests { _, builder ->
+                                    killersList.forEach { if (it.startsWith(builder.remainingLowerCase)) builder.suggest(it) }
+                                    builder.buildFuture()
+                                }
+                                .executes { ctx ->
+                                    val source = ctx.source.sender as? Player ?: return@executes 0
+                                    val killerId = StringArgumentType.getString(ctx, "killer")
+                                    val killerDummy = object : liric.mistaken.roles.killers.Killer(killerId, "<gold><bold>${killerId.uppercase()}</bold></gold>") {
+                                        override fun equip(player: Player) {}
+                                        override fun useSkill(player: Player, slot: Int) {}
+                                        override fun showTrail(player: Player) {}
+                                        override fun showPhysicalTrail(player: Player) {}
+                                    }
+                                    source.sendMessage(ColorTranslator.translate("<green>Playing <bold>INTRO</bold> for: <yellow>$killerId"))
+                                    plugin.cinematicManager.playKillerIntro(source, killerDummy, listOf(source))
+                                    1
+                                }
+                        )
+                )
+                .then(
+                    Commands.literal("outro")
+                        .then(
+                            Commands.argument("killer", StringArgumentType.word())
+                                .suggests { _, builder ->
+                                    killersList.forEach { if (it.startsWith(builder.remainingLowerCase)) builder.suggest(it) }
+                                    builder.buildFuture()
+                                }
+                                .executes { ctx ->
+                                    val source = ctx.source.sender as? Player ?: return@executes 0
+                                    val killerId = StringArgumentType.getString(ctx, "killer")
+                                    val killerDummy = object : liric.mistaken.roles.killers.Killer(killerId, "<gold><bold>${killerId.uppercase()}</bold></gold>") {
+                                        override fun equip(player: Player) {}
+                                        override fun useSkill(player: Player, slot: Int) {}
+                                        override fun showTrail(player: Player) {}
+                                        override fun showPhysicalTrail(player: Player) {}
+                                    }
+                                    source.sendMessage(ColorTranslator.translate("<red>Playing <bold>OUTRO</bold> for: <yellow>$killerId"))
+                                    plugin.cinematicManager.playKillerOutro(source, killerDummy, listOf(source))
+                                    1
+                                }
+                        )
+                )
+        )
+
+        // --- PERKS DEBUG ---
+        rootNode.then(
+            Commands.literal("perks")
+                .executes { ctx ->
+                    val player = ctx.source.sender as? Player ?: return@executes 0
+                    val options = plugin.perkManager.getDraftOptions(3)
+                    if (options.isEmpty()) {
+                        player.sendMessage(ColorTranslator.translate("<red>[DEBUG] No perks registered."))
+                        return@executes 0
+                    }
+                    // Clear any existing perk first so the menu is fully interactive
+                    plugin.perkManager.clearPerkForPlayer(player.uniqueId)
+                    liric.mistaken.menu.menus.PerkDraftMenu(plugin).open(player, options)
+                    player.sendMessage(ColorTranslator.translate("<gray>[<yellow>DEBUG<gray>] <white>Opening perk draft with <#3BFFC7>${options.size} random perks."))
+                    1
+                }
+        )
+
+        // --- GUI DEBUG ---
+        val guiNames = listOf("shop", "killers", "survivors", "private_lobby", "perks")
+        rootNode.then(
+            Commands.literal("gui")
+                .then(
+                    Commands.argument("menu", StringArgumentType.word())
+                        .suggests { _, builder ->
+                            guiNames.forEach { if (it.startsWith(builder.remainingLowerCase)) builder.suggest(it) }
+                            builder.buildFuture()
+                        }
+                        .executes { ctx ->
+                            val player = ctx.source.sender as? Player ?: return@executes 0
+                            val menuArg = StringArgumentType.getString(ctx, "menu").lowercase()
+                            when (menuArg) {
+                                "shop" -> {
+                                    plugin.shopSelector.abrir(player)
+                                    player.sendMessage(ColorTranslator.translate("<gray>[<yellow>DEBUG<gray>] <white>Opened: <#3BFFC7>Shop Selector"))
+                                }
+                                "killers" -> {
+                                    liric.mistaken.menu.menus.KillerShop().abrir(player)
+                                    player.sendMessage(ColorTranslator.translate("<gray>[<yellow>DEBUG<gray>] <white>Opened: <#3BFFC7>Killer Shop"))
+                                }
+                                "survivors" -> {
+                                    liric.mistaken.menu.menus.SurvivorShop().abrir(player)
+                                    player.sendMessage(ColorTranslator.translate("<gray>[<yellow>DEBUG<gray>] <white>Opened: <#3BFFC7>Survivor Shop"))
+                                }
+                                "perks" -> {
+                                    val options = plugin.perkManager.getDraftOptions(3)
+                                    plugin.perkManager.clearPerkForPlayer(player.uniqueId)
+                                    liric.mistaken.menu.menus.PerkDraftMenu(plugin).open(player, options)
+                                    player.sendMessage(ColorTranslator.translate("<gray>[<yellow>DEBUG<gray>] <white>Opened: <#3BFFC7>Perk Draft"))
+                                }
+                                else -> {
+                                    player.sendMessage(ColorTranslator.translate("<red>[DEBUG] Unknown menu: <white>$menuArg"))
+                                    player.sendMessage(ColorTranslator.translate("<gray>Available: <white>${guiNames.joinToString(", ")}"))
+                                }
+                            }
+                            1
+                        }
+                )
         )
 
         return rootNode.build()

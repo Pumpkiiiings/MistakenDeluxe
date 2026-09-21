@@ -1,4 +1,4 @@
-package liric.mistaken.utils.hooks
+﻿package liric.mistaken.utils.hooks
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

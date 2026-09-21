@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.api
+﻿package liric.mistaken.scripting.api
 
 /**
  * Contrato del Scheduler para los scripts.

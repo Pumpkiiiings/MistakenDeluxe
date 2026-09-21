@@ -1,0 +1,54 @@
+# MistakenDeluxe Visual Addon Configuration
+# Uses MiniMessage format for chat and tablist.
+# You can use PlaceholderAPI e.g. %player_name% or %vault_rank%
+# Also supports MiniPlaceholders native tags e.g. <player_name>
+
+chat:
+  enabled: true
+  legacy-colors: true # Translates &a, &b, etc. into minimessage format
+  
+  # Chat formats per GameState
+  formats:
+    LOBBY: "<gray>[Lobby] <white><player> <gray>» <white><message>"
+    STARTING: "<gray>[Lobby] <white><player> <gray>» <white><message>"
+    INGAME: "<red>[Playing] <white><player> <gray>» <white><message>"
+    ENDING: "<gold>[End] <white><player> <gray>» <white><message>"
+    DEFAULT: "<gray><player> <gray>» <white><message>"
+
+tablist:
+  enabled: true
+  update-interval: 20 # in ticks (20 ticks = 1 second)
+  legacy-colors: true
+  sort-by-rank-weight: true # Requires LuckPerms
+
+  # Formats per GameState
+  states:
+    LOBBY:
+      player-name: "<white><player>"
+      header:
+        - "<gold><b>Mistaken Deluxe</b>"
+        - "<yellow>Welcome to the Lobby!"
+        - ""
+      footer:
+        - ""
+        - "<gray>mc.yourserver.com"
+        
+    INGAME:
+      player-name: "<red><player>"
+      header:
+        - "<gold><b>Mistaken Deluxe</b>"
+        - "<red>Survive or Die!"
+        - ""
+      footer:
+        - ""
+        - "<gray>Killers on the loose: <red>%mistaken_killers%"
+        
+    DEFAULT:
+      player-name: "<white><player>"
+      header:
+        - "<gold><b>Mistaken Deluxe</b>"
+        - "<yellow>Welcome"
+        - ""
+      footer:
+        - ""
+        - "<gray>mc.yourserver.com"

@@ -1,4 +1,4 @@
-package liric.mistaken.models.integration.bettermodel
+﻿package liric.mistaken.models.integration.bettermodel
 
 import kr.toxicity.model.api.animation.AnimationIterator
 import kr.toxicity.model.api.animation.AnimationModifier

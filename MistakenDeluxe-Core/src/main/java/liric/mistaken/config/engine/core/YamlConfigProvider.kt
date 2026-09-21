@@ -1,4 +1,4 @@
-package liric.mistaken.config.engine.core
+﻿package liric.mistaken.config.engine.core
 
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration

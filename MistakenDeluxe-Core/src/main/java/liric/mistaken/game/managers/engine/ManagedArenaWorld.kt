@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.engine
+﻿package liric.mistaken.game.managers.engine
 
 import org.bukkit.World
 import java.util.concurrent.CompletableFuture

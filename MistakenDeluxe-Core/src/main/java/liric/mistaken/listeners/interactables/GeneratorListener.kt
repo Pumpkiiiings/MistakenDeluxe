@@ -154,6 +154,7 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
                 }
                 p.sendMessage(successMsg)
                 p.playSound(p.location, Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.8f, 1.0f)
+                plugin.perkManager.triggerGeneratorRepair(p)
             }
         }
 

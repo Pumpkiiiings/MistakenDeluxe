@@ -1,4 +1,4 @@
-package liric.mistaken.utils.scoreboard
+﻿package liric.mistaken.utils.scoreboard
 
 import org.bukkit.entity.Player
 import java.util.UUID

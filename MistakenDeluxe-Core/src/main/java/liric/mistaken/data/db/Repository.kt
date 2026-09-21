@@ -1,4 +1,4 @@
-package liric.mistaken.data.db
+﻿package liric.mistaken.data.db
 
 abstract class Repository<K, V>(protected val provider: DatabaseProvider) {
 

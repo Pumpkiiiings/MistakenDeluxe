@@ -1,4 +1,4 @@
-package liric.mistaken.utils.misc
+﻿package liric.mistaken.utils.misc
 
 import fr.skytasul.glowingentities.GlowingEntities
 import org.bukkit.ChatColor

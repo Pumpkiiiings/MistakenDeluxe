@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.engine.groovy
+﻿package liric.mistaken.scripting.engine.groovy
 
 import org.codehaus.groovy.ast.ClassCodeExpressionTransformer
 import org.codehaus.groovy.ast.ClassNode

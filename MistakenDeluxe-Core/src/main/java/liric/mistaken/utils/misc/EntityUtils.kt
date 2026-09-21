@@ -1,4 +1,4 @@
-package liric.mistaken.utils.misc
+﻿package liric.mistaken.utils.misc
 
 import org.bukkit.entity.Entity
 import org.bukkit.entity.TextDisplay

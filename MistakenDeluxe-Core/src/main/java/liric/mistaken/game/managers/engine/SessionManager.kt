@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.engine
+﻿package liric.mistaken.game.managers.engine
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.events.MistakenPlayerJoinSessionEvent

@@ -1,4 +1,4 @@
-package liric.mistaken.listeners.interactables
+﻿package liric.mistaken.listeners.interactables
 
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.Component

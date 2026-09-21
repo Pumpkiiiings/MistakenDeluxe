@@ -1,4 +1,4 @@
-package liric.mistaken.listeners.mechanics
+﻿package liric.mistaken.listeners.mechanics
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken

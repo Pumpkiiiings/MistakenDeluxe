@@ -1,4 +1,4 @@
-package liric.mistaken.listeners.lobby
+﻿package liric.mistaken.listeners.lobby
 
 import liric.mistaken.Mistaken
 import liric.mistaken.menu.menus.PrivateLobbyMenu

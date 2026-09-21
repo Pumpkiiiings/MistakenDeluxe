@@ -1,4 +1,4 @@
-package liric.mistaken.config
+﻿package liric.mistaken.config
 
 object Music {
     const val MUSIC_ENABLED = "music.enabled"

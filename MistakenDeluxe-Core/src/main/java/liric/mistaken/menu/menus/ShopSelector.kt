@@ -17,10 +17,10 @@ import org.bukkit.inventory.ItemFlag
  * Layout (slots, decoraciones) → menus/tienda_principal.yml  (GLOBAL)
  * Título y textos de items     → langs/<lang>/messages.yml   (POR IDIOMA)
  */
-class ShopSelector : MenuBase("tienda_principal") {
+class ShopSelector : MenuBase("main_shop") {
 
     override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
-        val soundName = config.getString("ajustes.sonido-click", "BLOCK_NOTE_BLOCK_XYLOPHONE") ?: "BLOCK_NOTE_BLOCK_XYLOPHONE"
+        val soundName = config.getString("settings.click-sound", "BLOCK_NOTE_BLOCK_XYLOPHONE") ?: "BLOCK_NOTE_BLOCK_XYLOPHONE"
         val clickSound = Sounds.of(soundName, Sound.BLOCK_NOTE_BLOCK_XYLOPHONE)
 
         
@@ -29,10 +29,10 @@ class ShopSelector : MenuBase("tienda_principal") {
             config.getString("items.killers.material", "NETHERITE_SWORD")!!.uppercase()
         ) ?: Material.NETHERITE_SWORD
 
-        val nombreA = getTranslatedString(player, "menus.tienda_principal.items.killers.nombre",
+        val nombreA = getTranslatedString(player, "menus.main_shop.items.killers.name",
             "<gradient:red:dark_red><b>ASSASSIN SHOP</b></gradient>")
 
-        val loreA = getTranslatedList(player, "menus.tienda_principal.items.killers.lore")
+        val loreA = getTranslatedList(player, "menus.main_shop.items.killers.lore")
             .map { parseSafe(it) }
 
         val itemKillers = ItemBuilder.from(matA)
@@ -48,10 +48,10 @@ class ShopSelector : MenuBase("tienda_principal") {
             config.getString("items.survivors.material", "IRON_CHESTPLATE")!!.uppercase()
         ) ?: Material.IRON_CHESTPLATE
 
-        val nombreS = getTranslatedString(player, "menus.tienda_principal.items.survivors.nombre",
+        val nombreS = getTranslatedString(player, "menus.main_shop.items.survivors.name",
             "<gradient:#00d4ff:#004d99><b>SURVIVOR SHOP</b></gradient>")
 
-        val loreS = getTranslatedList(player, "menus.tienda_principal.items.survivors.lore")
+        val loreS = getTranslatedList(player, "menus.main_shop.items.survivors.lore")
             .map { parseSafe(it) }
 
         val itemSurvivors = ItemBuilder.from(matS)

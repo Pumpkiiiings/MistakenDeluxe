@@ -25,7 +25,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
         
         val globalMecanicas = plugin.configManager.getSurvivorConfig("global") 
 
-        val slots = config.getIntegerList("ajustes.slots-disponibles")
+        val slots = config.getIntegerList("settings.available-slots")
         if (slots.isEmpty()) return
 
         val data = plugin.playerDataManager
@@ -33,11 +33,11 @@ class SurvivorShop : MenuBase("survivors_shop") {
         val selected = data.getSelectedSurvivor(uuid)
 
         
-        val labelHumano = MessageService.getComponent(player, "shop.clase-humana")
-        val labelSeleccionado = MessageService.getComponent(player, "shop.estado-seleccionado")
-        val labelPoseido = MessageService.getComponent(player, "shop.estado-poseido")
-        val labelComprar = MessageService.getComponent(player, "shop.estado-comprar-survivor")
-        val labelAbilityes = MessageService.getComponent(player, "shop.abilityes-titulo")
+        val labelHumano = MessageService.getComponent(player, "shop.human-class")
+        val labelSeleccionado = MessageService.getComponent(player, "shop.state-selected")
+        val labelPoseido = MessageService.getComponent(player, "shop.state-owned")
+        val labelComprar = MessageService.getComponent(player, "shop.state-buy-survivor")
+        val labelAbilityes = MessageService.getComponent(player, "shop.abilities-title")
 
         var slotIndex = 0
 
@@ -50,7 +50,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
 
             
             
-            val nombreVisual = MessageService.getStrictString(player, "survivors.$survivorId.nombre", "survivors_info")
+            val nombreVisual = MessageService.getStrictString(player, "survivors.$survivorId.name", "survivors_info")
             
             val loreShop = MessageService.getStrictStringList(player, "survivors.$survivorId.lore_shop", "survivors_info")
 
@@ -96,7 +96,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
                 esSeleccionado -> fullLore.add(labelSeleccionado)
                 tiene -> fullLore.add(labelPoseido)
                 else -> {
-                    fullLore.add(MessageService.getComponent(player, "shop.estado-precio", Placeholder.parsed("amount", precio.toString())))
+                    fullLore.add(MessageService.getComponent(player, "shop.state-price", Placeholder.parsed("amount", precio.toString())))
                     fullLore.add(labelComprar)
                 }
             }
@@ -119,9 +119,9 @@ class SurvivorShop : MenuBase("survivors_shop") {
             slotIndex++
         }
 
-        val botonAtrasMat = config.getString("ajustes.atras.material", "ARROW")!!
-        val botonAtrasNombre = config.getString("ajustes.atras.nombre", "Atrás")!!
-        val botonAtrasSlot = config.getInt("ajustes.atras.slot", 40)
+        val botonAtrasMat = config.getString("settings.back-button.material", "ARROW")!!
+        val botonAtrasNombre = config.getString("settings.back-button.name", "Back")!!
+        val botonAtrasSlot = config.getInt("settings.back-button.slot", 40)
         val matAtras = Material.matchMaterial(botonAtrasMat.uppercase()) ?: Material.ARROW
         val backItem = ItemBuilder.from(matAtras)
             .name(parseSafe(botonAtrasNombre))
@@ -140,7 +140,7 @@ class SurvivorShop : MenuBase("survivors_shop") {
 
         
         if (id.equals(actual, ignoreCase = true)) {
-            player.sendMessage(MessageService.getComponent(player, "shop.ya-seleccionado"))
+            player.sendMessage(MessageService.getComponent(player, "shop.already-selected"))
             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
             return
         }
@@ -151,9 +151,9 @@ class SurvivorShop : MenuBase("survivors_shop") {
             player.persistentDataContainer.set(survivorKey, PersistentDataType.STRING, id)
 
             
-            val nombreVisual = MessageService.getStrictString(player, "survivors.$id.nombre", "survivors_info")
+            val nombreVisual = MessageService.getStrictString(player, "survivors.$id.name", "survivors_info")
 
-            player.sendMessage(MessageService.getComponent(player, "shop.seleccionado", Placeholder.component("name", parseSafe(nombreVisual))))
+            player.sendMessage(MessageService.getComponent(player, "shop.selected", Placeholder.component("name", parseSafe(nombreVisual))))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
             abrir(player)
             return
@@ -173,9 +173,9 @@ class SurvivorShop : MenuBase("survivors_shop") {
             if (success) {
                 data.comprarSurvivor(uuid, id)
 
-                val nombreVisual = MessageService.getStrictString(player, "survivors.$id.nombre", "survivors_info")
+                val nombreVisual = MessageService.getStrictString(player, "survivors.$id.name", "survivors_info")
 
-                player.sendMessage(MessageService.getComponent(player, "shop.comprado", Placeholder.component("name", parseSafe(nombreVisual))))
+                player.sendMessage(MessageService.getComponent(player, "shop.purchased", Placeholder.component("name", parseSafe(nombreVisual))))
                 player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
                 abrir(player)
             } else {

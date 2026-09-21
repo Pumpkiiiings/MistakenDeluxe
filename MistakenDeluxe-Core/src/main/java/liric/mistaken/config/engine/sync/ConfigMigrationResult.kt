@@ -1,4 +1,4 @@
-package liric.mistaken.config.engine.sync
+﻿package liric.mistaken.config.engine.sync
 
 data class ConfigMigrationResult(
     val fileTarget: String,

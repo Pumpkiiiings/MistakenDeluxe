@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.tracking
+﻿package liric.mistaken.roles.killers.tracking
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import org.bukkit.event.HandlerList

@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers.classes
+﻿package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.roles.killers.CoreKiller
 import org.bukkit.entity.Player
@@ -17,7 +17,7 @@ import java.util.function.Consumer
 
 class StillLife : CoreKiller(
     "still_life",
-    MessageService.getStrictString(null, "killers.still_life.nombre", "killers_info")
+    MessageService.getStrictString(null, "killers.still_life.name", "killers_info")
 ), Listener {
 
     override val defaultMusic = "mistaken:still_life"

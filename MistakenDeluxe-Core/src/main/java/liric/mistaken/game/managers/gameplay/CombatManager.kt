@@ -316,6 +316,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             val nextHP = (victim.health - amount).coerceAtLeast(0.0)
             victim.health = nextHP
+            plugin.perkManager.triggerDamaged(victim)
 
             if (isSurvivor && nextHP <= 4.0 && nextHP > 0.0) {
                 if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {
@@ -348,6 +349,7 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
                 currentSession.getCurrentKiller()?.let { killer ->
                     try { plugin.glowingAPI.unsetGlowing(victim, killer) } catch (_: Exception) {}
+                    org.bukkit.Bukkit.getPluginManager().callEvent(liric.mistaken.api.events.MistakenDeathEvent(victim, killer))
                 }
 
                 currentSession.playerController.handlePlayerDeath(victim)
@@ -367,6 +369,10 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     override fun unfreeze(victim: Player, rescuer: Player) {
         if (!frozenPlayers.remove(victim.uniqueId)) return
         runOnMain {
+            val sess = plugin.sessionManager.getSession(victim)
+            if (sess != null) {
+                org.bukkit.Bukkit.getPluginManager().callEvent(liric.mistaken.api.events.MistakenSurvivorHealEvent(rescuer, victim, sess))
+            }
             victim.removePotionEffect(PotionEffectType.DARKNESS)
 
             victim.clearTitle()

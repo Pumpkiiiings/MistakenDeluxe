@@ -1,4 +1,4 @@
-package liric.mistaken.utils
+﻿package liric.mistaken.utils
 
 import liric.mistaken.Mistaken
 import org.bukkit.Location

@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.effects.gameplay
+﻿package liric.mistaken.scripting.effects.gameplay
 
 import liric.mistaken.Mistaken
 import org.bukkit.Location

@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.effects.music
+﻿package liric.mistaken.scripting.effects.music
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken

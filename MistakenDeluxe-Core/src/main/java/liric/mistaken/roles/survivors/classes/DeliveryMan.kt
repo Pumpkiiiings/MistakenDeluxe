@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.classes
+﻿package liric.mistaken.roles.survivors.classes
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -27,7 +27,7 @@ import liric.mistaken.config.engine.core.MessageService
  */
 class DeliveryMan : Survivor(
     "repartidor",
-    MessageService.getStrictString(null, "survivors.repartidor.nombre", "survivors_info")
+    MessageService.getStrictString(null, "survivors.repartidor.name", "survivors_info")
 ) {
 
     private val pathBase = "survivors.repartidor"

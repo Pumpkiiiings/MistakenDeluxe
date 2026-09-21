@@ -1,4 +1,4 @@
-# ======================================================
+﻿# ======================================================
 #          MISTAKEN - CHINESE LANGUAGE (SIMPLIFIED)
 # ======================================================
 
@@ -55,8 +55,8 @@ lms:
     other: "\n&#FF3344[!] &#FFFFFF<player> 是&#FF3344最后幸存的人&#FFFFFF。\n"
 
 # --- SKILLS ---
-habilidades:
-  pedido-impacto-asesino: "&#42F56C干得好！ &#FFFFFF请求已经送达杀手。"
+skills:
+  killer-hit-request: "&#42F56C干得好！ &#FFFFFF请求已经送达杀手。"
 
 # --- COMBAT ---
 combat:
@@ -292,16 +292,16 @@ killer:
 # --- STORE ---
 tienda:
   clase-especial: "&#888888特殊级别实体"
-  clase-humana: "&#CCCCCC职业: &#FFFFFF人类幸存者"
-  habilidades-titulo: "&#CCCCCC▶ &#FFFFFF技能:"
-  estado-seleccionado: "&#42F56C✔ 已选择"
-  estado-poseido: "&#FFE300» 点击选择"
-  estado-precio: "&#FFFFFF价格: &#FFE300● {amount} 金币"
-  estado-comprar: "&#42F56C点击购买杀手"
+  human-class: "&#CCCCCC职业: &#FFFFFF人类幸存者"
+  habilidades-title: "&#CCCCCC▶ &#FFFFFF技能:"
+  estado-selected: "&#42F56C✔ 已选择"
+  state-owned: "&#FFE300» 点击选择"
+  state-price: "&#FFFFFF价格: &#FFE300● {amount} 金币"
+  state-buy: "&#42F56C点击购买杀手"
   estado-comprar-superviviente: "&#33CCFF点击购买幸存者"
-  seleccionado: "<prefix>&#42F56C已选择: &#FFFFFF{name}"
-  comprado: "<prefix>&#FFAA00恭喜！你解锁了: &#FFFFFF{name}"
-  ya-seleccionado: "&#FFE300[!] 这个角色已经被选择了。"
+  selected: "<prefix>&#42F56C已选择: &#FFFFFF{name}"
+  purchased: "<prefix>&#FFAA00恭喜！你解锁了: &#FFFFFF{name}"
+  already-selected: "&#FFE300[!] 这个角色已经被选择了。"
 
 # --- COMMANDS AND HELP ---
 help:
@@ -528,14 +528,14 @@ anomalies:
 # ==========================================
 menus:
   killers_shop:
-    titulo: "&#555555「 杀手商店 」"
+    title: "&#555555「 杀手商店 」"
   survivors_shop:
-    titulo: "&#555555「 幸存者商店 」"
-  tienda_principal:
-    titulo: "&#555555「 主商店 」"
+    title: "&#555555「 幸存者商店 」"
+  main_shop:
+    title: "&#555555「 主商店 」"
     items:
       asesinos:
-        nombre: "&#FF3344「 杀手 」"
+        name: "&#FF3344「 杀手 」"
         lore:
           - ""
           - "&#CCCCCC释放你的杀手本能。"
@@ -544,7 +544,7 @@ menus:
           - ""
           - "&#FF3344» 点击进入"
       supervivientes:
-        nombre: "&#33CCFF「 幸存者 」"
+        name: "&#33CCFF「 幸存者 」"
         lore:
           - ""
           - "&#CCCCCC提高你成功的几率。"
@@ -567,13 +567,13 @@ hook:
     leave: "<red>你的队长离开了游戏，将所有人拉出..."
 
 shop:
-  estado-seleccionado: "<#00FF30>✔ 已选择"
-  estado-poseido: "<#FCFF00>★ 已拥有"
-  estado-comprar: "<#FCFF00>» 点击购买 «"
-  estado-precio: "<white>价格<dark_gray>: <#00FF30>${amount}"
-  abilityes-titulo: "<gray>「 技能 」"
-  clase-humana: "<dark_gray>「 幸存者 」"
-  estado-comprar-survivor: "<aqua>» 购买幸存者 «"
-  comprado: "<green>✔ ¡购买成功！ <gray>你已获得该职业。"
-  seleccionado: "<#00FF30>✔ 角色已选择。"
-  ya-seleccionado: "<red>⚠ <gray>你已经选择了这个。"
+  estado-selected: "<#00FF30>✔ 已选择"
+  state-owned: "<#FCFF00>★ 已拥有"
+  state-buy: "<#FCFF00>» 点击购买 «"
+  state-price: "<white>价格<dark_gray>: <#00FF30>${amount}"
+  abilities-title: "<gray>「 技能 」"
+  human-class: "<dark_gray>「 幸存者 」"
+  state-buy-survivor: "<aqua>» 购买幸存者 «"
+  purchased: "<green>✔ ¡购买成功！ <gray>你已获得该职业。"
+  selected: "<#00FF30>✔ 角色已选择。"
+  already-selected: "<red>⚠ <gray>你已经选择了这个。"

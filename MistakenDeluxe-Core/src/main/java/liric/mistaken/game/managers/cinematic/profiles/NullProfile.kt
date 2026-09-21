@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic.profiles
+﻿package liric.mistaken.game.managers.cinematic.profiles
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.managers.cinematic.CinematicProfile

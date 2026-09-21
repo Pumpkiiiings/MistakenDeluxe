@@ -1,4 +1,4 @@
-package liric.mistaken.game.entities
+﻿package liric.mistaken.game.entities
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.utils.worldViewers

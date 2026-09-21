@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.engine
+﻿package liric.mistaken.game.managers.engine
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

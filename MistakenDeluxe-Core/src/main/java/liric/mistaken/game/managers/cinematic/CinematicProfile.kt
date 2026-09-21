@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.cinematic
+﻿package liric.mistaken.game.managers.cinematic
 
 import net.kyori.adventure.text.Component
 import org.bukkit.Location

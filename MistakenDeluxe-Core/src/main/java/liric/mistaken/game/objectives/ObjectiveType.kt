@@ -1,4 +1,4 @@
-package liric.mistaken.game.objectives
+﻿package liric.mistaken.game.objectives
 
 enum class ObjectiveType {
     CLASSIC_GENERATOR,

@@ -1,4 +1,4 @@
-package liric.mistaken.utils.resourcepack
+﻿package liric.mistaken.utils.resourcepack
 
 import io.th0rgal.oraxen.api.OraxenItems
 import org.bukkit.inventory.ItemStack

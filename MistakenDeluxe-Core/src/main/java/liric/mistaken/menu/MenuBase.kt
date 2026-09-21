@@ -34,7 +34,7 @@ abstract class MenuBase(
 
     
     
-    protected open val titleMessageKey: String get() = "menus.$menuName.titulo"
+    protected open val titleMessageKey: String get() = "menus.$menuName.title"
 
     
     protected open val titleFallback: String get() = "<red>Menu: $menuName"
@@ -95,7 +95,7 @@ abstract class MenuBase(
      * Reemplaza la antigua necesidad de tener un YAML de men� por idioma.
      *
      * @param player El player cuyo idioma se usar�.
-     * @param path   La ruta en messages.yml, ej: "menus.tienda_principal.items.killers.nombre"
+     * @param path   La ruta en messages.yml, ej: "menus.main_shop.items.killers.name"
      * @param def    Valor por defecto si no se encuentra la clave.
      */
     fun getTranslatedString(player: Player, path: String, def: String = "<red>Missing: $path"): String {
@@ -142,14 +142,14 @@ abstract class MenuBase(
             
             val rawTitle = MessageService.getRawString(player, titleMessageKey, titleFallback, "messages")
 
-            val filas = config.getInt("filas", 3)
+            val filas = config.getInt("rows", 3)
             val decorList = mutableListOf<Pair<List<Int>, GuiItem>>()
 
-            val decorSection = config.getConfigurationSection("decoraciones")
+            val decorSection = config.getConfigurationSection("decorations")
             decorSection?.getKeys(false)?.forEach { key ->
                 val matStr = decorSection.getString("$key.material", "AIR") ?: "AIR"
                 val material = Material.matchMaterial(matStr.uppercase()) ?: Material.AIR
-                val display = decorSection.getString("$key.nombre", " ") ?: " "
+                val display = decorSection.getString("$key.name", " ") ?: " "
                 val slots = decorSection.getIntegerList("$key.slots")
 
                 if (material != Material.AIR && slots.isNotEmpty()) {

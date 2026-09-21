@@ -1,4 +1,4 @@
-package liric.mistaken.utils.hooks.economy
+﻿package liric.mistaken.utils.hooks.economy
 
 import net.milkbowl.vault.economy.Economy
 import org.bukkit.entity.Player

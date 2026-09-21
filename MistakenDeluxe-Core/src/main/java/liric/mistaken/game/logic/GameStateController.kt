@@ -31,7 +31,8 @@ class GameStateController(private val game: GameSession) {
             game.playerController.cleanupAllPlayers(lastKillerWon)
             game.worldController.clearMapa()
             
-            
+            // Clear per-session perks
+            game.plugin.perkManager.clearSession(game)
             
             val playersToLeave = game.getPlayers().toList()
             playersToLeave.forEach { player ->
@@ -157,6 +158,16 @@ class GameStateController(private val game: GameSession) {
 
                 game.playerController.setupPlayers(arena)
                 game.broadcastLocalized("game.map-loaded", Placeholder.parsed("map", winner))
+
+                // --- PERK DRAFT ---
+                // Generate 3 shared random perks for all survivors this match
+                val draftOptions = game.plugin.perkManager.getDraftOptions(3)
+                val draftMenu = liric.mistaken.menu.menus.PerkDraftMenu(game.plugin)
+                game.getPlayers().filter { !game.isKiller(it.uniqueId) }.forEach { survivor ->
+                    game.plugin.server.scheduler.runTask(game.plugin, Runnable {
+                        draftMenu.open(survivor, draftOptions)
+                    })
+                }
             }
         }
     }
@@ -191,6 +202,8 @@ class GameStateController(private val game: GameSession) {
         if (game.isDebugStart && !forceDebugEnd) return
         if (game.currentState == GameState.ENDING) return
         game.currentState = GameState.ENDING
+
+        org.bukkit.Bukkit.getPluginManager().callEvent(liric.mistaken.api.events.MistakenGameEndEvent(game, killerWon))
 
         
         

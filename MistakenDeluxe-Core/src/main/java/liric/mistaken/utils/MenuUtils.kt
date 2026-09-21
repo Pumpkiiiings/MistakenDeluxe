@@ -1,4 +1,4 @@
-package liric.mistaken.utils
+﻿package liric.mistaken.utils
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import org.bukkit.Material

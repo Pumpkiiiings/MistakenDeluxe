@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.services
+﻿package liric.mistaken.scripting.services
 
 import liric.mistaken.Mistaken
 import liric.mistaken.utils.hooks.ObserverHook

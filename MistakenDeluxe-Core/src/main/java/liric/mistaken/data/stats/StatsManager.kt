@@ -1,4 +1,4 @@
-package liric.mistaken.data.stats
+﻿package liric.mistaken.data.stats
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken

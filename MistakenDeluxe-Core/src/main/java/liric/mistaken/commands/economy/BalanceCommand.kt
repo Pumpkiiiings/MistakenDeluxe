@@ -1,4 +1,4 @@
-package liric.mistaken.commands.economy
+﻿package liric.mistaken.commands.economy
 
 import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.StringArgumentType
@@ -6,43 +6,58 @@ import com.mojang.brigadier.tree.LiteralCommandNode
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import liric.mistaken.Mistaken
-import liric.mistaken.utils.color.ColorTranslator
+import liric.mistaken.config.engine.core.MessageService
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
 object BalanceCommand {
 
     fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {
-        return Commands.literal("bal")
+        return Commands.literal("balance")
             .executes { context ->
-                val player = context.source.sender as? Player
+                val sender = context.source.sender
+                val player = sender as? Player
                 if (player == null) {
-                    context.source.sender.sendMessage("Solo jugadores.")
+                    sender.sendMessage(MessageService.getComponent(null, "errors.player-only"))
                     return@executes 0
                 }
                 
                 val stats = plugin.statsManager.getStats(player.uniqueId)
-                player.sendMessage(ColorTranslator.translate("<green>Tu balance actual: <gold>${stats.coins.get()} coins"))
+                val amount = stats.coins.get()
+                player.sendMessage(MessageService.getComponent(player, "economy.balance", 
+                    Placeholder.parsed("amount", amount.toString())))
+                
                 Command.SINGLE_SUCCESS
             }
             .then(
                 Commands.argument("target", StringArgumentType.word())
+                    .requires { it.sender.hasPermission("mistaken.admin") }
+                    .suggests { _, builder ->
+                        Bukkit.getOnlinePlayers().forEach { p ->
+                            if (p.name.lowercase().startsWith(builder.remainingLowerCase)) {
+                                builder.suggest(p.name)
+                            }
+                        }
+                        builder.buildFuture()
+                    }
                     .executes { context ->
                         val sender = context.source.sender
-                        if (!sender.hasPermission("mistaken.admin")) {
-                            sender.sendMessage(ColorTranslator.translate("<red>No tienes permiso para ver el balance de otros."))
-                            return@executes 0
-                        }
-                        
+                        val playerSender = sender as? Player
                         val targetName = StringArgumentType.getString(context, "target")
+                        
                         val target = Bukkit.getPlayer(targetName)
                         if (target == null) {
-                            sender.sendMessage(ColorTranslator.translate("<red>Jugador no encontrado."))
+                            sender.sendMessage(MessageService.getComponent(playerSender, "errors.player-not-found"))
                             return@executes 0
                         }
                         
                         val stats = plugin.statsManager.getStats(target.uniqueId)
-                        sender.sendMessage(ColorTranslator.translate("<green>Balance de ${target.name}: <gold>${stats.coins.get()} coins"))
+                        val amount = stats.coins.get()
+                        sender.sendMessage(MessageService.getComponent(playerSender, "economy.balance-other", 
+                            Placeholder.parsed("amount", amount.toString()), 
+                            Placeholder.parsed("player", target.name)))
+                        
                         Command.SINGLE_SUCCESS
                     }
             )

@@ -1,4 +1,4 @@
-package liric.mistaken.config.engine.core
+﻿package liric.mistaken.config.engine.core
 
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList

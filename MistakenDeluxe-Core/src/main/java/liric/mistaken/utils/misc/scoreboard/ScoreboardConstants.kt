@@ -1,4 +1,4 @@
-package liric.mistaken.utils.scoreboard
+﻿package liric.mistaken.utils.scoreboard
 
 /**
  * Precompiled constants to eliminate String.format() and allocation overhead

@@ -1,4 +1,4 @@
-package liric.mistaken.roles.common.triggers.traps
+﻿package liric.mistaken.roles.common.triggers.traps
 
 import org.bukkit.Location
 

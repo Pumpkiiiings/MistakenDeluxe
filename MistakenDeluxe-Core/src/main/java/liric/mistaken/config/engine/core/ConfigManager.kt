@@ -1,4 +1,4 @@
-package liric.mistaken.config.engine.core
+﻿package liric.mistaken.config.engine.core
 
 import kotlinx.coroutines.*
 import liric.mistaken.api.managers.IConfigManager
@@ -105,7 +105,7 @@ object ConfigManager : IConfigManager {
         return MessageService.getRawString(
             player = player,
             fileName = "killers_info",
-            path = "killers.$assassinId.nombre",
+            path = "killers.$assassinId.name",
             def = assassinId.uppercase()
         )
     }

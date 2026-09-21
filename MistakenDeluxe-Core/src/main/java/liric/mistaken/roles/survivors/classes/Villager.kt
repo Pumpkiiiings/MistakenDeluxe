@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors.classes
+﻿package liric.mistaken.roles.survivors.classes
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -23,7 +23,7 @@ import liric.mistaken.config.engine.core.MessageService
 
 class Villager : Survivor(
     "aldeano",
-    MessageService.getStrictString(null, "survivors.aldeano.nombre", "survivors_info")
+    MessageService.getStrictString(null, "survivors.aldeano.name", "survivors_info")
 ) {
 
     private val pathBase = "survivors.aldeano"

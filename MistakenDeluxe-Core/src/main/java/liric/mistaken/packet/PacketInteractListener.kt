@@ -1,4 +1,4 @@
-package liric.mistaken.packet
+﻿package liric.mistaken.packet
 
 import com.github.retrooper.packetevents.event.PacketListenerAbstract
 import com.github.retrooper.packetevents.event.PacketReceiveEvent

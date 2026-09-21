@@ -1,4 +1,4 @@
-package liric.mistaken.game.managers.visual
+﻿package liric.mistaken.game.managers.visual
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData

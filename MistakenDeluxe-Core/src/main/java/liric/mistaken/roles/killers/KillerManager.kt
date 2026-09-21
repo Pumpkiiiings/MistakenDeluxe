@@ -1,4 +1,4 @@
-package liric.mistaken.roles.killers
+﻿package liric.mistaken.roles.killers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.scripting.engine.groovy.KillerScriptEngine
@@ -79,7 +79,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                     
                     val luaAdapter = liric.mistaken.scripting.adapter.LuaKillerAdapter(
                         id = killerId,
-                        nombre = killerId.replaceFirstChar { it.uppercase() },
+                        name = killerId.replaceFirstChar { it.uppercase() },
                         scriptRole = scriptRole
                     )
                     registerClass(luaAdapter)
@@ -107,7 +107,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         
         player.scheduler.run(plugin, Consumer { _ ->
             clase.cleanup(player)
-            plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>${player.name} synchronized with ${clase.nombre}</gray>"))
+            plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>${player.name} synchronized with ${clase.name}</gray>"))
         }, null)
     }
 
@@ -126,7 +126,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
         
         player.sendMessage(MessageService.getComponent(player, "killer.transform",
-            Placeholder.component("name", ColorTranslator.translate(killer.nombre))))
+            Placeholder.component("name", ColorTranslator.translate(killer.name))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
         
@@ -242,7 +242,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
                 if (scriptRole != null) {
                     liric.mistaken.scripting.adapter.LuaKillerAdapter(
                         id = lowerId,
-                        nombre = lowerId.replaceFirstChar { it.uppercase() },
+                        name = lowerId.replaceFirstChar { it.uppercase() },
                         scriptRole = scriptRole
                     )
                 } else null

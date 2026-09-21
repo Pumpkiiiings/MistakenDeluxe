@@ -1,4 +1,4 @@
-package liric.mistaken.scripting.effects.gameplay
+﻿package liric.mistaken.scripting.effects.gameplay
 
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
