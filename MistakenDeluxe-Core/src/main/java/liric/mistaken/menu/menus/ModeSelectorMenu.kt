@@ -45,18 +45,22 @@ class ModeSelectorMenu(private val plugin: Mistaken, private val session: GameSe
             val defaultMat = if (isSelected) Material.DIAMOND_SWORD else Material.IRON_SWORD
             val color = if (isSelected) "<green><bold>" else "<yellow>"
             
-            val item = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.mode_selector.items.mode", defaultMat)
-                .name(ColorTranslator.translate("<!italic>$color${mode.name}"))
-                .lore(
+            val itemStack = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.mode_selector.items.mode", defaultMat)
+            
+            itemStack.editMeta {
+                it.displayName(ColorTranslator.translate("<!italic>$color${mode.name}"))
+                it.lore(listOf(
                     net.kyori.adventure.text.Component.empty(),
                     ColorTranslator.translate("<!italic>$loreClick")
-                )
-                .asGuiItem {
-                    settings.forcedMode = if (isSelected) null else mode
-                    player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-                    player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.mode_selector.messages.mode_selected", "<green>Modo selected: {mode}", "messages").replace("{mode}", settings.forcedMode?.name ?: "AUTOMÁTICO")))
-                    abrir(player)
-                }
+                ))
+            }
+            
+            val item = dev.triumphteam.gui.guis.GuiItem(itemStack) {
+                settings.forcedMode = if (isSelected) null else mode
+                player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
+                player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.mode_selector.messages.mode_selected", "<green>Modo selected: {mode}", "messages").replace("{mode}", settings.forcedMode?.name ?: "AUTOMÁTICO")))
+                abrir(player)
+            }
 
             gui.setItem(slot++, item)
             if (slot > maxSlots) break
@@ -65,12 +69,13 @@ class ModeSelectorMenu(private val plugin: Mistaken, private val session: GameSe
         val backNameFallback = config.getString("menus.private_lobby.items.back.name", "<red>Volver") ?: "<red>Volver"
         val backNameFinal = config.getString("menus.mode_selector.items.back.name", backNameFallback) ?: backNameFallback
 
-        gui.setItem(backSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.mode_selector.items.back", Material.ARROW)
-            .name(ColorTranslator.translate("<!italic>$backNameFinal"))
-            .asGuiItem {
-                player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 0.8f)
-                PrivateLobbyMenu(plugin, session).abrir(player)
-            })
+        val backStack = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.mode_selector.items.back", Material.ARROW)
+        backStack.editMeta { it.displayName(ColorTranslator.translate("<!italic>$backNameFinal")) }
+        
+        gui.setItem(backSlot, dev.triumphteam.gui.guis.GuiItem(backStack) {
+            player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 0.8f)
+            PrivateLobbyMenu(plugin, session).abrir(player)
+        })
 
         gui.open(player)
     }

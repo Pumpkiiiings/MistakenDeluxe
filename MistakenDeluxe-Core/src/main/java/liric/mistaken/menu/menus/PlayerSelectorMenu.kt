@@ -74,55 +74,58 @@ class PlayerSelectorMenu(private val plugin: Mistaken, private val session: Game
                 mat = Material.APPLE
             }
 
-            val item = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.player_selector.items.player", mat)
-                .name(ColorTranslator.translate("<!italic><yellow>$name"))
-                .lore(
+            val itemStack = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.player_selector.items.player", mat)
+            itemStack.editMeta {
+                it.displayName(ColorTranslator.translate("<!italic><yellow>$name"))
+                it.lore(listOf(
                     ColorTranslator.translate("<!italic>${loreRole.replace("{role}", roleText)}"),
                     net.kyori.adventure.text.Component.empty(),
                     ColorTranslator.translate("<!italic>$loreLeft"),
                     ColorTranslator.translate("<!italic>$loreRight")
-                )
-                .asGuiItem { event ->
-                    if (event.isLeftClick) {
-                        if (isKiller) {
-                            settings.allowedKillers.remove(name)
-                        } else {
-                            settings.allowedKillers.add(name)
-                            settings.allowedSurvivors.remove(name)
-                        }
-                        player.playSound(player.location, org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f)
-                        player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.player_selector.messages.role_changed", "<green>Has modificado el rol de: <yellow>{player}", "messages").replace("{player}", name)))
-                        abrir(player)
-                    } else if (event.isRightClick) {
-                        if (isSurvivor) {
-                            settings.allowedSurvivors.remove(name)
-                        } else {
-                            settings.allowedSurvivors.add(name)
-                            settings.allowedKillers.remove(name)
-                        }
-                        player.playSound(player.location, org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f)
-                        player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.player_selector.messages.role_changed", "<green>Has modificado el rol de: <yellow>{player}", "messages").replace("{player}", name)))
-                        abrir(player)
+                ))
+            }
+            val item = dev.triumphteam.gui.guis.GuiItem(itemStack) { event: org.bukkit.event.inventory.InventoryClickEvent ->
+                if (event.isLeftClick) {
+                    if (isKiller) {
+                        settings.allowedKillers.remove(name)
+                    } else {
+                        settings.allowedKillers.add(name)
+                        settings.allowedSurvivors.remove(name)
                     }
+                    player.playSound(player.location, org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f)
+                    player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.player_selector.messages.role_changed", "<green>Has modificado el rol de: <yellow>{player}", "messages").replace("{player}", name)))
+                    abrir(player)
+                } else if (event.isRightClick) {
+                    if (isSurvivor) {
+                        settings.allowedSurvivors.remove(name)
+                    } else {
+                        settings.allowedSurvivors.add(name)
+                        settings.allowedKillers.remove(name)
+                    }
+                    player.playSound(player.location, org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f)
+                    player.sendActionBar(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.player_selector.messages.role_changed", "<green>Has modificado el rol de: <yellow>{player}", "messages").replace("{player}", name)))
+                    abrir(player)
                 }
+            }
 
             gui.addItem(item)
         }
 
-        gui.setItem(nextSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.player_selector.items.next", Material.ARROW)
-            .name(ColorTranslator.translate("<!italic>$nextName"))
-            .asGuiItem { gui.next() })
+        val nextStack = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.player_selector.items.next", Material.ARROW)
+        nextStack.editMeta { it.displayName(ColorTranslator.translate("<!italic>$nextName")) }
+        gui.setItem(nextSlot, dev.triumphteam.gui.guis.GuiItem(nextStack) { gui.next() })
             
-        gui.setItem(prevSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.player_selector.items.prev", Material.ARROW)
-            .name(ColorTranslator.translate("<!italic>$prevName"))
-            .asGuiItem { gui.previous() })
+        val prevStack = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.player_selector.items.prev", Material.ARROW)
+        prevStack.editMeta { it.displayName(ColorTranslator.translate("<!italic>$prevName")) }
+        gui.setItem(prevSlot, dev.triumphteam.gui.guis.GuiItem(prevStack) { gui.previous() })
 
         val backNameFallback = config.getString("menus.private_lobby.items.back.name", "<red>Volver") ?: "<red>Volver"
         val backNameFinal = config.getString("menus.player_selector.items.back.name", backNameFallback) ?: backNameFallback
 
-        gui.setItem(backSlot, liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.player_selector.items.back", Material.ARROW)
-            .name(ColorTranslator.translate("<!italic>$backNameFinal"))
-            .asGuiItem {
+        val backStack = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.player_selector.items.back", Material.ARROW)
+        backStack.editMeta { it.displayName(ColorTranslator.translate("<!italic>$backNameFinal")) }
+        
+        gui.setItem(backSlot, dev.triumphteam.gui.guis.GuiItem(backStack) {
                 player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 0.8f)
                 PrivateLobbyMenu(plugin, session).abrir(player)
             })

@@ -9,6 +9,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 
 object MenuUtils {
 
@@ -22,23 +23,23 @@ object MenuUtils {
     /**
      * Backward compatibility wrapper for old menus.
      */
-    fun createConfigItem(config: org.bukkit.configuration.file.FileConfiguration, basePath: String, defaultMat: Material, player: Player? = null): dev.triumphteam.gui.builder.item.BaseItemBuilder<*> {
+    fun createConfigItem(config: org.bukkit.configuration.file.FileConfiguration, basePath: String, defaultMat: Material, player: Player? = null): ItemStack {
         val section = config.getConfigurationSection(basePath)
         return if (section != null) {
-            createItemBuilder(section, player, defaultMat)
+            createItemStack(section, player, defaultMat)
         } else {
-            ItemBuilder.from(defaultMat)
+            ItemStack(defaultMat)
         }
     }
 
     /**
-     * Creates an ItemBuilder parsing material, name, lore, custom-model-data, glow, amount, head-owner, head-texture.
+     * Creates an ItemStack parsing material, name, lore, custom-model-data, glow, amount, head-owner, head-texture.
      */
-    fun createItemBuilder(
+    fun createItemStack(
         section: ConfigurationSection,
         player: Player? = null,
         defaultMat: Material = Material.AIR
-    ): dev.triumphteam.gui.builder.item.BaseItemBuilder<*> {
+    ): ItemStack {
         val matStr = section.getString("material")
         val isHead = matStr?.equals("PLAYER_HEAD", ignoreCase = true) == true
         val mat = if (matStr != null) {
@@ -48,19 +49,6 @@ object MenuUtils {
         }
 
         val builder = if (isHead) ItemBuilder.skull() else ItemBuilder.from(mat)
-
-        // Parse Name
-        val nameRaw = section.getString("name")
-        if (nameRaw != null) {
-            builder.name(ColorTranslator.translate(player, "<!italic>$nameRaw"))
-        }
-
-        // Parse Lore
-        val loreRaw = section.getStringList("lore")
-        if (loreRaw.isNotEmpty()) {
-            val loreParsed = loreRaw.map { ColorTranslator.translate(player, "<!italic>$it") }
-            builder.lore(loreParsed)
-        }
 
         // Parse Model Data
         val modelData = section.getInt("custom-model-data", section.getInt("model_data", -1))
@@ -88,31 +76,45 @@ object MenuUtils {
                 val owner = section.getString("head-owner")
                 if (!owner.isNullOrEmpty()) {
                     val parsedOwner = setPlaceholders(player, owner)
-                    (builder as dev.triumphteam.gui.builder.item.SkullBuilder).owner(Bukkit.getOfflinePlayer(parsedOwner))
+                    (builder as dev.triumphteam.gui.builder.item.SkullBuilder).owner(org.bukkit.Bukkit.getOfflinePlayer(parsedOwner))
                 } else if (player != null) {
-                    // Fallback to the player opening the menu
                     (builder as dev.triumphteam.gui.builder.item.SkullBuilder).owner(player)
                 }
             }
         }
-        
-        return builder
+
+        val itemStack = builder.build()
+
+        // Parse Name and Lore natively to avoid TriumphTeam crash
+        itemStack.editMeta { meta ->
+            val nameRaw = section.getString("name")
+            if (nameRaw != null) {
+                meta.displayName(ColorTranslator.translate(player, "<!italic>$nameRaw"))
+            }
+
+            val loreRaw = section.getStringList("lore")
+            if (loreRaw.isNotEmpty()) {
+                meta.lore(loreRaw.map { ColorTranslator.translate(player, "<!italic>$it") })
+            }
+        }
+
+        return itemStack
     }
 
     /**
-     * Creates a fully-featured GuiItem and attaches click commands.
+     * Parses a GUI Item from a ConfigurationSection, including commands.
      */
     fun createGuiItem(
         section: ConfigurationSection,
         player: Player? = null,
         defaultMat: Material = Material.AIR
     ): GuiItem {
-        val builder = createItemBuilder(section, player, defaultMat)
+        val itemStack = createItemStack(section, player, defaultMat)
         val commands = section.getStringList("commands")
-        return builder.asGuiItem { event ->
+        return GuiItem(itemStack) { event: org.bukkit.event.inventory.InventoryClickEvent ->
             if (commands.isNotEmpty()) {
                 event.isCancelled = true // Standard protection
-                val clicker = event.whoClicked as? Player ?: return@asGuiItem
+                val clicker = event.whoClicked as? Player ?: return@GuiItem
                 for (cmd in commands) {
                     val parsedCmd = setPlaceholders(clicker, cmd)
                     if (parsedCmd.startsWith("[console] ")) {

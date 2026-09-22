@@ -51,18 +51,15 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
             val color = if (isEnabled) "<green>" else "<red>"
             val stateText = if (isEnabled) stateEnabled else stateDisabled
             
-            val item = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.character_selector.items.character", Material.ZOMBIE_HEAD)
-                .name(ColorTranslator.translate("<!italic><red>${killer.name}"))
-                .lore(
+            val itemStack = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.character_selector.items.character", Material.ZOMBIE_HEAD); itemStack.editMeta { it.displayName(ColorTranslator.translate("<!italic><red>${killer.name}")); it.lore(listOf(
                     ColorTranslator.translate("<!italic>${loreState.replace("{color}", color).replace("{state}", stateText)}"),
                     net.kyori.adventure.text.Component.empty(),
                     ColorTranslator.translate("<!italic>$loreClick")
-                )
-                .asGuiItem {
+                )) }; val item = dev.triumphteam.gui.guis.GuiItem(itemStack) { event: org.bukkit.event.inventory.InventoryClickEvent ->
                     
                     if (killer.id.equals("slasher", ignoreCase = true)) {
                         player.sendMessage(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.character_selector.messages.slasher_locked", "<red>No puedes bloquear a Slasher, es la clase por defecto.", "messages")))
-                        return@asGuiItem
+                        return@GuiItem
                     }
                     if (isEnabled) {
                         settings.disabledClasses.add(killer.id.lowercase())
@@ -85,18 +82,15 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
             val color = if (isEnabled) "<green>" else "<red>"
             val stateText = if (isEnabled) stateEnabled else stateDisabled
             
-            val item = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.character_selector.items.character", Material.APPLE)
-                .name(ColorTranslator.translate("<!italic><green>${survivor.name}"))
-                .lore(
+            val itemStack = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.character_selector.items.character", Material.APPLE); itemStack.editMeta { it.displayName(ColorTranslator.translate("<!italic><green>${survivor.name}")); it.lore(listOf(
                     ColorTranslator.translate("<!italic>${loreState.replace("{color}", color).replace("{state}", stateText)}"),
                     net.kyori.adventure.text.Component.empty(),
                     ColorTranslator.translate("<!italic>$loreClick")
-                )
-                .asGuiItem {
+                )) }; val item = dev.triumphteam.gui.guis.GuiItem(itemStack) { event: org.bukkit.event.inventory.InventoryClickEvent ->
                     
                     if (survivor.id.equals("civilian", ignoreCase = true) || survivor.id.equals("civil", ignoreCase = true)) {
                         player.sendMessage(ColorTranslator.translate(liric.mistaken.config.engine.core.MessageService.getRawString(player, "menus.character_selector.messages.civilian_locked", "<red>No puedes bloquear a Civilian, es la clase por defecto.", "messages")))
-                        return@asGuiItem
+                        return@GuiItem
                     }
                     if (isEnabled) {
                         settings.disabledClasses.add(survivor.id.lowercase())
@@ -117,9 +111,7 @@ class CharacterSelectorMenu(private val plugin: Mistaken, private val session: G
         val backNameFallback = config.getString("menus.private_lobby.items.back.name", "<red>Volver") ?: "<red>Volver"
         val backNameFinal = config.getString("menus.character_selector.items.back.name", backNameFallback) ?: backNameFallback
         
-        val backItem = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.character_selector.items.back", Material.ARROW)
-            .name(ColorTranslator.translate("<!italic>$backNameFinal"))
-            .asGuiItem {
+        val backStack = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.character_selector.items.back", Material.ARROW); backStack.editMeta { it.displayName(ColorTranslator.translate("<!italic>$backNameFinal")) }; val backItem = dev.triumphteam.gui.guis.GuiItem(backStack) {
                 player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 0.8f)
                 RuleEditorMenu(plugin, session).abrir(player)
             }

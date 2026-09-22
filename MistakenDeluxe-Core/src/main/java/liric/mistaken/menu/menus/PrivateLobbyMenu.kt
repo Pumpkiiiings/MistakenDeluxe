@@ -1,4 +1,5 @@
 package liric.mistaken.menu.menus
+import org.bukkit.inventory.ItemStack
 
 import dev.triumphteam.gui.builder.item.ItemBuilder
 import dev.triumphteam.gui.guis.Gui
@@ -54,8 +55,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
 
         val startSection = config.getConfigurationSection("menus.private_lobby.items.start")
         if (startSection != null) {
-            val startItem = liric.mistaken.utils.MenuUtils.createItemBuilder(startSection, player, Material.EMERALD_BLOCK)
-                .asGuiItem {
+            val startItem = dev.triumphteam.gui.guis.GuiItem(liric.mistaken.utils.MenuUtils.createItemStack(startSection, player, Material.EMERALD_BLOCK)) {
                     player.playSound(player.location, org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
                     gui.close(player)
                     if (session.isPrivate) {
@@ -68,8 +68,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
 
         val rulesSection = config.getConfigurationSection("menus.private_lobby.items.rules")
         if (rulesSection != null) {
-            val rulesItem = liric.mistaken.utils.MenuUtils.createItemBuilder(rulesSection, player, Material.COMPARATOR)
-                .asGuiItem {
+            val rulesItem = dev.triumphteam.gui.guis.GuiItem(liric.mistaken.utils.MenuUtils.createItemStack(rulesSection, player, Material.COMPARATOR)) {
                     player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
                     RuleEditorMenu(plugin, session).abrir(player)
                 }
@@ -78,8 +77,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
 
         val mapSection = config.getConfigurationSection("menus.private_lobby.items.map")
         if (mapSection != null) {
-            val mapItem = liric.mistaken.utils.MenuUtils.createItemBuilder(mapSection, player, Material.MAP)
-                .asGuiItem {
+            val mapItem = dev.triumphteam.gui.guis.GuiItem(liric.mistaken.utils.MenuUtils.createItemStack(mapSection, player, Material.MAP)) {
                     player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
                     MapSelectorMenu(plugin, session).abrir(player)
                 }
@@ -88,8 +86,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
 
         val modeSection = config.getConfigurationSection("menus.private_lobby.items.mode")
         if (modeSection != null) {
-            val modeItem = liric.mistaken.utils.MenuUtils.createItemBuilder(modeSection, player, Material.DIAMOND_SWORD)
-                .asGuiItem {
+            val modeItem = dev.triumphteam.gui.guis.GuiItem(liric.mistaken.utils.MenuUtils.createItemStack(modeSection, player, Material.DIAMOND_SWORD)) {
                     player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
                     ModeSelectorMenu(plugin, session).abrir(player)
                 }
@@ -98,8 +95,7 @@ class PrivateLobbyMenu(private val plugin: Mistaken, private val session: GameSe
 
         val playersSection = config.getConfigurationSection("menus.private_lobby.items.players")
         if (playersSection != null) {
-            val playersItem = liric.mistaken.utils.MenuUtils.createItemBuilder(playersSection, player, Material.PLAYER_HEAD)
-                .asGuiItem {
+            val playersItem = dev.triumphteam.gui.guis.GuiItem(liric.mistaken.utils.MenuUtils.createItemStack(playersSection, player, Material.PLAYER_HEAD)) {
                     player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1f, 1f)
                     PlayerSelectorMenu(plugin, session).abrir(player)
                 }
