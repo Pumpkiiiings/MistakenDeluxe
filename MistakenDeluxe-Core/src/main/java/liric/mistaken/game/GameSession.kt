@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game
+package liric.mistaken.game
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -84,7 +84,14 @@ class GameSession(
     }
 
     fun getPlayers(): List<Player> {
-        return players.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
+        val list = java.util.ArrayList<Player>(players.size)
+        for (uuid in players) {
+            val p = plugin.server.getPlayer(uuid)
+            if (p != null && p.isOnline) {
+                list.add(p)
+            }
+        }
+        return list
     }
 
     

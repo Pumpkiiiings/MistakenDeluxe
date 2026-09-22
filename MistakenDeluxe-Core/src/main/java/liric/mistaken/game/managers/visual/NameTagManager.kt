@@ -23,6 +23,18 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class NameTagManager(private val plugin: Mistaken) {
 
+    private val cachedLines = java.util.concurrent.ConcurrentHashMap<String, List<String>>()
+    private val cachedSizes = java.util.concurrent.ConcurrentHashMap<String, Float>()
+    private val cachedShadows = java.util.concurrent.ConcurrentHashMap<String, Boolean>()
+    private val cachedBgColors = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+    fun clearCache() {
+        cachedLines.clear()
+        cachedSizes.clear()
+        cachedShadows.clear()
+        cachedBgColors.clear()
+    }
+
     private val nametags = ConcurrentHashMap<UUID, VirtualNametag>()
     private val entityIdCounter = AtomicInteger(Int.MAX_VALUE / 2)
 
@@ -95,10 +107,10 @@ class NameTagManager(private val plugin: Mistaken) {
         val isIngame = session != null
         val configPath = if (isIngame) "nametags.ingame" else "nametags.global"
 
-        val lines = plugin.config.getStringList("$configPath.lines")
-        val size = plugin.config.getDouble("$configPath.size", 1.0).toFloat()
-        val shadow = plugin.config.getBoolean("$configPath.shadow", false)
-        val bgColorStr = plugin.config.getString("$configPath.background-color", "transparent")?.lowercase() ?: "transparent"
+        val lines = cachedLines.getOrPut(configPath) { plugin.config.getStringList("$configPath.lines") }
+        val size = cachedSizes.getOrPut(configPath) { plugin.config.getDouble("$configPath.size", 1.0).toFloat() }
+        val shadow = cachedShadows.getOrPut(configPath) { plugin.config.getBoolean("$configPath.shadow", false) }
+        val bgColorStr = cachedBgColors.getOrPut(configPath) { plugin.config.getString("$configPath.background-color", "transparent")?.lowercase() ?: "transparent" }
 
         val bgColorInt = parseBackgroundColor(bgColorStr)
 

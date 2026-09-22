@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.logic
+package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -48,7 +48,11 @@ class GameUIController(private val game: GameSession) {
         val mins = game.timer / 60
         val secs = game.timer % 60
         val timeStr = if (game.currentState == GameState.INGAME || game.currentState == GameState.STARTING) {
-            String.format("%02d:%02d", mins, secs)
+            buildString {
+                if (mins < 10) append('0'); append(mins)
+                append(':')
+                if (secs < 10) append('0'); append(secs)
+            }
         } else {
             game.timer.toString()
         }
