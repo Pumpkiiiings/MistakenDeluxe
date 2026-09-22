@@ -101,7 +101,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
             shuffled.drop(genCount + hackCount).forEach { assignments[it] = ObjectiveType.KEYPAD_CODE }
 
             locations.forEach { loc ->
-                val blockLoc = loc.block.location
+                val blockLoc = Location(loc.world, loc.blockX.toDouble(), loc.blockY.toDouble(), loc.blockZ.toDouble())
                 plugin.server.regionScheduler.execute(plugin, blockLoc, Runnable {
                     val key = toKey(blockLoc)
 

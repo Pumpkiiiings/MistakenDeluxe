@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.engine
+package liric.mistaken.game.managers.engine
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +49,16 @@ class ArenaManager(private val plugin: Mistaken) : IArenaManager {
             val section = config.getConfigurationSection("arenas") ?: return@launch
             val tempArenas = mutableMapOf<String, Arena>()
 
+            val customPath = plugin.config.getString("settings.arena-worlds.slime-worlds-path")
+            val folder = if (!customPath.isNullOrBlank()) File(customPath) else File(plugin.dataFolder, "slime_worlds")
+
             for (key in section.getKeys(false)) {
+                val slimeFile = File(folder, "$key.slime")
+                if (!slimeFile.exists()) {
+                    plugin.componentLogger.warn(liric.mistaken.utils.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>La arena '$key' esta en arenas.yml pero falta su archivo '$key.slime' en la carpeta slime_worlds! <red>Ignorando mapa.</red></gray>"))
+                    continue
+                }
+
                 val arena = Arena(key)
                 val path = "arenas.$key."
 

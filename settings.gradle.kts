@@ -7,3 +7,5 @@ include("MistakenDeluxe-JS-Addon")
 include("MistakenDeluxe-Visual-Addon")
 
 include("MistakenDeluxe-Preview-Addon")
+
+include("MistakenDeluxe-Visual-Addon-Dev")

@@ -322,6 +322,7 @@ class Mistaken : JavaPlugin() {
 
     private fun registerEvents() {
         val pm = server.pluginManager
+        pm.registerEvents(liric.mistaken.listeners.lobby.LobbyProtectionListener(this), this)
         pm.registerEvents(PlayerListener(this), this)
         pm.registerEvents(liric.mistaken.game.managers.setup.SetupListener(this), this)
         pm.registerEvents(PlayerQuitListener(this), this)

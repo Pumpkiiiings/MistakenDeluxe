@@ -315,6 +315,19 @@ object MistakenDebugCommand {
                     
                     p.scheduler.runDelayed(plugin, Consumer { _ ->
                         liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) 
+                        
+                        // Apply LMS Camera Posteffect
+                        val disabledKey = org.bukkit.NamespacedKey("mistakendeluxe-visual-addon-dev", "pref_disabled")
+                        val lmsKey = org.bukkit.NamespacedKey("mistakendeluxe-visual-addon-dev", "pref_lms")
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "posteffect clear ${p.name}")
+                        val pdc = p.persistentDataContainer
+                        val disabled = pdc.get(disabledKey, org.bukkit.persistence.PersistentDataType.BYTE) ?: 0
+                        if (disabled.toInt() != 1) {
+                            val intensity = pdc.get(lmsKey, org.bukkit.persistence.PersistentDataType.INTEGER) ?: 5
+                            val suffix = if (intensity == 5) "" else "_${6 - intensity}"
+                            val effectName = "mistaken:horror$suffix"
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "posteffect add ${p.name} $effectName")
+                        }
                     }, null, 30L)
                     
                     p.sendMessage("§a[!] LMS effects and music started (Test duration: 1 min).")
@@ -329,7 +342,20 @@ object MistakenDebugCommand {
                             liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.5f, 40)
                             p.playSound(p.location, "mistaken:lms", org.bukkit.SoundCategory.RECORDS, 1f, 1f)
                             p.scheduler.runDelayed(plugin, Consumer { _ ->
-                                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) 
+                                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200)
+                                
+                                // Apply LMS Camera Posteffect
+                                val disabledKey = org.bukkit.NamespacedKey("mistakendeluxe-visual-addon-dev", "pref_disabled")
+                                val lmsKey = org.bukkit.NamespacedKey("mistakendeluxe-visual-addon-dev", "pref_lms")
+                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "posteffect clear ${p.name}")
+                                val pdc = p.persistentDataContainer
+                                val disabled = pdc.get(disabledKey, org.bukkit.persistence.PersistentDataType.BYTE) ?: 0
+                                if (disabled.toInt() != 1) {
+                                    val intensity = pdc.get(lmsKey, org.bukkit.persistence.PersistentDataType.INTEGER) ?: 5
+                                    val suffix = if (intensity == 5) "" else "_${6 - intensity}"
+                                    val effectName = "mistaken:horror$suffix"
+                                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "posteffect add ${p.name} $effectName")
+                                }
                             }, null, 30L)
                         }, null, 20L)
                     }
@@ -342,6 +368,7 @@ object MistakenDebugCommand {
                 
                 p.stopSound("mistaken:lms", org.bukkit.SoundCategory.RECORDS)
                 liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 0, 0, 0, 0f, 1) 
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "posteffect clear ${p.name}")
                 p.sendMessage("§c[!] LMS effects stopped.")
                 1
             })

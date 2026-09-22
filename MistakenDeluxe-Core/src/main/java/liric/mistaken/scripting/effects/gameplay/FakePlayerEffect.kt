@@ -87,14 +87,10 @@ class FakePlayerEffect(
         }
 
         val equipPacket = WrapperPlayServerEntityEquipment(fakeId, equipmentList)
-        val metaPacket = WrapperPlayServerEntityMetadata(fakeId, listOf(
-            EntityData(17, EntityDataTypes.BYTE, 127.toByte())
-        ))
 
         plugin.server.onlinePlayers.forEach { viewer ->
             pm.sendPacket(viewer, infoPacket)
             pm.sendPacket(viewer, spawnPacket)
-            pm.sendPacket(viewer, metaPacket)
             if (equipmentList.isNotEmpty()) pm.sendPacket(viewer, equipPacket)
         }
 

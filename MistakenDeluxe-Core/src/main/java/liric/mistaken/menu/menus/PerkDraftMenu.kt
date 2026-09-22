@@ -9,6 +9,8 @@ import liric.mistaken.utils.color.ColorTranslator
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
+import org.bukkit.event.inventory.InventoryClickEvent
 
 /**
  * PerkDraftMenu — shown once per game during the STARTING countdown.
@@ -26,7 +28,11 @@ class PerkDraftMenu(private val plugin: Mistaken) {
             .disableAllInteractions()
             .create()
 
-        val bg = ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).name(ColorTranslator.translate(" ")).asGuiItem()
+        val bgItem = ItemStack(Material.BLACK_STAINED_GLASS_PANE)
+        bgItem.editMeta { meta ->
+            meta.displayName(ColorTranslator.translate(" "))
+        }
+        val bg = dev.triumphteam.gui.guis.GuiItem(bgItem)
         gui.filler.fill(bg)
 
         // 3 mystery cards in slots 11, 13, 15
@@ -37,31 +43,33 @@ class PerkDraftMenu(private val plugin: Mistaken) {
         val cardLore3 = MessageService.getRawString(player, "perks.draft-card-lore-3", "<dark_gray>Lasts this match only.", "messages")
 
         options.take(3).forEachIndexed { index, perk ->
-            val item = ItemBuilder.from(Material.FILLED_MAP)
-                .name(ColorTranslator.translate(cardName))
-                .lore(
+            val cardStack = ItemStack(Material.FILLED_MAP)
+            cardStack.editMeta { meta ->
+                meta.displayName(ColorTranslator.translate(cardName))
+                meta.lore(listOf(
                     ColorTranslator.translate(cardLore1),
                     ColorTranslator.translate(cardLore2),
                     ColorTranslator.translate(cardLore3)
-                )
-                .asGuiItem { _ ->
-                    if (plugin.perkManager.getActivePerk(player) != null) {
-                        val alreadyMsg = MessageService.getRawString(player, "perks.already-selected", "<red>Already have a perk!", "messages")
-                        player.sendMessage(ColorTranslator.translate(alreadyMsg))
-                        return@asGuiItem
-                    }
-                    plugin.perkManager.assignPerk(player.uniqueId, perk)
-                    player.closeInventory()
-                    player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f)
-
-                    val perkName = MessageService.getRawString(player, "perks.${perk.id}.name", perk.id, "messages")
-                    val selectedMsg = MessageService.getRawString(player, "perks.selected", "<#3BFFC7>✦ Perk | {perk} equipped!", "messages")
-                        .replace("{perk}", perkName)
-                    val actionbarMsg = MessageService.getRawString(player, "perks.actionbar-active", "<#3BFFC7>✦ Perk: {perk}", "messages")
-                        .replace("{perk}", perkName)
-                    player.sendMessage(ColorTranslator.translate(selectedMsg))
-                    player.sendActionBar(ColorTranslator.translate(actionbarMsg))
+                ))
+            }
+            val item = dev.triumphteam.gui.guis.GuiItem(cardStack) { event: InventoryClickEvent ->
+                if (plugin.perkManager.getActivePerk(player) != null) {
+                    val alreadyMsg = MessageService.getRawString(player, "perks.already-selected", "<red>Already have a perk!", "messages")
+                    player.sendMessage(ColorTranslator.translate(alreadyMsg))
+                    return@GuiItem
                 }
+                plugin.perkManager.assignPerk(player.uniqueId, perk)
+                player.closeInventory()
+                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f)
+
+                val perkName = MessageService.getRawString(player, "perks.${perk.id}.name", perk.id, "messages")
+                val selectedMsg = MessageService.getRawString(player, "perks.selected", "<#3BFFC7>⚔ Perk | {perk} equipped!", "messages")
+                    .replace("{perk}", perkName)
+                val actionbarMsg = MessageService.getRawString(player, "perks.actionbar-active", "<#3BFFC7>⚔ Perk: {perk}", "messages")
+                    .replace("{perk}", perkName)
+                player.sendMessage(ColorTranslator.translate(selectedMsg))
+                player.sendActionBar(ColorTranslator.translate(actionbarMsg))
+            }
             gui.setItem(displaySlots[index], item)
         }
 
@@ -71,14 +79,16 @@ class PerkDraftMenu(private val plugin: Mistaken) {
         val infoLore2 = MessageService.getRawString(player, "perks.draft-info-lore-2", "<gray>Your perk will be revealed on selection.", "messages")
         val infoLore3 = MessageService.getRawString(player, "perks.draft-info-lore-3", "<gray>It lasts for this match only.", "messages")
 
-        val info = ItemBuilder.from(Material.BOOK)
-            .name(ColorTranslator.translate(infoName))
-            .lore(
+        val infoStack = ItemStack(Material.BOOK)
+        infoStack.editMeta { meta ->
+            meta.displayName(ColorTranslator.translate(infoName))
+            meta.lore(listOf(
                 ColorTranslator.translate(infoLore1),
                 ColorTranslator.translate(infoLore2),
                 ColorTranslator.translate(infoLore3)
-            )
-            .asGuiItem()
+            ))
+        }
+        val info = dev.triumphteam.gui.guis.GuiItem(infoStack)
         gui.setItem(22, info)
 
         gui.open(player)
