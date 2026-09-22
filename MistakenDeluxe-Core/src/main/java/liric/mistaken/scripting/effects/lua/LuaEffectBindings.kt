@@ -105,6 +105,23 @@ object LuaEffectBindings {
             }
         })
 
+        globals.set("delay_ticks", object : TwoArgFunction() {
+            override fun call(ticksArg: LuaValue, callbackArg: LuaValue): LuaValue {
+                val ticks = ticksArg.checklong().coerceAtLeast(1L)
+                if (callbackArg.isfunction()) {
+                    val pPlugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+                    pPlugin.server.globalRegionScheduler.runDelayed(pPlugin, java.util.function.Consumer {
+                        try {
+                            callbackArg.call()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }, ticks)
+                }
+                return LuaValue.NIL
+            }
+        })
+
         
         globals.set("player_state_clear", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, keyArg: LuaValue): LuaValue {

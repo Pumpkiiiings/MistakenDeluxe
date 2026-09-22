@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.logic
+package liric.mistaken.game.logic
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.game.GameSession
@@ -64,17 +64,21 @@ class GameLoopTask(private val game: GameSession) {
                             game.stateController.handleStartingSequence()
                         }
                         GameState.INGAME -> {
-                            game.stateController.checkGeoffreySpawn()
+                            if (game.timer <= 0) {
+                                game.stateController.endGame("game.time-up", false, true)
+                            } else {
+                                game.stateController.checkGeoffreySpawn()
 
-                            val arena = game.plugin.arenaManager.getArena(game.currentMapName)
-                            if (arena != null && arena.timeMode == "dynamic") {
-                                val maxDuration = game.settings?.gameDuration ?: game.plugin.config.getInt("settings.game-duration", 300)
-                                val elapsed = maxDuration - game.timer
-                                if (maxDuration > 0) {
-                                    val targetTime = (18000.0 * elapsed / maxDuration).toLong()
-                                    val aspWorld = onlinePlayers.firstOrNull()?.world
-                                    if (aspWorld != null && targetTime <= 18000) {
-                                        aspWorld.time = targetTime
+                                val arena = game.plugin.arenaManager.getArena(game.currentMapName)
+                                if (arena != null && arena.timeMode == "dynamic") {
+                                    val maxDuration = game.settings?.gameDuration ?: game.plugin.config.getInt("settings.game-duration", 300)
+                                    val elapsed = maxDuration - game.timer
+                                    if (maxDuration > 0) {
+                                        val targetTime = (18000.0 * elapsed / maxDuration).toLong()
+                                        val aspWorld = onlinePlayers.firstOrNull()?.world
+                                        if (aspWorld != null && targetTime <= 18000) {
+                                            aspWorld.time = targetTime
+                                        }
                                     }
                                 }
                             }

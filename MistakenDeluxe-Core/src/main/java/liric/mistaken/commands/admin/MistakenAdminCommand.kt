@@ -86,7 +86,7 @@ object MistakenAdminCommand {
                 if (gm == null || gm.currentState == GameState.LOBBY) {
                     sender.sendMessage(MessageService.getComponent(player, "errors.no-active-game"))
                 } else {
-                    gm.stateController.endGame("admin.stop-broadcast", false)
+                    gm.stateController.endGame("admin.stop-broadcast", false, true)
                     sender.sendMessage(MessageService.getComponent(player, "admin.stop-success"))
                 }
                 1

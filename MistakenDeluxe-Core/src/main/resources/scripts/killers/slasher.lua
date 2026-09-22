@@ -65,7 +65,7 @@ local function on_skill_2(player)
             screen_tint(victim):color(255, 0, 0):alpha(0.6):duration(20):show()
             screen_shake(victim):intensity(1.5):duration(15):show()
         end)
-        :start()
+        :launch()
 end
 
 -- ──────────── SKILL 3: Presencia ────────────
@@ -76,8 +76,8 @@ local function on_skill_3(player)
         :type("SCULK_SOUL")
         :count(50)
         :offset(3.0, 1.0, 3.0)
-        :speed(0.05)
-        :spawn()
+        :spread(0.05)
+        :show()
 
     visual_hitbox(player, 8.0, 8.0, 8.0, 20, "PURPLE_STAINED_GLASS")
 
@@ -101,15 +101,15 @@ local function on_skill_4(player)
         :type("ASH")
         :count(300)
         :offset(3.0, 3.0, 3.0)
-        :speed(0.05)
-        :spawn()
+        :spread(0.05)
+        :show()
 
     particle_burst(player)
         :type("FALLING_LAVA")
         :count(50)
         :offset(3.0, 3.0, 3.0)
-        :speed(0.05)
-        :spawn()
+        :spread(0.05)
+        :show()
 
     screen_shake(player):intensity(0.8):duration(300):show()
     

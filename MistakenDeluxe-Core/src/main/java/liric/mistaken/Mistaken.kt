@@ -1,8 +1,7 @@
-﻿package liric.mistaken
+package liric.mistaken
 
 import com.github.retrooper.packetevents.PacketEvents
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
-import fr.skytasul.glowingentities.GlowingEntities
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.data.stats.StatsManager
 import liric.mistaken.game.managers.audio.MusicManager
@@ -134,7 +133,7 @@ class Mistaken : JavaPlugin() {
     lateinit var killerTienda: KillerShop
     lateinit var survivorTienda: SurvivorShop
     lateinit var shopSelector: ShopSelector
-    lateinit var glowingAPI: liric.mistaken.utils.misc.SafeGlowingManager
+    lateinit var glowingAPI: liric.mistaken.utils.misc.PacketEventsGlowManager
 
     override fun onLoad() {
         instance = this
@@ -201,7 +200,7 @@ class Mistaken : JavaPlugin() {
         val apiImpl = MistakenAPIImpl(this)
         MistakenProvider.register(apiImpl)
 
-        glowingAPI = liric.mistaken.utils.misc.SafeGlowingManager(this)
+        glowingAPI = liric.mistaken.utils.misc.PacketEventsGlowManager(this)
         combatManager = CombatManager(this)
         antiBlockListener = AntiBlockListener(this)
         voteManager = VoteManager()

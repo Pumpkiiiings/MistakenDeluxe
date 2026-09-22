@@ -11,6 +11,27 @@ class VisualAddon : JavaPlugin() {
             private set
     }
 
+    override fun reloadConfig() {
+        val configFile = java.io.File(dataFolder, "config.yml")
+        if (!configFile.exists()) {
+            super.reloadConfig()
+            return
+        }
+        val testConfig = org.bukkit.configuration.file.YamlConfiguration()
+        try {
+            testConfig.load(configFile)
+            super.reloadConfig()
+        } catch (e: Exception) {
+            logger.severe("==============================================")
+            logger.severe("ERROR GRAVE EN config.yml DE VISUAL-ADDON:")
+            logger.severe("Hay un error de sintaxis en el archivo (mira la línea abajo).")
+            logger.severe(e.message)
+            logger.severe("La configuración NO se ha recargado para protegerla.")
+            logger.severe("Corrige el error y usa /visual reload de nuevo.")
+            logger.severe("==============================================")
+        }
+    }
+
     override fun onEnable() {
         instance = this
         

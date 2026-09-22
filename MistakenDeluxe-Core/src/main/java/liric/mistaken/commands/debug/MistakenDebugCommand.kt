@@ -32,6 +32,7 @@ object MistakenDebugCommand {
                         """
                         <#3BFFC7>Mistaken Debug <#888888>| <#FF3344>Ayuda
                         <#CCCCCC>» <#FF3344>/mdebug help <#888888>- <white>This menu
+                        <#CCCCCC>» <#FF3344>/mdebug what <#888888>- <white>Server & Plugin info
                         <#CCCCCC>» <#FF3344>/mdebug arena (check|setup) <#888888>- <white>Arena debug
                         <#CCCCCC>» <#FF3344>/mdebug session (list|info) <#888888>- <white>Session debug
                         <#CCCCCC>» <#FF3344>/mdebug player <name> <#888888>- <white>Player data
@@ -42,6 +43,48 @@ object MistakenDebugCommand {
                         <#CCCCCC>» <#FF3344>/mdebug geoffrey <#888888>- <white>Boss test
                         <#CCCCCC>» <#FF3344>/mdebug perks <#888888>- <white>Open perk draft menu (debug)
                         <#CCCCCC>» <#FF3344>/mdebug gui <menu> <#888888>- <white>Open any GUI by name
+                        """.trimIndent()
+                    ))
+                    1
+                }
+        )
+
+        rootNode.then(
+            Commands.literal("what")
+                .executes { ctx ->
+                    val sender = ctx.source.sender
+                    val pluginVersion = plugin.pluginMeta.version
+                    val serverVersion = Bukkit.getVersion()
+                    val mapCount = plugin.arenaManager.getArenas().size
+                    var playersInDb = 0
+                    try {
+                        plugin.databaseManager.connection.prepareStatement("SELECT COUNT(*) FROM mistaken_player_data").use { ps ->
+                            val rs = ps.executeQuery()
+                            if (rs.next()) {
+                                playersInDb = rs.getInt(1)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                    
+                    val dbType = plugin.config.getString("database.type", "SQLite")
+                    val serverType = if (plugin.config.getBoolean("bungee.enabled", false)) "BungeeMode" else "MultiArena"
+                    val addons = Bukkit.getPluginManager().plugins
+                        .filter { it.name.startsWith("MistakenDeluxe-") }
+                        .map { it.name }
+                        .joinToString(", ")
+                    
+                    sender.sendMessage(ColorTranslator.translate(
+                        """
+                        <#3BFFC7>Mistaken Server Info:
+                        <#CCCCCC> <gray>Server Version:</gray> <white>$serverVersion</white>
+                        <#CCCCCC> <gray>Mistaken Version:</gray> <white>$pluginVersion</white>
+                        <#CCCCCC> <gray>Maps Loaded:</gray> <white>$mapCount</white>
+                        <#CCCCCC> <gray>DB Players:</gray> <white>$playersInDb</white>
+                        <#CCCCCC> <gray>DB Type:</gray> <white>$dbType</white>
+                        <#CCCCCC> <gray>Server Type:</gray> <white>$serverType</white>
+                        <#CCCCCC> <gray>Detected Addons:</gray> <white>$addons</white>
                         """.trimIndent()
                     ))
                     1

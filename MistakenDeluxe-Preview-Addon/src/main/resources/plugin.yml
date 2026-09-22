@@ -1,0 +1,10 @@
+name: "MistakenDeluxe-Preview-Addon"
+main: "liric.mistaken.preview.PreviewAddon"
+version: "1.0.0"
+author: "Liric"
+description: "Immersive 3D Lobby and Character Selector"
+api-version: 1.20
+depend: [Mistaken, packetevents]
+commands:
+  preview:
+    description: Preview commands

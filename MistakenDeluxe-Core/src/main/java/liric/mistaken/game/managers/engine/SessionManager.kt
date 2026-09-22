@@ -56,6 +56,10 @@ class SessionManager(private val plugin: Mistaken) : ISessionManager {
         if (session != null) {
             val event = MistakenPlayerLeaveSessionEvent(player, session)
             Bukkit.getPluginManager().callEvent(event)
+            
+            if (session.getPlayers().isEmpty()) {
+                destroySession(sessionId)
+            }
         }
 
         
