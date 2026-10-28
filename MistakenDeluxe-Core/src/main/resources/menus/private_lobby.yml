@@ -68,16 +68,16 @@ menus:
     rows: 5
     overlay:
       - "#########"
-      - "#########"
-      - "##     ##"
+      - "#       #"
+      - "#       #"
       - "#########"
       - "#### ####"
     overlay_items:
       '#':
         material: "BLACK_STAINED_GLASS_PANE"
         name: " "
-    start_slot: 20
-    max_slots: 24
+    start_slot: 10
+    max_slots: 25
     back_slot: 40
     items:
       mode:

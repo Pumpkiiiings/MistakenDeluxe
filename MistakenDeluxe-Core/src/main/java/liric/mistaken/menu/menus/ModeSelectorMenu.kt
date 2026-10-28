@@ -47,8 +47,15 @@ class ModeSelectorMenu(private val plugin: Mistaken, private val session: GameSe
             
             val itemStack = liric.mistaken.utils.MenuUtils.createConfigItem(config, "menus.mode_selector.items.mode", defaultMat)
             
+            val rawTitle = liric.mistaken.config.engine.core.MessageService.getRawString(player, "modes.${mode.name.lowercase()}.title", "", "messages")
+            val titleText = if (rawTitle.isNotBlank()) {
+                if (isSelected) "<green><bold>[✓] </bold></green>$rawTitle" else rawTitle
+            } else {
+                "$color${mode.name}"
+            }
+            
             itemStack.editMeta {
-                it.displayName(ColorTranslator.translate("<!italic>$color${mode.name}"))
+                it.displayName(ColorTranslator.translate("<!italic>$titleText"))
                 it.lore(listOf(
                     net.kyori.adventure.text.Component.empty(),
                     ColorTranslator.translate("<!italic>$loreClick")
@@ -63,6 +70,8 @@ class ModeSelectorMenu(private val plugin: Mistaken, private val session: GameSe
             }
 
             gui.setItem(slot++, item)
+            if (slot == 17) slot = 19
+            if (slot == 26) slot = 28
             if (slot > maxSlots) break
         }
 

@@ -1,4 +1,4 @@
-﻿# ======================================================
+# ======================================================
 #          MISTAKEN - ENGLISH LANGUAGE (US)
 # ======================================================
 
@@ -203,6 +203,20 @@ scoreboard:
     - " &#FF4141🗡 &#FFFFFFKiller:"
     - "  %killers%"
     - ""
+  ingame_lights_out:
+    - ""
+    - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
+    - " &#FF5500☠ &#FFFFFFMode: &#FF5500Lights Out"
+    - ""
+    - " &#FF9B00✎ &#FFFFFFMap: &#42F56C%map%"
+    - " &#ABC9FF⌚ &#FFFFFFTime: &#FFE300%timer%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFFGens: &#42F56C%completed%/%total%"
+    - " &#FF4141🗡 &#FFFFFFKiller:"
+    - "  %killers%"
+    - ""
+    - " &#FF3344❤ &#FFFFFFLives: &#FF3344%lives%"
+    - ""
   ending:
     - ""
     - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
@@ -312,6 +326,9 @@ modes:
   initializes:
     title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
+  lights_out:
+    title: "&#FF5500LIGHTS OUT"
+    subtitle: "&#555555Total darkness engulfs the arena... Nobody can see!"
 
 # --- GAME ---
 game:
@@ -507,6 +524,9 @@ modes:
   initializes:
     title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
+  lights_out:
+    title: "&#FF5500LIGHTS OUT"
+    subtitle: "&#555555Total darkness engulfs the arena... Nobody can see!"
 
 # --- GAME ---
 game:

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.modes
+package liric.mistaken.game.modes
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -15,6 +15,7 @@ object ModeHandlerFactory {
             MistakenMode.FREEZE_TAG -> FreezeTagModeHandler(plugin, session)
             MistakenMode.INFECTION -> InfectionModeHandler(plugin, session)
             MistakenMode.INITIALIZES -> InitializesModeHandler(plugin, session)
+            MistakenMode.LIGHTS_OUT -> LightsOutModeHandler(plugin, session)
         }
 
         // Si es juego privado, envolver con PrivateModeHandler para aplicar settings del host

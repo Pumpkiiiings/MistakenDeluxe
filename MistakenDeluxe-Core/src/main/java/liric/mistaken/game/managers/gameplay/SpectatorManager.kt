@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.gameplay
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -44,7 +44,7 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     fun setCustomSpectator(player: Player) {
         activeSpectators.add(player.uniqueId)
 
-        
+        player.removePotionEffect(org.bukkit.potion.PotionEffectType.DARKNESS)
         liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(player, false)
 
         

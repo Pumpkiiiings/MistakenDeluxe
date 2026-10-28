@@ -1,4 +1,4 @@
-﻿package liric.mistaken.config
+package liric.mistaken.config
 
 object Messages {
     const val ADMIN_AFK_DISABLED = "admin.afk-disabled"
@@ -206,6 +206,8 @@ object Messages {
     const val MODES_FREEZE_TAG_TITLE = "modes.freeze_tag.title"
     const val MODES_INITIALIZES_SUBTITLE = "modes.initializes.subtitle"
     const val MODES_INITIALIZES_TITLE = "modes.initializes.title"
+    const val MODES_LIGHTS_OUT_SUBTITLE = "modes.lights_out.subtitle"
+    const val MODES_LIGHTS_OUT_TITLE = "modes.lights_out.title"
     const val MODES_ONE_BOUNCE_SUBTITLE = "modes.one_bounce.subtitle"
     const val MODES_ONE_BOUNCE_TITLE = "modes.one_bounce.title"
     const val PARANOIA = "paranoia"

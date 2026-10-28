@@ -1,4 +1,4 @@
-﻿# ======================================================
+# ======================================================
 #          MISTAKEN - SPANISH LANGUAGE (MEXICO)
 # ======================================================
 
@@ -203,6 +203,20 @@ scoreboard:
     - " &#FF4141🗡 &#FFFFFFKiller:"
     - "  %killers%"
     - ""
+  ingame_lights_out:
+    - ""
+    - " &#FFD031🛡 &#FFFFFFID Partida: &#FFD031%id%"
+    - " &#FF5500☠ &#FFFFFFModo: &#FF5500Luces Fuera"
+    - ""
+    - " &#FF9B00✎ &#FFFFFFMapa: &#42F56C%map%"
+    - " &#ABC9FF⌚ &#FFFFFFTiempo: &#FFE300%timer%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFFGens: &#42F56C%completed%/%total%"
+    - " &#FF4141🗡 &#FFFFFFKiller:"
+    - "  %killers%"
+    - ""
+    - " &#FF3344❤ &#FFFFFFVidas: &#FF3344%lives%"
+    - ""
   ending:
     - ""
     - " &#FFD031🛡 &#FFFFFFID Partida: &#FFD031%id%"
@@ -383,6 +397,9 @@ modes:
   initializes:
     title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
+  lights_out:
+    title: "&#FF5500ʟᴜᴄᴇꜱ ꜰᴜᴇʀᴀ"
+    subtitle: "&#555555La oscuridad total consume la arena... ¡Nadie puede ver!"
 
 # --- JUEGO ---
 game:
@@ -578,6 +595,9 @@ hook:
   initializes:
     title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
+  lights_out:
+    title: "&#FF5500ʟᴜᴄᴇꜱ ꜰᴜᴇʀᴀ"
+    subtitle: "&#555555La oscuridad total consume la arena... ¡Nadie puede ver!"
 
 # --- JUEGO ---
 game:

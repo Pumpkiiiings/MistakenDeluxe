@@ -8,5 +8,6 @@ enum class MistakenMode(val isTagMode: Boolean) {
     FREEZE_TAG(true),      
     INFECTION(false),      
     HIDE_AND_SEEK(false),  
-    INITIALIZES(true);     
+    INITIALIZES(true),
+    LIGHTS_OUT(false);     
 }

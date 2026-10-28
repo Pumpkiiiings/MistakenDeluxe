@@ -111,6 +111,7 @@ class GameStateController(private val game: GameSession) {
                         liric.mistaken.utils.hooks.ObserverHook.setTrueDarkness(p, true)
                     }
                 }
+                game.activeModeHandler.onGameStart()
             }
         }
     }
@@ -185,11 +186,12 @@ class GameStateController(private val game: GameSession) {
         } else {
             val chance = ThreadLocalRandom.current().nextInt(1, 101)
             var selected = when {
-                chance <= 50 -> MistakenMode.CLASSIC
-                chance <= 65 -> MistakenMode.ONE_BOUNCE
-                chance <= 73 -> MistakenMode.DOUBLE_KILLER
-                chance <= 83 -> MistakenMode.INFECTION
-                chance <= 92 -> MistakenMode.FREEZE_TAG
+                chance <= 45 -> MistakenMode.CLASSIC
+                chance <= 57 -> MistakenMode.ONE_BOUNCE
+                chance <= 65 -> MistakenMode.DOUBLE_KILLER
+                chance <= 75 -> MistakenMode.INFECTION
+                chance <= 83 -> MistakenMode.FREEZE_TAG
+                chance <= 92 -> MistakenMode.LIGHTS_OUT
                 chance <= 98 -> MistakenMode.HIDE_AND_SEEK
                 else         -> MistakenMode.INITIALIZES    
             }
