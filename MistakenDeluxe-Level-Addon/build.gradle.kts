@@ -39,7 +39,7 @@ dependencies {
     
     compileOnly("com.zaxxer:HikariCP:5.1.0")
     compileOnly("com.mysql:mysql-connector-j:9.7.0")
-    compileOnly("org.xerial:sqlite-jdbc:3.53.2.0")
+    compileOnly("org.xerial:sqlite-jdbc:3.53.4.0")
     compileOnly("dev.triumphteam:triumph-gui:3.1.13")
 
     
