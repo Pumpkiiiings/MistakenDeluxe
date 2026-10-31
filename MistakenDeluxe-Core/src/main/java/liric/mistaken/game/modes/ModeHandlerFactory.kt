@@ -16,6 +16,7 @@ object ModeHandlerFactory {
             MistakenMode.INFECTION -> InfectionModeHandler(plugin, session)
             MistakenMode.INITIALIZES -> InitializesModeHandler(plugin, session)
             MistakenMode.LIGHTS_OUT -> LightsOutModeHandler(plugin, session)
+            MistakenMode.LEGACY -> LegacyModeHandler(plugin, session)
         }
 
         // Si es juego privado, envolver con PrivateModeHandler para aplicar settings del host

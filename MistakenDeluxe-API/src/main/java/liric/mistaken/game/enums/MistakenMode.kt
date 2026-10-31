@@ -9,5 +9,6 @@ enum class MistakenMode(val isTagMode: Boolean) {
     INFECTION(false),      
     HIDE_AND_SEEK(false),  
     INITIALIZES(true),
-    LIGHTS_OUT(false);     
+    LIGHTS_OUT(false),
+    LEGACY(false);     
 }

@@ -161,13 +161,15 @@ class GameStateController(private val game: GameSession) {
                 game.broadcastLocalized("game.map-loaded", Placeholder.parsed("map", winner))
 
                 // --- PERK DRAFT ---
-                // Generate 3 shared random perks for all survivors this match
-                val draftOptions = game.plugin.perkManager.getDraftOptions(3)
-                val draftMenu = liric.mistaken.menu.menus.PerkDraftMenu(game.plugin)
-                game.getPlayers().filter { !game.isKiller(it.uniqueId) }.forEach { survivor ->
-                    game.plugin.server.scheduler.runTask(game.plugin, Runnable {
-                        draftMenu.open(survivor, draftOptions)
-                    })
+                // Generate 3 shared random perks for all survivors this match (si las habilidades están activadas)
+                if (game.activeModeHandler.enableAbilities) {
+                    val draftOptions = game.plugin.perkManager.getDraftOptions(3)
+                    val draftMenu = liric.mistaken.menu.menus.PerkDraftMenu(game.plugin)
+                    game.getPlayers().filter { !game.isKiller(it.uniqueId) }.forEach { survivor ->
+                        game.plugin.server.scheduler.runTask(game.plugin, Runnable {
+                            draftMenu.open(survivor, draftOptions)
+                        })
+                    }
                 }
             }
         }
@@ -186,12 +188,13 @@ class GameStateController(private val game: GameSession) {
         } else {
             val chance = ThreadLocalRandom.current().nextInt(1, 101)
             var selected = when {
-                chance <= 45 -> MistakenMode.CLASSIC
-                chance <= 57 -> MistakenMode.ONE_BOUNCE
-                chance <= 65 -> MistakenMode.DOUBLE_KILLER
-                chance <= 75 -> MistakenMode.INFECTION
-                chance <= 83 -> MistakenMode.FREEZE_TAG
-                chance <= 92 -> MistakenMode.LIGHTS_OUT
+                chance <= 40 -> MistakenMode.CLASSIC
+                chance <= 50 -> MistakenMode.ONE_BOUNCE
+                chance <= 58 -> MistakenMode.DOUBLE_KILLER
+                chance <= 68 -> MistakenMode.INFECTION
+                chance <= 76 -> MistakenMode.FREEZE_TAG
+                chance <= 85 -> MistakenMode.LIGHTS_OUT
+                chance <= 93 -> MistakenMode.LEGACY
                 chance <= 98 -> MistakenMode.HIDE_AND_SEEK
                 else         -> MistakenMode.INITIALIZES    
             }

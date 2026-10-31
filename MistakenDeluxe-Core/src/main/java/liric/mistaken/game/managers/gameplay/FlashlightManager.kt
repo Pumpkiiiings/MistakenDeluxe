@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.managers.gameplay
+package liric.mistaken.game.managers.gameplay
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
@@ -52,6 +52,7 @@ class FlashlightManager(private val plugin: Mistaken) {
     fun canUse(player: Player): Boolean {
         val session = plugin.sessionManager.getSession(player) ?: return false
         if (session.currentState != GameState.INGAME) return false
+        if (!session.activeModeHandler.enableAbilities) return false
         if (session.isKiller(player.uniqueId)) return false
         if (!plugin.survivorManager.esSurvivorActivo(player)) return false
         if (player.gameMode != GameMode.SURVIVAL) return false

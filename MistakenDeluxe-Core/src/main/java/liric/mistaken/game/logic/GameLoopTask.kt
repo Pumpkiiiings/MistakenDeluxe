@@ -94,6 +94,7 @@ class GameLoopTask(private val game: GameSession) {
                 
                 if (game.currentState == GameState.INGAME) {
                     game.playerController.handleInGameTick(onlinePlayers, tickCounter)
+                    game.activeModeHandler.onTick(tickCounter)
                 }
             }
         }, 1L, 1L)

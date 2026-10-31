@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.common.triggers
+package liric.mistaken.roles.common.triggers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -24,6 +24,7 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
     private fun getActiveRole(player: Player): Any? {
         val session = plugin.sessionManager.getSession(player) ?: return null
         if (session.currentState != GameState.INGAME) return null
+        if (!session.activeModeHandler.enableAbilities) return null
         if (player.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(player)) return null
 
         if (session.isKiller(player.uniqueId)) {

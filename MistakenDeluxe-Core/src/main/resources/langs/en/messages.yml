@@ -217,6 +217,20 @@ scoreboard:
     - ""
     - " &#FF3344❤ &#FFFFFFLives: &#FF3344%lives%"
     - ""
+  ingame_legacy:
+    - ""
+    - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
+    - " &#FF3344☠ &#FFFFFFMode: &#FF3344Legacy"
+    - ""
+    - " &#FF9B00✎ &#FFFFFFMap: &#42F56C%map%"
+    - " &#ABC9FF⌚ &#FFFFFFTime: &#FFE300%timer%"
+    - ""
+    - " &#58D0FF⚙ &#FFFFFFGens: &#42F56C%completed%/%total%"
+    - " &#FF4141🗡 &#FFFFFFKiller:"
+    - "  %killers%"
+    - ""
+    - " &#FF3344❤ &#FFFFFFLives: &#FF3344%lives%"
+    - ""
   ending:
     - ""
     - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
@@ -329,6 +343,9 @@ modes:
   lights_out:
     title: "&#FF5500LIGHTS OUT"
     subtitle: "&#555555Total darkness engulfs the arena... Nobody can see!"
+  legacy:
+    title: "&#FF3344LEGACY MODE"
+    subtitle: "&#FFFFFFNo abilities! The killer drains your life upon getting close."
 
 # --- GAME ---
 game:
@@ -527,6 +544,9 @@ modes:
   lights_out:
     title: "&#FF5500LIGHTS OUT"
     subtitle: "&#555555Total darkness engulfs the arena... Nobody can see!"
+  legacy:
+    title: "&#FF3344LEGACY MODE"
+    subtitle: "&#FFFFFFNo abilities! The killer drains your life upon getting close."
 
 # --- GAME ---
 game:

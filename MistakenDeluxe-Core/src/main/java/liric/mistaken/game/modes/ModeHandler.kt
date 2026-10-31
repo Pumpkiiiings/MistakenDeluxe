@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.modes
+package liric.mistaken.game.modes
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -23,6 +23,9 @@ abstract class ModeHandler(val plugin: Mistaken, val session: GameSession) {
 
     /** Si los survivors pueden rescatar congelados via right-click. Default: false. FreezeTag: true. */
     open val enableRescueInteraction: Boolean = false
+
+    /** Si las habilidades y poderes de asesinos y supervivientes están habilitadas. Default: true. Legacy: false. */
+    open val enableAbilities: Boolean = true
 
     // === FUNCIONES DE VALOR ===
 
@@ -58,6 +61,11 @@ abstract class ModeHandler(val plugin: Mistaken, val session: GameSession) {
      * Evento al iniciar el juego (INGAME).
      */
     open fun onGameStart() {}
+
+    /**
+     * Evento ejecutado cada tick durante INGAME para lógicas personalizadas del modo.
+     */
+    open fun onTick(ticks: Int) {}
 
     /**
      * Evento al spawnear un jugador. Útil para buffos iniciales.

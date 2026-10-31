@@ -1,4 +1,4 @@
-﻿package liric.mistaken.listeners.killers
+package liric.mistaken.listeners.killers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -40,6 +40,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
         if (!session.isKiller(player.uniqueId)) return
+        if (!session.activeModeHandler.enableAbilities) return
 
         
         val now = System.currentTimeMillis()
@@ -72,6 +73,10 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
         if (!session.isKiller(player.uniqueId)) return
+        if (!session.activeModeHandler.enableAbilities) {
+            event.isCancelled = true
+            return
+        }
 
         val killer = plugin.killerManager.getKillerOfPlayer(player) ?: return
         if (killer is liric.mistaken.roles.killers.BaseKiller) {
@@ -103,6 +108,10 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
+        if (!session.activeModeHandler.enableAbilities) {
+            event.isCancelled = true
+            return
+        }
 
         
         if (player.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(player)) return

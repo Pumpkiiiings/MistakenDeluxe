@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.modes.handlers
+package liric.mistaken.game.modes.handlers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.GameSession
@@ -35,6 +35,9 @@ class PrivateModeHandler(
     override val enableRescueInteraction: Boolean
         get() = innerHandler.enableRescueInteraction
 
+    override val enableAbilities: Boolean
+        get() = innerHandler.enableAbilities
+
     // === Funciones de valor ===
 
     override fun getKillerBaseDamage(): Double = innerHandler.getKillerBaseDamage()
@@ -50,6 +53,8 @@ class PrivateModeHandler(
     override fun checkSpecialSpawn(timer: Int): Boolean = innerHandler.checkSpecialSpawn(timer)
 
     override fun onGameStart() = innerHandler.onGameStart()
+
+    override fun onTick(ticks: Int) = innerHandler.onTick(ticks)
 
     override fun onPlayerSpawn(player: Player, isKiller: Boolean) = innerHandler.onPlayerSpawn(player, isKiller)
 
