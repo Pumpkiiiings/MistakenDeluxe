@@ -29,7 +29,7 @@ dependencies {
     compileOnly("org.luaj:luaj-jse:3.0.1")
 
     implementation("org.graalvm.js:js:22.3.2")
-    implementation("org.graalvm.js:js-scriptengine:22.3.2")
+    implementation("org.graalvm.js:js-scriptengine:25.3.4.1")
 }
 
 tasks {
