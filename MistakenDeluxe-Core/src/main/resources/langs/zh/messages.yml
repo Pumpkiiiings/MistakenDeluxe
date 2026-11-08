@@ -166,19 +166,6 @@ scoreboard:
     - " &#FF4141🗡 &#FFFFFF杀手:"
     - "  %killers%"
     - ""
-  ingame_hide_and_seek:
-    - ""
-    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
-    - ""
-    - " &#FF9B00✎ &#FFFFFF地图: &#42F56C%map%"
-    - " &#ABC9FF⌚ &#FFFFFF时间: &#FFE300%timer%"
-    - ""
-    - " &#58D0FF⚙ &#FFFFFF发电机: &#42F56C%completed%/%total%"
-    - " &#FF4141🗡 &#FFFFFF搜寻者:"
-    - "  %killers%"
-    - ""
-    - " &#FF3344❤ &#FFFFFF生命: &#FF3344%lives%"
-    - ""
   ingame_infection:
     - ""
     - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
@@ -207,20 +194,6 @@ scoreboard:
     - ""
     - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
     - " &#FF5500☠ &#FFFFFF模式: &#FF5500熄灯模式"
-    - ""
-    - " &#FF9B00✎ &#FFFFFF地图: &#42F56C%map%"
-    - " &#ABC9FF⌚ &#FFFFFF时间: &#FFE300%timer%"
-    - ""
-    - " &#58D0FF⚙ &#FFFFFF发电机: &#42F56C%completed%/%total%"
-    - " &#FF4141🗡 &#FFFFFF杀手:"
-    - "  %killers%"
-    - ""
-    - " &#FF3344❤ &#FFFFFF生命: &#FF3344%lives%"
-    - ""
-  ingame_legacy:
-    - ""
-    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
-    - " &#FF3344☠ &#FFFFFF模式: &#FF3344经典怀旧"
     - ""
     - " &#FF9B00✎ &#FFFFFF地图: &#42F56C%map%"
     - " &#ABC9FF⌚ &#FFFFFF时间: &#FFE300%timer%"
@@ -402,18 +375,12 @@ modes:
   infection:
     title: "&#33FF00感染"
     subtitle: "&#FFFFFF每个倒下的幸存者都会加入杀手的阵营。"
-  hide_and_seek:
-    title: "&#FFFF00捉迷藏"
-    subtitle: "&#FFFFFF你有1分钟时间躲藏。"
   initializes:
     title: "&#FF0055初始化"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
   lights_out:
     title: "&#FF5500熄灯模式"
     subtitle: "&#555555无尽的黑暗吞噬了竞技场... 谁也看不见！"
-  legacy:
-    title: "&#FF3344经典怀旧"
-    subtitle: "&#FFFFFF无技能！杀手靠近时会吸取你的生命。"
 
 # --- GAME ---
 game:

@@ -31,9 +31,6 @@ class GameStateController(private val game: GameSession) {
             game.playerController.cleanupAllPlayers(lastKillerWon)
             game.worldController.clearMapa()
             
-            // Clear per-session perks
-            game.plugin.perkManager.clearSession(game)
-            
             val playersToLeave = game.getPlayers().toList()
             playersToLeave.forEach { player ->
                 game.plugin.sessionManager.leaveSession(player)
@@ -159,18 +156,6 @@ class GameStateController(private val game: GameSession) {
 
                 game.playerController.setupPlayers(arena)
                 game.broadcastLocalized("game.map-loaded", Placeholder.parsed("map", winner))
-
-                // --- PERK DRAFT ---
-                // Generate 3 shared random perks for all survivors this match (si las habilidades están activadas)
-                if (game.activeModeHandler.enableAbilities) {
-                    val draftOptions = game.plugin.perkManager.getDraftOptions(3)
-                    val draftMenu = liric.mistaken.menu.menus.PerkDraftMenu(game.plugin)
-                    game.getPlayers().filter { !game.isKiller(it.uniqueId) }.forEach { survivor ->
-                        game.plugin.server.scheduler.runTask(game.plugin, Runnable {
-                            draftMenu.open(survivor, draftOptions)
-                        })
-                    }
-                }
             }
         }
     }
@@ -189,13 +174,11 @@ class GameStateController(private val game: GameSession) {
             val chance = ThreadLocalRandom.current().nextInt(1, 101)
             var selected = when {
                 chance <= 40 -> MistakenMode.CLASSIC
-                chance <= 50 -> MistakenMode.ONE_BOUNCE
-                chance <= 58 -> MistakenMode.DOUBLE_KILLER
-                chance <= 68 -> MistakenMode.INFECTION
-                chance <= 76 -> MistakenMode.FREEZE_TAG
-                chance <= 85 -> MistakenMode.LIGHTS_OUT
-                chance <= 93 -> MistakenMode.LEGACY
-                chance <= 98 -> MistakenMode.HIDE_AND_SEEK
+                chance <= 55 -> MistakenMode.ONE_BOUNCE
+                chance <= 65 -> MistakenMode.DOUBLE_KILLER
+                chance <= 77 -> MistakenMode.INFECTION
+                chance <= 87 -> MistakenMode.FREEZE_TAG
+                chance <= 97 -> MistakenMode.LIGHTS_OUT
                 else         -> MistakenMode.INITIALIZES    
             }
             if (selected == MistakenMode.DOUBLE_KILLER && onlineCount < 4) selected = MistakenMode.CLASSIC

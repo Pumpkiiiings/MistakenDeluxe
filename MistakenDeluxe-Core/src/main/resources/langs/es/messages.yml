@@ -166,19 +166,6 @@ scoreboard:
     - " &#FF4141🗡 &#FFFFFFKiller:"
     - "  %killers%"
     - ""
-  ingame_hide_and_seek:
-    - ""
-    - " &#FFD031🛡 &#FFFFFFID Partida: &#FFD031%id%"
-    - ""
-    - " &#FF9B00✎ &#FFFFFFMapa: &#42F56C%map%"
-    - " &#ABC9FF⌚ &#FFFFFFTiempo: &#FFE300%timer%"
-    - ""
-    - " &#58D0FF⚙ &#FFFFFFGens: &#42F56C%completed%/%total%"
-    - " &#FF4141🗡 &#FFFFFFBuscador:"
-    - "  %killers%"
-    - ""
-    - " &#FF3344❤ &#FFFFFFVidas: &#FF3344%lives%"
-    - ""
   ingame_infection:
     - ""
     - " &#FFD031🛡 &#FFFFFFID Partida: &#FFD031%id%"
@@ -207,20 +194,6 @@ scoreboard:
     - ""
     - " &#FFD031🛡 &#FFFFFFID Partida: &#FFD031%id%"
     - " &#FF5500☠ &#FFFFFFModo: &#FF5500Luces Fuera"
-    - ""
-    - " &#FF9B00✎ &#FFFFFFMapa: &#42F56C%map%"
-    - " &#ABC9FF⌚ &#FFFFFFTiempo: &#FFE300%timer%"
-    - ""
-    - " &#58D0FF⚙ &#FFFFFFGens: &#42F56C%completed%/%total%"
-    - " &#FF4141🗡 &#FFFFFFKiller:"
-    - "  %killers%"
-    - ""
-    - " &#FF3344❤ &#FFFFFFVidas: &#FF3344%lives%"
-    - ""
-  ingame_legacy:
-    - ""
-    - " &#FFD031🛡 &#FFFFFFID Partida: &#FFD031%id%"
-    - " &#FF3344☠ &#FFFFFFModo: &#FF3344Legacy"
     - ""
     - " &#FF9B00✎ &#FFFFFFMapa: &#42F56C%map%"
     - " &#ABC9FF⌚ &#FFFFFFTiempo: &#FFE300%timer%"
@@ -405,18 +378,12 @@ modes:
   infection:
     title: "&#33FF00ɪɴꜰᴇᴄᴄɪóɴ"
     subtitle: "&#FFFFFFCada superviviente que caiga se unirá a los asesinos."
-  hide_and_seek:
-    title: "&#FFFF00ᴇꜱᴄᴏɴᴅɪᴛᴇ"
-    subtitle: "&#FFFFFFTienes 1 minuto para esconderte."
   initializes:
     title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
   lights_out:
     title: "&#FF5500ʟᴜᴄᴇꜱ ꜰᴜᴇʀᴀ"
     subtitle: "&#555555La oscuridad total consume la arena... ¡Nadie puede ver!"
-  legacy:
-    title: "&#FF3344ᴍᴏᴅᴏ ʟᴇɢᴀᴄʏ"
-    subtitle: "&#FFFFFF¡Sin habilidades! El asesino drena tu vida al acercarse."
 
 # --- JUEGO ---
 game:
@@ -580,7 +547,7 @@ menus:
         lore:
           - ""
           - "&#CCCCCCMejora tus probabilidades de éxito."
-          - "&#CCCCCCAdquiere clases con perks únicos"
+          - "&#CCCCCCAdquiere clases con habilidades únicas"
           - "&#CCCCCCpara burlar a la muerte."
           - ""
           - "&#33CCFF» Clic para entrar"
@@ -606,18 +573,12 @@ hook:
   infection:
     title: "&#33FF00ɪɴꜰᴇᴄᴄɪóɴ"
     subtitle: "&#FFFFFFCada superviviente que caiga se unirá a los asesinos."
-  hide_and_seek:
-    title: "&#FFFF00ᴇꜱᴄᴏɴᴅɪᴛᴇ"
-    subtitle: "&#FFFFFFTienes 1 minuto para esconderte."
   initializes:
     title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
   lights_out:
     title: "&#FF5500ʟᴜᴄᴇꜱ ꜰᴜᴇʀᴀ"
     subtitle: "&#555555La oscuridad total consume la arena... ¡Nadie puede ver!"
-  legacy:
-    title: "&#FF3344ᴍᴏᴅᴏ ʟᴇɢᴀᴄʏ"
-    subtitle: "&#FFFFFF¡Sin habilidades! El asesino drena tu vida al acercarse."
 
 # --- JUEGO ---
 game:
@@ -781,7 +742,7 @@ menus:
         lore:
           - ""
           - "&#CCCCCCMejora tus probabilidades de éxito."
-          - "&#CCCCCCAdquiere clases con perks únicos"
+          - "&#CCCCCCAdquiere clases con habilidades únicas"
           - "&#CCCCCCpara burlar a la muerte."
           - ""
           - "&#33CCFF» Clic para entrar"
@@ -852,41 +813,6 @@ admin:
   forcekiller-not-in-game: "<prefix>&#FF3344Debes estar en una partida para forzar un asesino."
   forcekiller-already-started: "<prefix>&#FF3344No puedes forzar el rol porque la partida ya inició."
   forcekiller-success: "<prefix>&#42F56CHas forzado a &#FFFFFF{player} &#42F56Ca ser el asesino en la siguiente partida de &#33CCFF{arena}&#42F56C."
-
-# ======================
-# PERKS
-# ======================
-perks:
-  # Menú de selección
-  draft-title: "<#3BFFC7>ʙᴏɴᴜs ᴘᴇʀᴋ <#888888>| <white>Elige 1"
-  draft-card-name: "<#FFE300><bold>❓ Carta Misteriosa"
-  draft-card-lore-1: "<gray>Clic para revelar y seleccionar este perk."
-  draft-card-lore-2: " "
-  draft-card-lore-3: "<dark_gray>Lo conservarás hasta que termine la partida."
-  draft-info-name: "<white>¿ᴄóᴍᴏ ꜰᴜɴᴄɪᴏɴᴀ?"
-  draft-info-lore-1: "<gray>Elige <#3BFFC7>1 carta misteriosa<gray>."
-  draft-info-lore-2: "<gray>Tu perk se revelará al seleccionarla."
-  draft-info-lore-3: "<gray>Solo dura <white>esta partida<gray>."
-
-  # Mensajes de feedback
-  already-selected: "<#FF3344>¡Ya tienes un perk equipado en esta partida!"
-  selected: "<#3BFFC7>✦ ᴘᴇʀᴋ <#888888>| <white>{perk} equipado!"
-  auto-assigned: "<gray>✦ Perk asignado automáticamente."
-  actionbar-active: "<#3BFFC7>✦ Perk: <white>{perk}"
-
-  # Nombres y descripciones de perks
-  adrenaline:
-    name: "<#FFE300><bold>⚡ Adrenalina"
-    desc: "<gray>Ganas Velocidad II por 3s al reparar un generador."
-  stealth:
-    name: "<#3BFFC7><bold>🥷 Sigilo"
-    desc: "<gray>Tus pisadas y partículas son invisibles para el asesino."
-  premonition:
-    name: "<#FF55FF><bold>👁 Premonición"
-    desc: "<gray>Escuchas una alerta cuando el asesino te mira directamente."
-  resilience:
-    name: "<#FF3344><bold>🛡 Resiliencia"
-    desc: "<gray>Ganas Velocidad II por 2s al recibir daño."
 
 network:
   connecting: '<green>Conectando a <server>...'

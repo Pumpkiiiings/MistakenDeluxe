@@ -107,7 +107,6 @@ class Mistaken : JavaPlugin() {
     lateinit var sessionManager: SessionManager
     lateinit var isolationManager: IsolationManager
     lateinit var visibilityManager: VisibilityManager
-    lateinit var perkManager: liric.mistaken.perks.PerkManager
 
     lateinit var antiBlockListener: AntiBlockListener
     lateinit var voteManager: VoteManager
@@ -209,12 +208,6 @@ class Mistaken : JavaPlugin() {
         generatorManager = GeneratorManager(this)
 
         flashlightManager = FlashlightManager(this)
-
-        perkManager = liric.mistaken.perks.PerkManager(this)
-        perkManager.registerPerk(liric.mistaken.perks.types.AdrenalinePerk())
-        perkManager.registerPerk(liric.mistaken.perks.types.StealthPerk())
-        perkManager.registerPerk(liric.mistaken.perks.types.PremonitionPerk())
-        perkManager.registerPerk(liric.mistaken.perks.types.ResiliencePerk())
 
         sessionManager = SessionManager(this)
         networkManager = liric.mistaken.network.NetworkManager(this)

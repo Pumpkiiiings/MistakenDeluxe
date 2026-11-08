@@ -41,7 +41,6 @@ object MistakenDebugCommand {
                         <#CCCCCC>» <#FF3344>/mdebug cinematic (intro|outro) <killer> <#888888>- <white>Play cinematics
                         <#CCCCCC>» <#FF3344>/mdebug hitbox <#888888>- <white>Toggle 3D hitboxes
                         <#CCCCCC>» <#FF3344>/mdebug geoffrey <#888888>- <white>Boss test
-                        <#CCCCCC>» <#FF3344>/mdebug perks <#888888>- <white>Open perk draft menu (debug)
                         <#CCCCCC>» <#FF3344>/mdebug gui <menu> <#888888>- <white>Open any GUI by name
                         """.trimIndent()
                     ))
@@ -482,26 +481,8 @@ object MistakenDebugCommand {
                 )
         )
 
-        // --- PERKS DEBUG ---
-        rootNode.then(
-            Commands.literal("perks")
-                .executes { ctx ->
-                    val player = ctx.source.sender as? Player ?: return@executes 0
-                    val options = plugin.perkManager.getDraftOptions(3)
-                    if (options.isEmpty()) {
-                        player.sendMessage(ColorTranslator.translate("<red>[DEBUG] No perks registered."))
-                        return@executes 0
-                    }
-                    // Clear any existing perk first so the menu is fully interactive
-                    plugin.perkManager.clearPerkForPlayer(player.uniqueId)
-                    liric.mistaken.menu.menus.PerkDraftMenu(plugin).open(player, options)
-                    player.sendMessage(ColorTranslator.translate("<gray>[<yellow>DEBUG<gray>] <white>Opening perk draft with <#3BFFC7>${options.size} random perks."))
-                    1
-                }
-        )
-
         // --- GUI DEBUG ---
-        val guiNames = listOf("shop", "killers", "survivors", "private_lobby", "perks")
+        val guiNames = listOf("shop", "killers", "survivors", "private_lobby")
         rootNode.then(
             Commands.literal("gui")
                 .then(
@@ -525,12 +506,6 @@ object MistakenDebugCommand {
                                 "survivors" -> {
                                     liric.mistaken.menu.menus.SurvivorShop().abrir(player)
                                     player.sendMessage(ColorTranslator.translate("<gray>[<yellow>DEBUG<gray>] <white>Opened: <#3BFFC7>Survivor Shop"))
-                                }
-                                "perks" -> {
-                                    val options = plugin.perkManager.getDraftOptions(3)
-                                    plugin.perkManager.clearPerkForPlayer(player.uniqueId)
-                                    liric.mistaken.menu.menus.PerkDraftMenu(plugin).open(player, options)
-                                    player.sendMessage(ColorTranslator.translate("<gray>[<yellow>DEBUG<gray>] <white>Opened: <#3BFFC7>Perk Draft"))
                                 }
                                 else -> {
                                     player.sendMessage(ColorTranslator.translate("<red>[DEBUG] Unknown menu: <white>$menuArg"))

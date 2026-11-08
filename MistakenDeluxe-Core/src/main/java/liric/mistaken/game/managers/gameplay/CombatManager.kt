@@ -62,7 +62,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             for (session in sessions) {
                 if (session.currentState != GameState.INGAME) continue
-                // No check needed here for HIDE_AND_SEEK as stamina is handled by activeModeHandler onStaminaTick
 
                 val killersOnline = session.killersUUIDs.mapNotNull { plugin.server.getPlayer(it) }.filter { it.isOnline }
                 if (killersOnline.isEmpty()) continue
@@ -316,7 +315,6 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
 
             val nextHP = (victim.health - amount).coerceAtLeast(0.0)
             victim.health = nextHP
-            plugin.perkManager.triggerDamaged(victim)
 
             if (isSurvivor && nextHP <= 4.0 && nextHP > 0.0) {
                 if (!victim.hasPotionEffect(PotionEffectType.DARKNESS)) {

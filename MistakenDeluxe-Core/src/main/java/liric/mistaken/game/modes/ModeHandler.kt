@@ -12,7 +12,7 @@ abstract class ModeHandler(val plugin: Mistaken, val session: GameSession) {
 
     // === PROPIEDADES (defaults = Classic) ===
 
-    /** Si los survivors ven heartbeat/glow cuando un killer está cerca. Default: true. HideAndSeek: false. */
+    /** Si los survivors ven heartbeat/glow cuando un killer está cerca. Default: true. */
     open val enableHeartbeat: Boolean = true
 
     /** Si el efecto visual de swimming se aplica cuando un survivor tiene 1 de vida. Default: true. FreezeTag: false. */
@@ -24,7 +24,7 @@ abstract class ModeHandler(val plugin: Mistaken, val session: GameSession) {
     /** Si los survivors pueden rescatar congelados via right-click. Default: false. FreezeTag: true. */
     open val enableRescueInteraction: Boolean = false
 
-    /** Si las habilidades y poderes de asesinos y supervivientes están habilitadas. Default: true. Legacy: false. */
+    /** Si las habilidades y poderes de asesinos y supervivientes están habilitadas. Default: true. */
     open val enableAbilities: Boolean = true
 
     // === FUNCIONES DE VALOR ===

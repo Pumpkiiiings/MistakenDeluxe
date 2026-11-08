@@ -11,12 +11,10 @@ object ModeHandlerFactory {
             MistakenMode.CLASSIC -> ClassicModeHandler(plugin, session)
             MistakenMode.ONE_BOUNCE -> OneBounceModeHandler(plugin, session)
             MistakenMode.DOUBLE_KILLER -> DoubleKillerModeHandler(plugin, session)
-            MistakenMode.HIDE_AND_SEEK -> HideAndSeekModeHandler(plugin, session)
             MistakenMode.FREEZE_TAG -> FreezeTagModeHandler(plugin, session)
             MistakenMode.INFECTION -> InfectionModeHandler(plugin, session)
             MistakenMode.INITIALIZES -> InitializesModeHandler(plugin, session)
             MistakenMode.LIGHTS_OUT -> LightsOutModeHandler(plugin, session)
-            MistakenMode.LEGACY -> LegacyModeHandler(plugin, session)
         }
 
         // Si es juego privado, envolver con PrivateModeHandler para aplicar settings del host

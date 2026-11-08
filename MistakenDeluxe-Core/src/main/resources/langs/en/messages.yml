@@ -166,19 +166,6 @@ scoreboard:
     - " &#FF4141🗡 &#FFFFFFKiller:"
     - "  %killers%"
     - ""
-  ingame_hide_and_seek:
-    - ""
-    - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
-    - ""
-    - " &#FF9B00✎ &#FFFFFFMap: &#42F56C%map%"
-    - " &#ABC9FF⌚ &#FFFFFFTime: &#FFE300%timer%"
-    - ""
-    - " &#58D0FF⚙ &#FFFFFFGens: &#42F56C%completed%/%total%"
-    - " &#FF4141🗡 &#FFFFFFSeeker:"
-    - "  %killers%"
-    - ""
-    - " &#FF3344❤ &#FFFFFFLives: &#FF3344%lives%"
-    - ""
   ingame_infection:
     - ""
     - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
@@ -207,20 +194,6 @@ scoreboard:
     - ""
     - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
     - " &#FF5500☠ &#FFFFFFMode: &#FF5500Lights Out"
-    - ""
-    - " &#FF9B00✎ &#FFFFFFMap: &#42F56C%map%"
-    - " &#ABC9FF⌚ &#FFFFFFTime: &#FFE300%timer%"
-    - ""
-    - " &#58D0FF⚙ &#FFFFFFGens: &#42F56C%completed%/%total%"
-    - " &#FF4141🗡 &#FFFFFFKiller:"
-    - "  %killers%"
-    - ""
-    - " &#FF3344❤ &#FFFFFFLives: &#FF3344%lives%"
-    - ""
-  ingame_legacy:
-    - ""
-    - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
-    - " &#FF3344☠ &#FFFFFFMode: &#FF3344Legacy"
     - ""
     - " &#FF9B00✎ &#FFFFFFMap: &#42F56C%map%"
     - " &#ABC9FF⌚ &#FFFFFFTime: &#FFE300%timer%"
@@ -334,18 +307,12 @@ modes:
   infection:
     title: "&#33FF00ɪɴꜰᴇᴄᴛɪᴏɴ"
     subtitle: "&#FFFFFFEvery fallen survivor will join the killers."
-  hide_and_seek:
-    title: "&#FFFF00ʜɪᴅᴇ ᴀɴᴅ ꜱᴇᴇᴋ"
-    subtitle: "&#FFFFFFYou have 1 minute to hide."
   initializes:
     title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
   lights_out:
     title: "&#FF5500LIGHTS OUT"
     subtitle: "&#555555Total darkness engulfs the arena... Nobody can see!"
-  legacy:
-    title: "&#FF3344LEGACY MODE"
-    subtitle: "&#FFFFFFNo abilities! The killer drains your life upon getting close."
 
 # --- GAME ---
 game:
@@ -506,7 +473,7 @@ menus:
         lore:
           - ""
           - "&#CCCCCCImprove your chances of success."
-          - "&#CCCCCCAcquire classes with unique perks"
+          - "&#CCCCCCAcquire classes with unique abilities"
           - "&#CCCCCCto cheat death."
           - ""
           - "&#33CCFF» Click to enter"
@@ -535,18 +502,12 @@ modes:
   infection:
     title: "&#33FF00ɪɴꜰᴇᴄᴛɪᴏɴ"
     subtitle: "&#FFFFFFEvery fallen survivor will join the killers."
-  hide_and_seek:
-    title: "&#FFFF00ʜɪᴅᴇ ᴀɴᴅ ꜱᴇᴇᴋ"
-    subtitle: "&#FFFFFFYou have 1 minute to hide."
   initializes:
     title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
   lights_out:
     title: "&#FF5500LIGHTS OUT"
     subtitle: "&#555555Total darkness engulfs the arena... Nobody can see!"
-  legacy:
-    title: "&#FF3344LEGACY MODE"
-    subtitle: "&#FFFFFFNo abilities! The killer drains your life upon getting close."
 
 # --- GAME ---
 game:
@@ -707,7 +668,7 @@ menus:
         lore:
           - ""
           - "&#CCCCCCImprove your chances of success."
-          - "&#CCCCCCAcquire classes with unique perks"
+          - "&#CCCCCCAcquire classes with unique abilities"
           - "&#CCCCCCto cheat death."
           - ""
           - "&#33CCFF» Click to enter"
@@ -779,41 +740,6 @@ admin:
   forcekiller-not-in-game: "<prefix>&#FF3344You must be in a game to force a killer."
   forcekiller-already-started: "<prefix>&#FF3344You cannot force the role because the game already started."
   forcekiller-success: "<prefix>&#42F56CForced &#FFFFFF{player} &#42F56Cto be the killer in the next game of &#33CCFF{arena}&#42F56C."
-
-# ======================
-# PERKS
-# ======================
-perks:
-  # Draft menu
-  draft-title: "<#3BFFC7>ʙᴏɴᴜs ᴘᴇʀᴋ <#888888>| <white>Choose 1"
-  draft-card-name: "<#FFE300><bold>❓ Mystery Perk"
-  draft-card-lore-1: "<gray>Click to reveal and select this perk."
-  draft-card-lore-2: " "
-  draft-card-lore-3: "<dark_gray>You will keep this perk until the game ends."
-  draft-info-name: "<white>ʜᴏᴡ ɪᴛ ᴡᴏʀᴋs"
-  draft-info-lore-1: "<gray>Pick <#3BFFC7>1 mystery card<gray>."
-  draft-info-lore-2: "<gray>Your perk will be revealed on selection."
-  draft-info-lore-3: "<gray>It lasts for <white>this match only<gray>."
-
-  # Perk feedback messages
-  already-selected: "<#FF3344>You already have a perk equipped for this match!"
-  selected: "<#3BFFC7>✦ ᴘᴇʀᴋ <#888888>| <white>{perk} equipped!"
-  auto-assigned: "<gray>✦ Perk auto-assigned since you didn't pick."
-  actionbar-active: "<#3BFFC7>✦ Perk: <white>{perk}"
-
-  # Individual perk names and descriptions
-  adrenaline:
-    name: "<#FFE300><bold>⚡ Adrenaline"
-    desc: "<gray>Gain Speed II for 3s after repairing a generator."
-  stealth:
-    name: "<#3BFFC7><bold>🥷 Stealth"
-    desc: "<gray>Your footsteps and particles are hidden from the killer."
-  premonition:
-    name: "<#FF55FF><bold>👁 Premonition"
-    desc: "<gray>Hear an alert when the killer looks directly at you."
-  resilience:
-    name: "<#FF3344><bold>🛡 Resilience"
-    desc: "<gray>Gain Speed II for 2s after taking damage."
 
 network:
   connecting: '<green>Connecting to <server>...'
