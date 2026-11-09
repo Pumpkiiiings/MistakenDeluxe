@@ -166,19 +166,6 @@ scoreboard:
     - " &#FF4141🗡 &#FFFFFFKiller:"
     - "  %killers%"
     - ""
-  ingame_infection:
-    - ""
-    - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
-    - ""
-    - " &#FF9B00✎ &#FFFFFFMap: &#42F56C%map%"
-    - " &#ABC9FF⌚ &#FFFFFFTime: &#FFE300%timer%"
-    - ""
-    - " &#58D0FF⚙ &#FFFFFFGens: &#42F56C%completed%/%total%"
-    - " &#FF4141🗡 &#FFFFFFInfected:"
-    - "  %killers%"
-    - ""
-    - " &#FF3344❤ &#FFFFFFLives: &#FF3344%lives%"
-    - ""
   ingame_initializes:
     - ""
     - " &#FFD031🛡 &#FFFFFFMatch ID: &#FFD031%id%"
@@ -304,9 +291,6 @@ modes:
   freeze_tag:
     title: "&#00FFFFꜰʀᴇᴇᴢᴇ ᴛᴀɢ"
     subtitle: "&#FFFFFFThe entities will freeze you. Rescue your teammates!"
-  infection:
-    title: "&#33FF00ɪɴꜰᴇᴄᴛɪᴏɴ"
-    subtitle: "&#FFFFFFEvery fallen survivor will join the killers."
   initializes:
     title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
@@ -499,9 +483,6 @@ modes:
   freeze_tag:
     title: "&#00FFFFꜰʀᴇᴇᴢᴇ ᴛᴀɢ"
     subtitle: "&#FFFFFFThe entities will freeze you. Rescue your teammates!"
-  infection:
-    title: "&#33FF00ɪɴꜰᴇᴄᴛɪᴏɴ"
-    subtitle: "&#FFFFFFEvery fallen survivor will join the killers."
   initializes:
     title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"

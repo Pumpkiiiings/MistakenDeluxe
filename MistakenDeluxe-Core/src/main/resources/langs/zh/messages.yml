@@ -166,19 +166,6 @@ scoreboard:
     - " &#FF4141🗡 &#FFFFFF杀手:"
     - "  %killers%"
     - ""
-  ingame_infection:
-    - ""
-    - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
-    - ""
-    - " &#FF9B00✎ &#FFFFFF地图: &#42F56C%map%"
-    - " &#ABC9FF⌚ &#FFFFFF时间: &#FFE300%timer%"
-    - ""
-    - " &#58D0FF⚙ &#FFFFFF发电机: &#42F56C%completed%/%total%"
-    - " &#FF4141🗡 &#FFFFFF感染者:"
-    - "  %killers%"
-    - ""
-    - " &#FF3344❤ &#FFFFFF生命: &#FF3344%lives%"
-    - ""
   ingame_initializes:
     - ""
     - " &#FFD031🛡 &#FFFFFF比赛 ID: &#FFD031%id%"
@@ -372,9 +359,6 @@ modes:
   freeze_tag:
     title: "&#00FFFF冰冻标签"
     subtitle: "&#FFFFFF实体会冻结你。拯救你的队友！"
-  infection:
-    title: "&#33FF00感染"
-    subtitle: "&#FFFFFF每个倒下的幸存者都会加入杀手的阵营。"
   initializes:
     title: "&#FF0055初始化"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"

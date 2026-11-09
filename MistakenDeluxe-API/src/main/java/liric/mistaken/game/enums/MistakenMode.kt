@@ -6,7 +6,6 @@ enum class MistakenMode(val isTagMode: Boolean) {
     DOUBLE_KILLER(false),  
     ONE_BOUNCE(false),     
     FREEZE_TAG(true),      
-    INFECTION(false),      
     INITIALIZES(true),
     LIGHTS_OUT(false);     
 }

@@ -166,19 +166,6 @@ scoreboard:
     - " &#FF4141🗡 &#FFFFFFKiller:"
     - "  %killers%"
     - ""
-  ingame_infection:
-    - ""
-    - " &#FFD031🛡 &#FFFFFFID Partida: &#FFD031%id%"
-    - ""
-    - " &#FF9B00✎ &#FFFFFFMapa: &#42F56C%map%"
-    - " &#ABC9FF⌚ &#FFFFFFTiempo: &#FFE300%timer%"
-    - ""
-    - " &#58D0FF⚙ &#FFFFFFGens: &#42F56C%completed%/%total%"
-    - " &#FF4141🗡 &#FFFFFFInfectados:"
-    - "  %killers%"
-    - ""
-    - " &#FF3344❤ &#FFFFFFVidas: &#FF3344%lives%"
-    - ""
   ingame_initializes:
     - ""
     - " &#FFD031🛡 &#FFFFFFID Partida: &#FFD031%id%"
@@ -375,9 +362,6 @@ modes:
   freeze_tag:
     title: "&#00FFFFꜰʀᴇᴇᴢᴇ ᴛᴀɢ"
     subtitle: "&#FFFFFFLas entidades te congelarán. ¡Rescata a tus compañeros!"
-  infection:
-    title: "&#33FF00ɪɴꜰᴇᴄᴄɪóɴ"
-    subtitle: "&#FFFFFFCada superviviente que caiga se unirá a los asesinos."
   initializes:
     title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"
@@ -570,9 +554,6 @@ hook:
   freeze_tag:
     title: "&#00FFFFꜰʀᴇᴇᴢᴇ ᴛᴀɢ"
     subtitle: "&#FFFFFFLas entidades te congelarán. ¡Rescata a tus compañeros!"
-  infection:
-    title: "&#33FF00ɪɴꜰᴇᴄᴄɪóɴ"
-    subtitle: "&#FFFFFFCada superviviente que caiga se unirá a los asesinos."
   initializes:
     title: "&#FF0055ɪɴɪᴛɪᴀʟɪᴢᴇꜱ"
     subtitle: "&#CCCCCC&kCORRUPTED DATA ERROR&r"

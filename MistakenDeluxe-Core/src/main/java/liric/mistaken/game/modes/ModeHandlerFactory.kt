@@ -12,7 +12,6 @@ object ModeHandlerFactory {
             MistakenMode.ONE_BOUNCE -> OneBounceModeHandler(plugin, session)
             MistakenMode.DOUBLE_KILLER -> DoubleKillerModeHandler(plugin, session)
             MistakenMode.FREEZE_TAG -> FreezeTagModeHandler(plugin, session)
-            MistakenMode.INFECTION -> InfectionModeHandler(plugin, session)
             MistakenMode.INITIALIZES -> InitializesModeHandler(plugin, session)
             MistakenMode.LIGHTS_OUT -> LightsOutModeHandler(plugin, session)
         }

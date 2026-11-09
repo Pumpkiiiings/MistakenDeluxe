@@ -173,11 +173,10 @@ class GameStateController(private val game: GameSession) {
         } else {
             val chance = ThreadLocalRandom.current().nextInt(1, 101)
             var selected = when {
-                chance <= 40 -> MistakenMode.CLASSIC
-                chance <= 55 -> MistakenMode.ONE_BOUNCE
-                chance <= 65 -> MistakenMode.DOUBLE_KILLER
-                chance <= 77 -> MistakenMode.INFECTION
-                chance <= 87 -> MistakenMode.FREEZE_TAG
+                chance <= 45 -> MistakenMode.CLASSIC
+                chance <= 60 -> MistakenMode.ONE_BOUNCE
+                chance <= 72 -> MistakenMode.DOUBLE_KILLER
+                chance <= 85 -> MistakenMode.FREEZE_TAG
                 chance <= 97 -> MistakenMode.LIGHTS_OUT
                 else         -> MistakenMode.INITIALIZES    
             }

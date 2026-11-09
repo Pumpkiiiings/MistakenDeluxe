@@ -224,7 +224,6 @@ object Messages {
     const val SCOREBOARD_INGAME_CLASSIC = "scoreboard.ingame_classic"
     const val SCOREBOARD_INGAME_DOUBLE_KILLER = "scoreboard.ingame_double_killer"
     const val SCOREBOARD_INGAME_FREEZE_TAG = "scoreboard.ingame_freeze_tag"
-    const val SCOREBOARD_INGAME_INFECTION = "scoreboard.ingame_infection"
     const val SCOREBOARD_INGAME_INITIALIZES = "scoreboard.ingame_initializes"
     const val SCOREBOARD_INGAME_ONE_BOUNCE = "scoreboard.ingame_one_bounce"
     const val SCOREBOARD_LOBBY = "scoreboard.lobby"
