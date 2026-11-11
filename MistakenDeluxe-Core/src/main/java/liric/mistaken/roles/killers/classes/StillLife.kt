@@ -1,8 +1,10 @@
-﻿package liric.mistaken.roles.killers.classes
+package liric.mistaken.roles.killers.classes
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.roles.killers.CoreKiller
 import org.bukkit.entity.Player
 import liric.mistaken.config.engine.core.MessageService
+import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.EventHandler
 import org.bukkit.event.entity.PlayerDeathEvent
@@ -26,10 +28,12 @@ class StillLife : CoreKiller(
     
     private val lastKilled = ConcurrentHashMap<UUID, String>()
     private val disguisedAs = ConcurrentHashMap<UUID, String>()
+    private var disguiseCheckTask: ScheduledTask? = null
+
     init {
         plugin.server.pluginManager.registerEvents(this, plugin)
 
-        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, java.util.function.Consumer {
+        disguiseCheckTask = plugin.server.globalRegionScheduler.runAtFixedRate(plugin, java.util.function.Consumer {
             for (uuid in disguisedAs.keys) {
                 val player = Bukkit.getPlayer(uuid)
                 if (player != null && player.isOnline) {
@@ -236,5 +240,13 @@ class StillLife : CoreKiller(
             it.customName = null
             it.isCustomNameVisible = false
         }
+    }
+
+    override fun onDispose() {
+        disguiseCheckTask?.cancel()
+        disguiseCheckTask = null
+        disguisedAs.clear()
+        lastKilled.clear()
+        HandlerList.unregisterAll(this)
     }
 }

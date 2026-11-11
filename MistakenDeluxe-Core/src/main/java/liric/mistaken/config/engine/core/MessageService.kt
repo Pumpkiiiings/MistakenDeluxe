@@ -122,8 +122,7 @@ object MessageService : IMessageService {
         return TagResolver.resolver(
             Placeholder.parsed("player", player?.name ?: "Console"),
             Placeholder.parsed("online", Bukkit.getOnlinePlayers().size.toString()),
-            Placeholder.component("prefix", ColorTranslator.translate(parseLegacy(prefixRaw))),
-            ColorTranslator.getUniversalTags(player)
+            Placeholder.component("prefix", ColorTranslator.translate(parseLegacy(prefixRaw)))
         )
     }
 
@@ -199,15 +198,7 @@ object MessageService : IMessageService {
     }
 
     private fun parseLegacy(text: String): String {
-        
-        
-        
-        
-        
-        
-        return ColorNormalizer.normalizeToMiniMessage(
-            text.replace("{", "<").replace("}", ">")
-        )
+        return text.replace("{", "<").replace("}", ">")
     }
 
     

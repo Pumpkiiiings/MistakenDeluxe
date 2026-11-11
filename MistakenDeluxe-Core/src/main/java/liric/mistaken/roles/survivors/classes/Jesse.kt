@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.survivors.classes
+package liric.mistaken.roles.survivors.classes
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.protocol.particle.Particle
@@ -40,69 +40,24 @@ class Jesse : Survivor(
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 20))) {
                 usarHeroDash(player)
-                sendAbilityMessage(player, langConfig, mechConfig, "skill1")
+                sendAbilityMessage(player, langConfig, mechConfig, "skill1", "ENTITY_PLAYER_ATTACK_SWEEP")
             }
             1 -> {  }
             2 -> if (!checkCooldown(player, 2, mechConfig.getInt("items.skill3_cooldown", 35))) {
                 usarBloqueoSonic(player)
-                sendAbilityMessage(player, langConfig, mechConfig, "skill3")
+                sendAbilityMessage(player, langConfig, mechConfig, "skill3", "ENTITY_PLAYER_ATTACK_SWEEP")
             }
         }
-    }
-
-    private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
-        val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(ColorTranslator.translate(msg))
-
-        val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_PLAYER_ATTACK_SWEEP")
-        Sounds.orNull(soundName)?.let { player.playSound(player.location, it, 1f, 1f) }
     }
 
     override fun equip(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        inv.armorContents = arrayOfNulls(4)
-
-        val langInfo = MessageService.getSpecificFile(player, "survivors_info")
-        val configMecanica = plugin.configManager.getSurvivorConfig(this.id)
-
-        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val id = if (isArmor) configMecanica.getString("armor.$key")
-            else configMecanica.getString("items.$key")
-
-            if (id == null || id == "none") return
-
-            val item = CustomItemManager.getCustomItem(id) ?: run {
-                val matName = id.replace(".*:".toRegex(), "").uppercase()
-                val mat = Material.matchMaterial(matName)
-                if (mat != null) ItemStack(mat) else null
-            } ?: return
-
-            val meta = item.itemMeta
-            if (key == "skill2") meta.persistentDataContainer.set(MELEE_PUNCH_KEY, PersistentDataType.BYTE, 1.toByte())
-
-            langInfo.getString("$pathBase.skill_names.$key")?.let {
-                meta.displayName(ColorTranslator.translate(it))
-            }
-            item.itemMeta = meta
-
-            if (isArmor) {
-                when(key) {
-                    "helmet" -> inv.helmet = item
-                    "chestplate" -> inv.chestplate = item
-                    "leggings" -> inv.leggings = item
-                    "boots" -> inv.boots = item
+        equipFromConfig(player) { key, item ->
+            if (key == "skill2") {
+                item.editMeta { meta ->
+                    meta.persistentDataContainer.set(MELEE_PUNCH_KEY, PersistentDataType.BYTE, 1.toByte())
                 }
-            } else {
-                inv.setItem(slot, item)
             }
         }
-
-        deliver("helmet", 0, true); deliver("chestplate", 0, true)
-        deliver("leggings", 0, true); deliver("boots", 0, true)
-        deliver("skill1", 0); deliver("skill2", 1); deliver("skill3", 2)
-
-        player.updateInventory()
     }
 
     

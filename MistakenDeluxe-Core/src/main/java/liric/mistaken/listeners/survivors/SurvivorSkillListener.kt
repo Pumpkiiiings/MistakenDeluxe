@@ -60,10 +60,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
         
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
-        if (!session.activeModeHandler.enableAbilities) {
-            event.isCancelled = true
-            return
-        }
+        if (!session.activeModeHandler.enableAbilities) return
 
         
         if (player.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(player)) return
@@ -111,10 +108,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
         
         val session = plugin.sessionManager.getSession(attacker) ?: return
         if (session.currentState != GameState.INGAME) return
-        if (!session.activeModeHandler.enableAbilities) {
-            event.isCancelled = true
-            return
-        }
+        if (!session.activeModeHandler.enableAbilities) return
 
         
         if (session.isKiller(attacker.uniqueId)) return
@@ -200,10 +194,7 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val session = plugin.sessionManager.getSession(player) ?: return
         if (session.currentState != GameState.INGAME) return
-        if (!session.activeModeHandler.enableAbilities) {
-            event.isCancelled = true
-            return
-        }
+        if (!session.activeModeHandler.enableAbilities) return
 
         if (player.gameMode != GameMode.SURVIVAL || plugin.spectatorManager.isSpectator(player)) return
 

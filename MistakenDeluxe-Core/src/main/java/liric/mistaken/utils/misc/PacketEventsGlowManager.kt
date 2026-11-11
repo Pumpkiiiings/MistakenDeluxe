@@ -123,16 +123,21 @@ class PacketEventsGlowManager(val plugin: Plugin) : PacketListenerAbstract(Packe
     }
 
     fun unsetGlowing(target: Entity, viewer: Player) {
-        unsetGlowing(target.entityId, viewer)
+        applyUnsetGlowing(target.entityId, target, viewer)
     }
 
     fun unsetGlowing(targetEntityId: Int, viewer: Player) {
+        applyUnsetGlowing(targetEntityId, null, viewer)
+    }
+
+    private fun applyUnsetGlowing(targetEntityId: Int, resolvedEntity: Entity?, viewer: Player) {
         val viewerMap = activeGlows[viewer.uniqueId] ?: return
         val removedColor = viewerMap.remove(targetEntityId)
-        
+
         if (removedColor != null && viewer.isOnline) {
-            // Eliminar del equipo
-            val entity = plugin.server.worlds.firstNotNullOfOrNull { it.entities.find { e -> e.entityId == targetEntityId } }
+            val entity = resolvedEntity ?: plugin.server.worlds.firstNotNullOfOrNull {
+                it.entities.find { e -> e.entityId == targetEntityId }
+            }
             if (entity != null) {
                 removeFromTeam(entity, viewer, removedColor)
                 sendMetadataUpdate(entity, viewer, false)
@@ -141,6 +146,10 @@ class PacketEventsGlowManager(val plugin: Plugin) : PacketListenerAbstract(Packe
         if (viewerMap.isEmpty()) {
             activeGlows.remove(viewer.uniqueId)
         }
+    }
+
+    fun clearViewer(viewerUuid: UUID) {
+        activeGlows.remove(viewerUuid)
     }
 
     override fun onPacketSend(event: PacketSendEvent) {

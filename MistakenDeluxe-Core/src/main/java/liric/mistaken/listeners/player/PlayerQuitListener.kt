@@ -1,4 +1,4 @@
-﻿package liric.mistaken.listeners.player
+package liric.mistaken.listeners.player
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
@@ -63,7 +63,9 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
         plugin.observerHUDManager.clearPlayer(player)
         plugin.flashlightManager.clear(uuid)
         plugin.combatManager.removePlayerData(uuid)
+        plugin.nameTagManager.removePlayer(player)
         plugin.scoreboardManager.removePlayer(player)
+        plugin.glowingAPI.clearViewer(uuid)
         plugin.ambientManager.stopAmbience(player)
         plugin.statsManager.unloadPlayer(uuid)
 

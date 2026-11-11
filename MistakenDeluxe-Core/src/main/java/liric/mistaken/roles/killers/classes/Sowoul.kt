@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.classes
+package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
@@ -19,6 +19,7 @@ import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
+import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.inventory.ItemStack
@@ -51,40 +52,16 @@ class Sowoul : CoreKiller(
 ), Listener {
 
     private val pathBase = "killers.sowoul"
-    private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
 
     private val orbitadores = ConcurrentHashMap<UUID, MutableList<VirtualItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
-    private val fakeEntities = ConcurrentHashMap.newKeySet<VirtualDisplay>()
+    private val fakeEntities = ConcurrentHashMap<UUID, MutableSet<VirtualDisplay>>()
 
     
     private val lastKillEffect = ConcurrentHashMap<UUID, Long>()
 
     init {
-        preLoadKit()
         plugin.server.pluginManager.registerEvents(this, plugin)
-    }
-
-    private fun preLoadKit() {
-        val config = plugin.configManager.getKillerConfig(this.id)
-        val armor = listOf("helmet", "chestplate", "leggings", "boots")
-        val items = listOf("weapon", "skill1", "skill2", "skill3", "skill4")
-
-        armor.forEach { k ->
-            config.getString("armor.$k")?.let { id ->
-                if (id != "none") {
-                    itemKitCache[k] = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.LEATHER_HELMET)
-                }
-            }
-        }
-
-        items.forEach { k ->
-            config.getString("items.$k")?.let { id ->
-                if (id != "none") {
-                    itemKitCache[k] = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase()) ?: Material.PAPER)
-                }
-            }
-        }
     }
 
     override fun useSkill(player: Player, slot: Int) {
@@ -198,13 +175,15 @@ class Sowoul : CoreKiller(
             id.teleportDuration = 1; id.interpolationDuration = 1
         }
 
-        fakeEntities.add(carta)
+        val ownerUuid = player.uniqueId
+        fakeEntities.computeIfAbsent(ownerUuid) { ConcurrentHashMap.newKeySet() }.add(carta)
         val dir = player.location.direction.normalize().multiply(1.5)
 
         var ticks = 0
         carta.scheduler.runAtFixedRate(plugin, Consumer { task ->
             if (ticks >= 40 || !carta.isValid) {
                 if (carta.isValid) carta.remove()
+                fakeEntities[ownerUuid]?.remove(carta)
                 task.cancel()
                 return@Consumer
             }
@@ -230,7 +209,7 @@ class Sowoul : CoreKiller(
                 carta.world.spawnParticle(org.bukkit.Particle.FIREWORK, carta.location, 30, 0.5, 0.5, 0.5, 0.1)
                 carta.world.spawnParticle(org.bukkit.Particle.ENTITY_EFFECT, carta.location, 30, 0.5, 0.5, 0.5, 0.1, org.bukkit.Color.LIME)
                 carta.remove()
-                fakeEntities.remove(carta)
+                fakeEntities[ownerUuid]?.remove(carta)
                 task.cancel()
             }
             ticks++
@@ -440,55 +419,6 @@ class Sowoul : CoreKiller(
         }
     }
 
-    override fun equip(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        inv.armorContents = arrayOfNulls(4)
-
-        val langInfo = MessageService.getSpecificFile(player, "killers_info")
-        val configMecanica = plugin.configManager.getKillerConfig(this.id)
-
-        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val id = configMecanica.getString("armor.$key") ?:
-            configMecanica.getString("items.$key")
-
-            if (id == null || id == "none") return
-
-            val item = CustomItemManager.getCustomItem(id) ?: run {
-                val mat = Material.matchMaterial(id.replace(".*:".toRegex(), "").uppercase())
-                if (mat != null) ItemStack(mat) else null
-            } ?: return
-
-            val namePath = if (key == "weapon") "killers.sowoul.skill_names.weapon"
-            else "killers.sowoul.skill_names.$key"
-
-            langInfo.getString(namePath)?.let {
-                item.editMeta { meta -> meta.displayName(ColorTranslator.translate(it)) }
-            }
-
-            if (isArmor) {
-                when(key) {
-                    "helmet" -> inv.helmet = item
-                    "chestplate" -> inv.chestplate = item
-                    "leggings" -> inv.leggings = item
-                    "boots" -> inv.boots = item
-                }
-            } else {
-                inv.setItem(slot, item)
-            }
-        }
-
-        deliver("helmet", 0, true)
-        deliver("chestplate", 0, true)
-        deliver("leggings", 0, true)
-        deliver("boots", 0, true)
-        deliver("skill1", 1)
-        deliver("skill2", 2)
-        deliver("skill3", 3)
-        deliver("skill4", 4)
-        deliver("weapon", 8)
-    }
-
     override fun showPhysicalTrail(player: Player) {
         val uuid = player.uniqueId
         if (!plugin.killerManager.isKiller(player)) { clearVisuales(uuid); return }
@@ -556,8 +486,16 @@ class Sowoul : CoreKiller(
         super.cleanup(player)
         player?.let {
             clearVisuales(it.uniqueId)
+            fakeEntities.remove(it.uniqueId)?.forEach { e -> e.remove() }
         }
-        fakeEntities.forEach { it.remove() }
+    }
+
+    override fun onDispose() {
+        orbitadores.values.forEach { list -> list.forEach { it.remove() } }
+        orbitadores.clear()
+        angulos.clear()
+        fakeEntities.values.forEach { set -> set.forEach { it.remove() } }
         fakeEntities.clear()
+        HandlerList.unregisterAll(this)
     }
 }

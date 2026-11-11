@@ -1,10 +1,7 @@
-﻿package liric.mistaken.roles.survivors.classes
+package liric.mistaken.roles.survivors.classes
 
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask
-import liric.mistaken.Mistaken
-import liric.mistaken.api.util.Sounds
+import liric.mistaken.roles.shared.RoleItemUtils
 import liric.mistaken.roles.survivors.Survivor
-import liric.mistaken.utils.resourcepack.CustomItemManager
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.Particle
@@ -15,8 +12,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import java.util.concurrent.ConcurrentHashMap
-import org.bukkit.configuration.file.FileConfiguration
 import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.config.engine.core.MessageService
 
@@ -26,52 +21,7 @@ class Villager : Survivor(
     MessageService.getStrictString(null, "survivors.aldeano.name", "survivors_info")
 ) {
 
-    private val pathBase = "survivors.aldeano"
-    private val itemCache = ConcurrentHashMap<String, ItemStack>()
-    private val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
-
-    
     val EMERALD_KEY = NamespacedKey("mistaken", "villager_emerald")
-
-    init {
-        preLoadKit()
-    }
-
-    private fun preLoadKit() {
-        val config = plugin.configManager.getSurvivorConfig(this.id)
-
-        
-        listOf("skill1", "skill2", "skill3").forEach { key ->
-            config.getString("items.$key")?.let { id ->
-                if (id != "none" && id.isNotEmpty()) {
-                    val item = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.EMERALD)
-                    itemCache[key] = item
-                }
-            }
-        }
-
-        
-        val armorParts = mapOf(
-            "helmet" to Material.LEATHER_HELMET,
-            "chestplate" to Material.LEATHER_CHESTPLATE,
-            "leggings" to Material.LEATHER_LEGGINGS,
-            "boots" to Material.LEATHER_BOOTS
-        )
-
-        armorParts.forEach { (key, fallbackMat) ->
-            val id = config.getString("armor.$key")
-            if (id != null && id != "none" && id.isNotEmpty()) {
-                val item = CustomItemManager.getCustomItem(id)
-                if (item != null) {
-                    itemCache[key] = item
-                } else {
-                    val cleanId = id.replace(".*:".toRegex(), "").uppercase()
-                    val mat = Material.matchMaterial(cleanId) ?: fallbackMat
-                    itemCache[key] = ItemStack(mat)
-                }
-            }
-        }
-    }
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
@@ -80,55 +30,34 @@ class Villager : Survivor(
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 20))) {
                 usarPanico(player)
-                sendAbilityMessage(player, langConfig, mechConfig, "skill1")
+                sendAbilityMessage(player, langConfig, mechConfig, "skill1", "ENTITY_VILLAGER_YES")
             }
             1 -> if (!checkCooldown(player, 1, mechConfig.getInt("items.skill2_cooldown", 15))) {
                 lanzarSoborno(player)
-                sendAbilityMessage(player, langConfig, mechConfig, "skill2")
+                sendAbilityMessage(player, langConfig, mechConfig, "skill2", "ENTITY_VILLAGER_YES")
             }
             2 -> if (!checkCooldown(player, 2, mechConfig.getInt("items.skill3_cooldown", 40))) {
                 invocarGolem(player)
-                sendAbilityMessage(player, langConfig, mechConfig, "skill3")
+                sendAbilityMessage(player, langConfig, mechConfig, "skill3", "ENTITY_VILLAGER_YES")
             }
         }
-    }
-
-    private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
-        var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(ColorTranslator.translate(msg))
-
-        
-        val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_VILLAGER_YES")
-        Sounds.orNull(soundName)?.let { player.playSound(player.location, it, 1f, 1f) }
     }
 
     override fun equip(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-
-        
-        preLoadKit()
-
-        val langInfo = MessageService.getSpecificFile(player, "survivors_info")
-
-        fun giveLocalizedSkill(slot: Int, key: String) {
-            val item = itemCache[key]?.clone() ?: return
-            langInfo.getString("$pathBase.skill_names.$key")?.let {
-                item.editMeta { m -> m.displayName(ColorTranslator.translate(it)) }
-            }
-            inv.setItem(slot, item)
-        }
-
-        giveLocalizedSkill(0, "skill1")
-        giveLocalizedSkill(1, "skill2")
-        giveLocalizedSkill(2, "skill3")
-
-        itemCache["helmet"]?.let { inv.helmet = it }
-        itemCache["chestplate"]?.let { inv.chestplate = it }
-        itemCache["leggings"]?.let { inv.leggings = it }
-        itemCache["boots"]?.let { inv.boots = it }
-
-        player.updateInventory()
+        equipFromConfig(
+            player,
+            armorFallbacks = mapOf(
+                "helmet" to Material.LEATHER_HELMET,
+                "chestplate" to Material.LEATHER_CHESTPLATE,
+                "leggings" to Material.LEATHER_LEGGINGS,
+                "boots" to Material.LEATHER_BOOTS
+            ),
+            itemFallbacks = mapOf(
+                "skill1" to Material.EMERALD,
+                "skill2" to Material.EMERALD,
+                "skill3" to Material.EMERALD
+            )
+        )
     }
 
     
@@ -140,7 +69,8 @@ class Villager : Survivor(
 
     
     private fun lanzarSoborno(player: Player) {
-        val item = itemCache["skill2"] ?: ItemStack(Material.EMERALD)
+        val itemId = plugin.configManager.getSurvivorConfig(this.id).getString("items.skill2")
+        val item = RoleItemUtils.resolveItem(itemId, Material.EMERALD) ?: ItemStack(Material.EMERALD)
 
         val proj = player.launchProjectile(Snowball::class.java)
         proj.item = item
@@ -173,7 +103,5 @@ class Villager : Survivor(
     override fun cleanup(player: Player?) {
         super.cleanup(player)
         player?.removePotionEffect(PotionEffectType.SPEED)
-        activeTasks.forEach { it.cancel() }
-        activeTasks.clear()
     }
 }

@@ -1,4 +1,4 @@
-﻿package liric.mistaken.utils.hooks
+package liric.mistaken.utils.hooks
 
 import io.netty.buffer.Unpooled
 import net.kyori.adventure.key.Key
@@ -70,25 +70,27 @@ object ObserverHook {
         } catch (e: Exception) {}
     }
 
+    private fun parseSoundKey(soundId: String): Key {
+        val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
+        val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
+        return Key.key(namespace, id)
+    }
+
+    private fun buildRecordSound(soundId: String, volume: Float, pitch: Float): Sound {
+        return Sound.sound(parseSoundKey(soundId), Sound.Source.RECORD, volume, pitch)
+    }
+
     fun playSound(player: Player, soundId: String, volume: Float = 1.0f, pitch: Float = 1.0f) {
         try {
-            val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
-            val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
-            val key = net.kyori.adventure.key.Key.key(namespace, id)
-            val sound = net.kyori.adventure.sound.Sound.sound(key, net.kyori.adventure.sound.Sound.Source.RECORD, volume, pitch)
-            player.playSound(sound)
+            player.playSound(buildRecordSound(soundId, volume, pitch))
         } catch (e: Exception) {
-            player.playSound(player.location, soundId, org.bukkit.SoundCategory.RECORDS, volume, pitch)
+            player.playSound(player.location, soundId, SoundCategory.RECORDS, volume, pitch)
         }
     }
 
     fun playSpatialSound(player: Player, soundId: String, x: Double, y: Double, z: Double, volume: Float = 1.0f, pitch: Float = 1.0f) {
         try {
-            val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
-            val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
-            val key = net.kyori.adventure.key.Key.key(namespace, id)
-            val sound = net.kyori.adventure.sound.Sound.sound(key, net.kyori.adventure.sound.Sound.Source.RECORD, volume, pitch)
-            player.playSound(sound, x, y, z)
+            player.playSound(buildRecordSound(soundId, volume, pitch), x, y, z)
         } catch (e: Exception) {
             player.playSound(Location(player.world, x, y, z), soundId, SoundCategory.RECORDS, volume, pitch)
         }
@@ -96,11 +98,7 @@ object ObserverHook {
 
     fun playEntitySound(player: Player, soundId: String, emitter: Entity, volume: Float = 1.0f, pitch: Float = 1.0f) {
         try {
-            val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
-            val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
-            val key = Key.key(namespace, id)
-            val sound = Sound.sound(key, Sound.Source.RECORD, volume, pitch)
-            player.playSound(sound, emitter)
+            player.playSound(buildRecordSound(soundId, volume, pitch), emitter)
         } catch (e: Exception) {
             player.playSound(emitter.location, soundId, SoundCategory.RECORDS, volume, pitch)
         }
@@ -108,10 +106,7 @@ object ObserverHook {
 
     fun stopSound(player: Player, soundId: String) {
         try {
-            val namespace = if (soundId.contains(":")) soundId.substringBefore(":") else "minecraft"
-            val id = if (soundId.contains(":")) soundId.substringAfter(":") else soundId
-            val key = Key.key(namespace, id)
-            player.stopSound(SoundStop.named(key))
+            player.stopSound(SoundStop.named(parseSoundKey(soundId)))
         } catch (e: Exception) {
             player.stopSound(soundId, SoundCategory.RECORDS)
         }

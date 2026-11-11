@@ -1,4 +1,4 @@
-﻿package liric.mistaken.listeners.interactables
+package liric.mistaken.listeners.interactables
 
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.Component
@@ -9,13 +9,8 @@ import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
-import org.bukkit.event.EventPriority
-import org.bukkit.event.Listener
-import org.bukkit.event.block.Action
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
-import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
@@ -25,7 +20,7 @@ import liric.mistaken.config.engine.core.MessageService
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class HackTerminalListener(private val plugin: Mistaken) : Listener {
+class HackTerminalListener(plugin: Mistaken) : BaseInteractableListener(plugin, Material.OBSERVER) {
 
     private val activeSessions = ConcurrentHashMap<UUID, HackSession>()
 
@@ -50,35 +45,11 @@ class HackTerminalListener(private val plugin: Mistaken) : Listener {
         var isShowing: Boolean = true
     )
 
-    @EventHandler(priority = EventPriority.LOW)
-    fun onInteract(event: PlayerInteractEvent) {
-        if (event.hand != EquipmentSlot.HAND) return
-        if (event.action != Action.RIGHT_CLICK_BLOCK) return
+    override fun killerErrorMessage(player: Player): Component = msg(player, "killer_error")
 
-        val block = event.clickedBlock ?: return
-        if (block.type != Material.OBSERVER) return
+    override fun alreadyCompletedMessage(player: Player): Component = msg(player, "already_hacked")
 
-        val player = event.player
-        val session = plugin.sessionManager.getSession(player) ?: return
-
-        
-        if (plugin.spectatorManager.isSpectator(player)) return
-
-        if (session.isKiller(player.uniqueId)) {
-            player.sendMessage(msg(player, "killer_error"))
-            return
-        }
-
-        val loc = block.location
-
-        if (plugin.generatorManager.isCompleted(loc)) {
-            player.sendMessage(msg(player, "already_hacked"))
-            return
-        }
-
-        event.isCancelled = true
-        event.setUseItemInHand(org.bukkit.event.Event.Result.DENY)
-        event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY)
+    override fun onInteractableUse(player: Player, loc: Location) {
         startHackSession(player, loc)
     }
 

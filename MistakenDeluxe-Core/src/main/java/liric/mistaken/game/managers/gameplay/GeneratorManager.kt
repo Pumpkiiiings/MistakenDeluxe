@@ -188,7 +188,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
     
     fun clearGeneratorsInWorld(world: World) {
         generators.entries.removeIf { (_, state) ->
-            if (state.location.world?.name == world.name) {
+            if (state.location.isWorldLoaded && state.location.world.name == world.name) {
                 state.displayEntity?.remove()
                 true
             } else false
@@ -218,7 +218,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
      */
     fun getCompletedCountInWorld(world: World): Int {
         return generators.values.count { state ->
-            state.location.world?.name == world.name && state.completed
+            state.location.isWorldLoaded && state.location.world.name == world.name && state.completed
         }
     }
 
@@ -226,7 +226,7 @@ class GeneratorManager(private val plugin: Mistaken) : Listener {
      * Devuelve el total de generadores registrados en un world espec?ico.
      */
     fun getTotalGeneratorsInWorld(world: World): Int {
-        return generators.values.count { it.location.world?.name == world.name }
+        return generators.values.count { it.location.isWorldLoaded && it.location.world.name == world.name }
     }
 
     fun getCompletedCount(): Int = generators.values.count { it.completed }

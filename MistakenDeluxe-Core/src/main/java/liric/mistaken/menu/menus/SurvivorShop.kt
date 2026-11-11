@@ -1,189 +1,66 @@
 package liric.mistaken.menu.menus
 
-import dev.triumphteam.gui.builder.item.ItemBuilder
-import dev.triumphteam.gui.guis.Gui
-import liric.mistaken.Mistaken
-import liric.mistaken.menu.MenuBase
+import liric.mistaken.config.engine.core.MessageService
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
-import org.bukkit.Sound
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemFlag
 import org.bukkit.persistence.PersistentDataType
-import liric.mistaken.api.requirements.RequirementEngine
-import liric.mistaken.config.engine.core.MessageService
+import java.util.UUID
 
-
-class SurvivorShop : MenuBase("survivors_shop") {
+/** Survivor unlock and selection shop GUI. */
+class SurvivorShop : BaseRoleShop(
+    menuName = "survivors_shop",
+    roleType = "survivors",
+    langFile = "survivors_info",
+    buyStateKey = "shop.state-buy-survivor",
+    defaultIcon = Material.IRON_CHESTPLATE,
+    requirementFailMessage = "<red>No cumples los requisitos para este survivor.</red>",
+    defaultBackSlot = 40,
+    defaultBackName = "Back",
+    fallbackToFirstEmpty = false
+) {
 
     private val survivorKey by lazy { NamespacedKey(plugin, "selected_survivor") }
 
-    override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
-        
-        val globalMecanicas = plugin.configManager.getSurvivorConfig("global") 
+    override fun getCatalogIds(): Iterable<String> = plugin.survivorManager.catalogo.keys
 
-        val slots = config.getIntegerList("settings.available-slots")
-        if (slots.isEmpty()) return
+    override fun getRoleConfig(roleId: String): FileConfiguration =
+        plugin.configManager.getSurvivorConfig(roleId)
 
-        val data = plugin.playerDataManager
-        val uuid = player.uniqueId
-        val selected = data.getSelectedSurvivor(uuid)
+    override fun isOwned(uuid: UUID, roleId: String): Boolean =
+        plugin.playerDataManager.tieneSurvivor(uuid, roleId)
 
-        
-        val labelHumano = MessageService.getComponent(player, "shop.human-class")
-        val labelSeleccionado = MessageService.getComponent(player, "shop.state-selected")
-        val labelPoseido = MessageService.getComponent(player, "shop.state-owned")
-        val labelComprar = MessageService.getComponent(player, "shop.state-buy-survivor")
-        val labelAbilityes = MessageService.getComponent(player, "shop.abilities-title")
+    override fun getSelected(uuid: UUID): String? =
+        plugin.playerDataManager.getSelectedSurvivor(uuid)
 
-        var slotIndex = 0
-
-        for (survivorId in plugin.survivorManager.catalogo.keys) {
-            if (slotIndex >= slots.size) break
-
-            val survivorConfig = plugin.configManager.getSurvivorConfig(survivorId)
-            val permisoRequerido = survivorConfig.getString("permiso")
-            if (permisoRequerido != null && !player.hasPermission(permisoRequerido)) continue
-
-            
-            
-            val nombreVisual = MessageService.getStrictString(player, "survivors.$survivorId.name", "survivors_info")
-            
-            val loreShop = MessageService.getStrictStringList(player, "survivors.$survivorId.lore_shop", "survivors_info")
-
-            
-            
-            val precio = survivorConfig.getInt("precio", 0)
-            
-            val matStr = survivorConfig.getString("icono_material", "IRON_CHESTPLATE")!!
-            val iconoMat = Material.matchMaterial(matStr.uppercase()) ?: Material.IRON_CHESTPLATE
-
-            
-            val fullLore = mutableListOf<Component>().apply {
-                add(labelHumano)
-                add(Component.empty())
-
-                
-                loreShop.forEach { line ->
-                    add(parseSafe(line))
-                }
-
-                add(Component.empty())
-                add(labelAbilityes)
-
-                
-                
-                for (i in 1..3) {
-                    val habName = MessageService.getRawString(player, "survivors.$survivorId.skill_names.skill$i", "", "survivors_info")
-                    if (habName.isNotEmpty()) {
-                        add(parseSafe(" <dark_gray>•</dark_gray> <white>$habName</white>"))
-                    }
-                }
-                add(Component.empty())
-            }
-
-            
-            val tiene = data.tieneSurvivor(uuid, survivorId)
-            val esSeleccionado = selected.equals(survivorId, ignoreCase = true)
-
-            val reqMessages = RequirementEngine.getRequirementMessages(player, "survivors", survivorId)
-            reqMessages.forEach { fullLore.add(parseSafe(it)) }
-
-            when {
-                esSeleccionado -> fullLore.add(labelSeleccionado)
-                tiene -> fullLore.add(labelPoseido)
-                else -> {
-                    fullLore.add(MessageService.getComponent(player, "shop.state-price", Placeholder.parsed("amount", precio.toString())))
-                    fullLore.add(labelComprar)
-                }
-            }
-
-            
-            val guiItem = ItemBuilder.from(iconoMat)
-                .name(parseSafe(nombreVisual))
-                .lore(fullLore.toList())
-                .asGuiItem { event ->
-                    event.isCancelled = true
-                    if (reqMessages.isNotEmpty()) {
-                        player.sendMessage(parseSafe("<red>No cumples los requisitos para este survivor.</red>"))
-                        player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
-                        return@asGuiItem
-                    }
-                    handleLogic(player, survivorId, precio, tiene)
-                }.also { it.itemStack.editMeta { meta -> meta.addItemFlags(*ItemFlag.entries.toTypedArray()) } }
-                
-            gui.setItem(slots[slotIndex], guiItem)
-            slotIndex++
-        }
-
-        val botonAtrasMat = config.getString("settings.back-button.material", "ARROW")!!
-        val botonAtrasNombre = config.getString("settings.back-button.name", "Back")!!
-        val botonAtrasSlot = config.getInt("settings.back-button.slot", 40)
-        val matAtras = Material.matchMaterial(botonAtrasMat.uppercase()) ?: Material.ARROW
-        val backItem = ItemBuilder.from(matAtras)
-            .name(parseSafe(botonAtrasNombre))
-            .asGuiItem { event ->
-                event.isCancelled = true
-                ShopSelector().abrir(player)
-            }.also { it.itemStack.editMeta { meta -> meta.addItemFlags(*ItemFlag.entries.toTypedArray()) } }
-            
-        gui.setItem(botonAtrasSlot, backItem)
+    override fun selectRole(player: Player, roleId: String) {
+        plugin.playerDataManager.setSelectedSurvivor(player.uniqueId, roleId)
+        player.persistentDataContainer.set(survivorKey, PersistentDataType.STRING, roleId)
     }
 
-    private fun handleLogic(player: Player, id: String, precio: Int, tiene: Boolean) {
-        val uuid = player.uniqueId
-        val data = plugin.playerDataManager
-        val actual = data.getSelectedSurvivor(uuid)
+    override fun unlockRole(uuid: UUID, roleId: String) {
+        plugin.playerDataManager.comprarSurvivor(uuid, roleId)
+    }
 
-        
-        if (id.equals(actual, ignoreCase = true)) {
-            player.sendMessage(MessageService.getComponent(player, "shop.already-selected"))
-            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
-            return
-        }
+    override fun resolveNamePlaceholder(player: Player, roleId: String, visualName: String): TagResolver {
+        return Placeholder.component("name", parseSafe(visualName))
+    }
 
-        
-        if (tiene) {
-            data.setSelectedSurvivor(uuid, id)
-            player.persistentDataContainer.set(survivorKey, PersistentDataType.STRING, id)
+    override fun appendHeaderLore(lore: MutableList<Component>, player: Player, roleId: String) {
+        lore.add(MessageService.getComponent(player, "shop.human-class"))
+        lore.add(Component.empty())
+    }
 
-            
-            val nombreVisual = MessageService.getStrictString(player, "survivors.$id.name", "survivors_info")
-
-            player.sendMessage(MessageService.getComponent(player, "shop.selected", Placeholder.component("name", parseSafe(nombreVisual))))
-            player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
-            abrir(player)
-            return
-        }
-
-        
-        val econ = Mistaken.Companion.economy
-        if (econ == null) {
-            player.sendMessage(parseSafe("<red>Error: No se encontró ningún sistema de economía.</red>"))
-            return
-        }
-
-        val costo = precio.toDouble()
-
-        if (econ.getBalance(player) >= costo) {
-            val success = econ.withdraw(player, costo)
-            if (success) {
-                data.comprarSurvivor(uuid, id)
-
-                val nombreVisual = MessageService.getStrictString(player, "survivors.$id.name", "survivors_info")
-
-                player.sendMessage(MessageService.getComponent(player, "shop.purchased", Placeholder.component("name", parseSafe(nombreVisual))))
-                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
-                abrir(player)
-            } else {
-                player.sendMessage(MessageService.getComponent(player, "shop_errores.error_bancario", Placeholder.parsed("error", "Transacción fallida.")))
+    override fun appendSkillLore(lore: MutableList<Component>, player: Player, roleId: String) {
+        for (i in 1..3) {
+            val habName = MessageService.getRawString(player, "survivors.$roleId.skill_names.skill$i", "", "survivors_info")
+            if (habName.isNotEmpty()) {
+                lore.add(parseSafe(" <dark_gray>•</dark_gray> <white>$habName</white>"))
             }
-        } else {
-            player.sendMessage(MessageService.getComponent(player, "errors.no-money"))
-            player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
         }
     }
 }

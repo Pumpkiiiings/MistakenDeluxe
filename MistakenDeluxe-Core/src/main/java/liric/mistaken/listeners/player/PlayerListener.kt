@@ -103,12 +103,7 @@ class PlayerListener(private val plugin: Mistaken) : Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     fun onPlayerQuit(event: PlayerQuitEvent) {
-        
         event.quitMessage(null)
-
-        plugin.nameTagManager.removePlayer(event.player)
-        plugin.sessionManager.leaveSession(event.player)
-        plugin.scoreboardManager.removePlayer(event.player)
     }
 
     @EventHandler(priority = EventPriority.NORMAL)

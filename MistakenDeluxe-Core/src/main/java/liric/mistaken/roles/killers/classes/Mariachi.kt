@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers.classes
+package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
@@ -40,36 +40,12 @@ class Mariachi : CoreKiller(
 
     private val pathBase = "killers.mariachi"
     override val defaultMusic = "mistaken:jarabetapatio"
-    private val sonidoMúsicaId = defaultMusic
 
-    private val itemKitCache = ConcurrentHashMap<String, ItemStack>()
     private val skullsOrbit = ConcurrentHashMap<UUID, MutableList<VirtualItemDisplay>>()
     private val angulos = ConcurrentHashMap<UUID, Double>()
 
-    init {
-        preLoadKit()
-    }
-
-    private fun preLoadKit() {
-        val config = plugin.configManager.getKillerConfig(this.id)
-        val armor = listOf("helmet", "chestplate", "leggings", "boots")
-        val items = listOf("weapon", "skill1", "skill2", "skill3", "skill4")
-
-        armor.forEach { k ->
-            config.getString("armor.$k")?.let { id ->
-                if (id != "none") {
-                    itemKitCache[k] = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.LEATHER_HELMET)
-                }
-            }
-        }
-
-        items.forEach { k ->
-            config.getString("items.$k")?.let { id ->
-                if (id != "none") {
-                    itemKitCache[k] = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.GOLDEN_AXE)
-                }
-            }
-        }
+    override fun onEquipped(player: Player) {
+        startLoopingMusic(player, defaultMusic, volume = 1.5f, maxDistSq = 1600.0)
     }
 
     override fun useSkill(player: Player, slot: Int) {
@@ -79,38 +55,6 @@ class Mariachi : CoreKiller(
             3 -> if (!checkCooldown(player, 3)) { abilityGuitarrazo(player); playSkillEffects(player, 3) }
             4 -> if (!checkCooldown(player, 4)) { abilityTequila(player); playSkillEffects(player, 4) }
         }
-    }
-
-    override fun equip(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        inv.armorContents = arrayOfNulls(4)
-
-        if (itemKitCache.isEmpty()) preLoadKit()
-        val langInfo = MessageService.getSpecificFile(player, "killers_info")
-
-        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val item = itemKitCache[key]?.clone() ?: return
-            val namePath = if (key == "weapon") "killers.mariachi.skill_names.weapon" else "killers.mariachi.skill_names.$key"
-
-            langInfo.getString(namePath)?.let { item.editMeta { m -> m.displayName(ColorTranslator.translate(it)) } }
-
-            if (isArmor) {
-                when(key) {
-                    "helmet" -> inv.helmet = item
-                    "chestplate" -> inv.chestplate = item
-                    "leggings" -> inv.leggings = item
-                    "boots" -> inv.boots = item
-                }
-            } else inv.setItem(slot, item)
-        }
-
-        listOf("helmet", "chestplate", "leggings", "boots").forEach { deliver(it, 0, true) }
-        deliver("skill1", 1); deliver("skill2", 2); deliver("skill3", 3); deliver("skill4", 4); deliver("weapon", 8)
-
-        player.inventory.heldItemSlot = 8
-        player.updateInventory()
-        iniciarMusica(player)
     }
 
     private fun abilityGrito(player: Player) {
@@ -204,39 +148,19 @@ class Mariachi : CoreKiller(
         }
     }
 
-    private fun iniciarMusica(player: Player) {
-        val uuid = player.uniqueId
-        detenerMusica(uuid)
-
-        player.scheduler.runAtFixedRate(plugin, Consumer { task ->
-            if (!player.isOnline || !plugin.killerManager.isKiller(player)) {
-                detenerMusica(uuid)
-                task.cancel()
-                return@Consumer
-            }
-            player.world.players.forEach { p ->
-                if (p.location.distanceSquared(player.location) < 1600) {
-                    ObserverHook.stopSound(p, sonidoMúsicaId)
-                    ObserverHook.playEntitySound(p, sonidoMúsicaId, player, 1.5f, 1.0f)
-                }
-            }
-        }, null, 1L, 1480L)
-    }
-
     private fun clearVisuales(uuid: UUID) {
         skullsOrbit.remove(uuid)?.forEach { it.remove() }
         angulos.remove(uuid)
     }
 
-    private fun detenerMusica(uuid: UUID) {
-        Bukkit.getOnlinePlayers().forEach { ObserverHook.stopSound(it, sonidoMúsicaId) }
-    }
-
     override fun cleanup(player: Player?) {
         super.cleanup(player)
-        player?.let {
-            clearVisuales(it.uniqueId)
-            detenerMusica(it.uniqueId)
-        }
+        player?.let { clearVisuales(it.uniqueId) }
+    }
+
+    override fun onDispose() {
+        skullsOrbit.values.forEach { list -> list.forEach { it.remove() } }
+        skullsOrbit.clear()
+        angulos.clear()
     }
 }

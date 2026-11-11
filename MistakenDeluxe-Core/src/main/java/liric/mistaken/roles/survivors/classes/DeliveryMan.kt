@@ -1,55 +1,28 @@
-﻿package liric.mistaken.roles.survivors.classes
+package liric.mistaken.roles.survivors.classes
 
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask
-import liric.mistaken.Mistaken
-import liric.mistaken.api.util.Sounds
+import liric.mistaken.config.engine.core.MessageService
 import liric.mistaken.roles.survivors.Survivor
-import liric.mistaken.utils.resourcepack.CustomItemManager
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.Particle
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.entity.Snowball
-import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import java.util.concurrent.ConcurrentHashMap
-import org.bukkit.configuration.file.FileConfiguration
-import liric.mistaken.utils.color.ColorTranslator
-import liric.mistaken.config.engine.core.MessageService
 
 /**
  * [LIRIC-MISTAKEN 2.0]
- * DeliveryMan: Soporte t�ctico y control de �rea.
- * OPTIMIZADO: Separaci�n Mec�nica/Info + Schedulers.
+ * DeliveryMan: Soporte tactico y control de area.
+ * OPTIMIZADO: Separacion Mecanica/Info + Schedulers.
  */
 class DeliveryMan : Survivor(
     "repartidor",
     MessageService.getStrictString(null, "survivors.repartidor.name", "survivors_info")
 ) {
 
-    private val pathBase = "survivors.repartidor"
-    private val itemCache = ConcurrentHashMap<String, ItemStack>()
-    private val activeTasks = ConcurrentHashMap.newKeySet<ScheduledTask>()
     private val pedidoKey = NamespacedKey("mistaken", "pedido")
-
-    init {
-        preLoadKit()
-    }
-
-    private fun preLoadKit() {
-        val config = plugin.configManager.getSurvivorConfig(this.id)
-        listOf("skill1", "skill2", "skill3").forEach { key ->
-            config.getString("items.$key")?.let { id ->
-                if (id != "none" && id.isNotEmpty()) {
-                    val item = CustomItemManager.getCustomItem(id) ?: ItemStack(Material.matchMaterial(id) ?: Material.PAPER)
-                    itemCache[key] = item
-                }
-            }
-        }
-    }
 
     override fun useSkill(player: Player, slot: Int) {
         val mechConfig = plugin.configManager.getSurvivorConfig(this.id)
@@ -58,54 +31,29 @@ class DeliveryMan : Survivor(
         when (slot) {
             0 -> if (!checkCooldown(player, 0, mechConfig.getInt("items.skill1_cooldown", 30))) {
                 usarBebidaEnergetica(player)
-                sendAbilityMessage(player, langConfig, mechConfig, "skill1")
+                sendAbilityMessage(player, langConfig, mechConfig, "skill1", "ENTITY_GENERIC_EAT")
             }
             1 -> if (!checkCooldown(player, 1, mechConfig.getInt("items.skill2_cooldown", 25))) {
                 lanzarPedido(player)
-                sendAbilityMessage(player, langConfig, mechConfig, "skill2")
+                sendAbilityMessage(player, langConfig, mechConfig, "skill2", "ENTITY_GENERIC_EAT")
             }
             2 -> if (!checkCooldown(player, 2, mechConfig.getInt("items.skill3_cooldown", 15))) {
                 usarDerrame(player)
-                sendAbilityMessage(player, langConfig, mechConfig, "skill3")
+                sendAbilityMessage(player, langConfig, mechConfig, "skill3", "ENTITY_GENERIC_EAT")
             }
         }
-    }
-
-    private fun sendAbilityMessage(
-        player: Player,
-        lang: FileConfiguration,
-        mech: FileConfiguration,
-        key: String
-    ) {
-        var msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) {
-            msg = msg.replace("<prefix>", "", true).replace("%prefix%", "", true).trim()
-            player.sendMessage(ColorTranslator.translate(msg))
-        }
-        val soundName = mech.getString("$pathBase.items.${key}_sound", "ENTITY_GENERIC_EAT")
-        Sounds.orNull(soundName)?.let { player.playSound(player.location, it, 1f, 1f) }
     }
 
     override fun equip(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        if (itemCache.isEmpty()) preLoadKit()
-
-        val langConfig = MessageService.getSpecificFile(player, "survivors_info")
-
-        fun giveLocalizedSkill(slot: Int, key: String) {
-            val item = itemCache[key]?.clone() ?: return
-            langConfig.getString("$pathBase.skill_names.$key")?.let {
-                item.editMeta { m -> m.displayName(ColorTranslator.translate(it)) }
-            }
-            inv.setItem(slot, item)
-        }
-
-        giveLocalizedSkill(0, "skill1")
-        giveLocalizedSkill(1, "skill2")
-        giveLocalizedSkill(2, "skill3")
-
-        player.updateInventory()
+        equipFromConfig(
+            player,
+            includeArmor = false,
+            itemFallbacks = mapOf(
+                "skill1" to Material.PAPER,
+                "skill2" to Material.PAPER,
+                "skill3" to Material.PAPER
+            )
+        )
     }
 
     private fun usarBebidaEnergetica(player: Player) {
@@ -118,7 +66,7 @@ class DeliveryMan : Survivor(
             }
         }, null, 120L)
 
-        task?.let { activeTasks.add(it) }
+        trackTask(player.uniqueId, task)
     }
 
     private fun lanzarPedido(player: Player) {
@@ -130,22 +78,14 @@ class DeliveryMan : Survivor(
 
     private fun usarDerrame(player: Player) {
         val blockLoc = player.location.block.location
-        
 
         player.world.spawnParticle(Particle.ITEM_SLIME, player.location.add(0.0, 0.1, 0.0), 40, 0.5, 0.0, 0.5, 0.1)
         player.playSound(player.location, Sound.BLOCK_SLIME_BLOCK_PLACE, 1f, 0.5f)
 
         val task = plugin.server.regionScheduler.runDelayed(plugin, blockLoc, {
-            
             blockLoc.world.spawnParticle(Particle.DRIPPING_WATER, blockLoc.clone().add(0.5, 0.1, 0.5), 15, 0.2, 0.1, 0.2)
         }, 200L)
 
-        task?.let { activeTasks.add(it) }
-    }
-
-    override fun cleanup(player: Player?) {
-        super.cleanup(player)
-        activeTasks.forEach { it.cancel() }
-        activeTasks.clear()
+        trackTask(player.uniqueId, task)
     }
 }

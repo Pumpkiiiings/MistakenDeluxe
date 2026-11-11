@@ -69,6 +69,9 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask
  */
 object LuaEffectBindings {
 
+    private val frozenSavedSpeed = java.util.concurrent.ConcurrentHashMap<java.util.UUID, Float>()
+    private val freezeCounts = java.util.concurrent.ConcurrentHashMap<java.util.UUID, Int>()
+
     fun install(globals: Globals, scriptId: String) {
         
         
@@ -604,14 +607,6 @@ object LuaEffectBindings {
         })
 
         
-        globals.set("dash", object : OneArgFunction() {
-            override fun call(playerArg: LuaValue): LuaValue {
-                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
-                return buildDashTable(scriptId, player)
-            }
-        })
-
-        
         globals.set("damage", object : VarArgFunction() {
             override fun invoke(args: Varargs): Varargs {
                 val victimArg = args.arg(1)
@@ -774,12 +769,24 @@ object LuaEffectBindings {
             override fun invoke(args: org.luaj.vm2.Varargs): org.luaj.vm2.Varargs {
                 val player = unwrapPlayer(args.arg(1)) ?: return org.luaj.vm2.LuaValue.NIL
                 val duration = args.arg(2).optint(40)
-                val oldSpeed = player.walkSpeed
+                val uuid = player.uniqueId
+                frozenSavedSpeed.putIfAbsent(uuid, player.walkSpeed.takeIf { it > 0.0f } ?: 0.2f)
+                freezeCounts.merge(uuid, 1, Int::plus)
                 player.walkSpeed = 0.0f
                 val pPlugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
                 player.scheduler.runDelayed(pPlugin, java.util.function.Consumer {
-                    if (player.isOnline) player.walkSpeed = oldSpeed
-                }, null, duration.toLong())
+                    val remaining = freezeCounts.compute(uuid) { _, count ->
+                        val next = (count ?: 1) - 1
+                        if (next <= 0) null else next
+                    }
+                    if (remaining == null) {
+                        val restore = frozenSavedSpeed.remove(uuid) ?: 0.2f
+                        if (player.isOnline) player.walkSpeed = restore
+                    }
+                }, {
+                    freezeCounts.remove(uuid)
+                    frozenSavedSpeed.remove(uuid)
+                }, duration.toLong())
                 return org.luaj.vm2.LuaValue.NIL
             }
         })
@@ -915,10 +922,12 @@ object LuaEffectBindings {
                 }
                 
                 
-                val modeledEntity = com.ticxo.modelengine.api.ModelEngineAPI.getModeledEntity(player.uniqueId)
-                if (modeledEntity != null) {
-                    modeledEntity.models.values.forEach { model ->
-                        model.animationHandler.playAnimation(animName, 0.0, 0.0, 1.0, true)
+                if (org.bukkit.Bukkit.getPluginManager().isPluginEnabled("ModelEngine")) {
+                    val modeledEntity = com.ticxo.modelengine.api.ModelEngineAPI.getModeledEntity(player.uniqueId)
+                    if (modeledEntity != null) {
+                        modeledEntity.models.values.forEach { model ->
+                            model.animationHandler.playAnimation(animName, 0.0, 0.0, 1.0, true)
+                        }
                     }
                 }
                 

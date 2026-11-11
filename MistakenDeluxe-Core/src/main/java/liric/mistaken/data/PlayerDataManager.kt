@@ -12,9 +12,9 @@ class PlayerDataManager(private val plugin: Mistaken) : IPlayerDataManager {
 
     data class MistakenUser(
         var language: String = "es",
-        val unlockedKillers: MutableSet<String> = mutableSetOf("slasher"),
+        val unlockedKillers: MutableSet<String> = ConcurrentHashMap.newKeySet<String>().apply { add("slasher") },
         var selectedKiller: String = "slasher",
-        val unlockedSurvivors: MutableSet<String> = mutableSetOf("civil"),
+        val unlockedSurvivors: MutableSet<String> = ConcurrentHashMap.newKeySet<String>().apply { add("civil") },
         var selectedSurvivor: String = "civil",
         var nickname: String = "",
         var skinName: String = "",

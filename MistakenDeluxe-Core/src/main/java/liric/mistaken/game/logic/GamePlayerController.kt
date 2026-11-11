@@ -1,4 +1,4 @@
-﻿package liric.mistaken.game.logic
+package liric.mistaken.game.logic
 
 import liric.mistaken.game.GameSession
 import liric.mistaken.game.enums.GameState
@@ -23,7 +23,7 @@ import liric.mistaken.config.engine.core.MessageService
 class GamePlayerController(private val game: GameSession) {
 
     companion object {
-        val globalRecentKillers = mutableListOf<String>()
+        val globalRecentKillers: MutableList<String> = java.util.concurrent.CopyOnWriteArrayList()
     }
 
     var lmsActivado = false
@@ -302,7 +302,7 @@ class GamePlayerController(private val game: GameSession) {
             lmsActivado = true
             activeLmsMusic = "mistaken:lms-2"
             
-            game.plugin.server.onlinePlayers.forEach { p ->
+            game.getPlayers().forEach { p ->
                 p.playSound(p.location, Sound.ENTITY_WITHER_SPAWN, 1f, 0.5f)
                 p.playSound(p.location, Sound.AMBIENT_CAVE, 1f, 0.5f)
                 p.playSound(p.location, activeLmsMusic, SoundCategory.RECORDS, 1f, 1f)

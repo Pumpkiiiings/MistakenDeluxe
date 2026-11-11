@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.survivors.classes
+package liric.mistaken.roles.survivors.classes
 
 import liric.mistaken.utils.sessionViewers
 import com.github.retrooper.packetevents.PacketEvents
@@ -44,10 +44,6 @@ class KasaneTeto : Survivor(
     MessageService.getStrictString(null, "survivors.teto.name", "survivors_info")
 ) {
 
-    private val pathBase = "survivors.teto"
-    private val itemCache = ConcurrentHashMap<String, ItemStack>()
-
-    
     private val tetoAccesorios = ConcurrentHashMap<UUID, MutableList<VirtualBlockDisplay>>()
 
     override fun useSkill(player: Player, slot: Int) {
@@ -70,57 +66,9 @@ class KasaneTeto : Survivor(
         }
     }
 
-    private fun sendAbilityMessage(player: Player, lang: FileConfiguration, mech: FileConfiguration, key: String) {
-        val msg = lang.getString("$pathBase.habilidades_mensajes.$key")
-        if (!msg.isNullOrEmpty()) player.sendMessage(ColorTranslator.translate(msg))
-    }
-
     override fun equip(player: Player) {
-        val inv = player.inventory
-        inv.clear()
-        inv.armorContents = arrayOfNulls(4)
-
         player.getAttribute(Attribute.SCALE)?.baseValue = 0.8861
-
-        val langInfo = MessageService.getSpecificFile(player, "survivors_info")
-        val configMecanica = plugin.configManager.getSurvivorConfig(this.id)
-
-        fun deliver(key: String, slot: Int, isArmor: Boolean = false) {
-            val id = if (isArmor) configMecanica.getString("armor.$key")
-            else configMecanica.getString("items.$key")
-
-            if (id == null || id == "none") return
-
-            val item = CustomItemManager.getCustomItem(id) ?: run {
-                val matName = id.replace(".*:".toRegex(), "").uppercase()
-                val mat = Material.matchMaterial(matName)
-                if (mat != null) ItemStack(mat) else if (key == "skill1") ItemStack(Material.IRON_HOE) else null
-            } ?: return
-
-            val meta = item.itemMeta
-            langInfo.getString("$pathBase.skill_names.$key")?.let {
-                meta.displayName(ColorTranslator.translate(it))
-            }
-            item.itemMeta = meta
-
-            if (isArmor) {
-                when(key) {
-                    "helmet" -> inv.helmet = item
-                    "chestplate" -> inv.chestplate = item
-                    "leggings" -> inv.leggings = item
-                    "boots" -> inv.boots = item
-                }
-            } else {
-                inv.setItem(slot, item)
-            }
-        }
-
-        deliver("helmet", 0, true); deliver("chestplate", 0, true)
-        deliver("leggings", 0, true); deliver("boots", 0, true)
-
-        deliver("skill1", 0); deliver("skill2", 1); deliver("skill3", 2)
-
-        player.updateInventory()
+        equipFromConfig(player, itemFallbacks = mapOf("skill1" to Material.IRON_HOE))
         crearCosmeticosTeto(player)
     }
 

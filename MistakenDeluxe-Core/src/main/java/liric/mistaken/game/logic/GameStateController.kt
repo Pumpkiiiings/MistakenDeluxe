@@ -48,13 +48,6 @@ class GameStateController(private val game: GameSession) {
 
         game.timer = game.plugin.config.getInt("settings.break-duration", 10)
 
-        
-        if (venimosDePartida) {
-            game.playerController.cleanupAllPlayers(lastKillerWon)
-            game.worldController.clearMapa()
-            game.playerController.teleportAllToLobby()
-        }
-
         game.broadcastLocalized("game.break-start")
     }
 

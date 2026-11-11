@@ -1,4 +1,4 @@
-﻿package liric.mistaken.data.db
+package liric.mistaken.data.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -43,7 +43,7 @@ class HikariDatabaseManager(
                 config.jdbcUrl = "jdbc:mysql://$host:$port/$database?useSSL=false&autoReconnect=true"
                 config.username = username
                 config.password = password
-                config.driverClassName = "Driver"
+                config.driverClassName = "com.mysql.cj.jdbc.Driver"
                 config.maximumPoolSize = 10
             }
             DatabaseType.POSTGRESQL -> {

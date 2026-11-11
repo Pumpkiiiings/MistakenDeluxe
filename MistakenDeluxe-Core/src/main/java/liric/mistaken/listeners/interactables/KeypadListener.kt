@@ -1,24 +1,21 @@
-﻿package liric.mistaken.listeners.interactables
+package liric.mistaken.listeners.interactables
 
 import liric.mistaken.Mistaken
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
+import net.kyori.adventure.text.Component
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
-import org.bukkit.event.Listener
-import org.bukkit.event.block.Action
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.inventory.EquipmentSlot
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import liric.mistaken.config.engine.core.MessageService
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class KeypadListener(private val plugin: Mistaken) : Listener {
+class KeypadListener(plugin: Mistaken) : BaseInteractableListener(plugin, Material.AMETHYST_BLOCK) {
 
     
     private val activeTyping = ConcurrentHashMap<UUID, Pair<Location, String>>()
@@ -26,36 +23,13 @@ class KeypadListener(private val plugin: Mistaken) : Listener {
     private fun cancelWord(player: Player): String =
         MessageService.getRawString(player, "listeners.keypad.cancel_word", "cancelar", "messages")
 
-    @EventHandler(priority = EventPriority.LOW)
-    fun onInteract(event: PlayerInteractEvent) {
-        if (event.hand != EquipmentSlot.HAND) return
-        if (event.action != Action.RIGHT_CLICK_BLOCK) return
+    override fun killerErrorMessage(player: Player): Component =
+        MessageService.getComponent(player, "listeners.keypad.killer_error")
 
-        val block = event.clickedBlock ?: return
-        if (block.type != Material.AMETHYST_BLOCK) return
+    override fun alreadyCompletedMessage(player: Player): Component =
+        MessageService.getComponent(player, "listeners.keypad.already_solved")
 
-        val player = event.player
-        val session = plugin.sessionManager.getSession(player) ?: return
-
-        if (session.isKiller(player.uniqueId)) {
-            player.sendMessage(MessageService.getComponent(player, "listeners.keypad.killer_error"))
-            return
-        }
-
-        
-        if (plugin.spectatorManager.isSpectator(player)) return
-
-        val loc = block.location
-
-        if (plugin.generatorManager.isCompleted(loc)) {
-            player.sendMessage(MessageService.getComponent(player, "listeners.keypad.already_solved"))
-            return
-        }
-
-        event.isCancelled = true
-        event.setUseItemInHand(org.bukkit.event.Event.Result.DENY)
-        event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY)
-
+    override fun onInteractableUse(player: Player, loc: Location) {
         if (activeTyping.containsKey(player.uniqueId)) {
             player.sendMessage(MessageService.getComponent(
                 player, "listeners.keypad.already_typing",

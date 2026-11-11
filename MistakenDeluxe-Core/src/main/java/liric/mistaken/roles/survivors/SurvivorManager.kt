@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.survivors
+package liric.mistaken.roles.survivors
 
 import liric.mistaken.Mistaken
 import liric.mistaken.roles.survivors.classes.*
@@ -16,62 +16,39 @@ import liric.mistaken.roles.shared.AbstractRoleManager
 class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api.roles.ISurvivor>(plugin), liric.mistaken.api.managers.ISurvivorManager {
 
     init {
-        
-        
-        listOf(
-            DeliveryMan(),
-            Jesse(),
-            Villager()
-        ).forEach { registerClass(it) }
-
+        loadHardcodedSurvivors()
         loadScripts()
     }
 
     fun reloadAll() {
         cleanAll()
+        availableClasses.values.toList().forEach { it.cleanup(null) }
         availableClasses.clear()
+        loadHardcodedSurvivors()
+        loadScripts()
+    }
+
+    private fun loadHardcodedSurvivors() {
         listOf(
             DeliveryMan(),
             Jesse(),
             Villager()
         ).forEach { registerClass(it) }
-        loadScripts()
     }
 
     fun loadScripts() {
-        val scriptsFolder = java.io.File(plugin.dataFolder, "scripts/survivors")
-        if (!scriptsFolder.exists()) {
-            scriptsFolder.mkdirs()
-        }
-
-        try {
-            val defaults = listOf("civil", "minty", "notch", "raincoatkid", "troll")
-            for (script in defaults) {
-                if (!java.io.File(scriptsFolder, "$script.lua").exists()) {
-                    plugin.saveResource("scripts/survivors/$script.lua", false)
-                }
+        val loadedCount = loadScriptsFromFolder(
+            subFolder = "survivors",
+            defaultLuaScripts = listOf("civil", "minty", "notch", "raincoatkid", "troll"),
+            supportsGroovy = false,
+            luaRoleFactory = { survivorId, displayName, scriptRole ->
+                liric.mistaken.scripting.adapter.LuaSurvivorAdapter(
+                    id = survivorId,
+                    name = displayName,
+                    scriptRole = scriptRole
+                )
             }
-        } catch (e: Exception) {
-            plugin.componentLogger.warn(liric.mistaken.utils.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Failed to copy default survivor scripts.</gray>"))
-        }
-
-        val files = scriptsFolder.listFiles() ?: return
-        var loadedCount = 0
-        for (file in files) {
-            if (file.name.endsWith(".lua")) {
-                val survivorId = file.nameWithoutExtension.lowercase()
-                val scriptRole = liric.mistaken.scripting.engine.lua.LuaScriptEngine.loadScript(file, survivorId)
-                if (scriptRole != null) {
-                    val luaAdapter = liric.mistaken.scripting.adapter.LuaSurvivorAdapter(
-                        id = survivorId,
-                        name = survivorId.replaceFirstChar { it.uppercase() },
-                        scriptRole = scriptRole
-                    )
-                    registerClass(luaAdapter)
-                    loadedCount++
-                }
-            }
-        }
+        )
         if (loadedCount > 0) {
             plugin.componentLogger.info(ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Loaded $loadedCount survivors from scripts.</gray>"))
         }
@@ -137,22 +114,18 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
 
     override fun removeRoleLogic(uuid: UUID, player: Player?) {
         val clase = activeRoles.remove(uuid) ?: return
+        if (player == null) return
 
-        if (player != null && player.isOnline) {
-            
+        if (player.isOnline) {
             player.scheduler.run(plugin, { _ ->
-                
                 clase.cleanup(player)
 
-                
                 player.inventory.clear()
                 player.inventory.armorContents = arrayOfNulls(4)
-                
-                
+
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = 20.0
 
-                
-                player.activePotionEffects.forEach { effect ->
+                player.activePotionEffects.toList().forEach { effect ->
                     player.removePotionEffect(effect.type)
                 }
 
@@ -160,14 +133,18 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
                 player.walkSpeed = 0.2f
             }, null)
         } else {
-            
-            clase.cleanup(null)
+            clase.cleanup(player)
         }
     }
 
     override fun cleanAll() {
         super.cleanAll()
         plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>Survivor cleanup completed.</gray>"))
+    }
+
+    override fun shutdown() {
+        super.shutdown()
+        availableClasses.values.toList().forEach { it.cleanup(null) }
     }
 
     

@@ -20,6 +20,28 @@ object MistakenDebugCommand {
 
     private var instanceCounter = 0
 
+    private fun playLmsTestEffectsForPlayer(plugin: Mistaken, p: Player) {
+        liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 255, 255, 0.9f, 30)
+        liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.5f, 40)
+        p.playSound(p.location, "mistaken:lms", org.bukkit.SoundCategory.RECORDS, 1f, 1f)
+
+        p.scheduler.runDelayed(plugin, Consumer { _ ->
+            liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200)
+
+            val disabledKey = org.bukkit.NamespacedKey("mistakendeluxe-visual-addon-dev", "pref_disabled")
+            val lmsKey = org.bukkit.NamespacedKey("mistakendeluxe-visual-addon-dev", "pref_lms")
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "posteffect clear ${p.name}")
+            val pdc = p.persistentDataContainer
+            val disabled = pdc.get(disabledKey, org.bukkit.persistence.PersistentDataType.BYTE) ?: 0
+            if (disabled.toInt() != 1) {
+                val intensity = pdc.get(lmsKey, org.bukkit.persistence.PersistentDataType.INTEGER) ?: 5
+                val suffix = if (intensity == 5) "" else "_${6 - intensity}"
+                val effectName = "mistaken:horror$suffix"
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "posteffect add ${p.name} $effectName")
+            }
+        }, null, 30L)
+    }
+
     fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {
         val rootNode = Commands.literal("mdebug")
             .requires { source -> source.sender.hasPermission("mistaken.admin") }
@@ -57,14 +79,17 @@ object MistakenDebugCommand {
                     val mapCount = plugin.arenaManager.getArenas().size
                     var playersInDb = 0
                     try {
-                        plugin.databaseManager.connection.prepareStatement("SELECT COUNT(*) FROM mistaken_player_data").use { ps ->
-                            val rs = ps.executeQuery()
-                            if (rs.next()) {
-                                playersInDb = rs.getInt(1)
+                        plugin.databaseManager.connection.use { conn ->
+                            conn.prepareStatement("SELECT COUNT(*) FROM mistaken_player_data").use { ps ->
+                                ps.executeQuery().use { rs ->
+                                    if (rs.next()) {
+                                        playersInDb = rs.getInt(1)
+                                    }
+                                }
                             }
                         }
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        plugin.logger.warning("Failed to count players in DB: ${e.message}")
                     }
                     
                     val dbType = plugin.config.getString("database.type", "SQLite")
@@ -303,32 +328,7 @@ object MistakenDebugCommand {
             .then(
                 Commands.literal("start").executes { ctx ->
                     val p = ctx.source.sender as? Player ?: return@executes 0
-                    
-                    
-                    liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 255, 255, 0.9f, 30)
-                    liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.5f, 40)
-                    
-                    
-                    p.playSound(p.location, "mistaken:lms", org.bukkit.SoundCategory.RECORDS, 1f, 1f)
-                    
-                    
-                    p.scheduler.runDelayed(plugin, Consumer { _ ->
-                        liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200) 
-                        
-                        // Apply LMS Camera Posteffect
-                        val disabledKey = org.bukkit.NamespacedKey("mistakendeluxe-visual-addon-dev", "pref_disabled")
-                        val lmsKey = org.bukkit.NamespacedKey("mistakendeluxe-visual-addon-dev", "pref_lms")
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "posteffect clear ${p.name}")
-                        val pdc = p.persistentDataContainer
-                        val disabled = pdc.get(disabledKey, org.bukkit.persistence.PersistentDataType.BYTE) ?: 0
-                        if (disabled.toInt() != 1) {
-                            val intensity = pdc.get(lmsKey, org.bukkit.persistence.PersistentDataType.INTEGER) ?: 5
-                            val suffix = if (intensity == 5) "" else "_${6 - intensity}"
-                            val effectName = "mistaken:horror$suffix"
-                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "posteffect add ${p.name} $effectName")
-                        }
-                    }, null, 30L)
-                    
+                    playLmsTestEffectsForPlayer(plugin, p)
                     p.sendMessage("§a[!] LMS effects and music started (Test duration: 1 min).")
                     1
                 }
@@ -337,25 +337,7 @@ object MistakenDebugCommand {
                     Bukkit.getOnlinePlayers().forEach { p ->
                         p.stopAllSounds()
                         p.scheduler.runDelayed(plugin, Consumer { _ ->
-                            liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 255, 255, 0.9f, 30)
-                            liric.mistaken.utils.hooks.ObserverHook.playScreenshake(p, 1.5f, 40)
-                            p.playSound(p.location, "mistaken:lms", org.bukkit.SoundCategory.RECORDS, 1f, 1f)
-                            p.scheduler.runDelayed(plugin, Consumer { _ ->
-                                liric.mistaken.utils.hooks.ObserverHook.playScreenTint(p, 255, 0, 0, 0.2f, 1200)
-                                
-                                // Apply LMS Camera Posteffect
-                                val disabledKey = org.bukkit.NamespacedKey("mistakendeluxe-visual-addon-dev", "pref_disabled")
-                                val lmsKey = org.bukkit.NamespacedKey("mistakendeluxe-visual-addon-dev", "pref_lms")
-                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "posteffect clear ${p.name}")
-                                val pdc = p.persistentDataContainer
-                                val disabled = pdc.get(disabledKey, org.bukkit.persistence.PersistentDataType.BYTE) ?: 0
-                                if (disabled.toInt() != 1) {
-                                    val intensity = pdc.get(lmsKey, org.bukkit.persistence.PersistentDataType.INTEGER) ?: 5
-                                    val suffix = if (intensity == 5) "" else "_${6 - intensity}"
-                                    val effectName = "mistaken:horror$suffix"
-                                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "posteffect add ${p.name} $effectName")
-                                }
-                            }, null, 30L)
+                            playLmsTestEffectsForPlayer(plugin, p)
                         }, null, 20L)
                     }
                     sender.sendMessage("§a[!] LMS effects and music started for all players.")

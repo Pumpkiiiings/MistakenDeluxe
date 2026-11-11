@@ -1,9 +1,11 @@
-﻿package liric.mistaken.roles.killers.classes
+package liric.mistaken.roles.killers.classes
 
 import liric.mistaken.models.components.CombatComponent
 import liric.mistaken.models.core.Character
 import liric.mistaken.models.states.CharacterState
 import liric.mistaken.roles.killers.BaseKiller
+import liric.mistaken.roles.shared.RoleItemUtils
+import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
 
 object SmilerAttackState : CharacterState {
@@ -17,19 +19,11 @@ class SmilerKiller : BaseKiller("smiler", "Smiler") {
 
     override fun equip(player: Player) {
         super.equip(player)
-        
-        val inv = player.inventory
-        val configMecanica = liric.mistaken.Mistaken.instance.configManager.getKillerConfig(this.id)
 
-        val id = configMecanica.getString("items.weapon")
-        if (id != null && id != "none") {
-            val matName = id.replace(".*:".toRegex(), "").uppercase()
-            val mat = org.bukkit.Material.matchMaterial(matName)
-            if (mat != null) {
-                val item = org.bukkit.inventory.ItemStack(mat)
-                item.editMeta { meta -> meta.displayName(net.kyori.adventure.text.Component.text("§cArma Smiler")) }
-                inv.setItem(8, item)
-            }
+        val configMecanica = plugin.configManager.getKillerConfig(this.id)
+        RoleItemUtils.resolveItem(configMecanica.getString("items.weapon"))?.let { item ->
+            item.editMeta { meta -> meta.displayName(Component.text("§cArma Smiler")) }
+            player.inventory.setItem(8, item)
         }
     }
 

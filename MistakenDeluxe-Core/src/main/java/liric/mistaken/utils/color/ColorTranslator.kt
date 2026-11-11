@@ -3,18 +3,63 @@ package liric.mistaken.utils.color
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import org.bukkit.Bukkit
+import org.bukkit.entity.Player
+import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 
 object ColorTranslator {
     private val mm = MiniMessage.miniMessage()
 
-    
-    
-    
-    
-    
-    
     private val cache = ConcurrentHashMap<String, Component>(1024)
+
+    private data class MiniPlaceholdersMethods(
+        val audienceMethod: Method?,
+        val audienceTakesPlayer: Boolean,
+        val globalMethod: Method?
+    )
+
+    private val miniPlaceholdersMethods: MiniPlaceholdersMethods by lazy { resolveMiniPlaceholdersMethods() }
+
+    private fun resolveMiniPlaceholdersMethods(): MiniPlaceholdersMethods {
+        return try {
+            val clazz = Class.forName("io.github.miniplaceholders.api.MiniPlaceholders")
+            val (audMethod, takesPlayer) = findAudienceMethod(clazz)
+            val globalMethod = findGlobalMethod(clazz)
+            MiniPlaceholdersMethods(audMethod, takesPlayer, globalMethod)
+        } catch (e: Exception) {
+            liric.mistaken.MistakenLib.logError(
+                liric.mistaken.MistakenLib.LogCategory.CORE,
+                "[WARN] Failed to resolve MiniPlaceholders methods via Reflection."
+            )
+            MiniPlaceholdersMethods(null, false, null)
+        }
+    }
+
+    private fun findAudienceMethod(clazz: Class<*>): Pair<Method?, Boolean> {
+        val candidates: List<Pair<String, Array<Class<*>>>> = listOf(
+            "getAudienceGlobalPlaceholders" to arrayOf(Player::class.java),
+            "getAudiencePlaceholders" to arrayOf(Player::class.java),
+            "getAudienceGlobalPlaceholders" to arrayOf(net.kyori.adventure.audience.Audience::class.java),
+            "audienceGlobalPlaceholders" to emptyArray(),
+            "audiencePlaceholders" to emptyArray()
+        )
+        for ((name, params) in candidates) {
+            try {
+                return clazz.getMethod(name, *params) to params.isNotEmpty()
+            } catch (_: NoSuchMethodException) {}
+        }
+        return null to false
+    }
+
+    private fun findGlobalMethod(clazz: Class<*>): Method? {
+        for (name in listOf("getGlobalPlaceholders", "globalPlaceholders")) {
+            try {
+                return clazz.getMethod(name)
+            } catch (_: NoSuchMethodException) {}
+        }
+        return null
+    }
 
     /**
      * Translates a string with mixed color formats (Legacy, Hex, MiniMessage) into a Component.
@@ -34,17 +79,18 @@ object ColorTranslator {
     /**
      * Translates a string with mixed color formats, applying PlaceholderAPI placeholders first.
      */
-    fun translate(player: org.bukkit.entity.Player?, input: String, vararg tags: TagResolver): Component {
+    fun translate(player: Player?, input: String, vararg tags: TagResolver): Component {
         var parsed = input
-        if (player != null && org.bukkit.Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+        if (player != null && Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             parsed = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, parsed)
         }
-        
-        // Include MiniPlaceholders universal tags automatically when player context is provided
-        val allTags = mutableListOf(*tags)
-        allTags.add(getUniversalTags(player))
 
-        return translate(parsed, *allTags.toTypedArray())
+        val universal = getUniversalTags(player)
+        return if (universal === TagResolver.empty()) {
+            translate(parsed, *tags)
+        } else {
+            translate(parsed, *tags, universal)
+        }
     }
 
     /**
@@ -55,59 +101,24 @@ object ColorTranslator {
     }
 
     /**
-     * Gets universal TagResolvers (like MiniPlaceholders) for a player.
+     * Gets universal TagResolvers (like MiniPlaceholders) for a player using cached reflection handles.
      */
-    fun getUniversalTags(player: org.bukkit.entity.Player?): TagResolver {
-        val list = mutableListOf<TagResolver>()
-        if (org.bukkit.Bukkit.getPluginManager().isPluginEnabled("MiniPlaceholders")) {
-            try {
-                // Try 2.x API
-                val clazz = Class.forName("io.github.miniplaceholders.api.MiniPlaceholders")
-                
-                if (player != null) {
-                    try {
-                        val getAudienceMethod = clazz.getMethod("getAudienceGlobalPlaceholders", org.bukkit.entity.Player::class.java)
-                        list.add(getAudienceMethod.invoke(null, player) as TagResolver)
-                    } catch (e: Exception) {
-                        // 3.x API Audience method
-                        try {
-                            val getAudienceMethod = clazz.getMethod("getAudiencePlaceholders", org.bukkit.entity.Player::class.java)
-                            list.add(getAudienceMethod.invoke(null, player) as TagResolver)
-                        } catch (e2: Exception) {
-                            try {
-                                val getAudienceMethod = clazz.getMethod("getAudienceGlobalPlaceholders", net.kyori.adventure.audience.Audience::class.java)
-                                list.add(getAudienceMethod.invoke(null, player) as TagResolver)
-                            } catch (e3: Exception) {
-                                // 3.x API no-arg
-                                try {
-                                    val getAudienceMethod = clazz.getMethod("audienceGlobalPlaceholders")
-                                    list.add(getAudienceMethod.invoke(null) as TagResolver)
-                                } catch (e4: Exception) {
-                                    try {
-                                        val getAudienceMethod = clazz.getMethod("audiencePlaceholders")
-                                        list.add(getAudienceMethod.invoke(null) as TagResolver)
-                                    } catch (e5: Exception) {
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    try {
-                        val getGlobalMethod = clazz.getMethod("getGlobalPlaceholders")
-                        list.add(getGlobalMethod.invoke(null) as TagResolver)
-                    } catch (e: Exception) {
-                        // 3.x API
-                        try {
-                            val getGlobalMethod = clazz.getMethod("globalPlaceholders")
-                            list.add(getGlobalMethod.invoke(null) as TagResolver)
-                        } catch (e2: Exception) {}
-                    }
-                }
-            } catch (e: Exception) {
-                liric.mistaken.MistakenLib.logError(liric.mistaken.MistakenLib.LogCategory.CORE, "[WARN] Failed to load MiniPlaceholders tags via Reflection.")
-            }
+    fun getUniversalTags(player: Player?): TagResolver {
+        if (!Bukkit.getPluginManager().isPluginEnabled("MiniPlaceholders")) {
+            return TagResolver.empty()
         }
-        return TagResolver.resolver(list)
+        return try {
+            val methods = miniPlaceholdersMethods
+            val resolved = if (player != null) {
+                val m = methods.audienceMethod ?: return TagResolver.empty()
+                if (methods.audienceTakesPlayer) m.invoke(null, player) else m.invoke(null)
+            } else {
+                val m = methods.globalMethod ?: return TagResolver.empty()
+                m.invoke(null)
+            }
+            (resolved as? TagResolver) ?: TagResolver.empty()
+        } catch (e: Exception) {
+            TagResolver.empty()
+        }
     }
 }

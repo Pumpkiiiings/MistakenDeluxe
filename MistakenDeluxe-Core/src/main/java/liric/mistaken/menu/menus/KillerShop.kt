@@ -1,196 +1,75 @@
 package liric.mistaken.menu.menus
 
-import dev.triumphteam.gui.builder.item.ItemBuilder
-import dev.triumphteam.gui.guis.Gui
-import liric.mistaken.Mistaken
-import liric.mistaken.menu.MenuBase
+import liric.mistaken.config.engine.core.MessageService
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Material
-import org.bukkit.Sound
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemFlag
 import org.bukkit.persistence.PersistentDataType
-import liric.mistaken.api.requirements.RequirementEngine
-import liric.mistaken.config.engine.core.MessageService
+import java.util.UUID
 
-class KillerShop : MenuBase("killers_shop") {
+/** Killer unlock and selection shop GUI. */
+class KillerShop : BaseRoleShop(
+    menuName = "killers_shop",
+    roleType = "killers",
+    langFile = "killers_info",
+    buyStateKey = "shop.state-buy",
+    defaultIcon = Material.STONE,
+    requirementFailMessage = "<red>No cumples los requisitos para este killer.</red>",
+    defaultBackSlot = 49,
+    defaultBackName = "<red>Volver",
+    fallbackToFirstEmpty = true
+) {
 
+    override fun getCatalogIds(): Iterable<String> = plugin.killerManager.catalogo.keys
 
+    override fun getRoleConfig(roleId: String): FileConfiguration =
+        plugin.configManager.getKillerConfig(roleId)
 
-    override fun setupItems(player: Player, gui: Gui, config: FileConfiguration) {
-        val globalMecanicas = plugin.configManager.getKillerConfig("global")
+    override fun isOwned(uuid: UUID, roleId: String): Boolean =
+        plugin.playerDataManager.hasKiller(uuid, roleId)
 
-        val preferredSlots = config.getIntegerList("settings.available-slots").toMutableList()
+    override fun getSelected(uuid: UUID): String? =
+        plugin.playerDataManager.getSelectedKiller(uuid)
 
-        
-        val fixedSlotsSection = config.getConfigurationSection("settings.fixed-slots")
-        val fixedSlots = mutableMapOf<String, Int>()
-        if (fixedSlotsSection != null) {
-            for (key in fixedSlotsSection.getKeys(false)) {
-                fixedSlots[key.lowercase()] = fixedSlotsSection.getInt(key)
-            }
-        }
-
-        val data = plugin.playerDataManager
-        val uuid = player.uniqueId
-        val selected = data.getSelectedKiller(uuid)
-
-        val labelSeleccionado = MessageService.getComponent(player, "shop.state-selected")
-        val labelPoseido = MessageService.getComponent(player, "shop.state-owned")
-        val labelComprar = MessageService.getComponent(player, "shop.state-buy")
-        val labelAbilityes = MessageService.getComponent(player, "shop.abilities-title")
-
-        val killersCatalogo = plugin.killerManager.catalogo.keys
-
-        for (killerId in killersCatalogo) {
-            val killerConfig = plugin.configManager.getKillerConfig(killerId)
-            val permisoRequerido = killerConfig.getString("permiso")
-            if (permisoRequerido != null && !player.hasPermission(permisoRequerido)) continue
-
-            if (killerId.equals("smiler", ignoreCase = true) || killerId.equals("warden", ignoreCase = true)) {
-                val hasAccess = player.name.equals("Pumpkiiings", ignoreCase = true) || 
-                                player.name.equals("Pumpkiings", ignoreCase = true) ||
-                                player.hasPermission("group.dueno") ||
-                                player.hasPermission("group.owner")
-                if (!hasAccess) continue
-            }
-
-            
-            val targetSlot = if (fixedSlots.containsKey(killerId)) {
-                fixedSlots[killerId]!!
-            } else if (preferredSlots.isNotEmpty()) {
-                preferredSlots.removeAt(0)
-            } else {
-                gui.inventory.firstEmpty()
-            }
-
-            if (targetSlot == -1) continue 
-
-            val nombreVisual = MessageService.getStrictString(player, "killers.$killerId.name", "killers_info")
-            val descripcion = MessageService.getStrictStringList(player, "killers.$killerId.descripcion", "killers_info")
-            val loreShop = MessageService.getStrictStringList(player, "killers.$killerId.lore_shop", "killers_info")
-
-            val precio = killerConfig.getInt("precio", 0)
-            val matStr = killerConfig.getString("icono_material", "STONE")!!
-            val iconoMat = Material.matchMaterial(matStr.uppercase()) ?: Material.STONE
-
-            val fullLore = mutableListOf<Component>()
-
-            descripcion.forEach { fullLore.add(parseSafe(it)) }
-            fullLore.add(Component.empty())
-
-            loreShop.forEach { fullLore.add(parseSafe(it)) }
-            fullLore.add(Component.empty())
-
-            fullLore.add(labelAbilityes)
-            val weaponName = MessageService.getRawString(player, "killers.$killerId.skill_names.weapon", "", "killers_info")
-            if (weaponName.isNotEmpty()) {
-                fullLore.add(parseSafe(" <dark_gray>•</dark_gray> <white>$weaponName</white>"))
-            }
-            for (i in 1..4) {
-                val habName = MessageService.getRawString(player, "killers.$killerId.skill_names.skill$i", "", "killers_info")
-                if (habName.isNotEmpty()) {
-                    fullLore.add(parseSafe(" <dark_gray>•</dark_gray> <white>$habName</white>"))
-                }
-            }
-            fullLore.add(Component.empty())
-
-            val tiene = data.hasKiller(uuid, killerId)
-            val esSeleccionado = selected.equals(killerId, ignoreCase = true)
-
-            val reqMessages = RequirementEngine.getRequirementMessages(player, "killers", killerId)
-            reqMessages.forEach { fullLore.add(parseSafe(it)) }
-
-            when {
-                esSeleccionado -> fullLore.add(labelSeleccionado)
-                tiene -> fullLore.add(labelPoseido)
-                else -> {
-                    fullLore.add(MessageService.getComponent(player, "shop.state-price", Placeholder.parsed("amount", precio.toString())))
-                    fullLore.add(labelComprar)
-                }
-            }
-
-            val guiItem = ItemBuilder.from(iconoMat)
-                .name(parseSafe(nombreVisual))
-                .lore(fullLore.toList())
-                .asGuiItem { event ->
-                    event.isCancelled = true
-                    if (reqMessages.isNotEmpty()) {
-                        player.sendMessage(parseSafe("<red>No cumples los requisitos para este killer.</red>"))
-                        player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
-                        return@asGuiItem
-                    }
-                    handlePurchaseLogic(player, killerId, precio, tiene)
-                }.also { it.itemStack.editMeta { meta -> meta.addItemFlags(*ItemFlag.entries.toTypedArray()) } }
-
-            gui.setItem(targetSlot, guiItem)
-        }
-        
-        val botonAtrasSlot = config.getInt("settings.back-button.slot", 49)
-        val botonAtrasMat = config.getString("settings.back-button.material", "ARROW")!!
-        val botonAtrasNombre = config.getString("settings.back-button.name", "<red>Volver")!!
-        val matAtras = Material.matchMaterial(botonAtrasMat.uppercase()) ?: Material.ARROW
-        
-        val backItem = ItemBuilder.from(matAtras)
-            .name(parseSafe(botonAtrasNombre))
-            .asGuiItem { event ->
-                event.isCancelled = true
-                ShopSelector().abrir(player)
-            }.also { it.itemStack.editMeta { meta -> meta.addItemFlags(*ItemFlag.entries.toTypedArray()) } }
-            
-        gui.setItem(botonAtrasSlot, backItem)
+    override fun selectRole(player: Player, roleId: String) {
+        plugin.playerDataManager.setSelectedKiller(player.uniqueId, roleId)
+        player.persistentDataContainer.set(plugin.assassinKey, PersistentDataType.STRING, roleId)
     }
 
-    private fun handlePurchaseLogic(player: Player, killerId: String, precio: Int, tiene: Boolean) {
-        val uuid = player.uniqueId
-        val data = plugin.playerDataManager
-        val actual = data.getSelectedKiller(uuid)
-
-        if (killerId.equals(actual, ignoreCase = true)) {
-            player.sendMessage(MessageService.getComponent(player, "shop.already-selected"))
-            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f)
-            return
-        }
-
-        if (tiene) {
-            data.setSelectedKiller(uuid, killerId)
-            player.persistentDataContainer.set(plugin.assassinKey, PersistentDataType.STRING, killerId)
-            player.sendMessage(MessageService.getComponent(player, "shop.selected", Placeholder.parsed("name", killerId)))
-            player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f)
-            abrir(player)
-            return
-        }
-
-        val econ = Mistaken.Companion.economy
-
-        if (econ == null) {
-            player.sendMessage(parseSafe("<red><b>[!]</b> Error interno: El sistema de economía no está conectado.</red>"))
-            plugin.componentLogger.error("Purchase failed due to disconnected Economy: Player ${player.name}, Killer $killerId")
-            return
-        }
-
-        val costo = precio.toDouble()
-
-        if (econ.getBalance(player) >= costo) {
-            val success = econ.withdraw(player, costo)
-
-            if (success) {
-                data.buyKiller(uuid, killerId)
-                player.sendMessage(MessageService.getComponent(player, "shop.purchased", Placeholder.parsed("name", killerId)))
-                player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.5f)
-                abrir(player)
-            } else {
-                player.sendMessage(MessageService.getComponent(player, "shop_errores.error_bancario", Placeholder.parsed("error", "Transacción fallida.")))
-                player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
-            }
-
-        } else {
-            player.sendMessage(MessageService.getComponent(player, "errors.no-money"))
-            player.playSound(player.location, Sound.ENTITY_VILLAGER_NO, 1.0f, 0.5f)
-        }
+    override fun unlockRole(uuid: UUID, roleId: String) {
+        plugin.playerDataManager.buyKiller(uuid, roleId)
     }
 
+    override fun purchaseSuccessPitch(): Float = 0.5f
 
+    override fun isVisibleToPlayer(player: Player, roleId: String, roleConfig: FileConfiguration): Boolean {
+        if (!super.isVisibleToPlayer(player, roleId, roleConfig)) return false
+        if (roleId.equals("smiler", ignoreCase = true) || roleId.equals("warden", ignoreCase = true)) {
+            return player.name.equals("Pumpkiiings", ignoreCase = true) ||
+                player.name.equals("Pumpkiings", ignoreCase = true) ||
+                player.hasPermission("group.dueno") ||
+                player.hasPermission("group.owner")
+        }
+        return true
+    }
+
+    override fun appendHeaderLore(lore: MutableList<Component>, player: Player, roleId: String) {
+        val descripcion = MessageService.getStrictStringList(player, "killers.$roleId.descripcion", "killers_info")
+        descripcion.forEach { lore.add(parseSafe(it)) }
+        lore.add(Component.empty())
+    }
+
+    override fun appendSkillLore(lore: MutableList<Component>, player: Player, roleId: String) {
+        val weaponName = MessageService.getRawString(player, "killers.$roleId.skill_names.weapon", "", "killers_info")
+        if (weaponName.isNotEmpty()) {
+            lore.add(parseSafe(" <dark_gray>•</dark_gray> <white>$weaponName</white>"))
+        }
+        for (i in 1..4) {
+            val habName = MessageService.getRawString(player, "killers.$roleId.skill_names.skill$i", "", "killers_info")
+            if (habName.isNotEmpty()) {
+                lore.add(parseSafe(" <dark_gray>•</dark_gray> <white>$habName</white>"))
+            }
+        }
+    }
 }

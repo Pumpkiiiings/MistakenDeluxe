@@ -10,13 +10,8 @@ import org.bukkit.Particle
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
-import org.bukkit.event.EventPriority
-import org.bukkit.event.Listener
-import org.bukkit.event.block.Action
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
-import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
@@ -27,10 +22,9 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.config.engine.core.MessageService
 
-class GeneratorListener(private val plugin: Mistaken) : Listener {
+class GeneratorListener(plugin: Mistaken) : BaseInteractableListener(plugin, Material.RAW_IRON_BLOCK) {
 
     private val mm = MiniMessage.miniMessage()
-    private var genBlock: Material = Material.RAW_IRON_BLOCK
 
     private val activeMenus = ConcurrentHashMap<Location, Inventory>()
     private val colaboradores = ConcurrentHashMap<Location, MutableSet<UUID>>()
@@ -42,43 +36,14 @@ class GeneratorListener(private val plugin: Mistaken) : Listener {
         override fun getInventory(): Inventory = Bukkit.createInventory(this, 27)
     }
 
-    init {
-        // En Mistaken 2.0 GeneratorManager siempre setea RAW_IRON_BLOCK.
-        genBlock = Material.RAW_IRON_BLOCK
+    override fun killerErrorMessage(player: Player): Component = killerError
+
+    override fun alreadyCompletedMessage(player: Player): Component {
+        val msg = MessageService.getRawString(player, "messages.already-completed", "<red>Ya completado", "messages")
+        return ColorTranslator.translate(msg)
     }
 
-    @EventHandler(priority = EventPriority.LOW)
-    fun onInteract(event: PlayerInteractEvent) {
-        val block = event.clickedBlock ?: return
-        
-        val player = event.player
-
-        if (block.type != Material.RAW_IRON_BLOCK) return
-
-        if (event.hand != EquipmentSlot.HAND) return
-        if (event.action != Action.RIGHT_CLICK_BLOCK) return
-
-        val session = plugin.sessionManager.getSession(player) ?: return
-
-        if (plugin.spectatorManager.isSpectator(player)) return
-
-        if (session.isKiller(player.uniqueId)) {
-            player.sendMessage(killerError)
-            return
-        }
-
-        val loc = block.location
-
-        if (plugin.generatorManager.isCompleted(loc)) {
-            val msg = MessageService.getRawString(player, "messages.already-completed", "<red>Ya completado", "messages")
-            player.sendMessage(ColorTranslator.translate(msg))
-            return
-        }
-
-        event.isCancelled = true
-        event.setUseItemInHand(org.bukkit.event.Event.Result.DENY)
-        event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY)
-
+    override fun onInteractableUse(player: Player, loc: Location) {
         val inv = activeMenus.getOrPut(loc) {
             Bukkit.createInventory(GeneratorHolder(loc), 27, menuTitle)
         }

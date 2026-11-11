@@ -31,7 +31,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
     }
 
     fun reloadAll() {
-        cleanAll()
+        removeAllKillers()
         availableClasses.clear()
         loadHardcodedKillers()
         loadScripts()
@@ -46,47 +46,19 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
     }
 
     fun loadScripts() {
-        val scriptsFolder = java.io.File(plugin.dataFolder, "scripts/killers")
-        if (!scriptsFolder.exists()) {
-            scriptsFolder.mkdirs()
-        }
-
-        
-        try {
-            val defaults = listOf("slasher", "herobrine", "romeo", "entity303", "colorandelectricity", "null", "tinkywinky")
-            for (script in defaults) {
-                if (!java.io.File(scriptsFolder, "$script.lua").exists() && !java.io.File(scriptsFolder, "$script.groovy").exists()) {
-                    plugin.saveResource("scripts/killers/$script.lua", false)
-                }
-            }
-        } catch (e: Exception) {
-            plugin.componentLogger.warn(liric.mistaken.utils.color.ColorTranslator.translate("<yellow>[WARN]</yellow> <gray>Failed to copy default scripts.</gray>"))
-        }
-
-        val files = scriptsFolder.listFiles() ?: return
-        var loadedCount = 0
-        for (file in files) {
-            if (file.name.endsWith(".groovy")) {
-                val killer = KillerScriptEngine.loadKillerScript(file)
-                if (killer != null) {
-                    registerClass(killer)
-                    loadedCount++
-                }
-            } else if (file.name.endsWith(".lua")) {
-                val killerId = file.nameWithoutExtension.lowercase()
-                val scriptRole = liric.mistaken.scripting.engine.lua.LuaScriptEngine.loadScript(file, killerId)
-                if (scriptRole != null) {
-                    
-                    val luaAdapter = liric.mistaken.scripting.adapter.LuaKillerAdapter(
-                        id = killerId,
-                        name = killerId.replaceFirstChar { it.uppercase() },
-                        scriptRole = scriptRole
-                    )
-                    registerClass(luaAdapter)
-                    loadedCount++
-                }
-            }
-        }
+        val loadedCount = loadScriptsFromFolder(
+            subFolder = "killers",
+            defaultLuaScripts = listOf("slasher", "herobrine", "romeo", "entity303", "colorandelectricity", "null", "tinkywinky"),
+            supportsGroovy = true,
+            luaRoleFactory = { killerId, displayName, scriptRole ->
+                liric.mistaken.scripting.adapter.LuaKillerAdapter(
+                    id = killerId,
+                    name = displayName,
+                    scriptRole = scriptRole
+                )
+            },
+            extraLoader = { file -> KillerScriptEngine.loadKillerScript(file) }
+        )
         plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Loaded $loadedCount killers from scripts.</gray>"))
     }
 
@@ -188,10 +160,9 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
     override fun removeRoleLogic(uuid: UUID, player: Player?) {
         val killer = activeRoles.remove(uuid) ?: return
 
-        
-        killer.cleanup(player)
-        
-        
+        if (player != null) {
+            killer.cleanup(player)
+        }
         liric.mistaken.scripting.effects.EffectRegistry.stopAll(uuid)
 
         if (player != null && player.isOnline) {
