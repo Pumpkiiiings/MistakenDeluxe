@@ -41,7 +41,6 @@ class CommandRegistry(private val plugin: Mistaken) {
             // Admin & Debug Commands
             registrar.register(MistakenDebugCommand.get(plugin), "Debug commands", listOf("mdebug"))
             registrar.register(MistakenAdminCommand.get(plugin), "Mistaken Administration", listOf("ms", "mt"))
-            registrar.register("visual", "Visual formatting settings reload", emptyList(), liric.mistaken.visual.VisualCommand(plugin))
             
             // Economy Commands
             if (!plugin.server.pluginManager.isPluginEnabled("Vault") && !plugin.server.pluginManager.isPluginEnabled("ExcellentEconomy")) {

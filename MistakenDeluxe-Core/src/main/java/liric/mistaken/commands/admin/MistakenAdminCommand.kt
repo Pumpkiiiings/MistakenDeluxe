@@ -24,6 +24,16 @@ object MistakenAdminCommand {
     fun get(plugin: Mistaken): LiteralCommandNode<CommandSourceStack> {
         val rootNode = Commands.literal("mistaken")
 
+        rootNode.executes { ctx ->
+            val sender = ctx.source.sender
+            val player = sender as? Player
+            sender.sendMessage(MessageService.getComponent(player, "admin.help-player"))
+            if (sender.hasPermission("mistaken.admin")) {
+                sender.sendMessage(MessageService.getComponent(player, "admin.help-admin"))
+            }
+            1
+        }
+
         rootNode.then(
             Commands.literal("help")
                 .executes { ctx ->
@@ -395,65 +405,98 @@ object MistakenAdminCommand {
         
         rootNode.then(playerNode)
 
+        val reloadAction: (CommandSourceStack, String) -> Int = { source, target ->
+            val sender = source.sender
+            val player = sender as? Player
+
+            plugin.server.asyncScheduler.runNow(plugin) { _ ->
+                val msg = "admin.reload-success"
+
+                when (target) {
+                    "scripts" -> {
+                        plugin.server.globalRegionScheduler.execute(plugin) {
+                            plugin.killerManager.reloadAll()
+                            plugin.survivorManager.reloadAll()
+                        }
+                    }
+                    "killers" -> plugin.server.globalRegionScheduler.execute(plugin) { plugin.killerManager.reloadAll() }
+                    "survivors" -> plugin.server.globalRegionScheduler.execute(plugin) { plugin.survivorManager.reloadAll() }
+                    "messages" -> MessageService.loadAllLanguages()
+                    "config" -> {
+                        plugin.reloadConfig()
+                        plugin.configManager.loadAllConfigs()
+                        plugin.configManager.reloadMenus()
+                        plugin.musicManager.loadMusicConfig()
+                    }
+                    "visual", "visuals" -> {
+                        plugin.reloadConfig()
+                        plugin.tabListTask?.start()
+                    }
+                    else -> {
+                        plugin.reloadConfig()
+                        MessageService.loadAllLanguages()
+                        plugin.configManager.loadAllConfigs()
+                        plugin.configManager.reloadMenus()
+                        plugin.musicManager.loadMusicConfig()
+                        plugin.tabListTask?.start()
+
+                        plugin.server.globalRegionScheduler.execute(plugin) {
+                            plugin.killerManager.reloadAll()
+                            plugin.survivorManager.reloadAll()
+                            plugin.shopSelector.reload()
+                            plugin.killerTienda.reload()
+                            plugin.survivorTienda.reload()
+                        }
+                    }
+                }
+
+                if (target == "visual" || target == "visuals") {
+                    sender.sendMessage(plugin.mm.deserialize("<green>[Mistaken] Configuración visual recargada correctamente.</green>"))
+                } else {
+                    sender.sendMessage(MessageService.getComponent(player, msg))
+                }
+                player?.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f)
+            }
+            1
+        }
+
+        // --- DIRECT SHORTCUT: /mistaken reload [target] ---
+        rootNode.then(
+            Commands.literal("reload")
+                .requires { source -> source.sender.hasPermission("mistaken.admin") }
+                .executes { ctx -> reloadAction(ctx.source, "all") }
+                .then(
+                    Commands.argument("target", StringArgumentType.word())
+                        .suggests { _, builder ->
+                            listOf("scripts", "killers", "survivors", "messages", "config", "visuals", "all").forEach {
+                                if (it.startsWith(builder.remainingLowerCase)) builder.suggest(it)
+                            }
+                            builder.buildFuture()
+                        }
+                        .executes { ctx ->
+                            val target = StringArgumentType.getString(ctx, "target").lowercase()
+                            reloadAction(ctx.source, target)
+                        }
+                )
+        )
 
         // --- RAMA CONFIG ---
         val configNode = Commands.literal("config").requires { source -> source.sender.hasPermission("mistaken.admin") }
 
         configNode.then(
             Commands.literal("reload")
+                .executes { ctx -> reloadAction(ctx.source, "all") }
                 .then(
                     Commands.argument("target", StringArgumentType.word())
                         .suggests { _, builder ->
-                            listOf("scripts", "killers", "survivors", "messages", "config", "all").forEach {
+                            listOf("scripts", "killers", "survivors", "messages", "config", "visuals", "all").forEach {
                                 if (it.startsWith(builder.remainingLowerCase)) builder.suggest(it)
                             }
                             builder.buildFuture()
                         }
                         .executes { ctx ->
-                            val sender = ctx.source.sender
-                            val player = sender as? Player
                             val target = StringArgumentType.getString(ctx, "target").lowercase()
-
-                            plugin.server.asyncScheduler.runNow(plugin) { _ ->
-                                var msg = "admin.reload-success"
-                                
-                                when (target) {
-                                    "scripts" -> {
-                                        plugin.server.globalRegionScheduler.execute(plugin) {
-                                            plugin.killerManager.reloadAll()
-                                            plugin.survivorManager.reloadAll()
-                                        }
-                                    }
-                                    "killers" -> plugin.server.globalRegionScheduler.execute(plugin) { plugin.killerManager.reloadAll() }
-                                    "survivors" -> plugin.server.globalRegionScheduler.execute(plugin) { plugin.survivorManager.reloadAll() }
-                                    "messages" -> MessageService.loadAllLanguages()
-                                    "config" -> {
-                                        plugin.reloadConfig()
-                                        plugin.configManager.loadAllConfigs()
-                                        plugin.configManager.reloadMenus()
-                                        plugin.musicManager.loadMusicConfig()
-                                    }
-                                    else -> {
-                                        plugin.reloadConfig()
-                                        MessageService.loadAllLanguages()
-                                        plugin.configManager.loadAllConfigs()
-                                        plugin.configManager.reloadMenus()
-                                        plugin.musicManager.loadMusicConfig()
-
-                                        plugin.server.globalRegionScheduler.execute(plugin) {
-                                            plugin.killerManager.reloadAll()
-                                            plugin.survivorManager.reloadAll()
-                                            plugin.shopSelector.reload()
-                                            plugin.killerTienda.reload()
-                                            plugin.survivorTienda.reload()
-                                        }
-                                    }
-                                }
-
-                                sender.sendMessage(MessageService.getComponent(player, msg))
-                                player?.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 2f)
-                            }
-                            1
+                            reloadAction(ctx.source, target)
                         }
                 )
         )
@@ -480,7 +523,131 @@ object MistakenAdminCommand {
         )
         
         rootNode.then(configNode)
+        rootNode.then(createVisualNode("visual", plugin))
+        rootNode.then(createVisualNode("visuals", plugin))
 
         return rootNode.build()
     }
+
+    private fun createVisualNode(name: String, plugin: Mistaken) =
+        Commands.literal(name)
+            .requires { source -> source.sender.hasPermission("mistaken.admin") }
+            .executes { ctx ->
+                val sender = ctx.source.sender
+                val chatEnabled = plugin.config.getBoolean("visuals.chat.enabled", true)
+                val tabEnabled = plugin.config.getBoolean("visuals.tab.enabled", true)
+                val mm = plugin.mm
+                sender.sendMessage(mm.deserialize("<gold><b>[Mistaken Visuals]</b></gold>"))
+                sender.sendMessage(mm.deserialize("<gray>Formato de Chat: </gray>" + if (chatEnabled) "<green>Activado</green>" else "<red>Desactivado</red>"))
+                sender.sendMessage(mm.deserialize("<gray>Formato de Tablist: </gray>" + if (tabEnabled) "<green>Activado</green>" else "<red>Desactivado</red>"))
+                sender.sendMessage(mm.deserialize("<yellow>Subcomandos: <white>/ms $name [reload | chat (on|off|toggle) | tab (on|off|toggle)]</white></yellow>"))
+                1
+            }
+            .then(
+                Commands.literal("reload").executes { ctx ->
+                    val sender = ctx.source.sender
+                    plugin.reloadConfig()
+                    plugin.tabListTask?.start()
+                    sender.sendMessage(plugin.mm.deserialize("<green>[Mistaken] Configuración visual recargada correctamente.</green>"))
+                    1
+                }
+            )
+            .then(
+                Commands.literal("chat")
+                    .executes { ctx ->
+                        val sender = ctx.source.sender
+                        val current = plugin.config.getBoolean("visuals.chat.enabled", true)
+                        val newStatus = !current
+                        plugin.config.set("visuals.chat.enabled", newStatus)
+                        plugin.saveConfig()
+                        val statusText = if (newStatus) "<green>activado</green>" else "<red>desactivado</red>"
+                        sender.sendMessage(plugin.mm.deserialize("<gold>[Mistaken]</gold> <gray>Formateo de chat: </gray>$statusText"))
+                        1
+                    }
+                    .then(
+                        Commands.literal("toggle").executes { ctx ->
+                            val sender = ctx.source.sender
+                            val current = plugin.config.getBoolean("visuals.chat.enabled", true)
+                            val newStatus = !current
+                            plugin.config.set("visuals.chat.enabled", newStatus)
+                            plugin.saveConfig()
+                            val statusText = if (newStatus) "<green>activado</green>" else "<red>desactivado</red>"
+                            sender.sendMessage(plugin.mm.deserialize("<gold>[Mistaken]</gold> <gray>Formateo de chat: </gray>$statusText"))
+                            1
+                        }
+                    )
+                    .then(
+                        Commands.literal("on").executes { ctx ->
+                            val sender = ctx.source.sender
+                            plugin.config.set("visuals.chat.enabled", true)
+                            plugin.saveConfig()
+                            sender.sendMessage(plugin.mm.deserialize("<gold>[Mistaken]</gold> <gray>Formateo de chat: </gray><green>activado</green>"))
+                            1
+                        }
+                    )
+                    .then(
+                        Commands.literal("off").executes { ctx ->
+                            val sender = ctx.source.sender
+                            plugin.config.set("visuals.chat.enabled", false)
+                            plugin.saveConfig()
+                            sender.sendMessage(plugin.mm.deserialize("<gold>[Mistaken]</gold> <gray>Formateo de chat: </gray><red>desactivado</red>"))
+                            1
+                        }
+                    )
+            )
+            .then(
+                Commands.literal("tab")
+                    .executes { ctx ->
+                        val sender = ctx.source.sender
+                        val current = plugin.config.getBoolean("visuals.tab.enabled", true)
+                        val newStatus = !current
+                        plugin.config.set("visuals.tab.enabled", newStatus)
+                        plugin.saveConfig()
+                        if (newStatus) {
+                            plugin.tabListTask?.start()
+                        } else {
+                            plugin.tabListTask?.stop()
+                        }
+                        val statusText = if (newStatus) "<green>activado</green>" else "<red>desactivado</red>"
+                        sender.sendMessage(plugin.mm.deserialize("<gold>[Mistaken]</gold> <gray>Formateo de Tablist: </gray>$statusText"))
+                        1
+                    }
+                    .then(
+                        Commands.literal("toggle").executes { ctx ->
+                            val sender = ctx.source.sender
+                            val current = plugin.config.getBoolean("visuals.tab.enabled", true)
+                            val newStatus = !current
+                            plugin.config.set("visuals.tab.enabled", newStatus)
+                            plugin.saveConfig()
+                            if (newStatus) {
+                                plugin.tabListTask?.start()
+                            } else {
+                                plugin.tabListTask?.stop()
+                            }
+                            val statusText = if (newStatus) "<green>activado</green>" else "<red>desactivado</red>"
+                            sender.sendMessage(plugin.mm.deserialize("<gold>[Mistaken]</gold> <gray>Formateo de Tablist: </gray>$statusText"))
+                            1
+                        }
+                    )
+                    .then(
+                        Commands.literal("on").executes { ctx ->
+                            val sender = ctx.source.sender
+                            plugin.config.set("visuals.tab.enabled", true)
+                            plugin.saveConfig()
+                            plugin.tabListTask?.start()
+                            sender.sendMessage(plugin.mm.deserialize("<gold>[Mistaken]</gold> <gray>Formateo de Tablist: </gray><green>activado</green>"))
+                            1
+                        }
+                    )
+                    .then(
+                        Commands.literal("off").executes { ctx ->
+                            val sender = ctx.source.sender
+                            plugin.config.set("visuals.tab.enabled", false)
+                            plugin.saveConfig()
+                            plugin.tabListTask?.stop()
+                            sender.sendMessage(plugin.mm.deserialize("<gold>[Mistaken]</gold> <gray>Formateo de Tablist: </gray><red>desactivado</red>"))
+                            1
+                        }
+                    )
+            )
 }
