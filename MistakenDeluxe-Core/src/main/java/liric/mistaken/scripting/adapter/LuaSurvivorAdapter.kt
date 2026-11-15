@@ -4,7 +4,7 @@ import liric.mistaken.scripting.api.ScriptContext
 import liric.mistaken.scripting.api.ScriptRole
 import liric.mistaken.scripting.api.ScriptScheduler
 import liric.mistaken.scripting.scheduler.LuaScriptScheduler
-import liric.mistaken.roles.survivors.Survivor
+import liric.mistaken.game.managers.gameplay.Survivor
 import org.bukkit.entity.Player
 import org.bukkit.Bukkit
 

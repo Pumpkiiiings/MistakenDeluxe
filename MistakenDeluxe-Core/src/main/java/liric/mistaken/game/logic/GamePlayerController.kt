@@ -154,7 +154,7 @@ class GamePlayerController(private val game: GameSession) {
                                 }
                                 val clase = game.plugin.survivorManager.getClassById(idElegido) ?: game.plugin.survivorManager.getClassById("civil") ?: game.plugin.survivorManager.getAvailableClasses().values.firstOrNull()
                                 if (clase != null) {
-                                    game.plugin.survivorManager.registrarSurvivor(p, clase as liric.mistaken.roles.survivors.Survivor)
+                                    game.plugin.survivorManager.registrarSurvivor(p, clase as liric.mistaken.game.managers.gameplay.Survivor)
                                 }
 
                                 game.activeModeHandler.onPlayerSpawn(p, false)

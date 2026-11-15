@@ -1,9 +1,11 @@
-package liric.mistaken.roles.common.triggers
+package liric.mistaken.listeners.mechanics
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.roles.killers.CoreKiller
-import liric.mistaken.roles.survivors.Survivor
+import liric.mistaken.game.managers.gameplay.CoreKiller
+import liric.mistaken.game.managers.gameplay.Survivor
+import liric.mistaken.scripting.effects.triggers.InputTrigger
+import liric.mistaken.scripting.effects.triggers.TriggerRegistry
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -60,22 +62,17 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         var handled = false
         for (trigger in triggers) {
             if (!registry.checkCooldown(player, trigger.triggerId, trigger.cooldownSeconds)) {
-                
                 plugin.server.scheduler.runTask(plugin, Runnable {
                     fireTrigger(role, player, trigger.triggerId)
                 })
                 handled = true
             } else {
-                
                 handled = true
             }
         }
         return handled
     }
 
-    /**
-     * Reemplaza el PlayerInteractEvent para skills 1-4.
-     */
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onUseAbility(event: PlayerInteractEvent) {
         if (event.hand != EquipmentSlot.HAND) return
@@ -84,14 +81,9 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         val player = event.player
         val role = getActiveRole(player) ?: return
         
-        
-        
-        
         val slot = player.inventory.heldItemSlot
         val input = when (slot) {
             0 -> InputTrigger.SLOT_1 
-            
-            
             1 -> InputTrigger.SLOT_1
             2 -> InputTrigger.SLOT_2
             3 -> InputTrigger.SLOT_3
@@ -103,10 +95,6 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
             if (handleInput(player, input)) {
                 event.isCancelled = true
                 plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
-            } else {
-                
-                
-                
             }
         }
     }
@@ -132,17 +120,13 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
 
         if (liric.mistaken.scripting.effects.gameplay.GameplayFunctions.isValidTarget(attacker, victim)) {
             handleInput(attacker, InputTrigger.ATTACK)
-            
         }
     }
-
 
     @EventHandler(priority = EventPriority.HIGH)
     fun onToggleSneak(event: PlayerToggleSneakEvent) {
         if (event.isSneaking) { 
             handleInput(event.player, InputTrigger.SNEAK_TOGGLE)
-            
-            
         }
     }
 
@@ -161,7 +145,6 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
             }
         }
 
-        
         if (role is CoreKiller) {
             val message = PlainTextComponentSerializer.plainText().serialize(event.message())
             val rewritten = role.onInterceptChat(player, message)

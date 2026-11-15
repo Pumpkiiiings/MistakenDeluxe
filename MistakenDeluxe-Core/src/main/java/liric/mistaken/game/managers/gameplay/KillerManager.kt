@@ -1,6 +1,9 @@
-package liric.mistaken.roles.killers
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
+import liric.mistaken.roles.killers.Killer
+import liric.mistaken.listeners.mechanics.TriggerListener
+import liric.mistaken.scripting.effects.triggers.WorldTrapRegistry
 import liric.mistaken.scripting.engine.groovy.KillerScriptEngine
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Sound
@@ -15,17 +18,14 @@ import org.bukkit.Material
 import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.config.engine.core.MessageService
 
-import liric.mistaken.roles.shared.AbstractRoleManager
-
-
 class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKillerManager {
 
     init {
         plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.api.event.LuaKillerEventDispatcher(plugin), plugin)
         plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.effects.EffectLifecycleListener(plugin), plugin)
         plugin.server.pluginManager.registerEvents(liric.mistaken.scripting.effects.gameplay.FinisherEngine, plugin)
-        plugin.server.pluginManager.registerEvents(liric.mistaken.roles.common.triggers.TriggerListener(plugin), plugin)
-        liric.mistaken.roles.common.triggers.traps.WorldTrapRegistry.init(plugin)
+        plugin.server.pluginManager.registerEvents(TriggerListener(plugin), plugin)
+        WorldTrapRegistry.init(plugin)
         reloadAll()
     }
 
@@ -66,7 +66,6 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         }
         val clase = getClassById(claseId) ?: return
 
-        
         player.scheduler.run(plugin, Consumer { _ ->
             clase.cleanup(player)
             plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<blue>[INFO]</blue> <gray>${player.name} synchronized with ${clase.name}</gray>"))
@@ -76,22 +75,18 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
     fun registerKiller(player: Player, killer: Killer) {
         val uuid = player.uniqueId
 
-        
         if (activeRoles.containsKey(uuid)) {
             removeRoleLogic(uuid, player)
         }
 
-        
         player.inventory.clear()
         player.inventory.armorContents = arrayOfNulls(4)
         activeRoles[uuid] = killer
 
-        
         player.sendMessage(MessageService.getComponent(player, "killer.transform",
             Placeholder.component("name", ColorTranslator.translate(killer.name))))
         player.world.playSound(player.location, Sound.ENTITY_WITHER_SPAWN, 1.0f, 0.5f)
 
-        
         player.scheduler.runDelayed(
             plugin,
             Consumer { _ ->
@@ -99,9 +94,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
 
                 killer.equip(player)
 
-                
                 val config = plugin.configManager.getKillerConfig(killer.id)
-                
                 
                 val maxHealth = config.getDouble("stats.health", 40.0)
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = maxHealth
@@ -164,7 +157,6 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             player.getAttribute(Attribute.MOVEMENT_SPEED)?.baseValue = 0.1
             player.isGlowing = false
             player.activePotionEffects.forEach { effect -> player.removePotionEffect(effect.type) }
-            
             
             plugin.visibilityManager.removePlayer(player.uniqueId)
         }
@@ -233,7 +225,6 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
             if (newKiller != null) {
                 registerClass(newKiller)
                 
-                
                 val affectedPlayers = mutableListOf<Player>()
                 activeRoles.forEach { (uuid, activeKiller) ->
                     if (activeKiller.id.equals(lowerId, ignoreCase = true)) {
@@ -261,7 +252,6 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         }
     }
 
-    
     fun getKillerOfPlayer(player: Player?): Killer? = player?.let { activeRoles[it.uniqueId] }
     fun isKiller(player: Player?): Boolean = player?.let { activeRoles.containsKey(it.uniqueId) } ?: false
     fun getAvailableClasses(): Map<String, Killer> = availableClasses

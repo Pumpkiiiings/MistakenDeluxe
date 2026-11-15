@@ -1,4 +1,4 @@
-package liric.mistaken.roles.shared
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.utils.resourcepack.CustomItemManager

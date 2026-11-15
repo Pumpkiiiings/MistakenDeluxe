@@ -1,12 +1,11 @@
-package liric.mistaken.roles.survivors
+package liric.mistaken.game.managers.gameplay
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import kotlinx.coroutines.Job
 import liric.mistaken.Mistaken
 import liric.mistaken.api.util.Sounds
 import liric.mistaken.config.engine.core.MessageService
-import liric.mistaken.roles.common.triggers.TriggerRegistry
-import liric.mistaken.roles.shared.RoleItemUtils
+import liric.mistaken.scripting.effects.triggers.TriggerRegistry
 import liric.mistaken.utils.color.ColorTranslator
 import org.bukkit.Material
 import org.bukkit.configuration.file.FileConfiguration
@@ -28,18 +27,8 @@ abstract class Survivor(override val id: String, override val name: String) : li
     protected val playerJobs = ConcurrentHashMap<UUID, MutableSet<Job>>()
     protected val activeTasks = ConcurrentHashMap<UUID, MutableSet<ScheduledTask>>()
 
-    /**
-     * Ability secundaria (Clic Izquierdo / Interacciones especiales).
-     * Se mantiene 'open' para que classes como Jesse puedan sobreescribirla.
-     */
-    open fun trackearHeridos(player: Player) {
+    open fun trackearHeridos(player: Player) {}
 
-    }
-
-    /**
-     * Verifica el enfriamiento de una ability y envia feedback visual.
-     * @return true si aun esta en cooldown, false si se puede usar.
-     */
     fun checkCooldown(player: Player, slot: Int, seconds: Int): Boolean {
         if (seconds <= 0) return false
 
@@ -57,9 +46,6 @@ abstract class Survivor(override val id: String, override val name: String) : li
         return false
     }
 
-    /**
-     * Registra una corrutina (Job) para ser cancelada automaticamente al finalizar la partida.
-     */
     protected fun trackJob(job: Job, ownerUuid: UUID? = null) {
         if (ownerUuid != null) {
             val set = playerJobs.computeIfAbsent(ownerUuid) { ConcurrentHashMap.newKeySet() }
@@ -71,13 +57,11 @@ abstract class Survivor(override val id: String, override val name: String) : li
         }
     }
 
-    /** Registers a scheduled Paper task for per-player cleanup. */
     protected fun trackTask(ownerUuid: UUID, task: ScheduledTask?) {
         if (task == null) return
         activeTasks.computeIfAbsent(ownerUuid) { ConcurrentHashMap.newKeySet() }.add(task)
     }
 
-    /** Equips configurable survivor armor (slots optional) and ability items in hotbar slots 0..2. */
     protected fun equipFromConfig(
         player: Player,
         includeArmor: Boolean = true,
@@ -115,7 +99,6 @@ abstract class Survivor(override val id: String, override val name: String) : li
         player.updateInventory()
     }
 
-    /** Sends localized ability feedback and optionally plays the configured ability sound. */
     protected fun sendAbilityMessage(
         player: Player,
         lang: FileConfiguration,

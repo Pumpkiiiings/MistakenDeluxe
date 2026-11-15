@@ -1,4 +1,4 @@
-package liric.mistaken.roles.shared
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
 import liric.mistaken.api.roles.GameRole

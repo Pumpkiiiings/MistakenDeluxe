@@ -1,4 +1,4 @@
-package liric.mistaken.roles.survivors
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.Mistaken
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
@@ -8,9 +8,6 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import liric.mistaken.utils.color.ColorTranslator
 import liric.mistaken.config.engine.core.MessageService
-
-import liric.mistaken.roles.shared.AbstractRoleManager
-
 
 class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api.roles.ISurvivor>(plugin), liric.mistaken.api.managers.ISurvivorManager {
 
@@ -53,24 +50,19 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
     }
 
     /**
-     * ?? REGISTRO OPTIMIZADO (Paper 1.21.4+):
+     * REGISTRO OPTIMIZADO (Paper):
      * Usamos 'player.scheduler'. Si el player se desconecta antes de los 5 ticks,
-     * la tarea se cancela sola autom�ticamente.
+     * la tarea se cancela sola automáticamente.
      */
     fun registrarSurvivor(player: Player, clase: Survivor) {
         val uuid = player.uniqueId
 
-        
         activeRoles[uuid] = clase
 
-        
-        
         player.scheduler.runDelayed(plugin, { task ->
-            
             if (activeRoles[uuid] == clase) {
                 clase.equip(player)
 
-                
                 val config = plugin.configManager.getSurvivorConfig(clase.id)
                 val maxHealth = config.getDouble("stats.health", 20.0)
                 player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH)?.baseValue = maxHealth
@@ -82,7 +74,6 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
                     "<gray>[Survivor]</gray> <white>${player.name}</white> <green>equipado como ${clase.name}</green>"
                 ))
 
-                
                 player.sendMessage(MessageService.getComponent(player, "game.class-selected",
                     Placeholder.component("class", ColorTranslator.translate(clase.name))))
             }
@@ -136,7 +127,6 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
         availableClasses.values.toList().forEach { it.cleanup(null) }
     }
 
-    
     fun esSurvivorActivo(player: Player?): Boolean = player?.let { activeRoles.containsKey(it.uniqueId) } ?: false
     fun getSurvivorClass(player: Player?): Survivor? = player?.let { activeRoles[it.uniqueId] as? Survivor }
     fun getAvailableClasses(): Map<String, Survivor> = availableClasses.mapValues { it.value as Survivor }

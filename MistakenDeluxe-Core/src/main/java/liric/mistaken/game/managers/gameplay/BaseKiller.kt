@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.killers
+package liric.mistaken.game.managers.gameplay
 
 import liric.mistaken.models.components.AnimationComponent
 import liric.mistaken.models.components.CombatComponent
@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap
  */
 abstract class BaseKiller(id: String, name: String) : CoreKiller(id, name) {
 
-    
     protected val activeCharacters = ConcurrentHashMap<UUID, Character>()
 
     /**
@@ -29,10 +28,6 @@ abstract class BaseKiller(id: String, name: String) : CoreKiller(id, name) {
      * si getModelId() retorna un valor no-null. Killers sin modelo 3D (Null, Charlie,
      * 303, Romeo, etc.) no necesitan ningún componente ECS y se comportan igual que
      * sus equivalentes Kotlin vía CoreKiller.
-     *
-     * Si en el futuro se necesita un killer Lua con state machine pero sin modelo 3D,
-     * este bloque debe separarse en dos flags independientes (getModelId() y
-     * usesStateMachine()). Por ahora, un solo condicional es suficiente.
      */
     open override fun equip(player: Player) {
         super.equip(player)
@@ -41,7 +36,6 @@ abstract class BaseKiller(id: String, name: String) : CoreKiller(id, name) {
 
         val modelId = getModelId()
         if (modelId != null) {
-            
             val pluginManager = org.bukkit.Bukkit.getPluginManager()
             if (pluginManager.isPluginEnabled("ModelEngine")) {
                 character.addComponent(ModelComponent::class.java, liric.mistaken.models.integration.modelengine.ModelEngineComponent(modelId))
@@ -56,44 +50,29 @@ abstract class BaseKiller(id: String, name: String) : CoreKiller(id, name) {
             character.addComponent(StateComponent::class.java, StandardStateComponent())
             character.addComponent(MovementComponent::class.java, BukkitMovementComponent())
 
-            
             setupAdditionalComponents(character)
 
-            
             character.getComponent(ModelComponent::class.java)?.spawn()
         }
     }
 
     /**
      * El identificador del modelo en BetterModel (ej. "warden").
-     * Retorna null si el killer no usa modelo 3D — en ese caso, el pipeline
-     * ECS completo (modelo, animaciones, estado, movimiento) se omite.
+     * Retorna null si el killer no usa modelo 3D.
      */
     abstract fun getModelId(): String?
 
-    /**
-     * Permite inyectar componentes extra (ej. CombatComponent) al instanciar.
-     */
     open fun setupAdditionalComponents(character: Character) {}
 
-    /**
-     * Helper para transicionar de estado fácilmente para un player específico.
-     */
     protected fun transitionTo(player: Player, state: CharacterState, force: Boolean = false) {
         val character = activeCharacters[player.uniqueId] ?: return
         character.getComponent(StateComponent::class.java)?.transitionTo(state, force)
     }
 
-    /**
-     * Obtiene el Character (ECS) asociado a un player.
-     */
     fun getCharacter(player: Player): Character? {
         return activeCharacters[player.uniqueId]
     }
 
-    /**
-     * Llama al tick de todos los characters activos.
-     */
     fun tickAll() {
         for (character in activeCharacters.values) {
             character.tick()
@@ -106,7 +85,6 @@ abstract class BaseKiller(id: String, name: String) : CoreKiller(id, name) {
             activeCharacters.remove(it.uniqueId)?.destroy()
         }
     }
-    
     
     override fun showTrail(player: Player) {}
     override fun useSkill(player: Player, slot: Int) {}

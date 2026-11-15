@@ -5,7 +5,7 @@ import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import liric.mistaken.api.HealthAPI
 import liric.mistaken.data.stats.StatsManager
 import liric.mistaken.game.managers.audio.MusicManager
-import liric.mistaken.roles.killers.KillerManager
+import liric.mistaken.game.managers.gameplay.KillerManager
 import liric.mistaken.menu.menus.KillerShop
 import liric.mistaken.commands.CommandRegistry
 import liric.mistaken.data.PlayerDataManager
@@ -39,7 +39,7 @@ import liric.mistaken.listeners.killers.KillerSkillListener
 import liric.mistaken.listeners.survivors.FlashlightListener
 import liric.mistaken.listeners.survivors.SurvivorAbilityListener
 import liric.mistaken.menu.menus.ShopSelector
-import liric.mistaken.roles.survivors.SurvivorManager
+import liric.mistaken.game.managers.gameplay.SurvivorManager
 import liric.mistaken.menu.menus.SurvivorShop
 import liric.mistaken.utils.hooks.Placeholders
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -408,7 +408,7 @@ class Mistaken : JavaPlugin() {
         killerTickTask = server.globalRegionScheduler.runAtFixedRate(this, { _ ->
             if (!isReady) return@runAtFixedRate
             killerManager.getAvailableClasses().values.forEach { killer ->
-                if (killer is liric.mistaken.roles.killers.BaseKiller) {
+                if (killer is liric.mistaken.game.managers.gameplay.BaseKiller) {
                     killer.tickAll()
                 }
             }

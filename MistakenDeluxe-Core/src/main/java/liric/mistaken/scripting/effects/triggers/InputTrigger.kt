@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.common.triggers
+package liric.mistaken.scripting.effects.triggers
 
 enum class InputTrigger {
     SLOT_1,

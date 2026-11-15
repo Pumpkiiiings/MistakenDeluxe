@@ -51,7 +51,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         lastAttackMap[player.uniqueId] = now
 
         val killer = plugin.killerManager.getKillerOfPlayer(player) ?: return
-        if (killer is liric.mistaken.roles.killers.BaseKiller) {
+        if (killer is liric.mistaken.game.managers.gameplay.BaseKiller) {
             val character = killer.getCharacter(player) ?: return
             
             val combatComp = character.getComponent(liric.mistaken.models.components.CombatComponent::class.java)
@@ -79,7 +79,7 @@ class KillerSkillListener(private val plugin: Mistaken) : Listener {
         }
 
         val killer = plugin.killerManager.getKillerOfPlayer(player) ?: return
-        if (killer is liric.mistaken.roles.killers.BaseKiller) {
+        if (killer is liric.mistaken.game.managers.gameplay.BaseKiller) {
             val character = killer.getCharacter(player) ?: return
             
             val combatComp = character.getComponent(liric.mistaken.models.components.CombatComponent::class.java)

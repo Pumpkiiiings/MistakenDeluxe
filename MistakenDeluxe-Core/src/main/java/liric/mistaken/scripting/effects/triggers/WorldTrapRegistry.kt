@@ -1,4 +1,4 @@
-﻿package liric.mistaken.roles.common.triggers.traps
+package liric.mistaken.scripting.effects.triggers
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.event.PacketListenerAbstract
@@ -6,7 +6,6 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent
 import com.github.retrooper.packetevents.protocol.packettype.PacketType
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement
 import liric.mistaken.Mistaken
-import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.Player
 import java.util.UUID
@@ -48,9 +47,7 @@ object WorldTrapRegistry {
                     if (trap != null) {
                         event.isCancelled = true
                         
-                        
                         player.scheduler.run(plugin, java.util.function.Consumer {
-                            
                             val trapLoc = Location(player.world, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
                             trap.onTrigger(player, trapLoc)
                         }, null)

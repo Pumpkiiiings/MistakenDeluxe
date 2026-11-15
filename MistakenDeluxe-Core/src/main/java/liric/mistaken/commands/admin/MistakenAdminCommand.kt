@@ -193,7 +193,7 @@ object MistakenAdminCommand {
                             if (clase == null) {
                                 player.sendMessage(MessageService.getComponent(player, "errors.survivor-not-found", Placeholder.parsed("type", id)))
                             } else {
-                                plugin.survivorManager.registrarSurvivor(player, clase as liric.mistaken.roles.survivors.Survivor)
+                                plugin.survivorManager.registrarSurvivor(player, clase as liric.mistaken.game.managers.gameplay.Survivor)
                             }
                             1
                         }

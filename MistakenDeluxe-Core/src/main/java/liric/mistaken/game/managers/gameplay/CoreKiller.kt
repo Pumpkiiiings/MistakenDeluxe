@@ -1,9 +1,9 @@
-package liric.mistaken.roles.killers
+package liric.mistaken.game.managers.gameplay
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import liric.mistaken.Mistaken
-import liric.mistaken.roles.common.triggers.TriggerRegistry
-import liric.mistaken.roles.shared.RoleItemUtils
+import liric.mistaken.roles.killers.Killer
+import liric.mistaken.scripting.effects.triggers.TriggerRegistry
 import liric.mistaken.utils.hooks.ObserverHook
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -38,7 +38,7 @@ abstract class CoreKiller(id: String, name: String) : Killer(id, name) {
     open fun onTrigger(player: Player, triggerId: String) {}
 
     /**
-     * Interceptaci�n de chat para Killers nativos. 
+     * Interceptación de chat para Killers nativos. 
      * Retorna un string para reescribir el broadcast, o null para no tocarlo.
      */
     open fun onInterceptChat(player: Player, message: String): String? { return null }
@@ -125,22 +125,16 @@ abstract class CoreKiller(id: String, name: String) : Killer(id, name) {
         Bukkit.getOnlinePlayers().forEach { ObserverHook.stopSound(it, soundId) }
     }
 
-    
-    
-    
     private var isDisposed = false
-    private val taskTracker = liric.mistaken.roles.killers.tracking.KillerTaskTracker()
-    private val eventTracker = liric.mistaken.roles.killers.tracking.KillerEventTracker()
-    private val resourceTracker = liric.mistaken.roles.killers.tracking.KillerResourceTracker()
+    private val taskTracker = KillerTaskTracker()
+    private val eventTracker = KillerEventTracker()
+    private val resourceTracker = KillerResourceTracker()
 
     fun trackResource(cleanupAction: Runnable) {
         if (isDisposed) return
         resourceTracker.track(cleanupAction)
     }
 
-    
-    
-    
     fun <T : org.bukkit.event.Event> onEvent(
         eventClass: Class<T>,
         priority: org.bukkit.event.EventPriority = org.bukkit.event.EventPriority.NORMAL,
@@ -157,9 +151,6 @@ abstract class CoreKiller(id: String, name: String) : Killer(id, name) {
         eventTracker.track(listener)
     }
 
-    
-    
-    
     fun runTimer(
         entity: org.bukkit.entity.Entity, 
         delayTicks: Long, 
@@ -221,9 +212,6 @@ abstract class CoreKiller(id: String, name: String) : Killer(id, name) {
         taskTracker.track(t)
     }
 
-    
-    
-    
     final override fun dispose() {
         if (isDisposed) return
         isDisposed = true

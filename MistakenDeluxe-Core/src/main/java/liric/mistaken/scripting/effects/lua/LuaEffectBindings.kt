@@ -14,8 +14,8 @@ import liric.mistaken.scripting.effects.music.AmbientMusicEffect
 import liric.mistaken.scripting.effects.gameplay.FinisherEngine
 import liric.mistaken.scripting.effects.gameplay.PlayerStateRegistry
 import liric.mistaken.scripting.effects.gameplay.ChatInterceptorRegistry
-import liric.mistaken.roles.common.triggers.traps.WorldTrapRegistry
-import liric.mistaken.roles.common.triggers.traps.TrapDefinition
+import liric.mistaken.scripting.effects.triggers.WorldTrapRegistry
+import liric.mistaken.scripting.effects.triggers.TrapDefinition
 import liric.mistaken.scripting.effects.gameplay.LineSpawnEffect
 import liric.mistaken.scripting.effects.gameplay.SequenceEffect
 import liric.mistaken.scripting.effects.gameplay.BaitTrapEffect
@@ -944,7 +944,7 @@ object LuaEffectBindings {
                 val priority = args.arg(3).optint(80)
                 
                 val killer = liric.mistaken.Mistaken.instance.killerManager.getKillerOfPlayer(player)
-                if (killer is liric.mistaken.roles.killers.BaseKiller) {
+                if (killer is liric.mistaken.game.managers.gameplay.BaseKiller) {
                     val character = killer.getCharacter(player)
                     if (character != null) {
                         val state = object : liric.mistaken.models.states.CharacterState {
