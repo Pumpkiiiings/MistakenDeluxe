@@ -1,7 +1,6 @@
 package liric.mistaken.roles.survivors
 
 import liric.mistaken.Mistaken
-import liric.mistaken.roles.survivors.classes.*
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -16,7 +15,6 @@ import liric.mistaken.roles.shared.AbstractRoleManager
 class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api.roles.ISurvivor>(plugin), liric.mistaken.api.managers.ISurvivorManager {
 
     init {
-        loadHardcodedSurvivors()
         loadScripts()
     }
 
@@ -24,16 +22,7 @@ class SurvivorManager(plugin: Mistaken) : AbstractRoleManager<liric.mistaken.api
         cleanAll()
         availableClasses.values.toList().forEach { it.cleanup(null) }
         availableClasses.clear()
-        loadHardcodedSurvivors()
         loadScripts()
-    }
-
-    private fun loadHardcodedSurvivors() {
-        listOf(
-            DeliveryMan(),
-            Jesse(),
-            Villager()
-        ).forEach { registerClass(it) }
     }
 
     fun loadScripts() {

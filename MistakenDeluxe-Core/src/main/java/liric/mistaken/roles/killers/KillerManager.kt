@@ -2,7 +2,6 @@ package liric.mistaken.roles.killers
 
 import liric.mistaken.Mistaken
 import liric.mistaken.scripting.engine.groovy.KillerScriptEngine
-import liric.mistaken.roles.killers.classes.*
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Sound
 import org.bukkit.attribute.Attribute
@@ -33,16 +32,7 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
     fun reloadAll() {
         removeAllKillers()
         availableClasses.clear()
-        loadHardcodedKillers()
         loadScripts()
-    }
-
-    private fun loadHardcodedKillers() {
-        listOf(
-            CharlieInferno(), CharlieJazz(), Mariachi(),
-            Sowoul(), StillLife(), SmilerKiller()
-        ).forEach { registerClass(it) }
-        plugin.componentLogger.info(liric.mistaken.utils.color.ColorTranslator.translate("<green>[SUCCESS]</green> <gray>Loaded native killers (Hardcoded).</gray>"))
     }
 
     fun loadScripts() {

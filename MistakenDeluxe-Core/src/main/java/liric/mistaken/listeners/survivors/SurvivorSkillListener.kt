@@ -2,8 +2,6 @@ package liric.mistaken.listeners.survivors
 
 import liric.mistaken.Mistaken
 import liric.mistaken.game.enums.GameState
-import liric.mistaken.roles.survivors.classes.KasaneTeto
-import liric.mistaken.roles.survivors.classes.Jesse
 import org.bukkit.GameMode
 import org.bukkit.NamespacedKey
 import org.bukkit.Sound
@@ -39,7 +37,6 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
 
         
         private val STICK_KEY = NamespacedKey("mistaken", "kid_stick")
-        private val JESSE_PUNCH_KEY = NamespacedKey("mistaken", "jesse_punch")
 
         fun marcarBloque(loc: Location) {
             val key = "${loc.world.name}_${loc.blockX}_${loc.blockY}_${loc.blockZ}"
@@ -77,20 +74,12 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
 
         when (event.action) {
             Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK -> {
-                if (clase is Jesse && slot == 1) return
-
                 event.isCancelled = true
                 plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
                 clase.useSkill(player, slot)
             }
             Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK -> {
-                
-                if (clase is KasaneTeto && slot == 0) {
-                    event.isCancelled = true
-                    plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
-                    clase.useSkill(player, slot)
-                } else if (slot == 1) {
-                    
+                if (slot == 1) {
                     event.isCancelled = true
                     plugin.server.scheduler.runTask(plugin, Runnable { player.updateInventory() })
                     clase.trackearHeridos(player)
@@ -120,20 +109,6 @@ class SurvivorAbilityListener(private val plugin: Mistaken) : Listener {
 
         if (clase is liric.mistaken.scripting.adapter.LuaSurvivorAdapter) {
             clase.onMeleeAttack(attacker, victim, attacker.inventory.heldItemSlot)
-            
-        } else {
-            val item = attacker.inventory.itemInMainHand
-            if (item.hasItemMeta()) {
-                val pdc = item.itemMeta.persistentDataContainer
-                if (pdc.has(JESSE_PUNCH_KEY, PersistentDataType.BYTE) && clase is Jesse) {
-                    val cooldownTime = plugin.configManager.getSurvivorConfig(clase.id).getInt("survivors.jesse.items.skill2_cooldown", 15)
-                    if (!clase.checkCooldown(attacker, 1, cooldownTime)) {
-                        clase.applyGolpePuno(victim)
-                        attacker.sendMessage(ColorTranslator.translate("<gold><b>TOMA ESO!</b></gold>"))
-                    }
-                    return
-                }
-            }
         }
     }
 
