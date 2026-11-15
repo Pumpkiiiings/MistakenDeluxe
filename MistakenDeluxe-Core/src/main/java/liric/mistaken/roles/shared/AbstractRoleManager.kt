@@ -67,6 +67,12 @@ abstract class AbstractRoleManager<T : GameRole>(protected val plugin: Mistaken)
                         luaRoleFactory(roleId, roleId.replaceFirstChar { it.uppercase() }, scriptRole)
                     }
                 }
+                file.name.endsWith(".js") -> {
+                    val roleId = file.nameWithoutExtension.lowercase()
+                    liric.mistaken.scripting.engine.js.JsScriptEngine.loadScript(file, roleId, plugin.logger)?.let { scriptRole ->
+                        luaRoleFactory(roleId, roleId.replaceFirstChar { it.uppercase() }, scriptRole)
+                    }
+                }
                 else -> null
             }
             if (loaded != null) {

@@ -135,6 +135,7 @@ class Mistaken : JavaPlugin() {
     lateinit var glowingAPI: liric.mistaken.utils.misc.PacketEventsGlowManager
 
     var staminaListenerInstance: StaminaListener? = null; private set
+    var tabListTask: liric.mistaken.visual.TabListTask? = null; private set
     private var trailParticleTask: io.papermc.paper.threadedregions.scheduler.ScheduledTask? = null
     private var killerTickTask: io.papermc.paper.threadedregions.scheduler.ScheduledTask? = null
 
@@ -241,6 +242,9 @@ class Mistaken : JavaPlugin() {
         
         visualUpdateService = liric.mistaken.game.managers.visual.VisualUpdateService(this)
         visualUpdateService.start()
+        val tabTask = liric.mistaken.visual.TabListTask(this)
+        tabListTask = tabTask
+        tabTask.start()
 
         server.servicesManager.register(HealthAPI::class.java, combatManager, this, ServicePriority.Normal)
 
@@ -269,6 +273,7 @@ class Mistaken : JavaPlugin() {
     override fun onDisable() {
         isReady = false
 
+        tabListTask?.stop()
         trailParticleTask?.cancel()
         killerTickTask?.cancel()
         staminaListenerInstance?.shutdown()
@@ -302,6 +307,11 @@ class Mistaken : JavaPlugin() {
         PacketEvents.getAPI().terminate()
 
         componentLogger.info(ColorTranslator.translate("[INFO] MISTAKEN has been successfully disabled."))
+    }
+
+    override fun reloadConfig() {
+        super.reloadConfig()
+        tabListTask?.start()
     }
 
     private fun setupDatabase(): Boolean {
@@ -343,6 +353,7 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(HackTerminalListener(this), this)
         pm.registerEvents(KeypadListener(this), this)
         pm.registerEvents(PrivateGameInteractListener(this), this)
+        pm.registerEvents(liric.mistaken.visual.ChatListener(this), this)
 
         if (pm.isPluginEnabled("Parties")) {
             pm.registerEvents(liric.mistaken.utils.hooks.AlessioPartiesHook(this), this)

@@ -69,6 +69,48 @@ gameplay:
 visuals:
   bossbar-style: SOLID # SOLID, SEGMENTED_6, 10, 12, 20
   vote-format: <white>{map}</white> - <yellow>({votes})</yellow><newline>
+  chat:
+    enabled: true
+    legacy-colors: true # Translates &a, &b, etc. into minimessage format
+    formats:
+      LOBBY: "<gray>[Lobby] <white><player> <gray>» <white><message>"
+      STARTING: "<gray>[Lobby] <white><player> <gray>» <white><message>"
+      INGAME: "<red>[Playing] <white><player> <gray>» <white><message>"
+      ENDING: "<gold>[End] <white><player> <gray>» <white><message>"
+      DEFAULT: "<gray><player> <gray>» <white><message>"
+  tab:
+    enabled: true
+    update-interval: 20 # in ticks (20 ticks = 1 second)
+    legacy-colors: true
+    sort-by-rank-weight: true # Requires LuckPerms
+    states:
+      LOBBY:
+        player-name: "<white><player>"
+        header:
+          - "<gold><b>Mistaken Deluxe</b>"
+          - "<yellow>Welcome to the Lobby!"
+          - ""
+        footer:
+          - ""
+          - "<gray>mc.yourserver.com"
+      INGAME:
+        player-name: "<red><player>"
+        header:
+          - "<gold><b>Mistaken Deluxe</b>"
+          - "<red>Survive or Die!"
+          - ""
+        footer:
+          - ""
+          - "<gray>Killers on the loose: <red>%mistaken_killers%"
+      DEFAULT:
+        player-name: "<white><player>"
+        header:
+          - "<gold><b>Mistaken Deluxe</b>"
+          - "<yellow>Welcome"
+          - ""
+        footer:
+          - ""
+          - "<gray>mc.yourserver.com"
 
 # --- Database ---
 database:

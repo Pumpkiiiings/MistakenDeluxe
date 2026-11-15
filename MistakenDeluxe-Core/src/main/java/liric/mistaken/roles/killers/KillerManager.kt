@@ -203,22 +203,41 @@ class KillerManager(plugin: Mistaken) : AbstractRoleManager<Killer>(plugin), IKi
         val scriptsFolder = java.io.File(plugin.dataFolder, "scripts/killers")
         val groovyScript = java.io.File(scriptsFolder, "$lowerId.groovy")
         val luaScript = java.io.File(scriptsFolder, "$lowerId.lua")
+        val jsScript = java.io.File(scriptsFolder, "$lowerId.js")
         
         val isLua = luaScript.exists()
-        val scriptFile = if (isLua) luaScript else groovyScript
+        val isJs = jsScript.exists()
+        val scriptFile = when {
+            isLua -> luaScript
+            isJs -> jsScript
+            else -> groovyScript
+        }
         
         if (scriptFile.exists()) {
-            val newKiller = if (isLua) {
-                val scriptRole = liric.mistaken.scripting.engine.lua.LuaScriptEngine.loadScript(scriptFile, lowerId)
-                if (scriptRole != null) {
-                    liric.mistaken.scripting.adapter.LuaKillerAdapter(
-                        id = lowerId,
-                        name = lowerId.replaceFirstChar { it.uppercase() },
-                        scriptRole = scriptRole
-                    )
-                } else null
-            } else {
-                KillerScriptEngine.loadKillerScript(scriptFile)
+            val newKiller = when {
+                isLua -> {
+                    val scriptRole = liric.mistaken.scripting.engine.lua.LuaScriptEngine.loadScript(scriptFile, lowerId)
+                    if (scriptRole != null) {
+                        liric.mistaken.scripting.adapter.LuaKillerAdapter(
+                            id = lowerId,
+                            name = lowerId.replaceFirstChar { it.uppercase() },
+                            scriptRole = scriptRole
+                        )
+                    } else null
+                }
+                isJs -> {
+                    val scriptRole = liric.mistaken.scripting.engine.js.JsScriptEngine.loadScript(scriptFile, lowerId, plugin.logger)
+                    if (scriptRole != null) {
+                        liric.mistaken.scripting.adapter.LuaKillerAdapter(
+                            id = lowerId,
+                            name = lowerId.replaceFirstChar { it.uppercase() },
+                            scriptRole = scriptRole
+                        )
+                    } else null
+                }
+                else -> {
+                    KillerScriptEngine.loadKillerScript(scriptFile)
+                }
             }
 
             if (newKiller != null) {
