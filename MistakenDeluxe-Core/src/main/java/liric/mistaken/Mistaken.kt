@@ -134,6 +134,10 @@ class Mistaken : JavaPlugin() {
     lateinit var shopSelector: ShopSelector
     lateinit var glowingAPI: liric.mistaken.utils.misc.PacketEventsGlowManager
 
+    var staminaListenerInstance: StaminaListener? = null; private set
+    private var trailParticleTask: io.papermc.paper.threadedregions.scheduler.ScheduledTask? = null
+    private var killerTickTask: io.papermc.paper.threadedregions.scheduler.ScheduledTask? = null
+
     override fun onLoad() {
         instance = this
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this))
@@ -265,6 +269,13 @@ class Mistaken : JavaPlugin() {
     override fun onDisable() {
         isReady = false
 
+        trailParticleTask?.cancel()
+        killerTickTask?.cancel()
+        staminaListenerInstance?.shutdown()
+        if (::antiBlockListener.isInitialized) runCatching { antiBlockListener.shutdown() }
+        if (::combatManager.isInitialized) runCatching { combatManager.shutdown() }
+        liric.mistaken.utils.misc.HitboxVisualizer.clearAll()
+
         if (::networkManager.isInitialized) runCatching { networkManager.shutdown() }
         if (::flashlightManager.isInitialized) runCatching { flashlightManager.disableAll() }
         if (::sessionManager.isInitialized) sessionManager.activeSessions.values.forEach { it.shutdown() }
@@ -320,7 +331,9 @@ class Mistaken : JavaPlugin() {
         pm.registerEvents(liric.mistaken.game.managers.setup.SetupListener(this), this)
         pm.registerEvents(PlayerQuitListener(this), this)
         pm.registerEvents(GameListener(this), this)
-        pm.registerEvents(StaminaListener(this), this)
+        val stamina = StaminaListener(this)
+        staminaListenerInstance = stamina
+        pm.registerEvents(stamina, this)
         pm.registerEvents(KillerSkillListener(this), this)
         pm.registerEvents(KillerGeneralListener(this), this)
         pm.registerEvents(antiBlockListener, this)
@@ -360,7 +373,7 @@ class Mistaken : JavaPlugin() {
         
         // globalRegionScheduler runs on the main thread — safe for all Bukkit API.
         
-        server.globalRegionScheduler.runAtFixedRate(this, { _ ->
+        trailParticleTask = server.globalRegionScheduler.runAtFixedRate(this, { _ ->
             if (!isReady) return@runAtFixedRate
 
             sessionManager.activeSessions.values.forEach { session ->
@@ -370,18 +383,18 @@ class Mistaken : JavaPlugin() {
                     val p = server.getPlayer(uuid) ?: return@forEach
                     val killer = killerManager.getKillerOfPlayer(p) ?: return@forEach
 
-                    if (p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
-                        
-                        // inner globalRegionScheduler.run() dispatch that was required before.
-                        killer.showTrail(p)
-                        killer.showPhysicalTrail(p)
-                    }
+                    p.scheduler.run(this, { _ ->
+                        if (p.isOnline && (p.velocity.lengthSquared() > 0.001 || p.isSprinting)) {
+                            killer.showTrail(p)
+                            killer.showPhysicalTrail(p)
+                        }
+                    }, null)
                 }
             }
         }, 1L, 2L) 
 
         
-        server.globalRegionScheduler.runAtFixedRate(this, { _ ->
+        killerTickTask = server.globalRegionScheduler.runAtFixedRate(this, { _ ->
             if (!isReady) return@runAtFixedRate
             killerManager.getAvailableClasses().values.forEach { killer ->
                 if (killer is liric.mistaken.roles.killers.BaseKiller) {

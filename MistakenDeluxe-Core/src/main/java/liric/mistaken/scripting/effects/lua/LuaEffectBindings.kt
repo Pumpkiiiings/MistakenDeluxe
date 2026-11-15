@@ -36,6 +36,7 @@ import org.luaj.vm2.Globals
 import org.luaj.vm2.LuaTable
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.Varargs
+import org.luaj.vm2.lib.ZeroArgFunction
 import org.luaj.vm2.lib.OneArgFunction
 import org.luaj.vm2.lib.TwoArgFunction
 import org.luaj.vm2.lib.ThreeArgFunction
@@ -103,7 +104,7 @@ object LuaEffectBindings {
             override fun call(playerArg: LuaValue, keyArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
                 val key = keyArg.optjstring("")
-                val value = PlayerStateRegistry.get(scriptId, player.uniqueId, key!!)
+                val value = PlayerStateRegistry.get(scriptId, player.uniqueId, key)
                 return if (value != null) LuaValue.valueOf(value) else LuaValue.NIL
             }
         })
@@ -113,13 +114,22 @@ object LuaEffectBindings {
                 val ticks = ticksArg.checklong().coerceAtLeast(1L)
                 if (callbackArg.isfunction()) {
                     val pPlugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
-                    pPlugin.server.globalRegionScheduler.runDelayed(pPlugin, java.util.function.Consumer {
+                    var taskRef: io.papermc.paper.threadedregions.scheduler.ScheduledTask? = null
+                    taskRef = pPlugin.server.globalRegionScheduler.runDelayed(pPlugin, java.util.function.Consumer {
                         try {
                             callbackArg.call()
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                        } catch (e: Throwable) {
+                            pPlugin.logger.warning("Error running Lua delay_ticks in $scriptId: ${e.message}")
                         }
                     }, ticks)
+                    val handle = LuaTable()
+                    handle.set("cancel", object : ZeroArgFunction() {
+                        override fun call(): LuaValue {
+                            taskRef?.cancel()
+                            return LuaValue.NIL
+                        }
+                    })
+                    return handle
                 }
                 return LuaValue.NIL
             }
@@ -130,7 +140,7 @@ object LuaEffectBindings {
             override fun call(playerArg: LuaValue, keyArg: LuaValue): LuaValue {
                 val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
                 val key = keyArg.optjstring("")
-                PlayerStateRegistry.clear(scriptId, player.uniqueId, key!!)
+                PlayerStateRegistry.clear(scriptId, player.uniqueId, key)
                 return LuaValue.NIL
             }
         })
@@ -148,17 +158,20 @@ object LuaEffectBindings {
             }
         })
 
-        globals.set("dash", object : ThreeArgFunction() {
-            override fun call(playerArg: LuaValue, multArg: LuaValue, yOffsetArg: LuaValue): LuaValue {
-                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
-                val mult = multArg.optdouble(1.0)
-                val yOff = yOffsetArg.optdouble(0.0)
-                
-                player.scheduler.run(org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java), java.util.function.Consumer<io.papermc.paper.threadedregions.scheduler.ScheduledTask> {
-                    val dir = player.location.direction.normalize().multiply(mult).setY(yOff)
-                    player.velocity = dir
-                }, null)
-                return LuaValue.NIL
+        globals.set("dash", object : VarArgFunction() {
+            override fun invoke(args: Varargs): Varargs {
+                val player = unwrapPlayer(args.arg(1)) ?: return LuaValue.NIL
+                if (args.narg() > 1) {
+                    val mult = args.arg(2).optdouble(1.0)
+                    val yOff = args.arg(3).optdouble(0.0)
+                    val p = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
+                    player.scheduler.run(p, java.util.function.Consumer<io.papermc.paper.threadedregions.scheduler.ScheduledTask> {
+                        val dir = player.location.direction.normalize().multiply(mult).setY(yOff)
+                        player.velocity = dir
+                    }, null)
+                    return LuaValue.NIL
+                }
+                return buildDashTable(scriptId, player)
             }
         })
 
@@ -524,9 +537,11 @@ object LuaEffectBindings {
                 skull.yield = yield
                 var life = 0
                 val plugin = liric.mistaken.Mistaken.instance
-                skull.scheduler.runAtFixedRate(plugin, Consumer<ScheduledTask> { task ->
+                var taskRef: ScheduledTask? = null
+                taskRef = skull.scheduler.runAtFixedRate(plugin, Consumer<ScheduledTask> { task ->
                     if (life >= maxTicks || !skull.isValid) {
                         task.cancel()
+                        if (skull.isValid) skull.remove()
                         return@Consumer
                     }
                     skull.world.spawnParticle(org.bukkit.Particle.WITCH, skull.location, 3, 0.05, 0.05, 0.05, 0.01)
@@ -534,26 +549,32 @@ object LuaEffectBindings {
                     if (hit != null) {
                         if (onHitCallback != null) {
                             hit.scheduler.run(plugin, Consumer<ScheduledTask> { _ ->
-                                onHitCallback.call(org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce(liric.mistaken.scripting.adapter.BukkitPlayerAdapter(hit)))
+                                try {
+                                    onHitCallback.call(org.luaj.vm2.lib.jse.CoerceJavaToLua.coerce(liric.mistaken.scripting.adapter.BukkitPlayerAdapter(hit)))
+                                } catch (e: Throwable) {
+                                    plugin.logger.warning("Error running Lua onHit in launch_wither_skull: ${e.message}")
+                                }
                             }, null)
                         }
-                        skull.remove()
+                        if (skull.isValid) skull.remove()
                         task.cancel()
                     }
                     life++
                 }, null, 1L, 1L)
-                return LuaValue.NIL
-            }
-        })
-        
-        
-        globals.set("dash", object : OneArgFunction() {
-            override fun call(playerArg: LuaValue): LuaValue {
-                val player = unwrapPlayer(playerArg) ?: return LuaValue.NIL
-                return buildDashTable(scriptId, player)
-            }
-        })
 
+                val handle = LuaTable()
+                handle.set("cancel", object : ZeroArgFunction() {
+                    override fun call(): LuaValue {
+                        taskRef?.cancel()
+                        if (skull.isValid) skull.remove()
+                        return LuaValue.NIL
+                    }
+                })
+                return handle
+            }
+        })
+        
+        
         
         globals.set("place_trap", object : TwoArgFunction() {
             override fun call(playerArg: LuaValue, locArg: LuaValue): LuaValue {
@@ -820,21 +841,36 @@ object LuaEffectBindings {
         globals.set("run_timer", object : org.luaj.vm2.lib.VarArgFunction() {
             override fun invoke(args: org.luaj.vm2.Varargs): org.luaj.vm2.Varargs {
                 val delay = args.arg(1).optlong(0)
-                val period = args.arg(2).optlong(1)
+                val period = args.arg(2).optlong(1).coerceAtLeast(1L)
                 val maxIterations = args.arg(3).optint(10)
                 val func = args.arg(4)
                 
                 if (func.isfunction()) {
                     val pPlugin = org.bukkit.plugin.java.JavaPlugin.getPlugin(liric.mistaken.Mistaken::class.java)
                     val counter = intArrayOf(0)
-                    pPlugin.server.globalRegionScheduler.runAtFixedRate(pPlugin, java.util.function.Consumer { task ->
+                    var taskRef: io.papermc.paper.threadedregions.scheduler.ScheduledTask? = null
+                    taskRef = pPlugin.server.globalRegionScheduler.runAtFixedRate(pPlugin, java.util.function.Consumer { task ->
                         if (counter[0] >= maxIterations) {
                             task.cancel()
                             return@Consumer
                         }
-                        func.call(org.luaj.vm2.LuaValue.valueOf(counter[0]))
+                        try {
+                            func.call(org.luaj.vm2.LuaValue.valueOf(counter[0]))
+                        } catch (e: Throwable) {
+                            pPlugin.logger.warning("Error running Lua run_timer in $scriptId: ${e.message}")
+                            task.cancel()
+                        }
                         counter[0]++
                     }, if (delay <= 0) 1L else delay, period)
+
+                    val handle = LuaTable()
+                    handle.set("cancel", object : ZeroArgFunction() {
+                        override fun call(): LuaValue {
+                            taskRef?.cancel()
+                            return LuaValue.NIL
+                        }
+                    })
+                    return handle
                 }
                 return org.luaj.vm2.LuaValue.NIL
             }

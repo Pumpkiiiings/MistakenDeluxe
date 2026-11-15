@@ -155,10 +155,9 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
         val triggers = registry.getTriggersForInput(InputTrigger.CHAT_MESSAGE)
         for (trigger in triggers) {
             if (!registry.checkCooldown(player, trigger.triggerId, trigger.cooldownSeconds)) {
-                
-                plugin.server.scheduler.runTask(plugin, Runnable {
+                player.scheduler.run(plugin, java.util.function.Consumer {
                     fireTrigger(role, player, trigger.triggerId)
-                })
+                }, null)
             }
         }
 
@@ -168,13 +167,13 @@ class TriggerListener(private val plugin: Mistaken) : Listener {
             val rewritten = role.onInterceptChat(player, message)
             if (rewritten != null) {
                 event.isCancelled = true
-                
-                
-                plugin.server.scheduler.runTask(plugin, Runnable {
-                    plugin.server.onlinePlayers.forEach { p ->
+                val session = plugin.sessionManager.getSession(player)
+                val recipients = session?.getPlayers() ?: player.world.players
+                player.scheduler.run(plugin, java.util.function.Consumer {
+                    recipients.forEach { p ->
                         p.sendMessage(rewritten)
                     }
-                })
+                }, null)
             }
         }
     }

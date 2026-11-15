@@ -191,7 +191,7 @@ object SkillService {
         val bukkitPlayer = player.getPlayer()
         val hitbox = liric.mistaken.utils.misc.HitboxVisualizer.createHitbox(bukkitPlayer.location, sx, sy, sz, material)
         var ticks = 0L
-        plugin.server.regionScheduler.runAtFixedRate(plugin, bukkitPlayer.location, Consumer { task ->
+        bukkitPlayer.scheduler.runAtFixedRate(plugin, Consumer { task ->
             if (ticks >= durationTicks || !bukkitPlayer.isOnline) {
                 hitbox?.remove()
                 task.cancel()
@@ -199,7 +199,7 @@ object SkillService {
             }
             hitbox?.teleport(bukkitPlayer.location)
             ticks++
-        }, 1L, 1L)
+        }, null, 1L, 1L)
     }
 
     fun drawInstantHitbox(loc: Location, sx: Double, sy: Double, sz: Double, durationTicks: Long, material: org.bukkit.Material) {

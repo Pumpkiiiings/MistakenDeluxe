@@ -26,8 +26,8 @@ class SetupManager(private val plugin: Mistaken) {
     private val savedInventories = ConcurrentHashMap<UUID, Array<ItemStack?>>()
     private val savedArmor = ConcurrentHashMap<UUID, Array<ItemStack?>>()
     
-    // Player UUID -> BukkitTask (Particle task)
-    private val particleTasks = ConcurrentHashMap<UUID, BukkitTask>()
+    // Player UUID -> ScheduledTask (Particle task)
+    private val particleTasks = ConcurrentHashMap<UUID, io.papermc.paper.threadedregions.scheduler.ScheduledTask>()
 
     private fun createSetupItem(material: Material, nameComp: Component, loreComps: List<Component>): ItemStack {
         val item = ItemStack(material)
@@ -88,10 +88,11 @@ class SetupManager(private val plugin: Mistaken) {
     }
 
     private fun startParticleTask(player: Player, arena: Arena) {
-        val task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, Runnable {
+        val task = player.scheduler.runAtFixedRate(plugin, java.util.function.Consumer { task ->
             if (!player.isOnline) {
+                task.cancel()
                 stopSetup(player)
-                return@Runnable
+                return@Consumer
             }
 
             // Draw Killer Spawn (Red)
@@ -114,9 +115,11 @@ class SetupManager(private val plugin: Mistaken) {
                     drawMarker(player, gen, 0, 100, 255) // Blue
                 }
             }
-        }, 0L, 10L) // Every half second
+        }, null, 1L, 10L)
 
-        particleTasks[player.uniqueId] = task
+        if (task != null) {
+            particleTasks[player.uniqueId] = task
+        }
     }
 
     private fun drawMarker(player: Player, loc: Location, r: Int, g: Int, b: Int) {

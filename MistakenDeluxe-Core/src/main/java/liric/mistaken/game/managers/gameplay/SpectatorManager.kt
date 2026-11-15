@@ -74,7 +74,9 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
         player.inventory.setItem(4, speedItem)
 
         
-        Bukkit.getOnlinePlayers().forEach { online ->
+        val session = plugin.sessionManager.getSession(player)
+        val relevantPlayers = session?.getPlayers() ?: player.world.players
+        relevantPlayers.forEach { online ->
             if (online != player) {
                 if (isSpectator(online)) {
                     plugin.visibilityManager.showPlayer(player, online)
@@ -104,7 +106,8 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
             player.gameMode = GameMode.SURVIVAL
         }
 
-        Bukkit.getOnlinePlayers().forEach { online ->
+        val relevantPlayers = session?.getPlayers() ?: player.world.players
+        relevantPlayers.forEach { online ->
             plugin.visibilityManager.showPlayer(player, online)
             plugin.visibilityManager.showPlayer(online, player)
         }
@@ -189,7 +192,9 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
     }
 
     private fun abrirMenuTeleport(p: Player) {
-        val vivos = Bukkit.getOnlinePlayers().filter { it.gameMode == GameMode.SURVIVAL && !isSpectator(it) }
+        val session = plugin.sessionManager.getSession(p)
+        val pool = session?.getPlayers() ?: p.world.players
+        val vivos = pool.filter { it.gameMode == GameMode.SURVIVAL && !isSpectator(it) }
         if (vivos.isEmpty()) {
             p.sendMessage(ColorTranslator.translate("<red>No hay jugadores vivos."))
             return
@@ -216,7 +221,8 @@ class SpectatorManager(private val plugin: Mistaken) : Listener {
 
         if (e.inventory.holder is SpectatorHolder) {
             val clicked = e.currentItem ?: return
-            val targetName = PlainTextComponentSerializer.plainText().serialize(clicked.itemMeta.displayName()!!)
+            val displayNameComp = clicked.itemMeta?.displayName() ?: return
+            val targetName = PlainTextComponentSerializer.plainText().serialize(displayNameComp)
             Bukkit.getPlayerExact(targetName)?.let { target ->
                 p.teleportAsync(target.location).thenAccept {
                     p.playSound(p.location, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.5f)

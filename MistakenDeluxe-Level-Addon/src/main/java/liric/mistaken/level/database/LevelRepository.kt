@@ -39,22 +39,6 @@ class LevelRepository(provider: DatabaseProvider) : Repository<UUID, PlayerLevel
     }
 
     override fun save(entity: PlayerLevelData) {
-        val query = """
-            INSERT INTO mistaken_levels (uuid, level, experience, total_experience, prestige) 
-            VALUES (?, ?, ?, ?, ?) 
-            ON DUPLICATE KEY UPDATE 
-            level = VALUES(level), 
-            experience = VALUES(experience), 
-            total_experience = VALUES(total_experience), 
-            prestige = VALUES(prestige)
-        """.trimIndent()
-
-        
-        
-        
-        
-        
-        
         val exists = load(entity.uuid) != null
         if (exists) {
             val updateQuery = "UPDATE mistaken_levels SET level = ?, experience = ?, total_experience = ?, prestige = ? WHERE uuid = ?"

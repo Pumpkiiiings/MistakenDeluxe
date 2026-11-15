@@ -20,6 +20,7 @@ object HitboxVisualizer {
     
     
     private val _isEnabled = AtomicBoolean(false)
+    private val activeHitboxes = java.util.concurrent.ConcurrentHashMap.newKeySet<VirtualBlockDisplay>()
 
     /** Thread-safe read of the enabled state. */
     val isEnabled: Boolean get() = _isEnabled.get()
@@ -30,6 +31,12 @@ object HitboxVisualizer {
             val current = _isEnabled.get()
             if (_isEnabled.compareAndSet(current, !current)) return !current
         }
+    }
+
+    /** Cleans up all active hitboxes immediately. */
+    fun clearAll() {
+        activeHitboxes.forEach { if (it.isValid) it.remove() }
+        activeHitboxes.clear()
     }
     /**
      * Crea una Hitbox 3D usando BlockDisplays (Cristal tintado).
@@ -43,7 +50,7 @@ object HitboxVisualizer {
     fun createHitbox(loc: Location, x: Double, y: Double, z: Double, mat: Material = Material.LIME_STAINED_GLASS): VirtualBlockDisplay? {
         if (!isEnabled) return null
 
-        return PacketFactory.displays.buildBlockDisplay(loc.worldViewers(), loc) { display ->
+        val display = PacketFactory.displays.buildBlockDisplay(loc.worldViewers(), loc) { display ->
             display.block = mat.createBlockData()
             display.isPersistent = false
             display.setGravity(false)
@@ -64,6 +71,10 @@ object HitboxVisualizer {
             display.teleportDuration = 1
             display.interpolationDuration = 1
         }
+        if (display != null) {
+            activeHitboxes.add(display)
+        }
+        return display
     }
 
     /**
@@ -80,6 +91,7 @@ object HitboxVisualizer {
 
         
         plugin.server.globalRegionScheduler.runDelayed(plugin, Consumer { _ ->
+            activeHitboxes.remove(hitbox)
             if (hitbox.isValid) hitbox.remove()
         }, ticks)
     }

@@ -116,20 +116,21 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
                 val query = "SELECT * FROM stats WHERE uuid = ?"
                 conn.prepareStatement(query).use { ps ->
                     ps.setString(1, uuid)
-                    val rs = ps.executeQuery()
-                    if (rs.next()) {
-                        val stats = PlayerStats()
-                        stats.load(
-                            rs.getInt("wins_survivor"),
-                            rs.getInt("wins_assassin"),
-                            rs.getInt("losses_survivor"),
-                            rs.getInt("losses_assassin"),
-                            rs.getInt("kills"),
-                            rs.getInt("deaths"),
-                            rs.getInt("generators_repaired"),
-                            rs.getInt("coins")
-                        )
-                        return stats
+                    ps.executeQuery().use { rs ->
+                        if (rs.next()) {
+                            val stats = PlayerStats()
+                            stats.load(
+                                rs.getInt("wins_survivor"),
+                                rs.getInt("wins_assassin"),
+                                rs.getInt("losses_survivor"),
+                                rs.getInt("losses_assassin"),
+                                rs.getInt("kills"),
+                                rs.getInt("deaths"),
+                                rs.getInt("generators_repaired"),
+                                rs.getInt("coins")
+                            )
+                            return stats
+                        }
                     }
                 }
             }
@@ -175,17 +176,18 @@ abstract class AbstractSQLDatabaseManager(protected val plugin: Mistaken) : Data
             connection.use { conn ->
                 conn.prepareStatement(query).use { ps ->
                     ps.setString(1, uuid)
-                    val rs = ps.executeQuery()
-                    if (rs.next()) {
-                        return mapOf(
-                            "lang" to (rs.getString("lang") ?: "es"),
-                            "killers_owned" to (rs.getString("killers_owned") ?: "slasher"),
-                            "killer_selected" to (rs.getString("killer_selected") ?: "slasher"),
-                            "survivors_owned" to (rs.getString("survivors_owned") ?: "civil"),
-                            "survivor_selected" to (rs.getString("survivor_selected") ?: "civil"),
-                            "nick" to (rs.getString("nick") ?: ""),
-                            "skin_source" to (rs.getString("skin_source") ?: "")
-                        )
+                    ps.executeQuery().use { rs ->
+                        if (rs.next()) {
+                            return mapOf(
+                                "lang" to (rs.getString("lang") ?: "es"),
+                                "killers_owned" to (rs.getString("killers_owned") ?: "slasher"),
+                                "killer_selected" to (rs.getString("killer_selected") ?: "slasher"),
+                                "survivors_owned" to (rs.getString("survivors_owned") ?: "civil"),
+                                "survivor_selected" to (rs.getString("survivor_selected") ?: "civil"),
+                                "nick" to (rs.getString("nick") ?: ""),
+                                "skin_source" to (rs.getString("skin_source") ?: "")
+                            )
+                        }
                     }
                 }
             }

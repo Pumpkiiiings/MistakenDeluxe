@@ -100,7 +100,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
                 ))
 
                 setGlowColor(NamedTextColor.WHITE)
-                Bukkit.broadcast(MessageService.getComponent(null, "anomalies.geoffrey.spawn"))
+                broadcastGeoffreyMessage(MessageService.getComponent(null, "anomalies.geoffrey.spawn"))
 
                 iniciarIANativa()
             } catch (e: Exception) {
@@ -315,7 +315,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
             parts[4].block = Material.RED_CONCRETE.createBlockData()
         }
 
-        Bukkit.broadcast(MessageService.getComponent(null, "anomalies.geoffrey.rage"))
+        broadcastGeoffreyMessage(MessageService.getComponent(null, "anomalies.geoffrey.rage"))
 
         var hasHit = false
         var ticks = 0
@@ -372,7 +372,7 @@ class GeoffreyEXE(private val plugin: Mistaken) {
             
             victim.health = 0.0
             val prefix = if (enrage) "<dark_red><b>[FURIA]</b>" else "<red><b>[!]</b>"
-            Bukkit.broadcast(MessageService.getComponent(null, "anomalies.geoffrey.death", Placeholder.parsed("player", victim.name)))
+            broadcastGeoffreyMessage(MessageService.getComponent(null, "anomalies.geoffrey.death", Placeholder.parsed("player", victim.name)))
         } else {
             
             victim.health = nuevaVida
@@ -422,9 +422,28 @@ class GeoffreyEXE(private val plugin: Mistaken) {
         remove()
     }
 
+    private fun broadcastGeoffreyMessage(component: net.kyori.adventure.text.Component) {
+        val session = assignedSession
+        if (session != null) {
+            session.getPlayers().forEach { it.sendMessage(component) }
+        } else if (parts.isNotEmpty() && parts[0].isValid) {
+            parts[0].location.world?.players?.forEach { it.sendMessage(component) }
+        } else {
+            Bukkit.broadcast(component)
+        }
+    }
+
     fun remove() {
         isRunning = false
-        parts.forEach { if (it.isValid) it.remove() }
+        val scoreboard = Bukkit.getScoreboardManager().mainScoreboard
+        val white = scoreboard.getTeam(teamWhite)
+        val red = scoreboard.getTeam(teamRed)
+        parts.forEach {
+            val id = it.uniqueId.toString()
+            white?.removeEntry(id)
+            red?.removeEntry(id)
+            if (it.isValid) it.remove()
+        }
         parts.clear()
     }
 }

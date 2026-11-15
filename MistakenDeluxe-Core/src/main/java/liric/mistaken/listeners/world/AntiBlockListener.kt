@@ -20,12 +20,17 @@ import java.util.concurrent.TimeUnit
 class AntiBlockListener(private val plugin: Mistaken) : Listener {
 
     private val activeGameWorlds = ConcurrentHashMap.newKeySet<String>()
+    private var cacheTask: io.papermc.paper.threadedregions.scheduler.ScheduledTask? = null
 
     init {
-        
-        plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
+        cacheTask = plugin.server.globalRegionScheduler.runAtFixedRate(plugin, java.util.function.Consumer { _ ->
             updateWorldCache()
-        }, 1, 1, TimeUnit.MINUTES)
+        }, 1200L, 1200L)
+    }
+
+    fun shutdown() {
+        cacheTask?.cancel()
+        cacheTask = null
     }
 
     fun updateWorldCache() {

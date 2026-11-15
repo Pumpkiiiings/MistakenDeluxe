@@ -19,9 +19,15 @@ class BoosterRepository(private val provider: DatabaseProvider) {
         AddonQueryExecutor.executeUpdate(provider, query)
 
         try {
-            AddonQueryExecutor.executeUpdate(provider, "ALTER TABLE mistaken_boosters ADD COLUMN total_duration BIGINT NOT NULL DEFAULT 3600000")
-        } catch (e: Exception) {
-            // Column might already exist
+            provider.getConnection().use { conn ->
+                val md = conn.metaData
+                val colExists = md.getColumns(null, null, "mistaken_boosters", "total_duration").use { it.next() }
+                    || md.getColumns(null, null, "MISTAKEN_BOOSTERS", "TOTAL_DURATION").use { it.next() }
+                if (!colExists) {
+                    AddonQueryExecutor.executeUpdate(provider, "ALTER TABLE mistaken_boosters ADD COLUMN total_duration BIGINT NOT NULL DEFAULT 3600000")
+                }
+            }
+        } catch (ignored: Exception) {
         }
     }
 

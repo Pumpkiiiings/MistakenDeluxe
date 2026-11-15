@@ -68,6 +68,9 @@ class PlayerQuitListener(private val plugin: Mistaken) : Listener {
         plugin.glowingAPI.clearViewer(uuid)
         plugin.ambientManager.stopAmbience(player)
         plugin.statsManager.unloadPlayer(uuid)
+        if (plugin.setupManager.activeSetups.containsKey(uuid)) {
+            plugin.setupManager.stopSetup(player)
+        }
 
         
         plugin.server.asyncScheduler.runNow(plugin) { _ ->

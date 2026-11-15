@@ -57,70 +57,61 @@ class StaminaListener(private val plugin: Mistaken) : Listener {
             if (!plugin.isReady) return@runAtFixedRate
 
             for (player in plugin.server.onlinePlayers) {
-                
-                val session = plugin.sessionManager.getSession(player)
+                if (!player.isOnline) continue
+                player.scheduler.execute(plugin, {
+                    if (!player.isOnline) return@execute
 
-                
-                if (session == null || session.currentState != GameState.INGAME) {
-                    player.scheduler.execute(plugin, {
+                    val session = plugin.sessionManager.getSession(player)
+                    if (session == null || session.currentState != GameState.INGAME) {
                         if (player.level != 100 || player.exp != 1.0f) {
                             player.level = 100
                             player.exp = 1.0f
                             if (player.foodLevel < 20) player.foodLevel = 20
                         }
-                    }, null, 0L)
-                    continue
-                }
-
-                
-                if (player.gameMode != GameMode.SURVIVAL || plugin.isIgnored(player) || plugin.spectatorManager.isSpectator(player)) continue
-
-                val uuid = player.uniqueId
-                val user = plugin.playerDataManager.getUserData(uuid) ?: continue
-
-                var currentStamina = user.stamina
-                val isSprinting = player.isSprinting
-
-                val maxStamina = session.activeModeHandler.getMaxStamina(player)
-                val currentRecoveryRate = if (maxStamina > 100.0) recoveryRate * 2 else recoveryRate
-
-                // Consumo (Sprinting)
-                if (isSprinting && currentStamina > 0.0) {
-                    
-                    var loss = if (session.isKiller(uuid)) lossKiller else lossSurvivor
-                    if (maxStamina > 100.0) loss /= 2.0
-                    currentStamina = (currentStamina - loss).coerceAtLeast(0.0)
-                } else if (currentStamina < maxStamina) {
-                    
-                    
-                    val isExhausted = player.hasPotionEffect(PotionEffectType.SLOWNESS) &&
-                        (player.getPotionEffect(PotionEffectType.SLOWNESS)?.amplifier ?: -1) >= 2
-                    if (!isExhausted) {
-                        currentStamina = (currentStamina + currentRecoveryRate).coerceAtMost(maxStamina)
+                        return@execute
                     }
-                }
 
-                currentStamina = session.activeModeHandler.onStaminaTick(user, currentStamina)
-                user.stamina = currentStamina
+                    if (player.gameMode != GameMode.SURVIVAL || plugin.isIgnored(player) || plugin.spectatorManager.isSpectator(player)) return@execute
 
-                val justExhausted = currentStamina <= 0.0 && !player.hasPotionEffect(PotionEffectType.SLOWNESS)
-                val newLevel = currentStamina.toInt()
-                val newExpProgress = (currentStamina / maxStamina).toFloat().coerceIn(0.0f, 1.0f)
+                    val uuid = player.uniqueId
+                    val user = plugin.playerDataManager.getUserData(uuid) ?: return@execute
 
-                player.scheduler.execute(plugin, {
-                    if (player.isOnline) {
-                        if (player.foodLevel < 20) player.foodLevel = 20
+                    var currentStamina = user.stamina
+                    val isSprinting = player.isSprinting
 
-                        if (player.level != newLevel) player.level = newLevel
-                        player.exp = newExpProgress
+                    val maxStamina = session.activeModeHandler.getMaxStamina(player)
+                    val currentRecoveryRate = if (maxStamina > 100.0) recoveryRate * 2 else recoveryRate
 
-                        if (justExhausted) {
-                            applyAgotamiento(player)
+                    // Consumo (Sprinting)
+                    if (isSprinting && currentStamina > 0.0) {
+                        var loss = if (session.isKiller(uuid)) lossKiller else lossSurvivor
+                        if (maxStamina > 100.0) loss /= 2.0
+                        currentStamina = (currentStamina - loss).coerceAtLeast(0.0)
+                    } else if (currentStamina < maxStamina) {
+                        val isExhausted = player.hasPotionEffect(PotionEffectType.SLOWNESS) &&
+                            (player.getPotionEffect(PotionEffectType.SLOWNESS)?.amplifier ?: -1) >= 2
+                        if (!isExhausted) {
+                            currentStamina = (currentStamina + currentRecoveryRate).coerceAtMost(maxStamina)
                         }
+                    }
 
-                        if (currentStamina in 1.0..25.0 && isSprinting) {
-                            player.sendActionBar(MessageService.getComponent(player, "stamina.low_warning", Placeholder.parsed("level", newLevel.toString())))
-                        }
+                    currentStamina = session.activeModeHandler.onStaminaTick(user, currentStamina)
+                    user.stamina = currentStamina
+
+                    val justExhausted = currentStamina <= 0.0 && !player.hasPotionEffect(PotionEffectType.SLOWNESS)
+                    val newLevel = currentStamina.toInt()
+                    val newExpProgress = (currentStamina / maxStamina).toFloat().coerceIn(0.0f, 1.0f)
+
+                    if (player.foodLevel < 20) player.foodLevel = 20
+                    if (player.level != newLevel) player.level = newLevel
+                    player.exp = newExpProgress
+
+                    if (justExhausted) {
+                        applyAgotamiento(player)
+                    }
+
+                    if (currentStamina in 1.0..25.0 && isSprinting) {
+                        player.sendActionBar(MessageService.getComponent(player, "stamina.low_warning", Placeholder.parsed("level", newLevel.toString())))
                     }
                 }, null, 0L)
             }

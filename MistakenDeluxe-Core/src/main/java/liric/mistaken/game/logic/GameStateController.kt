@@ -63,7 +63,7 @@ class GameStateController(private val game: GameSession) {
     }
 
     fun handleStartingSequence() {
-        val online = game.plugin.server.onlinePlayers
+        val online = game.getPlayers()
         when (game.timer) {
             12 -> online.forEach { it.playSound(it.location, Sound.BLOCK_NOTE_BLOCK_SNARE, 1f, 0.5f) }
             10 -> {
@@ -213,7 +213,8 @@ class GameStateController(private val game: GameSession) {
             MessageService.getRawString(null, "discord.reason_survivors_won", "¡Los supervivientes escaparon!", "messages")
         }
 
-        val escapados = game.plugin.server.onlinePlayers.filter {
+        val sessionPlayers = game.getPlayers()
+        val escapados = sessionPlayers.filter {
             !game.isKiller(it.uniqueId) && it.gameMode == GameMode.SURVIVAL
         }.map { it.name }
 
@@ -235,7 +236,7 @@ class GameStateController(private val game: GameSession) {
 
         val times = Title.Times.times(Duration.ofMillis(500), Duration.ofSeconds(5), Duration.ofMillis(1000))
         
-        game.plugin.server.onlinePlayers.forEach { p ->
+        sessionPlayers.forEach { p ->
             val isK = game.isKiller(p.uniqueId)
             val t1 = if (isK) tK1 else tS1
             val t2 = if (isK) tK2 else tS2
@@ -247,16 +248,16 @@ class GameStateController(private val game: GameSession) {
             ))
         }
 
+        val statsSnapshot = sessionPlayers.map { it.uniqueId to it.gameMode }
         game.plugin.server.asyncScheduler.runNow(game.plugin) { _ ->
             game.plugin.webHook.sendGameEnd(mapName, ganadorNombre, razon, escapados)
-            game.plugin.server.onlinePlayers.forEach { p ->
-                val uuid = p.uniqueId
+            statsSnapshot.forEach { (uuid, gMode) ->
                 if (killerWon) {
                     if (game.isKiller(uuid)) game.plugin.statsManager.incrementStat(uuid, "wins_assassin")
                     else game.plugin.statsManager.incrementStat(uuid, "losses_survivor")
                 } else {
                     if (game.isKiller(uuid)) game.plugin.statsManager.incrementStat(uuid, "losses_assassin")
-                    else if (p.gameMode != GameMode.SPECTATOR) game.plugin.statsManager.incrementStat(uuid, "wins_survivor")
+                    else if (gMode != GameMode.SPECTATOR) game.plugin.statsManager.incrementStat(uuid, "wins_survivor")
                 }
             }
         }
@@ -270,7 +271,7 @@ class GameStateController(private val game: GameSession) {
             }
         } else {
             game.broadcastLocalized(configPath)
-            game.plugin.server.onlinePlayers.forEach { it.playSound(it.location, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f) }
+            sessionPlayers.forEach { it.playSound(it.location, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f) }
         }
 
         game.plugin.combatManager.giveWinRewards(killerWon, game)

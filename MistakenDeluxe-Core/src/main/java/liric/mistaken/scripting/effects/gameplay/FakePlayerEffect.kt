@@ -88,7 +88,7 @@ class FakePlayerEffect(
 
         val equipPacket = WrapperPlayServerEntityEquipment(fakeId, equipmentList)
 
-        plugin.server.onlinePlayers.forEach { viewer ->
+        getViewers().forEach { viewer ->
             pm.sendPacket(viewer, infoPacket)
             pm.sendPacket(viewer, spawnPacket)
             if (equipmentList.isNotEmpty()) pm.sendPacket(viewer, equipPacket)
@@ -96,7 +96,7 @@ class FakePlayerEffect(
 
         plugin.server.globalRegionScheduler.runDelayed(plugin, Consumer { _ ->
             val removeInfo = WrapperPlayServerPlayerInfoRemove(profile.uuid)
-            plugin.server.onlinePlayers.forEach { pm.sendPacket(it, removeInfo) }
+            getViewers().forEach { pm.sendPacket(it, removeInfo) }
         }, 5L)
 
         if (enableAi) {
@@ -106,7 +106,8 @@ class FakePlayerEffect(
                 fleeRadiusSq = fleeRadius?.let { it * it },
                 catchRadiusSq = fleeCatchRadius?.let { it * it },
                 onCaught = {
-                    onCaughtCallback?.invoke(ai!!.currentLoc.clone())
+                    val currentLoc = ai?.currentLoc?.clone() ?: location
+                    onCaughtCallback?.invoke(currentLoc)
                     cleanup()
                 }
             )
@@ -125,24 +126,25 @@ class FakePlayerEffect(
                 return@Consumer
             }
 
-            if (enableAi && ai != null) {
-                ai!!.tick(tickCount)
+            val currentAi = ai
+            if (enableAi && currentAi != null) {
+                currentAi.tick(tickCount)
                 if (!alive.get()) return@Consumer
 
-                val loc = ai!!.currentLoc
-                val tpPacket = WrapperPlayServerEntityTeleport(fakeId, Vector3d(loc.x, loc.y, loc.z), ai!!.currentYaw, loc.pitch, ai!!.isOnGround)
-                val headPacket = WrapperPlayServerEntityHeadLook(fakeId, ai!!.currentYaw)
+                val loc = currentAi.currentLoc
+                val tpPacket = WrapperPlayServerEntityTeleport(fakeId, Vector3d(loc.x, loc.y, loc.z), currentAi.currentYaw, loc.pitch, currentAi.isOnGround)
+                val headPacket = WrapperPlayServerEntityHeadLook(fakeId, currentAi.currentYaw)
                 val metadataPacket = WrapperPlayServerEntityMetadata(fakeId, listOf(
                     EntityData(0, EntityDataTypes.BYTE, 0x08.toByte())
                 ))
 
-                plugin.server.onlinePlayers.forEach { viewer ->
+                getViewers().forEach { viewer ->
                     pm.sendPacket(viewer, tpPacket)
                     pm.sendPacket(viewer, headPacket)
                     pm.sendPacket(viewer, metadataPacket)
                 }
 
-                if (ai!!.isOnGround && tickCount % (if (ai!!.isFleeing) 5 else 6) == 0) {
+                if (currentAi.isOnGround && tickCount % (if (currentAi.isFleeing) 5 else 6) == 0) {
                     plugin.server.regionScheduler.execute(plugin, loc) {
                         loc.world.playSound(loc, Sound.BLOCK_STONE_STEP, 0.3f, 1f)
                     }
@@ -151,6 +153,12 @@ class FakePlayerEffect(
 
             tickCount++
         }, 1L, 1L)
+    }
+
+    private fun getViewers(): List<Player> {
+        val owner = plugin.server.getPlayer(ownerUuid)
+        val session = owner?.let { plugin.sessionManager.getSession(it) }
+        return session?.getPlayers() ?: location.world?.players ?: plugin.server.onlinePlayers.toList()
     }
 
     override fun stop() { cleanup() }
@@ -162,7 +170,7 @@ class FakePlayerEffect(
             scheduledTask = null
             
             val destroyPacket = WrapperPlayServerDestroyEntities(fakeId)
-            plugin.server.onlinePlayers.forEach { pm.sendPacket(it, destroyPacket) }
+            getViewers().forEach { pm.sendPacket(it, destroyPacket) }
         }
     }
 }

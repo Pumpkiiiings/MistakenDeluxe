@@ -16,6 +16,7 @@ import org.bukkit.Location
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import java.util.function.Consumer
+import liric.mistaken.utils.worldViewers
 
 class StillLife : CoreKiller(
     "still_life",
@@ -99,7 +100,9 @@ class StillLife : CoreKiller(
                     com.github.retrooper.packetevents.util.Vector3i(targetLoc.blockX, targetLoc.blockY, targetLoc.blockZ),
                     blockState.globalId
                 )
-                Bukkit.getOnlinePlayers().forEach { p ->
+                val session = plugin.sessionManager.getSession(player)
+                val recipients = session?.getPlayers() ?: targetLoc.worldViewers()
+                recipients.forEach { p ->
                     com.github.retrooper.packetevents.PacketEvents.getAPI().playerManager.sendPacket(p, packet)
                 }
                 player.sendMessage(liric.mistaken.utils.color.ColorTranslator.translate(
@@ -181,7 +184,9 @@ class StillLife : CoreKiller(
             com.github.retrooper.packetevents.util.Vector3i(loc.blockX, loc.blockY, loc.blockZ),
             airState.globalId
         )
-        Bukkit.getOnlinePlayers().forEach { p ->
+        val session = plugin.sessionManager.getSession(survivor)
+        val recipients = session?.getPlayers() ?: loc.worldViewers()
+        recipients.forEach { p ->
             com.github.retrooper.packetevents.PacketEvents.getAPI().playerManager.sendPacket(p, packet)
         }
 

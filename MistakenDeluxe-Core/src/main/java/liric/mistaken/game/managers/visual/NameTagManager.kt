@@ -55,7 +55,7 @@ class NameTagManager(private val plugin: Mistaken) {
         nametags[player.uniqueId] = tag
 
         
-        Bukkit.getOnlinePlayers().forEach { viewer ->
+        player.world.players.forEach { viewer ->
             spawnForViewer(player, viewer, tag)
         }
     }
@@ -65,7 +65,7 @@ class NameTagManager(private val plugin: Mistaken) {
 
         val destroyPacket = WrapperPlayServerDestroyEntities(tag.entityId)
         
-        Bukkit.getOnlinePlayers().forEach { viewer ->
+        player.world.players.forEach { viewer ->
             PacketEvents.getAPI().playerManager.sendPacket(viewer, destroyPacket)
         }
     }
@@ -74,7 +74,7 @@ class NameTagManager(private val plugin: Mistaken) {
         val tag = nametags[player.uniqueId]
         if (tag != null) {
             val destroyPacket = com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities(tag.entityId)
-            Bukkit.getOnlinePlayers().forEach { viewer ->
+            player.world.players.forEach { viewer ->
                 com.github.retrooper.packetevents.PacketEvents.getAPI().playerManager.sendPacket(viewer, destroyPacket)
             }
             tag.confirmedViewers.clear()
@@ -164,7 +164,7 @@ class NameTagManager(private val plugin: Mistaken) {
         val passengerIds = player.passengers.map { it.entityId }.toIntArray() + tag.entityId
         val passengerPacket = WrapperPlayServerSetPassengers(player.entityId, passengerIds)
 
-        Bukkit.getOnlinePlayers().forEach { viewer ->
+        player.world.players.forEach { viewer ->
             if (!tag.confirmedViewers.contains(viewer.uniqueId)) {
                 spawnForViewer(player, viewer, tag)
             }

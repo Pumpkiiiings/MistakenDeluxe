@@ -48,13 +48,19 @@ class CombatManager(private val plugin: Mistaken) : Listener, HealthAPI {
     private val SURVIVOR_COOLDOWN = 1000L
 
     private val mm = plugin.mm
+    private var radarTask: io.papermc.paper.threadedregions.scheduler.ScheduledTask? = null
 
     init {
         startRadarTask()
     }
 
+    fun shutdown() {
+        radarTask?.cancel()
+        radarTask = null
+    }
+
     private fun startRadarTask() {
-        plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { _ ->
+        radarTask = plugin.server.globalRegionScheduler.runAtFixedRate(plugin, Consumer { _ ->
             if (!plugin.isReady) return@Consumer
 
             

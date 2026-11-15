@@ -22,7 +22,12 @@ class VisualUpdateService(private val plugin: Mistaken) {
         asyncTask = plugin.server.asyncScheduler.runAtFixedRate(plugin, { _ ->
             asyncTicks += scoreboardInterval
             for (player in Bukkit.getOnlinePlayers()) {
-                plugin.scoreboardManager.updatePlayer(player)
+                if (!player.isOnline) continue
+                player.scheduler.run(plugin, { _ ->
+                    if (player.isOnline) {
+                        plugin.scoreboardManager.updatePlayer(player)
+                    }
+                }, null)
             }
         }, 1000L, scoreboardInterval * 50L, TimeUnit.MILLISECONDS)
 
